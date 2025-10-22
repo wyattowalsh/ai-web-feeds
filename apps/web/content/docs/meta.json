@@ -7,7 +7,7 @@
   "features": {
     "title": "Features",
     "icon": "Sparkles",
-    "pages": ["overview", "data-enrichment", "pdf-export", "ai-integration", "llms-full-format", "rss-feeds", "platform-integrations", "twitter-arxiv-integration", "link-validation", "seo-metadata", "mermaid", "math"]
+    "pages": ["overview", "analytics", "search", "recommendations", "data-enrichment", "pdf-export", "ai-integration", "llms-full-format", "rss-feeds", "platform-integrations", "twitter-arxiv-integration", "link-validation", "seo-metadata", "mermaid", "math"]
   },
   "---Guides": {
     "type": "separator"

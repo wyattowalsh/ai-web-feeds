@@ -1,0 +1,115 @@
+---
+title: Analytics Dashboard
+description: Real-time feed analytics with interactive visualizations, trending topics, and health insights
+---
+
+# Analytics Dashboard
+
+The Analytics Dashboard provides curators with comprehensive metrics and insights for the AIWebFeeds collection.
+
+## Features
+
+### Key Metrics
+
+- **Total Feeds**: Count of all feeds in the collection
+- **Validation Success Rate**: Percentage of feeds passing health checks
+- **Average Response Time**: Mean latency for feed validation
+- **Health Score Distribution**: Feed quality buckets (healthy, moderate, unhealthy)
+
+### Interactive Charts
+
+#### Most Active Topics
+Bar chart showing topics ranked by validation frequency (last 30 days), weighted by feed health scores.
+
+#### Publication Velocity
+Line chart displaying daily/weekly/monthly validation frequency trends, used as proxy for publication activity.
+
+#### Feed Health Distribution
+Pie chart showing distribution of feeds by health category:
+- **Healthy**: ≥0.8 health score
+- **Moderate**: 0.5-0.8 health score
+- **Unhealthy**: <0.5 health score
+
+#### Validation Success Over Time
+Area chart tracking validation success rate over time ranges (7d, 30d, 90d).
+
+### Filtering
+
+- **Time Range**: Last 7 days, Last 30 days, Last 90 days, Custom date range
+- **Topic Filter**: Filter all analytics by specific topic (e.g., "Show only LLM feeds")
+
+### Data Export
+
+- **CSV Export**: Download raw metrics for external analysis
+- **API Endpoint**: Programmatic access at `/api/analytics/summary`
+
+## Configuration
+
+Analytics caching is configurable via environment variables:
+
+```bash
+# Static metrics (total_feeds, health_distribution) - 1 hour TTL
+AIWF_ANALYTICS__STATIC_CACHE_TTL=3600
+
+# Dynamic metrics (trending_topics, validation_success_rate) - 5 minutes TTL
+AIWF_ANALYTICS__DYNAMIC_CACHE_TTL=300
+
+# Maximum concurrent analytics queries
+AIWF_ANALYTICS__MAX_CONCURRENT_QUERIES=10
+```
+
+## Usage
+
+### Web Interface
+
+Navigate to `/analytics` to access the dashboard.
+
+**Manual Refresh**: Click "Refresh Now" button to bypass cache and fetch real-time data.
+
+**Data Freshness**: Dashboard displays "Last updated: [timestamp]" with auto-refresh option.
+
+### CLI
+
+```bash
+# Display analytics summary
+uv run aiwebfeeds analytics summary --date-range 30d
+
+# Filter by topic
+uv run aiwebfeeds analytics summary --topic llm
+
+# Export to CSV
+uv run aiwebfeeds analytics export --output metrics.csv
+```
+
+### API
+
+```typescript
+// Fetch analytics summary
+const response = await fetch('/api/analytics/summary?date_range=30d&topic=llm');
+const data = await response.json();
+
+console.log(data.total_feeds);
+console.log(data.validation_success_rate);
+console.log(data.trending_topics);
+```
+
+## Performance
+
+- **Page Load**: <2 seconds on 4G connection (NFR-001)
+- **Cache Hit Rate**: 95% of queries served from cache
+- **Database Load Reduction**: ≥80% via hybrid caching strategy
+
+## Success Criteria
+
+- ✅ Dashboard loads within 2 seconds for 95% of requests
+- ✅ Curators can identify top 10 trending topics in ≤30 seconds
+- ✅ 80% of curators use dashboard at least weekly
+- ✅ Curators identify and disable 20+ inactive feeds within first month
+- ✅ Export feature used by 30% of curators within first quarter
+
+## Related
+
+- [Search & Discovery](./search) - Find feeds by keywords and semantic similarity
+- [Recommendations](./recommendations) - AI-powered feed suggestions
+- [Data Model](/docs/development/data-model#analyticssnapshot) - AnalyticsSnapshot entity schema
+

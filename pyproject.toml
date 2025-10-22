@@ -272,3 +272,10 @@ show_missing = true
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+[dependency-groups]
+dev = [
+    "numpy>=2.3.4",
+    "scikit-learn>=1.7.2",
+    "sentence-transformers>=5.1.1",
+]

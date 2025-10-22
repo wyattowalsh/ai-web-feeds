@@ -46,15 +46,49 @@ class LoggingConfig(BaseSettings):
     backtrace: bool = Field(True, description="Enable better tracebacks")
     diagnose : bool = Field(False, description="Verbose exception formatting (set True for debugging)")
 
+class EmbeddingSettings(BaseSettings):
+    """Embedding generation settings for semantic search."""
+    provider          : str = Field("local", description="Embedding provider: 'local' or 'huggingface'")
+    hf_api_token      : str = Field("", description="Hugging Face API token (optional, for HF provider)")
+    hf_model          : str = Field("sentence-transformers/all-MiniLM-L6-v2", description="Hugging Face model name")
+    local_model       : str = Field("sentence-transformers/all-MiniLM-L6-v2", description="Local model name")
+    embedding_cache_size: int = Field(1000, description="LRU cache size for embeddings")
+
+
+class AnalyticsSettings(BaseSettings):
+    """Analytics caching and query settings."""
+    static_cache_ttl    : int = Field(3600, description="Static metrics cache TTL (seconds), e.g., total_feeds, health_distribution")
+    dynamic_cache_ttl   : int = Field(300, description="Dynamic metrics cache TTL (seconds), e.g., trending_topics, validation_success_rate")
+    max_concurrent_queries: int = Field(10, description="Maximum concurrent analytics queries")
+
+
+class SearchSettings(BaseSettings):
+    """Search configuration for autocomplete and full-text search."""
+    autocomplete_limit           : int   = Field(8, description="Max autocomplete suggestions (5 feeds + 3 topics)")
+    full_text_limit              : int   = Field(20, description="Max full-text search results per page")
+    semantic_similarity_threshold: float = Field(0.7, description="Minimum cosine similarity for semantic search")
+
+
+class RecommendationSettings(BaseSettings):
+    """Recommendation algorithm weights and constraints."""
+    content_weight     : float = Field(0.7, description="Weight for content-based recommendations (topic similarity)")
+    popularity_weight  : float = Field(0.2, description="Weight for popularity-based recommendations")
+    serendipity_weight : float = Field(0.1, description="Weight for serendipity (random high-quality feeds)")
+
+
 class Settings(BaseSettings):
     """Settings configs for AIWebFeeds."""
-    logging: LoggingConfig = Field(default_factory=LoggingConfig, description="Logging configuration")
+    logging        : LoggingConfig         = Field(default_factory=LoggingConfig, description="Logging configuration")
+    embedding      : EmbeddingSettings     = Field(default_factory=EmbeddingSettings, description="Embedding configuration")
+    analytics      : AnalyticsSettings     = Field(default_factory=AnalyticsSettings, description="Analytics configuration")
+    search         : SearchSettings        = Field(default_factory=SearchSettings, description="Search configuration")
+    recommendation : RecommendationSettings = Field(default_factory=RecommendationSettings, description="Recommendation configuration")
 
     # Enable nested env vars, e.g.:
     # AIWF_LOGGING__LEVEL=DEBUG
     # AIWF_LOGGING__FILE=True
-    # AIWF_LOGGING__FILE_SERIALIZE=True
-    # AIWF_LOGGING__FILE_ROTATION="50 MB"
+    # AIWF_EMBEDDING__PROVIDER=huggingface
+    # AIWF_ANALYTICS__STATIC_CACHE_TTL=7200
     model_config = SettingsConfigDict(
         env_prefix="AIWF_",
         env_nested_delimiter="__",
