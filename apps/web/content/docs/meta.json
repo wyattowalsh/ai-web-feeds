@@ -18,6 +18,7 @@
     "pages": [
       "quick-reference", 
       "workflow-reference",
+      "deployment",
       "data-explorer",
       "database-quick-start",
       "testing", 
