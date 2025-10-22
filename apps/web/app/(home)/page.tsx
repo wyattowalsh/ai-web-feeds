@@ -37,10 +37,16 @@ export default function HomePage() {
       color: 'from-blue-500 to-cyan-500',
     },
     {
-      title: '🔍 Explorer',
+      title: '🔍 Search & Discovery',
+      description: 'Full-text and semantic search powered by SQLite FTS5 and AI embeddings',
+      href: '/search',
+      color: 'from-purple-500 to-pink-500',
+    },
+    {
+      title: '📂 Feed Explorer',
       description: 'Browse and explore all feeds with filters, search, and topic visualization',
       href: '/explorer',
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-indigo-500 to-purple-500',
     },
     {
       title: '📚 Documentation',
@@ -58,7 +64,7 @@ export default function HomePage() {
       title: '📥 Downloads',
       description: 'Export feeds in OPML format for your favorite feed reader',
       href: '/downloads',
-      color: 'from-indigo-500 to-purple-500',
+      color: 'from-pink-500 to-rose-500',
     },
     {
       title: '🤖 LLM Formats',
