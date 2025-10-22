@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/search-query.schema.json",
+  "title": "SearchQuery",
+  "description": "User search query log for analytics and personalization",
+  "type": "object",
+  "required": [
+    "id",
+    "query_text",
+    "search_type",
+    "result_count",
+    "timestamp"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique query identifier"
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "description": "User identifier (optional, null for anonymous)"
+    },
+    "query_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "description": "Search query text"
+    },
+    "search_type": {
+      "type": "string",
+      "enum": ["full_text", "semantic", "hybrid"],
+      "description": "Search algorithm used"
+    },
+    "filters_applied": {
+      "type": ["object", "null"],
+      "description": "Filters applied to search (JSON object)",
+      "properties": {
+        "source_type": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["blog", "podcast", "newsletter", "video", "social", "other"]
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      }
+    },
+    "result_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of results returned"
+    },
+    "clicked_results": {
+      "type": ["array", "null"],
+      "description": "Array of feed IDs that user clicked",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Query timestamp (ISO 8601)"
+    }
+  },
+  "examples": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "user_id": "user-123",
+      "query_text": "transformer models",
+      "search_type": "semantic",
+      "filters_applied": {
+        "source_type": ["blog"],
+        "verified": true
+      },
+      "result_count": 15,
+      "clicked_results": ["feed-45", "feed-89"],
+      "timestamp": "2025-10-22T10:30:00Z"
+    }
+  ]
+}
+
