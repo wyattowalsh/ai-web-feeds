@@ -377,7 +377,61 @@ class NotificationPreferencePublic(SQLModel):
 
 ---
 
-### 6. EmailDigest
+### 6. UserFeedFollow
+
+**Purpose**: Stores which feeds a user follows for notification targeting and personalization.
+
+**SQLModel Schema**:
+```python
+class UserFeedFollow(SQLModel, table=True):
+    """User feed follow relationship"""
+    __tablename__ = "user_feed_follows"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: str = Field(index=True)  # localStorage UUID
+    feed_id: str = Field(foreign_key="feeds.id", index=True)
+    followed_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    feed: Optional["Feed"] = Relationship(back_populates="followers")
+    
+    __table_args__ = (
+        UniqueConstraint("user_id", "feed_id", name="unique_user_feed"),
+    )
+
+class UserFeedFollowCreate(SQLModel):
+    """Create follow relationship"""
+    user_id: str
+    feed_id: str
+
+class UserFeedFollowPublic(SQLModel):
+    """Public-facing follow relationship"""
+    id: int
+    feed_id: str
+    followed_at: datetime
+```
+
+**Validation Rules**:
+- `user_id` MUST be valid UUID (localStorage format)
+- `feed_id` MUST exist in feeds table (foreign key constraint)
+- UNIQUE constraint on (user_id, feed_id) prevents duplicate follows
+- `followed_at` MUST be ≥feed.created_at
+
+**Usage**:
+- **Follow Feed**: Insert new row, auto-create default NotificationPreference (instant, websocket)
+- **Unfollow Feed**: Delete row, optionally delete associated NotificationPreferences
+- **Get Followers**: Query all user_ids for given feed_id (for notification targeting)
+- **Get User Follows**: Query all feed_ids for given user_id (for digest generation)
+
+**Indexes**:
+- Primary key on `id`
+- Index on `user_id` (user's followed feeds)
+- Index on `feed_id` (feed's followers)
+- Unique index on (user_id, feed_id)
+
+---
+
+### 7. EmailDigest
 
 **Purpose**: Stores email digest subscriptions and engagement tracking.
 
@@ -460,13 +514,23 @@ class EmailDigestPublic(SQLModel):
 - One user has many notifications
 - Indexed by user_id for efficient queries
 
+### User → UserFeedFollow (One-to-Many)
+- One user can follow many feeds
+- UNIQUE constraint prevents duplicate follows
+- Following a feed auto-creates default NotificationPreference
+
 ### User → NotificationPreference (One-to-Many)
 - One user has multiple preferences (per feed, per delivery method)
 - UNIQUE constraint prevents duplicates
+- Automatically created when following a feed (default: instant, websocket)
 
 ### User → EmailDigest (One-to-One)
 - One user has at most one active digest subscription
 - Soft delete (unsubscribed_at) preserves engagement data
+
+### Feed → UserFeedFollow (One-to-Many)
+- One feed can have many followers
+- Used for notification targeting (who to notify when feed publishes)
 
 ---
 
@@ -583,12 +647,27 @@ def upgrade():
     op.create_index('idx_notifications_created_at', 'notifications', ['created_at'])
     op.create_index('idx_notifications_type', 'notifications', ['type'])
     
+    # Create user_feed_follows table
+    op.create_table(
+        'user_feed_follows',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('feed_id', sa.String(), nullable=False),
+        sa.Column('followed_at', sa.DateTime(), nullable=False),
+        sa.ForeignKeyConstraint(['feed_id'], ['feeds.id']),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('user_id', 'feed_id', name='unique_user_feed')
+    )
+    op.create_index('idx_follows_user', 'user_feed_follows', ['user_id'])
+    op.create_index('idx_follows_feed', 'user_feed_follows', ['feed_id'])
+    
     # Additional tables: trending_topics, notification_preferences, email_digests
-    # (Full migration script would include all 6 tables)
+    # (Full migration script would include all 7 tables)
 
 def downgrade():
     op.drop_table('email_digests')
     op.drop_table('notification_preferences')
+    op.drop_table('user_feed_follows')
     op.drop_table('trending_topics')
     op.drop_table('notifications')
     op.drop_table('feed_poll_jobs')

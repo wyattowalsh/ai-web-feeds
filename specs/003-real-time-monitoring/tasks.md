@@ -37,7 +37,7 @@
 - [ ] T001 Install Python dependencies: APScheduler 3.10+, python-socketio 5.x+, httpx 0.27+, tenacity 8.x+ in packages/ai_web_feeds/pyproject.toml
 - [ ] T002 [P] Install Node.js dependencies: socket.io-client 4.x in apps/web/package.json
 - [ ] T003 [P] Create database migration file packages/ai_web_feeds/alembic/versions/003_phase3b_tables.py
-- [ ] T004 [P] Implement migration up() function with 6 new tables (feed_entries, feed_poll_jobs, notifications, trending_topics, notification_preferences, email_digests)
+- [ ] T004 [P] Implement migration up() function with 7 new tables (feed_entries, feed_poll_jobs, notifications, user_feed_follows, trending_topics, notification_preferences, email_digests)
 - [ ] T005 [P] Implement migration down() function to revert Phase 3B tables
 - [ ] T006 Run database migration: uv run alembic upgrade head
 - [ ] T007 [P] Create .env.example file with Phase 3B configuration variables (WEBSOCKET_PORT, FEED_POLL_INTERVAL_MIN, etc.)
@@ -59,6 +59,7 @@
 - [ ] T012 [P] Create TrendingTopic SQLModel in packages/ai_web_feeds/src/ai_web_feeds/models.py
 - [ ] T013 [P] Create NotificationPreference SQLModel with frequency/delivery enums in packages/ai_web_feeds/src/ai_web_feeds/models.py
 - [ ] T014 [P] Create EmailDigest SQLModel with schedule_type enum in packages/ai_web_feeds/src/ai_web_feeds/models.py
+- [ ] T014b [P] Create UserFeedFollow SQLModel with unique constraint in packages/ai_web_feeds/src/ai_web_feeds/models.py
 
 ### Tasks - Storage Extensions
 
@@ -68,6 +69,7 @@
 - [ ] T018 [P] Extend storage.py with notification_preferences table queries (get, upsert, get_user_preferences)
 - [ ] T019 [P] Extend storage.py with trending_topics table queries (create, get_recent, get_by_topic)
 - [ ] T020 [P] Extend storage.py with email_digests table queries (get, create, update_send_time, get_due)
+- [ ] T020b [P] Extend storage.py with user_feed_follows table queries (follow, unfollow, get_feed_followers, get_user_follows)
 
 **Acceptance**: All models defined with type hints, storage queries implemented, mypy passes
 
@@ -83,7 +85,7 @@
 
 - [ ] T021 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/polling.py with async httpx client setup
 - [ ] T022 [US1] Implement poll_feed() function with conditional requests (ETag, If-Modified-Since) in polling.py
-- [ ] T023 [US1] Implement detect_new_articles() function to compare GUIDs against database in polling.py
+- [ ] T023 [US1] Implement detect_new_articles() function to compare GUIDs against database in polling.py (queries followers via storage.get_feed_followers())
 - [ ] T024 [US1] Implement retry logic with tenacity decorator (3 attempts, exponential backoff) in polling.py
 - [ ] T025 [US1] Implement feed health tracking (consecutive failures/successes) in polling.py
 - [ ] T026 [US1] Create APScheduler configuration with SQLAlchemyJobStore in polling.py
@@ -106,8 +108,8 @@
 
 ### Tasks - Frontend WebSocket Client
 
-- [ ] T040 [P] [US1] Create apps/web/lib/websocket.ts with Socket.IO client wrapper
-- [ ] T041 [P] [US1] Implement getUserId() function using localStorage UUID in websocket.ts
+- [ ] T040 [P] [US1] Create apps/web/lib/user-identity.ts with getUserId() function using localStorage UUID (crypto.randomUUID())
+- [ ] T041 [P] [US1] Create apps/web/lib/websocket.ts with Socket.IO client wrapper (imports getUserId from user-identity.ts)
 - [ ] T042 [P] [US1] Implement auto-reconnection logic with exponential backoff in websocket.ts
 - [ ] T043 [P] [US1] Create apps/web/components/NotificationBell.tsx header component
 - [ ] T044 [US1] Implement useWebSocket() React hook for connection management in websocket.ts
@@ -127,8 +129,10 @@
 - [ ] T052 [P] [US1] Create apps/web/app/notifications/preferences/page.tsx preferences UI
 - [ ] T053 [P] [US1] Create apps/web/components/NotificationPreferencesForm.tsx form component
 - [ ] T054 [P] [US1] Create apps/web/app/api/preferences/route.ts (GET, POST /api/preferences)
+- [ ] T054b [P] [US1] Create apps/web/app/api/follows/route.ts (GET, POST /api/follows - list and follow feeds)
+- [ ] T054c [P] [US1] Create apps/web/app/api/follows/[feed_id]/route.ts (DELETE /api/follows/{feed_id} - unfollow)
 - [ ] T055 [US1] Create notification CLI module apps/cli/ai_web_feeds/cli/commands/notify.py
-- [ ] T056 [US1] Implement CLI command: aiwebfeeds notify follow <feed-id> in notify.py
+- [ ] T056 [US1] Implement CLI command: aiwebfeeds notify follow <feed-id> in notify.py (uses storage.follow_feed())
 
 ### Tasks - Integration & Testing
 

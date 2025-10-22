@@ -27,6 +27,8 @@ servers:
 tags:
   - name: Notifications
     description: User notification management
+  - name: Follows
+    description: Feed follow/unfollow management
   - name: Preferences
     description: Notification preference settings
   - name: Digests
@@ -120,6 +122,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /follows:
+    get:
+      tags: [Follows]
+      summary: List feeds user follows
+      description: Retrieve all feeds that the user is following
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Anonymous user ID from localStorage
+      responses:
+        '200':
+          description: List of followed feeds
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  follows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserFeedFollow'
+                  total:
+                    type: integer
+                    example: 10
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    post:
+      tags: [Follows]
+      summary: Follow a feed
+      description: Add a feed to user's followed feeds list (auto-creates default notification preference)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - feed_id
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                  description: Anonymous user ID
+                feed_id:
+                  type: string
+                  description: Feed ID to follow
+      responses:
+        '201':
+          description: Feed followed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFeedFollow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Already following this feed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /follows/{feed_id}:
+    delete:
+      tags: [Follows]
+      summary: Unfollow a feed
+      description: Remove a feed from user's followed feeds list
+      parameters:
+        - name: feed_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feed ID to unfollow
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Anonymous user ID
+      responses:
+        '204':
+          description: Feed unfollowed successfully
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -386,6 +481,26 @@ components:
           type: string
           format: time
           nullable: true
+
+    UserFeedFollow:
+      type: object
+      required: [id, feed_id, followed_at]
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Anonymous user ID from localStorage
+        feed_id:
+          type: string
+          example: "ai-research-blog"
+        followed_at:
+          type: string
+          format: date-time
+          example: "2025-10-22T10:30:00Z"
 
     EmailDigest:
       type: object
