@@ -43,10 +43,16 @@ export default function HomePage() {
       color: 'from-purple-500 to-pink-500',
     },
     {
+      title: '🤖 AI Recommendations',
+      description: 'Personalized feed suggestions using content-based filtering and popularity',
+      href: '/recommendations',
+      color: 'from-indigo-500 to-purple-500',
+    },
+    {
       title: '📂 Feed Explorer',
       description: 'Browse and explore all feeds with filters, search, and topic visualization',
       href: '/explorer',
-      color: 'from-indigo-500 to-purple-500',
+      color: 'from-violet-500 to-indigo-500',
     },
     {
       title: '📚 Documentation',
