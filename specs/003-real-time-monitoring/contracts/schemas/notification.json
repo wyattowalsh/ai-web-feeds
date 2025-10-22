@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/notification.json",
+  "title": "Notification",
+  "description": "Real-time notification message schema for WebSocket delivery",
+  "type": "object",
+  "required": ["id", "type", "title", "message", "created_at"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique notification ID",
+      "minimum": 1,
+      "example": 12345
+    },
+    "type": {
+      "type": "string",
+      "description": "Notification type",
+      "enum": ["new_article", "trending_topic", "feed_updated", "system_alert"],
+      "example": "new_article"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title",
+      "minLength": 1,
+      "maxLength": 255,
+      "example": "New article from AI Research Blog"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message body",
+      "minLength": 1,
+      "maxLength": 1000,
+      "example": "Introducing GPT-5: The Next Generation Language Model"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "URL to navigate when notification clicked (optional)",
+      "format": "uri",
+      "example": "https://example.com/article/gpt-5"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata (type-specific)",
+      "additionalProperties": true,
+      "properties": {
+        "feed_id": {
+          "type": "string",
+          "description": "Feed ID (for new_article type)",
+          "example": "ai-research-blog"
+        },
+        "feed_name": {
+          "type": "string",
+          "description": "Feed display name",
+          "example": "AI Research Blog"
+        },
+        "article_id": {
+          "type": "integer",
+          "description": "Article ID (for new_article type)",
+          "example": 67890
+        },
+        "trend_score": {
+          "type": "number",
+          "description": "Z-score for trending topic",
+          "minimum": 2.0,
+          "example": 3.5
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Notification creation timestamp (ISO 8601 UTC)",
+      "format": "date-time",
+      "example": "2025-10-22T14:30:00Z"
+    }
+  },
+  "examples": [
+    {
+      "id": 12345,
+      "type": "new_article",
+      "title": "New article from AI Research Blog",
+      "message": "Introducing GPT-5: The Next Generation Language Model",
+      "action_url": "https://example.com/article/gpt-5",
+      "metadata": {
+        "feed_id": "ai-research-blog",
+        "feed_name": "AI Research Blog",
+        "article_id": 67890
+      },
+      "created_at": "2025-10-22T14:30:00Z"
+    },
+    {
+      "id": 12346,
+      "type": "system_alert",
+      "title": "Maintenance scheduled",
+      "message": "AIWebFeeds will be down for maintenance on Oct 25 from 2-4am UTC",
+      "action_url": "https://aiwebfeeds.com/status",
+      "metadata": {
+        "maintenance_window": "2025-10-25T02:00:00Z to 2025-10-25T04:00:00Z"
+      },
+      "created_at": "2025-10-22T15:00:00Z"
+    }
+  ]
+}
+
