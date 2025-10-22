@@ -99,7 +99,9 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-017**: System MUST display result count badges: "Blogs (45)", "Verified (23)" next to each filter option
 - **FR-018**: System MUST support filter combinations: multiple filters applied with AND logic (e.g., "blog AND nlp AND verified")
 - **FR-019**: System MUST provide semantic search toggle: "Include similar results" checkbox that enables vector similarity search
-- **FR-020**: System MUST implement semantic search using embeddings: Sentence-BERT embeddings for feed titles+descriptions, cosine similarity ≥0.7 threshold
+- **FR-020**: System MUST implement semantic search using embeddings: Sentence-BERT embeddings for feed titles+descriptions, cosine similarity ≥0.7 threshold, with configurable local vs API generation
+- **FR-020a**: System MUST support two embedding modes: (1) Local Sentence-Transformers (default, zero setup), (2) Hugging Face Inference API (optional, requires `AIWF_HF_API_TOKEN` env var)
+- **FR-020b**: System MUST gracefully fall back to local embeddings if HF API fails or rate limit exceeded
 - **FR-021**: System MUST allow saving searches: "Save Search" button stores query+filters, shown in sidebar for one-click replay
 - **FR-022**: System MUST support search history: last 10 searches stored per user (localStorage or database if logged in)
 - **FR-023**: System MUST handle zero results gracefully: suggestions (check spelling, broaden search), browse by topic link, contact form
@@ -219,9 +221,12 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 2. **Feed Metadata Quality**: Assumes feed titles/descriptions are accurate and informative for search relevance
 3. **Data Volume**: Spec designed for 1,000-50,000 feeds; SQLite FTS5 handles this range efficiently without external search engines
 4. **User Base**: Initial launch targets 100-1,000 users; recommendations use collaborative filtering when sufficient interaction data exists
-5. **Computing Resources**: Semantic search requires CPU for embedding generation (one-time, ~100ms per feed); no GPU needed with quantized models
+5. **Computing Resources**: 
+   - **Local embeddings**: Requires CPU for generation (~50-100ms per feed); no GPU needed, models are CPU-optimized
+   - **HF API embeddings**: Zero local compute, but limited to 1000 requests/day on free tier (sufficient for incremental updates)
 6. **Privacy**: Analytics and search logs are anonymized; personalized recommendations stored in browser localStorage (no user accounts in P1)
 7. **SQLite Performance**: Assumes proper indexing, query optimization, and WAL mode for concurrent reads (sufficient for 1000 concurrent users)
+8. **Hugging Face API**: Optional feature requiring user-provided API token (free tier); system falls back to local embeddings if API unavailable
 
 ---
 
@@ -231,7 +236,9 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 - **Database**: SQLite with FTS5 (full-text search), JSON1 extension (JSON support), triggers for materialized views
 - **Search**: SQLite FTS5 with rank scoring, in-memory LRU cache (Python functools) for autocomplete
-- **ML/AI**: Sentence-Transformers (open-source, Apache 2.0), scikit-learn (BSD), all-MiniLM-L6-v2 model (free)
+- **ML/AI**: 
+  - **Local**: Sentence-Transformers (Apache 2.0), scikit-learn (BSD), all-MiniLM-L6-v2 model (free, 80MB download)
+  - **Optional**: Hugging Face Inference API (free tier with API token) for zero-setup embeddings
 - **Visualization**: Chart.js (MIT license, free), Apache ECharts (Apache 2.0), TailwindCSS (MIT)
 - **Caching**: Python functools.lru_cache, SQLite temporary tables for precomputed analytics
 - **Vector Storage**: SQLite with BLOB columns + NumPy for embeddings, or sqlite-vec extension (MIT, optional)
@@ -244,7 +251,16 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 ### External Dependencies (All Free & Open-Source)
 
-- **Embedding Model**: Pre-trained `all-MiniLM-L6-v2` from Sentence-Transformers (80MB, Apache 2.0 license, downloaded once)
+- **Embedding Model (Local)**:
+  - Pre-trained `all-MiniLM-L6-v2` from Sentence-Transformers (80MB, Apache 2.0 license, downloaded once via HF Hub)
+  - Auto-downloads from Hugging Face Model Hub on first use (no token required for public models)
+  
+- **Embedding Model (Optional - Hugging Face API)**:
+  - Hugging Face Inference API (free tier: 1000 requests/day per token)
+  - Models: `sentence-transformers/all-MiniLM-L6-v2` or `sentence-transformers/all-mpnet-base-v2`
+  - No local compute required - offload to HF servers
+  - Set `HF_API_TOKEN` in environment variables
+  
 - **Visualization**: Chart.js v4 (MIT) or Apache ECharts (Apache 2.0) via CDN or npm
 - **PDF Export**: Playwright (Apache 2.0) or WeasyPrint (BSD) for server-side PDF generation
 - **Vector Search**: sqlite-vec extension (MIT, optional) or native NumPy + SQLite BLOB for embeddings
@@ -341,6 +357,89 @@ ORDER BY similarity DESC
 LIMIT 10;
 ```
 
+#### Embedding Generation: Local vs Hugging Face API
+
+**Approach 1: Local Sentence-Transformers** (Default, zero external deps)
+```python
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+# Load model once (downloads 80MB on first use)
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
+# Generate embeddings locally (CPU: ~50-100ms per text)
+def generate_embeddings_local(texts: list[str]) -> np.ndarray:
+    embeddings = model.encode(texts, show_progress_bar=True)
+    return embeddings  # Shape: (len(texts), 384)
+
+# Store in SQLite
+for feed_id, text in feeds:
+    embedding = generate_embeddings_local([text])[0]
+    embedding_blob = embedding.astype(np.float32).tobytes()
+    db.execute("INSERT INTO feed_embeddings VALUES (?, ?)", (feed_id, embedding_blob))
+```
+
+**Approach 2: Hugging Face Inference API** (Optional, offload compute)
+```python
+import requests
+import os
+
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
+HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+
+def generate_embeddings_hf(texts: list[str]) -> list[list[float]]:
+    """Generate embeddings via Hugging Face API (free tier: 1000 req/day)"""
+    headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+    response = requests.post(HF_API_URL, headers=headers, json={"inputs": texts})
+    embeddings = response.json()
+    return embeddings  # Shape: (len(texts), 384)
+
+# Batch processing to respect rate limits
+from functools import lru_cache
+
+@lru_cache(maxsize=1000)
+def get_embedding_cached(text: str) -> bytes:
+    """Cache embeddings to avoid re-generating"""
+    embedding = generate_embeddings_hf([text])[0]
+    return np.array(embedding, dtype=np.float32).tobytes()
+```
+
+**Hybrid Approach** (Best of both worlds)
+```python
+def generate_embeddings_hybrid(texts: list[str], use_api: bool = False) -> np.ndarray:
+    """
+    Use HF API if token is set and rate limit not exceeded,
+    otherwise fall back to local model.
+    """
+    if use_api and os.getenv("HF_API_TOKEN"):
+        try:
+            return np.array(generate_embeddings_hf(texts))
+        except (requests.RequestException, KeyError) as e:
+            logger.warning(f"HF API failed, falling back to local: {e}")
+    
+    # Fallback to local model
+    return generate_embeddings_local(texts)
+```
+
+**Configuration** (`config.py`)
+```python
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    # Embedding configuration
+    embedding_provider: str = "local"  # "local" or "huggingface"
+    hf_api_token: str = ""
+    hf_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    
+    # Local model settings
+    local_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_cache_size: int = 1000
+    
+    model_config = SettingsConfigDict(env_prefix="AIWF_")
+
+settings = Settings()
+```
+
 ### Free & Open-Source Library Stack
 
 | Component | Library | License | Purpose |
@@ -349,7 +448,9 @@ LIMIT 10;
 | **ORM** | SQLModel | MIT | Type-safe database models |
 | **Search** | SQLite FTS5 | Built-in | Full-text search |
 | **ML Framework** | scikit-learn | BSD | Collaborative filtering |
-| **Embeddings** | sentence-transformers | Apache 2.0 | Semantic search |
+| **Embeddings (Local)** | sentence-transformers | Apache 2.0 | Semantic search (local) |
+| **Embeddings (API)** | Hugging Face API | Free tier | Offload compute (optional) |
+| **Model Hub** | Hugging Face Hub | Free | Model downloads |
 | **Pretrained Model** | all-MiniLM-L6-v2 | Apache 2.0 | 384-dim embeddings |
 | **Visualization** | Chart.js | MIT | Interactive charts |
 | **Alt Visualization** | Apache ECharts | Apache 2.0 | Advanced charting |
@@ -357,11 +458,13 @@ LIMIT 10;
 | **Alt PDF** | WeasyPrint | BSD | HTML to PDF |
 | **Caching** | functools.lru_cache | Python stdlib | In-memory cache |
 | **Vector Math** | NumPy | BSD | Embedding operations |
+| **HTTP Requests** | httpx / requests | Apache 2.0 / MIT | API calls to HF |
 | **Web Framework** | FastAPI | MIT | REST API (existing) |
 | **Frontend** | Next.js 15 | MIT | Web UI (existing) |
 | **Styling** | TailwindCSS | MIT | CSS framework (existing) |
 
-**Total Cost**: $0 (100% free, open-source, permissive licenses)
+**Total Cost**: $0 (100% free, open-source, permissive licenses)  
+**Optional**: Hugging Face API token (free tier: 1000 requests/day)
 
 ### Performance Optimizations
 
