@@ -1,0 +1,433 @@
+---
+title: Analytics & Monitoring
+description: Comprehensive guide to feed analytics, monitoring, and reporting capabilities
+icon: BarChart
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+AI Web Feeds provides robust analytics and monitoring capabilities to track feed health, performance, and content trends.
+
+## Overview
+
+The analytics system provides:
+
+- **8 Different Analytics Views** - Overview, distributions, quality, performance, content, trends, health, contributors
+- **Real-time Health Monitoring** - Track each feed's status and performance
+- **Performance Metrics** - Success rates, durations, error analysis
+- **Publishing Trends** - Analyze content patterns over time
+- **Quality Scoring** - 3-dimensional quality assessment
+- **JSON Export** - Generate comprehensive reports
+
+## Analytics Commands
+
+### Overview Dashboard
+
+Get a high-level view of all your feeds:
+
+```bash
+ai-web-feeds analytics overview
+```
+
+**Provides:**
+- Total feeds, items, and topics
+- Feed status distribution (verified, active, inactive)
+- Recent activity (last 24 hours)
+
+### Distributions
+
+Analyze how feeds are distributed across different dimensions:
+
+```bash
+ai-web-feeds analytics distributions [--limit N]
+```
+
+**Shows:**
+- Source type distribution (blog, newsletter, podcast, etc.)
+- Topic distribution across feeds
+- Language distribution
+- Content medium distribution
+
+### Quality Metrics
+
+View quality scores and distributions:
+
+```bash
+ai-web-feeds analytics quality
+```
+
+**Displays:**
+- Average and median quality scores
+- Quality distribution (excellent/good/fair/poor)
+- High/low quality feed counts
+
+<Callout type="info" title="Quality Scoring">
+
+Each feed receives three scores (0-1):
+
+- **Completeness**: How complete is the feed metadata?
+- **Richness**: How rich and detailed is the content?
+- **Structure**: How well-structured is the feed?
+
+</Callout>
+
+### Performance Tracking
+
+Monitor fetch performance over time:
+
+```bash
+ai-web-feeds analytics performance [--days N]
+```
+
+**Metrics:**
+- Total fetches and success rate
+- Average fetch duration
+- Error type distribution
+- HTTP status code analysis
+
+### Content Statistics
+
+Analyze content across all feeds:
+
+```bash
+ai-web-feeds analytics content
+```
+
+**Provides:**
+- Total items and content coverage
+- Author attribution rates
+- Enclosure/media usage
+- Top categories
+
+### Publishing Trends
+
+Understand publishing patterns:
+
+```bash
+ai-web-feeds analytics trends [--days N]
+```
+
+**Shows:**
+- Items per day
+- Publishing patterns by hour
+- Publishing patterns by weekday
+- Peak publishing times
+
+### Feed Health Reports
+
+Get detailed health metrics for a specific feed:
+
+```bash
+ai-web-feeds analytics health <feed-id>
+```
+
+**Includes:**
+- Overall health score and status
+- Fetch statistics and success rate
+- Content quality metrics
+- Publishing frequency
+
+**Health Status Levels:**
+- **Excellent** (0.8-1.0) - Feed is performing optimally
+- **Good** (0.6-0.8) - Feed is healthy with minor issues
+- **Fair** (0.4-0.6) - Feed has some problems
+- **Poor** (0.2-0.4) - Feed needs attention
+- **Critical** (0.0-0.2) - Feed is failing
+
+### Contributor Analytics
+
+View top contributors:
+
+```bash
+ai-web-feeds analytics contributors [--limit N]
+```
+
+**Shows:**
+- Contributors ranked by feed count
+- Verification rates per contributor
+- Quality benchmarks
+
+### Full Report Generation
+
+Generate comprehensive JSON reports:
+
+```bash
+ai-web-feeds analytics report [--output FILE]
+```
+
+Exports all analytics data in JSON format for:
+- Custom analysis
+- Integration with other tools
+- Long-term tracking
+- Data visualization
+
+## Quality Scoring System
+
+### Completeness Score (0-1)
+
+Measures how complete the feed metadata is:
+
+✓ Has title
+✓ Has description
+✓ Has link
+✓ Has language
+✓ Has timestamps
+✓ Has author/publisher
+✓ Has categories
+✓ Has image/logo
+
+### Richness Score (0-1)
+
+Evaluates content depth and quality:
+
+✓ Items have content
+✓ Content coverage percentage
+✓ Author attribution
+✓ Average content length
+✓ Full content availability
+✓ Media/images present
+
+### Structure Score (0-1)
+
+Assesses feed validity and structure:
+
+✓ No parsing errors
+✓ Has items
+✓ Items have GUIDs
+✓ Has timestamps
+✓ Has links
+
+## Monitoring Workflows
+
+### Daily Health Check
+
+Set up a daily monitoring routine:
+
+```bash
+#!/bin/bash
+# daily-health-check.sh
+
+# Fetch all verified feeds
+ai-web-feeds fetch all --verified-only
+
+# Generate health report
+ai-web-feeds analytics overview > daily-overview.txt
+ai-web-feeds analytics performance --days 1 > daily-performance.txt
+
+# Check for critical feeds
+ai-web-feeds analytics quality | grep -i "poor\|critical"
+```
+
+### Weekly Analytics Review
+
+Generate weekly analytics:
+
+```bash
+#!/bin/bash
+# weekly-analytics.sh
+
+DATE=$(date +%Y-%m-%d)
+
+# Generate comprehensive report
+ai-web-feeds analytics report --output "reports/analytics-${DATE}.json"
+
+# View trends
+ai-web-feeds analytics trends --days 7
+ai-web-feeds analytics distributions
+
+# Top contributors
+ai-web-feeds analytics contributors --limit 10
+```
+
+### Alert on Feed Failures
+
+Monitor for failing feeds:
+
+```bash
+#!/bin/bash
+# check-failures.sh
+
+# Get performance stats
+STATS=$(ai-web-feeds analytics performance --days 1)
+
+# Extract success rate
+SUCCESS_RATE=$(echo "$STATS" | grep "Success Rate" | awk '{print $3}' | tr -d '%')
+
+if (( $(echo "$SUCCESS_RATE < 90" | bc -l) )); then
+    echo "WARNING: Success rate below 90%: ${SUCCESS_RATE}%"
+    # Send alert (email, Slack, etc.)
+fi
+```
+
+## Advanced Analytics
+
+### Custom Python Analysis
+
+Use the Python API for custom analytics:
+
+```python
+from ai_web_feeds.analytics import FeedAnalytics
+from ai_web_feeds.storage import DatabaseManager
+
+# Initialize
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+analytics = FeedAnalytics(db.get_session())
+
+# Custom query: Find all feeds with quality < 0.5
+feeds = db.get_all_feed_sources()
+low_quality = [
+    f for f in feeds
+    if f.quality_score and f.quality_score < 0.5
+]
+
+print(f"Found {len(low_quality)} low quality feeds:")
+for feed in low_quality:
+    print(f"  - {feed.title}: {feed.quality_score:.2f}")
+
+# Generate custom report
+report = analytics.generate_full_report()
+
+# Analyze specific dimension
+quality_by_type = {}
+for feed in feeds:
+    if feed.source_type and feed.quality_score:
+        type_name = feed.source_type.value
+        if type_name not in quality_by_type:
+            quality_by_type[type_name] = []
+        quality_by_type[type_name].append(feed.quality_score)
+
+# Calculate averages
+for source_type, scores in quality_by_type.items():
+    avg = sum(scores) / len(scores)
+    print(f"{source_type}: {avg:.3f}")
+```
+
+### Database Queries
+
+Direct SQL queries for advanced analysis:
+
+```python
+from sqlalchemy import select, func
+from ai_web_feeds.models import FeedSource, FeedItem
+
+# Get feeds with most items
+stmt = (
+    select(FeedSource.id, FeedSource.title, func.count(FeedItem.id))
+    .join(FeedItem)
+    .group_by(FeedSource.id)
+    .order_by(func.count(FeedItem.id).desc())
+    .limit(10)
+)
+
+results = session.exec(stmt).all()
+for feed_id, title, count in results:
+    print(f"{title}: {count} items")
+```
+
+## Export Formats
+
+### JSON Reports
+
+Comprehensive analytics in JSON:
+
+```json
+{
+  "generated_at": "2025-10-15T12:00:00Z",
+  "overview": {
+    "totals": {
+      "feeds": 150,
+      "items": 5000,
+      "topics": 25
+    },
+    "feed_status": {
+      "verified": 120,
+      "active": 100,
+      "inactive": 5
+    }
+  },
+  "quality": {
+    "average_quality": 0.85,
+    "median_quality": 0.87
+  }
+}
+```
+
+### CSV Export (via Python)
+
+```python
+import csv
+from ai_web_feeds.storage import DatabaseManager
+
+db = DatabaseManager()
+feeds = db.get_all_feed_sources()
+
+with open('feeds-export.csv', 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(['ID', 'Title', 'Type', 'Quality', 'Verified'])
+    
+    for feed in feeds:
+        writer.writerow([
+            feed.id,
+            feed.title,
+            feed.source_type.value if feed.source_type else '',
+            feed.quality_score or '',
+            feed.verified
+        ])
+```
+
+## Integration Examples
+
+### Grafana Dashboard
+
+Export metrics for Grafana:
+
+```python
+import json
+from datetime import datetime
+
+def export_metrics():
+    analytics = FeedAnalytics(session)
+    stats = analytics.get_overview_stats()
+    
+    metrics = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "feeds_total": stats["totals"]["feeds"],
+        "feeds_active": stats["feed_status"]["active"],
+        "items_24h": stats["recent_activity_24h"]["new_items"]
+    }
+    
+    with open('/var/lib/grafana/metrics/ai-web-feeds.json', 'w') as f:
+        json.dump(metrics, f)
+```
+
+### Prometheus Exporter
+
+```python
+from prometheus_client import Gauge, generate_latest
+
+feeds_total = Gauge('ai_web_feeds_total', 'Total number of feeds')
+feeds_active = Gauge('ai_web_feeds_active', 'Number of active feeds')
+
+def update_metrics():
+    stats = analytics.get_overview_stats()
+    feeds_total.set(stats["totals"]["feeds"])
+    feeds_active.set(stats["feed_status"]["active"])
+```
+
+## Best Practices
+
+1. **Regular Monitoring** - Run analytics daily to track changes
+2. **Health Checks** - Monitor feed health scores regularly
+3. **Performance Tracking** - Watch for degrading fetch success rates
+4. **Quality Improvement** - Address low-quality feeds
+5. **Trend Analysis** - Understand publishing patterns
+6. **Report Generation** - Keep historical analytics for comparison
+7. **Alert on Anomalies** - Set up alerts for critical issues
+
+## Related Documentation
+
+- [CLI Reference](/docs/development/cli) - All CLI commands
+- [Python API](/docs/development/python-api) - Programmatic usage
+- [Database Schema](/docs/development/database) - Data model
+- [Getting Started](/docs/guides/getting-started) - Installation guide

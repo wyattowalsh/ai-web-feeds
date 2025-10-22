@@ -1,0 +1,963 @@
+---
+title: Testing Guide
+description: Comprehensive test suite with unit, integration, and E2E tests using pytest and uv
+icon: TestTube
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Test Infrastructure
+
+AI Web Feeds includes a comprehensive test suite with 100+ tests covering unit, integration, and end-to-end scenarios. All tests use **uv** for fast, deterministic execution and **pytest** with advanced plugins.
+
+<Callout type="info">
+  Tests are organized to mirror the source code structure, making it easy to find and maintain tests.
+</Callout>
+
+## Quick Start
+
+<Tabs items={['CLI', 'Direct pytest', 'Watch Mode']}>
+  <Tab value="CLI">
+    ```bash
+    # Quick test (recommended during development)
+    aiwebfeeds test quick
+    
+    # All tests
+    aiwebfeeds test all
+    
+    # With coverage
+    aiwebfeeds test coverage --open
+    
+    # Unit tests only
+    aiwebfeeds test unit
+    ```
+  </Tab>
+  
+  <Tab value="Direct pytest">
+    ```bash
+    # From tests directory
+    cd tests
+    uv run pytest -v
+    
+    # From workspace root
+    uv run --directory tests pytest -v -m unit
+    
+    # With coverage
+    uv run --directory tests pytest --cov=ai_web_feeds --cov-report=html
+    ```
+  </Tab>
+  
+  <Tab value="Watch Mode">
+    ```bash
+    # Auto-rerun tests on file changes
+    aiwebfeeds test watch
+    ```
+  </Tab>
+</Tabs>
+
+## Test Commands
+
+### Available Commands
+
+| Command | Description | Use Case |
+|---------|-------------|----------|
+| `test all` | Run all tests | Pre-commit, CI/CD |
+| `test unit` | Unit tests only | Development |
+| `test integration` | Integration tests | Feature testing |
+| `test e2e` | E2E tests | Release validation |
+| `test quick` | Fast unit tests | Rapid feedback |
+| `test coverage` | With coverage report | Quality check |
+| `test watch` | Auto-rerun on changes | TDD mode |
+| `test file <path>` | Specific file | Focused testing |
+| `test debug` | With debugger | Troubleshooting |
+| `test markers` | List available markers | Discovery |
+
+### Common Options
+
+```bash
+# Verbose output
+aiwebfeeds test all --verbose
+
+# Parallel execution
+aiwebfeeds test all --parallel
+
+# Coverage with HTML report
+aiwebfeeds test coverage --open
+
+# Skip slow tests
+aiwebfeeds test unit --fast
+
+# Filter by keyword
+aiwebfeeds test file test_utils.py -k "twitter"
+```
+
+## Test Structure
+
+Tests are organized to mirror the source code:
+
+```
+tests/
+├── packages/ai_web_feeds/
+│   ├── unit/              # Fast, isolated tests
+│   │   ├── test_models.py
+│   │   ├── test_storage.py
+│   │   ├── test_fetcher.py
+│   │   ├── test_config.py
+│   │   ├── test_utils.py
+│   │   └── test_analytics.py
+│   ├── integration/       # Multi-component tests
+│   │   └── test_integration.py
+│   └── e2e/              # Full workflow tests
+│       └── test_workflows.py
+└── apps/cli/
+    ├── unit/
+    │   └── test_commands.py
+    └── integration/
+        └── test_cli_integration.py
+```
+
+## Test Categories
+
+### Unit Tests (`@pytest.mark.unit`)
+
+Fast, isolated tests with no external dependencies:
+
+- **Models**: Data validation with property-based testing
+- **Storage**: Database CRUD operations
+- **Fetcher**: Feed fetching with mocking
+- **Config**: Configuration management
+- **Utils**: Utility functions (platform detection, URL generation)
+- **Analytics**: Analytics calculations
+
+```bash
+# Run unit tests
+aiwebfeeds test unit
+
+# Skip slow unit tests
+aiwebfeeds test unit --fast
+```
+
+### Integration Tests (`@pytest.mark.integration`)
+
+Multi-component workflows:
+
+- Database + Fetcher integration
+- Complete fetch/parse/store workflow
+- Topic-feed relationships
+- CLI integration
+
+```bash
+# Run integration tests
+aiwebfeeds test integration
+```
+
+### E2E Tests (`@pytest.mark.e2e`)
+
+Complete user workflows:
+
+- New user onboarding
+- Feed management
+- Bulk operations (100+ feeds)
+- Data export workflows
+- Performance testing (1000+ feeds)
+
+```bash
+# Run E2E tests
+aiwebfeeds test e2e
+```
+
+## Advanced Features
+
+### Property-Based Testing
+
+Using Hypothesis for robust input testing:
+
+```python
+from hypothesis import given, strategies as st
+
+@given(st.text())
+def test_sanitize_text_property_based(text):
+    result = sanitize_text(text)
+    assert isinstance(result, str)
+```
+
+### Test Markers
+
+Available markers for filtering tests:
+
+- `unit` - Unit tests (fast, no external dependencies)
+- `integration` - Integration tests (multiple components)
+- `e2e` - End-to-end tests (full workflows)
+- `slow` - Slow running tests
+- `network` - Tests requiring network access
+- `database` - Tests requiring database
+
+```bash
+# List all markers
+aiwebfeeds test markers
+
+# Run specific markers
+uv run --directory tests pytest -m "unit and not slow"
+```
+
+### Coverage Reporting
+
+Generate coverage reports:
+
+```bash
+# HTML + terminal report
+aiwebfeeds test coverage
+
+# Open in browser
+aiwebfeeds test coverage --open
+
+# Coverage reports are saved to tests/reports/coverage/
+```
+
+## Configuration
+
+All pytest configuration is in `tests/pyproject.toml`:
+
+```toml
+[tool.pytest.ini_options]
+testpaths = ["."]
+markers = [
+    "unit: Unit tests (fast, no external dependencies)",
+    "integration: Integration tests (multiple components)",
+    "e2e: End-to-end tests (full workflows)",
+    "slow: Slow running tests",
+    "network: Tests requiring network access",
+    "database: Tests requiring database",
+]
+```
+
+## CI/CD Integration
+
+For continuous integration:
+
+```bash
+# Comprehensive CI test
+aiwebfeeds test all --coverage --parallel
+
+# Or directly with pytest
+uv run --directory tests pytest -v --cov=ai_web_feeds --cov-report=html
+```
+
+## Debugging Tests
+
+### Debug Mode
+
+Run tests with pdb debugger:
+
+```bash
+# Debug all tests
+aiwebfeeds test debug
+
+# Debug specific file
+aiwebfeeds test debug packages/ai_web_feeds/unit/test_models.py
+```
+
+### Verbose Output
+
+```bash
+# Very verbose
+aiwebfeeds test all -vv
+
+# Show local variables
+uv run --directory tests pytest --showlocals
+```
+
+## Web Integration Testing
+
+Follow these steps to verify the AI & LLM integration is working correctly.
+
+## Prerequisites
+
+<Steps>
+
+### Start Development Server
+
+```bash
+pnpm dev
+```
+
+Wait for the server to be ready at `http://localhost:3000`
+
+### Open Terminal
+
+You'll need a terminal for running test commands.
+
+</Steps>
+
+<Callout type="info">
+  All tests assume the development server is running on `http://localhost:3000`.
+</Callout>
+
+## Test Discovery Endpoint
+
+### `/llms.txt`
+
+<Tabs items={['Browser', 'cURL', 'Expected Output']}>
+  <Tab value="Browser">
+    Visit: http://localhost:3000/llms.txt
+    
+    You should see a plain text file listing all documentation pages.
+  </Tab>
+  <Tab value="cURL">
+    ```bash
+    curl http://localhost:3000/llms.txt
+    ```
+  </Tab>
+  <Tab value="Expected Output">
+    ```text
+    # AI Web Feeds Documentation
+
+    > A collection of curated RSS/Atom feeds optimized for AI agents
+
+    ## Documentation Pages
+
+    - [Getting Started](http://localhost:3000/docs.mdx): Overview...
+    - [PDF Export](http://localhost:3000/docs/features/pdf-export.mdx): Export...
+    ...
+    ```
+  </Tab>
+</Tabs>
+
+### Verify Headers
+
+```bash
+curl -I http://localhost:3000/llms.txt
+```
+
+**Expected Headers:**
+```http
+Content-Type: text/plain; charset=utf-8
+Cache-Control: public, max-age=3600, s-maxage=86400
+```
+
+## Test Full Documentation
+
+### `/llms-full.txt`
+
+<Tabs items={['Browser', 'cURL', 'Expected Structure']}>
+  <Tab value="Browser">
+    Visit: http://localhost:3000/llms-full.txt
+    
+    You should see all documentation in a structured format.
+  </Tab>
+  <Tab value="cURL">
+    ```bash
+    curl http://localhost:3000/llms-full.txt
+    ```
+  </Tab>
+  <Tab value="Expected Structure">
+    ```text
+    ================================================================================
+    AI WEB FEEDS - COMPLETE DOCUMENTATION
+    ================================================================================
+
+    METADATA
+    --------------------------------------------------------------------------------
+    Generated: 2025-10-14T12:00:00.000Z
+    Total Pages: 5
+    Base URL: http://localhost:3000
+
+    Table of Contents:
+      1. Getting Started - /docs
+      2. PDF Export - /docs/features/pdf-export
+      ...
+
+    ================================================================================
+    PAGE 1 OF 5
+    ================================================================================
+
+    TITLE: Getting Started
+    URL: http://localhost:3000/docs
+    ...
+    ```
+  </Tab>
+</Tabs>
+
+### Verify Custom Headers
+
+```bash
+curl -I http://localhost:3000/llms-full.txt | grep "X-"
+```
+
+**Expected:**
+```
+X-Content-Pages: 5
+X-Generated-Date: 2025-10-14T12:00:00.000Z
+```
+
+### Download and Inspect
+
+```bash
+# Download
+curl http://localhost:3000/llms-full.txt -o docs.txt
+
+# Check file size
+wc -l docs.txt
+
+# View header
+head -50 docs.txt
+
+# View table of contents
+sed -n '/Table of Contents:/,/^===/p' docs.txt
+
+# Count pages
+grep -c "^PAGE [0-9]" docs.txt
+```
+
+## Test Markdown Extensions
+
+### `.mdx` Extension
+
+<Tabs items={['Browser', 'cURL', 'Verify Content']}>
+  <Tab value="Browser">
+    Visit: http://localhost:3000/docs.mdx
+    
+    You should see markdown content with `Content-Type: text/markdown`.
+  </Tab>
+  <Tab value="cURL">
+    ```bash
+    curl http://localhost:3000/docs.mdx
+    ```
+  </Tab>
+  <Tab value="Verify Content">
+    ```bash
+    # Check content type
+    curl -I http://localhost:3000/docs.mdx | grep "Content-Type"
+    
+    # Expected:
+    # Content-Type: text/markdown; charset=utf-8
+    ```
+  </Tab>
+</Tabs>
+
+### `.md` Extension
+
+```bash
+# Test alternative extension
+curl http://localhost:3000/docs.md
+
+# Should return same content as .mdx
+```
+
+### Test Nested Pages
+
+```bash
+# Test feature pages
+curl http://localhost:3000/docs/features/pdf-export.mdx
+curl http://localhost:3000/docs/features/ai-integration.mdx
+
+# Test guide pages
+curl http://localhost:3000/docs/guides/quick-reference.mdx
+curl http://localhost:3000/docs/guides/testing.mdx
+```
+
+## Test Content Negotiation
+
+### With Accept Header
+
+```bash
+# Request markdown via header
+curl -H "Accept: text/markdown" http://localhost:3000/docs
+```
+
+**Expected:** Markdown content (same as `/docs.mdx`)
+
+### With Browser Accept Header
+
+```bash
+# Request HTML (default)
+curl -H "Accept: text/html" http://localhost:3000/docs
+```
+
+**Expected:** HTML page with full layout
+
+### Verify Rewrite
+
+```bash
+# Check status and headers
+curl -I -H "Accept: text/markdown" http://localhost:3000/docs
+```
+
+**Expected:**
+- Status: `200 OK`
+- Content-Type: `text/markdown`
+
+## Test RSS Feeds
+
+### Sitewide Feeds
+
+<Tabs items={['RSS 2.0', 'Atom 1.0', 'JSON Feed']}>
+  <Tab value="RSS 2.0">
+    ```bash
+    # Test RSS feed
+    curl http://localhost:3000/rss.xml | head -50
+    
+    # Check content type
+    curl -I http://localhost:3000/rss.xml | grep "Content-Type"
+    ```
+    
+    **Expected:** `Content-Type: application/rss+xml`
+  </Tab>
+  <Tab value="Atom 1.0">
+    ```bash
+    # Test Atom feed
+    curl http://localhost:3000/atom.xml | head -50
+    
+    # Check content type
+    curl -I http://localhost:3000/atom.xml | grep "Content-Type"
+    ```
+    
+    **Expected:** `Content-Type: application/atom+xml`
+  </Tab>
+  <Tab value="JSON Feed">
+    ```bash
+    # Test JSON feed
+    curl http://localhost:3000/feed.json | jq
+    
+    # Check content type
+    curl -I http://localhost:3000/feed.json | grep "Content-Type"
+    ```
+    
+    **Expected:** `Content-Type: application/json`
+  </Tab>
+</Tabs>
+
+### Documentation Feeds
+
+```bash
+# Test documentation RSS feed
+curl http://localhost:3000/docs/rss.xml | head -50
+
+# Test documentation Atom feed
+curl http://localhost:3000/docs/atom.xml | head -50
+
+# Test documentation JSON feed
+curl http://localhost:3000/docs/feed.json | jq .items
+```
+
+### Verify Feed Discovery
+
+Check that feeds are discoverable in HTML:
+
+```bash
+# View HTML head
+curl http://localhost:3000 | grep -i "alternate" | grep -i "rss\|atom\|json"
+
+# Expected output includes:
+# <link rel="alternate" type="application/rss+xml" ... />
+# <link rel="alternate" type="application/atom+xml" ... />
+# <link rel="alternate" type="application/json" ... />
+```
+
+### Validate Feed Format
+
+Use the [W3C Feed Validator](https://validator.w3.org/feed/):
+
+<Steps>
+
+### Open Validator
+
+Visit https://validator.w3.org/feed/
+
+### Enter Feed URL
+
+Use your local or deployed feed URL:
+- `http://localhost:3000/rss.xml`
+- `http://localhost:3000/docs/rss.xml`
+
+### Check Validation
+
+Click "Check" and review results
+
+</Steps>
+
+## Test Page Actions UI
+
+### Visual Test
+
+<Steps>
+
+### Navigate to Docs
+
+Open http://localhost:3000/docs in your browser
+
+### Locate Page Actions
+
+Look for the section below the page title with:
+- "Copy Markdown" button
+- View options dropdown button (with chevron icon)
+
+</Steps>
+
+### Test Copy Button
+
+<Steps>
+
+### Click Copy Button
+
+Click the "Copy Markdown" button
+
+### Observe Behavior
+
+- Button should show loading state briefly
+- Button should show checkmark when done
+- No errors in console
+
+### Verify Clipboard
+
+Paste clipboard content into a text editor
+
+**Expected:** Markdown source of the page
+
+</Steps>
+
+### Test View Options
+
+<Steps>
+
+### Open Dropdown
+
+Click the view options dropdown button
+
+### Verify Options
+
+Check that these options appear:
+- Open in GitHub
+- Open in Scira AI
+- Open in Perplexity
+- Open in ChatGPT
+
+### Test Link
+
+Click "Open in GitHub"
+
+**Expected:** Opens correct GitHub file path
+
+</Steps>
+
+<Callout type="warn">
+  Update GitHub URLs in `app/docs/[[...slug]]/page.tsx` to match your repository path.
+</Callout>
+
+## Test Error Handling
+
+### Non-Existent Page
+
+```bash
+curl http://localhost:3000/docs/non-existent.mdx
+```
+
+**Expected:** 404 error
+
+### Invalid Path
+
+```bash
+curl http://localhost:3000/llms.mdx
+```
+
+**Expected:** Appropriate error handling
+
+## Production Build Test
+
+### Build the Site
+
+```bash
+pnpm build
+```
+
+**Expected:** Build completes successfully without errors
+
+### Validate Links
+
+```bash
+pnpm lint:links
+```
+
+**Expected:** No broken links found
+
+### Start Production Server
+
+```bash
+pnpm start
+```
+
+### Test Static Generation
+
+```bash
+# Check generated files
+ls -la .next/server/app/llms.mdx/
+
+# Verify static generation
+find .next/server/app -name "*.html"
+```
+
+### Test All Endpoints
+
+```bash
+# Test discovery
+curl http://localhost:3000/llms.txt
+
+# Test full docs
+curl http://localhost:3000/llms-full.txt
+
+# Test markdown pages
+curl http://localhost:3000/docs.mdx
+curl http://localhost:3000/docs/features/pdf-export.mdx
+```
+
+## Performance Testing
+
+### Check Caching Headers
+
+<Tabs items={['/llms.txt', '/llms-full.txt', '*.mdx']}>
+  <Tab value="/llms.txt">
+    ```bash
+    curl -I http://localhost:3000/llms.txt | grep -i cache
+    ```
+    
+    **Expected:**
+    ```
+    Cache-Control: public, max-age=3600, s-maxage=86400
+    ```
+  </Tab>
+  <Tab value="/llms-full.txt">
+    ```bash
+    curl -I http://localhost:3000/llms-full.txt | grep -i cache
+    ```
+    
+    **Expected:**
+    ```
+    Cache-Control: public, max-age=0, must-revalidate
+    ```
+  </Tab>
+  <Tab value="*.mdx">
+    ```bash
+    curl -I http://localhost:3000/docs.mdx | grep -i cache
+    ```
+    
+    **Expected:**
+    ```
+    Cache-Control: public, max-age=31536000, immutable
+    ```
+  </Tab>
+</Tabs>
+
+### Measure Response Time
+
+```bash
+# Time discovery endpoint
+time curl -s http://localhost:3000/llms.txt > /dev/null
+
+# Time full docs
+time curl -s http://localhost:3000/llms-full.txt > /dev/null
+
+# Time markdown page
+time curl -s http://localhost:3000/docs.mdx > /dev/null
+```
+
+## Integration Test (AI Agent Simulation)
+
+### Simulate Discovery Flow
+
+```bash
+# Step 1: Discover documentation
+curl http://localhost:3000/llms.txt
+
+# Step 2: Get specific page
+curl http://localhost:3000/docs.mdx
+
+# Step 3: Use content negotiation
+curl -H "Accept: text/markdown" http://localhost:3000/docs
+```
+
+**Expected:** All three methods should work seamlessly
+
+### Simulate RAG System
+
+```bash
+# Get all documentation for embedding
+curl http://localhost:3000/llms-full.txt > docs.txt
+
+# Verify file size is reasonable
+wc -l docs.txt
+du -h docs.txt
+
+# Check structure
+head -100 docs.txt
+tail -50 docs.txt
+```
+
+## Browser DevTools Test
+
+### Network Tab
+
+<Steps>
+
+### Open DevTools
+
+Press `F12` or `Cmd+Option+I` (Mac)
+
+### Navigate to Network Tab
+
+Click the "Network" tab
+
+### Visit Page
+
+Go to http://localhost:3000/docs
+
+### Click Copy Button
+
+Click "Copy Markdown" button
+
+### Observe Request
+
+Check for:
+- Request to `/docs.mdx`
+- Status: `200 OK`
+- Type: `text/markdown`
+
+</Steps>
+
+### Console Tab
+
+<Steps>
+
+### Open Console
+
+Click the "Console" tab in DevTools
+
+### Check for Errors
+
+**Expected:** No errors in console
+
+### Test Copy Function
+
+Click "Copy Markdown" button
+
+**Expected:** No errors, success feedback shown
+
+</Steps>
+
+## Checklist
+
+Run through this checklist to verify everything works:
+
+- [ ] `/llms.txt` returns discovery information
+- [ ] `/llms-full.txt` returns all documentation with structure
+- [ ] `*.mdx` extension works for all pages
+- [ ] `*.md` extension works (same as .mdx)
+- [ ] Content negotiation with `Accept: text/markdown` works
+- [ ] RSS feeds accessible (`/rss.xml`, `/docs/rss.xml`)
+- [ ] Atom feeds accessible (`/atom.xml`, `/docs/atom.xml`)
+- [ ] JSON feeds accessible (`/feed.json`, `/docs/feed.json`)
+- [ ] Feed discovery metadata in HTML head
+- [ ] Feeds validate with W3C Feed Validator
+- [ ] Copy Markdown button functions correctly
+- [ ] View Options dropdown shows all AI tools
+- [ ] GitHub link points to correct repository
+- [ ] Custom headers present (`X-Content-Pages`, `X-Generated-Date`)
+- [ ] Caching headers configured correctly
+- [ ] Link validation passes (`pnpm lint:links`)
+- [ ] Production build succeeds without errors
+- [ ] Static generation working for `.mdx` routes
+- [ ] No console errors in browser
+- [ ] All documentation pages accessible
+- [ ] Table of contents in `/llms-full.txt` accurate
+
+## Troubleshooting
+
+### Endpoint Not Found
+
+<Callout type="warn">
+  Clear the `.next` cache and rebuild:
+  ```bash
+  rm -rf .next/
+  pnpm dev
+  ```
+</Callout>
+
+### Markdown Not Returning
+
+Check `source.config.ts`:
+
+```typescript
+includeProcessedMarkdown: true  // Must be present
+```
+
+### Copy Button Not Working
+
+Check browser console for errors. Verify:
+- Button component imported correctly
+- `markdownUrl` prop provided
+- Fetch API available
+
+### GitHub Link Incorrect
+
+Update in `app/docs/[[...slug]]/page.tsx`:
+
+```tsx
+githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/content/docs/${page.file.path}`}
+```
+
+### Headers Missing
+
+Verify in route files:
+
+```typescript
+return new Response(content, {
+  headers: {
+    'Content-Type': 'text/plain; charset=utf-8',
+    'X-Content-Pages': pages.length.toString(),
+    'X-Generated-Date': new Date().toISOString(),
+  },
+});
+```
+
+### RSS Feed Not Found
+
+Check route file exists:
+
+```bash
+ls -la app/rss.xml/route.ts
+ls -la app/docs/rss.xml/route.ts
+```
+
+If missing, recreate or check build output.
+
+### RSS Feed Empty
+
+Verify `source.getPages()` returns pages:
+
+```typescript
+// In lib/rss.ts
+const pages = source.getPages();
+console.log('Pages found:', pages.length);
+```
+
+### Invalid RSS/Atom XML
+
+- Ensure special characters are HTML-encoded
+- Validate with [W3C Feed Validator](https://validator.w3.org/feed/)
+- Check for proper UTF-8 encoding
+
+## Next Steps
+
+Once all tests pass:
+
+1. **Customize** - Update GitHub URLs, add more AI tools
+2. **Deploy** - Push to production
+3. **Monitor** - Check analytics and usage
+4. **Iterate** - Gather feedback and improve
+
+## Related Documentation
+
+- [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints
+- [AI Integration](/docs/features/ai-integration) - Complete AI guide
+- [llms-full.txt Format](/docs/features/llms-full-format) - Format specification

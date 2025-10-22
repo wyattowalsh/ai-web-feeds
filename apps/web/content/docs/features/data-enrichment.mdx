@@ -1,0 +1,378 @@
+---
+title: Data Enrichment & Analytics
+description: Comprehensive data enrichment and advanced analytics capabilities
+---
+
+# Data Enrichment & Analytics
+
+AI Web Feeds includes comprehensive data enrichment and advanced analytics capabilities that automatically enhance feed metadata, analyze content, track quality, and provide ML-powered insights.
+
+## Key Features
+
+### 1. Metadata Enrichment
+
+**Module**: `enrichment.metadata`
+
+Automatically discovers and enriches feed metadata:
+
+- **Auto-discovery**: Extracts titles, descriptions, authors from feeds and websites
+- **Language Detection**: Identifies feed language with confidence scores
+- **Platform Detection**: Recognizes Reddit, Medium, Substack, GitHub, arXiv, YouTube, etc.
+- **Icon/Logo Discovery**: Finds favicons and Open Graph images
+- **Feed Format Detection**: Identifies RSS, Atom, JSON feeds
+- **Publishing Frequency**: Analyzes update patterns
+
+**Example Usage**:
+
+```python
+from ai_web_feeds.enrichment import MetadataEnricher
+
+enricher = MetadataEnricher()
+
+# Enrich single feed
+feed_data = {"url": "https://example.com/feed"}
+enriched = enricher.enrich_feed_source(feed_data)
+
+print(enriched["title"])  # Auto-discovered title
+print(enriched["language"])  # Detected language
+print(enriched["platform"])  # Detected platform
+
+# Batch enrichment (parallel)
+feeds = [{"url": url1}, {"url": url2}, {"url": url3}]
+enriched_feeds = enricher.batch_enrich(feeds, max_workers=5)
+```
+
+### 2. Content Analysis
+
+**Module**: `enrichment.content`
+
+NLP-powered content analysis:
+
+- **Text Statistics**: Word count, sentence count, paragraph count
+- **Readability Scoring**: Flesch reading ease, reading level classification
+- **Keyword Extraction**: Top keywords, domain-specific keywords (AI/ML)
+- **Named Entity Recognition**: Simple capitalization-based extraction
+- **Sentiment Analysis**: Positive/negative/neutral classification with confidence
+- **Topic Detection**: Auto-classification into research, industry, ML, NLP, etc.
+- **Content Detection**: Identifies code snippets and mathematical notation
+
+**Example Usage**:
+
+```python
+from ai_web_feeds.enrichment import ContentAnalyzer
+
+analyzer = ContentAnalyzer()
+
+# Analyze text content
+text = """
+Machine learning models are becoming increasingly powerful.
+Recent advances in transformer architectures have led to
+breakthrough performance on many NLP tasks.
+"""
+
+analysis = analyzer.analyze_text(text)
+
+print(f"Readability: {analysis.readability_score:.1f}")
+print(f"Reading Level: {analysis.reading_level}")
+print(f"Sentiment: {analysis.sentiment_label} ({analysis.sentiment_score:.2f})")
+print(f"Top Keywords: {analysis.top_keywords[:5]}")
+print(f"Detected Topics: {analysis.detected_topics}")
+print(f"Has Code: {analysis.has_code}")
+```
+
+### 3. Quality Analysis
+
+**Module**: `enrichment.quality`
+
+Multi-dimensional quality scoring:
+
+- **Completeness**: Required vs. optional fields
+- **Accuracy**: URL format, title length, description quality
+- **Consistency**: Domain matching, language code format
+- **Timeliness**: Update freshness, staleness detection
+- **Validity**: Data type checking, schema compliance
+- **Uniqueness**: Duplicate detection (with context)
+
+**Quality Dimensions** (with weights):
+
+- Completeness (25%): Are required fields present?
+- Accuracy (20%): Is data properly formatted?
+- Consistency (15%): Do related fields match?
+- Timeliness (15%): Is data up-to-date?
+- Validity (15%): Does data meet type requirements?
+- Uniqueness (10%): Is feed unique?
+
+**Example Usage**:
+
+```python
+from ai_web_feeds.enrichment import QualityAnalyzer
+
+analyzer = QualityAnalyzer()
+
+# Assess feed quality
+feed_data = {
+    "url": "example.com/feed",  # Missing protocol
+    "title": "AI News",
+    # Missing recommended fields: description, language, topics
+}
+
+score = analyzer.assess_feed_source(feed_data)
+
+print(f"Overall Score: {score.overall_score}/100")
+print(f"Completeness: {score.completeness_score}/100")
+print(f"Issues Found: {len(score.issues)}")
+
+for issue in score.issues:
+    print(f"  [{issue.severity}] {issue.field}: {issue.issue}")
+    if issue.auto_fixable:
+        print(f"    → Can auto-fix: {issue.suggestion}")
+
+# Auto-fix issues
+fixed = analyzer.auto_fix_issues(feed_data)
+print(f"Fixed URL: {fixed['url']}")  # Now has https://
+```
+
+### 4. Time-Series Analysis
+
+**Module**: `analytics.timeseries`
+
+Forecasting and temporal pattern analysis:
+
+- **Health Forecasting**: Predict feed health 7+ days ahead
+- **Seasonality Detection**: Weekly/daily posting patterns
+- **Trend Analysis**: Increasing/decreasing/stable trends with R²
+- **Frequency Analysis**: Publishing rates and regularity
+- **Peak Time Detection**: Most active hours/days
+
+**Example Usage**:
+
+```python
+from ai_web_feeds.analytics.timeseries import TimeSeriesAnalyzer
+from ai_web_feeds import DatabaseManager
+
+db = DatabaseManager()
+
+with db.get_session() as session:
+    analyzer = TimeSeriesAnalyzer(session)
+    
+    # Forecast health
+    forecast = analyzer.forecast_health_metric("feed_123", days_ahead=14)
+    print(f"Forecast (next 14 days): {forecast.forecast_values}")
+    print(f"Confidence Intervals: {forecast.confidence_intervals}")
+    print(f"Model RMSE: {forecast.rmse:.3f}")
+    
+    # Detect seasonality
+    seasonality = analyzer.detect_seasonality("feed_123", lookback_days=90)
+    if seasonality.has_seasonality:
+        print(f"Seasonal Period: {seasonality.seasonal_period} hours/days")
+        print(f"Seasonal Strength: {seasonality.seasonal_strength:.2f}")
+    
+    # Analyze trend
+    trend = analyzer.analyze_trend("feed_123", lookback_days=90)
+    print(f"Trend Direction: {trend.trend_direction}")
+    print(f"Slope: {trend.slope:.4f}")
+    print(f"R²: {trend.r_squared:.3f}")
+```
+
+### 5. Network Analysis
+
+**Module**: `analytics.network`
+
+Graph-based topic and feed relationship analysis:
+
+- **Topic Networks**: Graph of topic relationships
+- **Feed Similarity Networks**: Feeds connected by shared topics
+- **Centrality Metrics**: PageRank, degree, closeness, betweenness
+- **Community Detection**: Identify topic clusters
+- **Influential Topics**: Rank topics by network importance
+
+**Example Usage**:
+
+```python
+from ai_web_feeds.analytics.network import NetworkAnalyzer
+from ai_web_feeds import DatabaseManager
+
+db = DatabaseManager()
+
+with db.get_session() as session:
+    analyzer = NetworkAnalyzer(session)
+    
+    # Build topic network
+    topic_graph = analyzer.build_topic_network()
+    print(f"Topics: {topic_graph.stats['num_nodes']}")
+    print(f"Relationships: {topic_graph.stats['num_edges']}")
+    print(f"Density: {topic_graph.stats['density']:.3f}")
+    
+    # Find influential topics
+    influential = analyzer.find_influential_topics(topic_graph, top_n=10)
+    for topic in influential:
+        print(f"{topic['label']}: PageRank={topic['pagerank']:.4f}")
+```
+
+### 6. Advanced Analytics
+
+**Module**: `analytics.advanced`
+
+ML-powered insights:
+
+- **Predictive Health Modeling**: Linear regression forecasts
+- **Pattern Detection**: Temporal, content, category patterns
+- **Similarity Computation**: Jaccard similarity between feeds
+- **Feed Clustering**: BFS-based clustering by similarity
+- **ML Insights Reports**: Comprehensive ML analysis
+
+## Integration with Data Sync
+
+The enrichment system integrates seamlessly with data synchronization:
+
+```python
+from ai_web_feeds.data_sync import DataSyncOrchestrator
+from ai_web_feeds.enrichment import MetadataEnricher, QualityAnalyzer
+from ai_web_feeds import DatabaseManager
+
+db = DatabaseManager()
+
+# Load and enrich feeds
+with MetadataEnricher() as enricher:
+    import yaml
+    with open("data/feeds.yaml") as f:
+        data = yaml.safe_load(f)
+    
+    # Enrich all feeds
+    enriched_sources = enricher.batch_enrich(data["sources"])
+    
+    # Assess quality
+    quality_analyzer = QualityAnalyzer()
+    for feed in enriched_sources:
+        score = quality_analyzer.assess_feed_source(feed)
+        feed["quality_score"] = score.overall_score
+
+# Sync to database
+sync = DataSyncOrchestrator(db)
+sync.full_sync()
+```
+
+## Workflow Examples
+
+### Complete Feed Enrichment Pipeline
+
+```python
+from ai_web_feeds.enrichment import (
+    MetadataEnricher,
+    ContentAnalyzer,
+    QualityAnalyzer
+)
+
+# 1. Extract metadata
+enricher = MetadataEnricher()
+feed_data = {"url": "https://openai.com/blog/rss/"}
+enriched = enricher.enrich_feed_source(feed_data)
+
+# 2. Analyze content
+content_analyzer = ContentAnalyzer()
+content_text = "Latest advances in GPT-4 and DALL-E 3..."
+content_analysis = content_analyzer.analyze_text(content_text)
+
+# 3. Assess quality
+quality_analyzer = QualityAnalyzer()
+quality = quality_analyzer.assess_feed_source(enriched)
+
+# 4. Combine results
+final_feed = {
+    **enriched,
+    "content_analysis": {
+        "readability": content_analysis.readability_score,
+        "sentiment": content_analysis.sentiment_label,
+        "topics": content_analysis.detected_topics,
+    },
+    "quality": {
+        "overall_score": quality.overall_score,
+        "issues_count": len(quality.issues),
+    }
+}
+```
+
+### Health Monitoring Dashboard
+
+```python
+from ai_web_feeds.analytics.timeseries import TimeSeriesAnalyzer
+from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
+
+with db.get_session() as session:
+    ts_analyzer = TimeSeriesAnalyzer(session)
+    adv_analytics = AdvancedFeedAnalytics(session)
+    
+    feed_id = "feed_123"
+    
+    # Current health
+    current_health = adv_analytics.get_current_health(feed_id)
+    
+    # Future forecast
+    forecast = ts_analyzer.forecast_health_metric(feed_id, days_ahead=7)
+    
+    # Trend analysis
+    trend = ts_analyzer.analyze_trend(feed_id, lookback_days=30)
+    
+    dashboard = {
+        "feed_id": feed_id,
+        "current_health": current_health,
+        "forecast_7d": forecast.forecast_values[-1],
+        "trend": trend.trend_direction,
+        "status": "healthy" if current_health > 0.7 else "degraded"
+    }
+```
+
+## Performance Considerations
+
+- **Batch Processing**: Use `batch_enrich()` for multiple feeds (parallel workers)
+- **Caching**: Metadata enrichment results cached in enriched YAML
+- **Incremental Updates**: Only re-enrich feeds older than X days
+- **Database Indexes**: Ensure indexes on `feed_source_id`, `published_date`, `calculated_at`
+- **Memory**: Time-series analysis memory-efficient with streaming for large datasets
+
+## Troubleshooting
+
+### Common Issues
+
+**Language detection fails**
+- Ensure text is at least 10 characters; langdetect requires minimum text
+
+**Metadata extraction returns empty**
+- Check URL accessibility; some sites block scrapers (use crawlee-python)
+
+**Quality score too low**
+- Use `auto_fix_issues()` to automatically fix common problems
+
+**Forecasting insufficient data**
+- Need minimum 7 data points; ensure health metrics collected regularly
+
+## Best Practices
+
+1. **Enrich on Import**: Run enrichment when adding new feeds
+2. **Quality Gates**: Set minimum quality score threshold (e.g., 70/100)
+3. **Regular Updates**: Re-enrich metadata monthly
+4. **Content Analysis**: Run on new feed items, not all historical
+5. **Health Monitoring**: Schedule daily health metric calculations
+6. **Network Updates**: Rebuild topic network when taxonomy changes
+
+## Future Enhancements
+
+Planned features:
+
+- **Deep Learning Models**: Use transformer models for better NLP
+- **Real-time Anomaly Detection**: Alert on unusual patterns
+- **Automated Categorization**: ML-based topic assignment
+- **Sentiment Trends**: Track sentiment changes over time
+- **Duplicate Detection**: Find near-duplicate feeds
+- **Performance Optimization**: GPU acceleration for large-scale analysis
+
+## Related Documentation
+
+- [Database Architecture](/docs/development/database-architecture) - Database implementation
+- [Database Quick Start](/docs/guides/database-quick-start) - Get started with the database
+- [Python API](/docs/development/python-api) - Full API reference
+
+---
+
+**Version**: 1.0  
+**Last Updated**: October 15, 2025

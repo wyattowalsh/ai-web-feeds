@@ -1,0 +1,261 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with the project
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        
+        Thanks for taking the time to report a bug! Please fill out the sections below.
+        
+        ### 🔍 Before Reporting
+        
+        **Please check**:
+        - [ ] Search [existing issues](https://github.com/wyattowalsh/ai-web-feeds/issues) for duplicates
+        - [ ] Try the latest version (`git pull origin main && uv sync`)
+        - [ ] Review [troubleshooting guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+        
+        ### 🛠️ Debugging Tips
+        
+        **For CLI issues**, run with debug logging:
+        ```bash
+        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
+        ```
+        
+        **For workflow issues**, check the workflow logs in GitHub Actions.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the project is affected?
+      options:
+        - "CLI Tool"
+        - "Web Application (Next.js)"
+        - "Core Package (ai_web_feeds)"
+        - "Feed Data/Schema"
+        - "Documentation Site"
+        - "GitHub Actions/CI/CD"
+        - "Database/Storage"
+        - "Analytics Engine"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: "When I try to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command '...'
+        2. Navigate to '...'
+        3. Click on '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: "I expected..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: "Instead, what happened was..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/Error Messages
+      description: |
+        Please paste any relevant log output or error messages.
+        
+        **Tip**: Run with debug logging for more details:
+        ```bash
+        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose 2>&1 | tee error.log
+        ```
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - "Critical - System unusable, data loss risk"
+        - "High - Major feature broken, no workaround"
+        - "Medium - Feature partially broken, workaround exists"
+        - "Low - Minor issue, cosmetic problem"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Please provide details about your environment.
+        
+        **Quick method** - Run these commands and paste output:
+        ```bash
+        # System info
+        uname -a
+        
+        # Python/uv version
+        uv --version
+        python --version
+        
+        # Package versions
+        uv pip list | grep -E "(ai-web-feeds|ruff|mypy)"
+        
+        # For web issues
+        node --version
+        pnpm --version
+        ```
+      placeholder: |
+        OS: macOS 14.0 / Ubuntu 22.04 / Windows 11
+        Python: 3.13.0
+        uv: 0.4.0
+        ai-web-feeds: 0.1.0
+        Browser: Chrome 120 (for web issues)
+        Node.js: 20.10.0 (for web issues)
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: cli_output
+    attributes:
+      label: CLI Command Output (if applicable)
+      description: |
+        If this is a CLI bug, paste the full command and output.
+        
+        **Include**:
+        - The exact command you ran
+        - Full output (including stack trace)
+        - Any relevant environment variables
+      placeholder: |
+        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all --verbose
+        [2025-01-15 10:30:00] DEBUG: Loading config...
+        [2025-01-15 10:30:01] ERROR: ...
+        Traceback (most recent call last):
+          ...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: workflow_info
+    attributes:
+      label: Workflow Information (if CI/CD bug)
+      description: |
+        If this is a GitHub Actions workflow bug, provide:
+        - Workflow file name
+        - Run ID or URL
+        - Relevant log excerpt
+      placeholder: |
+        Workflow: .github/workflows/quality-enforcement.yml
+        Run: https://github.com/wyattowalsh/ai-web-feeds/actions/runs/123456
+        Job: python-linting
+        Step: Run Ruff linting
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: attempted_fixes
+    attributes:
+      label: Attempted Fixes
+      description: What have you tried to fix the issue?
+      options:
+        - label: "Restarted the application/process"
+        - label: "Cleared cache (`rm -rf .next` for web, `~/.cache/uv` for Python)"
+        - label: "Reinstalled dependencies (`uv sync --reinstall` or `pnpm install --force`)"
+        - label: "Tried with latest code (`git pull origin main && uv sync`)"
+        - label: "Ran linting/formatting (`uv run ruff check --fix .`)"
+        - label: "Checked environment variables and configuration"
+        - label: "Searched documentation and existing issues"
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context about the problem here.
+        
+        **Helpful information**:
+        - Screenshots or screen recordings
+        - Related issues or PRs
+        - Links to relevant code
+        - Minimal reproducible example
+        - Network logs (for feed validation issues)
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ### 🚀 What Happens Next?
+        
+        1. **Triage**: Issue will be labeled and assigned priority
+        2. **Investigation**: Maintainers will attempt to reproduce
+        3. **Fix**: PR will be created to address the bug
+        4. **Validation**: Fix will be tested in CI/CD:
+           ```bash
+           uv run aiwebfeeds test --coverage
+           uv run ruff check .
+           uv run mypy .
+           ```
+        5. **Release**: Fix will be included in next release
+        
+        ### 🛠️ Want to Help?
+        
+        - 🐛 Create a failing test case that reproduces the bug
+        - 🔧 Submit a PR with a fix (see [Contributing Guide](../../CONTRIBUTING.md))
+        - 📝 Improve documentation to prevent similar issues
+        
+        Thank you for helping improve AI Web Feeds! 🙏
+        - OS (macOS, Linux, Windows)
+        - Python version (if CLI)
+        - Node.js version (if web)
+        - Browser (if web)
+      placeholder: |
+        - OS: macOS 14.0
+        - Python: 3.11.5
+        - Browser: Chrome 119
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information about the bug
+    validations:
+      required: false

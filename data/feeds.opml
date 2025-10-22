@@ -1,0 +1,262 @@
+<?xml version="1.0" ?>
+<opml version="2.0">
+  <head>
+    <title>AI Web Feeds</title>
+  </head>
+  <body>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="Anthropic News" title="Anthropic News"/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="Towards Data Science" title="Towards Data Science"/>
+    <outline type="rss" text="Two Minute Papers" title="Two Minute Papers"/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="Andrej Karpathy" title="Andrej Karpathy"/>
+    <outline type="rss" text="Yoshua Bengio - arXiv Papers" title="Yoshua Bengio - arXiv Papers"/>
+    <outline type="rss" text="Google AI Blog" title="Google AI Blog"/>
+    <outline type="rss" text="DeepMind — Discover/Blog" title="DeepMind — Discover/Blog"/>
+    <outline type="rss" text="Meta AI — Blog" title="Meta AI — Blog"/>
+    <outline type="rss" text="Microsoft Research Blog" title="Microsoft Research Blog"/>
+    <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS"/>
+    <outline type="rss" text="AWS Machine Learning Blog — RSS" title="AWS Machine Learning Blog — RSS"/>
+    <outline type="rss" text="BAIR Blog (UC Berkeley) — RSS" title="BAIR Blog (UC Berkeley) — RSS"/>
+    <outline type="rss" text="Stanford CRFM — RSS" title="Stanford CRFM — RSS"/>
+    <outline type="rss" text="Stanford HAI — News" title="Stanford HAI — News"/>
+    <outline type="rss" text="The Gradient — RSS" title="The Gradient — RSS"/>
+    <outline type="rss" text="TensorFlow Blog — RSS" title="TensorFlow Blog — RSS"/>
+    <outline type="rss" text="Cohere — txt (RSS)" title="Cohere — txt (RSS)"/>
+    <outline type="rss" text="Replicate Blog — RSS" title="Replicate Blog — RSS"/>
+    <outline type="rss" text="Databricks Blog — RSS" title="Databricks Blog — RSS"/>
+    <outline type="rss" text="LMSYS — Blog" title="LMSYS — Blog"/>
+    <outline type="rss" text="vLLM (GitHub)" title="vLLM (GitHub)"/>
+    <outline type="rss" text="TensorRT-LLM (GitHub)" title="TensorRT-LLM (GitHub)"/>
+    <outline type="rss" text="Weaviate — Blog" title="Weaviate — Blog"/>
+    <outline type="rss" text="Milvus — Blog" title="Milvus — Blog"/>
+    <outline type="rss" text="Qdrant — Articles" title="Qdrant — Articles"/>
+    <outline type="rss" text="LangChain — Blog" title="LangChain — Blog"/>
+    <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog"/>
+    <outline type="rss" text="MLOps Community — Blog" title="MLOps Community — Blog"/>
+    <outline type="rss" text="UK AI Safety Institute — News" title="UK AI Safety Institute — News"/>
+    <outline type="rss" text="MLCommons — News (MLPerf)" title="MLCommons — News (MLPerf)"/>
+    <outline type="rss" text="Sebastian Raschka — RSS" title="Sebastian Raschka — RSS"/>
+    <outline type="rss" text="Eugene Yan — RSS" title="Eugene Yan — RSS"/>
+    <outline type="rss" text="Hamel Husain — Atom" title="Hamel Husain — Atom"/>
+    <outline type="rss" text="Apple Machine Learning Research (Journal)" title="Apple Machine Learning Research (Journal)"/>
+    <outline type="rss" text="Allen Institute for AI — Blog" title="Allen Institute for AI — Blog"/>
+    <outline type="rss" text="MIT CSAIL — News" title="MIT CSAIL — News"/>
+    <outline type="rss" text="fast.ai — Blog" title="fast.ai — Blog"/>
+    <outline type="rss" text="DeepLearning.AI — The Batch" title="DeepLearning.AI — The Batch"/>
+    <outline type="rss" text="Robotics at Google — Blog" title="Robotics at Google — Blog"/>
+    <outline type="rss" text="OpenMined — Blog" title="OpenMined — Blog"/>
+    <outline type="rss" text="EleutherAI — Blog" title="EleutherAI — Blog"/>
+    <outline type="rss" text="Apache TVM — Blog" title="Apache TVM — Blog"/>
+    <outline type="rss" text="Nixtla — Blog" title="Nixtla — Blog"/>
+    <outline type="rss" text="Roboflow — Blog" title="Roboflow — Blog"/>
+    <outline type="rss" text="OpenCV — Blog" title="OpenCV — Blog"/>
+    <outline type="rss" text="Neo4j — Developer Blog" title="Neo4j — Developer Blog"/>
+    <outline type="rss" text="ArangoDB — Blog" title="ArangoDB — Blog"/>
+    <outline type="rss" text="Arize AI — Blog" title="Arize AI — Blog"/>
+    <outline type="rss" text="Evidently AI — Blog" title="Evidently AI — Blog"/>
+    <outline type="rss" text="WhyLabs — Blog" title="WhyLabs — Blog"/>
+    <outline type="rss" text="Anyscale (Ray) — Blog" title="Anyscale (Ray) — Blog"/>
+    <outline type="rss" text="Modal — Blog" title="Modal — Blog"/>
+    <outline type="rss" text="Neo4j Graph Data Science — Articles" title="Neo4j Graph Data Science — Articles"/>
+    <outline type="rss" text="Cohere — Research" title="Cohere — Research"/>
+    <outline type="rss" text="Microsoft AI — Blog" title="Microsoft AI — Blog"/>
+    <outline type="rss" text="Qualcomm — AI Research/Engineering" title="Qualcomm — AI Research/Engineering"/>
+    <outline type="rss" text="Langfuse — Blog" title="Langfuse — Blog"/>
+    <outline type="rss" text="AI Now Institute — News (RSS)" title="AI Now Institute — News (RSS)"/>
+    <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog"/>
+    <outline type="rss" text="Mila — News" title="Mila — News"/>
+    <outline type="rss" text="Vector Institute — Insights" title="Vector Institute — Insights"/>
+    <outline type="rss" text="The Alan Turing Institute — Blog" title="The Alan Turing Institute — Blog"/>
+    <outline type="rss" text="CMU Machine Learning Department — Blog (RSS)" title="CMU Machine Learning Department — Blog (RSS)"/>
+    <outline type="rss" text="MIT News — Machine Learning (RSS)" title="MIT News — Machine Learning (RSS)"/>
+    <outline type="rss" text="Vespa.ai — Blog" title="Vespa.ai — Blog"/>
+    <outline type="rss" text="Jina AI — Blog" title="Jina AI — Blog"/>
+    <outline type="rss" text="Haystack (deepset) — Blog" title="Haystack (deepset) — Blog"/>
+    <outline type="rss" text="MLC LLM — Blog" title="MLC LLM — Blog"/>
+    <outline type="rss" text="llama.cpp — Releases (Atom)" title="llama.cpp — Releases (Atom)"/>
+    <outline type="rss" text="Hugging Face TGI — Releases (Atom)" title="Hugging Face TGI — Releases (Atom)"/>
+    <outline type="rss" text="SGLang — Releases (Atom)" title="SGLang — Releases (Atom)"/>
+    <outline type="rss" text="Triton — Releases (Atom)" title="Triton — Releases (Atom)"/>
+    <outline type="rss" text="MLC-LLM — Releases (Atom)" title="MLC-LLM — Releases (Atom)"/>
+    <outline type="rss" text="Neptune.ai — Blog (RSS)" title="Neptune.ai — Blog (RSS)"/>
+    <outline type="rss" text="ONNX — Blog" title="ONNX — Blog"/>
+    <outline type="rss" text="Mistral AI — News" title="Mistral AI — News"/>
+    <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog"/>
+    <outline type="rss" text="CrewAI — Blog" title="CrewAI — Blog"/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="Proceedings of Machine Learning Research (PMLR)" title="Proceedings of Machine Learning Research (PMLR)"/>
+    <outline type="rss" text="Transactions on Machine Learning Research (TMLR)" title="Transactions on Machine Learning Research (TMLR)"/>
+    <outline type="rss" text="Nature Machine Intelligence" title="Nature Machine Intelligence"/>
+    <outline type="rss" text="NEJM AI" title="NEJM AI"/>
+    <outline type="rss" text="NPJ Digital Medicine" title="NPJ Digital Medicine"/>
+    <outline type="rss" text="Google Earth Engine — Developer Blog" title="Google Earth Engine — Developer Blog"/>
+    <outline type="rss" text="Microsoft Planetary Computer — Blog" title="Microsoft Planetary Computer — Blog"/>
+    <outline type="rss" text="Radiant Earth — Blog" title="Radiant Earth — Blog"/>
+    <outline type="rss" text="AI Incident Database — Blog" title="AI Incident Database — Blog"/>
+    <outline type="rss" text="OpenLineage — Blog" title="OpenLineage — Blog"/>
+    <outline type="rss" text="Great Expectations (GX) — Blog" title="Great Expectations (GX) — Blog"/>
+    <outline type="rss" text="Monte Carlo — Data Observability Blog" title="Monte Carlo — Data Observability Blog"/>
+    <outline type="rss" text="AssemblyAI — Blog (RSS)" title="AssemblyAI — Blog (RSS)"/>
+    <outline type="rss" text="Edge Impulse — Blog" title="Edge Impulse — Blog"/>
+    <outline type="rss" text="tinyML Foundation — Blog" title="tinyML Foundation — Blog"/>
+    <outline type="rss" text="Weights &amp; Biases — Release Notes (RSS)" title="Weights &amp; Biases — Release Notes (RSS)"/>
+    <outline type="rss" text="NVIDIA Research — AI" title="NVIDIA Research — AI"/>
+    <outline type="rss" text="NeurIPS — Official Blog" title="NeurIPS — Official Blog"/>
+    <outline type="rss" text="ICLR — Official Blog" title="ICLR — Official Blog"/>
+    <outline type="rss" text="Stanford AI Lab — SAIL Blog" title="Stanford AI Lab — SAIL Blog"/>
+    <outline type="rss" text="Hazy Research — Blog" title="Hazy Research — Blog"/>
+    <outline type="rss" text="arXiv — cs.CV RSS" title="arXiv — cs.CV RSS"/>
+    <outline type="rss" text="arXiv — cs.CL RSS" title="arXiv — cs.CL RSS"/>
+    <outline type="rss" text="arXiv — cs.IR RSS" title="arXiv — cs.IR RSS"/>
+    <outline type="rss" text="Dagster — Blog" title="Dagster — Blog"/>
+    <outline type="rss" text="Astronomer (Airflow) — Blog" title="Astronomer (Airflow) — Blog"/>
+    <outline type="rss" text="dbt Labs — Blog" title="dbt Labs — Blog"/>
+    <outline type="rss" text="DuckDB — News (RSS)" title="DuckDB — News (RSS)"/>
+    <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)"/>
+    <outline type="rss" text="Chips and Cheese — RSS" title="Chips and Cheese — RSS"/>
+    <outline type="rss" text="NIST — Cybersecurity Insights" title="NIST — Cybersecurity Insights"/>
+    <outline type="rss" text="Center for AI Safety — Blog" title="Center for AI Safety — Blog"/>
+    <outline type="rss" text="Alignment Forum — RSS" title="Alignment Forum — RSS"/>
+    <outline type="rss" text="ACL Rolling Review — Site" title="ACL Rolling Review — Site"/>
+    <outline type="rss" text="PyTorch — Engineering Blog" title="PyTorch — Engineering Blog"/>
+    <outline type="rss" text="Lightning AI — Blog" title="Lightning AI — Blog"/>
+    <outline type="rss" text="Groq — Blog" title="Groq — Blog"/>
+    <outline type="rss" text="Together AI — Blog" title="Together AI — Blog"/>
+    <outline type="rss" text="Fireworks.ai — Blog" title="Fireworks.ai — Blog"/>
+    <outline type="rss" text="Baseten — Blog" title="Baseten — Blog"/>
+    <outline type="rss" text="OctoAI — Blog" title="OctoAI — Blog"/>
+    <outline type="rss" text="LAION — Blog" title="LAION — Blog"/>
+    <outline type="rss" text="Weights &amp; Biases — Articles" title="Weights &amp; Biases — Articles"/>
+    <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog"/>
+    <outline type="rss" text="Ragas — Blog" title="Ragas — Blog"/>
+    <outline type="rss" text="TruLens — Blog" title="TruLens — Blog"/>
+    <outline type="rss" text="DeepEval (Confident AI) — Blog" title="DeepEval (Confident AI) — Blog"/>
+    <outline type="rss" text="KServe — GitHub" title="KServe — GitHub"/>
+    <outline type="rss" text="LangGraph — GitHub" title="LangGraph — GitHub"/>
+    <outline type="rss" text="LangChain — GitHub" title="LangChain — GitHub"/>
+    <outline type="rss" text="JAX — GitHub" title="JAX — GitHub"/>
+    <outline type="rss" text="Transformers — GitHub" title="Transformers — GitHub"/>
+    <outline type="rss" text="OpenAI — Evals" title="OpenAI — Evals"/>
+    <outline type="rss" text="U.S. AI Safety Institute (NIST)" title="U.S. AI Safety Institute (NIST)"/>
+    <outline type="rss" text="OECD.AI Policy Observatory" title="OECD.AI Policy Observatory"/>
+    <outline type="rss" text="Redwood Research — Blog" title="Redwood Research — Blog"/>
+    <outline type="rss" text="FAR AI — Blog" title="FAR AI — Blog"/>
+    <outline type="rss" text="OpenAI — News (RSS)" title="OpenAI — News (RSS)"/>
+    <outline type="rss" text="European AI Office — Policy &amp; News" title="European AI Office — Policy &amp; News"/>
+    <outline type="rss" text="Georgetown CSET — Blog" title="Georgetown CSET — Blog"/>
+    <outline type="rss" text="Robohub — RSS" title="Robohub — RSS"/>
+    <outline type="rss" text="vLLM — Blog" title="vLLM — Blog"/>
+    <outline type="rss" text="SkyPilot — Blog" title="SkyPilot — Blog"/>
+    <outline type="rss" text="IREE — Blog (OpenXLA)" title="IREE — Blog (OpenXLA)"/>
+    <outline type="rss" text="MLX — Releases (Atom)" title="MLX — Releases (Atom)"/>
+    <outline type="rss" text="ONNX Runtime — Releases (Atom)" title="ONNX Runtime — Releases (Atom)"/>
+    <outline type="rss" text="NVIDIA NeMo — Releases (Atom)" title="NVIDIA NeMo — Releases (Atom)"/>
+    <outline type="rss" text="FAISS — Releases (Atom)" title="FAISS — Releases (Atom)"/>
+    <outline type="rss" text="OpenXLA IREE — Releases (Atom)" title="OpenXLA IREE — Releases (Atom)"/>
+    <outline type="rss" text="Microsoft AutoGen — Releases (Atom)" title="Microsoft AutoGen — Releases (Atom)"/>
+    <outline type="rss" text="OpenDevin — Releases (Atom)" title="OpenDevin — Releases (Atom)"/>
+    <outline type="rss" text="NVIDIA FasterTransformer — Releases (Atom)" title="NVIDIA FasterTransformer — Releases (Atom)"/>
+    <outline type="rss" text="FlashAttention — Releases (Atom)" title="FlashAttention — Releases (Atom)"/>
+    <outline type="rss" text="Practical AI — Podcast (RSS)" title="Practical AI — Podcast (RSS)"/>
+    <outline type="rss" text="The Data Exchange — Podcast (RSS)" title="The Data Exchange — Podcast (RSS)"/>
+    <outline type="rss" text="Lilian Weng — Blog" title="Lilian Weng — Blog"/>
+    <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability"/>
+    <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog"/>
+    <outline type="rss" text="Jigsaw — Blog" title="Jigsaw — Blog"/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest"/>
+    <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog"/>
+    <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog"/>
+    <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics"/>
+    <outline type="rss" text="DataHub — Blog" title="DataHub — Blog"/>
+    <outline type="rss" text="Agency — Substack" title="Agency — Substack"/>
+    <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications"/>
+    <outline type="rss" text="Microsoft Research — AI for Science (News &amp; Awards)" title="Microsoft Research — AI for Science (News &amp; Awards)"/>
+    <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog"/>
+    <outline type="rss" text="LangChain — Changelog" title="LangChain — Changelog"/>
+    <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog"/>
+    <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog"/>
+    <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News"/>
+    <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog"/>
+    <outline type="rss" text="Lakera — Blog" title="Lakera — Blog"/>
+    <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub"/>
+    <outline type="rss" text="Protect AI — MLSecOps Blog" title="Protect AI — MLSecOps Blog"/>
+    <outline type="rss" text="Bank Underground (Bank of England)" title="Bank Underground (Bank of England)"/>
+    <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events"/>
+    <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News"/>
+    <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News"/>
+    <outline type="rss" text="RIKEN AIP — News" title="RIKEN AIP — News"/>
+    <outline type="rss" text="xAI — Blog" title="xAI — Blog"/>
+    <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog"/>
+    <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog"/>
+    <outline type="rss" text="Ollama — Blog" title="Ollama — Blog"/>
+    <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog"/>
+    <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub"/>
+    <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog"/>
+    <outline type="rss" text="Chroma — Blog" title="Chroma — Blog"/>
+    <outline type="rss" text="Nomic — Blog" title="Nomic — Blog"/>
+    <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog"/>
+    <outline type="rss" text="UpTrain — Blog" title="UpTrain — Blog"/>
+    <outline type="rss" text="Gentrace — Blog" title="Gentrace — Blog"/>
+    <outline type="rss" text="Tecton — Blog" title="Tecton — Blog"/>
+    <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog"/>
+    <outline type="rss" text="Flyte — Blog" title="Flyte — Blog"/>
+    <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog"/>
+    <outline type="rss" text="Prefect — Blog" title="Prefect — Blog"/>
+    <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog"/>
+    <outline type="rss" text="Guardrails AI — Blog" title="Guardrails AI — Blog"/>
+    <outline type="rss" text="Coqui — Blog" title="Coqui — Blog"/>
+    <outline type="rss" text="Stability AI — News" title="Stability AI — News"/>
+    <outline type="rss" text="OpenMMLab — Blog" title="OpenMMLab — Blog"/>
+    <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog"/>
+    <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog"/>
+    <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog"/>
+    <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML"/>
+    <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML"/>
+    <outline type="rss" text="IBM — AI Blog" title="IBM — AI Blog"/>
+    <outline type="rss" text="Yannic Kilcher — YouTube" title="Yannic Kilcher — YouTube"/>
+    <outline type="rss" text="Henry AI Labs — YouTube" title="Henry AI Labs — YouTube"/>
+    <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube"/>
+    <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube"/>
+    <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube"/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="" title=""/>
+    <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub"/>
+    <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub"/>
+    <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub"/>
+    <outline type="rss" text="LiteLLM — GitHub" title="LiteLLM — GitHub"/>
+    <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub"/>
+    <outline type="rss" text="AutoAWQ — GitHub" title="AutoAWQ — GitHub"/>
+    <outline type="rss" text="ExLlamaV2 — GitHub" title="ExLlamaV2 — GitHub"/>
+    <outline type="rss" text="whisper.cpp — GitHub" title="whisper.cpp — GitHub"/>
+    <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub"/>
+    <outline type="rss" text="Guardrails — GitHub" title="Guardrails — GitHub"/>
+    <outline type="rss" text="Outlines — GitHub" title="Outlines — GitHub"/>
+    <outline type="rss" text="OpenAI Whisper — GitHub" title="OpenAI Whisper — GitHub"/>
+    <outline type="rss" text="SpeechBrain — GitHub" title="SpeechBrain — GitHub"/>
+    <outline type="rss" text="Coqui TTS — GitHub" title="Coqui TTS — GitHub"/>
+    <outline type="rss" text="sktime — GitHub" title="sktime — GitHub"/>
+    <outline type="rss" text="Darts — GitHub" title="Darts — GitHub"/>
+    <outline type="rss" text="Transformer Circuits" title="Transformer Circuits"/>
+    <outline type="rss" text="Stanford CodeX — Legal Informatics" title="Stanford CodeX — Legal Informatics"/>
+    <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog"/>
+    <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub"/>
+    <outline type="rss" text="OpenHands — GitHub" title="OpenHands — GitHub"/>
+    <outline type="rss" text="AutoGPT — GitHub" title="AutoGPT — GitHub"/>
+    <outline type="rss" text="arXiv — cs.AI RSS" title="arXiv — cs.AI RSS"/>
+    <outline type="rss" text="AMD ROCm — Blogs" title="AMD ROCm — Blogs"/>
+    <outline type="rss" text="Arm — AI &amp; ML Blog" title="Arm — AI &amp; ML Blog"/>
+    <outline type="rss" text="MLIR — The LLVM Project Blog" title="MLIR — The LLVM Project Blog"/>
+    <outline type="rss" text="FTC Business Blog — RSS" title="FTC Business Blog — RSS"/>
+    <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)"/>
+  </body>
+</opml>

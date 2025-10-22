@@ -1,0 +1,193 @@
+---
+title: Database Setup
+description: Database architecture, models, and operations
+---
+
+# Database Setup
+
+AI Web Feeds uses SQLModel (SQLAlchemy + Pydantic) for database operations with Alembic for migrations.
+
+## Quick Links
+
+- **[Database Architecture](/docs/development/database-architecture)** - Comprehensive architecture overview
+- **[Database Quick Start](/docs/guides/database-quick-start)** - Get started in minutes
+- **[Database Enhancements](/docs/development/database-enhancements)** - Recent improvements and features
+
+## Database Schema
+
+### `feed_sources` Table
+
+Core feed metadata and configuration:
+
+- **Core fields:** `id`, `feed`, `site`, `title`
+- **Classification:** `source_type`, `mediums`, `tags`
+- **Topics:** `topics`, `topic_weights`
+- **Metadata:** `language`, `format`, `updated`, `last_validated`, `verified`, `contributor`
+- **Curation:** `curation_status`, `curation_since`, `curation_by`, `quality_score`, `curation_notes`
+- **Provenance:** `provenance_source`, `provenance_from`, `provenance_license`
+- **Discovery:** `discover_enabled`, `discover_config`
+- **Relations:** `relations`, `mappings` (JSON fields)
+
+### `feed_items` Table
+
+Individual feed entries:
+
+- **Identifiers:** `id` (UUID), `feed_source_id` (foreign key)
+- **Content:** `title`, `link`, `description`, `content`, `author`
+- **Timestamps:** `published`, `updated`, `created_at`, `updated_at`
+- **Metadata:** `guid`, `categories`, `tags`, `enclosures`, `extra_data`
+
+### `feed_fetch_logs` Table
+
+Fetch attempt tracking:
+
+- **Fetch info:** `fetched_at`, `fetch_url`, `success`
+- **Response:** `status_code`, `content_type`, `content_length`, `etag`, `last_modified`
+- **Errors:** `error_message`, `error_type`
+- **Stats:** `items_found`, `items_new`, `items_updated`, `fetch_duration_ms`
+- **Data:** `response_headers`, `extra_data` (JSON fields)
+
+### `topics` Table
+
+Topic definitions:
+
+- **Core:** `id`, `name`, `description`, `parent_id`
+- **Metadata:** `aliases`, `related_topics`
+- **Timestamps:** `created_at`, `updated_at`
+
+## Python API
+
+### Initialize Database
+
+```python
+from ai_web_feeds.storage import DatabaseManager
+
+# Initialize database
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db.create_db_and_tables()
+```
+
+### Add Feed Sources
+
+```python
+from ai_web_feeds.models import FeedSource, SourceType
+
+feed = FeedSource(
+    id="example-blog",
+    feed="https://example.com/feed.xml",
+    site="https://example.com",
+    title="Example Blog",
+    source_type=SourceType.BLOG,
+    topics=["ml", "nlp"],
+    verified=True,
+)
+
+db.add_feed_source(feed)
+```
+
+### Query Feed Sources
+
+```python
+# Get all feeds
+all_feeds = db.get_all_feed_sources()
+
+# Get specific feed
+feed = db.get_feed_source("example-blog")
+
+# Get all topics
+topics = db.get_all_topics()
+```
+
+### Bulk Operations
+
+```python
+# Bulk insert feed sources
+db.bulk_insert_feed_sources(feed_sources)
+
+# Bulk insert topics
+db.bulk_insert_topics(topics)
+```
+
+## Database Migrations
+
+### Initialize Alembic
+
+```bash
+# Run initialization script
+uv run python packages/ai_web_feeds/scripts/init_alembic.py
+```
+
+### Create Migration
+
+```bash
+cd packages/ai_web_feeds
+alembic revision --autogenerate -m "Initial schema"
+```
+
+### Apply Migrations
+
+```bash
+# Upgrade to latest
+alembic upgrade head
+
+# Downgrade one version
+alembic downgrade -1
+
+# Show current version
+alembic current
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Database URL
+export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
+
+# For PostgreSQL
+export AIWF_DATABASE_URL=postgresql://user:pass@localhost/aiwebfeeds
+
+# For MySQL
+export AIWF_DATABASE_URL=mysql://user:pass@localhost/aiwebfeeds
+```
+
+### Database Manager Options
+
+```python
+# Custom database URL
+db = DatabaseManager("postgresql://localhost/aiwebfeeds")
+
+# Enable SQL echo for debugging
+from sqlalchemy import create_engine
+engine = create_engine(
+    "sqlite:///data/aiwebfeeds.db",
+    echo=True  # Print all SQL statements
+)
+```
+
+## Models Reference
+
+All models are defined using SQLModel, which combines SQLAlchemy and Pydantic for type-safe database operations with automatic validation.
+
+**Core Models** (`models.py`):
+- `FeedSource` - Feed metadata and configuration
+- `FeedItem` - Individual feed entries
+- `FeedFetchLog` - Fetch attempt history
+- `Topic` - Topic taxonomy
+
+**Advanced Models** (`models_advanced.py`):
+- `FeedValidationHistory` - Validation tracking over time
+- `FeedHealthMetric` - Health scores and metrics
+- `DataQualityMetric` - Multi-dimensional quality tracking
+- `ContentEmbedding` - Semantic search embeddings
+- `TopicRelationship` - Computed topic associations
+- `UserFeedPreference` - User interactions and preferences
+- `AnalyticsCacheEntry` - Computed analytics caching
+
+## Next Steps
+
+- **Get Started**: Follow the [Database Quick Start](/docs/guides/database-quick-start) guide
+- **Deep Dive**: Read the [Database Architecture](/docs/development/database-architecture) documentation
+- **Learn More**: See [Database Enhancements](/docs/development/database-enhancements) for recent features
+- **API Usage**: Check the [Python API](/docs/development/python-api) documentation

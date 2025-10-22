@@ -1,0 +1,313 @@
+name: 🛠️ CLI Issue
+description: Report an issue with the aiwebfeeds CLI tool
+title: "[CLI]: "
+labels: ["cli", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## CLI Issue Report
+        
+        Report bugs, feature requests, or issues with the `aiwebfeeds` command-line tool.
+        
+        ### 🔍 Before Reporting
+        
+        1. **Update to latest version**:
+           ```bash
+           git pull origin main
+           uv sync --reinstall
+           ```
+        
+        2. **Test with debug logging**:
+           ```bash
+           AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
+           ```
+        
+        3. **Check CLI help**:
+           ```bash
+           uv run aiwebfeeds --help
+           uv run aiwebfeeds <command> --help
+           ```
+        
+        4. **Review [CLI documentation](https://aiwebfeeds.com/docs/development/cli)**
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What kind of CLI issue is this?
+      options:
+        - "🐛 Bug - CLI crashes or errors"
+        - "❌ Command doesn't work as expected"
+        - "📝 Incorrect/unclear help text or documentation"
+        - "⚡ Performance issue"
+        - "✨ Feature request for new command"
+        - "🔧 Improvement to existing command"
+        - "💡 Suggestion for better UX/output"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: command
+    attributes:
+      label: CLI Command
+      description: Which command is affected?
+      options:
+        - "validate"
+        - "test"
+        - "analytics"
+        - "stats"
+        - "export"
+        - "opml (export/import/validate)"
+        - "enrich"
+        - "fetch"
+        - "Multiple commands"
+        - "General CLI (not command-specific)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: command_run
+    attributes:
+      label: Command Executed
+      description: |
+        Paste the exact command you ran.
+        
+        **Include**:
+        - Full command with all flags/options
+        - Any environment variables
+        - Working directory (if relevant)
+      placeholder: |
+        $ cd /path/to/ai-web-feeds
+        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all --strict --verbose
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Command Output
+      description: |
+        Paste the complete output, including:
+        - stdout
+        - stderr
+        - Exit code
+        - Stack trace (if error)
+      placeholder: |
+        [2025-01-15 10:30:00] INFO: Starting validation...
+        [2025-01-15 10:30:01] ERROR: Failed to validate feed
+        Traceback (most recent call last):
+          File "...", line 123, in validate
+            ...
+        Error: Validation failed
+        
+        Exit code: 1
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: |
+        I expected the command to:
+        1. Validate all feeds in data/feeds.yaml
+        2. Report any validation errors
+        3. Exit with code 0 if all pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: |
+        Instead, the command:
+        1. Started validation ✅
+        2. Crashed with TypeError ❌
+        3. Exit code 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Run these commands and paste the output:
+        
+        ```bash
+        uv --version
+        python --version
+        uv run python -c "import ai_web_feeds; print(ai_web_feeds.__version__)"
+        uname -a
+        ```
+      placeholder: |
+        uv version: 0.4.0
+        Python version: 3.13.0
+        ai_web_feeds version: 0.1.0
+        OS: macOS 14.0 (Darwin Kernel Version...)
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: data_sample
+    attributes:
+      label: Sample Data (if relevant)
+      description: |
+        If the issue involves specific data, provide a minimal example.
+        
+        **For feed validation issues**:
+        - Provide the feed URL
+        - Or paste a minimal YAML snippet
+      placeholder: |
+        feeds:
+          - id: example-feed
+            url: https://example.com/feed.xml
+            title: Example Feed
+            topics: [ml, nlp]
+      render: yaml
+    validations:
+      required: false
+
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      description: Can you reproduce this consistently?
+      options:
+        - "Always (100%)"
+        - "Frequently (>50%)"
+        - "Sometimes (25-50%)"
+        - "Rarely (<25%)"
+        - "Only once"
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround (if any)
+      description: Have you found a temporary workaround?
+      placeholder: |
+        Workaround: Using the Python API directly instead of CLI works:
+        
+        ```python
+        from ai_web_feeds import validate_feeds
+        validate_feeds("data/feeds.yaml")
+        ```
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: debugging
+    attributes:
+      label: Debugging Attempted
+      description: What have you tried?
+      options:
+        - label: "Ran with `--verbose` flag"
+        - label: "Ran with `AIWEBFEEDS_LOG_LEVEL=DEBUG`"
+        - label: "Checked command help (`--help`)"
+        - label: "Updated to latest version (`uv sync --reinstall`)"
+        - label: "Tested with minimal example"
+        - label: "Cleared caches (`rm -rf ~/.cache/uv`)"
+        - label: "Tried different Python version"
+        - label: "Checked file permissions"
+
+  - type: textarea
+    id: feature_request
+    attributes:
+      label: Feature Request Details (if applicable)
+      description: |
+        If this is a feature request, describe:
+        - What you want to do
+        - Why current commands don't work
+        - Proposed command/flag syntax
+        - Example usage
+      placeholder: |
+        **Proposed command**:
+        ```bash
+        uv run aiwebfeeds validate --feeds <url> --output-format json
+        ```
+        
+        **Use case**: I want to validate a feed and get structured JSON output
+        for integration with other tools.
+        
+        **Example output**:
+        ```json
+        {
+          "valid": true,
+          "feed_url": "https://example.com/feed.xml",
+          "errors": [],
+          "warnings": ["Missing description"]
+        }
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: |
+        Any other relevant information:
+        - Screenshots of output
+        - Related issues/PRs
+        - Links to documentation
+        - Impact on your workflow
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ### 🛠️ CLI Debugging Tips
+        
+        **Enable full debug output**:
+        ```bash
+        export AIWEBFEEDS_LOG_LEVEL=DEBUG
+        export AIWEBFEEDS_LOG_FILE=debug.log
+        uv run aiwebfeeds <command> --verbose 2>&1 | tee output.log
+        ```
+        
+        **Test individual components**:
+        ```bash
+        # Test Python directly
+        uv run python -c "from ai_web_feeds import validate_feeds; validate_feeds('data/feeds.yaml')"
+        
+        # Test CLI entry point
+        uv run python -m ai_web_feeds.cli validate --help
+        ```
+        
+        **Check installation**:
+        ```bash
+        uv pip list | grep ai-web-feeds
+        which aiwebfeeds
+        uv run which python
+        ```
+        
+        ### 📚 Resources
+        
+        - [CLI Documentation](https://aiwebfeeds.com/docs/development/cli)
+        - [CLI Workflow Integration](https://aiwebfeeds.com/docs/development/cli-workflows)
+        - [Python API Docs](https://aiwebfeeds.com/docs/development/python-api)
+        - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+        
+        ### 🤝 Want to Fix It?
+        
+        The CLI code is in:
+        - Commands: `apps/cli/ai_web_feeds/cli/commands/`
+        - Main CLI: `apps/cli/ai_web_feeds/cli/__init__.py`
+        - Core logic: `packages/ai_web_feeds/src/ai_web_feeds/`
+        
+        PRs welcome! See [Contributing Guide](../../CONTRIBUTING.md).
+        
+        Thank you for helping improve the CLI! 🚀

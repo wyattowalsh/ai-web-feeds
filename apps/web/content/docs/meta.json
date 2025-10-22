@@ -1,0 +1,38 @@
+{
+  "title": "Documentation",
+  "pages": ["index", "test", "security", "taxonomy-visualization"],
+  "---Features": {
+    "type": "separator"
+  },
+  "features": {
+    "title": "Features",
+    "icon": "Sparkles",
+    "pages": ["overview", "data-enrichment", "pdf-export", "ai-integration", "llms-full-format", "rss-feeds", "platform-integrations", "twitter-arxiv-integration", "link-validation", "seo-metadata", "mermaid", "math"]
+  },
+  "---Guides": {
+    "type": "separator"
+  },
+  "guides": {
+    "title": "Guides",
+    "icon": "BookOpen",
+    "pages": [
+      "quick-reference", 
+      "workflow-reference",
+      "data-explorer",
+      "database-quick-start",
+      "testing", 
+      "---1",
+      "feed-schema", 
+      "github-infrastructure", 
+      "github-setup-summary"
+    ]
+  },
+  "---Development": {
+    "type": "separator"
+  },
+  "development": {
+    "title": "Development", 
+    "icon": "Code", 
+    "pages": ["index", "architecture", "implementation", "database", "database-architecture", "database-enhancements", "database-storage", "refactoring-summary", "final-status", "cli", "python-api", "python-autodoc", "testing", "workflows", "cli-workflows", "contributing"]
+  }
+}

@@ -1,0 +1,181 @@
+name: Add Approved Feed to Registry
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  add-feed:
+    if: github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema
+          
+      - name: Parse and add feed
+        id: add_feed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            
+            // Parse issue body
+            const issueBody = context.payload.issue.body;
+            
+            function extractField(label) {
+              const regex = new RegExp(`### ${label}\\s*\\n\\s*(.+?)(?=\\n###|$)`, 's');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            }
+            
+            // Build feed entry
+            const feedData = {
+              id: extractField('Feed ID'),
+              title: extractField('Feed Title'),
+              source_type: extractField('Source Type').toLowerCase(),
+              topics: extractField('Topics')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.match(/\(([^)]+)\)/)?.[1])
+                .filter(Boolean),
+              mediums: extractField('Content Mediums')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.replace('- [x]', '').trim().toLowerCase())
+                .filter(Boolean),
+              meta: {
+                updated: new Date().toISOString().split('T')[0],
+                contributor: context.actor
+              }
+            };
+            
+            // Add feed or site URL
+            const feedUrl = extractField('Feed URL');
+            const siteUrl = extractField('Website URL');
+            if (feedUrl) {
+              feedData.feed = feedUrl;
+            } else if (siteUrl) {
+              feedData.site = siteUrl;
+            }
+            
+            // Add optional fields
+            const language = extractField('Language');
+            if (language) {
+              feedData.meta.language = language;
+            }
+            
+            const platform = extractField('Platform (if applicable)');
+            if (platform && platform !== 'None') {
+              const platformDetails = extractField('Platform Details');
+              if (platformDetails) {
+                try {
+                  feedData.platform_config = {
+                    platform: platform.toLowerCase(),
+                    [platform.toLowerCase()]: JSON.parse(platformDetails)
+                  };
+                } catch (e) {
+                  core.warning(`Failed to parse platform details: ${e.message}`);
+                }
+              }
+            }
+            
+            const tags = extractField('Tags');
+            if (tags) {
+              feedData.tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+            }
+            
+            const notes = extractField('Additional Notes');
+            if (notes && notes !== '_No response_') {
+              feedData.notes = notes;
+            }
+            
+            const autoDiscover = extractField('Enable Auto-Discovery?');
+            if (autoDiscover === 'Yes (recommended)') {
+              feedData.discover = true;
+            }
+            
+            // Load existing feeds.yaml
+            const feedsContent = fs.readFileSync('data/feeds.yaml', 'utf8');
+            const feedsData = yaml.load(feedsContent);
+            
+            // Check for duplicates
+            const exists = feedsData.sources.some(s => s.id === feedData.id);
+            if (exists) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `❌ **Error**: A feed with ID \`${feedData.id}\` already exists in the registry.`
+              });
+              throw new Error('Duplicate feed ID');
+            }
+            
+            // Add new feed
+            feedsData.sources.push(feedData);
+            
+            // Update document_meta
+            if (!feedsData.document_meta) {
+              feedsData.document_meta = {};
+            }
+            feedsData.document_meta.updated = new Date().toISOString().split('T')[0];
+            
+            // Write back to file
+            const updatedYaml = yaml.dump(feedsData, {
+              indent: 2,
+              lineWidth: -1,
+              noRefs: true
+            });
+            fs.writeFileSync('data/feeds.yaml', updatedYaml);
+            
+            return { feedId: feedData.id };
+            
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: add feed ${{ steps.add_feed.outputs.result }}"
+          branch: "feed-submission-${{ github.event.issue.number }}"
+          title: "Add feed: ${{ steps.add_feed.outputs.result }}"
+          body: |
+            ## Feed Submission
+            
+            This PR adds a new feed to the registry from issue #${{ github.event.issue.number }}.
+            
+            ### Feed Details
+            
+            Please review the changes to `data/feeds.yaml`.
+            
+            ---
+            
+            Closes #${{ github.event.issue.number }}
+          labels: |
+            feed-submission
+            automated
+            
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ **Feed Added!**\n\nA pull request has been created to add this feed to the registry. The issue will be closed when the PR is merged.'
+            });

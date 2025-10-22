@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-python/preset.css';
+
+/* Print styles for PDF export */
+@media print {
+  #nd-docs-layout {
+    --fd-sidebar-width: 0px !important;
+  }
+
+  #nd-sidebar {
+    display: none;
+  }
+
+  /* Hide navigation elements */
+  nav,
+  #nd-tocnav,
+  .nd-toc {
+    display: none;
+  }
+
+  /* Ensure content takes full width */
+  main {
+    max-width: 100% !important;
+  }
+
+  /* Prevent page breaks inside code blocks and images */
+  pre,
+  img,
+  figure {
+    page-break-inside: avoid;
+  }
+
+  /* Better heading spacing */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+}

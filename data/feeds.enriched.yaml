@@ -1,0 +1,1936 @@
+schema_version: feeds-2.1.0
+document_meta:
+  created: '2025-10-15'
+  updated: '2025-10-15'
+  generated_with:
+    tool: aiwebfeeds-cli
+    version: 0.1.0
+  notes: Simplified schema - only URL and topics required. Titles and metadata auto-enriched,
+    but can be customized.
+sources:
+- url: http://export.arxiv.org/rss/cs.LG
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Official arXiv RSS for Machine Learning
+- url: https://openai.com/blog/rss/
+  topics:
+  - industry
+  - product
+  - llm
+- url: https://www.pinecone.io/learn/feed.xml
+  topics:
+  - retrieval
+  - vector
+  - embeddings
+  - mlops
+- url: https://www.latent.space/feed
+  topics:
+  - podcasts
+  - industry
+  - product
+- url: https://importai.substack.com/feed
+  topics:
+  - newsletters
+  - industry
+  - research
+- url: https://huggingface.co/blog
+  topics:
+  - open-source
+  - mlops
+  - nlp
+  notes: Site URL; auto-discovers RSS feed
+- url: https://www.anthropic.com/news
+  topics:
+  - industry
+  - safety
+  - llm
+  title: Anthropic News
+  notes: Custom title provided; feed auto-discovered
+- url: https://openxla.org/blog
+  topics:
+  - compilers
+  - optimization
+  - open-source
+- url: https://www.reddit.com/r/MachineLearning
+  topics:
+  - ml
+  - community
+  - research
+  notes: Reddit subreddit; auto-generates .rss URL
+- url: https://towardsdatascience.com
+  topics:
+  - ml
+  - blogs
+  - education
+  title: Towards Data Science
+  notes: Popular Medium publication with custom title
+- url: https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg
+  topics:
+  - research
+  - videos
+  - education
+  title: Two Minute Papers
+  notes: Excellent AI research video summaries
+- url: https://github.com/pytorch/pytorch
+  topics:
+  - open-source
+  - ml
+  - product
+  notes: PyTorch repo; auto-generates releases.atom
+- url: https://dev.to/t/machinelearning
+  topics:
+  - blogs
+  - education
+  - ml
+  notes: Dev.to tag; auto-generates feed URL
+- url: https://x.com/karpathy
+  topics:
+  - ai
+  - ml
+  - research
+  title: Andrej Karpathy
+  notes: Custom title; uses RSSHub for Twitter feed
+- url: https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y
+  topics:
+  - research
+  - papers
+  - ml
+  title: Yoshua Bengio - arXiv Papers
+  notes: Custom title for arXiv author search
+- url: https://ai.googleblog.com
+  topics:
+  - industry
+  - research
+  - llm
+  title: Google AI Blog
+  notes: Official Google AI blog; enrichment auto-discovers feed.
+- url: https://deepmind.google/discover/blog
+  topics:
+  - research
+  - ml
+  - llm
+  title: DeepMind — Discover/Blog
+  notes: DeepMind’s research & product posts; feed auto-discovery.
+- url: https://ai.meta.com/blog/
+  topics:
+  - industry
+  - research
+  - llm
+  - open-source
+  title: Meta AI — Blog
+  notes: Official Meta AI blog; enrichment will locate feed.
+- url: https://www.microsoft.com/en-us/research/feed/
+  topics:
+  - research
+  - papers
+  - llm
+  title: Microsoft Research Blog
+  notes: Official RSS feed.
+- url: https://developer.nvidia.com/blog/feed/
+  topics:
+  - accelerators
+  - inference
+  - optimization
+  - mlops
+  title: NVIDIA Technical Blog — RSS
+  notes: Official RSS feed; heavy on kernels, Triton/TensorRT-LLM, perf.
+- url: https://aws.amazon.com/blogs/machine-learning/feed/
+  topics:
+  - mlops
+  - serving
+  - inference
+  - industry
+  title: AWS Machine Learning Blog — RSS
+  notes: Official RSS feed; production ML patterns & case studies.
+- url: https://bair.berkeley.edu/blog/feed.xml
+  topics:
+  - research
+  - papers
+  - ml
+  title: BAIR Blog (UC Berkeley) — RSS
+  notes: Academic explainers & lab highlights.
+- url: https://crfm.stanford.edu/feed
+  topics:
+  - research
+  - llm
+  - evaluation
+  title: Stanford CRFM — RSS
+  notes: HELM, FMs, policy & research updates.
+- url: https://hai.stanford.edu/news
+  topics:
+  - industry
+  - governance
+  - research
+  title: Stanford HAI — News
+  notes: News & analysis from HAI; feed auto-discovery.
+- url: https://thegradient.pub/rss/
+  topics:
+  - newsletters
+  - research
+  - ml
+  title: The Gradient — RSS
+  notes: Interviews, essays, and curated research.
+- url: https://blog.tensorflow.org/feeds/posts/default?alt=rss
+  topics:
+  - open-source
+  - training
+  - inference
+  title: TensorFlow Blog — RSS
+  notes: Core framework updates, tutorials, performance.
+- url: https://txt.cohere.ai/rss/
+  topics:
+  - industry
+  - llm
+  - product
+  title: Cohere — txt (RSS)
+  notes: Provider perspective on LLMs and use cases.
+- url: https://replicate.com/blog/rss
+  topics:
+  - open-source
+  - mlops
+  - inference
+  title: Replicate Blog — RSS
+  notes: Models-as-APIs, infra notes, OSS ecosystem.
+- url: https://www.databricks.com/feed
+  topics:
+  - mlops
+  - evaluation
+  - product
+  - industry
+  title: Databricks Blog — RSS
+  notes: Data+AI, lakehouse, eval/monitoring patterns.
+- url: https://lmsys.org/blog/
+  topics:
+  - evaluation
+  - llm
+  - agents
+  title: LMSYS — Blog
+  notes: Chatbot Arena, SGLang; Hugo feed autodetected.
+- url: https://github.com/vllm-project/vllm
+  topics:
+  - open-source
+  - serving
+  - inference
+  title: vLLM (GitHub)
+  notes: Auto-generates releases feed via releases.atom.
+- url: https://github.com/NVIDIA/TensorRT-LLM
+  topics:
+  - accelerators
+  - inference
+  - open-source
+  title: TensorRT-LLM (GitHub)
+  notes: Auto-generates releases feed via releases.atom.
+- url: https://weaviate.io/blog
+  topics:
+  - vector
+  - retrieval
+  - mlops
+  - open-source
+  title: Weaviate — Blog
+  notes: Vector search patterns and product engineering.
+- url: https://milvus.io/blog
+  topics:
+  - vector
+  - retrieval
+  - open-source
+  - mlops
+  title: Milvus — Blog
+  notes: Zilliz/Milvus updates & scaling notes.
+- url: https://qdrant.tech/articles/
+  topics:
+  - vector
+  - retrieval
+  - open-source
+  - mlops
+  title: Qdrant — Articles
+  notes: Vector database internals, HNSW, filters.
+- url: https://blog.langchain.com/
+  topics:
+  - agents
+  - tool-use
+  - llm
+  - workflows
+  title: LangChain — Blog
+  notes: LangGraph/agents runtime posts; feed autodiscovery.
+- url: https://www.llamaindex.ai/blog
+  topics:
+  - retrieval
+  - rag
+  - agents
+  - llm
+  title: LlamaIndex — Blog
+  notes: RAG patterns & evaluation; feed autodiscovery.
+- url: https://mlops.community/blog
+  topics:
+  - mlops
+  - monitoring
+  - workflows
+  title: MLOps Community — Blog
+  notes: Practitioner case studies; WordPress feed typically at /feed/.
+- url: https://www.aisafety.gov.uk/news
+  topics:
+  - safety
+  - governance
+  - evaluation
+  title: UK AI Safety Institute — News
+  notes: Safety, evaluations, system cards, assurance.
+- url: https://mlcommons.org/news/
+  topics:
+  - evaluation
+  - benchops
+  - industry
+  title: MLCommons — News (MLPerf)
+  notes: Benchmark releases and methodology updates.
+- url: https://sebastianraschka.com/rss.xml
+  topics:
+  - education
+  - ml
+  - llm
+  title: Sebastian Raschka — RSS
+  notes: Hands-on deep learning/LLM posts, high cadence.
+- url: https://eugeneyan.com/rss/
+  topics:
+  - education
+  - mlops
+  - data
+  title: Eugene Yan — RSS
+  notes: Practical prod-ML systems & design write-ups.
+- url: https://hamel.dev/atom.xml
+  topics:
+  - llmops
+  - mlops
+  - agents
+  title: Hamel Husain — Atom
+  notes: Agentic systems, evals, and tooling deep dives.
+- url: https://machinelearning.apple.com
+  topics:
+  - research
+  - on-device
+  - ai
+  title: Apple Machine Learning Research (Journal)
+  notes: On-device/edge ML research from Apple; platform auto-discovers feed.
+- url: https://allenai.org/blog
+  topics:
+  - research
+  - llm
+  - evaluation
+  title: Allen Institute for AI — Blog
+  notes: AI2 lab research updates; high-quality technical write-ups.
+- url: https://www.csail.mit.edu/news
+  topics:
+  - research
+  - ai
+  - robotics
+  title: MIT CSAIL — News
+  notes: Academic lab news and research explainers; feed autodiscovery.
+- url: http://www.fast.ai
+  topics:
+  - education
+  - ml
+  - blogs
+  title: fast.ai — Blog
+  notes: Hands-on deep learning essays; known feed endpoint historically at /atom.xml.
+- url: https://www.deeplearning.ai/the-batch/
+  topics:
+  - newsletters
+  - industry
+  - education
+  title: DeepLearning.AI — The Batch
+  notes: Weekly AI newsletter by Andrew Ng team.
+- url: https://robotics.googleblog.com/
+  topics:
+  - robotics
+  - cv
+  - rl
+  title: Robotics at Google — Blog
+  notes: Google robotics research; Atom feed available.
+- url: https://openmined.org/blog
+  topics:
+  - privacy
+  - pets
+  - security
+  title: OpenMined — Blog
+  notes: PETs, federated learning, DP; Ghost-based site (feed autodiscovery).
+- url: https://blog.eleuther.ai/
+  topics:
+  - open-source
+  - llm
+  - research
+  title: EleutherAI — Blog
+  notes: Open research on LLMs and scaling; known feed endpoint at /index.xml.
+- url: https://tvm.apache.org/blog
+  topics:
+  - compilers
+  - optimization
+  - inference
+  title: Apache TVM — Blog
+  notes: Compiler stack for ML; kernels, codegen, deployment.
+- url: https://nixtla.github.io/blog
+  topics:
+  - time-series
+  - ml
+  - education
+  title: Nixtla — Blog
+  notes: Forecasting libraries, probabilistic TS; frequent technical posts.
+- url: https://blog.roboflow.com
+  topics:
+  - cv
+  - open-source
+  - product
+  title: Roboflow — Blog
+  notes: Vision datasets, labeling, YOLO/Detectron tips; RSS available.
+- url: https://opencv.org/blog
+  topics:
+  - cv
+  - education
+  - open-source
+  title: OpenCV — Blog
+  notes: Official OpenCV engineering posts; WordPress feed at /feed/.
+- url: https://neo4j.com/developer-blog/
+  topics:
+  - knowledge-graphs
+  - retrieval
+  - vector
+  title: Neo4j — Developer Blog
+  notes: Graph algorithms, embeddings, graph-RAG patterns; RSS available.
+- url: https://www.arangodb.com/blog/
+  topics:
+  - knowledge-graphs
+  - retrieval
+  - open-source
+  title: ArangoDB — Blog
+  notes: Multi-model DB posts incl. graph queries and vector search.
+- url: https://arize.com/blog
+  topics:
+  - mlops
+  - monitoring
+  - llmops
+  title: Arize AI — Blog
+  notes: Prod ML/LLM monitoring, evals, and tracing patterns.
+- url: https://www.evidentlyai.com/blog
+  topics:
+  - mlops
+  - evaluation
+  - monitoring
+  title: Evidently AI — Blog
+  notes: Metrics, drift detection, eval pipelines; practical guides.
+- url: https://whylabs.ai/blog
+  topics:
+  - mlops
+  - monitoring
+  - security
+  title: WhyLabs — Blog
+  notes: Observability, data quality, LLM risk; frequent how-tos.
+- url: https://www.anyscale.com/blog
+  topics:
+  - ai-infra-stacks
+  - orchestration
+  - serving
+  title: Anyscale (Ray) — Blog
+  notes: Ray ecosystem (serve, actors, scaling); production case studies.
+- url: https://modal.com/blog
+  topics:
+  - serving
+  - ai-infra-stacks
+  - optimization
+  title: Modal — Blog
+  notes: Serverless GPU workflows, model serving patterns.
+- url: https://neo4j.com/developer/graph-data-science/
+  topics:
+  - knowledge-graphs
+  - embeddings
+  - retrieval
+  title: Neo4j Graph Data Science — Articles
+  notes: Graph embeddings, similarity search, pipelines.
+- url: https://cohere.com/research
+  topics:
+  - research
+  - llm
+  - evaluation
+  title: Cohere — Research
+  notes: Provider research updates complementing ‘txt’; feed autodiscovery.
+- url: https://www.microsoft.com/en-us/ai/blog/
+  topics:
+  - industry
+  - product
+  - llm
+  title: Microsoft AI — Blog
+  notes: Platform features + partner work; separate from MSR feed.
+- url: https://www.qualcomm.com/research/artificial-intelligence
+  topics:
+  - edge
+  - on-device
+  - accelerators
+  title: Qualcomm — AI Research/Engineering
+  notes: On-device inference, NPUs, edge acceleration; feed autodiscovery.
+- url: https://blog.langfuse.com
+  topics:
+  - llmops
+  - evaluation
+  - monitoring
+  title: Langfuse — Blog
+  notes: LLM telemetry, tracing, evals for agentic systems.
+- url: https://ainowinstitute.org/category/news/feed
+  topics:
+  - governance
+  - safety
+  - research
+  title: AI Now Institute — News (RSS)
+  notes: Policy, governance, and safety analyses; active 2025 cadence.
+- url: https://partnershiponai.org/blog/
+  topics:
+  - governance
+  - safety
+  - trust-audit
+  - evaluation
+  title: Partnership on AI — Blog
+  notes: Standards & guidance (e.g., foundation-model deployment); feed auto-discovery.
+- url: https://mila.quebec/en/news
+  topics:
+  - research
+  - ml
+  - genai
+  title: Mila — News
+  notes: Leading academic lab; WordPress feed auto-discovery.
+- url: https://vectorinstitute.ai/insights/
+  topics:
+  - research
+  - industry
+  - evaluation
+  title: Vector Institute — Insights
+  notes: Canadian institute analyses and research highlights.
+- url: https://www.turing.ac.uk/blog
+  topics:
+  - research
+  - governance
+  - ethics
+  title: The Alan Turing Institute — Blog
+  notes: National lab perspective; policy & technical posts.
+- url: https://blog.ml.cmu.edu/feed/
+  topics:
+  - research
+  - education
+  - ml
+  title: CMU Machine Learning Department — Blog (RSS)
+  notes: Faculty/student explainers and research notes.
+- url: https://news.mit.edu/topic/mitmachine-learning-rss.xml
+  topics:
+  - research
+  - education
+  - ml
+  title: MIT News — Machine Learning (RSS)
+  notes: Institute news stream with ML focus.
+- url: https://blog.vespa.ai
+  topics:
+  - retrieval
+  - vector
+  - serving
+  - ai-infra-stacks
+  title: Vespa.ai — Blog
+  notes: Production ranking/search/ANN at scale; auto-discovery.
+- url: https://jina.ai/blog/
+  topics:
+  - retrieval
+  - agents
+  - open-source
+  title: Jina AI — Blog
+  notes: Embeddings, hybrid search, multimodal RAG.
+- url: https://haystack.deepset.ai/blog
+  topics:
+  - retrieval
+  - rag
+  - llmops
+  title: Haystack (deepset) — Blog
+  notes: RAG patterns, pipelines, evaluation.
+- url: https://llm.mlc.ai/blog
+  topics:
+  - on-device
+  - small-models
+  - inference
+  title: MLC LLM — Blog
+  notes: Edge/Apple/Android inference stacks; frequent updates.
+- url: https://github.com/ggml-org/llama.cpp/releases.atom
+  topics:
+  - open-source
+  - inference
+  - small-models
+  title: llama.cpp — Releases (Atom)
+  notes: CPU/GPU kernels, quantization, perf; release-driven signal.
+- url: https://github.com/huggingface/text-generation-inference/releases.atom
+  topics:
+  - open-source
+  - serving
+  - inference
+  title: Hugging Face TGI — Releases (Atom)
+  notes: 'Serving updates: tensor/kv cache, batching, spec-decoding.'
+- url: https://github.com/sgl-project/sglang/releases.atom
+  topics:
+  - open-source
+  - serving
+  - ai-infra-stacks
+  title: SGLang — Releases (Atom)
+  notes: High-throughput serving/runtime; arena-visible in 2025.
+- url: https://github.com/triton-lang/triton/releases.atom
+  topics:
+  - compilers
+  - optimization
+  - accelerators
+  - open-source
+  title: Triton — Releases (Atom)
+  notes: Kernel DSL & compiler; fused ops, matmul, attention kernels.
+- url: https://github.com/mlc-ai/mlc-llm/releases.atom
+  topics:
+  - on-device
+  - inference
+  - open-source
+  - small-models
+  title: MLC-LLM — Releases (Atom)
+  notes: Mobile/edge packaging and runtime improvements.
+- url: https://neptune.ai/blog/feed
+  topics:
+  - mlops
+  - monitoring
+  - evaluation
+  - education
+  title: Neptune.ai — Blog (RSS)
+  notes: Telemetry, drift, evals, practical prod-ML guides.
+- url: https://onnx.ai/blog
+  topics:
+  - compilers
+  - optimization
+  - open-source
+  title: ONNX — Blog
+  notes: Interchange & runtimes ecosystem; feed auto-discovery.
+- url: https://mistral.ai/news
+  topics:
+  - industry
+  - product
+  - llm
+  title: Mistral AI — News
+  notes: Provider releases & product updates.
+- url: https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html
+  topics:
+  - optimization
+  - inference
+  - on-device
+  - accelerators
+  title: Intel OpenVINO — Blog
+  notes: Quantization, toolchain, kernel & deployment tutorials.
+- url: https://www.crewai.com/blog
+  topics:
+  - agents
+  - workflows
+  - orchestration
+  title: CrewAI — Blog
+  notes: Agentic frameworks, planning, multi-tool pipelines.
+- url: https://www.jmlr.org/jmlr.xml
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Official Journal of Machine Learning Research RSS.
+- url: https://proceedings.mlr.press
+  topics:
+  - research
+  - papers
+  - ml
+  title: Proceedings of Machine Learning Research (PMLR)
+  notes: Venue site; enrichment should auto-discover the RSS feed.
+- url: https://jmlr.org/tmlr/
+  topics:
+  - research
+  - papers
+  - ml
+  title: Transactions on Machine Learning Research (TMLR)
+  notes: Venue page; enrichment to locate the feed.
+- url: https://www.nature.com/natmachintell
+  topics:
+  - research
+  - papers
+  - ml
+  title: Nature Machine Intelligence
+  notes: Nature research journal; feed auto-discovery expected.
+- url: https://ai.nejm.org
+  topics:
+  - healthcare-ai
+  - research
+  - papers
+  title: NEJM AI
+  notes: Medical AI journal; healthcare focus.
+- url: https://www.nature.com/npjdigitalmed/
+  topics:
+  - healthcare-ai
+  - research
+  - papers
+  title: NPJ Digital Medicine
+  notes: Digital medicine / clinical AI journal.
+- url: https://developers.google.com/earth-engine/blog
+  topics:
+  - geospatial-ml
+  - data
+  - cv
+  - education
+  title: Google Earth Engine — Developer Blog
+  notes: Official geospatial ML/dev updates.
+- url: https://planetarycomputer.microsoft.com/blog
+  topics:
+  - geospatial-ml
+  - data
+  - ai-for-science
+  - education
+  title: Microsoft Planetary Computer — Blog
+  notes: Geospatial datasets, APIs, notebooks.
+- url: https://www.radiant.earth/blog/
+  topics:
+  - geospatial-ml
+  - datasets
+  - ai-for-science
+  title: Radiant Earth — Blog
+  notes: Earth observation / ML datasets & methods.
+- url: https://incidentdatabase.ai/blog/
+  topics:
+  - trust-audit
+  - safety
+  - governance
+  - evaluation
+  title: AI Incident Database — Blog
+  notes: Monthly incident roundups; taxonomy & incident analysis.
+- url: https://openlineage.io/blog/
+  topics:
+  - data-governance
+  - mlops
+  - workflows
+  - orchestration
+  title: OpenLineage — Blog
+  notes: Lineage standards, integrations, and design notes.
+- url: https://greatexpectations.io/blog/
+  topics:
+  - data-governance
+  - mlops
+  - evaluation
+  title: Great Expectations (GX) — Blog
+  notes: Data quality, validation patterns, case studies.
+- url: https://www.montecarlodata.com/blog/
+  topics:
+  - mlops
+  - monitoring
+  - data-governance
+  title: Monte Carlo — Data Observability Blog
+  notes: Observability patterns, lineage, incident response.
+- url: https://www.assemblyai.com/blog/rss/
+  topics:
+  - audio-speech
+  - ml
+  - education
+  - product
+  title: AssemblyAI — Blog (RSS)
+  notes: ASR/LLM audio techniques, benchmarks, and tutorials.
+- url: https://www.edgeimpulse.com/blog
+  topics:
+  - on-device
+  - edge
+  - small-models
+  - mlops
+  title: Edge Impulse — Blog
+  notes: Embedded/edge ML workflows; enrichment to resolve feed.
+- url: https://www.tinyml.org/blog/
+  topics:
+  - on-device
+  - edge
+  - small-models
+  - optimization
+  title: tinyML Foundation — Blog
+  notes: Community and conference updates for TinyML.
+- url: https://docs.wandb.ai/ref/release-notes/index.xml
+  topics:
+  - mlops
+  - monitoring
+  - benchops
+  title: Weights & Biases — Release Notes (RSS)
+  notes: Product/runtime changes; useful for MLOps tracking.
+- url: https://www.nvidia.com/en-us/research/ai/
+  topics:
+  - accelerators
+  - inference
+  - optimization
+  - research
+  title: NVIDIA Research — AI
+  notes: Research highlights; enrichment to locate feed if present.
+- url: https://blog.neurips.cc
+  topics:
+  - research
+  - community
+  - papers
+  title: NeurIPS — Official Blog
+  notes: Conference announcements, calls, and highlights; WordPress feed autodiscovery.
+- url: https://blog.iclr.cc
+  topics:
+  - research
+  - community
+  - papers
+  title: ICLR — Official Blog
+  notes: Conference news, calls, and program updates; feed autodiscovery.
+- url: https://ai.stanford.edu/blog
+  topics:
+  - research
+  - ml
+  - education
+  title: Stanford AI Lab — SAIL Blog
+  notes: Active lab blog with explicit RSS; papers/talks round-ups and technical explainers.
+- url: https://hazyresearch.stanford.edu/blog
+  topics:
+  - research
+  - optimization
+  - training
+  - ai-infra-stacks
+  title: Hazy Research — Blog
+  notes: Systems-for-ML, optimizers, and infra; frequent deep technical posts.
+- url: http://export.arxiv.org/rss/cs.CV
+  topics:
+  - research
+  - papers
+  - cv
+  title: arXiv — cs.CV RSS
+  notes: Official category feed (Computer Vision & Pattern Recognition).
+- url: http://export.arxiv.org/rss/cs.CL
+  topics:
+  - research
+  - papers
+  - nlp
+  title: arXiv — cs.CL RSS
+  notes: Official category feed (Computation and Language).
+- url: http://export.arxiv.org/rss/cs.IR
+  topics:
+  - research
+  - papers
+  - retrieval
+  title: arXiv — cs.IR RSS
+  notes: Official category feed (Information Retrieval).
+- url: https://dagster.io/blog
+  topics:
+  - mlops
+  - workflows
+  - orchestration
+  title: Dagster — Blog
+  notes: Practitioner posts on pipelines, lineage, assets; feed autodiscovery.
+- url: https://www.astronomer.io/blog
+  topics:
+  - data
+  - workflows
+  - orchestration
+  title: Astronomer (Airflow) — Blog
+  notes: Airflow best practices, scheduling, data reliability.
+- url: https://www.getdbt.com/blog
+  topics:
+  - data
+  - data-governance
+  - workflows
+  title: dbt Labs — Blog
+  notes: Analytics engineering, testing, docs, deployments.
+- url: https://duckdb.org/feed.xml
+  topics:
+  - data
+  - optimization
+  - product
+  title: DuckDB — News (RSS)
+  notes: Release notes and engineering posts; official RSS endpoint.
+- url: https://semianalysis.substack.com/feed
+  topics:
+  - industry
+  - hardware
+  - accelerators
+  - infra-economics
+  title: SemiAnalysis — Substack (RSS)
+  notes: Semiconductor supply/compute economics analyses for AI workloads.
+- url: https://chipsandcheese.com/feed/
+  topics:
+  - hardware
+  - accelerators
+  - optimization
+  title: Chips and Cheese — RSS
+  notes: Microarchitecture deep dives relevant to AI inference/training.
+- url: https://www.nist.gov/blogs/cybersecurity-insights
+  topics:
+  - security
+  - governance
+  - trust-audit
+  title: NIST — Cybersecurity Insights
+  notes: Standards/guidance perspectives impacting AI/ML security.
+- url: https://www.safe.ai/blog
+  topics:
+  - safety
+  - governance
+  - evaluation
+  title: Center for AI Safety — Blog
+  notes: Safety research, risk analyses, policy-relevant technical posts.
+- url: https://alignmentforum.org/rss
+  topics:
+  - alignment
+  - safety
+  - research
+  title: Alignment Forum — RSS
+  notes: Community research threads on alignment and safety.
+- url: https://aclrollingreview.org
+  topics:
+  - nlp
+  - evaluation
+  - research
+  title: ACL Rolling Review — Site
+  notes: Peer-review updates for ACL venues; WordPress feed autodiscovery.
+- url: https://pytorch.org/blog
+  topics:
+  - open-source
+  - training
+  - inference
+  - blogs
+  title: PyTorch — Engineering Blog
+  notes: Framework internals, performance work, and release details.
+- url: https://lightning.ai/pages/blog
+  topics:
+  - training
+  - optimization
+  - education
+  - blogs
+  title: Lightning AI — Blog
+  notes: Trainer/Fabric ecosystem updates and best practices.
+- url: https://groq.com/blog
+  topics:
+  - accelerators
+  - inference
+  - ai-infra-stacks
+  - product
+  title: Groq — Blog
+  notes: LPU-centric inference engineering and product posts.
+- url: https://www.together.ai/blog
+  topics:
+  - industry
+  - product
+  - llm
+  - inference
+  title: Together AI — Blog
+  notes: Hosting, finetuning, datasets, and cost/perf notes.
+- url: https://fireworks.ai/blog
+  topics:
+  - serving
+  - agents
+  - optimization
+  - product
+  title: Fireworks.ai — Blog
+  notes: High-throughput serving, agents, and platform releases.
+- url: https://www.baseten.co/blog
+  topics:
+  - serving
+  - agents
+  - mlops
+  - product
+  title: Baseten — Blog
+  notes: Serverless model hosting patterns and case studies.
+- url: https://octoai.cloud/blog
+  topics:
+  - serving
+  - inference
+  - ai-infra-stacks
+  - product
+  title: OctoAI — Blog
+  notes: Optimized inference runtimes and workflow guides.
+- url: https://laion.ai/blog
+  topics:
+  - open-source
+  - datasets
+  - research
+  - blogs
+  title: LAION — Blog
+  notes: Open datasets and research updates.
+- url: https://wandb.com/articles
+  topics:
+  - mlops
+  - monitoring
+  - evaluation
+  - blogs
+  title: Weights & Biases — Articles
+  notes: Observability, evals, and practical production ML guides.
+- url: https://humanloop.com/blog
+  topics:
+  - llmops
+  - evaluation
+  - structured-generation
+  - blogs
+  title: Humanloop — Blog
+  notes: Prompt management, eval methodology, and tooling.
+- url: https://ragas.io/blog
+  topics:
+  - evaluation
+  - rag
+  - llmops
+  - blogs
+  title: Ragas — Blog
+  notes: RAG evaluation techniques and benchmarks.
+- url: https://www.trulens.org/blog
+  topics:
+  - evaluation
+  - monitoring
+  - llmops
+  - blogs
+  title: TruLens — Blog
+  notes: Telemetry and evaluation for LLM/agent systems.
+- url: https://www.confident-ai.com/blog
+  topics:
+  - evaluation
+  - llmops
+  - monitoring
+  - blogs
+  title: DeepEval (Confident AI) — Blog
+  notes: Evaluation frameworks and methodology posts.
+- url: https://github.com/kserve/kserve
+  topics:
+  - serving
+  - mlops
+  - ai-infra-stacks
+  - open-source
+  title: KServe — GitHub
+  notes: K8s-native serving; releases feed auto-discovered.
+- url: https://github.com/langchain-ai/langgraph
+  topics:
+  - agents
+  - tool-use
+  - workflows
+  - open-source
+  title: LangGraph — GitHub
+  notes: Agent graphs runtime; frequent releases.
+- url: https://github.com/langchain-ai/langchain
+  topics:
+  - agents
+  - tool-use
+  - structured-generation
+  - open-source
+  title: LangChain — GitHub
+  notes: Core agents/tooling; release activity tracked.
+- url: https://github.com/jax-ml/jax
+  topics:
+  - compilers
+  - optimization
+  - training
+  - open-source
+  title: JAX — GitHub
+  notes: XLA transforms and array program transformations.
+- url: https://github.com/huggingface/transformers
+  topics:
+  - nlp
+  - llm
+  - open-source
+  - training
+  title: Transformers — GitHub
+  notes: Model library releases and API changes.
+- url: https://evals.openai.com
+  topics:
+  - evaluation
+  - llmops
+  - benchops
+  title: OpenAI — Evals
+  notes: Evaluation framework, tasks, and documentation hub.
+- url: https://www.nist.gov/aisi
+  topics:
+  - safety
+  - governance
+  - evaluation
+  title: U.S. AI Safety Institute (NIST)
+  notes: Safety guidance, evaluation artifacts, and calls.
+- url: https://oecd.ai
+  topics:
+  - governance
+  - industry
+  title: OECD.AI Policy Observatory
+  notes: Global AI policy data, indicators, and analysis.
+- url: https://www.redwoodresearch.org/blog
+  topics:
+  - alignment
+  - safety
+  - research
+  - blogs
+  title: Redwood Research — Blog
+  notes: Alignment research updates and commentary.
+- url: https://www.far.ai/blog
+  topics:
+  - safety
+  - evaluation
+  - research
+  - blogs
+  title: FAR AI — Blog
+  notes: Evals and risk-reduction research perspectives.
+- url: https://openai.com/news/rss.xml
+  topics:
+  - industry
+  - product
+  - llm
+  title: OpenAI — News (RSS)
+  notes: Official news feed for releases, safety & policy updates.
+- url: https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office
+  topics:
+  - governance
+  - regulation
+  - safety
+  title: European AI Office — Policy & News
+  notes: European Commission AI Office landing; feed auto-discovery during enrichment.
+- url: https://cset.georgetown.edu/blog/
+  topics:
+  - governance
+  - safety
+  - industry
+  title: Georgetown CSET — Blog
+  notes: Policy/governance analysis; typical WordPress feed at /feed/.
+- url: https://robohub.org/feed/
+  topics:
+  - robotics
+  - community
+  - education
+  title: Robohub — RSS
+  notes: Independent robotics news & interviews; active cadence.
+- url: https://blog.vllm.ai/
+  topics:
+  - ai-infra-stacks
+  - serving
+  - inference
+  title: vLLM — Blog
+  notes: Runtime internals, perf notes; feed auto-discovery (Jekyll).
+- url: https://blog.skypilot.so/
+  topics:
+  - ai-infra-stacks
+  - orchestration
+  - optimization
+  title: SkyPilot — Blog
+  notes: Multi-cloud GPU scheduling & orchestration patterns.
+- url: https://iree.dev/blog/
+  topics:
+  - compilers
+  - optimization
+  - accelerators
+  title: IREE — Blog (OpenXLA)
+  notes: ML compiler stack updates; kernel & codegen deep dives.
+- url: https://github.com/ml-explore/mlx/releases.atom
+  topics:
+  - on-device
+  - small-models
+  - optimization
+  - compilers
+  title: MLX — Releases (Atom)
+  notes: Apple’s on-device array/NN framework—release notes as they ship.
+- url: https://github.com/microsoft/onnxruntime/releases.atom
+  topics:
+  - inference
+  - optimization
+  - compilers
+  title: ONNX Runtime — Releases (Atom)
+  notes: Cross-provider inference runtime updates.
+- url: https://github.com/NVIDIA/NeMo/releases.atom
+  topics:
+  - audio-speech
+  - llm
+  - multimodal
+  - training
+  title: NVIDIA NeMo — Releases (Atom)
+  notes: ASR/TTS/LLM toolkit releases.
+- url: https://github.com/facebookresearch/faiss/releases.atom
+  topics:
+  - vector
+  - retrieval
+  - embeddings
+  - open-source
+  title: FAISS — Releases (Atom)
+  notes: ANN/vector search library releases.
+- url: https://github.com/openxla/iree/releases.atom
+  topics:
+  - compilers
+  - optimization
+  - accelerators
+  title: OpenXLA IREE — Releases (Atom)
+  notes: IREE release channel complementing the blog.
+- url: https://github.com/microsoft/autogen/releases.atom
+  topics:
+  - agents
+  - tool-use
+  - workflows
+  - open-source
+  title: Microsoft AutoGen — Releases (Atom)
+  notes: Agentic framework updates.
+- url: https://github.com/OpenDevin/OpenDevin/releases.atom
+  topics:
+  - agents
+  - ai-for-code
+  - workflows
+  - open-source
+  title: OpenDevin — Releases (Atom)
+  notes: AI SWE agent—release feed.
+- url: https://github.com/NVIDIA/FasterTransformer/releases.atom
+  topics:
+  - inference
+  - optimization
+  - accelerators
+  title: NVIDIA FasterTransformer — Releases (Atom)
+  notes: Transformer inference kernels & fused ops.
+- url: https://github.com/Dao-AILab/flash-attention/releases.atom
+  topics:
+  - optimization
+  - inference
+  - training
+  title: FlashAttention — Releases (Atom)
+  notes: Attention kernel library releases.
+- url: https://changelog.com/practicalai/feed
+  topics:
+  - podcasts
+  - education
+  - industry
+  title: Practical AI — Podcast (RSS)
+  notes: Weekly AI engineering podcast by Changelog.
+- url: https://feeds.buzzsprout.com/682433.rss
+  topics:
+  - podcasts
+  - industry
+  - research
+  title: The Data Exchange — Podcast (RSS)
+  notes: Ben Lorica interviews & quick takes; weekly cadence.
+- url: https://lilianweng.github.io/
+  topics:
+  - llm
+  - agents
+  - evaluation
+  - blogs
+  title: Lilian Weng — Blog
+  notes: Deep technical explainers; feed auto-discovery at /rss.xml.
+- url: https://www.neelnanda.io/blog
+  topics:
+  - interpretability
+  - safety
+  - research
+  - blogs
+  title: Neel Nanda — Mechanistic Interpretability
+  notes: Mech-interp deep dives; active posts.
+- url: https://open-metadata.medium.com/
+  topics:
+  - data-governance
+  - mlops
+  - workflows
+  - open-source
+  title: OpenMetadata — Blog
+  notes: Data catalog & lineage; Medium feed at /feed.
+- url: https://blog.jigsaw.google/
+  topics:
+  - content-moderation
+  - safety
+  - governance
+  title: Jigsaw — Blog
+  notes: Harms & safety tech; platform feed auto-discovery.
+- url: https://www.modular.com/blog
+  topics:
+  - compilers
+  - optimization
+  - accelerators
+  - ai-infra-stacks
+  - blogs
+  notes: Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.
+- url: https://www.aiverifyfoundation.sg/latest
+  topics:
+  - governance
+  - safety
+  - trust-audit
+  - evaluation
+  title: AI Verify Foundation — Latest
+  notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards
+    updates.
+- url: https://www.earthdata.nasa.gov/news/blog
+  topics:
+  - geospatial-ml
+  - datasets
+  - ai-for-science
+  - education
+  - blogs
+  title: NASA Earthdata — News & Blog
+  notes: Earth-observation datasets & ML use cases; RSS support documented.
+- url: https://www.ontotext.com/blog/
+  topics:
+  - knowledge-graphs
+  - retrieval
+  - open-source
+  - blogs
+  title: Ontotext — Knowledge Graph Blog
+  notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case
+    studies.
+- url: https://spectrum.ieee.org/topic/robotics
+  topics:
+  - robotics
+  - cv
+  - rl
+  - education
+  - blogs
+  title: IEEE Spectrum — Robotics
+  notes: Robotics research & industry engineering coverage; steady weekly cadence.
+- url: https://datahub.com/blog
+  topics:
+  - data-governance
+  - mlops
+  - workflows
+  - llmops
+  - blogs
+  title: DataHub — Blog
+  notes: Metadata, lineage, governance patterns; LLM app metadata/eval posts.
+- url: https://blog.agen.cy
+  topics:
+  - agents
+  - workflows
+  - orchestration
+  - newsletters
+  - industry
+  title: Agency — Substack
+  notes: Agentic systems analysis and ecosystem updates; Substack feed auto-available.
+- url: https://genai.owasp.org/llm-top-10/
+  topics:
+  - security
+  - safety
+  - governance
+  - trust-audit
+  - evaluation
+  title: OWASP — Top 10 for LLM Applications
+  notes: Canonical AI security reference for LLM apps; project updates and guidance.
+- url: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
+  topics:
+  - ai-for-science
+  - research
+  - evaluation
+  - blogs
+  title: Microsoft Research — AI for Science (News & Awards)
+  notes: Active AI4Science lab stream (materials, bio, physics); RSS available from
+    lab pages.
+- url: https://scale.com/blog
+  topics:
+  - industry
+  - llmops
+  - evaluation
+  - data
+  - product
+  - blogs
+  title: Scale AI — Blog
+  notes: Data pipelines, evals, model-ops & deployment stories; weekly+ cadence.
+- url: https://changelog.langchain.com/
+  topics:
+  - llmops
+  - evaluation
+  - product
+  - agents
+  title: LangChain — Changelog
+  notes: Operational updates for LangSmith/LangGraph (evals, tracing, agents).
+- url: https://mozilla.ai/blog/
+  topics:
+  - industry
+  - safety
+  - governance
+  - llm
+  - blogs
+  title: Mozilla.ai — Blog
+  notes: Independent lab on trustworthy AI; technical posts + policy perspective.
+- url: https://opendp.org/blog
+  topics:
+  - privacy
+  - pets
+  - data-governance
+  - research
+  - blogs
+  title: OpenDP — Blog
+  notes: Harvard/MIT open-source differential privacy project; methods & releases.
+- url: https://www.ri.cmu.edu/news/
+  topics:
+  - robotics
+  - cv
+  - rl
+  - research
+  - blogs
+  title: CMU Robotics Institute — News
+  notes: Leading academic robotics lab; research spotlights and event posts.
+- url: https://metr.org/blog
+  topics:
+  - safety
+  - evaluation
+  - governance
+  - trust-audit
+  - blogs
+  title: METR (ARC Evals) — Blog
+  notes: Frontier model evaluations and risk reports.
+- url: https://www.lakera.ai/blog
+  topics:
+  - security
+  - safety
+  - llmops
+  - evaluation
+  - blogs
+  title: Lakera — Blog
+  notes: 'Applied LLM security: prompt injection, model abuse, guardrails.'
+- url: https://hiddenlayer.com/innovation-hub/
+  topics:
+  - security
+  - safety
+  - trust-audit
+  - mlops
+  - blogs
+  title: HiddenLayer — Innovation Hub
+  notes: AI security research & incident analysis from a specialist vendor.
+- url: https://www.protectai.com/blog
+  topics:
+  - security
+  - mlops
+  - llmops
+  - blogs
+  title: Protect AI — MLSecOps Blog
+  notes: Threat modeling, SBOMs for ML, supply chain, scanning/model risk.
+- url: https://bankunderground.co.uk/
+  topics:
+  - infra-economics
+  - industry
+  - governance
+  - blogs
+  title: Bank Underground (Bank of England)
+  notes: Central-bank analytics incl. AI/ML in finance, model risk.
+- url: https://ai.ethz.ch/news-and-events.html
+  topics:
+  - research
+  - ml
+  - robotics
+  - education
+  - blogs
+  title: ETH AI Center — News & Events
+  notes: Swiss flagship AI center; research news & seminars.
+- url: https://is.mpg.de/news
+  topics:
+  - research
+  - robotics
+  - cv
+  - ml
+  - blogs
+  title: Max Planck Institute for Intelligent Systems — News
+  notes: Tübingen/Stuttgart; academic highlights and project updates.
+- url: https://www.tue.ai/news
+  topics:
+  - research
+  - ml
+  - robotics
+  - education
+  - blogs
+  title: Tübingen AI Center — News
+  notes: German national AI center (Uni Tübingen + MPI); research news.
+- url: https://aip.riken.jp/news-en/
+  topics:
+  - research
+  - ml
+  - safety
+  - blogs
+  title: RIKEN AIP — News
+  notes: Japan’s national AI research hub; multilingual updates.
+- url: https://x.ai/blog
+  topics:
+  - industry
+  - llm
+  - research
+  - product
+  - blogs
+  title: xAI — Blog
+  notes: Model releases, evaluations, and research notes.
+- url: https://sakana.ai/blog/
+  topics:
+  - optimization
+  - training
+  - ml
+  - research
+  - blogs
+  title: Sakana AI — Blog
+  notes: Engineering-first posts on efficient training/inference.
+- url: https://kyutai.org/blog
+  topics:
+  - audio-speech
+  - multimodal
+  - llm
+  - research
+  - blogs
+  title: Kyutai — Blog
+  notes: Open research lab (France); speech & multimodal model posts.
+- url: https://ollama.com/blog
+  topics:
+  - on-device
+  - small-models
+  - inference
+  - product
+  - blogs
+  title: Ollama — Blog
+  notes: Local LLM ecosystem, model packs, runtime updates.
+- url: https://lmstudio.ai/blog
+  topics:
+  - on-device
+  - small-models
+  - inference
+  - product
+  - blogs
+  title: LM Studio — Blog
+  notes: Desktop local-LLM tooling; releases and tips.
+- url: https://blog.perplexity.ai/
+  topics:
+  - product
+  - retrieval
+  - rag
+  - llmops
+  - blogs
+  title: Perplexity — Hub
+  notes: Search+LLM product engineering, features, and research collabs.
+- url: https://blog.openrouter.ai/
+  topics:
+  - product
+  - serving
+  - llmops
+  - agents
+  - blogs
+  title: OpenRouter — Blog
+  notes: Model routing, cost/perf notes, and ecosystem updates.
+- url: https://trychroma.com/blog
+  topics:
+  - vector
+  - retrieval
+  - open-source
+  - product
+  - blogs
+  title: Chroma — Blog
+  notes: Vector DB engineering & RAG patterns.
+- url: https://blog.nomic.ai/
+  topics:
+  - embeddings
+  - retrieval
+  - open-source
+  - blogs
+  title: Nomic — Blog
+  notes: Embeddings, Atlas, and data-centric AI posts.
+- url: https://promptfoo.dev/blog/
+  topics:
+  - evaluation
+  - llmops
+  - structured-generation
+  - tool-use
+  - blogs
+  title: promptfoo — Blog
+  notes: LLM evaluation tooling, prompts-as-tests, CI/CD patterns.
+- url: https://www.uptrain.ai/blog
+  topics:
+  - evaluation
+  - monitoring
+  - llmops
+  - blogs
+  title: UpTrain — Blog
+  notes: LLM evals/monitoring playbooks and case studies.
+- url: https://blog.gentrace.ai/
+  topics:
+  - evaluation
+  - llmops
+  - benchops
+  - blogs
+  title: Gentrace — Blog
+  notes: Eval pipelines, benchmarks, and reliability for LLM apps.
+- url: https://www.tecton.ai/blog/
+  topics:
+  - data
+  - mlops
+  - data-governance
+  - workflows
+  - blogs
+  title: Tecton — Blog
+  notes: Feature platforms, real-time ML data engineering.
+- url: https://www.hopsworks.ai/blog
+  topics:
+  - data
+  - mlops
+  - workflows
+  - data-governance
+  - blogs
+  title: Hopsworks — Blog
+  notes: Feature store engineering and MLOps at scale.
+- url: https://flyte.org/blog
+  topics:
+  - orchestration
+  - workflows
+  - mlops
+  - ai-infra-stacks
+  - blogs
+  title: Flyte — Blog
+  notes: OSS workflow orchestration for data/ML; patterns and releases.
+- url: https://blog.argoproj.io/
+  topics:
+  - orchestration
+  - workflows
+  - ai-infra-stacks
+  - open-source
+  - blogs
+  title: Argo Project — Blog
+  notes: Kubernetes-native workflows (Workflows, CD, Events).
+- url: https://www.prefect.io/blog
+  topics:
+  - orchestration
+  - workflows
+  - monitoring
+  - mlops
+  - blogs
+  title: Prefect — Blog
+  notes: Dataflow orchestration, assets, and observability for ML/data.
+- url: https://devblogs.microsoft.com/autogen/
+  topics:
+  - agents
+  - tool-use
+  - workflows
+  - llmops
+  - blogs
+  title: Microsoft AutoGen — Blog
+  notes: Agent frameworks, studio, and architecture updates.
+- url: https://blog.guardrailsai.com/
+  topics:
+  - structured-generation
+  - evaluation
+  - llmops
+  - blogs
+  title: Guardrails AI — Blog
+  notes: Schemas, constraints, and reliability for LLM outputs.
+- url: https://coqui.ai/blog
+  topics:
+  - audio-speech
+  - multimodal
+  - open-source
+  - product
+  - blogs
+  title: Coqui — Blog
+  notes: TTS/ASR engineering and model updates.
+- url: https://stability.ai/news
+  topics:
+  - diffusion
+  - cv
+  - multimodal
+  - product
+  - blogs
+  title: Stability AI — News
+  notes: Image/video diffusion releases and ecosystem posts.
+- url: https://openmmlab.com/blog/
+  topics:
+  - cv
+  - open-source
+  - optimization
+  - blogs
+  title: OpenMMLab — Blog
+  notes: MM* stacks (Det/Seg/Posing); kernels and model zoo notes.
+- url: https://ultralytics.com/blog
+  topics:
+  - cv
+  - open-source
+  - optimization
+  - product
+  - blogs
+  title: Ultralytics — Blog
+  notes: YOLO family updates and vision deployment tips.
+- url: https://blog.salesforceairesearch.com/
+  topics:
+  - research
+  - nlp
+  - llm
+  - ml
+  - blogs
+  title: Salesforce AI Research — Blog
+  notes: Research explainers, code releases, and demos.
+- url: https://research.ibm.com/blog/ai
+  topics:
+  - industry
+  - research
+  - mlops
+  - optimization
+  - blogs
+  title: IBM Research — AI Blog
+  notes: Foundation models, tooling, and applied research.
+- url: https://cloud.google.com/blog/topics/ai-ml
+  topics:
+  - industry
+  - product
+  - mlops
+  - ai-infra-stacks
+  - blogs
+  title: Google Cloud — AI & ML
+  notes: Platform features, MLOps patterns, and case studies.
+- url: https://azure.microsoft.com/en-us/blog/topics/ai-ml/
+  topics:
+  - industry
+  - product
+  - mlops
+  - ai-infra-stacks
+  - blogs
+  title: Microsoft Azure — AI & ML
+  notes: Azure AI services, inference/training stacks, refs.
+- url: https://www.ibm.com/blog/ai/
+  topics:
+  - industry
+  - product
+  - governance
+  - blogs
+  title: IBM — AI Blog
+  notes: Enterprise AI adoption, governance, and platform posts.
+- url: https://www.youtube.com/@YannicKilcher
+  topics:
+  - research
+  - education
+  - videos
+  - ml
+  title: Yannic Kilcher — YouTube
+  notes: Paper walkthroughs and critical takes; high-cadence videos.
+- url: https://www.youtube.com/@HenryAILabs
+  topics:
+  - research
+  - education
+  - videos
+  - llm
+  title: Henry AI Labs — YouTube
+  notes: Model explainers, interviews, and weekly recaps.
+- url: https://www.youtube.com/@GoogleDeepMind
+  topics:
+  - research
+  - videos
+  - ml
+  - multimodal
+  title: Google DeepMind — YouTube
+  notes: Talks, demos, and research highlights.
+- url: https://www.youtube.com/@OpenAI
+  topics:
+  - industry
+  - product
+  - videos
+  - llm
+  title: OpenAI — YouTube
+  notes: Product demos, research talks, and updates.
+- url: https://www.youtube.com/@MetaAI
+  topics:
+  - industry
+  - research
+  - videos
+  - open-source
+  title: Meta AI — YouTube
+  notes: FAIR/GenAI research talks and product tech.
+- url: https://www.reddit.com/r/LocalLLaMA
+  topics:
+  - small-models
+  - on-device
+  - community
+  - ml
+  notes: Community for running/optimizing local LLMs.
+- url: https://www.reddit.com/r/StableDiffusion
+  topics:
+  - diffusion
+  - cv
+  - community
+  - multimodal
+  notes: Image diffusion techniques, models, and workflows.
+- url: https://github.com/ollama/ollama
+  topics:
+  - on-device
+  - inference
+  - serving
+  - open-source
+  title: Ollama — GitHub
+  notes: Local model runtime; follow releases for engine updates.
+- url: https://github.com/open-webui/open-webui
+  topics:
+  - agents
+  - tool-use
+  - product
+  - open-source
+  title: Open WebUI — GitHub
+  notes: Self-hosted chat/agent UI; rapid releases.
+- url: https://github.com/FlowiseAI/Flowise
+  topics:
+  - agents
+  - workflows
+  - llmops
+  - open-source
+  title: Flowise — GitHub
+  notes: Flow-based agent and tool graph builder.
+- url: https://github.com/BerriAI/litellm
+  topics:
+  - llmops
+  - serving
+  - tool-use
+  - open-source
+  title: LiteLLM — GitHub
+  notes: Unified LLM API router; costs/observability features.
+- url: https://github.com/unslothai/unsloth
+  topics:
+  - training
+  - optimization
+  - small-models
+  - open-source
+  title: Unsloth — GitHub
+  notes: Fast finetuning for LLMs; LoRA/QLoRA-focused.
+- url: https://github.com/casper-hansen/AutoAWQ
+  topics:
+  - optimization
+  - inference
+  - small-models
+  - open-source
+  title: AutoAWQ — GitHub
+  notes: Activation-aware quantization for fast inference.
+- url: https://github.com/turboderp/exllamav2
+  topics:
+  - inference
+  - optimization
+  - small-models
+  - open-source
+  title: ExLlamaV2 — GitHub
+  notes: High-throughput kernels for LLaMA-family models.
+- url: https://github.com/ggerganov/whisper.cpp
+  topics:
+  - audio-speech
+  - on-device
+  - optimization
+  - open-source
+  title: whisper.cpp — GitHub
+  notes: On-device ASR; CPU/GPU-optimized ports.
+- url: https://github.com/LostRuins/koboldcpp
+  topics:
+  - inference
+  - on-device
+  - small-models
+  - open-source
+  title: KoboldCpp — GitHub
+  notes: Local text-gen runtime with UI; frequent builds.
+- url: https://github.com/guardrails-ai/guardrails
+  topics:
+  - structured-generation
+  - evaluation
+  - llmops
+  - open-source
+  title: Guardrails — GitHub
+  notes: Output validation/guarded decoding library.
+- url: https://github.com/outlines-dev/outlines
+  topics:
+  - structured-generation
+  - tool-use
+  - optimization
+  - open-source
+  title: Outlines — GitHub
+  notes: Grammar/constrained decoding for reliable generation.
+- url: https://github.com/openai/whisper
+  topics:
+  - audio-speech
+  - open-source
+  title: OpenAI Whisper — GitHub
+  notes: Speech recognition model; track releases.
+- url: https://github.com/speechbrain/speechbrain
+  topics:
+  - audio-speech
+  - open-source
+  title: SpeechBrain — GitHub
+  notes: Open speech toolkit (ASR/TTS/SSL).
+- url: https://github.com/coqui-ai/TTS
+  topics:
+  - audio-speech
+  - open-source
+  title: Coqui TTS — GitHub
+  notes: TTS toolkit and models.
+- url: https://github.com/sktime/sktime
+  topics:
+  - time-series
+  - open-source
+  title: sktime — GitHub
+  notes: Time-series ML in Python; classical + deep.
+- url: https://github.com/unit8co/darts
+  topics:
+  - time-series
+  - open-source
+  title: Darts — GitHub
+  notes: Forecasting library; probabilistic & deep TS models.
+- url: https://transformer-circuits.pub/
+  topics:
+  - interpretability
+  - alignment
+  - research
+  title: Transformer Circuits
+  notes: Mechanistic interpretability research hub.
+- url: https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/
+  topics:
+  - legal-ai
+  - governance
+  - structured-generation
+  title: Stanford CodeX — Legal Informatics
+  notes: Legal+AI research; policy, tooling, structured generation.
+- url: https://blog.englishtest.duolingo.com/
+  topics:
+  - edtech-ai
+  - education
+  - evaluation
+  - blogs
+  title: Duolingo English Test — Blog
+  notes: Assessment/measurement + ML-driven test design.
+- url: https://www.perplexity.ai/hub
+  topics:
+  - industry
+  - product
+  - llm
+  title: Perplexity — Hub
+  notes: Provider announcements, product and research partnerships.
+- url: https://github.com/All-Hands-AI/openhands
+  topics:
+  - agents
+  - ai-for-code
+  - open-source
+  title: OpenHands — GitHub
+  notes: Agentic software-engineering framework.
+- url: https://github.com/Significant-Gravitas/AutoGPT
+  topics:
+  - agents
+  - workflows
+  - open-source
+  title: AutoGPT — GitHub
+  notes: Agent workflows; frequent ecosystem changes.
+- url: https://rss.arxiv.org/rss/cs.AI
+  topics:
+  - research
+  - papers
+  - ai
+  title: arXiv — cs.AI RSS
+  notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence;
+    primary preprint venue for labs/venues.
+- url: https://www.amd.com/en/technologies/rocm/blogs.html
+  topics:
+  - accelerators
+  - optimization
+  - inference
+  title: AMD ROCm — Blogs
+  notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises
+    RSS; frequent updates.
+- url: https://community.arm.com/arm-community-blogs/b/ai-blog
+  topics:
+  - edge
+  - on-device
+  - accelerators
+  - optimization
+  title: Arm — AI & ML Blog
+  notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active
+    2025 cadence.
+- url: https://blog.llvm.org/tags/mlir/
+  topics:
+  - compilers
+  - optimization
+  - accelerators
+  title: MLIR — The LLVM Project Blog
+  notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects,
+    lowering). Maintained under LLVM; feed autodiscovery.
+- url: https://www.ftc.gov/feeds/blog-business.xml
+  topics:
+  - governance
+  - regulation
+  - privacy
+  title: FTC Business Blog — RSS
+  notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed;
+    frequent policy/complaint analysis.
+- url: https://www.jair.org
+  topics:
+  - research
+  - papers
+  - ai
+  title: Journal of Artificial Intelligence Research (JAIR)
+  notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major
+    indices; feed autodiscovery from site.

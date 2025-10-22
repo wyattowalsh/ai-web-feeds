@@ -1,0 +1,583 @@
+---
+title: Link Validation
+description: Ensure all links in your documentation are correct and working
+icon: Link
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Link as LinkIcon, Hash, FileText, FolderOpen } from 'lucide-react';
+
+Automatically validate all links in your documentation to ensure they're correct and working.
+
+## Overview
+
+Link validation uses [`next-validate-link`](https://next-validate-link.vercel.app) to check:
+
+<Cards>
+  <Card icon={<Link />}>
+    **Internal Links**
+    Links between documentation pages
+  </Card>
+  <Card icon={<Hash />}>
+    **Anchor Links**
+    Links to headings within pages
+  </Card>
+  <Card icon={<FileText />}>
+    **MDX Components**
+    Links in Cards and other components
+  </Card>
+  <Card icon={<FolderOpen />}>
+    **Relative Paths**
+    File path references
+  </Card>
+</Cards>
+
+## Features
+
+- ✅ **Automatic scanning** - Finds all links in MDX files
+- ✅ **Heading validation** - Checks anchor links to headings
+- ✅ **Component support** - Validates links in MDX components
+- ✅ **Relative paths** - Checks file references
+- ✅ **Exit codes** - CI/CD friendly error reporting
+- ✅ **Detailed errors** - Shows exact location of broken links
+
+## Quick Start
+
+### Run Validation
+
+<Tabs items={['Node.js (Default)', 'Bun']}>
+  <Tab value="Node.js (Default)">
+    ```bash
+    pnpm lint:links
+    ```
+    
+    Uses the Node.js/tsx runtime (no additional installation required).
+  </Tab>
+  <Tab value="Bun">
+    ```bash
+    # Install Bun first (if not already installed)
+    curl -fsSL https://bun.sh/install | bash
+    
+    # Run with Bun
+    pnpm lint:links:bun
+    ```
+    
+    Uses the Bun runtime for faster execution.
+  </Tab>
+</Tabs>
+
+This will scan all documentation files and validate:
+- Links to other documentation pages
+- Anchor links to headings
+- Links in Card components
+- Relative file paths
+
+### Expected Output
+
+**All links valid:**
+```
+🔍 Scanning URLs and validating links...
+
+✅ All links are valid!
+```
+
+**Broken links found:**
+```
+🔍 Scanning URLs and validating links...
+
+❌ /Users/.../content/docs/index.mdx
+  Line 25: Link to /docs/invalid-page not found
+
+❌ Found 1 link validation error(s)
+```
+
+## How It Works
+
+### File Structure
+
+```
+apps/web/
+├── bunfig.toml                # Bun runtime configuration (for Bun)
+├── scripts/
+│   ├── lint.ts               # Validation script (Bun runtime)
+│   ├── lint-node.mjs         # Validation script (Node.js runtime)
+│   └── preload.ts            # MDX plugin loader (for Bun)
+└── package.json              # Scripts configuration
+```
+
+### Validation Script
+
+<Tabs items={['Node.js (Default)', 'Bun (Optional)']}>
+  <Tab value="Node.js (Default)">
+    The `scripts/lint-node.mjs` file runs with tsx/Node.js:
+
+    ```javascript title="scripts/lint-node.mjs"
+    import {
+      printErrors,
+      scanURLs,
+      validateFiles,
+    } from 'next-validate-link';
+    import { loader } from 'fumadocs-core/source';
+    import { createMDXSource } from 'fumadocs-mdx';
+    import { map } from '@/.map';
+
+    const source = loader({
+      baseUrl: '/docs',
+      source: createMDXSource(map),
+    });
+
+    async function checkLinks() {
+      const scanned = await scanURLs({
+        preset: 'next',
+        populate: {
+          'docs/[[...slug]]': source.getPages().map((page) => ({
+            value: { slug: page.slugs },
+            hashes: getHeadings(page),
+          })),
+        },
+      });
+
+      const errors = await validateFiles(await getFiles(), {
+        scanned,
+        markdown: {
+          components: {
+            Card: { attributes: ['href'] },
+          },
+        },
+        checkRelativePaths: 'as-url',
+      });
+
+      printErrors(errors, true);
+      
+      if (errors.length > 0) {
+        process.exit(1);
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="Bun (Optional)">
+    The `scripts/lint.ts` file runs with Bun runtime:
+
+    ```typescript title="scripts/lint.ts"
+    import {
+      type FileObject,
+      printErrors,
+      scanURLs,
+      validateFiles,
+    } from 'next-validate-link';
+    import type { InferPageType } from 'fumadocs-core/source';
+    import { source } from '@/lib/source';
+
+    async function checkLinks() {
+      const scanned = await scanURLs({
+        preset: 'next',
+        populate: {
+          'docs/[[...slug]]': source.getPages().map((page) => ({
+            value: { slug: page.slugs },
+            hashes: getHeadings(page),
+          })),
+        },
+      });
+
+      const errors = await validateFiles(await getFiles(), {
+        scanned,
+        markdown: {
+          components: {
+            Card: { attributes: ['href'] },
+          },
+        },
+        checkRelativePaths: 'as-url',
+      });
+
+      printErrors(errors, true);
+      
+      if (errors.length > 0) {
+        process.exit(1);
+      }
+    }
+    ```
+    
+    Requires Bun preload setup (see below).
+  </Tab>
+</Tabs>
+
+### Bun Runtime Loader
+
+<Callout type="info">
+  Only required if using the Bun runtime (`pnpm lint:links:bun`). The default Node.js version doesn't need this.
+</Callout>
+
+The `scripts/preload.ts` enables MDX processing in Bun:
+
+```typescript title="scripts/preload.ts"
+import { createMdxPlugin } from 'fumadocs-mdx/bun';
+
+Bun.plugin(createMdxPlugin());
+```
+
+### Bun Configuration
+
+<Callout type="info">
+  Only required for Bun runtime. Not needed for default Node.js execution.
+</Callout>
+
+The `bunfig.toml` loads the preload script:
+
+```toml title="bunfig.toml"
+preload = ["./scripts/preload.ts"]
+```
+
+## What Gets Validated
+
+### Internal Documentation Links
+
+Links to other documentation pages:
+
+```mdx
+[Getting Started](/docs)
+[PDF Export](/docs/features/pdf-export)
+[Testing Guide](/docs/guides/testing)
+```
+
+### Anchor Links
+
+Links to headings within pages:
+
+```mdx
+[Quick Start](#quick-start)
+[Configuration](#configuration)
+```
+
+### MDX Component Links
+
+Links in special components:
+
+```mdx
+<Card href="/docs/features/rss-feeds" />
+<Card href="/docs/guides/quick-reference" />
+```
+
+### Relative Paths
+
+File references:
+
+```mdx
+[Scripts Documentation](./scripts/README.md)
+[Source Code](../../packages/ai_web_feeds/src)
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+Add to your workflow:
+
+```yaml title=".github/workflows/validate.yml"
+name: Validate Links
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Validate links
+        run: pnpm lint:links
+```
+
+### Exit Codes
+
+The script exits with appropriate codes:
+
+- **0** - All links valid ✅
+- **1** - Broken links found ❌
+
+## Customization
+
+### Add More Components
+
+Validate links in additional MDX components:
+
+```typescript title="scripts/lint.ts"
+markdown: {
+  components: {
+    Card: { attributes: ['href'] },
+    CustomCard: { attributes: ['link', 'url'] },
+    Button: { attributes: ['href'] },
+  },
+}
+```
+
+### Custom Validation Rules
+
+Add custom validation logic:
+
+```typescript title="scripts/lint.ts"
+const errors = await validateFiles(await getFiles(), {
+  scanned,
+  markdown: {
+    components: {
+      Card: { attributes: ['href'] },
+    },
+  },
+  checkRelativePaths: 'as-url',
+  
+  // Custom filter
+  filter: (file) => {
+    // Skip draft files
+    return !file.data?.draft;
+  },
+});
+```
+
+### Exclude Patterns
+
+Skip certain files or paths:
+
+```typescript title="scripts/lint.ts"
+async function getFiles(): Promise<FileObject[]> {
+  const allPages = source.getPages();
+  
+  // Filter out test files
+  const pages = allPages.filter(
+    (page) => !page.absolutePath.includes('/test/')
+  );
+  
+  const promises = pages.map(async (page): Promise<FileObject> => ({
+    path: page.absolutePath,
+    content: await page.data.getText('raw'),
+    url: page.url,
+    data: page.data,
+  }));
+
+  return Promise.all(promises);
+}
+```
+
+## Common Issues
+
+### Broken Links
+
+<Tabs items={['Internal Links', 'Anchor Links', 'Component Links']}>
+  <Tab value="Internal Links">
+    **Problem:** Link to `/docs/invalid-page` not found
+    
+    **Solutions:**
+    - Check the page exists in `content/docs/`
+    - Verify the URL path matches the file structure
+    - Ensure `meta.json` includes the page
+  </Tab>
+  <Tab value="Anchor Links">
+    **Problem:** Anchor `#section-name` not found
+    
+    **Solutions:**
+    - Check heading exists in target page
+    - Verify anchor matches heading slug
+    - Headings are auto-slugified (spaces become `-`)
+  </Tab>
+  <Tab value="Component Links">
+    **Problem:** Card href `/docs/page` not found
+    
+    **Solutions:**
+    - Verify Card component uses `href` attribute
+    - Check link target exists
+    - Add component to validation config if custom
+  </Tab>
+</Tabs>
+
+### False Positives
+
+Some links may be valid but flagged as errors:
+
+**External Links**
+```mdx
+<!-- External links are not validated by default -->
+[GitHub](https://github.com/user/repo)
+```
+
+**Dynamic Routes**
+```mdx
+<!-- May need manual configuration for complex routes -->
+[User Profile](/users/[id])
+```
+
+**API Routes**
+```mdx
+<!-- API routes may not be scanned -->
+[Search API](/api/search)
+```
+
+### Bun Not Installed
+
+<Callout type="info">
+  The default `pnpm lint:links` command uses Node.js/tsx and doesn't require Bun.
+  
+  If you want to use the faster Bun runtime, install it:
+  ```bash
+  curl -fsSL https://bun.sh/install | bash
+  ```
+  
+  Then use: `pnpm lint:links:bun`
+</Callout>
+
+### Script Errors
+
+If the script fails to run:
+
+```bash
+# Clear cache
+rm -rf .next/
+rm -rf node_modules/
+pnpm install
+
+# Verify Bun is installed
+bun --version
+
+# Run with verbose output
+DEBUG=* pnpm lint:links
+```
+
+## Best Practices
+
+### 1. Run Before Commits
+
+Add to your pre-commit hook:
+
+```bash title=".husky/pre-commit"
+#!/bin/sh
+pnpm lint:links
+```
+
+### 2. Validate on Build
+
+Add to build process:
+
+```json title="package.json"
+{
+  "scripts": {
+    "build": "pnpm lint:links && next build"
+  }
+}
+```
+
+### 3. Regular Checks
+
+Run validation regularly:
+
+```bash
+# Daily cron job
+0 0 * * * cd /path/to/project && pnpm lint:links
+```
+
+### 4. Document Link Patterns
+
+Keep a consistent link style:
+
+```mdx
+<!-- Good: Absolute paths -->
+[Features](/docs/features/pdf-export)
+
+<!-- Avoid: Relative paths for internal links -->
+[Features](../features/pdf-export)
+```
+
+### 5. Use Anchor Links
+
+Link to specific sections:
+
+```mdx
+[Configuration Section](/docs/features/rss-feeds#configuration)
+```
+
+## Testing
+
+### Manual Test
+
+Create a broken link to test:
+
+```mdx title="content/docs/test.mdx"
+---
+title: Test Page
+---
+
+This link is broken: [Invalid Page](/docs/does-not-exist)
+```
+
+Run validation:
+
+```bash
+pnpm lint:links
+```
+
+**Expected output:**
+```
+❌ /Users/.../content/docs/test.mdx
+  Line 6: Link to /docs/does-not-exist not found
+```
+
+### Test Anchor Links
+
+```mdx
+This anchor is broken: [Missing Section](#does-not-exist)
+```
+
+### Test Component Links
+
+```mdx
+<Card href="/docs/invalid-page" />
+```
+
+## Performance
+
+### Optimization Tips
+
+1. **Cache Results**
+   - Validation results can be cached between runs
+   - Only re-validate changed files
+
+2. **Parallel Processing**
+   - Script processes files in parallel
+   - Scales with CPU cores
+
+3. **Incremental Validation**
+   - Only validate modified files in CI
+   - Use git diff to find changed files
+
+### Benchmark
+
+Typical validation times:
+
+| Pages | Time |
+|-------|------|
+| 10 | ~2s |
+| 50 | ~5s |
+| 100 | ~10s |
+| 500 | ~30s |
+
+## Related Documentation
+
+- [Quick Reference](/docs/guides/quick-reference) - Commands and scripts
+- [Testing Guide](/docs/guides/testing) - Comprehensive testing
+- [PDF Export](/docs/features/pdf-export) - Export documentation
+
+## External Resources
+
+- [next-validate-link Documentation](https://next-validate-link.vercel.app)
+- [Fumadocs Link Validation Guide](https://fumadocs.dev/docs/ui/validate-links)
+- [Bun Documentation](https://bun.sh/docs)

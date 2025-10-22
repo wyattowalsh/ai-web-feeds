@@ -1,0 +1,370 @@
+---
+title: Quick Reference
+description: Essential commands and endpoints at a glance
+icon: Zap
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Quick reference for common tasks, commands, and endpoints.
+
+## Endpoints
+
+### AI & LLM
+
+| URL | Purpose | For |
+|-----|---------|-----|
+| `/llms.txt` | Discovery file | AI agents |
+| `/llms-full.txt` | All docs, structured format | RAG systems |
+| `/docs/page.mdx` | Page as markdown | AI tools |
+| `/docs/page.md` | Page as markdown (alt) | AI tools |
+
+<Callout type="info">
+  `/llms-full.txt` has enhanced structure with metadata, TOC, and clear separators. See [Format Documentation](/docs/features/llms-full-format).
+</Callout>
+
+### RSS Feeds
+
+| URL | Format | Content |
+|-----|--------|---------|
+| `/rss.xml` | RSS 2.0 | Sitewide |
+| `/atom.xml` | Atom 1.0 | Sitewide |
+| `/feed.json` | JSON Feed | Sitewide |
+| `/docs/rss.xml` | RSS 2.0 | Docs only |
+| `/docs/atom.xml` | Atom 1.0 | Docs only |
+| `/docs/feed.json` | JSON Feed | Docs only |
+
+<Callout type="info">
+  All feeds are auto-discoverable via `<link>` tags and refreshed hourly. See [RSS Feeds](/docs/features/rss-feeds).
+</Callout>
+
+### Content Negotiation
+
+```bash
+# Get markdown automatically
+curl -H "Accept: text/markdown" https://yourdomain.com/docs/page
+```
+
+## Scripts
+
+### Development
+
+```bash
+# Start dev server
+pnpm dev
+
+# Start on different port
+PORT=3001 pnpm dev
+```
+
+### PDF Export
+
+```bash
+# Export all pages
+pnpm export-pdf
+
+# Export specific pages
+pnpm export-pdf:specific /docs /docs/getting-started
+
+# Build and export (production)
+pnpm export-pdf:build
+```
+
+### Link Validation
+
+```bash
+# Validate all documentation links
+pnpm lint:links
+```
+
+### Build & Deploy
+
+```bash
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Build with PDF export mode
+NEXT_PUBLIC_PDF_EXPORT=true pnpm build
+```
+
+## Testing Commands
+
+### Test Endpoints
+
+```bash
+# Discovery file
+curl http://localhost:3000/llms.txt
+
+# Full documentation
+curl http://localhost:3000/llms-full.txt
+
+# Specific page as markdown
+curl http://localhost:3000/docs.mdx
+
+# Test content negotiation
+curl -H "Accept: text/markdown" http://localhost:3000/docs
+```
+
+### Inspect Headers
+
+```bash
+# Check HTTP headers
+curl -I http://localhost:3000/llms.txt
+curl -I http://localhost:3000/llms-full.txt
+
+# Check custom headers
+curl -I http://localhost:3000/llms-full.txt | grep "X-"
+```
+
+### Download Content
+
+```bash
+# Download full documentation
+curl http://localhost:3000/llms-full.txt -o docs.txt
+
+# View table of contents
+curl http://localhost:3000/llms-full.txt | \
+  sed -n '/Table of Contents:/,/^===/p'
+
+# Count pages
+curl http://localhost:3000/llms-full.txt | \
+  grep -c "^PAGE [0-9]"
+```
+
+## Components
+
+### AI Page Actions
+
+```tsx
+import { LLMCopyButton, ViewOptions } from '@/components/page-actions';
+
+// Copy markdown button
+<LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+
+// View options dropdown
+<ViewOptions 
+  markdownUrl={`${page.url}.mdx`}
+  githubUrl="https://github.com/user/repo/blob/main/..." 
+/>
+```
+
+### Cards and Callouts
+
+```mdx
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Cards>
+  <Card title="Title" description="Description" href="/link" />
+</Cards>
+
+<Callout type="info">
+  Information message
+</Callout>
+
+<Callout type="warn">
+  Warning message
+</Callout>
+```
+
+### Tabs and Steps
+
+```mdx
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Tabs items={['Tab 1', 'Tab 2']}>
+  <Tab value="Tab 1">Content 1</Tab>
+  <Tab value="Tab 2">Content 2</Tab>
+</Tabs>
+
+<Steps>
+  <Step>First step</Step>
+  <Step>Second step</Step>
+</Steps>
+```
+
+## Configuration Files
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `middleware.ts` | Content negotiation |
+| `next.config.mjs` | URL rewrites |
+| `source.config.ts` | MDX processing |
+| `app/llms.txt/route.ts` | Discovery endpoint |
+| `components/page-actions.tsx` | AI UI components |
+
+### Environment Variables
+
+```bash
+# Enable PDF export mode
+NEXT_PUBLIC_PDF_EXPORT=true
+
+# Set port
+PORT=3001
+```
+
+## Customization
+
+### Update GitHub URL
+
+Edit `app/docs/[[...slug]]/page.tsx`:
+
+```tsx
+githubUrl={`https://github.com/YOUR_ORG/YOUR_REPO/blob/main/apps/web/content/docs/${page.file.path}`}
+```
+
+### Add AI Tool
+
+Edit `components/page-actions.tsx`:
+
+```tsx
+{
+  title: 'Open in MyAI',
+  href: `https://myai.com/?url=${markdownUrl}`,
+  icon: <MyIcon />,
+}
+```
+
+### Customize PDF Settings
+
+Edit `scripts/export-pdf.ts`:
+
+```typescript
+await page.pdf({
+  width: '950px',
+  margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+});
+```
+
+### Modify Discovery File
+
+Edit `app/llms.txt/route.ts`:
+
+```typescript
+const content = `# Your Custom Title
+
+> Your custom description
+
+## Documentation Pages
+
+${pages.map(page => `- [${page.data.title}](${origin}${page.url}.mdx): ${page.data.description ?? ''}`).join('\n')}
+`;
+```
+
+## Common Tasks
+
+### Add New Doc Page
+
+1. Create file in `content/docs/`
+2. Add frontmatter with title and description
+3. Write MDX content
+4. Page automatically appears in navigation
+
+### Export PDFs
+
+1. Start dev server: `pnpm dev`
+2. Run export: `pnpm export-pdf`
+3. Find PDFs in `pdfs/` directory
+
+### Test AI Integration
+
+1. Start dev server: `pnpm dev`
+2. Test endpoints with curl (see above)
+3. Check page actions in browser
+4. Verify content negotiation
+
+### Deploy to Production
+
+1. Build: `pnpm build`
+2. Test locally: `pnpm start`
+3. Deploy to hosting platform
+4. Verify all endpoints work
+
+## Performance Optimization
+
+### Caching Strategy
+
+| Resource | Cache-Control |
+|----------|---------------|
+| `/llms.txt` | `s-maxage=86400` (24h) |
+| `/llms-full.txt` | `revalidate=false` (permanent) |
+| `*.mdx` routes | `immutable` (forever) |
+
+### Build Optimization
+
+```bash
+# Analyze bundle
+pnpm build --analyze
+
+# Check bundle size
+du -sh .next/
+
+# Clear cache
+rm -rf .next/
+```
+
+## Troubleshooting
+
+### Clear Cache
+
+```bash
+# Clear Next.js cache
+rm -rf .next/
+
+# Clear node modules
+rm -rf node_modules/
+pnpm install
+```
+
+### Check Errors
+
+```bash
+# View build errors
+pnpm build 2>&1 | tee build.log
+
+# Check TypeScript errors
+pnpm tsc --noEmit
+```
+
+### Verify Configuration
+
+```bash
+# Check source config
+cat source.config.ts | grep includeProcessedMarkdown
+
+# Check middleware
+cat middleware.ts
+
+# Check rewrites
+cat next.config.mjs | grep -A 10 "rewrites"
+```
+
+## Documentation
+
+### Full Guides
+
+- [Getting Started](/docs) - Overview and introduction
+- [PDF Export](/docs/features/pdf-export) - Complete PDF export guide
+- [AI Integration](/docs/features/ai-integration) - AI/LLM integration guide
+- [llms-full.txt Format](/docs/features/llms-full-format) - Format specification
+- [Testing Guide](/docs/guides/testing) - Comprehensive testing
+
+### External Resources
+
+- [Fumadocs](https://fumadocs.dev/docs)
+- [Next.js](https://nextjs.org/docs)
+- [llms.txt Spec](https://llmstxt.org)
+- [Puppeteer](https://pptr.dev)
+
+## Status
+
+✅ All features implemented and tested  
+✅ Following Fumadocs official guidelines  
+✅ Performance optimized with caching  
+✅ Production ready

@@ -1,0 +1,21 @@
+[project]
+name = "ai_web_feeds"
+version = "0.1.0"
+description = "Core library for AI Web Feeds"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.14.0",
+    "beautifulsoup4>=4.12.0",
+    "feedparser>=6.0.11",
+    "httpx>=0.28.1",
+    "jsonschema>=4.23.0",
+    "langdetect>=1.0.9",
+    "loguru>=0.7.3",
+    "pydantic>=2.12.2",
+    "pydantic-settings>=2.11.0",
+    "pyyaml>=6.0.3",
+    "sqlalchemy>=2.0.36",
+    "sqlmodel>=0.0.27",
+    "tenacity>=9.1.2",
+]

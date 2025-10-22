@@ -1,0 +1,248 @@
+"""Unit tests for ai_web_feeds.fetcher module."""
+
+import pytest
+from datetime import datetime
+from unittest.mock import Mock, patch, MagicMock
+
+from ai_web_feeds.fetcher import FeedFetcher, FeedMetadata
+from ai_web_feeds.models import FeedFormat
+
+
+@pytest.mark.unit
+class TestFeedMetadata:
+    """Test FeedMetadata class."""
+
+    def test_init(self):
+        """Test FeedMetadata initialization."""
+        metadata = FeedMetadata()
+        assert metadata.title is None
+        assert metadata.total_items == 0
+        assert metadata.categories == []
+        assert metadata.completeness_score == 0.0
+
+    def test_to_dict(self):
+        """Test converting metadata to dictionary."""
+        metadata = FeedMetadata()
+        metadata.title = "Test Feed"
+        metadata.total_items = 10
+        
+        result = metadata.to_dict()
+        assert isinstance(result, dict)
+        assert result["title"] == "Test Feed"
+        assert result["total_items"] == 10
+
+
+@pytest.mark.unit
+class TestFeedFetcher:
+    """Test FeedFetcher class."""
+
+    def test_init(self):
+        """Test FeedFetcher initialization."""
+        fetcher = FeedFetcher()
+        assert fetcher is not None
+
+    @pytest.mark.network
+    @patch("ai_web_feeds.fetcher.httpx.get")
+    def test_fetch_feed_success(self, mock_get, mock_httpx_response):
+        """Test successful feed fetching."""
+        mock_get.return_value = mock_httpx_response
+        
+        fetcher = FeedFetcher()
+        result = fetcher.fetch_feed("https://example.com/feed.xml")
+        
+        assert result is not None
+        mock_get.assert_called_once()
+
+    @pytest.mark.network
+    @patch("ai_web_feeds.fetcher.httpx.get")
+    def test_fetch_feed_http_error(self, mock_get):
+        """Test feed fetching with HTTP error."""
+        mock_get.side_effect = Exception("HTTP 404")
+        
+        fetcher = FeedFetcher()
+        with pytest.raises(Exception):
+            fetcher.fetch_feed("https://example.com/404.xml")
+
+    @patch("ai_web_feeds.fetcher.httpx.get")
+    def test_fetch_feed_timeout(self, mock_get):
+        """Test feed fetching with timeout."""
+        import httpx
+        mock_get.side_effect = httpx.TimeoutException("Timeout")
+        
+        fetcher = FeedFetcher()
+        with pytest.raises(httpx.TimeoutException):
+            fetcher.fetch_feed("https://example.com/slow.xml")
+
+    @patch("ai_web_feeds.fetcher.feedparser.parse")
+    def test_parse_feed_rss(self, mock_parse, mock_feedparser_result):
+        """Test parsing RSS feed."""
+        mock_parse.return_value = mock_feedparser_result
+        
+        fetcher = FeedFetcher()
+        result = fetcher.parse_feed_content("<rss>...</rss>")
+        
+        assert result is not None
+        assert "feed" in result
+
+    def test_detect_feed_format_rss(self):
+        """Test detecting RSS feed format."""
+        fetcher = FeedFetcher()
+        rss_content = '<?xml version="1.0"?><rss version="2.0">...</rss>'
+        
+        format_detected = fetcher.detect_feed_format(rss_content)
+        assert format_detected == FeedFormat.RSS
+
+    def test_detect_feed_format_atom(self):
+        """Test detecting Atom feed format."""
+        fetcher = FeedFetcher()
+        atom_content = '<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom">...</feed>'
+        
+        format_detected = fetcher.detect_feed_format(atom_content)
+        assert format_detected == FeedFormat.ATOM
+
+    def test_detect_feed_format_unknown(self):
+        """Test detecting unknown feed format."""
+        fetcher = FeedFetcher()
+        unknown_content = "Not a valid feed"
+        
+        format_detected = fetcher.detect_feed_format(unknown_content)
+        assert format_detected == FeedFormat.UNKNOWN
+
+    @patch("ai_web_feeds.fetcher.feedparser.parse")
+    def test_extract_metadata(self, mock_parse, mock_feedparser_result):
+        """Test extracting feed metadata."""
+        mock_parse.return_value = mock_feedparser_result
+        
+        fetcher = FeedFetcher()
+        metadata = fetcher.extract_metadata(mock_feedparser_result)
+        
+        assert isinstance(metadata, FeedMetadata)
+        assert metadata.title == "Test Feed"
+
+    def test_extract_feed_items(self, mock_feedparser_result):
+        """Test extracting feed items."""
+        fetcher = FeedFetcher()
+        items = fetcher.extract_feed_items(mock_feedparser_result)
+        
+        assert isinstance(items, list)
+        assert len(items) == 1
+
+    @patch("ai_web_feeds.fetcher.httpx.get")
+    @patch("ai_web_feeds.fetcher.feedparser.parse")
+    def test_fetch_and_parse_integration(self, mock_parse, mock_get, 
+                                         mock_httpx_response, mock_feedparser_result):
+        """Test full fetch and parse workflow."""
+        mock_get.return_value = mock_httpx_response
+        mock_parse.return_value = mock_feedparser_result
+        
+        fetcher = FeedFetcher()
+        feed_data = fetcher.fetch_feed("https://example.com/feed.xml")
+        parsed = fetcher.parse_feed_content(feed_data)
+        
+        assert parsed is not None
+        assert "feed" in parsed
+
+    def test_calculate_completeness_score(self):
+        """Test calculating feed completeness score."""
+        fetcher = FeedFetcher()
+        metadata = FeedMetadata()
+        metadata.title = "Test"
+        metadata.description = "Description"
+        metadata.link = "https://example.com"
+        
+        score = fetcher.calculate_completeness_score(metadata)
+        assert 0.0 <= score <= 1.0
+
+    @pytest.mark.parametrize("status_code,should_retry", [
+        (200, False),
+        (404, False),
+        (500, True),
+        (503, True),
+        (429, True),
+    ])
+    @patch("ai_web_feeds.fetcher.httpx.get")
+    def test_retry_logic(self, mock_get, status_code, should_retry):
+        """Test retry logic for different HTTP status codes."""
+        response = Mock()
+        response.status_code = status_code
+        response.raise_for_status = Mock(
+            side_effect=Exception(f"HTTP {status_code}") if status_code >= 400 else None
+        )
+        mock_get.return_value = response
+        
+        fetcher = FeedFetcher()
+        if status_code >= 400:
+            with pytest.raises(Exception):
+                fetcher.fetch_feed("https://example.com/feed.xml")
+        else:
+            result = fetcher.fetch_feed("https://example.com/feed.xml")
+            assert result is not None
+
+
+@pytest.mark.unit
+class TestFeedContentAnalysis:
+    """Test feed content analysis functions."""
+
+    def test_extract_author_info(self, mock_feedparser_result):
+        """Test extracting author information."""
+        fetcher = FeedFetcher()
+        author = fetcher.extract_author_info(mock_feedparser_result["feed"])
+        assert author is not None
+
+    def test_extract_categories(self, mock_feedparser_result):
+        """Test extracting feed categories."""
+        fetcher = FeedFetcher()
+        categories = fetcher.extract_categories(mock_feedparser_result["feed"])
+        assert isinstance(categories, list)
+
+    def test_analyze_content_length(self):
+        """Test analyzing content length statistics."""
+        fetcher = FeedFetcher()
+        items = [
+            {"title": "Short", "summary": "Brief summary"},
+            {"title": "Medium length title", "summary": "A longer summary with more details"},
+        ]
+        
+        avg_length = fetcher.analyze_content_length(items)
+        assert avg_length > 0
+
+    def test_detect_update_frequency(self):
+        """Test detecting feed update frequency."""
+        fetcher = FeedFetcher()
+        items = [
+            {"published_parsed": (2024, 1, 15, 12, 0, 0, 0, 15, 0)},
+            {"published_parsed": (2024, 1, 14, 12, 0, 0, 0, 14, 0)},
+            {"published_parsed": (2024, 1, 13, 12, 0, 0, 0, 13, 0)},
+        ]
+        
+        frequency = fetcher.detect_update_frequency(items)
+        assert frequency is not None
+
+
+@pytest.mark.unit
+class TestFeedValidation:
+    """Test feed validation functions."""
+
+    def test_validate_feed_url(self):
+        """Test feed URL validation."""
+        fetcher = FeedFetcher()
+        
+        assert fetcher.validate_url("https://example.com/feed.xml")
+        assert fetcher.validate_url("http://example.com/rss")
+        assert not fetcher.validate_url("not-a-url")
+        assert not fetcher.validate_url("")
+
+    def test_validate_feed_structure(self, mock_feedparser_result):
+        """Test feed structure validation."""
+        fetcher = FeedFetcher()
+        
+        is_valid = fetcher.validate_feed_structure(mock_feedparser_result)
+        assert is_valid is True
+
+    def test_validate_feed_structure_invalid(self):
+        """Test validation with invalid feed structure."""
+        fetcher = FeedFetcher()
+        invalid_feed = {"bozo": True}
+        
+        is_valid = fetcher.validate_feed_structure(invalid_feed)
+        assert is_valid is False

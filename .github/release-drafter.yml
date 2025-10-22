@@ -1,0 +1,93 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+version-template: '$MAJOR.$MINOR.$PATCH'
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'type/feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'type/bug'
+      - 'bug'
+  - title: '🔖 Feed Updates'
+    labels:
+      - 'feed-submission'
+      - 'feed-update'
+  - title: '📝 Documentation'
+    labels:
+      - 'component/docs'
+      - 'documentation'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'dependencies'
+      - 'type/refactor'
+  - title: '⚡ Performance'
+    labels:
+      - 'type/performance'
+  - title: '🔒 Security'
+    labels:
+      - 'type/security'
+      - 'security'
+
+version-resolver:
+  major:
+    labels:
+      - 'type/breaking'
+      - 'breaking-change'
+  minor:
+    labels:
+      - 'type/feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'type/bug'
+      - 'bug'
+  default: patch
+
+exclude-labels:
+  - 'skip-changelog'
+  - 'invalid'
+  - 'duplicate'
+  - 'wontfix'
+
+autolabeler:
+  - label: 'component/docs'
+    files:
+      - '*.md'
+      - 'docs/**/*'
+  - label: 'component/cli'
+    files:
+      - 'apps/cli/**/*'
+  - label: 'component/web'
+    files:
+      - 'apps/web/**/*'
+  - label: 'component/data'
+    files:
+      - 'data/**/*'
+  - label: 'component/schema'
+    files:
+      - 'data/**/*.schema.json'
+  - label: 'component/ci-cd'
+    files:
+      - '.github/**/*'
+  - label: 'dependencies'
+    files:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+  ## Contributors
+
+  Thanks to all contributors who made this release possible! 🎉
+
+  $CONTRIBUTORS

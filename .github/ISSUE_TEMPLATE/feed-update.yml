@@ -1,0 +1,80 @@
+name: 🔗 Update Existing Feed
+description: Report an issue or suggest an update to an existing feed
+title: "[Feed Update]: "
+labels: ["feed-update", "needs-review"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Update Existing Feed
+        
+        Report an issue with an existing feed or suggest updates to its metadata.
+
+  - type: input
+    id: feed_id
+    attributes:
+      label: Feed ID
+      description: The ID of the feed to update (from feeds.yaml)
+      placeholder: "e.g., openai-blog"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: update_type
+    attributes:
+      label: Update Type
+      description: What type of update is needed?
+      options:
+        - "Feed URL changed/broken"
+        - "Feed is inactive/archived"
+        - "Metadata correction (title, topics, etc.)"
+        - "Quality issues (content not relevant)"
+        - "Platform configuration update"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_issue
+    attributes:
+      label: Current Issue
+      description: What's wrong with the current feed entry?
+      placeholder: "The feed URL returns 404..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested_fix
+    attributes:
+      label: Suggested Fix
+      description: What changes should be made?
+      placeholder: "Update the feed URL to..."
+    validations:
+      required: true
+
+  - type: input
+    id: new_url
+    attributes:
+      label: New URL (if applicable)
+      description: If the feed URL changed, provide the new URL
+      placeholder: "https://example.com/new-feed.xml"
+    validations:
+      required: false
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification Steps
+      description: How did you verify this issue? What tests did you perform?
+      placeholder: "I visited the URL and received..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the update
+    validations:
+      required: false

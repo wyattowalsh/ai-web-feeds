@@ -1,0 +1,317 @@
+---
+title: Python API
+description: Using AI Web Feeds as a Python library
+---
+
+# Python API
+
+AI Web Feeds can be used as a Python library for custom integrations and automation.
+
+## Installation
+
+```bash
+uv pip install -e packages/ai_web_feeds
+```
+
+## Feed Enrichment
+
+### Basic Enrichment
+
+```python
+import asyncio
+from ai_web_feeds.utils import enrich_feed_source
+
+feed_data = {
+    "id": "example-blog",
+    "site": "https://example.com",
+    "title": "Example Blog",
+    "discover": True,  # Enable feed discovery
+    "topics": ["ml", "nlp"],
+}
+
+# Enrich the feed
+enriched = asyncio.run(enrich_feed_source(feed_data))
+
+# enriched now contains:
+# - Discovered feed URL (if found)
+# - Detected feed format
+# - Validation timestamp
+# - etc.
+```
+
+### Feed Discovery
+
+```python
+from ai_web_feeds.utils import discover_feed_url
+
+# Discover feed URL from a website
+feed_url = asyncio.run(discover_feed_url("https://example.com"))
+
+if feed_url:
+    print(f"Discovered feed: {feed_url}")
+```
+
+### Format Detection
+
+```python
+from ai_web_feeds.utils import detect_feed_format
+
+# Detect feed format
+format = asyncio.run(detect_feed_format("https://example.com/feed.xml"))
+print(f"Feed format: {format}")  # rss, atom, jsonfeed, or unknown
+```
+
+## OPML Generation
+
+### Generate All Feeds OPML
+
+```python
+from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.utils import generate_opml, save_opml
+
+# Get feeds from database
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+feeds = db.get_all_feed_sources()
+
+# Generate OPML
+opml_xml = generate_opml(feeds, title="AI Web Feeds - All")
+save_opml(opml_xml, "data/all.opml")
+```
+
+### Generate Categorized OPML
+
+```python
+from ai_web_feeds.utils import generate_categorized_opml
+
+# Generate categorized OPML (by source type)
+opml_xml = generate_categorized_opml(feeds, title="AI Web Feeds - By Type")
+save_opml(opml_xml, "data/categorized.opml")
+```
+
+### Generate Filtered OPML
+
+```python
+from ai_web_feeds.utils import generate_filtered_opml
+
+# Define custom filter
+def nlp_filter(feed):
+    return "nlp" in feed.topics and feed.verified
+
+# Generate filtered OPML
+opml_xml = generate_filtered_opml(
+    feeds,
+    title="AI Web Feeds - NLP (Verified)",
+    filter_fn=nlp_filter,
+)
+save_opml(opml_xml, "data/nlp-verified.opml")
+```
+
+## Schema Generation
+
+```python
+from ai_web_feeds.utils import generate_enriched_schema, save_json_schema
+
+# Generate the enriched schema
+schema = generate_enriched_schema()
+
+# Save to file
+save_json_schema(schema, "data/feeds.enriched.schema.json")
+```
+
+## YAML Operations
+
+### Load Feeds
+
+```python
+from ai_web_feeds.utils import load_feeds_yaml
+
+# Load feeds from YAML
+feeds_data = load_feeds_yaml("data/feeds.yaml")
+sources = feeds_data.get("sources", [])
+```
+
+### Save Enriched Feeds
+
+```python
+from ai_web_feeds.utils import save_feeds_yaml
+
+enriched_data = {
+    "schema_version": "feeds-enriched-1.0.0",
+    "document_meta": {
+        "enriched_at": datetime.utcnow().isoformat(),
+        "total_sources": len(sources),
+    },
+    "sources": enriched_sources,
+}
+
+save_feeds_yaml(enriched_data, "data/feeds.enriched.yaml")
+```
+
+## Database Operations
+
+### Initialize Database
+
+```python
+from ai_web_feeds.storage import DatabaseManager
+
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db.create_db_and_tables()
+```
+
+### Add Feed Sources
+
+```python
+from ai_web_feeds.models import FeedSource, SourceType
+
+feed = FeedSource(
+    id="example-blog",
+    feed="https://example.com/feed.xml",
+    site="https://example.com",
+    title="Example Blog",
+    source_type=SourceType.BLOG,
+    topics=["ml", "nlp"],
+    topic_weights={"ml": 0.9, "nlp": 0.8},
+    verified=True,
+)
+
+db.add_feed_source(feed)
+```
+
+### Query Data
+
+```python
+# Get all feed sources
+all_feeds = db.get_all_feed_sources()
+
+# Get specific feed
+feed = db.get_feed_source("example-blog")
+
+# Get all topics
+topics = db.get_all_topics()
+```
+
+### Bulk Operations
+
+```python
+# Bulk insert feed sources
+db.bulk_insert_feed_sources(feed_sources)
+
+# Bulk insert topics
+db.bulk_insert_topics(topics)
+```
+
+## Complete Example
+
+```python
+import asyncio
+from datetime import datetime
+from pathlib import Path
+
+from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.utils import (
+    enrich_feed_source,
+    generate_categorized_opml,
+    generate_enriched_schema,
+    generate_opml,
+    load_feeds_yaml,
+    save_feeds_yaml,
+    save_json_schema,
+    save_opml,
+)
+
+
+async def main():
+    # 1. Load feeds
+    feeds_data = load_feeds_yaml("data/feeds.yaml")
+    sources = feeds_data.get("sources", [])
+    
+    # 2. Enrich each source
+    enriched_sources = []
+    for source in sources:
+        enriched = await enrich_feed_source(source)
+        enriched_sources.append(enriched)
+    
+    # 3. Save enriched YAML
+    enriched_data = {
+        "schema_version": "feeds-enriched-1.0.0",
+        "document_meta": {
+            "enriched_at": datetime.utcnow().isoformat(),
+            "total_sources": len(enriched_sources),
+        },
+        "sources": enriched_sources,
+    }
+    save_feeds_yaml(enriched_data, "data/feeds.enriched.yaml")
+    
+    # 4. Generate and save schema
+    schema = generate_enriched_schema()
+    save_json_schema(schema, "data/feeds.enriched.schema.json")
+    
+    # 5. Save to database
+    db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+    db.create_db_and_tables()
+    
+    from ai_web_feeds.models import FeedSource
+    for source_data in enriched_sources:
+        feed = FeedSource(
+            id=source_data["id"],
+            feed=source_data.get("feed"),
+            site=source_data.get("site"),
+            title=source_data["title"],
+            # ... other fields
+        )
+        db.add_feed_source(feed)
+    
+    # 6. Generate OPML files
+    feeds = db.get_all_feed_sources()
+    
+    # All feeds
+    opml_all = generate_opml(feeds, "AI Web Feeds - All")
+    save_opml(opml_all, "data/all.opml")
+    
+    # Categorized
+    opml_cat = generate_categorized_opml(feeds, "AI Web Feeds - Categorized")
+    save_opml(opml_cat, "data/categorized.opml")
+    
+    print("✓ Complete!")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## Error Handling
+
+```python
+from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
+async def safe_enrich(source):
+    try:
+        return await enrich_feed_source(source)
+    except Exception as e:
+        logger.error(f"Failed to enrich {source.get('id')}: {e}")
+        return source  # Return original on error
+```
+
+## Configuration
+
+```python
+from ai_web_feeds.config import Settings
+
+# Load settings from environment
+settings = Settings()
+
+# Access logging config
+log_level = settings.logging.level
+log_file = settings.logging.file_path
+
+# Custom settings
+custom_settings = Settings(
+    logging__level="DEBUG",
+    logging__file=True,
+)
+```

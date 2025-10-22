@@ -1,0 +1,354 @@
+---
+title: Database Quick Start
+description: Get started with the AI Web Feeds database in minutes
+---
+
+# Database Quick Start
+
+Get up and running with the AI Web Feeds database system quickly.
+
+## First-Time Setup
+
+### 1. Initialize Alembic (One-Time)
+
+```bash
+cd packages/ai_web_feeds
+uv run alembic init alembic
+```
+
+### 2. Create Initial Migration
+
+```bash
+uv run alembic revision --autogenerate -m "initial_schema"
+uv run alembic upgrade head
+```
+
+### 3. Load Data from YAML Files
+
+```python
+from ai_web_feeds.data_sync import DataSyncOrchestrator
+from ai_web_feeds import DatabaseManager
+
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+sync = DataSyncOrchestrator(db)
+
+# Load feeds.yaml and topics.yaml into database
+results = sync.full_sync()
+print(f"Loaded {results['feeds_loaded']} feeds and {results['topics_loaded']} topics")
+```
+
+## Common Usage Patterns
+
+### Core Analytics
+
+```python
+from ai_web_feeds import DatabaseManager
+from ai_web_feeds.analytics import FeedAnalytics
+
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+
+with db.get_session() as session:
+    analytics = FeedAnalytics(session)
+    
+    # Overview statistics
+    stats = analytics.get_overview_stats()
+    print(f"Total feeds: {stats['total_feeds']}")
+    
+    # Quality metrics
+    quality = analytics.get_quality_metrics()
+    print(f"Average quality score: {quality['avg_quality_score']:.2f}")
+    
+    # Health report
+    health = analytics.generate_health_report()
+    print(f"Healthy feeds: {health['overall_stats']['healthy_count']}")
+```
+
+### Advanced Analytics
+
+```python
+from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
+
+with db.get_session() as session:
+    analytics = AdvancedFeedAnalytics(session)
+    
+    # Predict feed health
+    prediction = analytics.predict_feed_health("feed_id_123", days_ahead=7)
+    print(f"Predicted health: {prediction['predicted_health']:.2f}")
+    
+    # Cluster similar feeds
+    clusters = analytics.cluster_feeds_by_similarity(similarity_threshold=0.6)
+    print(f"Found {len(clusters)} clusters")
+    
+    # Generate ML insights
+    insights = analytics.generate_ml_insights_report()
+    print(f"Top pattern: {insights['patterns'][0]['pattern_type']}")
+```
+
+### Data Synchronization
+
+```python
+from ai_web_feeds.data_sync import DataSyncOrchestrator
+
+sync = DataSyncOrchestrator(db)
+
+# Full bidirectional sync
+results = sync.full_sync()
+
+# Export enriched data
+export_results = sync.export_enriched_feeds("../../data/feeds.enriched.yaml")
+print(f"Exported {export_results['feeds_exported']} feeds")
+
+# Sync with progress callback
+def on_progress(current, total, item_type):
+    print(f"Progress: {current}/{total} {item_type}")
+
+results = sync.full_sync(progress_callback=on_progress)
+```
+
+### Working with Advanced Models
+
+```python
+from ai_web_feeds.models_advanced import (
+    FeedHealthMetric,
+    DataQualityMetric,
+    ContentEmbedding
+)
+
+with db.get_session() as session:
+    # Record health metric
+    health = FeedHealthMetric(
+        feed_source_id="feed_123",
+        overall_health_score=0.85,
+        availability_score=0.95,
+        freshness_score=0.80,
+        content_quality_score=0.90
+    )
+    session.add(health)
+    
+    # Store content embedding
+    embedding = ContentEmbedding(
+        feed_item_id="item_456",
+        embedding_vector=[0.1, 0.2, 0.3],  # Actual embeddings from model
+        model_name="text-embedding-ada-002",
+        dimension=1536
+    )
+    session.add(embedding)
+    
+    session.commit()
+```
+
+## Usage Examples from Python
+
+### Basic Analytics
+
+```python
+from ai_web_feeds import DatabaseManager
+from ai_web_feeds.analytics import FeedAnalytics
+
+# Initialize
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db.create_db_and_tables()
+
+# Run analytics
+with db.get_session() as session:
+    analytics = FeedAnalytics(session)
+    
+    # Overview stats
+    stats = analytics.get_overview_stats()
+    
+    # Quality metrics
+    quality = analytics.get_quality_metrics()
+    
+    # Feed health
+    health = analytics.get_feed_health_report("feed_xyz")
+    
+    # Full report
+    report = analytics.generate_full_report()
+```
+
+### Advanced Analytics
+
+```python
+from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
+
+with db.get_session() as session:
+    analytics = AdvancedFeedAnalytics(session)
+    
+    # Predict feed health 7 days ahead
+    prediction = analytics.predict_feed_health("feed_xyz", days_ahead=7)
+    
+    # Detect content patterns
+    patterns = analytics.detect_content_patterns("feed_xyz")
+    
+    # Find similar feeds
+    similarity = analytics.compute_feed_similarity("feed_1", "feed_2")
+    
+    # Cluster feeds
+    clusters = analytics.cluster_feeds_by_similarity(similarity_threshold=0.6)
+    
+    # ML insights report
+    insights = analytics.generate_ml_insights_report()
+```
+
+### Data Synchronization
+
+```python
+from ai_web_feeds.data_sync import DataSyncOrchestrator, SyncConfig
+
+# Configure sync
+config = SyncConfig(
+    feeds_yaml_path=Path("data/feeds.yaml"),
+    topics_yaml_path=Path("data/topics.yaml"),
+    batch_size=100,
+    update_existing=True,
+)
+
+# Initialize sync
+sync = DataSyncOrchestrator(db, config)
+
+# Full bidirectional sync
+results = sync.full_sync()
+
+print(f"Topics synced: {results['topics']}")
+print(f"Feeds synced: {results['feeds']}")
+print(f"Export complete: {results['export']}")
+```
+
+### Load Feeds from YAML
+
+```python
+from ai_web_feeds.data_sync import FeedDataLoader
+
+loader = FeedDataLoader(db)
+
+# With progress callback
+def progress(current, total):
+    print(f"Loading feeds: {current}/{total}")
+
+stats = loader.load_feeds_from_yaml(progress_callback=progress)
+print(f"Inserted: {stats['inserted']}, Updated: {stats['updated']}")
+```
+
+### Export Enriched Data
+
+```python
+from ai_web_feeds.data_sync import DataExporter
+
+exporter = DataExporter(db)
+output_path = exporter.export_enriched_feeds()
+print(f"Exported to: {output_path}")
+```
+
+## Database Management
+
+### Check Database Status
+
+```python
+from ai_web_feeds import DatabaseManager
+
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+
+with db.get_session() as session:
+    from ai_web_feeds.models import FeedSource
+    feed_count = session.query(FeedSource).count()
+    print(f"Database contains {feed_count} feeds")
+```
+
+### Run Migrations
+
+```bash
+# Check current version
+uv run alembic current
+
+# Upgrade to latest
+uv run alembic upgrade head
+
+# Downgrade one version
+uv run alembic downgrade -1
+
+# Show migration history
+uv run alembic history
+```
+
+### Backup Database
+
+```bash
+# SQLite backup
+cp data/aiwebfeeds.db data/aiwebfeeds.db.backup
+
+# Or use SQLite backup command
+sqlite3 data/aiwebfeeds.db ".backup data/aiwebfeeds.db.backup"
+```
+
+## Migration Strategy
+
+### Initial Setup (First Time)
+
+```bash
+# 1. Create tables
+cd packages/ai_web_feeds
+uv run python -c "from ai_web_feeds import DatabaseManager; db = DatabaseManager(); db.create_db_and_tables()"
+
+# 2. Initialize Alembic
+uv run alembic init alembic
+
+# 3. Create initial migration
+uv run alembic revision --autogenerate -m "initial_schema"
+
+# 4. Apply migration
+uv run alembic upgrade head
+
+# 5. Load data
+uv run python -c "from ai_web_feeds.data_sync import DataSyncOrchestrator; from ai_web_feeds import DatabaseManager; sync = DataSyncOrchestrator(DatabaseManager()); sync.full_sync()"
+```
+
+### Ongoing Updates
+
+```bash
+# 1. Modify models in models.py or models_advanced.py
+
+# 2. Generate migration
+uv run alembic revision --autogenerate -m "add_new_field"
+
+# 3. Review migration file in alembic/versions/
+
+# 4. Apply migration
+uv run alembic upgrade head
+```
+
+## Testing
+
+```bash
+# Run all tests with coverage
+cd tests
+uv run pytest --cov=ai_web_feeds --cov-report=html
+
+# Run specific test file
+uv run pytest tests/packages/ai_web_feeds/test_data_sync.py -v
+
+# Run with markers
+uv run pytest -m "not slow" -v
+```
+
+## File Reference
+
+| File | Purpose |
+|------|---------|
+| `models.py` | Core database models (FeedSource, FeedItem, etc.) |
+| `models_advanced.py` | Advanced models (health, quality, embeddings) |
+| `analytics/core.py` | Core analytics functions |
+| `analytics/advanced.py` | ML-powered analytics |
+| `data_sync.py` | YAML ↔ Database synchronization |
+| `storage.py` | Database connection management |
+
+## Related Documentation
+
+- [Database Architecture](/docs/development/database-architecture) - Comprehensive documentation
+- [Database Enhancements](/docs/development/database-enhancements) - What was changed and why
+- [Python API](/docs/development/python-api) - Full API reference
+- [Testing](/docs/development/testing) - Testing guidelines
+
+---
+
+**Version**: 0.1.0  
+**Last Updated**: October 15, 2025

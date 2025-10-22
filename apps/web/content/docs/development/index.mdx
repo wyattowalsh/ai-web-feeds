@@ -1,0 +1,116 @@
+---
+title: Overview
+description: AI Web Feeds development architecture and implementation
+---
+
+# Development Overview
+
+AI Web Feeds is a comprehensive system for managing AI/ML feed sources with database persistence, enrichment, and OPML generation.
+
+## What We Built
+
+A production-ready system with the following capabilities:
+
+### 1. Database Layer (`aiwebfeeds.db`)
+
+**Technology:** SQLModel + SQLAlchemy + Alembic
+
+**Tables:**
+- `feed_sources` - Core feed metadata
+- `feed_items` - Individual feed entries  
+- `feed_fetch_logs` - Fetch attempt tracking
+- `topics` - Topic taxonomy
+
+**Features:**
+- Full CRUD operations
+- Relationship management
+- Migration support via Alembic
+- JSON field support for flexible data
+
+### 2. Feed Enrichment Pipeline (`feeds.enriched.yaml`)
+
+**Capabilities:**
+- Automatic feed URL discovery from site URLs
+- Feed format detection (RSS/Atom/JSONFeed)
+- Metadata validation and enrichment
+- Quality scoring and curation tracking
+
+**Input:** `data/feeds.yaml` (human-curated)  
+**Output:** `data/feeds.enriched.yaml` (fully enriched with automation data)
+
+### 3. Schema Management (`feeds.enriched.schema.json`)
+
+**Features:**
+- Auto-generated JSON Schema for enriched feeds
+- Comprehensive validation rules
+- Extends base `feeds.schema.json`
+- Supports all enrichment metadata
+
+### 4. OPML Generation
+
+**Formats:**
+- **all.opml** - Flat list of all feeds
+- **categorized.opml** - Organized by source type
+- **Custom filtered** - By topic, type, tag, verification status
+
+**Use Case:** Import into feed readers (Feedly, Inoreader, NetNewsWire, etc.)
+
+### 5. CLI Interface
+
+**Commands:**
+```bash
+aiwebfeeds enrich all          # Enrich feeds
+aiwebfeeds opml all            # Generate all.opml
+aiwebfeeds opml categorized    # Generate categorized.opml
+aiwebfeeds opml filtered       # Generate custom filtered OPML
+aiwebfeeds stats show          # Display statistics
+```
+
+## Package Structure
+
+```
+ai-web-feeds (workspace root)
+├── packages/ai_web_feeds/          # Core library
+│   └── src/ai_web_feeds/
+│       ├── models.py               # SQLModel tables + Pydantic models
+│       ├── storage.py              # Database manager
+│       ├── utils.py                # Enrichment, OPML, schema utils
+│       ├── config.py               # Configuration
+│       └── logger.py               # Logging setup
+│
+└── apps/cli/                       # CLI application
+    └── ai_web_feeds/cli/
+        ├── __init__.py             # Main CLI app
+        └── commands/
+            ├── enrich.py           # Enrichment commands
+            ├── opml.py             # OPML generation
+            ├── stats.py            # Statistics
+            ├── export.py           # Export (stub)
+            └── validate.py         # Validation (stub)
+```
+
+## Data Flow
+
+```
+feeds.yaml (human-curated)
+    ↓
+    ├─→ Feed Discovery (if discover: true)
+    ├─→ Format Detection
+    ├─→ Metadata Validation
+    └─→ Enrichment
+         ↓
+         ├─→ feeds.enriched.yaml (YAML export)
+         ├─→ feeds.enriched.schema.json (JSON schema)
+         └─→ aiwebfeeds.db (SQLite database)
+              ↓
+              ├─→ all.opml (all feeds)
+              ├─→ categorized.opml (by type)
+              └─→ filtered.opml (custom filters)
+```
+
+## Next Steps
+
+- [Database Setup](/docs/development/database) - Learn about the database layer
+- [CLI Usage](/docs/development/cli) - Using the command-line interface
+- [Python API](/docs/development/python-api) - Using the Python API
+- [Contributing](/docs/development/contributing) - How to contribute

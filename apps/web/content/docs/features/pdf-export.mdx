@@ -1,0 +1,290 @@
+---
+title: PDF Export
+description: Export your Fumadocs documentation pages as high-quality PDF files
+icon: FileDown
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Export your Fumadocs documentation pages as high-quality PDF files with automatic discovery and batch processing.
+
+## Features
+
+<Cards>
+  <Card icon={<Check />}>
+    **Automatic Discovery**
+    Exports all documentation pages automatically
+  </Card>
+  <Card icon={<Eye />}>
+    **Clean Output**
+    Navigation and UI elements hidden in print mode
+  </Card>
+  <Card icon={<Layout />}>
+    **Interactive Content**
+    Accordions and tabs expanded to show all content
+  </Card>
+  <Card icon={<Zap />}>
+    **Batch Processing**
+    Concurrent exports with rate limiting
+  </Card>
+</Cards>
+
+## Quick Start
+
+<Steps>
+
+### Start Development Server
+
+```bash
+pnpm dev
+```
+
+Wait for the server to be ready at `http://localhost:3000`
+
+### Export PDFs
+
+<Tabs items={['All Pages', 'Specific Pages', 'Production']}>
+  <Tab value="All Pages">
+    ```bash
+    pnpm export-pdf
+    ```
+    Exports all documentation pages to the `pdfs/` directory.
+  </Tab>
+  <Tab value="Specific Pages">
+    ```bash
+    pnpm export-pdf:specific /docs /docs/getting-started
+    ```
+    Export only the specified pages.
+  </Tab>
+  <Tab value="Production">
+    ```bash
+    pnpm export-pdf:build
+    ```
+    Automated build and export (recommended for final PDFs).
+  </Tab>
+</Tabs>
+
+### Find Your PDFs
+
+PDFs are saved to the `pdfs/` directory:
+
+```
+pdfs/
+├── index.pdf
+├── docs-getting-started.pdf
+└── docs-features-pdf-export.pdf
+```
+
+</Steps>
+
+## How It Works
+
+### Print Styles
+
+Special CSS in `app/global.css` hides navigation elements and optimizes for printing:
+
+```css title="app/global.css"
+@media print {
+  #nd-docs-layout {
+    --fd-sidebar-width: 0px !important;
+  }
+  #nd-sidebar {
+    display: none;
+  }
+  pre, img {
+    page-break-inside: avoid;
+  }
+}
+```
+
+### Component Overrides
+
+When `NEXT_PUBLIC_PDF_EXPORT=true`, interactive components render expanded:
+
+```tsx title="mdx-components.tsx"
+const isPrinting = process.env.NEXT_PUBLIC_PDF_EXPORT === 'true';
+
+return {
+  Accordion: isPrinting ? PrintingAccordion : Accordion,
+  Tab: isPrinting ? PrintingTab : Tab,
+};
+```
+
+<Callout type="info">
+  **PrintingAccordion** and **PrintingTab** components expand all content so nothing is hidden in PDFs.
+</Callout>
+
+### Export Script
+
+The `scripts/export-pdf.ts` script uses Puppeteer to:
+
+1. Discover all documentation pages from `source.getPages()`
+2. Navigate to each page with headless Chrome
+3. Wait for content to load
+4. Generate PDF with custom settings
+
+```typescript title="scripts/export-pdf.ts"
+await page.pdf({
+  path: outputPath,
+  width: '950px',
+  printBackground: true,
+  margin: {
+    top: '20px',
+    right: '20px',
+    bottom: '20px',
+    left: '20px',
+  },
+});
+```
+
+## Configuration
+
+### PDF Settings
+
+Edit `scripts/export-pdf.ts` to customize PDF output:
+
+```typescript title="scripts/export-pdf.ts"
+await page.pdf({
+  path: outputPath,
+  width: '950px',              // Page width
+  printBackground: true,       // Include backgrounds
+  margin: {                    // Page margins
+    top: '20px',
+    right: '20px',
+    bottom: '20px',
+    left: '20px',
+  },
+});
+```
+
+### Concurrency Control
+
+Adjust parallel exports to match your server capacity:
+
+```typescript title="scripts/export-pdf.ts"
+const CONCURRENCY = 3; // Export 3 pages at a time
+```
+
+<Callout type="warn">
+  Higher concurrency = faster exports but more server load. Start with 3 and adjust based on your system.
+</Callout>
+
+### Environment Variables
+
+Set `NEXT_PUBLIC_PDF_EXPORT=true` to enable PDF-friendly rendering:
+
+```bash
+NEXT_PUBLIC_PDF_EXPORT=true pnpm build
+```
+
+## Advanced Usage
+
+### Custom Page Selection
+
+Modify `getAllDocUrls()` to filter pages:
+
+```typescript title="scripts/export-pdf.ts"
+async function getAllDocUrls(): Promise<string[]> {
+  const pages = source.getPages();
+  return pages
+    .filter(page => page.url.startsWith('/docs/api')) // Only API docs
+    .map(page => page.url);
+}
+```
+
+### Custom Viewport
+
+Change rendering viewport for different display sizes:
+
+```typescript
+await page.setViewport({
+  width: 1920,  // Wider viewport
+  height: 1080,
+});
+```
+
+### Add Headers/Footers
+
+Puppeteer supports custom PDF headers and footers:
+
+```typescript
+await page.pdf({
+  // ... other options
+  displayHeaderFooter: true,
+  headerTemplate: '<div style="font-size: 10px;">My Docs</div>',
+  footerTemplate: '<div style="font-size: 10px;">Page <span class="pageNumber"></span></div>',
+});
+```
+
+## Troubleshooting
+
+### PDFs are blank
+
+<Steps>
+
+### Increase Timeout
+```typescript
+timeout: 60000 // 60 seconds
+```
+
+### Check Server
+```bash
+curl http://localhost:3000/docs
+```
+
+### View Browser
+Set `headless: false` in launch options to see what's happening.
+
+</Steps>
+
+### Missing Content
+
+<Callout type="warn">
+  Ensure `NEXT_PUBLIC_PDF_EXPORT=true` is set during build:
+  ```bash
+  NEXT_PUBLIC_PDF_EXPORT=true pnpm build
+  ```
+</Callout>
+
+### Navigation Still Visible
+
+1. Clear `.next` cache: `rm -rf .next`
+2. Rebuild with PDF export mode enabled
+3. Verify print styles in browser dev tools
+
+### Timeout Errors
+
+- Reduce concurrency: `CONCURRENCY = 1`
+- Increase timeout values
+- Check server resources
+
+## Best Practices
+
+1. **Always use production build** for final exports
+2. **Test with single pages** first before exporting all
+3. **Monitor server resources** during large exports
+4. **Review PDFs** before distribution
+
+## Scripts Reference
+
+| Script | Description |
+|--------|-------------|
+| `pnpm export-pdf` | Export all pages (requires server running) |
+| `pnpm export-pdf:specific <urls...>` | Export specific pages |
+| `pnpm export-pdf:build` | Build and export (automated) |
+
+## Tips
+
+- Export during off-peak hours for large sites
+- Use `--no-sandbox` flag if running in containers
+- Consider PDF file size when distributing
+- Test exports on different content types
+- Keep Puppeteer updated for best compatibility
+
+## More Information
+
+- [Fumadocs PDF Export Guide](https://fumadocs.dev/docs/ui/export-pdf)
+- [Puppeteer PDF API](https://pptr.dev/api/puppeteer.pdfoptions)
+- [Scripts Documentation](/docs/guides/scripts)

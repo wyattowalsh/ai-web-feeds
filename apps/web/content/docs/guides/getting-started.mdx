@@ -1,0 +1,396 @@
+---
+title: Getting Started
+description: Complete guide to installing and using AI Web Feeds - from setup to your first analytics report
+icon: Rocket
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+This guide will help you get started with AI Web Feeds, from installation to your first analytics report.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Python 3.13 or higher
+- pip (Python package manager)
+- Git (for cloning the repository)
+
+## Installation
+
+<Steps>
+
+<Step>
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/wyattowalsh/ai-web-feeds.git
+cd ai-web-feeds
+```
+
+</Step>
+
+<Step>
+
+### Choose Setup Method
+
+<Tabs items={['Quick Setup (Recommended)', 'Manual Setup']}>
+
+<Tab value="Quick Setup (Recommended)">
+
+Use the automated setup script:
+
+```bash
+chmod +x setup-enhanced-features.sh
+./setup-enhanced-features.sh
+```
+
+This will:
+- Install the core library
+- Install the CLI
+- Create the data directory
+- Initialize the database
+
+</Tab>
+
+<Tab value="Manual Setup">
+
+If you prefer manual installation:
+
+```bash
+# Install core library
+cd packages/ai_web_feeds
+pip install -e .
+
+# Install CLI
+cd ../../apps/cli
+pip install -e .
+
+# Create data directory and initialize database
+cd ../..
+mkdir -p data
+python3 -c "
+from ai_web_feeds.storage import DatabaseManager
+db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
+db.create_db_and_tables()
+"
+```
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+</Steps>
+
+## Quick Start
+
+### 1. Add Your First Feeds
+
+The project comes with sample feeds in `data/feeds.yaml`. You can:
+
+<Tabs items={['Use Existing Feeds', 'Add Custom Feeds']}>
+
+<Tab value="Use Existing Feeds">
+
+```bash
+# The repository includes curated AI/ML feeds
+cat data/feeds.yaml
+```
+
+</Tab>
+
+<Tab value="Add Custom Feeds">
+
+Edit `data/feeds.yaml`:
+
+```yaml
+sources:
+  - id: "my-custom-feed"
+    feed: "https://example.com/feed.xml"
+    title: "My Custom Feed"
+    source_type: "blog"
+    topics: ["machine-learning"]
+    tags: ["custom"]
+```
+
+</Tab>
+
+</Tabs>
+
+### 2. Enrich Feed Metadata
+
+Process feeds and extract metadata:
+
+```bash
+ai-web-feeds enrich all
+```
+
+This will:
+- Validate feed URLs
+- Discover feeds for sites without direct feed URLs
+- Detect feed formats
+- Generate quality scores
+
+### 3. Fetch Feed Content
+
+Download and analyze feed content:
+
+```bash
+# Fetch all feeds
+ai-web-feeds fetch all
+
+# Or fetch a specific feed
+ai-web-feeds fetch one huggingface-blog --metadata
+```
+
+### 4. View Analytics
+
+Explore your feed data:
+
+```bash
+# Overview dashboard
+ai-web-feeds analytics overview
+
+# View distributions
+ai-web-feeds analytics distributions
+
+# Check quality metrics
+ai-web-feeds analytics quality
+
+# See publishing trends
+ai-web-feeds analytics trends --days 30
+```
+
+### 5. Check Feed Health
+
+Monitor individual feed performance:
+
+```bash
+ai-web-feeds analytics health huggingface-blog
+```
+
+### 6. Generate Reports
+
+Export comprehensive analytics:
+
+```bash
+# Generate JSON report
+ai-web-feeds analytics report --output data/analytics-report.json
+
+# Generate OPML for feed readers
+ai-web-feeds opml generate --output data/feeds.opml
+```
+
+## Common Workflows
+
+### Adding New Feeds
+
+1. **Find a feed URL** - Most blogs have RSS/Atom feeds
+2. **Add to feeds.yaml**:
+
+```yaml
+- id: "new-feed-id"
+  feed: "https://example.com/feed.xml"
+  title: "Feed Title"
+  source_type: "blog"
+  topics: ["nlp", "computer-vision"]
+```
+
+3. **Enrich and validate**:
+
+```bash
+ai-web-feeds enrich one new-feed-id
+```
+
+4. **Fetch content**:
+
+```bash
+ai-web-feeds fetch one new-feed-id
+```
+
+### Platform-Specific Feeds
+
+For known platforms, you can use just the site URL:
+
+```yaml
+# Reddit subreddit
+- id: "reddit-machinelearning"
+  site: "https://reddit.com/r/MachineLearning"
+  discover: true
+  platform_config:
+    reddit:
+      sort: "hot"  # or "top", "new"
+
+# YouTube channel
+- id: "youtube-channel"
+  site: "https://youtube.com/channel/UC123..."
+  discover: true
+
+# GitHub repository
+- id: "github-repo"
+  site: "https://github.com/owner/repo"
+  discover: true
+  platform_config:
+    github:
+      feed_type: "releases"  # or "commits", "tags"
+```
+
+See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.
+
+### Monitoring Feed Health
+
+Set up regular health checks:
+
+```bash
+# Check all feeds
+ai-web-feeds fetch all --verified-only
+
+# Review performance
+ai-web-feeds analytics performance --days 7
+
+# Check specific feed health
+ai-web-feeds analytics health <feed-id>
+```
+
+### Exporting Data
+
+Export to different formats:
+
+```bash
+# OPML for feed readers
+ai-web-feeds opml generate --output feeds.opml
+
+# Categorized OPML
+ai-web-feeds opml categorize --output feeds-categorized.opml
+
+# JSON analytics report
+ai-web-feeds analytics report --output analytics.json
+```
+
+## Configuration
+
+### Database Configuration
+
+By default, SQLite is used. To use a different database:
+
+```bash
+ai-web-feeds fetch all --database "postgresql://user:pass@localhost/dbname"
+```
+
+Or set an environment variable:
+
+```bash
+export AI_WEB_FEEDS_DB="postgresql://user:pass@localhost/dbname"
+```
+
+### Fetch Configuration
+
+Create a config file (e.g., `.env`):
+
+```bash
+AI_WEB_FEEDS_TIMEOUT=30
+AI_WEB_FEEDS_USER_AGENT="MyApp/1.0"
+```
+
+## Troubleshooting
+
+<Callout type="info" title="Common Issues">
+
+**Feed Not Found Error**
+
+```bash
+# Verify feed exists in database
+ai-web-feeds stats show
+
+# Check feeds.yaml for typos
+cat data/feeds.yaml | grep "id:"
+```
+
+**Fetch Failures**
+
+```bash
+# Check error details
+ai-web-feeds analytics performance
+
+# Test single feed with verbose output
+ai-web-feeds fetch one <feed-id> --metadata
+```
+
+**Database Issues**
+
+```bash
+# Reinitialize database
+rm data/aiwebfeeds.db
+python3 -c "
+from ai_web_feeds.storage import DatabaseManager
+db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
+db.create_db_and_tables()
+"
+```
+
+</Callout>
+
+## Next Steps
+
+1. **Explore Analytics** - Try different analytics commands to understand your feed data
+2. **Set Up Automation** - Create cron jobs for regular fetching
+3. **Customize Feeds** - Add feeds relevant to your interests
+4. **Build Integrations** - Use the Python API to integrate with other tools
+5. **Contribute** - Share your curated feeds with the community
+
+## Example Session
+
+Here's a complete example workflow:
+
+```bash
+# 1. Install
+./setup-enhanced-features.sh
+
+# 2. Check what's in the database
+ai-web-feeds stats show
+
+# 3. Enrich existing feeds
+ai-web-feeds enrich all
+
+# 4. Fetch content
+ai-web-feeds fetch all --limit 10
+
+# 5. View analytics
+ai-web-feeds analytics overview
+ai-web-feeds analytics distributions
+ai-web-feeds analytics quality
+
+# 6. Check a specific feed
+ai-web-feeds analytics health huggingface-blog
+
+# 7. Generate reports
+ai-web-feeds analytics report --output report.json
+ai-web-feeds opml generate --output feeds.opml
+
+# 8. View trends
+ai-web-feeds analytics trends --days 30
+```
+
+## What's Next?
+
+Now that you're set up, you can:
+
+- Add more feeds to your collection
+- Set up automated fetching (cron jobs)
+- Build custom analytics scripts
+- Integrate with other tools
+- Contribute back to the project
+
+## Resources
+
+- [Feature Overview](/docs/features) - Comprehensive feature list
+- [CLI Reference](/docs/development/cli) - Command-line interface guide
+- [Python API](/docs/development/python-api) - Programmatic usage
+- [Analytics Guide](/docs/guides/analytics) - Advanced analytics
+
+Happy feed aggregating! 🚀

@@ -1,0 +1,491 @@
+---
+title: Database & Storage
+description: Comprehensive data persistence for feed sources, enrichment data, validation results, and analytics
+---
+
+## Overview
+
+The AIWebFeeds database system provides comprehensive storage for all feed-related data, metadata, and enrichments using SQLModel (SQLAlchemy 2.0 + Pydantic v2) with SQLite as the default backend.
+
+## Architecture
+
+### Core Models
+
+The database schema consists of 7 primary tables that store all possible data:
+
+```python
+# Core data models
+FeedSource          # Feed definitions and metadata
+FeedItem            # Individual feed entries  
+FeedFetchLog        # Fetch history and logs
+Topic               # Topic taxonomy
+
+# Enrichment and analytics
+FeedEnrichmentData  # Comprehensive enrichment metadata
+FeedValidationResult # Validation results and checks
+FeedAnalytics       # Usage metrics and analytics
+```
+
+## Data Models
+
+### FeedSource
+
+Primary table for feed definitions with basic metadata:
+
+```python
+class FeedSource(SQLModel, table=True):
+    id: str                    # Unique feed identifier
+    feed: str                  # Feed URL
+    site: str | None           # Website URL
+    title: str                 # Display name
+    source_type: SourceType    # personal, institutional, etc.
+    mediums: list[Medium]      # text, video, audio, image
+    topics: list[str]          # Topic IDs
+    topic_weights: dict        # Topic relevance scores
+    language: str              # Language code (en, es, etc.)
+    format: FeedFormat         # RSS, Atom, JSON Feed
+    quality_score: float       # Overall quality (0-1)
+    # ... curation, provenance, relations fields
+```
+
+### FeedEnrichmentData
+
+Comprehensive enrichment metadata (30+ fields):
+
+```python
+class FeedEnrichmentData(SQLModel, table=True):
+    feed_source_id: str        # Foreign key to FeedSource
+    enriched_at: datetime      # Enrichment timestamp
+    enrichment_version: str    # Version tracking
+    
+    # Basic metadata
+    discovered_title: str | None
+    discovered_description: str | None
+    discovered_language: str | None
+    discovered_author: str | None
+    
+    # Format and platform
+    detected_format: FeedFormat | None
+    detected_platform: str | None
+    platform_metadata: dict
+    
+    # Visual assets
+    icon_url: str | None
+    logo_url: str | None
+    image_url: str | None
+    favicon_url: str | None
+    banner_url: str | None
+    
+    # Quality and health scores
+    health_score: float | None         # Feed health (0-1)
+    quality_score: float | None        # Content quality (0-1)
+    completeness_score: float | None   # Metadata completeness (0-1)
+    reliability_score: float | None    # Update reliability (0-1)
+    freshness_score: float | None      # Content freshness (0-1)
+    
+    # Content analysis
+    entry_count: int | None
+    has_full_content: bool
+    avg_content_length: float | None
+    content_types: list[str]
+    content_samples: list[str]
+    
+    # Update patterns
+    estimated_frequency: str | None
+    last_updated: datetime | None
+    update_regularity: float | None
+    update_intervals: list[int]
+    
+    # Performance metrics
+    response_time_ms: float | None
+    availability_score: float | None
+    uptime_percentage: float | None
+    
+    # Topic suggestions
+    suggested_topics: list[str]
+    topic_confidence: dict[str, float]
+    auto_keywords: list[str]
+    
+    # Feed extensions
+    has_itunes: bool
+    has_media_rss: bool
+    has_dublin_core: bool
+    has_geo: bool
+    extension_data: dict
+    
+    # SEO and social
+    seo_title: str | None
+    seo_description: str | None
+    og_image: str | None
+    twitter_card: str | None
+    social_metadata: dict
+    
+    # Technical details
+    encoding: str | None
+    generator: str | None
+    ttl: int | None
+    cloud: dict
+    
+    # Link analysis
+    internal_links: int | None
+    external_links: int | None
+    broken_links: int | None
+    redirect_chains: list[str]
+    
+    # Security
+    uses_https: bool
+    has_valid_ssl: bool
+    security_headers: dict
+    
+    # Flexible storage
+    structured_data: dict
+    raw_metadata: dict
+    extra_data: dict
+```
+
+### FeedValidationResult
+
+Validation checks and results:
+
+```python
+class FeedValidationResult(SQLModel, table=True):
+    feed_source_id: str
+    validated_at: datetime
+    
+    # Overall status
+    is_valid: bool
+    validation_level: str          # strict, moderate, lenient
+    
+    # Schema validation
+    schema_valid: bool
+    schema_version: str | None
+    schema_errors: list[str]
+    
+    # Accessibility
+    is_accessible: bool
+    http_status: int | None
+    redirect_count: int | None
+    
+    # Content validation
+    has_items: bool
+    item_count: int | None
+    has_required_fields: bool
+    missing_fields: list[str]
+    
+    # Link validation
+    links_checked: int | None
+    links_valid: int | None
+    broken_link_urls: list[str]
+    
+    # Security checks
+    https_enabled: bool
+    ssl_valid: bool
+    security_issues: list[str]
+    
+    # Recommendations
+    warnings: list[str]
+    recommendations: list[str]
+    validation_report: dict
+```
+
+### FeedAnalytics
+
+Time-series analytics data:
+
+```python
+class FeedAnalytics(SQLModel, table=True):
+    feed_source_id: str
+    period_start: datetime
+    period_end: datetime
+    period_type: str              # daily, weekly, monthly, yearly
+    
+    # Volume metrics
+    total_items: int
+    new_items: int
+    updated_items: int
+    
+    # Update frequency
+    update_count: int
+    avg_update_interval_hours: float | None
+    
+    # Content metrics
+    avg_content_length: float | None
+    has_images_count: int
+    has_video_count: int
+    
+    # Quality metrics
+    items_with_full_content: int
+    items_with_summary_only: int
+    
+    # Reliability
+    fetch_attempts: int
+    fetch_successes: int
+    uptime_percentage: float | None
+    
+    # Performance
+    avg_response_time_ms: float | None
+    
+    # Distribution
+    topic_distribution: dict[str, int]
+    keyword_frequency: dict[str, int]
+```
+
+## Storage Operations
+
+### DatabaseManager
+
+The `DatabaseManager` class provides all storage operations:
+
+```python
+from ai_web_feeds import DatabaseManager
+
+# Initialize
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db.create_db_and_tables()
+
+# Feed sources
+db.add_feed_source(feed_source)
+source = db.get_feed_source(feed_id)
+all_sources = db.get_all_feed_sources()
+
+# Enrichment data
+db.add_enrichment_data(enrichment)
+enrichment = db.get_enrichment_data(feed_id)
+all_enrichments = db.get_all_enrichment_data(feed_id)
+db.delete_old_enrichments(feed_id, keep_count=5)
+
+# Validation results
+db.add_validation_result(validation)
+result = db.get_validation_result(feed_id)
+failed = db.get_failed_validations()
+
+# Analytics
+db.add_analytics(analytics)
+analytics = db.get_analytics(feed_id, period_type="daily", limit=30)
+all_analytics = db.get_all_analytics(period_type="monthly")
+
+# Comprehensive queries
+complete_data = db.get_feed_complete_data(feed_id)
+health_summary = db.get_health_summary()
+```
+
+### Enrichment Persistence
+
+The enrichment process automatically stores data to the database:
+
+```python
+from ai_web_feeds import enrich_all_feeds, DatabaseManager
+
+# Initialize database
+db = DatabaseManager()
+db.create_db_and_tables()
+
+# Enrich and persist
+feeds_data = load_feeds("data/feeds.yaml")
+enriched_data = enrich_all_feeds(feeds_data, db=db)
+
+# Enrichment data is automatically saved to FeedEnrichmentData table
+```
+
+### Comprehensive Data Retrieval
+
+Get all data for a feed source in one call:
+
+```python
+data = db.get_feed_complete_data("feed-id")
+# Returns:
+# {
+#     "source": FeedSource,
+#     "enrichment": FeedEnrichmentData,
+#     "validation": FeedValidationResult,
+#     "analytics": [FeedAnalytics],
+#     "recent_items": [FeedItem]
+# }
+```
+
+### Health Summary
+
+Get overall health metrics across all feeds:
+
+```python
+summary = db.get_health_summary()
+# Returns:
+# {
+#     "total_feeds": 150,
+#     "feeds_with_health_data": 145,
+#     "avg_health_score": 0.82,
+#     "avg_quality_score": 0.78,
+#     "feeds_healthy": 120,     # health_score >= 0.7
+#     "feeds_warning": 20,      # 0.4 <= health_score < 0.7
+#     "feeds_critical": 5       # health_score < 0.4
+# }
+```
+
+## Data Flow
+
+### Complete Pipeline
+
+```
+1. Load feeds from YAML
+   ↓
+2. Validate feeds → Store FeedValidationResult
+   ↓
+3. Enrich feeds → Store FeedEnrichmentData
+   ↓
+4. Validate enriched → Store FeedValidationResult
+   ↓
+5. Export + Store FeedSource
+   ↓
+6. Collect analytics → Store FeedAnalytics
+```
+
+### CLI Usage
+
+The CLI automatically handles database storage:
+
+```bash
+# Process with database persistence
+aiwebfeeds process \
+  --input data/feeds.yaml \
+  --output data/feeds.enriched.yaml \
+  --database sqlite:///data/aiwebfeeds.db
+
+# Database is automatically populated with:
+# - FeedSource records (from YAML)
+# - FeedEnrichmentData (from enrichment)
+# - FeedValidationResult (from validation)
+```
+
+## Schema Migration
+
+### Alembic Integration
+
+Database migrations are managed via Alembic:
+
+```bash
+# Generate migration
+uv run alembic revision --autogenerate -m "Add new enrichment fields"
+
+# Apply migration
+uv run alembic upgrade head
+
+# Rollback
+uv run alembic downgrade -1
+```
+
+### Schema Evolution
+
+The database schema supports evolution through:
+
+1. **JSON columns**: Flexible `extra_data`, `raw_metadata`, `structured_data` fields
+2. **Version tracking**: `enrichment_version`, `validator_version` fields
+3. **Backwards compatibility**: Nullable fields for gradual rollout
+
+## Performance Considerations
+
+### Indexes
+
+Automatically created indexes:
+
+```python
+# Foreign keys (auto-indexed)
+FeedEnrichmentData.feed_source_id
+FeedValidationResult.feed_source_id
+FeedAnalytics.feed_source_id
+
+# Custom indexes
+FeedItem.published_at  # For time-based queries
+Topic.parent_id        # For hierarchical queries
+```
+
+### Query Optimization
+
+```python
+# Use specific queries vs loading all data
+enrichment = db.get_enrichment_data(feed_id)  # Latest only
+vs
+all_enrichments = db.get_all_enrichment_data(feed_id)  # All history
+
+# Limit analytics queries
+analytics = db.get_analytics(feed_id, period_type="daily", limit=30)
+
+# Clean up old enrichments periodically
+db.delete_old_enrichments(feed_id, keep_count=5)
+```
+
+### Batch Operations
+
+```python
+# Bulk insert for performance
+db.bulk_insert_feed_sources(feed_sources)
+db.bulk_insert_topics(topics)
+```
+
+## Data Integrity
+
+### Constraints
+
+- **Primary keys**: Auto-generated UUIDs for enrichment/validation/analytics
+- **Foreign keys**: Enforce relationships between tables
+- **Unique constraints**: Feed IDs, topic IDs
+- **Check constraints**: Score ranges (0-1), positive counts
+
+### Validation
+
+Data is validated at multiple levels:
+
+1. **Pydantic validation**: Type checking, field constraints
+2. **SQLModel validation**: Database constraints
+3. **Application validation**: Business logic validation
+
+### Transactions
+
+All database operations use transactions:
+
+```python
+with db.get_session() as session:
+    session.add(enrichment)
+    session.commit()
+    # Auto-rollback on error
+```
+
+## Monitoring
+
+### Health Checks
+
+```python
+# Overall health
+summary = db.get_health_summary()
+
+# Failed validations
+failed = db.get_failed_validations()
+
+# Recent enrichments
+recent = db.get_all_enrichment_data(feed_id)
+```
+
+### Analytics Queries
+
+```python
+# Daily analytics for last 30 days
+daily = db.get_analytics(feed_id, period_type="daily", limit=30)
+
+# Monthly trends
+monthly = db.get_all_analytics(period_type="monthly")
+```
+
+## Best Practices
+
+1. **Regular cleanup**: Delete old enrichments periodically
+2. **Index usage**: Query with indexed fields (feed_source_id)
+3. **Batch operations**: Use bulk inserts for performance
+4. **JSON fields**: Use for flexible/evolving data structures
+5. **Version tracking**: Always set version fields for migrations
+6. **Health monitoring**: Check health_summary regularly
+7. **Validation**: Always validate before persisting
+
+## Related
+
+- [Architecture](/docs/development/architecture) - System architecture overview
+- [CLI Reference](/docs/cli) - Command-line interface
+- [Data Models](/docs/api/models) - Model definitions

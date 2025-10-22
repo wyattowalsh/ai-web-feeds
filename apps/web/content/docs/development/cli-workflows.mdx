@@ -1,0 +1,743 @@
+---
+title: CLI Integration in Workflows
+description: How the aiwebfeeds CLI powers our CI/CD pipeline
+---
+
+# CLI Integration in GitHub Actions
+
+The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow leverages CLI commands for consistent, reliable automation.
+
+## 🎯 Why CLI-First Workflows?
+
+### Benefits
+
+1. **Consistency**: Same commands in CI/CD and local development
+2. **Testability**: CLI is fully tested (90%+ coverage)
+3. **Maintainability**: Logic in Python, not YAML
+4. **Reusability**: One command, many workflows
+5. **Debugging**: Run exact CI command locally
+
+### Anti-Pattern ❌
+
+```yaml
+# DON'T: Duplicate logic in YAML
+- name: Validate feeds
+  run: |
+    python -c "import yaml; data = yaml.safe_load(open('data/feeds.yaml'))"
+    # ... 50 lines of shell script validation logic
+```
+
+### Best Practice ✅
+
+```yaml
+# DO: Use CLI command
+- name: Validate feeds
+  run: uv run aiwebfeeds validate --all --strict
+```
+
+---
+
+## 🔧 Available CLI Commands
+
+### Validation Commands
+
+#### `validate` - Comprehensive Feed Validation
+
+**Purpose**: Validate feed data, schemas, URLs, and parsing
+
+**Workflow Usage**:
+```yaml
+# Validate all feeds
+- name: Validate all feeds
+  run: uv run aiwebfeeds validate --all
+
+# Schema validation only
+- name: Validate schema
+  run: uv run aiwebfeeds validate --schema --strict
+
+# Check URL accessibility
+- name: Check feed URLs
+  run: uv run aiwebfeeds validate --check-urls --timeout 30
+
+# Validate specific feeds (for PR changes)
+- name: Validate changed feeds
+  run: |
+    CHANGED_FEEDS=$(git diff origin/main -- data/feeds.yaml | grep -oP 'url:\s*\K\S+')
+    uv run aiwebfeeds validate --feeds $CHANGED_FEEDS
+```
+
+**Options**:
+- `--all` - Validate all feeds in `data/feeds.yaml`
+- `--schema` - Schema validation only
+- `--check-urls` - Test URL accessibility
+- `--parse-feeds` - Validate feed parsing
+- `--strict` - Fail on warnings
+- `--timeout` - Request timeout (default: 30s)
+- `--feeds` - Validate specific feed URLs
+
+**Exit Codes**:
+- `0` - All validations passed
+- `1` - Validation failures
+- `2` - Schema errors
+
+---
+
+#### `test` - Run Test Suite
+
+**Purpose**: Execute pytest test suite with coverage
+
+**Workflow Usage**:
+```yaml
+# Full test suite
+- name: Run tests
+  run: uv run aiwebfeeds test --coverage
+
+# Quick tests only
+- name: Quick test
+  run: uv run aiwebfeeds test --quick
+
+# Specific test markers
+- name: Unit tests
+  run: uv run aiwebfeeds test --marker unit
+```
+
+**Options**:
+- `--coverage` - Generate coverage report
+- `--quick` - Fast tests only (no slow/integration)
+- `--marker` - Run specific test markers (unit, integration, e2e)
+- `--verbose` - Detailed output
+
+**Output**:
+- Creates `reports/coverage/` directory
+- Generates `coverage.xml` for Codecov
+- Exit code 1 if tests fail or coverage below 90%
+
+---
+
+### Analytics Commands
+
+#### `analytics` - Generate Feed Statistics
+
+**Purpose**: Calculate feed metrics and insights
+
+**Workflow Usage**:
+```yaml
+# Generate analytics JSON
+- name: Generate analytics
+  run: uv run aiwebfeeds analytics --output data/analytics.json
+
+# Display in workflow
+- name: Show analytics
+  run: uv run aiwebfeeds analytics --format table
+
+# Track changes
+- name: Analytics diff
+  run: |
+    uv run aiwebfeeds analytics --output /tmp/new.json
+    diff data/analytics.json /tmp/new.json || echo "Analytics changed"
+```
+
+**Options**:
+- `--output` - Save to JSON file
+- `--format` - Output format (table, json, yaml)
+- `--metrics` - Specific metrics to calculate
+- `--changed-feeds` - Only analyze changed feeds
+
+**Metrics**:
+- Total feed count
+- Feeds per category
+- Language distribution
+- Feed health status
+- Update frequency statistics
+
+---
+
+#### `stats` - Display Feed Statistics
+
+**Purpose**: Show human-readable feed statistics
+
+**Workflow Usage**:
+```yaml
+# Post stats as PR comment
+- name: Generate stats
+  id: stats
+  run: |
+    STATS=$(uv run aiwebfeeds stats --format markdown)
+    echo "stats<<EOF" >> $GITHUB_OUTPUT
+    echo "$STATS" >> $GITHUB_OUTPUT
+    echo "EOF" >> $GITHUB_OUTPUT
+
+- name: Comment PR
+  uses: actions/github-script@v7
+  with:
+    script: |
+      github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: ${{ steps.stats.outputs.stats }}
+      })
+```
+
+**Options**:
+- `--format` - markdown, table, or json
+- `--categories` - Show per-category stats
+- `--trends` - Include trend analysis
+
+---
+
+### Export Commands
+
+#### `export` - Export Feed Data
+
+**Purpose**: Generate output in various formats
+
+**Workflow Usage**:
+```yaml
+# Export to JSON for artifacts
+- name: Export feeds
+  run: uv run aiwebfeeds export --format json --output feeds.json
+
+- name: Upload artifact
+  uses: actions/upload-artifact@v4
+  with:
+    name: feed-data
+    path: feeds.json
+
+# Validate export
+- name: Export with validation
+  run: uv run aiwebfeeds export --validate --format opml
+```
+
+**Options**:
+- `--format` - json, yaml, opml, csv
+- `--output` - Output file path
+- `--validate` - Validate before export
+- `--pretty` - Pretty-print JSON/YAML
+
+---
+
+#### `opml` - OPML Management
+
+**Purpose**: Import/export OPML feed lists
+
+**Workflow Usage**:
+```yaml
+# Export to OPML
+- name: Generate OPML
+  run: uv run aiwebfeeds opml export --output data/all.opml
+
+# Export categorized OPML
+- name: Generate categorized OPML
+  run: uv run aiwebfeeds opml export --categorized --output data/categorized.opml
+
+# Validate OPML structure
+- name: Validate OPML
+  run: uv run aiwebfeeds opml validate data/all.opml
+
+# Import from OPML (for migration)
+- name: Import OPML
+  run: uv run aiwebfeeds opml import feeds.opml --merge
+```
+
+**Subcommands**:
+- `export` - Generate OPML from feeds.yaml
+- `import` - Import OPML into feeds.yaml
+- `validate` - Validate OPML structure
+
+**Options**:
+- `--categorized` - Group by categories
+- `--validate` - Validate structure
+- `--merge` - Merge with existing feeds
+- `--fix-structure` - Auto-fix common issues
+
+---
+
+### Enrichment Commands
+
+#### `enrich` - Enhance Feed Metadata
+
+**Purpose**: Add/update feed metadata automatically
+
+**Workflow Usage**:
+```yaml
+# Enrich all feeds
+- name: Enrich feeds
+  run: uv run aiwebfeeds enrich --all --output data/feeds.enriched.yaml
+
+# Enrich specific feed
+- name: Enrich new feed
+  run: |
+    FEED_URL="${{ github.event.inputs.feed_url }}"
+    uv run aiwebfeeds enrich --url "$FEED_URL" --output data/feeds.yaml
+
+# Fix schema issues
+- name: Fix schema
+  run: uv run aiwebfeeds enrich --fix-schema --all
+
+# Fetch feed metadata
+- name: Fetch metadata
+  run: uv run aiwebfeeds fetch --url "$FEED_URL" --metadata-only
+```
+
+**Options**:
+- `--all` - Enrich all feeds
+- `--url` - Enrich specific feed URL
+- `--fix-schema` - Auto-fix schema violations
+- `--output` - Output file
+- `--metadata-only` - Fetch metadata without full parsing
+
+**Enrichment Process**:
+1. Fetches feed content
+2. Extracts title, description, language
+3. Detects feed type (RSS/Atom)
+4. Validates against schema
+5. Adds missing required fields
+6. Updates timestamps
+
+---
+
+## 🔄 Workflow Patterns
+
+### Pattern 1: Incremental Validation
+
+**Use Case**: Only validate feeds changed in PR
+
+```yaml
+name: Validate Changed Feeds
+
+on:
+  pull_request:
+    paths:
+      - 'data/feeds.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need history for diff
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Get changed feeds
+        id: changes
+        run: |
+          # Extract URLs from diff
+          CHANGED=$(git diff origin/${{ github.base_ref }} -- data/feeds.yaml | \
+                    grep -oP '^\+\s+url:\s*\K\S+' | \
+                    tr '\n' ' ')
+          echo "feeds=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Validate changed feeds
+        if: steps.changes.outputs.feeds != ''
+        run: uv run aiwebfeeds validate --feeds ${{ steps.changes.outputs.feeds }}
+```
+
+---
+
+### Pattern 2: Matrix Validation
+
+**Use Case**: Validate feeds in parallel for speed
+
+```yaml
+name: Parallel Feed Validation
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.feeds.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Generate feed matrix
+        id: feeds
+        run: |
+          # Extract all feed URLs into JSON array
+          FEEDS=$(uv run python -c "
+          import yaml, json
+          with open('data/feeds.yaml') as f:
+              data = yaml.safe_load(f)
+          feeds = [item['url'] for item in data['feeds']]
+          # Split into chunks of 10
+          chunks = [feeds[i:i+10] for i in range(0, len(feeds), 10)]
+          print(json.dumps({'chunk': list(range(len(chunks)))}))
+          ")
+          echo "matrix=$FEEDS" >> $GITHUB_OUTPUT
+
+  validate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Validate chunk ${{ matrix.chunk }}
+        run: |
+          # Get feeds for this chunk
+          FEEDS=$(uv run python -c "
+          import yaml
+          with open('data/feeds.yaml') as f:
+              data = yaml.safe_load(f)
+          feeds = [item['url'] for item in data['feeds']]
+          chunk = feeds[${{ matrix.chunk }}*10:(${{ matrix.chunk }}+1)*10]
+          print(' '.join(chunk))
+          ")
+          uv run aiwebfeeds validate --feeds $FEEDS
+```
+
+---
+
+### Pattern 3: Conditional Workflow Steps
+
+**Use Case**: Run different CLI commands based on file changes
+
+```yaml
+name: Smart Validation
+
+on: [pull_request]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      feeds: ${{ steps.filter.outputs.feeds }}
+      python: ${{ steps.filter.outputs.python }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            feeds:
+              - 'data/feeds.yaml'
+            python:
+              - 'packages/**/*.py'
+              - 'apps/cli/**/*.py'
+            web:
+              - 'apps/web/**/*'
+
+  validate-feeds:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.feeds == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Validate feeds
+        run: uv run aiwebfeeds validate --all --strict
+
+  test-python:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run Python tests
+        run: uv run aiwebfeeds test --coverage
+
+  test-web:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - name: Test web
+        run: |
+          cd apps/web
+          pnpm install
+          pnpm lint
+          pnpm build
+```
+
+---
+
+### Pattern 4: PR Comments with CLI Output
+
+**Use Case**: Post CLI results as PR comments
+
+```yaml
+name: Post Feed Stats
+
+on:
+  pull_request:
+    paths:
+      - 'data/feeds.yaml'
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Generate stats
+        id: stats
+        run: |
+          {
+            echo 'stats<<EOF'
+            uv run aiwebfeeds stats --format markdown
+            echo EOF
+          } >> $GITHUB_OUTPUT
+      
+      - name: Generate analytics
+        id: analytics
+        run: |
+          {
+            echo 'analytics<<EOF'
+            uv run aiwebfeeds analytics --format table
+            echo EOF
+          } >> $GITHUB_OUTPUT
+      
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const stats = `${{ steps.stats.outputs.stats }}`;
+            const analytics = `${{ steps.analytics.outputs.analytics }}`;
+            
+            const body = `## 📊 Feed Statistics
+            
+            ${stats}
+            
+            ## 📈 Analytics
+            
+            \`\`\`
+            ${analytics}
+            \`\`\`
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+```
+
+---
+
+### Pattern 5: Workflow Artifacts
+
+**Use Case**: Save CLI output as downloadable artifacts
+
+```yaml
+name: Generate Feed Reports
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+
+jobs:
+  reports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Generate reports
+        run: |
+          mkdir -p reports
+          
+          # Analytics report
+          uv run aiwebfeeds analytics --output reports/analytics.json
+          
+          # Export feeds
+          uv run aiwebfeeds export --format json --output reports/feeds.json
+          
+          # OPML export
+          uv run aiwebfeeds opml export --output reports/feeds.opml
+          uv run aiwebfeeds opml export --categorized --output reports/feeds-categorized.opml
+          
+          # Validation report
+          uv run aiwebfeeds validate --all > reports/validation.txt || true
+          
+          # Stats
+          uv run aiwebfeeds stats --format markdown > reports/stats.md
+      
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-reports
+          path: reports/
+          retention-days: 90
+```
+
+---
+
+## 🎨 Custom CLI Commands for Workflows
+
+You can add workflow-specific CLI commands:
+
+### Example: `workflow-report` Command
+
+**File**: `apps/cli/ai_web_feeds/cli/commands/workflow.py`
+
+```python
+import typer
+from rich.console import Console
+from rich.table import Table
+
+app = typer.Typer()
+console = Console()
+
+@app.command()
+def report(
+    pr_number: int = typer.Option(..., help="PR number"),
+    format: str = typer.Option("markdown", help="Output format")
+) -> None:
+    """Generate workflow report for PR."""
+    from ai_web_feeds.analytics import calculate_metrics
+    from ai_web_feeds.storage import get_changed_feeds
+    
+    changed = get_changed_feeds(pr_number)
+    metrics = calculate_metrics(changed)
+    
+    if format == "markdown":
+        console.print(f"## Changed Feeds: {len(changed)}")
+        console.print(f"**Categories**: {', '.join(metrics['categories'])}")
+        console.print(f"**Languages**: {', '.join(metrics['languages'])}")
+    elif format == "json":
+        import json
+        console.print(json.dumps(metrics, indent=2))
+```
+
+**Workflow Usage**:
+```yaml
+- name: Generate PR report
+  run: uv run aiwebfeeds workflow report --pr-number ${{ github.event.number }}
+```
+
+---
+
+## 🐛 Debugging CLI in Workflows
+
+### Enable Verbose Output
+
+```yaml
+- name: Validate with debug
+  run: uv run aiwebfeeds validate --all --verbose
+  env:
+    AIWEBFEEDS_LOG_LEVEL: DEBUG
+```
+
+### Capture Logs
+
+```yaml
+- name: Validate and save logs
+  run: |
+    uv run aiwebfeeds validate --all --verbose 2>&1 | tee validation.log
+
+- name: Upload logs
+  if: failure()
+  uses: actions/upload-artifact@v4
+  with:
+    name: validation-logs
+    path: validation.log
+```
+
+### Test CLI Locally
+
+```bash
+# Run exact command from workflow
+uv run aiwebfeeds validate --all --strict
+
+# With environment variables
+AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all
+```
+
+---
+
+## 📊 Monitoring & Metrics
+
+### Track CLI Command Usage
+
+Add telemetry to CLI commands:
+
+```python
+# In CLI command
+import time
+from loguru import logger
+
+start = time.time()
+# ... command logic ...
+duration = time.time() - start
+
+logger.info(f"Command completed in {duration:.2f}s")
+
+# In workflow
+- name: Track validation time
+  run: |
+    START=$(date +%s)
+    uv run aiwebfeeds validate --all
+    END=$(date +%s)
+    DURATION=$((END - START))
+    echo "validation_duration=$DURATION" >> $GITHUB_OUTPUT
+```
+
+### Workflow Performance
+
+```yaml
+name: Performance Tracking
+
+on: [push]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Benchmark CLI commands
+        run: |
+          echo "## CLI Performance" > benchmark.md
+          
+          time_command() {
+            START=$(date +%s.%N)
+            $1
+            END=$(date +%s.%N)
+            DURATION=$(echo "$END - $START" | bc)
+            echo "- $1: ${DURATION}s" >> benchmark.md
+          }
+          
+          time_command "uv run aiwebfeeds validate --schema"
+          time_command "uv run aiwebfeeds analytics"
+          time_command "uv run aiwebfeeds export --format json"
+          
+          cat benchmark.md
+```
+
+---
+
+## 📚 Related Documentation
+
+- [GitHub Actions Workflows](/docs/development/workflows) - Complete workflow reference
+- [CLI Commands](/docs/development/cli) - Full CLI documentation
+- [Testing](/docs/development/testing) - Testing guide
+- [Contributing](/docs/development/contributing) - Contribution workflow
+
+---
+
+*Last Updated: October 2025*

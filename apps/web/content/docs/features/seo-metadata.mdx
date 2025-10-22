@@ -1,0 +1,571 @@
+---
+title: SEO & Metadata
+description: Rich metadata and Open Graph images for improved discoverability
+icon: Search
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Image, FileText, Share2, Bot } from 'lucide-react';
+
+Comprehensive SEO optimization with rich metadata, Open Graph images, and search engine discoverability.
+
+## Overview
+
+AI Web Feeds implements Next.js Metadata API for:
+
+<Cards>
+  <Card icon={<Image />}>
+    **Dynamic OG Images**
+    Custom Open Graph images for every page
+  </Card>
+  <Card icon={<FileText />}>
+    **Rich Metadata**
+    Complete SEO tags for all content
+  </Card>
+  <Card icon={<Share2 />}>
+    **Social Sharing**
+    Optimized for Twitter, LinkedIn, Slack
+  </Card>
+  <Card icon={<Bot />}>
+    **AI-Friendly**
+    Special rules for AI crawlers
+  </Card>
+</Cards>
+
+## Features
+
+### ✨ What's Included
+
+- **Dynamic OG Images** - Unique images generated for each documentation page
+- **Rich Metadata** - Complete title, description, keywords, and author information
+- **Twitter Cards** - Summary cards with large images
+- **Canonical URLs** - Proper canonical link tags
+- **Structured Data** - JSON-LD for better search results
+- **Sitemap** - Auto-generated XML sitemap
+- **Robots.txt** - Search engine crawling rules with AI bot support
+- **PWA Manifest** - Progressive Web App configuration
+- **RSS Discovery** - Feed links in HTML head
+
+## Open Graph Images
+
+### Dynamic Page Images
+
+Every documentation page gets a unique OG image:
+
+```tsx title="lib/source.ts"
+export function getPageImage(page: InferPageType<typeof source>) {
+  const segments = [...page.slugs, 'image.png'];
+
+  return {
+    segments,
+    url: `/og/docs/${segments.join('/')}`,
+  };
+}
+```
+
+### Image Design
+
+Custom-designed OG images with:
+
+- **Dark theme** - Modern dark background with gradient accents
+- **Brand identity** - Logo and site name
+- **Page title** - Large, readable typography
+- **Description** - Supporting text for context
+- **Category badge** - Visual categorization
+- **Site URL** - Domain attribution
+
+### Example URLs
+
+<Tabs items={['Docs Index', 'Feature Page', 'Guide Page']}>
+  <Tab value="Docs Index">
+    ```
+    /og/docs/image.png
+    ```
+    
+    Main documentation landing page OG image
+  </Tab>
+  <Tab value="Feature Page">
+    ```
+    /og/docs/features/pdf-export/image.png
+    ```
+    
+    PDF Export feature page OG image
+  </Tab>
+  <Tab value="Guide Page">
+    ```
+    /og/docs/guides/quick-reference/image.png
+    ```
+    
+    Quick Reference guide OG image
+  </Tab>
+</Tabs>
+
+### Image Specifications
+
+| Property | Value |
+|----------|-------|
+| Width | 1200px |
+| Height | 630px |
+| Format | PNG |
+| Generation | Static at build time |
+| Caching | Permanent (`revalidate = false`) |
+
+## Metadata Structure
+
+### Root Layout
+
+Site-wide metadata in `app/layout.tsx`:
+
+```tsx
+export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'AI Web Feeds - RSS/Atom Feeds for AI Agents',
+    template: '%s | AI Web Feeds',
+  },
+  description: 'Curated RSS/Atom feeds optimized for AI agents...',
+  keywords: ['AI', 'RSS feeds', 'Atom feeds', ...],
+  authors: [{ name: 'Wyatt Walsh', url: '...' }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: baseUrl,
+    siteName: 'AI Web Feeds',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    creator: '@wyattowalsh',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+```
+
+### Documentation Pages
+
+Dynamic metadata for each page in `app/docs/[[...slug]]/page.tsx`:
+
+```tsx
+export async function generateMetadata(
+  props: PageProps
+): Promise<Metadata> {
+  const page = source.getPage(params.slug);
+  
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    keywords: ['documentation', 'AI', ...],
+    openGraph: {
+      type: 'article',
+      title: page.data.title,
+      url: pageUrl,
+      images: [{ url: imageUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.data.title,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: pageUrl,
+      types: {
+        'application/rss+xml': '/docs/rss.xml',
+        'application/atom+xml': '/docs/atom.xml',
+      },
+    },
+  };
+}
+```
+
+## Sitemap
+
+Auto-generated XML sitemap at `/sitemap.xml`:
+
+```tsx title="app/sitemap.ts"
+export default function sitemap(): MetadataRoute.Sitemap {
+  const pages = source.getPages();
+  
+  return pages.map((page) => ({
+    url: `${baseUrl}${page.url}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+}
+```
+
+### Sitemap Features
+
+- ✅ All documentation pages included
+- ✅ Proper priority levels
+- ✅ Change frequency hints
+- ✅ Last modified dates
+- ✅ Auto-updates on build
+
+### Access Sitemap
+
+```bash
+curl https://ai-web-feeds.vercel.app/sitemap.xml
+```
+
+## Robots.txt
+
+Custom robots.txt with AI crawler support:
+
+```txt title="Generated robots.txt"
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+Sitemap: https://ai-web-feeds.vercel.app/sitemap.xml
+```
+
+### AI Crawler Support
+
+Explicitly allows common AI crawlers:
+
+- **GPTBot** - OpenAI's web crawler
+- **ChatGPT-User** - ChatGPT browsing
+- **Google-Extended** - Google's AI training crawler
+- **anthropic-ai** - Anthropic's crawler
+- **ClaudeBot** - Claude's web crawler
+
+## PWA Manifest
+
+Progressive Web App configuration:
+
+```json title="Generated manifest.json"
+{
+  "name": "AI Web Feeds - RSS/Atom Feeds for AI Agents",
+  "short_name": "AI Web Feeds",
+  "description": "Curated RSS/Atom feeds optimized for AI agents",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+## Social Media Preview
+
+### How It Looks
+
+When shared on social media, links display:
+
+**Twitter/X**
+- Large image (1200x630)
+- Page title
+- Description
+- Site name
+- Creator handle
+
+**LinkedIn**
+- Large image
+- Page title
+- Description
+- Site URL
+
+**Slack/Discord**
+- Rich embed with image
+- Title and description
+- Site information
+
+### Testing Social Cards
+
+<Tabs items={['Twitter', 'LinkedIn', 'Facebook']}>
+  <Tab value="Twitter">
+    Use [Twitter Card Validator](https://cards-dev.twitter.com/validator):
+    
+    1. Enter page URL
+    2. Click "Preview card"
+    3. Verify image and text
+  </Tab>
+  <Tab value="LinkedIn">
+    Use [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/):
+    
+    1. Enter page URL
+    2. Click "Inspect"
+    3. Review preview
+  </Tab>
+  <Tab value="Facebook">
+    Use [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/):
+    
+    1. Enter page URL
+    2. Click "Debug"
+    3. Scrape again if needed
+  </Tab>
+</Tabs>
+
+## Search Engine Optimization
+
+### Google Search Features
+
+Optimized for:
+
+- **Rich snippets** - Enhanced search results
+- **Knowledge graph** - Structured data integration
+- **Image preview** - Large image thumbnails
+- **Site links** - Auto-generated navigation
+- **Breadcrumbs** - Clear page hierarchy
+
+### Verification
+
+Add verification codes in `app/layout.tsx`:
+
+```tsx
+verification: {
+  google: 'your-google-verification-code',
+  yandex: 'your-yandex-verification-code',
+  bing: 'your-bing-verification-code',
+}
+```
+
+## Implementation
+
+### File Structure
+
+```
+app/
+├── layout.tsx              # Root metadata
+├── manifest.ts             # PWA manifest
+├── robots.ts               # Robots.txt
+├── sitemap.ts              # XML sitemap
+├── og-image.png/
+│   └── route.tsx          # Homepage OG image
+├── (home)/
+│   └── page.tsx           # Homepage metadata
+├── docs/
+│   └── [[...slug]]/
+│       └── page.tsx       # Dynamic page metadata
+└── og/
+    └── docs/
+        └── [...slug]/
+            └── route.tsx  # Dynamic OG images
+
+lib/
+└── source.ts              # getPageImage helper
+```
+
+### Key Functions
+
+**Get Page Image URL**
+```tsx
+const image = getPageImage(page);
+// { segments: ['features', 'pdf-export', 'image.png'], 
+//   url: '/og/docs/features/pdf-export/image.png' }
+```
+
+**Generate Metadata**
+```tsx
+export async function generateMetadata(props): Promise<Metadata> {
+  const page = source.getPage(params.slug);
+  return {
+    title: page.data.title,
+    openGraph: { images: getPageImage(page).url },
+  };
+}
+```
+
+## Best Practices
+
+### 1. Title Templates
+
+Use templates for consistent branding:
+
+```tsx
+title: {
+  default: 'AI Web Feeds',
+  template: '%s | AI Web Feeds',
+}
+```
+
+Results in:
+- Homepage: "AI Web Feeds"
+- Docs page: "Getting Started | AI Web Feeds"
+
+### 2. Description Length
+
+Keep descriptions under 160 characters:
+
+```tsx
+description: 'Clear, concise description under 160 characters'
+```
+
+### 3. Image Optimization
+
+- Use 1200x630 for OG images (1.91:1 ratio)
+- Keep file sizes under 1MB
+- Use high-contrast text
+- Test on multiple platforms
+
+### 4. Canonical URLs
+
+Always set canonical URLs:
+
+```tsx
+alternates: {
+  canonical: pageUrl,
+}
+```
+
+### 5. Keywords
+
+Include relevant keywords:
+
+```tsx
+keywords: ['specific', 'relevant', 'keywords']
+```
+
+## Troubleshooting
+
+### OG Images Not Showing
+
+<Callout type="warn">
+  OG images are generated at build time. Rebuild after changes:
+  ```bash
+  pnpm build
+  ```
+</Callout>
+
+### Social Media Cache
+
+If old images persist:
+
+1. Clear platform cache using their debug tools
+2. Add query parameter: `?v=2` to force refresh
+3. Wait 24-48 hours for automatic cache expiry
+
+### Missing Metadata
+
+Check browser dev tools:
+
+```bash
+# View page source
+curl https://ai-web-feeds.vercel.app/docs | grep -i "og:"
+curl https://ai-web-feeds.vercel.app/docs | grep -i "twitter:"
+```
+
+Expected tags:
+```html
+<meta property="og:title" content="..." />
+<meta property="og:description" content="..." />
+<meta property="og:image" content="..." />
+<meta name="twitter:card" content="summary_large_image" />
+```
+
+## Testing
+
+### Verify Metadata
+
+<Steps>
+
+### Check HTML Head
+
+View page source and verify tags:
+
+```bash
+curl https://ai-web-feeds.vercel.app/docs | head -100
+```
+
+### Test OG Images
+
+Visit image URLs directly:
+
+```
+/og-image.png
+/og/docs/image.png
+/og/docs/features/pdf-export/image.png
+```
+
+### Validate Sitemap
+
+```bash
+curl https://ai-web-feeds.vercel.app/sitemap.xml
+```
+
+### Check Robots.txt
+
+```bash
+curl https://ai-web-feeds.vercel.app/robots.txt
+```
+
+</Steps>
+
+### SEO Audit Tools
+
+- [Google Search Console](https://search.google.com/search-console)
+- [Bing Webmaster Tools](https://www.bing.com/webmasters)
+- [Lighthouse](https://developer.chrome.com/docs/lighthouse) (Chrome DevTools)
+- [PageSpeed Insights](https://pagespeed.web.dev/)
+
+## Performance
+
+### Build-Time Generation
+
+All OG images generated during build:
+
+- **Development**: Images generated on-demand
+- **Production**: All images pre-rendered
+- **Caching**: Permanent (`revalidate = false`)
+
+### Size Optimization
+
+| Asset | Size |
+|-------|------|
+| OG Image (PNG) | ~50-100KB |
+| Sitemap XML | ~5-10KB |
+| Manifest JSON | ~1KB |
+| Robots.txt | ~500B |
+
+## Related Documentation
+
+- [RSS Feeds](/docs/features/rss-feeds) - Feed discovery and metadata
+- [AI Integration](/docs/features/ai-integration) - AI crawler support
+- [Quick Reference](/docs/guides/quick-reference) - Metadata endpoints
+
+## External Resources
+
+- [Next.js Metadata API](https://nextjs.org/docs/app/building-your-application/optimizing/metadata)
+- [Open Graph Protocol](https://ogp.me/)
+- [Twitter Cards](https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/abouts-cards)
+- [Schema.org](https://schema.org/)

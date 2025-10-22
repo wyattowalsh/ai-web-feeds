@@ -1,0 +1,305 @@
+name: 🔖 Add New Feed
+description: Submit a new AI/ML feed to the registry
+title: "[Feed]: "
+labels: ["feed-submission", "needs-review"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Add a New AI/ML Feed
+        
+        Thanks for contributing! This form will help you submit a new feed to the AI Web Feeds registry.
+        
+        Your submission will be:
+        1. ✅ Automatically validated against our schema
+        2. 🔍 Tested for accessibility and parsing
+        3. 📊 Enriched with metadata
+        4. ✨ Added to `data/feeds.yaml` if approved
+        
+        ### 🛠️ Validate Before Submitting
+        
+        **Optional but recommended**: Test your feed URL locally first:
+        
+        ```bash
+        # Clone the repo and install CLI
+        git clone https://github.com/wyattowalsh/ai-web-feeds.git
+        cd ai-web-feeds
+        uv sync
+        
+        # Validate your feed
+        uv run aiwebfeeds validate --feeds "YOUR_FEED_URL"
+        
+        # Fetch and preview metadata
+        uv run aiwebfeeds fetch --url "YOUR_FEED_URL" --metadata-only
+        ```
+        
+        This helps ensure faster approval! 🚀
+
+  - type: input
+    id: feed_id
+    attributes:
+      label: Feed ID
+      description: |
+        Unique identifier (lowercase, alphanumeric, dashes/underscores only).
+        
+        **Format**: `organization-name` or `publication-name`
+        
+        **Examples**: `openai-blog`, `deepmind-research`, `huggingface-blog`
+      placeholder: "e.g., openai-blog, deepmind-research"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: Submission Type
+      description: Do you have the direct feed URL, or should we discover it?
+      options:
+        - "I have the direct feed URL (recommended)"
+        - "I have the website URL (auto-discover feed)"
+        - "I'm not sure (provide both URLs)"
+    validations:
+      required: true
+
+  - type: input
+    id: feed_url
+    attributes:
+      label: Feed URL
+      description: |
+        Direct RSS/Atom/JSON feed URL (preferred).
+        
+        **How to find**: Look for RSS/feed icons, `/feed`, `/rss`, or `/atom.xml` in the site.
+        
+        **Validation**: Run `uv run aiwebfeeds validate --feeds "URL"` to test locally.
+      placeholder: "https://example.com/feed.xml"
+    validations:
+      required: false
+
+  - type: input
+    id: site_url
+    attributes:
+      label: Website URL
+      description: |
+        Main website or blog section URL.
+        
+        **Required if feed URL unknown** - we'll attempt auto-discovery.
+      placeholder: "https://example.com/blog"
+    validations:
+      required: false
+
+  - type: input
+    id: title
+    attributes:
+      label: Feed Title
+      description: Human-readable title for this feed
+      placeholder: "e.g., OpenAI Blog"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: Source Type
+      description: What type of content source is this?
+      options:
+        - blog
+        - newsletter
+        - podcast
+        - journal
+        - preprint
+        - organization
+        - aggregator
+        - video
+        - docs
+        - forum
+        - dataset
+        - code-repo
+        - newsroom
+        - education
+        - reddit
+        - medium
+        - youtube
+        - github
+        - substack
+        - devto
+        - hackernews
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: topics
+    attributes:
+      label: Topics
+      description: Select 1-6 relevant topics (canonical from topics.yaml)
+      options:
+        - label: "Machine Learning (ml)"
+        - label: "Natural Language Processing (nlp)"
+        - label: "Computer Vision (cv)"
+        - label: "Reinforcement Learning (rl)"
+        - label: "Research Papers (research)"
+        - label: "Industry News (industry)"
+        - label: "Open Source (open-source)"
+        - label: "MLOps (mlops)"
+        - label: "LLMs (llm)"
+        - label: "AI Safety (safety)"
+        - label: "Retrieval (retrieval)"
+        - label: "Vector Databases (vector)"
+        - label: "Embeddings (embeddings)"
+        - label: "Compilers (compilers)"
+        - label: "Optimization (optimization)"
+        - label: "Inference (inference)"
+        - label: "Training (training)"
+        - label: "Data Science (data-science)"
+        - label: "Tutorials (tutorials)"
+        - label: "Frameworks (frameworks)"
+        - label: "Podcasts (podcasts)"
+        - label: "Blogs (blogs)"
+        - label: "Newsletters (newsletters)"
+        - label: "Community (community)"
+
+  - type: checkboxes
+    id: mediums
+    attributes:
+      label: Content Mediums
+      description: What type(s) of content does this feed publish?
+      options:
+        - label: Text
+        - label: Audio
+        - label: Video
+        - label: Code
+        - label: Data
+
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: Primary language (IETF BCP-47, e.g., 'en', 'en-US', 'zh')
+      placeholder: "en"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform (if applicable)
+      description: Is this from a specific platform that needs special handling?
+      options:
+        - "None"
+        - "Reddit"
+        - "Medium"
+        - "YouTube"
+        - "GitHub"
+        - "Substack"
+        - "Dev.to"
+        - "Hacker News"
+    validations:
+      required: false
+
+  - type: input
+    id: platform_details
+    attributes:
+      label: Platform Details
+      description: |
+        If platform-specific, provide details in JSON format:
+        - Reddit: `{"subreddit": "MachineLearning", "sort": "hot"}`
+        - Medium: `{"publication": "towards-data-science"}`
+        - YouTube: `{"channel_id": "UCxxxxxx"}`
+        - GitHub: `{"owner": "pytorch", "repo": "pytorch", "feed_type": "releases"}`
+        - Substack: `{"publication": "importai"}`
+        - Dev.to: `{"tag": "machinelearning"}` or `{"username": "user"}`
+      placeholder: '{"subreddit": "MachineLearning"}'
+    validations:
+      required: false
+
+  - type: textarea
+    id: tags
+    attributes:
+      label: Tags
+      description: Freeform tags (lowercase, hyphenated, comma-separated)
+      placeholder: "official, community, engineering, research"
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any additional context or information
+      placeholder: "This feed covers..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: auto_discover
+    attributes:
+      label: Enable Auto-Discovery?
+      description: Should we attempt to auto-discover feeds if the direct URL is unknown?
+      options:
+        - "Yes (recommended)"
+        - "No"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      description: Please confirm the following
+      options:
+        - label: "I have verified this feed is currently active and accessible"
+          required: true
+        - label: "This feed contains AI/ML related content"
+          required: true
+        - label: "I have checked that this feed is not already in the registry"
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ### 📋 What happens next?
+        
+        1. **Automated Validation** - Our GitHub Actions workflow will:
+           ```bash
+           # Schema validation
+           uv run aiwebfeeds validate --schema --strict
+           
+           # URL accessibility check
+           uv run aiwebfeeds validate --check-urls --feeds "YOUR_URL"
+           
+           # Feed parsing test
+           uv run aiwebfeeds validate --parse-feeds --feeds "YOUR_URL"
+           ```
+        
+        2. **Manual Review** - A maintainer will review the feed for:
+           - Content quality and relevance to AI/ML
+           - Feed reliability and update frequency
+           - Proper categorization
+        
+        3. **Enrichment** - If approved, the feed will be enriched:
+           ```bash
+           uv run aiwebfeeds enrich --url "YOUR_URL" --output data/feeds.yaml
+           ```
+        
+        4. **Automation** - The feed will be:
+           - ✅ Added to `data/feeds.yaml`
+           - 📊 Included in analytics
+           - 📤 Exported to OPML files
+           - 🌐 Published on the website
+        
+        ### 🚀 Speed Up Approval
+        
+        - ✅ Provide the direct feed URL (not just the website)
+        - ✅ Test with CLI validation (see instructions at top)
+        - ✅ Select accurate topics and categories
+        - ✅ Provide platform details if applicable
+        
+        ### 💡 Need Help?
+        
+        - 📖 [Feed Schema Documentation](https://aiwebfeeds.com/docs/guides/feed-schema)
+        - 🛠️ [CLI Validation Guide](https://aiwebfeeds.com/docs/development/cli)
+        - 💬 [Join our Discord](https://discord.gg/aiwebfeeds)
+        
+        Thank you for contributing to AI Web Feeds! 🎉

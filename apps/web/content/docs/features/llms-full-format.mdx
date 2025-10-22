@@ -1,0 +1,509 @@
+---
+title: llms-full.txt Format
+description: Detailed specification of the enhanced llms-full.txt structured format
+icon: FileCode
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+The `/llms-full.txt` endpoint provides a comprehensive, structured format optimized for AI agents and RAG systems.
+
+## Overview
+
+The enhanced format includes:
+
+- **Metadata header** with generation info
+- **Table of contents** for navigation
+- **Structured page sections** with clear separators
+- **Individual metadata** for each page
+- **AI-friendly formatting** for easy parsing
+
+<Callout type="info">
+  This format is designed to be both human-readable and machine-parsable, making it ideal for RAG systems, embeddings, and AI analysis.
+</Callout>
+
+## Format Structure
+
+The document follows this hierarchical structure:
+
+```
+================================================================================
+HEADER SECTION
+================================================================================
+├── Metadata (date, page count, base URL)
+├── Description
+├── Structure explanation
+└── Table of Contents
+
+================================================================================
+DOCUMENTATION CONTENT
+================================================================================
+├── PAGE 1
+│   ├── Page metadata (title, URL, description, path)
+│   ├── Content separator
+│   ├── Full markdown content
+│   └── End marker
+├── PAGE 2
+│   └── ...
+└── PAGE N
+
+================================================================================
+FOOTER SECTION
+================================================================================
+└── Summary and access information
+```
+
+## Header Section
+
+### Metadata Block
+
+Essential information about the documentation:
+
+```text
+================================================================================
+AI WEB FEEDS - COMPLETE DOCUMENTATION
+================================================================================
+
+METADATA
+--------------------------------------------------------------------------------
+Generated: 2025-10-14T12:00:00.000Z
+Total Pages: 5
+Base URL: https://yourdomain.com
+Format: Markdown
+Encoding: UTF-8
+```
+
+### Description Block
+
+Project overview for context:
+
+```text
+DESCRIPTION
+--------------------------------------------------------------------------------
+A comprehensive collection of curated RSS/Atom feeds optimized for AI agents
+and large language models. This document contains the complete documentation
+for the AI Web Feeds project, including setup guides, API references, and
+usage examples.
+```
+
+### Structure Explanation
+
+Format guide for parsers:
+
+```text
+STRUCTURE
+--------------------------------------------------------------------------------
+Each page section follows this format:
+  - Page separator (===)
+  - Page number (X OF Y)
+  - Page metadata (title, URL, description, path)
+  - Content separator (---)
+  - Full markdown content
+```
+
+### Table of Contents
+
+Complete navigation index:
+
+```text
+NAVIGATION
+--------------------------------------------------------------------------------
+Table of Contents:
+
+  1. Getting Started - /docs
+  2. PDF Export - /docs/features/pdf-export
+  3. AI Integration - /docs/features/ai-integration
+  4. Testing Guide - /docs/guides/testing
+  5. Quick Reference - /docs/guides/quick-reference
+
+================================================================================
+DOCUMENTATION CONTENT
+================================================================================
+```
+
+## Page Section Format
+
+Each page follows a consistent structure:
+
+```text
+================================================================================
+PAGE 1 OF 5
+================================================================================
+
+TITLE: Getting Started
+URL: https://yourdomain.com/docs
+MARKDOWN: https://yourdomain.com/docs.mdx
+DESCRIPTION: Quick start guide for AI Web Feeds
+PATH: /
+
+--------------------------------------------------------------------------------
+CONTENT
+--------------------------------------------------------------------------------
+
+# Getting Started
+
+[Full markdown content of the page...]
+
+--------------------------------------------------------------------------------
+END OF PAGE 1
+--------------------------------------------------------------------------------
+```
+
+### Page Metadata Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `TITLE` | Page title | `Getting Started` |
+| `URL` | Full page URL | `https://yourdomain.com/docs` |
+| `MARKDOWN` | Markdown endpoint | `https://yourdomain.com/docs.mdx` |
+| `DESCRIPTION` | Page description | `Quick start guide...` |
+| `PATH` | Relative path | `/` |
+
+## Footer Section
+
+Summary and access instructions:
+
+```text
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+
+Total pages processed: 5
+Generated: 2025-10-14T12:00:00.000Z
+Format: Plain text with markdown content
+
+For individual pages, append .mdx to any documentation URL.
+For the discovery file, visit /llms.txt
+
+================================================================================
+```
+
+## Benefits for AI Agents
+
+### Clear Structure
+
+- **Consistent separators** - 80-character wide `=` and `-` lines
+- **Numbered pages** - `PAGE X OF Y` format
+- **Hierarchical organization** - Header → Content → Footer
+- **Predictable format** - Easy to parse with regex
+
+### Rich Metadata
+
+- **Generation timestamp** - Know when docs were created
+- **Total page count** - Plan context window usage
+- **Base URL** - Resolve relative links
+- **Per-page metadata** - Title, URL, description, path
+
+### Multiple Access Patterns
+
+- **Complete documentation** - Single request for all content
+- **Table of contents** - Quick overview of structure
+- **Individual pages** - URLs for targeted access
+- **Markdown endpoints** - Source content links
+
+### Parser-Friendly
+
+- **Fixed-width separators** - 80 characters for consistency
+- **Clear section markers** - Unmistakable boundaries
+- **Predictable structure** - Same format every time
+- **UTF-8 encoding** - Universal character support
+
+## HTTP Headers
+
+Enhanced response headers provide additional metadata:
+
+```http
+Content-Type: text/plain; charset=utf-8
+Cache-Control: public, max-age=0, must-revalidate
+X-Content-Pages: 5
+X-Generated-Date: 2025-10-14T12:00:00.000Z
+```
+
+<Callout>
+  Custom headers allow clients to access metadata without parsing the document body.
+</Callout>
+
+## Usage Examples
+
+### RAG System Integration
+
+<Tabs items={['Python', 'JavaScript', 'cURL']}>
+  <Tab value="Python">
+    ```python
+    import requests
+
+    # Fetch complete documentation
+    response = requests.get('https://yourdomain.com/llms-full.txt')
+    content = response.text
+
+    # Parse metadata from headers
+    total_pages = int(response.headers['X-Content-Pages'])
+    generated = response.headers['X-Generated-Date']
+
+    # Split by page separators
+    separator = '=' * 80 + '\nPAGE '
+    pages = content.split(separator)
+
+    # Extract table of contents
+    toc_start = content.find('Table of Contents:')
+    toc_end = content.find('=' * 80 + '\nDOCUMENTATION CONTENT')
+    toc = content[toc_start:toc_end]
+
+    # Process individual pages
+    for i, page in enumerate(pages[1:], 1):
+        if 'TITLE:' in page:
+            # Extract page metadata
+            title = page.split('TITLE: ')[1].split('\n')[0]
+            url = page.split('URL: ')[1].split('\n')[0]
+            
+            # Extract content
+            content_start = page.find('CONTENT\n' + '-' * 80 + '\n\n')
+            content_end = page.find('\n\n' + '-' * 80 + '\nEND OF PAGE')
+            content = page[content_start:content_end]
+            
+            print(f"Page {i}: {title}")
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```javascript
+    // Fetch complete documentation
+    const response = await fetch('https://yourdomain.com/llms-full.txt');
+    const content = await response.text();
+
+    // Parse metadata from headers
+    const totalPages = parseInt(response.headers.get('X-Content-Pages'));
+    const generated = response.headers.get('X-Generated-Date');
+
+    // Split by page separators
+    const separator = '='.repeat(80) + '\nPAGE ';
+    const pages = content.split(separator);
+
+    // Extract table of contents
+    const tocStart = content.indexOf('Table of Contents:');
+    const tocEnd = content.indexOf('='.repeat(80) + '\nDOCUMENTATION CONTENT');
+    const toc = content.substring(tocStart, tocEnd);
+
+    // Process individual pages
+    pages.slice(1).forEach((page, index) => {
+      if (page.includes('TITLE:')) {
+        // Extract page metadata
+        const title = page.split('TITLE: ')[1].split('\n')[0];
+        const url = page.split('URL: ')[1].split('\n')[0];
+        
+        // Extract content
+        const contentStart = page.indexOf('CONTENT\n' + '-'.repeat(80) + '\n\n');
+        const contentEnd = page.indexOf('\n\n' + '-'.repeat(80) + '\nEND OF PAGE');
+        const content = page.substring(contentStart, contentEnd);
+        
+        console.log(`Page ${index + 1}: ${title}`);
+      }
+    });
+    ```
+  </Tab>
+  <Tab value="cURL">
+    ```bash
+    # Download complete documentation
+    curl https://yourdomain.com/llms-full.txt -o docs.txt
+
+    # View headers
+    curl -I https://yourdomain.com/llms-full.txt
+
+    # Extract table of contents
+    curl https://yourdomain.com/llms-full.txt | \
+      sed -n '/Table of Contents:/,/^===/p'
+
+    # Count pages
+    curl https://yourdomain.com/llms-full.txt | \
+      grep -c "^PAGE [0-9]"
+
+    # Extract first page
+    curl https://yourdomain.com/llms-full.txt | \
+      sed -n '/^PAGE 1 OF/,/^END OF PAGE 1/p'
+    ```
+  </Tab>
+</Tabs>
+
+## Parsing Tips
+
+### Regular Expressions
+
+```python
+import re
+
+# Extract page numbers
+page_pattern = r'PAGE (\d+) OF (\d+)'
+matches = re.findall(page_pattern, content)
+
+# Extract metadata fields
+title_pattern = r'TITLE: (.+)'
+url_pattern = r'URL: (.+)'
+desc_pattern = r'DESCRIPTION: (.+)'
+
+# Split by separators
+separator_80 = r'={80}'
+separator_dash = r'-{80}'
+```
+
+### Content Extraction
+
+```python
+def extract_pages(content: str) -> list:
+    """Extract individual pages from llms-full.txt"""
+    pages = []
+    
+    # Find all page sections
+    page_pattern = r'={80}\nPAGE (\d+) OF (\d+)={80}(.+?)(?=={80}\nPAGE |\Z)'
+    
+    for match in re.finditer(page_pattern, content, re.DOTALL):
+        page_num, total, page_content = match.groups()
+        
+        # Extract metadata
+        metadata = {}
+        for line in page_content.split('\n'):
+            if ':' in line and line.isupper().startswith(line.split(':')[0]):
+                key, value = line.split(':', 1)
+                metadata[key.strip()] = value.strip()
+        
+        # Extract content
+        content_match = re.search(
+            r'CONTENT\n-{80}\n\n(.+?)\n\n-{80}',
+            page_content,
+            re.DOTALL
+        )
+        
+        if content_match:
+            pages.append({
+                'page_number': int(page_num),
+                'total_pages': int(total),
+                'metadata': metadata,
+                'content': content_match.group(1).strip()
+            })
+    
+    return pages
+```
+
+### Token Counting
+
+```python
+def count_tokens_per_page(content: str) -> dict:
+    """Estimate token count for each page"""
+    import tiktoken
+    
+    enc = tiktoken.get_encoding("cl100k_base")
+    pages = extract_pages(content)
+    
+    token_counts = {}
+    for page in pages:
+        page_content = page['content']
+        tokens = len(enc.encode(page_content))
+        token_counts[page['metadata']['TITLE']] = tokens
+    
+    return token_counts
+```
+
+## Comparison with Previous Format
+
+### Before Enhancement
+
+```text
+# Page Title (url)
+
+Content...
+
+# Another Page (url)
+
+Content...
+```
+
+**Limitations:**
+- No metadata header
+- No table of contents
+- Basic separators
+- No page numbers
+- No HTTP headers
+
+### After Enhancement
+
+```text
+================================================================================
+HEADER WITH METADATA
+================================================================================
+...
+Table of Contents: [all pages]
+================================================================================
+PAGE 1 OF 5
+================================================================================
+TITLE: ...
+URL: ...
+MARKDOWN: ...
+...
+```
+
+**Improvements:**
+- ✅ Rich metadata header
+- ✅ Complete table of contents
+- ✅ 80-character separators
+- ✅ Page numbers (X OF Y)
+- ✅ Custom HTTP headers
+- ✅ Structured format
+
+## Best Practices
+
+### For RAG Systems
+
+1. **Parse metadata first** - Get page count and base URL
+2. **Use table of contents** - Quick overview of structure
+3. **Extract pages individually** - Process one at a time
+4. **Respect token limits** - Use page numbers to estimate size
+5. **Cache the response** - Revalidate periodically
+
+### For Embeddings
+
+1. **Chunk by pages** - Natural boundaries
+2. **Include metadata** - Title, URL, description in embeddings
+3. **Cross-reference** - Use URLs for linking
+4. **Update regularly** - Check X-Generated-Date header
+
+### For Analysis
+
+1. **Validate structure** - Check separator consistency
+2. **Handle errors** - Missing descriptions are optional
+3. **Use HTTP headers** - Metadata without parsing
+4. **Test parsing** - Verify on sample data first
+
+## Testing
+
+### Verify Format
+
+```bash
+# Download and inspect
+curl https://yourdomain.com/llms-full.txt > docs.txt
+
+# Check header
+head -50 docs.txt
+
+# Count separators (should be consistent)
+grep -c "^====" docs.txt
+grep -c "^----" docs.txt
+
+# Verify page numbers
+grep "^PAGE [0-9]" docs.txt
+```
+
+### Validate Headers
+
+```bash
+# Check custom headers
+curl -I https://yourdomain.com/llms-full.txt | grep "X-"
+
+# Expected output:
+# X-Content-Pages: 5
+# X-Generated-Date: 2025-10-14T12:00:00.000Z
+```
+
+## Related Documentation
+
+- [AI Integration](/docs/features/ai-integration) - Complete AI/LLM guide
+- [Testing Guide](/docs/guides/testing) - Verify your setup
+- [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints

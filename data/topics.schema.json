@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aiwebfeeds.com/schema/topics.schema.json",
+  "title": "AI/ML Topics (Hierarchical + Ontological, Simplified)",
+  "type": "object",
+  "required": ["topics"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Optional human-readable version label."
+    },
+    "relations_meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Declares edge semantics for reasoning and visualization.",
+      "properties": {
+        "directed": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relation_type" }
+        },
+        "symmetric": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relation_type" }
+        }
+      }
+    },
+    "topics": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/topic" }
+    }
+  },
+  "$defs": {
+    "topic_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Kebab-case identifier; globally unique."
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "depends_on",
+        "implements",
+        "influences",
+        "contrasts_with",
+        "same_as",
+        "related_to"
+      ]
+    },
+    "relations": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed ontological relationships to other topics (non-hierarchical).",
+      "properties": {
+        "depends_on":    { "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "implements":    { "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "influences":    { "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "contrasts_with":{ "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "same_as":       { "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "related_to":    { "type": "array", "items": { "$ref": "#/$defs/topic_id" } }
+      }
+    },
+    "feeds": {
+      "type": "array",
+      "description": "External feed references that help discovery/ingestion.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "ref"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["arxiv", "rsshub", "crossref", "custom"],
+            "description": "Feed reference type."
+          },
+          "ref": {
+            "type": "string",
+            "description": "Category, route, query, or URL (kind-dependent)."
+          }
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "External ontology / ecosystem IDs and feed hints.",
+      "properties": {
+        "wikidata":       { "type": "string" },
+        "schema_org":     { "type": "string" },
+        "huggingface":    { "type": "string" },
+        "paperswithcode": { "type": "string" },
+        "openml":         { "type": "string" },
+        "feeds":          { "$ref": "#/$defs/feeds" }
+      }
+    },
+    "i18n": {
+      "type": "object",
+      "description": "Per-locale labels/descriptions/aliases.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "description": { "type": "string" },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "facet", "parents"],
+      "properties": {
+        "id":        { "$ref": "#/$defs/topic_id" },
+        "label":     { "type": "string", "minLength": 1 },
+        "facet": {
+          "type": "string",
+          "description": "Primary classification axis.",
+          "enum": [
+            "domain", "subfield", "task", "methodology", "modality",
+            "data", "workflow", "ops", "deployment", "infra", "devtools", "hardware",
+            "research", "safety", "ethics", "privacy", "security",
+            "governance", "regulation", "education", "industry", "community",
+            "product", "open-source", "media", "prompting"
+          ]
+        },
+        "facet_group": {
+          "type": "string",
+          "description": "Optional UI/meta grouping for filtering and theming.",
+          "enum": ["conceptual", "operational", "governance", "contextual", "communicative", "interactional"]
+        },
+        "description": { "type": "string" },
+        "aliases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "parents": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/topic_id" },
+          "description": "Zero or more hierarchical parents (DAG; acyclicity enforced upstream)."
+        },
+        "relations": { "$ref": "#/$defs/relations" },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "uri": { "type": "string", "format": "uri", "description": "Optional canonical reference." },
+        "mappings": { "$ref": "#/$defs/mappings" },
+        "i18n": { "$ref": "#/$defs/i18n" },
+        "rank_hint": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Priority weight for surfacing in feeds/recommendations."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Generic behavior flags (e.g., 'no-embed', 'embed:title,summary,content').",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string", "description": "Freeform curation, provenance, lineage, or guidance." }
+      }
+    }
+  }
+}
