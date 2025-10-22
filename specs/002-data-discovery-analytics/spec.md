@@ -2,8 +2,23 @@
 
 **Feature Branch**: `002-data-discovery-analytics`  
 **Created**: 2025-10-22  
-**Status**: Draft  
+**Status**: Clarified → Ready for Planning  
 **Input**: User description: "Phase 1: Data & Discovery - Analytics Dashboard, Intelligent Search & Discovery, and AI-Powered Feed Recommendations"
+
+## Clarifications
+
+The following decisions were made during clarification phase (2025-10-22):
+
+1. **Analytics Caching Strategy**: Hybrid approach - static metrics cached 1 hour, dynamic metrics cached 5 minutes, user can "Refresh Now" for real-time data
+2. **Vector Storage**: NumPy + SQLite BLOB for MVP (simple, zero dependencies), with upgrade path to sqlite-vec extension for future optimization
+3. **Collaborative Filtering**: Deferred to Phase 2 when user accounts exist; Phase 1 uses content-based recommendations (topic similarity + popularity) only
+4. **Autocomplete Implementation**: Pre-built Trie index for feed titles and topics (in-memory, <10ms response time)
+5. **PDF Export**: CSV export only for MVP; defer PDF generation to Phase 2 if user demand exists
+6. **Trending Topics**: Use validation frequency as proxy for activity; rename to "Most Active Topics" for clarity (no article content in Phase 1)
+7. **Recommendation Diversity**: Flexible constraints - respect user intent; suggest "Explore similar topics" if too narrow, but don't force unrelated content
+8. **Zero Results Contact**: Link to GitHub "Add Feed" issue template (aligns with open-source nature)
+9. **Saved Searches Persistence**: Browser localStorage with Export/Import JSON functionality for cross-device transfer
+10. **Semantic Search Latency**: 3 seconds total acceptable (2s vector search + 1s result rendering)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -81,11 +96,11 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-002**: System MUST provide time range filters: Last 7 days, Last 30 days, Last 90 days, Custom date range (date picker)
 - **FR-003**: System MUST render interactive charts: trending topics (bar chart), publication velocity (line chart), feed health distribution (pie chart), validation success over time (area chart)
 - **FR-004**: System MUST allow topic filtering: dropdown to filter all analytics by single topic (e.g., "Show only LLM feeds")
-- **FR-005**: System MUST calculate trending topics by: article publication frequency (last 30 days), weighted by feed quality scores
+- **FR-005**: System MUST calculate "Most Active Topics" by: feed validation frequency (last 30 days), weighted by feed health scores (proxy for publication activity until article content is tracked in Phase 2)
 - **FR-006**: System MUST display publication velocity metrics: daily/weekly/monthly post counts, average posts per feed, most/least active feeds
 - **FR-007**: System MUST show feed health insights: healthy (≥0.8), moderate (0.5-0.8), unhealthy (<0.5) with counts and percentages
-- **FR-008**: System MUST provide data export: PDF report (charts + summary), CSV export (raw metrics), API endpoint for programmatic access
-- **FR-009**: System MUST cache analytics queries for 5 minutes to reduce database load
+- **FR-008**: System MUST provide data export: CSV export (raw metrics), API endpoint for programmatic access (PDF generation deferred to Phase 2)
+- **FR-009**: System MUST cache analytics queries with hybrid strategy: static metrics (1 hour TTL), dynamic metrics (5 minutes TTL), with "Refresh Now" button for on-demand updates
 - **FR-010**: System MUST show data freshness indicator: "Last updated: [timestamp]" with auto-refresh option
 
 ### Functional Requirements - Search & Discovery
@@ -104,7 +119,7 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-020b**: System MUST gracefully fall back to local embeddings if HF API fails or rate limit exceeded
 - **FR-021**: System MUST allow saving searches: "Save Search" button stores query+filters, shown in sidebar for one-click replay
 - **FR-022**: System MUST support search history: last 10 searches stored per user (localStorage or database if logged in)
-- **FR-023**: System MUST handle zero results gracefully: suggestions (check spelling, broaden search), browse by topic link, contact form
+- **FR-023**: System MUST handle zero results gracefully: suggestions (check spelling, broaden search), browse by topic link, "Suggest a feed" link to GitHub issue template
 - **FR-024**: System MUST paginate search results: 20 results per page with infinite scroll or numbered pagination
 - **FR-025**: System MUST log search queries: anonymized search analytics (popular queries, zero-result queries) for improvement
 
@@ -113,14 +128,14 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-026**: System MUST provide recommendations page at `/recommendations` with personalized feed suggestions
 - **FR-027**: System MUST implement cold start onboarding: quiz with 3-5 topic selection (e.g., "What AI/ML areas interest you?")
 - **FR-028**: System MUST generate 10-20 recommendations per page with infinite scroll
-- **FR-029**: System MUST use collaborative filtering: "Users who follow X also follow Y" based on feed co-occurrence in user collections
-- **FR-030**: System MUST use content-based filtering: recommend feeds similar to user's followed feeds (topic overlap, embedding similarity)
-- **FR-031**: System MUST implement hybrid recommendation algorithm: 60% collaborative, 30% content-based, 10% serendipity (random popular feeds)
-- **FR-032**: System MUST enforce diversity constraints: max 3 feeds per topic in recommendations, minimum 2 topics represented
+- **FR-029**: System MUST use content-based filtering: recommend feeds similar to user's interests based on topic overlap and embedding similarity (collaborative filtering deferred to Phase 2 when user accounts exist)
+- **FR-030**: System MUST implement recommendation algorithm for Phase 1: 70% content-based (topic similarity), 20% popularity-based (most followed/verified), 10% serendipity (random high-quality feeds)
+- **FR-031**: System MUST prepare for Phase 2 collaborative filtering: collect anonymous interaction data (likes/dismisses) in localStorage for future use when user accounts implemented
+- **FR-032**: System SHOULD enforce diversity constraints with flexibility: max 3 feeds per topic (best effort), minimum 2 topics represented (unless user's interests are highly focused), with "Explore similar topics" suggestion if recommendations are too narrow
 - **FR-033**: System MUST provide recommendation explanations: "Because you follow X", "Popular in Y", "Similar to Z" with clickable links
 - **FR-034**: System MUST support user feedback: "Like" (thumbs up), "Dismiss" (X icon), "Not interested in topic" (block topic)
 - **FR-035**: System MUST update recommendations based on feedback: boost liked topics (weight +0.2), reduce dismissed feeds (weight -0.5), block unwanted topics
-- **FR-036**: System MUST periodically retrain recommendation models: nightly batch job to recalculate collaborative matrix, weekly embedding refresh
+- **FR-036**: System MUST periodically refresh recommendation data: weekly embedding refresh for new feeds, nightly topic popularity recalculation (collaborative matrix deferred to Phase 2)
 - **FR-037**: System MUST implement trending feeds boost: feeds with sudden activity spike (3x avg posts in 7 days) get +0.1 relevance boost
 - **FR-038**: System MUST provide recommendation API: `/api/recommendations?user_id=X&count=10` for programmatic access
 - **FR-039**: System MUST log recommendation interactions: impressions, clicks, likes, dismisses for model evaluation and A/B testing
