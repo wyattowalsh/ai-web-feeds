@@ -738,3 +738,131 @@ class DatabaseManager:
                 .limit(1)
             )
             return session.exec(statement).first()
+
+    # ========================================================================
+    # Phase 1: Search Storage Extensions
+    # ========================================================================
+
+    def search_feeds(
+        self,
+        query: str,
+        search_type: str = "full_text",
+        limit: int = 20,
+        filters: dict[str, Any] | None = None,
+    ) -> list[FeedSource] | list[tuple[FeedSource, float]]:
+        """Search feeds with full-text or semantic search.
+
+        Args:
+            query: Search query
+            search_type: 'full_text' or 'semantic'
+            limit: Maximum results
+            filters: Optional filters (source_type, topics, verified, active)
+
+        Returns:
+            List of FeedSource (full-text) or (FeedSource, score) tuples (semantic)
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import full_text_search, semantic_search
+
+            if search_type == "semantic":
+                threshold = filters.get("threshold", 0.7) if filters else 0.7
+                return semantic_search(session, query, threshold=threshold, limit=limit, filters=filters)
+            else:
+                return full_text_search(session, query, limit=limit, filters=filters)
+
+    def autocomplete_search(
+        self,
+        prefix: str,
+        limit: int = 8,
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Get autocomplete suggestions.
+
+        Args:
+            prefix: Search prefix
+            limit: Maximum suggestions
+
+        Returns:
+            Dictionary with 'feeds' and 'topics' lists
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import autocomplete
+
+            return autocomplete(session, prefix, limit=limit)
+
+    def log_search(
+        self,
+        user_id: str | None,
+        query_text: str,
+        search_type: str,
+        filters: dict[str, Any],
+        result_count: int,
+        clicked_results: list[str] | None = None,
+    ):
+        """Log search query for analytics.
+
+        Args:
+            user_id: User ID (optional)
+            query_text: Search query
+            search_type: 'full_text' or 'semantic'
+            filters: Applied filters
+            result_count: Number of results
+            clicked_results: Feed IDs clicked
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import log_search_query
+
+            log_search_query(
+                session,
+                user_id,
+                query_text,
+                search_type,
+                filters,
+                result_count,
+                clicked_results,
+            )
+
+    def save_user_search(
+        self,
+        user_id: str,
+        search_name: str,
+        query_text: str,
+        filters: dict[str, Any],
+    ) -> SavedSearch:
+        """Save search for one-click replay.
+
+        Args:
+            user_id: User ID
+            search_name: User-provided name
+            query_text: Search query
+            filters: Saved filters
+
+        Returns:
+            SavedSearch object
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import save_search
+
+            return save_search(session, user_id, search_name, query_text, filters)
+
+    def get_user_saved_searches(self, user_id: str) -> list[SavedSearch]:
+        """Get all saved searches for a user.
+
+        Args:
+            user_id: User ID
+
+        Returns:
+            List of SavedSearch objects
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import get_saved_searches
+
+            return get_saved_searches(session, user_id)
+
+    def initialize_search_tables(self):
+        """Initialize FTS5 table and Trie index."""
+        with self.get_session() as session:
+            from ai_web_feeds.search import create_fts_table, build_trie_index
+
+            create_fts_table(session)
+            build_trie_index(session)
+            logger.info("Search tables initialized")
