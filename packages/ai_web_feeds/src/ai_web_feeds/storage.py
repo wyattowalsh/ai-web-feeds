@@ -866,3 +866,81 @@ class DatabaseManager:
             create_fts_table(session)
             build_trie_index(session)
             logger.info("Search tables initialized")
+
+    # ========================================================================
+    # Phase 1: Recommendation Storage Extensions
+    # ========================================================================
+
+    def get_recommendations(
+        self,
+        user_id: str | None = None,
+        seed_feed_ids: list[str] | None = None,
+        seed_topics: list[str] | None = None,
+        limit: int = 20,
+    ) -> list[tuple[FeedSource, float, str]]:
+        """Get feed recommendations.
+
+        Args:
+            user_id: User ID for personalization
+            seed_feed_ids: Seed feed IDs for content-based
+            seed_topics: Seed topics for topic-based
+            limit: Maximum recommendations
+
+        Returns:
+            List of (FeedSource, score, reason) tuples
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.recommendations import generate_recommendations
+
+            return generate_recommendations(
+                session,
+                user_id=user_id,
+                seed_feed_ids=seed_feed_ids,
+                seed_topics=seed_topics,
+                limit=limit,
+            )
+
+    def get_user_recommendations(
+        self,
+        user_id: str,
+        limit: int = 20,
+    ) -> list[tuple[FeedSource, float, str]]:
+        """Get personalized recommendations for user.
+
+        Args:
+            user_id: User ID
+            limit: Maximum recommendations
+
+        Returns:
+            List of (FeedSource, score, reason) tuples
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.recommendations import get_user_recommendations
+
+            return get_user_recommendations(session, user_id, limit)
+
+    def track_recommendation_click(
+        self,
+        user_id: str,
+        feed_id: str,
+        interaction_type: str,
+        reason: str,
+    ):
+        """Track recommendation interaction.
+
+        Args:
+            user_id: User ID
+            feed_id: Feed ID
+            interaction_type: 'view', 'click', 'subscribe', 'dismiss'
+            reason: Recommendation reason
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.recommendations import track_recommendation_interaction
+
+            track_recommendation_interaction(
+                session,
+                user_id,
+                feed_id,
+                interaction_type,
+                reason,
+            )
