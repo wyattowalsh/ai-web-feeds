@@ -8,17 +8,19 @@
 
 ## Task Summary
 
-**Total Tasks**: 156  
-**MVP Tasks** (US1 + US2): 92  
-**Phase 2 Tasks** (US3): 39  
+**Total Tasks**: 209  
+**MVP Tasks** (US1 + US2): 122  
+**Phase 2 Tasks** (US3): 52  
 **Setup & Foundation**: 25  
+**Performance & Data Quality**: 10  
 
 **User Stories**:
-- **US1**: Analytics Dashboard (P1) - 35 tasks
-- **US2**: Intelligent Search & Discovery (P1) - 57 tasks  
-- **US3**: AI-Powered Feed Recommendations (P2) - 39 tasks
+- **US1**: Analytics Dashboard (P1) - 45 tasks (35 implementation + 10 tests)
+- **US2**: Intelligent Search & Discovery (P1) - 77 tasks (57 implementation + 20 tests)  
+- **US3**: AI-Powered Feed Recommendations (P2) - 52 tasks (39 implementation + 13 tests)
 
-**Parallel Opportunities**: 78 tasks can be executed in parallel (marked with [P])
+**Test Coverage**: 43 test tasks (≥90% coverage target per constitution)
+**Parallel Opportunities**: 115 tasks can be executed in parallel (marked with [P])
 
 ---
 
@@ -136,6 +138,22 @@
 - [ ] T059 [US1] Add data freshness indicator ("Last updated: [timestamp]")
 - [ ] T060 [US1] Add loading states and error handling for API calls
 
+### Tests: Analytics Unit Tests
+
+- [ ] T060a [P] [US1] Create tests/tests/packages/ai_web_feeds/test_analytics.py with test_calculate_summary_metrics()
+- [ ] T060b [P] [US1] Add test_get_trending_topics() with mock TopicStats data
+- [ ] T060c [P] [US1] Add test_get_publication_velocity() with date range variations
+- [ ] T060d [P] [US1] Add test_get_health_distribution() with bucket validation
+- [ ] T060e [P] [US1] Add test_cache_decorator() to verify TTL behavior
+- [ ] T060f [P] [US1] Add test_generate_analytics_snapshot() with JSON validation
+- [ ] T060g [P] [US1] Add test_export_analytics_csv() to verify CSV format
+
+### Tests: Analytics Integration Tests
+
+- [ ] T060h [US1] Add test_analytics_summary_integration() to verify end-to-end query
+- [ ] T060i [US1] Add test_topic_stats_trigger() to verify SQLite trigger updates
+- [ ] T060j [US1] Add test_analytics_caching_integration() to verify hybrid TTL strategy
+
 ---
 
 ## Phase 4: User Story 2 - Intelligent Search & Discovery (Priority: P1) 🎯 MVP
@@ -233,6 +251,38 @@
 - [ ] T116 [US2] Add loading states, error handling, and timeout fallback for semantic search
 - [ ] T117 [US2] Implement result highlighting with <b> tags from API response
 
+### Tests: Embeddings Unit Tests
+
+- [ ] T117a [P] [US2] Create tests/tests/packages/ai_web_feeds/test_embeddings.py with test_generate_embeddings_local()
+- [ ] T117b [P] [US2] Add test_generate_embeddings_hf() with mock Hugging Face API responses
+- [ ] T117c [P] [US2] Add test_generate_embeddings_hybrid() to verify fallback logic
+- [ ] T117d [P] [US2] Add test_store_embeddings() to verify BLOB serialization
+- [ ] T117e [P] [US2] Add test_get_embedding() to verify deserialization
+- [ ] T117f [P] [US2] Add test_cosine_similarity() with known vector pairs
+
+### Tests: Search Unit Tests
+
+- [ ] T117g [P] [US2] Create tests/tests/packages/ai_web_feeds/test_search.py with test_full_text_search()
+- [ ] T117h [P] [US2] Add test_highlight_matches() to verify <b> tag insertion
+- [ ] T117i [P] [US2] Add test_apply_faceted_filters() with various filter combinations
+- [ ] T117j [P] [US2] Add test_semantic_search() with mock embeddings
+- [ ] T117k [P] [US2] Add test_hybrid_search() to verify weighted ranking
+- [ ] T117l [P] [US2] Add test_search_timeout() to verify fallback behavior
+
+### Tests: Autocomplete Unit Tests
+
+- [ ] T117m [P] [US2] Create tests/tests/packages/ai_web_feeds/test_autocomplete.py with test_trie_node_insert()
+- [ ] T117n [P] [US2] Add test_trie_search() with various prefix lengths
+- [ ] T117o [P] [US2] Add test_build_autocomplete_index() to verify trie population
+- [ ] T117p [P] [US2] Add test_get_autocomplete_suggestions_caching() to verify LRU cache
+
+### Tests: Search Integration Tests
+
+- [ ] T117q [US2] Add test_fts5_index_building() to verify FTS5 virtual table creation
+- [ ] T117r [US2] Add test_embedding_storage_integration() to verify BLOB roundtrip
+- [ ] T117s [US2] Add test_search_query_logging() to verify SearchQuery record creation
+- [ ] T117t [US2] Add test_saved_search_workflow() to verify save/load functionality
+
 ---
 
 ## Phase 5: User Story 3 - AI-Powered Feed Recommendations (Priority: P2)
@@ -309,6 +359,49 @@
 - [ ] T155 [US3] Implement recommendation loading with skeleton UI
 - [ ] T156 [US3] Implement feedback handling (optimistic UI updates, persist to API)
 
+### Tests: Recommendations Unit Tests
+
+- [ ] T156a [P] [US3] Create tests/tests/packages/ai_web_feeds/test_recommendations.py with test_generate_content_based_recommendations()
+- [ ] T156b [P] [US3] Add test_calculate_topic_similarity() with various topic overlap scenarios
+- [ ] T156c [P] [US3] Add test_calculate_embedding_similarity() with mock embeddings
+- [ ] T156d [P] [US3] Add test_calculate_popularity_score() to verify normalization
+- [ ] T156e [P] [US3] Add test_calculate_final_recommendation_score() to verify 70/20/10 weighting
+- [ ] T156f [P] [US3] Add test_enforce_diversity_constraints() to verify max 3 per topic
+- [ ] T156g [P] [US3] Add test_generate_explanation() to verify explanation text generation
+- [ ] T156h [P] [US3] Add test_cold_start_recommendations() with quiz topics
+- [ ] T156i [P] [US3] Add test_apply_user_feedback() to verify weight adjustments (+0.2/-0.5)
+- [ ] T156j [P] [US3] Add test_block_topic() to verify topic exclusion
+
+### Tests: Recommendations Integration Tests
+
+- [ ] T156k [US3] Add test_recommendation_workflow_integration() to verify end-to-end scoring
+- [ ] T156l [US3] Add test_user_profile_persistence() to verify localStorage roundtrip
+- [ ] T156m [US3] Add test_recommendation_interaction_logging() to verify RecommendationInteraction records
+
+---
+
+## Phase 6: Performance & Data Quality Validation
+
+**Goal**: Validate non-functional requirements and data quality standards
+
+**Tasks**: 10 (7 parallelizable)
+
+### Performance Benchmarking
+
+- [ ] T157 [P] Run Lighthouse audit on /analytics page to verify NFR-001 (≤2s load time)
+- [ ] T158 [P] Measure autocomplete latency with 1000 queries to verify NFR-002 (<200ms for 95%)
+- [ ] T159 [P] Measure full-text search response time with 10,000 feeds to verify NFR-003 (<500ms)
+- [ ] T160 [P] Measure semantic search latency (end-to-end) to verify NFR-004 (<3s)
+- [ ] T161 [P] Measure recommendation generation time with 100 users to verify NFR-005 (<1s)
+- [ ] T162 [P] Run load test with 1000 concurrent users to verify NFR-006 (no degradation)
+- [ ] T163 [P] Verify analytics caching reduces DB load by ≥80% using query logs (NFR-007)
+
+### Data Quality Validation
+
+- [ ] T164 Verify trending topics exclude spam/low-quality feeds (NFR-022): validate verified flag filter
+- [ ] T165 Implement weekly recommendation metrics script: calculate precision@10, recall@10, CTR (NFR-023)
+- [ ] T166 Create monthly search audit checklist: test queries, relevance scoring, A/B test plan (NFR-024)
+
 ---
 
 ## Dependencies & Execution Order
@@ -323,17 +416,21 @@ graph TD
     P2 --> P5[Phase 5: US3 Recommendations]
     
     P4 --> P5
+    P3 --> P6[Phase 6: Performance & Quality]
+    P4 --> P6
+    P5 --> P6
     
     P3 -.->|Independent| P4
     P4 -.->|Weak dependency: embeddings| P5
 ```
 
-**Critical Path**: Setup → Database → Search (embeddings required for recommendations) → Recommendations
+**Critical Path**: Setup → Database → Search → Recommendations → Performance Validation
 
 **User Story Independence**:
 - ✅ **US1 (Analytics)** is fully independent of US2 and US3
 - ✅ **US2 (Search)** is independent of US1, weak dependency from US3 (embeddings)
 - ⚠️ **US3 (Recommendations)** requires embeddings from US2
+- 🎯 **Phase 6 (Validation)** runs after all implementations complete
 
 ---
 
@@ -395,13 +492,14 @@ graph TD
 ### MVP-First Approach
 
 **Recommended MVP Scope** (Prioritize US1 + US2 only):
-1. ✅ **Phase 1**: Setup (all tasks)
-2. ✅ **Phase 2**: Database Foundation (all tasks)
-3. ✅ **Phase 3**: US1 Analytics Dashboard (all 35 tasks)
-4. ✅ **Phase 4**: US2 Intelligent Search (all 57 tasks)
-5. ⏸️ **Phase 5**: US3 Recommendations (defer to Phase 2 release)
+1. ✅ **Phase 1**: Setup (15 tasks)
+2. ✅ **Phase 2**: Database Foundation (10 tasks)
+3. ✅ **Phase 3**: US1 Analytics Dashboard (45 tasks including tests)
+4. ✅ **Phase 4**: US2 Intelligent Search (77 tasks including tests)
+5. ✅ **Phase 6**: Performance Validation (7 core NFR tests)
+6. ⏸️ **Phase 5**: US3 Recommendations (defer to Phase 2 release)
 
-**Total MVP Tasks**: 92 tasks (59% of total)
+**Total MVP Tasks**: 154 tasks (74% of total, includes test coverage)
 
 **Rationale**:
 - US1 and US2 deliver immediate value (analytics + search)
@@ -415,23 +513,29 @@ graph TD
 - ✅ Environment setup
 - ✅ Database migrations
 - ✅ Analytics dashboard with charts
+- ✅ Unit & integration tests (10 tasks)
 - **Test**: Curator can view metrics and export CSV
-- **Duration**: ~2 weeks
+- **Coverage**: ≥90% for analytics module
+- **Duration**: ~2.5 weeks (includes test development)
 
 **Milestone 2: Search MVP** (Phase 4)
 - ✅ Full-text search with FTS5
 - ✅ Autocomplete with Trie index
 - ✅ Faceted filtering
 - ✅ Semantic search (optional HF API)
+- ✅ Unit & integration tests (20 tasks)
 - **Test**: User can search and save queries
-- **Duration**: ~3 weeks
+- **Coverage**: ≥90% for search/embeddings/autocomplete modules
+- **Duration**: ~3.5 weeks (includes test development)
 
 **Milestone 3: Recommendations (Phase 2 Feature)** (Phase 5)
 - ✅ Content-based recommendations
 - ✅ Cold start onboarding quiz
 - ✅ User feedback (like/dismiss)
+- ✅ Unit & integration tests (13 tasks)
 - **Test**: User receives personalized suggestions
-- **Duration**: ~2 weeks
+- **Coverage**: ≥90% for recommendations module
+- **Duration**: ~2.5 weeks (includes test development)
 
 ---
 

@@ -13,12 +13,11 @@ The following decisions were made during clarification phase (2025-10-22):
 2. **Vector Storage**: NumPy + SQLite BLOB for MVP (simple, zero dependencies), with upgrade path to sqlite-vec extension for future optimization
 3. **Collaborative Filtering**: Deferred to Phase 2 when user accounts exist; Phase 1 uses content-based recommendations (topic similarity + popularity) only
 4. **Autocomplete Implementation**: Pre-built Trie index for feed titles and topics (in-memory, <10ms response time)
-5. **PDF Export**: CSV export only for MVP; defer PDF generation to Phase 2 if user demand exists
-6. **Trending Topics**: Use validation frequency as proxy for activity; rename to "Most Active Topics" for clarity (no article content in Phase 1)
-7. **Recommendation Diversity**: Flexible constraints - respect user intent; suggest "Explore similar topics" if too narrow, but don't force unrelated content
-8. **Zero Results Contact**: Link to GitHub "Add Feed" issue template (aligns with open-source nature)
-9. **Saved Searches Persistence**: Browser localStorage with Export/Import JSON functionality for cross-device transfer
-10. **Semantic Search Latency**: 3 seconds total acceptable (2s vector search + 1s result rendering)
+5. **Trending Topics**: Use validation frequency as proxy for activity; rename to "Most Active Topics" for clarity (no article content in Phase 1)
+6. **Recommendation Diversity**: Flexible constraints - respect user intent; suggest "Explore similar topics" if too narrow, but don't force unrelated content
+7. **Zero Results Contact**: Link to GitHub "Add Feed" issue template (aligns with open-source nature)
+8. **Saved Searches Persistence**: Browser localStorage with Export/Import JSON functionality for cross-device transfer
+9. **Semantic Search Latency**: 3 seconds total acceptable (2s vector search + 1s result rendering)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -94,13 +93,13 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 - **FR-001**: System MUST display real-time analytics dashboard at `/analytics` with key metrics: total feeds, validation success rate, average response time, health score distribution
 - **FR-002**: System MUST provide time range filters: Last 7 days, Last 30 days, Last 90 days, Custom date range (date picker)
-- **FR-003**: System MUST render interactive charts: trending topics (bar chart), publication velocity (line chart), feed health distribution (pie chart), validation success over time (area chart)
+- **FR-003**: System MUST render interactive charts: Most Active Topics (bar chart), publication velocity (line chart), feed health distribution (pie chart), validation success over time (area chart)
 - **FR-004**: System MUST allow topic filtering: dropdown to filter all analytics by single topic (e.g., "Show only LLM feeds")
 - **FR-005**: System MUST calculate "Most Active Topics" by: feed validation frequency (last 30 days), weighted by feed health scores (proxy for publication activity until article content is tracked in Phase 2)
-- **FR-006**: System MUST display publication velocity metrics: daily/weekly/monthly post counts, average posts per feed, most/least active feeds
+- **FR-006**: System MUST display publication velocity metrics: daily/weekly/monthly validation frequency, average validations per feed, most/least active feeds (validation frequency is used as proxy for publication activity in Phase 1)
 - **FR-007**: System MUST show feed health insights: healthy (≥0.8), moderate (0.5-0.8), unhealthy (<0.5) with counts and percentages
 - **FR-008**: System MUST provide data export: CSV export (raw metrics), API endpoint for programmatic access (PDF generation deferred to Phase 2)
-- **FR-009**: System MUST cache analytics queries with hybrid strategy: static metrics (1 hour TTL), dynamic metrics (5 minutes TTL), with "Refresh Now" button for on-demand updates
+- **FR-009**: System MUST cache analytics queries with hybrid strategy: static metrics (total_feeds, health_distribution - 1 hour TTL), dynamic metrics (trending_topics, validation_success_rate - 5 minutes TTL), with "Refresh Now" button for on-demand updates
 - **FR-010**: System MUST show data freshness indicator: "Last updated: [timestamp]" with auto-refresh option
 
 ### Functional Requirements - Search & Discovery
@@ -136,7 +135,7 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-034**: System MUST support user feedback: "Like" (thumbs up), "Dismiss" (X icon), "Not interested in topic" (block topic)
 - **FR-035**: System MUST update recommendations based on feedback: boost liked topics (weight +0.2), reduce dismissed feeds (weight -0.5), block unwanted topics
 - **FR-036**: System MUST periodically refresh recommendation data: weekly embedding refresh for new feeds, nightly topic popularity recalculation (collaborative matrix deferred to Phase 2)
-- **FR-037**: System MUST implement trending feeds boost: feeds with sudden activity spike (3x avg posts in 7 days) get +0.1 relevance boost
+- **FR-037**: System MUST implement trending feeds boost: feeds with sudden validation frequency spike (3x avg validations in 7 days) get +0.1 relevance boost
 - **FR-038**: System MUST provide recommendation API: `/api/recommendations?user_id=X&count=10` for programmatic access
 - **FR-039**: System MUST log recommendation interactions: impressions, clicks, likes, dismisses for model evaluation and A/B testing
 - **FR-040**: System MUST handle privacy: user can opt-out of personalization, recommendations fall back to popular feeds only
@@ -163,16 +162,16 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 #### Usability
 
-- **NFR-011**: All charts MUST be interactive: hover tooltips, click to drill down, zoom/pan support
-- **NFR-012**: Search interface MUST provide keyboard shortcuts: Cmd/Ctrl+K to focus, Arrow keys for autocomplete, Enter to search
-- **NFR-013**: Recommendations MUST show progress indicator during generation (spinner, skeleton UI)
-- **NFR-014**: All analytics/search/recommendations pages MUST be mobile-responsive (TailwindCSS breakpoints)
+- **NFR-018**: All charts MUST be interactive: hover tooltips, click to drill down, zoom/pan support
+- **NFR-019**: Search interface MUST provide keyboard shortcuts: Cmd/Ctrl+K to focus, Arrow keys for autocomplete, Enter to search
+- **NFR-020**: Recommendations MUST show progress indicator during generation (spinner, skeleton UI)
+- **NFR-021**: All analytics/search/recommendations pages MUST be mobile-responsive (TailwindCSS breakpoints)
 
 #### Data Quality
 
-- **NFR-015**: Trending topics MUST exclude spam/low-quality feeds (verified flag filter)
-- **NFR-016**: Recommendation models MUST be evaluated weekly: precision@10, recall@10, click-through rate metrics
-- **NFR-017**: Search relevance MUST be manually audited monthly: test queries, A/B test ranking algorithms
+- **NFR-022**: Trending topics MUST exclude spam/low-quality feeds (verified flag filter)
+- **NFR-023**: Recommendation models MUST be evaluated weekly: precision@10, recall@10, click-through rate metrics
+- **NFR-024**: Search relevance MUST be manually audited monthly: test queries, A/B test ranking algorithms
 
 ### Key Entities
 
@@ -182,7 +181,7 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 - **SavedSearch**: User-saved search queries. Attributes: user_id, search_name, query_text, filters (JSON), created_at, last_used_at. Enables one-click replay of complex searches.
 
-- **FeedEmbedding**: Vector representation of feed content. Attributes: feed_id, embedding_vector (768-dim float array), embedding_model_version, last_updated. Used for semantic search and content-based recommendations.
+- **FeedEmbedding**: Vector representation of feed content. Attributes: feed_id, embedding_vector (384-dim float array), embedding_model_version, last_updated. Used for semantic search and content-based recommendations. Model: all-MiniLM-L6-v2.
 
 - **RecommendationInteraction**: User feedback on recommendations. Attributes: user_id, feed_id, interaction_type (impression/click/like/dismiss), timestamp. Used for model training and evaluation.
 
