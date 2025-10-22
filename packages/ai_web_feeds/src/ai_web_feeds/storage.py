@@ -605,3 +605,136 @@ class DatabaseManager:
                 ),
                 "feeds_critical": len([s for s in health_scores if s < 0.4]),
             }
+
+    # ========================================================================
+    # Phase 1: Analytics Storage Extensions
+    # ========================================================================
+
+    def get_analytics_summary(
+        self,
+        date_range_days: int = 30,
+        topic: str | None = None,
+    ) -> dict[str, Any]:
+        """Get analytics summary with optional topic filter.
+
+        Args:
+            date_range_days: Number of days to include in analysis
+            topic: Optional topic ID to filter by
+
+        Returns:
+            Dictionary with analytics metrics
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.analytics import calculate_summary_metrics
+
+            date_range = f"{date_range_days}d"
+            return calculate_summary_metrics(session, date_range=date_range, topic=topic)
+
+    def get_topic_stats(
+        self,
+        snapshot_date: str | None = None,
+        limit: int = 10,
+    ) -> list[TopicStats]:
+        """Get topic statistics for a specific snapshot date.
+
+        Args:
+            snapshot_date: ISO date YYYY-MM-DD (defaults to latest)
+            limit: Maximum number of topics to return
+
+        Returns:
+            List of TopicStats ordered by validation frequency
+        """
+        with self.get_session() as session:
+            # Get latest snapshot date if not provided
+            if not snapshot_date:
+                latest = session.exec(
+                    select(TopicStats.snapshot_date)
+                    .order_by(TopicStats.snapshot_date.desc())
+                    .limit(1)
+                ).first()
+                snapshot_date = latest if latest else datetime.utcnow().strftime("%Y-%m-%d")
+
+            # Query topic stats
+            statement = (
+                select(TopicStats)
+                .where(TopicStats.snapshot_date == snapshot_date)
+                .order_by(TopicStats.validation_frequency.desc())
+                .limit(limit)
+            )
+            return list(session.exec(statement).all())
+
+    def get_validation_history(
+        self,
+        feed_source_id: str | None = None,
+        days: int = 30,
+        limit: int = 100,
+    ) -> list[FeedValidationResult]:
+        """Get validation history with aggregations.
+
+        Args:
+            feed_source_id: Optional feed ID to filter by
+            days: Number of days to look back
+            limit: Maximum number of results
+
+        Returns:
+            List of FeedValidationResult ordered by timestamp desc
+        """
+        with self.get_session() as session:
+            cutoff_date = datetime.utcnow() - timedelta(days=days)
+
+            statement = (
+                select(FeedValidationResult)
+                .where(FeedValidationResult.validated_at >= cutoff_date)
+                .order_by(FeedValidationResult.validated_at.desc())
+                .limit(limit)
+            )
+
+            if feed_source_id:
+                statement = statement.where(
+                    FeedValidationResult.feed_source_id == feed_source_id
+                )
+
+            return list(session.exec(statement).all())
+
+    def save_analytics_snapshot(self, snapshot: AnalyticsSnapshot) -> AnalyticsSnapshot:
+        """Save or update analytics snapshot.
+
+        Args:
+            snapshot: AnalyticsSnapshot to save
+
+        Returns:
+            Saved snapshot with any updates
+        """
+        with self.get_session() as session:
+            # Check if snapshot exists for this date
+            existing = session.get(AnalyticsSnapshot, snapshot.snapshot_date)
+            if existing:
+                # Update existing
+                for key, value in snapshot.dict(exclude={"snapshot_date"}).items():
+                    setattr(existing, key, value)
+                session.add(existing)
+                session.commit()
+                session.refresh(existing)
+                logger.info(f"Updated analytics snapshot for {snapshot.snapshot_date}")
+                return existing
+            else:
+                # Create new
+                session.add(snapshot)
+                session.commit()
+                session.refresh(snapshot)
+                logger.info(f"Created analytics snapshot for {snapshot.snapshot_date}")
+                return snapshot
+
+    def get_latest_analytics_snapshot(self) -> AnalyticsSnapshot | None:
+        """Get the most recent analytics snapshot.
+
+        Returns:
+            Latest AnalyticsSnapshot or None
+        """
+        with self.get_session() as session:
+            statement = (
+                select(AnalyticsSnapshot)
+                .order_by(AnalyticsSnapshot.snapshot_date.desc())
+                .limit(1)
+            )
+            return session.exec(statement).first()

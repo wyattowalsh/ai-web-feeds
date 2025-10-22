@@ -19,11 +19,17 @@ from ai_web_feeds import (
     validate_feeds,
 )
 
+# Import command modules
+from ai_web_feeds.cli.commands import analytics
+
 app = typer.Typer(
     name="ai-web-feeds",
     help="AI Web Feeds - Process feed sources through: load → validate → enrich → export",
     add_completion=False,
 )
+
+# Register command modules
+app.add_typer(analytics.app, name="analytics")
 
 console = Console()
 
