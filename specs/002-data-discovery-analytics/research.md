@@ -1,4 +1,4 @@
-# Technology Research: Phase 1 - Data Discovery & Analytics
+# Technology Research: Phase 2 - Data Discovery & Analytics
 
 **Feature Branch**: `002-data-discovery-analytics`  
 **Date**: 2025-10-22  
@@ -300,22 +300,22 @@ dynamic_cache = CacheWithTTL(ttl_seconds=300)  # 5 minutes for dynamic metrics
 
 ## 6. Recommendation Algorithm
 
-### Decision: Content-Based Filtering (Phase 1) with Collaborative Filtering Prep (Phase 2)
+### Decision: Content-Based Filtering (Phase 2) with Collaborative Filtering Prep (Phase 3)
 
 **Rationale**:
-- **No User Accounts**: Phase 1 has no authentication, so no user-user interaction data
+- **No User Accounts**: Phase 2 has no authentication, so no user-user interaction data
 - **Content-Based Works**: Topic overlap + embedding similarity provide value without accounts
 - **Popularity Boost**: Verified feeds + most followed feeds add quality signals
 - **Serendipity**: 10% random high-quality feeds prevent filter bubbles
 - **localStorage Tracking**: Collect anonymous likes/dismisses for future collaborative filtering
-- **Phase 2 Ready**: When user accounts added, can enable collaborative filtering immediately
+- **Phase 3 Ready**: When user accounts added, can enable collaborative filtering immediately
 
 **Alternatives Considered**:
-- **Implement Collaborative Filtering Now**: Requires user accounts system (deferred to Phase 2)
+- **Implement Collaborative Filtering Now**: Requires user accounts system (deferred to Phase 3)
 - **Pure Popularity**: Would not personalize, defeats purpose of "AI-powered"
 - **External Recommendation API**: Vendor lock-in, privacy concerns, costs
 
-**Algorithm Breakdown** (Phase 1):
+**Algorithm Breakdown** (Phase 2):
 - **70% Content-Based**: Topic overlap + embedding similarity (cosine ≥0.7)
 - **20% Popularity-Based**: Most followed/verified feeds
 - **10% Serendipity**: Random high-quality feeds (health score ≥0.8)
@@ -374,7 +374,7 @@ def generate_recommendations(
     return scores[:limit]
 ```
 
-**Phase 2 Preparation** (Collaborative Filtering):
+**Phase 3 Preparation** (Collaborative Filtering):
 ```python
 # Collect anonymous interaction data in localStorage
 {
@@ -385,7 +385,7 @@ def generate_recommendations(
   ]
 }
 
-# When Phase 2 user accounts implemented, migrate to database
+# When Phase 3 user accounts implemented, migrate to database
 CREATE TABLE recommendation_interactions (
   user_id TEXT NOT NULL,
   feed_id TEXT NOT NULL,
@@ -557,7 +557,7 @@ async def autocomplete(q: str):
 - **Universal Format**: Importable to Excel, Google Sheets, pandas, etc.
 - **Simple**: Single function to generate CSV from SQLite query results
 
-**PDF Export** (Deferred to Phase 2):
+**PDF Export** (Deferred to Phase 3):
 - **Playwright** (Apache 2.0): Headless Chrome for high-fidelity chart rendering
 - **WeasyPrint** (BSD): HTML-to-PDF, simpler but less accurate for charts
 - **Decision**: Wait for user demand, CSV sufficient for MVP
@@ -688,12 +688,12 @@ AIWF_ANALYTICS__DYNAMIC_CACHE_TTL=300
 | **Embeddings (Local)** | Sentence-Transformers | Apache 2.0 | Zero setup, offline, CPU-optimized |
 | **Embeddings (API)** | Hugging Face Inference API | Free tier | Optional offload, 1000 req/day |
 | **Vector Storage** | NumPy + SQLite BLOB | BSD + Public Domain | Simple, upgrade path to sqlite-vec |
-| **ML Framework** | scikit-learn | BSD | Cosine similarity, collaborative filtering (Phase 2) |
+| **ML Framework** | scikit-learn | BSD | Cosine similarity, collaborative filtering (Phase 3) |
 | **Caching** | functools.lru_cache | Python stdlib | In-memory, no external service |
 | **Visualization** | Chart.js | MIT | Simple, responsive, React integration |
 | **Alt Visualization** | Apache ECharts | Apache 2.0 | Advanced charts if needed |
 | **CSV Export** | csv module | Python stdlib | Universal format, fast |
-| **PDF Export** | Playwright (deferred) | Apache 2.0 | High-fidelity rendering (Phase 2) |
+| **PDF Export** | Playwright (deferred) | Apache 2.0 | High-fidelity rendering (Phase 3) |
 | **Configuration** | Pydantic Settings | MIT | Type-safe, validation, env vars |
 | **Progress Bars** | tqdm | MIT/MPL | User feedback for long operations |
 | **Logging** | Loguru | MIT | Structured logging, async |
@@ -715,5 +715,5 @@ AIWF_ANALYTICS__DYNAMIC_CACHE_TTL=300
 
 ---
 
-**Next Steps**: Proceed to Phase 1 (Design & Contracts) to define data models and API contracts.
+**Next Steps**: Proceed to Phase 2 (Design & Contracts) to define data models and API contracts.
 

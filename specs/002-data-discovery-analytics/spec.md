@@ -1,9 +1,9 @@
-# Feature Specification: Phase 1 - Data Discovery & Analytics
+# Feature Specification: Phase 2 - Data Discovery & Analytics
 
 **Feature Branch**: `002-data-discovery-analytics`  
 **Created**: 2025-10-22  
 **Status**: Clarified → Ready for Planning  
-**Input**: User description: "Phase 1: Data & Discovery - Analytics Dashboard, Intelligent Search & Discovery, and AI-Powered Feed Recommendations"
+**Input**: User description: "Phase 2: Data & Discovery - Analytics Dashboard, Intelligent Search & Discovery, and AI-Powered Feed Recommendations"
 
 ## Clarifications
 
@@ -11,9 +11,9 @@ The following decisions were made during clarification phase (2025-10-22):
 
 1. **Analytics Caching Strategy**: Hybrid approach - static metrics cached 1 hour, dynamic metrics cached 5 minutes, user can "Refresh Now" for real-time data
 2. **Vector Storage**: NumPy + SQLite BLOB for MVP (simple, zero dependencies), with upgrade path to sqlite-vec extension for future optimization
-3. **Collaborative Filtering**: Deferred to Phase 2 when user accounts exist; Phase 1 uses content-based recommendations (topic similarity + popularity) only
+3. **Collaborative Filtering**: Deferred to Phase 3 when user accounts exist; Phase 2 uses content-based recommendations (topic similarity + popularity) only
 4. **Autocomplete Implementation**: Pre-built Trie index for feed titles and topics (in-memory, <10ms response time)
-5. **Trending Topics**: Use validation frequency as proxy for activity; rename to "Most Active Topics" for clarity (no article content in Phase 1)
+5. **Trending Topics**: Use validation frequency as proxy for activity; rename to "Most Active Topics" for clarity (no article content in Phase 2)
 6. **Recommendation Diversity**: Flexible constraints - respect user intent; suggest "Explore similar topics" if too narrow, but don't force unrelated content
 7. **Zero Results Contact**: Link to GitHub "Add Feed" issue template (aligns with open-source nature)
 8. **Saved Searches Persistence**: Browser localStorage with Export/Import JSON functionality for cross-device transfer
@@ -96,9 +96,9 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-003**: System MUST render interactive charts: Most Active Topics (bar chart), publication velocity (line chart), feed health distribution (pie chart), validation success over time (area chart)
 - **FR-004**: System MUST allow topic filtering: dropdown to filter all analytics by single topic (e.g., "Show only LLM feeds")
 - **FR-005**: System MUST calculate "Most Active Topics" by: feed validation frequency (last 30 days), weighted by feed health scores (proxy for publication activity until article content is tracked in Phase 2)
-- **FR-006**: System MUST display publication velocity metrics: daily/weekly/monthly validation frequency, average validations per feed, most/least active feeds (validation frequency is used as proxy for publication activity in Phase 1)
+- **FR-006**: System MUST display publication velocity metrics: daily/weekly/monthly validation frequency, average validations per feed, most/least active feeds (validation frequency is used as proxy for publication activity in Phase 2)
 - **FR-007**: System MUST show feed health insights: healthy (≥0.8), moderate (0.5-0.8), unhealthy (<0.5) with counts and percentages
-- **FR-008**: System MUST provide data export: CSV export (raw metrics), API endpoint for programmatic access (PDF generation deferred to Phase 2)
+- **FR-008**: System MUST provide data export: CSV export (raw metrics), API endpoint for programmatic access (PDF generation deferred to Phase 3)
 - **FR-009**: System MUST cache analytics queries with hybrid strategy: static metrics (total_feeds, health_distribution - 1 hour TTL), dynamic metrics (trending_topics, validation_success_rate - 5 minutes TTL), with "Refresh Now" button for on-demand updates
 - **FR-010**: System MUST show data freshness indicator: "Last updated: [timestamp]" with auto-refresh option
 
@@ -127,14 +127,14 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 - **FR-026**: System MUST provide recommendations page at `/recommendations` with personalized feed suggestions
 - **FR-027**: System MUST implement cold start onboarding: quiz with 3-5 topic selection (e.g., "What AI/ML areas interest you?")
 - **FR-028**: System MUST generate 10-20 recommendations per page with infinite scroll
-- **FR-029**: System MUST use content-based filtering: recommend feeds similar to user's interests based on topic overlap and embedding similarity (collaborative filtering deferred to Phase 2 when user accounts exist)
-- **FR-030**: System MUST implement recommendation algorithm for Phase 1: 70% content-based (topic similarity), 20% popularity-based (most followed/verified), 10% serendipity (random high-quality feeds)
-- **FR-031**: System MUST prepare for Phase 2 collaborative filtering: collect anonymous interaction data (likes/dismisses) in localStorage for future use when user accounts implemented
+- **FR-029**: System MUST use content-based filtering: recommend feeds similar to user's interests based on topic overlap and embedding similarity (collaborative filtering deferred to Phase 3 when user accounts exist)
+- **FR-030**: System MUST implement recommendation algorithm for Phase 2: 70% content-based (topic similarity), 20% popularity-based (most followed/verified), 10% serendipity (random high-quality feeds)
+- **FR-031**: System MUST prepare for Phase 3 collaborative filtering: collect anonymous interaction data (likes/dismisses) in localStorage for future use when user accounts implemented
 - **FR-032**: System SHOULD enforce diversity constraints with flexibility: max 3 feeds per topic (best effort), minimum 2 topics represented (unless user's interests are highly focused), with "Explore similar topics" suggestion if recommendations are too narrow
 - **FR-033**: System MUST provide recommendation explanations: "Because you follow X", "Popular in Y", "Similar to Z" with clickable links
 - **FR-034**: System MUST support user feedback: "Like" (thumbs up), "Dismiss" (X icon), "Not interested in topic" (block topic)
 - **FR-035**: System MUST update recommendations based on feedback: boost liked topics (weight +0.2), reduce dismissed feeds (weight -0.5), block unwanted topics
-- **FR-036**: System MUST periodically refresh recommendation data: weekly embedding refresh for new feeds, nightly topic popularity recalculation (collaborative matrix deferred to Phase 2)
+- **FR-036**: System MUST periodically refresh recommendation data: weekly embedding refresh for new feeds, nightly topic popularity recalculation (collaborative matrix deferred to Phase 3)
 - **FR-037**: System MUST implement trending feeds boost: feeds with sudden validation frequency spike (3x avg validations in 7 days) get +0.1 relevance boost
 - **FR-038**: System MUST provide recommendation API: `/api/recommendations?user_id=X&count=10` for programmatic access
 - **FR-039**: System MUST log recommendation interactions: impressions, clicks, likes, dismisses for model evaluation and A/B testing
@@ -221,11 +221,11 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 
 ### Business Metrics
 
-- **SC-018**: Monthly active users increase by 30% after Phase 1 launch (improved discovery)
+- **SC-018**: Monthly active users increase by 30% after Phase 2 launch (improved discovery)
 - **SC-019**: Average session duration increases by 50% (users spend more time exploring)
 - **SC-020**: Support tickets for "can't find X feed" decrease by 60% (better search)
 - **SC-021**: 500+ saved searches created within first quarter (user engagement signal)
-- **SC-022**: 80% user satisfaction score on post-launch survey (Phase 1 features)
+- **SC-022**: 80% user satisfaction score on post-launch survey (Phase 2 features)
 
 ---
 
@@ -238,7 +238,7 @@ As a **Feed Consumer**, I want to **receive personalized feed suggestions based 
 5. **Computing Resources**: 
    - **Local embeddings**: Requires CPU for generation (~50-100ms per feed); no GPU needed, models are CPU-optimized
    - **HF API embeddings**: Zero local compute, but limited to 1000 requests/day on free tier (sufficient for incremental updates)
-6. **Privacy**: Analytics and search logs are anonymized; personalized recommendations stored in browser localStorage (no user accounts in P1)
+6. **Privacy**: Analytics and search logs are anonymized; personalized recommendations stored in browser localStorage (no user accounts in Phase 2)
 7. **SQLite Performance**: Assumes proper indexing, query optimization, and WAL mode for concurrent reads (sufficient for 1000 concurrent users)
 8. **Hugging Face API**: Optional feature requiring user-provided API token (free tier); system falls back to local embeddings if API unavailable
 
@@ -531,18 +531,18 @@ CREATE INDEX idx_collaborative_matrix ON collaborative_matrix(feed_id_1, feed_id
 
 ---
 
-## Out of Scope (Phase 1)
+## Out of Scope (Phase 2)
 
-The following features are explicitly **NOT included** in Phase 1 and may be considered for future phases:
+The following features are explicitly **NOT included** in Phase 2 and may be considered for future phases:
 
-1. **User Accounts**: No authentication, login, or personalized profiles (deferred to Phase 2). Recommendations use browser localStorage for MVP.
+1. **User Accounts**: No authentication, login, or personalized profiles (deferred to Phase 3). Recommendations use browser localStorage for Phase 2.
 2. **Real-Time Analytics**: Dashboard updates every 5 minutes (cached), not live streaming. Real-time requires WebSocket infrastructure.
-3. **Advanced NLP**: No sentiment analysis, entity extraction, or topic modeling beyond keyword trending. Deferred to Phase 3.
-4. **Collaborative Feeds**: No user-generated collections or public sharing. Deferred to Phase 2 (Community Curation).
-5. **Notification System**: No email/push notifications for trending topics or new recommendations. Deferred to Phase 2.
-6. **A/B Testing Framework**: Manual ranking/algorithm adjustments. Automated experimentation framework deferred to Phase 3.
-7. **Multi-Language Support**: Search and recommendations are English-only initially. I18n deferred to Phase 4.
-8. **Mobile Apps**: Web-only (responsive design). Native iOS/Android apps deferred to Phase 5.
+3. **Advanced NLP**: No sentiment analysis, entity extraction, or topic modeling beyond keyword trending. Deferred to Phase 4.
+4. **Collaborative Feeds**: No user-generated collections or public sharing. Deferred to Phase 3 (Community Curation).
+5. **Notification System**: No email/push notifications for trending topics or new recommendations. Deferred to Phase 3.
+6. **A/B Testing Framework**: Manual ranking/algorithm adjustments. Automated experimentation framework deferred to Phase 4.
+7. **Multi-Language Support**: Search and recommendations are English-only initially. I18n deferred to Phase 5.
+8. **Mobile Apps**: Web-only (responsive design). Native iOS/Android apps deferred to Phase 6.
 9. **Video/Podcast Content**: Text-based feeds only. Multimedia content search deferred to future.
 10. **Advanced Filtering**: Simple facets only (type, topic, verified). Complex boolean queries, date ranges, custom fields deferred.
 

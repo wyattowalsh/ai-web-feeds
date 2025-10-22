@@ -1,4 +1,4 @@
-# Data Model: Phase 1 - Data Discovery & Analytics
+# Data Model: Phase 2 - Data Discovery & Analytics
 
 **Feature Branch**: `002-data-discovery-analytics`  
 **Date**: 2025-10-22  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document defines the complete data model for Phase 1 features: Analytics Dashboard, Intelligent Search & Discovery, and AI-Powered Feed Recommendations. All entities use SQLModel for type-safe database interactions and Pydantic v2 for validation.
+This document defines the complete data model for Phase 2 features: Analytics Dashboard, Intelligent Search & Discovery, and AI-Powered Feed Recommendations. All entities use SQLModel for type-safe database interactions and Pydantic v2 for validation.
 
 ---
 
@@ -84,7 +84,7 @@ class FeedSource(SQLModel, table=True):
 
 ---
 
-## New Entities (Phase 1)
+## New Entities (Phase 2)
 
 ### 1. FeedEmbedding
 
@@ -368,14 +368,14 @@ interaction = RecommendationInteraction(
 
 ---
 
-### 7. UserProfile (Phase 1 Preparation for Phase 2)
+### 7. UserProfile (Phase 2 Preparation for Phase 3)
 
-**Purpose**: Stores user preferences and interests (localStorage in Phase 1, database in Phase 2).
+**Purpose**: Stores user preferences and interests (localStorage in Phase 2, database in Phase 3).
 
 **Fields**:
 ```python
 class UserProfile(SQLModel, table=True):
-    """User preferences and interests (Phase 2)"""
+    """User preferences and interests (Phase 3)"""
     __tablename__ = "user_profiles"
     
     user_id: str = Field(primary_key=True)  # Anonymous ID or authenticated user ID
@@ -396,7 +396,7 @@ class UserProfile(SQLModel, table=True):
 - Primary key: `user_id`
 - B-tree: `updated_at`
 
-**Phase 1 Implementation** (localStorage):
+**Phase 2 Implementation** (localStorage):
 ```typescript
 // Browser localStorage schema
 interface UserProfile {
@@ -419,14 +419,14 @@ const importProfile = (json: string) => localStorage.setItem('userProfile', json
 
 ---
 
-### 8. CollaborativeMatrix (Phase 2)
+### 8. CollaborativeMatrix (Phase 3)
 
 **Purpose**: Precomputed feed co-occurrence matrix for collaborative filtering.
 
 **Fields**:
 ```python
 class CollaborativeMatrix(SQLModel, table=True):
-    """Precomputed feed co-occurrence scores (Phase 2)"""
+    """Precomputed feed co-occurrence scores (Phase 3)"""
     __tablename__ = "collaborative_matrix"
     
     feed_id_1: str = Field(foreign_key="sources.id", primary_key=True)
@@ -450,7 +450,7 @@ class CollaborativeMatrix(SQLModel, table=True):
 - B-tree: `co_occurrence_score`, `last_updated`
 - Compound: `(feed_id_1, co_occurrence_score)` for recommendation queries
 
-**Usage (Phase 2)**:
+**Usage (Phase 3)**:
 ```python
 # Find feeds similar to user's followed feeds
 collaborative_recs = session.exec(
@@ -476,7 +476,7 @@ CREATE VIRTUAL TABLE feed_search_index USING fts5(
   feed_id UNINDEXED,
   title,
   description,
-  content,  -- Recent article titles (if cached in Phase 2)
+  content,  -- Recent article titles (if cached in Phase 3)
   tokenize='porter unicode61'
 );
 
@@ -598,12 +598,12 @@ class RecommendationSettings(BaseSettings):
 
 **Migration Strategy**: Use Alembic for schema migrations.
 
-### Migration 1: Add Phase 1 Tables
+### Migration 1: Add Phase 2 Tables
 
 ```python
-"""Add Phase 1 analytics, search, and recommendation tables
+"""Add Phase 2 analytics, search, and recommendation tables
 
-Revision ID: 002_phase1_tables
+Revision ID: 002_phase2_tables
 Revises: 001_mvp_tables
 Create Date: 2025-10-22
 """
