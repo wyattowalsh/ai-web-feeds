@@ -128,6 +128,14 @@ class FeedSource(SQLModel, table=True):
     verified: bool = SQLField(default=False)
     contributor: str | None = SQLField(default=None)
 
+    # NEW Phase 1: Search & Recommendation fields
+    popularity_score: float = SQLField(
+        default=0.0, ge=0.0, le=1.0, index=True, description="Computed popularity score for recommendations"
+    )
+    validation_count: int = SQLField(
+        default=0, description="Number of successful validations for trending analysis"
+    )
+
     # Curation
     curation_status: CurationStatus | None = SQLField(default=CurationStatus.UNVERIFIED)
     curation_since: datetime | None = SQLField(default=None)
@@ -599,3 +607,199 @@ class OPMLDocument(SQLModel):
     owner_name: str = "AI Web Feeds"
     owner_email: str | None = None
     outlines: list[OPMLOutline] = []
+
+
+# ============================================================================
+# Phase 1: Data Discovery & Analytics Models
+# ============================================================================
+
+
+class FeedEmbedding(SQLModel, table=True):
+    """Vector embeddings for semantic similarity search.
+    
+    Stores 384-dim embeddings from all-MiniLM-L6-v2 model for semantic search
+    and content-based recommendations.
+    """
+
+    __tablename__ = "feed_embeddings"
+
+    feed_id: str = SQLField(foreign_key="sources.id", primary_key=True, description="Feed source ID")
+    embedding: bytes = SQLField(description="384-dim float32 array serialized as bytes (1536 bytes)")
+    embedding_model: str = SQLField(
+        default="sentence-transformers/all-MiniLM-L6-v2",
+        description="Embedding model version"
+    )
+    embedding_provider: str = SQLField(
+        default="local",
+        description="Embedding provider: 'local' or 'huggingface'"
+    )
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class AnalyticsSnapshot(SQLModel, table=True):
+    """Aggregated analytics metrics stored daily for historical trending.
+    
+    JSON snapshots of key metrics for efficient dashboard rendering without
+    real-time aggregation queries.
+    """
+
+    __tablename__ = "analytics_snapshots"
+
+    snapshot_date: str = SQLField(primary_key=True, description="ISO date YYYY-MM-DD")
+    total_feeds: int = SQLField(description="Total feed count")
+    active_feeds: int = SQLField(description="Active feed count")
+    validation_success_rate: float = SQLField(ge=0.0, le=1.0, description="Validation success rate")
+    avg_response_time: float = SQLField(description="Average validation response time (ms)")
+    trending_topics: list[dict[str, Any]] = SQLField(
+        sa_column=Column(JSON),
+        description="Top topics by validation frequency"
+    )
+    health_distribution: dict[str, int] = SQLField(
+        sa_column=Column(JSON),
+        description="Feed counts by health category"
+    )
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class TopicStats(SQLModel, table=True):
+    """Topic-level analytics for trending and Most Active Topics.
+    
+    Tracks validation frequency and health scores per topic for analytics dashboard.
+    """
+
+    __tablename__ = "topic_stats"
+
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    topic: str = SQLField(index=True, description="Topic ID from topics.yaml")
+    feed_count: int = SQLField(description="Number of feeds with this topic")
+    validation_frequency: float = SQLField(
+        description="Validation frequency (last 30 days), weighted by health"
+    )
+    avg_health_score: float = SQLField(ge=0.0, le=1.0, description="Average health score")
+    snapshot_date: str = SQLField(index=True, description="ISO date YYYY-MM-DD")
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class SearchQuery(SQLModel, table=True):
+    """User search interactions for analytics and personalization.
+    
+    Logs search queries, filters, and clicked results for search analytics
+    and improvement.
+    """
+
+    __tablename__ = "search_queries"
+
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    user_id: str | None = SQLField(default=None, index=True, description="User ID (optional, localStorage key)")
+    query_text: str = SQLField(description="Search query text")
+    search_type: str = SQLField(description="Search type: 'full_text' or 'semantic'")
+    filters_applied: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON),
+        description="Applied filters (source_type, topics, verified, active)"
+    )
+    result_count: int = SQLField(description="Number of results returned")
+    clicked_results: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Feed IDs clicked by user"
+    )
+    timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class SavedSearch(SQLModel, table=True):
+    """User-saved search queries for one-click replay.
+    
+    Stores search query + filters for quick access from sidebar.
+    """
+
+    __tablename__ = "saved_searches"
+
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage key)")
+    search_name: str = SQLField(description="User-provided name for saved search")
+    query_text: str = SQLField(description="Search query text")
+    filters: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON),
+        description="Saved filters"
+    )
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    last_used_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class RecommendationInteraction(SQLModel, table=True):
+    """User feedback on recommendations for model training and evaluation.
+    
+    Tracks impressions, clicks, likes, and dismisses for recommendation
+    performance metrics.
+    """
+
+    __tablename__ = "recommendation_interactions"
+
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage key)")
+    feed_id: str = SQLField(foreign_key="sources.id", index=True)
+    interaction_type: str = SQLField(
+        description="Interaction: 'impression', 'click', 'like', 'dismiss', 'block_topic'"
+    )
+    context: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON),
+        description="Additional context (explanation, position, etc.)"
+    )
+    timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class UserProfile(SQLModel, table=True):
+    """User interests and preferences for personalization.
+    
+    Phase 1: Stored in localStorage. Phase 2: Migrate to database with user accounts.
+    """
+
+    __tablename__ = "user_profiles"
+
+    user_id: str = SQLField(primary_key=True, description="User ID (localStorage key)")
+    followed_feeds: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Feed IDs user follows"
+    )
+    preferred_topics: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Topic IDs user prefers"
+    )
+    blocked_topics: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Topic IDs user blocked"
+    )
+    interaction_history: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON),
+        description="Interaction history for recommendations"
+    )
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class CollaborativeMatrix(SQLModel, table=True):
+    """Precomputed feed co-occurrence matrix for collaborative filtering.
+    
+    Phase 2: Used when user accounts exist. Phase 1: Placeholder for future.
+    """
+
+    __tablename__ = "collaborative_matrix"
+
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    feed_id_1: str = SQLField(foreign_key="sources.id", index=True)
+    feed_id_2: str = SQLField(foreign_key="sources.id", index=True)
+    co_occurrence_score: float = SQLField(
+        ge=0.0,
+        le=1.0,
+        description="Co-occurrence score based on user interactions"
+    )
+    support: int = SQLField(description="Number of users who interacted with both feeds")
+    last_updated: datetime = SQLField(default_factory=datetime.utcnow)

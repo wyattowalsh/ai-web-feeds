@@ -10,13 +10,21 @@ from sqlalchemy import create_engine, desc, text
 from sqlmodel import SQLModel, select, Session
 
 from ai_web_feeds.models import (
+    AnalyticsSnapshot,
+    CollaborativeMatrix,
     FeedAnalytics,
+    FeedEmbedding,
     FeedEnrichmentData,
     FeedFetchLog,
     FeedItem,
     FeedSource,
     FeedValidationResult,
+    RecommendationInteraction,
+    SavedSearch,
+    SearchQuery,
     Topic,
+    TopicStats,
+    UserProfile,
 )
 
 
