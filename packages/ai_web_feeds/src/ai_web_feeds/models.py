@@ -803,3 +803,214 @@ class CollaborativeMatrix(SQLModel, table=True):
     )
     support: int = SQLField(description="Number of users who interacted with both feeds")
     last_updated: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+# ============================================================================
+# Phase 3B: Real-Time Monitoring Models
+# ============================================================================
+
+
+class PollStatus(str, Enum):
+    """Feed poll job status values."""
+
+    PENDING  = "pending"
+    RUNNING  = "running"
+    SUCCESS  = "success"
+    FAILURE  = "failure"
+
+
+class NotificationType(str, Enum):
+    """Notification type values."""
+
+    NEW_ARTICLE    = "new_article"
+    TRENDING_TOPIC = "trending_topic"
+    FEED_UPDATED   = "feed_updated"
+    SYSTEM_ALERT   = "system_alert"
+
+
+class DeliveryMethod(str, Enum):
+    """Notification delivery method."""
+
+    WEBSOCKET = "websocket"
+    EMAIL     = "email"
+    IN_APP    = "in_app"
+
+
+class NotificationFrequency(str, Enum):
+    """Notification frequency preferences."""
+
+    INSTANT = "instant"
+    HOURLY  = "hourly"
+    DAILY   = "daily"
+    WEEKLY  = "weekly"
+    OFF     = "off"
+
+
+class ScheduleType(str, Enum):
+    """Email digest schedule type."""
+
+    DAILY  = "daily"
+    WEEKLY = "weekly"
+    CUSTOM = "custom"
+
+
+class FeedEntry(SQLModel, table=True):
+    """Individual feed articles/entries from polling.
+    
+    Stores article metadata discovered during feed polling for notification
+    targeting and historical tracking.
+    """
+
+    __tablename__ = "feed_entries"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    feed_id: str = SQLField(foreign_key="sources.id", index=True)
+    guid: str = SQLField(unique=True, index=True, description="Article GUID (globally unique)")
+    link: str = SQLField(max_length=2048, description="Article URL")
+    title: str = SQLField(max_length=512)
+    summary: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
+    content_html: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
+    pub_date: datetime = SQLField(index=True, description="Article publication date")
+    author: Optional[str] = SQLField(default=None, max_length=255)
+    categories: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Article categories/tags"
+    )
+    discovered_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class FeedPollJob(SQLModel, table=True):
+    """Feed polling job tracking for monitoring and debugging.
+    
+    Logs each polling attempt with status, timing, and error information
+    for feed health monitoring.
+    """
+
+    __tablename__ = "feed_poll_jobs"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    feed_id: str = SQLField(foreign_key="sources.id", index=True)
+    scheduled_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    status: PollStatus = SQLField(index=True)
+    error_message: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
+    articles_discovered: int = SQLField(default=0, ge=0)
+    response_time_ms: Optional[int] = SQLField(default=None, ge=0)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class Notification(SQLModel, table=True):
+    """User notifications for real-time and in-app delivery.
+    
+    Stores notification messages with metadata for WebSocket broadcasting
+    and notification center display.
+    """
+
+    __tablename__ = "notifications"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
+    type: NotificationType = SQLField(index=True)
+    title: str = SQLField(max_length=255)
+    message: str = SQLField(max_length=1000)
+    action_url: Optional[str] = SQLField(default=None, max_length=2048)
+    metadata: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON),
+        description="Additional context (feed_id, article_id, trend_score)"
+    )
+    read_at: Optional[datetime] = None
+    dismissed_at: Optional[datetime] = None
+    created_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class UserFeedFollow(SQLModel, table=True):
+    """User feed follow relationships for notification targeting.
+    
+    Stores which feeds a user follows to determine notification recipients
+    and personalize feed recommendations.
+    """
+
+    __tablename__ = "user_feed_follows"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
+    feed_id: str = SQLField(foreign_key="sources.id", index=True)
+    followed_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class TrendingTopic(SQLModel, table=True):
+    """Detected trending topics with statistical metrics.
+    
+    Stores topic trends with Z-score calculations for alerting and
+    discovery features.
+    """
+
+    __tablename__ = "trending_topics"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    topic_id: str = SQLField(index=True, description="Topic ID from taxonomy")
+    period_start: datetime = SQLField(index=True)
+    period_end: datetime
+    article_count: int = SQLField(ge=0, description="Articles in period")
+    baseline_mean: float = SQLField(ge=0.0, description="Historical mean")
+    baseline_std: float = SQLField(ge=0.0, description="Historical std dev")
+    z_score: float = SQLField(description="Z-score (trending if >2.0)")
+    rank: int = SQLField(ge=1, description="Ranking by Z-score")
+    representative_articles: list[int] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON),
+        description="Top 3 article IDs"
+    )
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class NotificationPreference(SQLModel, table=True):
+    """User notification preferences per feed and delivery method.
+    
+    Configures notification delivery settings with quiet hours and
+    frequency preferences.
+    """
+
+    __tablename__ = "notification_preferences"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
+    feed_id: Optional[str] = SQLField(
+        default=None,
+        foreign_key="sources.id",
+        description="NULL for global preferences"
+    )
+    delivery_method: DeliveryMethod
+    frequency: NotificationFrequency
+    quiet_hours_start: Optional[str] = SQLField(default=None, description="HH:MM format")
+    quiet_hours_end: Optional[str] = SQLField(default=None, description="HH:MM format")
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class EmailDigest(SQLModel, table=True):
+    """Email digest subscriptions with engagement tracking.
+    
+    Stores digest schedule and tracks open/click metrics for
+    optimization and analytics.
+    """
+
+    __tablename__ = "email_digests"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
+    email: str = SQLField(max_length=255)
+    schedule_type: ScheduleType
+    schedule_cron: str = SQLField(max_length=50, description="Cron expression: '0 9 * * *'")
+    timezone: str = SQLField(default="UTC", max_length=50, description="IANA timezone")
+    last_sent_at: Optional[datetime] = None
+    next_send_at: datetime = SQLField(index=True)
+    article_count: int = SQLField(default=0, ge=0, description="Total articles sent")
+    open_count: int = SQLField(default=0, ge=0, description="Digest opens")
+    click_count: int = SQLField(default=0, ge=0, description="Article clicks")
+    unsubscribed_at: Optional[datetime] = None
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
