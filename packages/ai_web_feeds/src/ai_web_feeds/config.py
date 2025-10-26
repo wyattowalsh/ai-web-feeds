@@ -76,6 +76,38 @@ class RecommendationSettings(BaseSettings):
     serendipity_weight : float = Field(0.1, description="Weight for serendipity (random high-quality feeds)")
 
 
+class Phase3BSettings(BaseSettings):
+    """Phase 3B: Real-Time Monitoring & Alerts configuration."""
+    
+    # WebSocket Server
+    websocket_port        : int  = Field(8000, description="WebSocket server port")
+    websocket_cors_origins: str  = Field("http://localhost:3000,https://aiwebfeeds.com", description="CORS allowed origins (comma-separated)")
+    
+    # Feed Polling
+    feed_poll_interval_min  : int = Field(15, description="Minimum feed poll interval (minutes)")
+    feed_poll_timeout       : int = Field(30, description="Feed poll HTTP timeout (seconds)")
+    feed_poll_max_concurrent: int = Field(10, description="Maximum concurrent feed polls")
+    
+    # Notifications
+    notification_retention_days      : int = Field(7, description="Notification retention period (days)")
+    notification_bundle_threshold    : int = Field(3, description="Bundle threshold (>N articles in window)")
+    notification_bundle_window_seconds: int = Field(300, description="Bundle window (seconds, e.g., 300 = 5 min)")
+    
+    # Trending Detection
+    trending_baseline_days       : int   = Field(3, description="Baseline calculation period (days)")
+    trending_z_score_threshold   : float = Field(2.0, description="Z-score threshold for trending (>2.0)")
+    trending_min_articles        : int   = Field(5, description="Minimum articles for trending topic")
+    trending_update_interval_hours: int  = Field(1, description="Trending detection update interval (hours)")
+    
+    # Email Digests
+    smtp_host           : str = Field("localhost", description="SMTP server host")
+    smtp_port           : int = Field(25, description="SMTP server port")
+    smtp_user           : str = Field("", description="SMTP username (optional)")
+    smtp_password       : str = Field("", description="SMTP password (optional)")
+    smtp_from           : str = Field("noreply@aiwebfeeds.com", description="Email sender address")
+    digest_max_articles: int = Field(20, description="Maximum articles per digest email")
+
+
 class Settings(BaseSettings):
     """Settings configs for AIWebFeeds."""
     logging        : LoggingConfig         = Field(default_factory=LoggingConfig, description="Logging configuration")
@@ -83,6 +115,7 @@ class Settings(BaseSettings):
     analytics      : AnalyticsSettings     = Field(default_factory=AnalyticsSettings, description="Analytics configuration")
     search         : SearchSettings        = Field(default_factory=SearchSettings, description="Search configuration")
     recommendation : RecommendationSettings = Field(default_factory=RecommendationSettings, description="Recommendation configuration")
+    phase3b        : Phase3BSettings        = Field(default_factory=Phase3BSettings, description="Phase 3B: Real-Time Monitoring configuration")
 
     # Enable nested env vars, e.g.:
     # AIWF_LOGGING__LEVEL=DEBUG
