@@ -110,6 +110,11 @@ class Phase3BSettings(BaseSettings):
 
 class Settings(BaseSettings):
     """Settings configs for AIWebFeeds."""
+    # Core settings
+    database_url   : str                    = Field("sqlite:///data/aiwebfeeds.db", description="Database URL")
+    backend_url    : str                    = Field("http://localhost:8000", description="Backend API URL")
+    
+    # Feature-specific settings
     logging        : LoggingConfig         = Field(default_factory=LoggingConfig, description="Logging configuration")
     embedding      : EmbeddingSettings     = Field(default_factory=EmbeddingSettings, description="Embedding configuration")
     analytics      : AnalyticsSettings     = Field(default_factory=AnalyticsSettings, description="Analytics configuration")
@@ -127,3 +132,7 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
         extra="ignore",
     )
+
+
+# Global settings instance for backward compatibility
+settings = Settings()
