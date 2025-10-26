@@ -917,7 +917,7 @@ class Notification(SQLModel, table=True):
     title: str = SQLField(max_length=255)
     message: str = SQLField(max_length=1000)
     action_url: Optional[str] = SQLField(default=None, max_length=2048)
-    metadata: dict[str, Any] = SQLField(
+    context_data: dict[str, Any] = SQLField(
         default_factory=dict,
         sa_column=Column(JSON),
         description="Additional context (feed_id, article_id, trend_score)"

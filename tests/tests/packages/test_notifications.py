@@ -67,8 +67,8 @@ class TestNotificationManager:
         notification = mock_db.create_notification.call_args_list[0][0][0]
         assert notification.type == NotificationType.FEED_UPDATED
         assert "5 new articles" in notification.title
-        assert notification.metadata["article_count"] == 5
-        assert len(notification.metadata["article_ids"]) == 5
+        assert notification.context_data["article_count"] == 5
+        assert len(notification.context_data["article_ids"]) == 5
 
     @pytest.mark.asyncio
     async def test_notify_new_articles_individual(self, notifier, mock_db, sample_articles):
@@ -83,7 +83,7 @@ class TestNotificationManager:
         notification = mock_db.create_notification.call_args_list[0][0][0]
         assert notification.type == NotificationType.NEW_ARTICLE
         assert notification.title == "Article 1"
-        assert notification.metadata["article_id"] == 1
+        assert notification.context_data["article_id"] == 1
 
     @pytest.mark.asyncio
     async def test_notify_new_articles_no_followers(self, notifier, mock_db, sample_articles):
@@ -131,8 +131,8 @@ class TestNotificationManager:
         assert notification.type == NotificationType.TRENDING_TOPIC
         assert "Trending" in notification.title
         assert "artificial-intelligence" in notification.title
-        assert notification.metadata["topic_id"] == "artificial-intelligence"
-        assert notification.metadata["z_score"] == 2.5
+        assert notification.context_data["topic_id"] == "artificial-intelligence"
+        assert notification.context_data["z_score"] == 2.5
 
     @pytest.mark.asyncio
     async def test_broadcast_notification(self, notifier):

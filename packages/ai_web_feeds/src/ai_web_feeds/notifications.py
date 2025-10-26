@@ -70,7 +70,7 @@ class NotificationManager:
                     title      =f"{len(articles)} new articles",
                     message    =f"{len(articles)} new articles from {feed_id}",
                     action_url =f"/feeds/{feed_id}",
-                    metadata   ={
+                    context_data={
                         "feed_id"      : feed_id,
                         "article_count": len(articles),
                         "article_ids"  : [a.id for a in articles[:5]],
@@ -89,7 +89,7 @@ class NotificationManager:
                         title      =article.title,
                         message    =article.summary or article.title,
                         action_url =article.link,
-                        metadata   ={
+                        context_data={
                             "feed_id"   : feed_id,
                             "article_id": article.id,
                         },
@@ -119,7 +119,7 @@ class NotificationManager:
                 title      =f"Trending: {topic.topic_id}",
                 message    =f"{topic.article_count} articles in the last hour (Z-score: {topic.z_score:.2f})",
                 action_url =f"/topics/{topic.topic_id}",
-                metadata   ={
+                context_data={
                     "topic_id"  : topic.topic_id,
                     "z_score"   : topic.z_score,
                     "article_ids": topic.representative_articles,

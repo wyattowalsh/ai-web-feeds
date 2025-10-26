@@ -194,7 +194,7 @@ class WebSocketServer:
             "title"       : notification.title,
             "message"     : notification.message,
             "action_url"  : notification.action_url,
-            "metadata"    : notification.metadata,
+            "context_data": notification.context_data,
             "read_at"     : notification.read_at.isoformat() if notification.read_at else None,
             "dismissed_at": notification.dismissed_at.isoformat() if notification.dismissed_at else None,
             "created_at"  : notification.created_at.isoformat(),
