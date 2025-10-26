@@ -12,18 +12,25 @@ from sqlmodel import SQLModel, select, Session
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
     CollaborativeMatrix,
+    EmailDigest,
     FeedAnalytics,
     FeedEmbedding,
+    FeedEntry,
     FeedEnrichmentData,
     FeedFetchLog,
     FeedItem,
+    FeedPollJob,
     FeedSource,
     FeedValidationResult,
+    Notification,
+    NotificationPreference,
     RecommendationInteraction,
     SavedSearch,
     SearchQuery,
     Topic,
     TopicStats,
+    TrendingTopic,
+    UserFeedFollow,
     UserProfile,
 )
 
@@ -944,3 +951,357 @@ class DatabaseManager:
                 interaction_type,
                 reason,
             )
+
+    # ========================================================================
+    # Phase 3B: Real-Time Monitoring Storage Methods
+    # ========================================================================
+
+    # T015: Feed Entries
+    def add_feed_entry(self, entry: FeedEntry) -> FeedEntry:
+        """Add new feed entry (article) from polling.
+        
+        Args:
+            entry: FeedEntry to add
+            
+        Returns:
+            Added FeedEntry with ID
+        """
+        with self.get_session() as session:
+            session.add(entry)
+            session.commit()
+            session.refresh(entry)
+            return entry
+
+    def get_feed_entries(
+        self, feed_id: str, limit: int = 20, offset: int = 0
+    ) -> list[FeedEntry]:
+        """Get recent entries for a feed.
+        
+        Args:
+            feed_id: Feed ID
+            limit: Max entries to return
+            offset: Pagination offset
+            
+        Returns:
+            List of FeedEntry objects
+        """
+        with self.get_session() as session:
+            statement = (
+                select(FeedEntry)
+                .where(FeedEntry.feed_id == feed_id)
+                .order_by(desc(FeedEntry.pub_date))
+                .limit(limit)
+                .offset(offset)
+            )
+            return list(session.exec(statement).all())
+
+    def get_recent_entries(
+        self, since: datetime, limit: int = 100
+    ) -> list[FeedEntry]:
+        """Get entries discovered since a timestamp.
+        
+        Args:
+            since: Timestamp to filter from
+            limit: Max entries to return
+            
+        Returns:
+            List of recent FeedEntry objects
+        """
+        with self.get_session() as session:
+            statement = (
+                select(FeedEntry)
+                .where(FeedEntry.discovered_at >= since)
+                .order_by(desc(FeedEntry.discovered_at))
+                .limit(limit)
+            )
+            return list(session.exec(statement).all())
+
+    # T016: Poll Jobs
+    def create_poll_job(self, job: FeedPollJob) -> FeedPollJob:
+        """Create new feed poll job.
+        
+        Args:
+            job: FeedPollJob to create
+            
+        Returns:
+            Created FeedPollJob with ID
+        """
+        with self.get_session() as session:
+            session.add(job)
+            session.commit()
+            session.refresh(job)
+            return job
+
+    def update_poll_job(self, job: FeedPollJob) -> FeedPollJob:
+        """Update existing poll job status.
+        
+        Args:
+            job: FeedPollJob with updated fields
+            
+        Returns:
+            Updated FeedPollJob
+        """
+        with self.get_session() as session:
+            session.add(job)
+            session.commit()
+            session.refresh(job)
+            return job
+
+    def get_poll_jobs(
+        self, feed_id: str, limit: int = 10
+    ) -> list[FeedPollJob]:
+        """Get recent poll jobs for a feed.
+        
+        Args:
+            feed_id: Feed ID
+            limit: Max jobs to return
+            
+        Returns:
+            List of FeedPollJob objects
+        """
+        with self.get_session() as session:
+            statement = (
+                select(FeedPollJob)
+                .where(FeedPollJob.feed_id == feed_id)
+                .order_by(desc(FeedPollJob.scheduled_at))
+                .limit(limit)
+            )
+            return list(session.exec(statement).all())
+
+    # T017: Notifications
+    def create_notification(self, notification: Notification) -> Notification:
+        """Create new notification.
+        
+        Args:
+            notification: Notification to create
+            
+        Returns:
+            Created Notification with ID
+        """
+        with self.get_session() as session:
+            session.add(notification)
+            session.commit()
+            session.refresh(notification)
+            return notification
+
+    def get_user_notifications(
+        self, user_id: str, unread_only: bool = False, limit: int = 50
+    ) -> list[Notification]:
+        """Get notifications for a user.
+        
+        Args:
+            user_id: User ID (localStorage UUID)
+            unread_only: Filter to unread only
+            limit: Max notifications to return
+            
+        Returns:
+            List of Notification objects
+        """
+        with self.get_session() as session:
+            statement = select(Notification).where(Notification.user_id == user_id)
+            if unread_only:
+                statement = statement.where(Notification.read_at.is_(None))
+            statement = statement.order_by(desc(Notification.created_at)).limit(limit)
+            return list(session.exec(statement).all())
+
+    def mark_notification_read(self, notification_id: int) -> None:
+        """Mark notification as read.
+        
+        Args:
+            notification_id: Notification ID
+        """
+        with self.get_session() as session:
+            notification = session.get(Notification, notification_id)
+            if notification:
+                notification.read_at = datetime.utcnow()
+                session.add(notification)
+                session.commit()
+
+    def dismiss_notification(self, notification_id: int) -> None:
+        """Dismiss notification.
+        
+        Args:
+            notification_id: Notification ID
+        """
+        with self.get_session() as session:
+            notification = session.get(Notification, notification_id)
+            if notification:
+                notification.dismissed_at = datetime.utcnow()
+                session.add(notification)
+                session.commit()
+
+    # T018: Trending Topics
+    def save_trending_topics(self, topics: list[TrendingTopic]) -> None:
+        """Bulk save trending topics.
+        
+        Args:
+            topics: List of TrendingTopic objects
+        """
+        with self.get_session() as session:
+            for topic in topics:
+                session.add(topic)
+            session.commit()
+
+    def get_trending_topics(self, limit: int = 10) -> list[TrendingTopic]:
+        """Get current trending topics.
+        
+        Args:
+            limit: Max topics to return
+            
+        Returns:
+            List of TrendingTopic objects ordered by rank
+        """
+        with self.get_session() as session:
+            statement = (
+                select(TrendingTopic)
+                .order_by(TrendingTopic.rank)
+                .limit(limit)
+            )
+            return list(session.exec(statement).all())
+
+    # T019: Notification Preferences
+    def save_notification_preference(
+        self, pref: NotificationPreference
+    ) -> NotificationPreference:
+        """Save or update notification preference.
+        
+        Args:
+            pref: NotificationPreference to save
+            
+        Returns:
+            Saved NotificationPreference with ID
+        """
+        with self.get_session() as session:
+            pref.updated_at = datetime.utcnow()
+            session.add(pref)
+            session.commit()
+            session.refresh(pref)
+            return pref
+
+    def get_user_preferences(self, user_id: str) -> list[NotificationPreference]:
+        """Get all notification preferences for a user.
+        
+        Args:
+            user_id: User ID (localStorage UUID)
+            
+        Returns:
+            List of NotificationPreference objects
+        """
+        with self.get_session() as session:
+            statement = select(NotificationPreference).where(
+                NotificationPreference.user_id == user_id
+            )
+            return list(session.exec(statement).all())
+
+    # T020: Email Digests
+    def create_email_digest(self, digest: EmailDigest) -> EmailDigest:
+        """Create email digest subscription.
+        
+        Args:
+            digest: EmailDigest to create
+            
+        Returns:
+            Created EmailDigest with ID
+        """
+        with self.get_session() as session:
+            session.add(digest)
+            session.commit()
+            session.refresh(digest)
+            return digest
+
+    def update_email_digest(self, digest: EmailDigest) -> EmailDigest:
+        """Update email digest subscription.
+        
+        Args:
+            digest: EmailDigest with updated fields
+            
+        Returns:
+            Updated EmailDigest
+        """
+        with self.get_session() as session:
+            session.add(digest)
+            session.commit()
+            session.refresh(digest)
+            return digest
+
+    def get_due_digests(self, now: datetime) -> list[EmailDigest]:
+        """Get digests due for sending.
+        
+        Args:
+            now: Current datetime
+            
+        Returns:
+            List of EmailDigest objects due for sending
+        """
+        with self.get_session() as session:
+            statement = (
+                select(EmailDigest)
+                .where(EmailDigest.next_send_at <= now)
+                .where(EmailDigest.unsubscribed_at.is_(None))
+            )
+            return list(session.exec(statement).all())
+
+    # T020b: User Feed Follows
+    def follow_feed(self, user_id: str, feed_id: str) -> UserFeedFollow:
+        """Create user-feed follow relationship.
+        
+        Args:
+            user_id: User ID (localStorage UUID)
+            feed_id: Feed ID
+            
+        Returns:
+            Created UserFeedFollow
+        """
+        with self.get_session() as session:
+            follow = UserFeedFollow(user_id=user_id, feed_id=feed_id)
+            session.add(follow)
+            session.commit()
+            session.refresh(follow)
+            return follow
+
+    def unfollow_feed(self, user_id: str, feed_id: str) -> None:
+        """Remove user-feed follow relationship.
+        
+        Args:
+            user_id: User ID (localStorage UUID)
+            feed_id: Feed ID
+        """
+        with self.get_session() as session:
+            statement = select(UserFeedFollow).where(
+                UserFeedFollow.user_id == user_id,
+                UserFeedFollow.feed_id == feed_id,
+            )
+            follow = session.exec(statement).first()
+            if follow:
+                session.delete(follow)
+                session.commit()
+
+    def get_feed_followers(self, feed_id: str) -> list[str]:
+        """Get user IDs following a feed.
+        
+        Args:
+            feed_id: Feed ID
+            
+        Returns:
+            List of user IDs
+        """
+        with self.get_session() as session:
+            statement = select(UserFeedFollow.user_id).where(
+                UserFeedFollow.feed_id == feed_id
+            )
+            return list(session.exec(statement).all())
+
+    def get_user_follows(self, user_id: str) -> list[str]:
+        """Get feed IDs a user follows.
+        
+        Args:
+            user_id: User ID (localStorage UUID)
+            
+        Returns:
+            List of feed IDs
+        """
+        with self.get_session() as session:
+            statement = select(UserFeedFollow.feed_id).where(
+                UserFeedFollow.user_id == user_id
+            )
+            return list(session.exec(statement).all())
