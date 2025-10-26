@@ -5,14 +5,17 @@ description = "Core library for AI Web Feeds"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.11.15",
     "alembic>=1.14.0",
     "apscheduler>=3.10.0",
     "beautifulsoup4>=4.12.0",
+    "croniter>=5.0.1",
     "feedparser>=6.0.11",
     "httpx>=0.28.1",
     "jsonschema>=4.23.0",
     "langdetect>=1.0.9",
     "loguru>=0.7.3",
+    "numpy>=2.2.4",
     "pydantic>=2.12.2",
     "pydantic-settings>=2.11.0",
     "python-socketio>=5.12.0",
