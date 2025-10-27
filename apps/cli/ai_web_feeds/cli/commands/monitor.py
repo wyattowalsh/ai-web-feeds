@@ -206,3 +206,122 @@ def list_follows(
         console.print(f"[red]✗ Failed to list follows: {e}[/]")
         raise typer.Exit(1)
 
+
+@app.command("subscribe-digest")
+def subscribe_digest(
+    user_id: str     = typer.Argument(..., help="User ID (localStorage UUID)"),
+    email: str       = typer.Argument(..., help="Email address"),
+    schedule: str    = typer.Option("daily", help="Digest schedule (daily/weekly)"),
+    timezone: str    = typer.Option("UTC", help="Timezone (e.g., 'America/New_York')"),
+):
+    """Subscribe to email digests."""
+    from ai_web_feeds.models import EmailDigest
+    from datetime import datetime, timedelta
+    
+    settings = Settings()
+    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+
+    # Map schedule to cron expression
+    cron_map = {
+        "daily": "0 9 * * *",      # 9:00 AM daily
+        "weekly": "0 9 * * 1",     # 9:00 AM Monday
+        "hourly": "0 * * * *",     # Top of each hour
+    }
+    
+    if schedule not in cron_map:
+        console.print(f"[red]✗ Invalid schedule. Choose from: {', '.join(cron_map.keys())}[/]")
+        raise typer.Exit(1)
+
+    try:
+        digest = EmailDigest(
+            user_id       =user_id,
+            email         =email,
+            schedule_type =schedule,
+            schedule_cron =cron_map[schedule],
+            timezone      =timezone,
+            next_send_at  =datetime.utcnow() + timedelta(days=1),
+            is_active     =True,
+        )
+        
+        created = db.create_email_digest(digest)
+        console.print(f"[green]✓ Subscribed to {schedule} digest[/]")
+        console.print(f"Email: {email}")
+        console.print(f"Schedule: {schedule} ({cron_map[schedule]})")
+        console.print(f"Timezone: {timezone}")
+        console.print(f"Next send: {created.next_send_at}")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Failed to subscribe: {e}[/]")
+        raise typer.Exit(1)
+
+
+@app.command("unsubscribe-digest")
+def unsubscribe_digest(
+    digest_id: int = typer.Argument(..., help="Digest subscription ID"),
+):
+    """Unsubscribe from email digests."""
+    from datetime import datetime
+    
+    settings = Settings()
+    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+
+    try:
+        # Mark as unsubscribed
+        digest = db.get_email_digest(digest_id)
+        if not digest:
+            console.print(f"[red]✗ Digest {digest_id} not found[/]")
+            raise typer.Exit(1)
+        
+        digest.unsubscribed_at = datetime.utcnow()
+        digest.is_active       = False
+        db.update_email_digest(digest)
+        
+        console.print(f"[green]✓ Unsubscribed from digest {digest_id}[/]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Failed to unsubscribe: {e}[/]")
+        raise typer.Exit(1)
+
+
+@app.command("list-digests")
+def list_digests(
+    user_id: str = typer.Argument(..., help="User ID (localStorage UUID)"),
+):
+    """List email digest subscriptions for a user."""
+    settings = Settings()
+    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+
+    try:
+        digests = db.get_user_digests(user_id)
+
+        if not digests:
+            console.print("[yellow]No digest subscriptions found[/]")
+            return
+
+        console.print(f"\n[bold]Email Digest Subscriptions ({len(digests)})[/]\n")
+        
+        table = Table()
+        table.add_column("ID", style="cyan")
+        table.add_column("Email", style="green")
+        table.add_column("Schedule", style="yellow")
+        table.add_column("Status", style="magenta")
+        table.add_column("Next Send", style="blue")
+        
+        for digest in digests:
+            status = "[green]Active[/]" if digest.is_active else "[red]Inactive[/]"
+            next_send = digest.next_send_at.strftime("%Y-%m-%d %H:%M") if digest.next_send_at else "N/A"
+            
+            table.add_row(
+                str(digest.id),
+                digest.email,
+                digest.schedule_type,
+                status,
+                next_send,
+            )
+        
+        console.print(table)
+
+    except Exception as e:
+        console.print(f"[red]✗ Failed to list digests: {e}[/]")
+        raise typer.Exit(1)
+

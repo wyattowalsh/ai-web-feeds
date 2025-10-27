@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from loguru import logger
@@ -1208,6 +1208,32 @@ class DatabaseManager:
             session.commit()
             session.refresh(digest)
             return digest
+
+    def get_email_digest(self, digest_id: int) -> Optional[EmailDigest]:
+        """Get email digest by ID.
+        
+        Args:
+            digest_id: Digest ID
+            
+        Returns:
+            EmailDigest if found, None otherwise
+        """
+        with self.get_session() as session:
+            return session.get(EmailDigest, digest_id)
+
+    def get_user_digests(self, user_id: str) -> list[EmailDigest]:
+        """Get all digest subscriptions for a user.
+        
+        Args:
+            user_id: User ID
+            
+        Returns:
+            List of EmailDigest objects
+        """
+        with self.get_session() as session:
+            stmt = select(EmailDigest).where(EmailDigest.user_id == user_id)
+            result = session.execute(stmt)
+            return list(result.scalars().all())
 
     def update_email_digest(self, digest: EmailDigest) -> EmailDigest:
         """Update email digest subscription.
