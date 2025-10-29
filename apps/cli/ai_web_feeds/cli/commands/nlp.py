@@ -9,7 +9,10 @@ from rich.table import Table
 
 # Import NLP components
 from ai_web_feeds.config import Settings
+from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
 from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
+from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
+from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 from ai_web_feeds.nlp.scheduler import NLPScheduler
 
 app = typer.Typer(help="Advanced AI/NLP features (Phase 5)")
@@ -67,14 +70,45 @@ def run_entity_extraction(
     batch_size: Optional[int] = typer.Option(None, "--batch-size", "-b", help="Number of articles to process"),
     force: bool = typer.Option(False, "--force", "-f", help="Reprocess all articles"),
 ) -> None:
-    """Run entity extraction batch job (Phase 5B - Coming Soon).
+    """Run entity extraction batch job using spaCy NER (Phase 5B).
     
     Examples:
         aiwebfeeds nlp entities
         aiwebfeeds nlp entities --batch-size 25
+        aiwebfeeds nlp entities --force
     """
-    console.print("[yellow]Entity extraction (Phase 5B) - Coming Soon[/yellow]")
-    raise typer.Exit(code=0)
+    console.print("[bold blue]Entity Extraction Batch Job[/bold blue]")
+    console.print()
+    
+    try:
+        settings = Settings()
+        job = EntityBatchJob(settings)
+        
+        console.print(f"Processing articles (batch_size={batch_size or settings.phase5.entity_batch_size})...")
+        stats = job.run(batch_size=batch_size, force=force)
+        
+        # Display results
+        table = Table(title="Entity Extraction Results")
+        table.add_column("Metric", style="cyan")
+        table.add_column("Count", style="magenta")
+        
+        table.add_row("Processed", str(stats["processed"]))
+        table.add_row("Entities Found", str(stats["entities_found"]))
+        table.add_row("Unique Entities", str(stats["unique_entities"]))
+        table.add_row("Failed", str(stats["failed"]))
+        table.add_row("Duration", f"{stats['duration_seconds']:.2f}s")
+        
+        console.print(table)
+        
+        if stats["failed"] > 0:
+            console.print(f"\n[yellow]⚠ {stats['failed']} articles failed to process[/yellow]")
+        else:
+            console.print("\n[green]✓ Entity extraction completed successfully[/green]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Entity extraction failed: {e}[/red]")
+        logger.error(f"Entity extraction error: {e}")
+        raise typer.Exit(code=1)
 
 
 @app.command("sentiment")
@@ -82,29 +116,97 @@ def run_sentiment_analysis(
     batch_size: Optional[int] = typer.Option(None, "--batch-size", "-b", help="Number of articles to process"),
     force: bool = typer.Option(False, "--force", "-f", help="Reprocess all articles"),
 ) -> None:
-    """Run sentiment analysis batch job (Phase 5C - Coming Soon).
+    """Run sentiment analysis batch job using DistilBERT (Phase 5C).
     
     Examples:
         aiwebfeeds nlp sentiment
         aiwebfeeds nlp sentiment --batch-size 50
+        aiwebfeeds nlp sentiment --force
     """
-    console.print("[yellow]Sentiment analysis (Phase 5C) - Coming Soon[/yellow]")
-    raise typer.Exit(code=0)
+    console.print("[bold blue]Sentiment Analysis Batch Job[/bold blue]")
+    console.print()
+    
+    try:
+        settings = Settings()
+        job = SentimentBatchJob(settings)
+        
+        console.print(f"Processing articles (batch_size={batch_size or settings.phase5.sentiment_batch_size})...")
+        stats = job.run(batch_size=batch_size, force=force)
+        
+        # Display results
+        table = Table(title="Sentiment Analysis Results")
+        table.add_column("Metric", style="cyan")
+        table.add_column("Count", style="magenta")
+        
+        table.add_row("Processed", str(stats["processed"]))
+        table.add_row("Analyzed", str(stats["analyzed"]))
+        table.add_row("Positive", f"[green]{stats['positive']}[/green]")
+        table.add_row("Neutral", f"[yellow]{stats['neutral']}[/yellow]")
+        table.add_row("Negative", f"[red]{stats['negative']}[/red]")
+        table.add_row("Failed", str(stats["failed"]))
+        table.add_row("Duration", f"{stats['duration_seconds']:.2f}s")
+        
+        console.print(table)
+        
+        if stats["failed"] > 0:
+            console.print(f"\n[yellow]⚠ {stats['failed']} articles failed to process[/yellow]")
+        else:
+            console.print("\n[green]✓ Sentiment analysis completed successfully[/green]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Sentiment analysis failed: {e}[/red]")
+        logger.error(f"Sentiment analysis error: {e}")
+        raise typer.Exit(code=1)
 
 
 @app.command("topics")
 def run_topic_modeling(
     topic: Optional[str] = typer.Option(None, "--topic", "-t", help="Topic to model (default: all)"),
     force: bool = typer.Option(False, "--force", "-f", help="Reprocess all topics"),
+    min_articles: int = typer.Option(10, "--min-articles", "-m", help="Minimum articles per topic"),
 ) -> None:
-    """Run topic modeling batch job (Phase 5D - Coming Soon).
+    """Run topic modeling batch job using Gensim LDA (Phase 5D).
+    
+    Discovers subtopics within parent topics and tracks evolution.
     
     Examples:
         aiwebfeeds nlp topics
         aiwebfeeds nlp topics --topic "Machine Learning"
+        aiwebfeeds nlp topics --force --min-articles 20
     """
-    console.print("[yellow]Topic modeling (Phase 5D) - Coming Soon[/yellow]")
-    raise typer.Exit(code=0)
+    console.print("[bold blue]Topic Modeling Batch Job[/bold blue]")
+    console.print()
+    
+    try:
+        settings = Settings()
+        job = TopicModelingJob(settings)
+        
+        console.print(f"Discovering subtopics (topic={topic or 'all'}, min_articles={min_articles})...")
+        stats = job.run(topic=topic, force=force, min_articles=min_articles)
+        
+        # Display results
+        table = Table(title="Topic Modeling Results")
+        table.add_column("Metric", style="cyan")
+        table.add_column("Count", style="magenta")
+        
+        table.add_row("Topics Processed", str(stats["topics_processed"]))
+        table.add_row("Subtopics Discovered", str(stats["subtopics_discovered"]))
+        table.add_row("Articles Analyzed", str(stats["articles_analyzed"]))
+        table.add_row("Failed", str(stats["failed"]))
+        table.add_row("Duration", f"{stats['duration_seconds']:.2f}s")
+        
+        console.print(table)
+        
+        if stats["failed"] > 0:
+            console.print(f"\n[yellow]⚠ {stats['failed']} topics failed to process[/yellow]")
+        else:
+            console.print("\n[green]✓ Topic modeling completed successfully[/green]")
+            console.print("\n[dim]Note: Discovered subtopics require manual approval[/dim]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Topic modeling failed: {e}[/red]")
+        logger.error(f"Topic modeling error: {e}")
+        raise typer.Exit(code=1)
 
 
 @app.command("scheduler")
