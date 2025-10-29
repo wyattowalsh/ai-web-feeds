@@ -879,6 +879,17 @@ class FeedEntry(SQLModel, table=True):
     )
     discovered_at: datetime = SQLField(default_factory=datetime.utcnow)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    
+    # Phase 5: NLP processing flags
+    quality_processed: bool = SQLField(default=False, description="Quality scoring completed")
+    entities_processed: bool = SQLField(default=False, description="Entity extraction completed")
+    sentiment_processed: bool = SQLField(default=False, description="Sentiment analysis completed")
+    topics_processed: bool = SQLField(default=False, description="Topic modeling completed")
+    quality_processed_at: Optional[datetime] = None
+    entities_processed_at: Optional[datetime] = None
+    sentiment_processed_at: Optional[datetime] = None
+    nlp_failures: Optional[str] = SQLField(default=None, description="JSON: failure counts by type")
+    last_failure_reason: Optional[str] = None
 
 
 class FeedPollJob(SQLModel, table=True):
@@ -1014,3 +1025,152 @@ class EmailDigest(SQLModel, table=True):
     click_count: int = SQLField(default=0, ge=0, description="Article clicks")
     unsubscribed_at: Optional[datetime] = None
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+# =============================================================================
+# Phase 5: Advanced AI/NLP Models
+# =============================================================================
+
+
+class ArticleQualityScore(SQLModel, table=True):
+    """Quality scores for article content analysis.
+    
+    Stores heuristic-based quality metrics including content depth,
+    references, author authority, and domain reputation.
+    """
+
+    __tablename__ = "article_quality_scores"
+
+    article_id: int = SQLField(foreign_key="feed_entries.id", primary_key=True)
+    overall_score: int = SQLField(ge=0, le=100, description="Weighted overall quality score")
+    depth_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Content depth (words, structure)")
+    reference_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="External links and citations")
+    author_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Author authority and credentials")
+    domain_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Feed reputation score")
+    engagement_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Read time and shares")
+    computed_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class Entity(SQLModel, table=True):
+    """Extracted entities with normalization and metadata.
+    
+    Stores canonical entity names with aliases, descriptions, and
+    frequency tracking for entity-based navigation and search.
+    """
+
+    __tablename__ = "entities"
+
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    canonical_name: str = SQLField(unique=True, max_length=255, index=True)
+    entity_type: str = SQLField(
+        max_length=50,
+        description="Entity type: person, organization, technique, dataset, concept"
+    )
+    aliases: Optional[str] = SQLField(default=None, description="JSON array of name variants")
+    description: Optional[str] = None
+    entity_metadata: Optional[str] = SQLField(default=None, description="JSON: {bio, affiliation, h_index, wikipedia_url}")
+    frequency_count: int = SQLField(default=0, index=True, ge=0)
+    first_seen: datetime = SQLField(default_factory=datetime.utcnow)
+    last_seen: Optional[datetime] = None
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class EntityMention(SQLModel, table=True):
+    """Links entities to articles with extraction metadata.
+    
+    Records entity occurrences in articles with confidence scores
+    and extraction context for quality assessment.
+    """
+
+    __tablename__ = "entity_mentions"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    entity_id: str = SQLField(foreign_key="entities.id", index=True)
+    article_id: int = SQLField(foreign_key="feed_entries.id", index=True)
+    confidence: float = SQLField(ge=0.0, le=1.0, description="Extraction confidence score")
+    extraction_method: str = SQLField(
+        max_length=50,
+        description="Method used: ner_model, rule_based, manual"
+    )
+    context: Optional[str] = SQLField(default=None, description="Surrounding text snippet")
+    mentioned_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class ArticleSentiment(SQLModel, table=True):
+    """Sentiment classification for articles.
+    
+    Stores transformer-based sentiment scores with model tracking
+    for reproducibility and trend analysis.
+    """
+
+    __tablename__ = "article_sentiment"
+
+    article_id: int = SQLField(foreign_key="feed_entries.id", primary_key=True)
+    sentiment_score: float = SQLField(ge=-1.0, le=1.0, description="Sentiment score: -1 (negative) to +1 (positive)")
+    classification: str = SQLField(
+        max_length=20,
+        description="Classification: positive, neutral, negative"
+    )
+    model_name: str = SQLField(max_length=255, description="Hugging Face model identifier")
+    confidence: float = SQLField(ge=0.0, le=1.0, description="Model confidence score")
+    computed_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class TopicSentimentDaily(SQLModel, table=True):
+    """Aggregated daily sentiment scores by topic.
+    
+    Time-series data for sentiment trend analysis and shift detection.
+    Enables charting and alerting on sentiment changes.
+    """
+
+    __tablename__ = "topic_sentiment_daily"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    topic: str = SQLField(max_length=255, index=True)
+    date: str = SQLField(max_length=10, description="Date in YYYY-MM-DD format")
+    avg_sentiment: float = SQLField(description="Average sentiment score for the day")
+    article_count: int = SQLField(ge=0, description="Number of articles analyzed")
+    positive_count: int = SQLField(default=0, ge=0)
+    neutral_count: int = SQLField(default=0, ge=0)
+    negative_count: int = SQLField(default=0, ge=0)
+
+
+class Subtopic(SQLModel, table=True):
+    """Discovered subtopics from topic modeling.
+    
+    Stores LDA/BERTopic results with keywords and manual curation flags.
+    Enables hierarchical topic taxonomy and evolution tracking.
+    """
+
+    __tablename__ = "subtopics"
+
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    parent_topic: str = SQLField(max_length=255, index=True)
+    name: str = SQLField(max_length=255)
+    keywords: str = SQLField(description="JSON array of representative keywords")
+    description: Optional[str] = None
+    article_count: int = SQLField(default=0, ge=0, index=True)
+    detected_at: datetime = SQLField(default_factory=datetime.utcnow)
+    approved: bool = SQLField(default=False, index=True, description="Manual curation flag")
+    created_by: str = SQLField(default="system", max_length=50)
+
+
+class TopicEvolutionEvent(SQLModel, table=True):
+    """Topic evolution events for tracking topic lifecycle.
+    
+    Records splits, merges, emergence, and decline events for
+    strategic foresight and research trend identification.
+    """
+
+    __tablename__ = "topic_evolution_events"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    event_type: str = SQLField(
+        max_length=50,
+        description="Event type: split, merge, emergence, decline"
+    )
+    source_topic: Optional[str] = SQLField(default=None, max_length=255)
+    target_topics: Optional[str] = SQLField(default=None, description="JSON array of subtopic IDs")
+    article_count: int = SQLField(ge=0, description="Articles involved in the event")
+    growth_rate: Optional[float] = SQLField(default=None, description="Month-over-month growth percentage")
+    detected_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
