@@ -108,6 +108,36 @@ class Phase3BSettings(BaseSettings):
     digest_max_articles: int = Field(20, description="Maximum articles per digest email")
 
 
+class Phase5Settings(BaseSettings):
+    """Phase 5: Advanced AI/NLP Configuration."""
+    
+    # Batch Processing
+    quality_batch_size  : int = Field(100, description="Quality scoring batch size (articles)")
+    entity_batch_size   : int = Field(50, description="Entity extraction batch size (articles)")
+    sentiment_batch_size: int = Field(100, description="Sentiment analysis batch size (articles)")
+    
+    # Schedule (cron expressions)
+    quality_cron       : str = Field("*/30 * * * *", description="Quality scoring schedule (every 30 min)")
+    entity_cron        : str = Field("0 * * * *", description="Entity extraction schedule (hourly)")
+    sentiment_cron     : str = Field("0 * * * *", description="Sentiment analysis schedule (hourly)")
+    topic_modeling_cron: str = Field("0 3 1 * *", description="Topic modeling schedule (monthly, 1st at 3 AM)")
+    
+    # Models
+    spacy_model   : str = Field("en_core_web_sm", description="spaCy NER model")
+    sentiment_model: str = Field("distilbert-base-uncased-finetuned-sst-2-english", description="Hugging Face sentiment model")
+    topic_model   : str = Field("lda", description="Topic modeling algorithm: 'lda' or 'bertopic'")
+    
+    # Thresholds
+    quality_min_words            : int   = Field(100, description="Minimum words for quality scoring")
+    entity_confidence_threshold  : float = Field(0.7, description="Minimum entity extraction confidence")
+    sentiment_shift_threshold    : float = Field(0.3, description="Sentiment shift alert threshold")
+    topic_coherence_min          : float = Field(0.5, description="Minimum topic coherence score")
+    
+    # Resources
+    nlp_workers     : int = Field(4, description="Parallel processing workers (CPU cores)")
+    model_cache_dir : str = Field("~/.cache/ai_web_feeds/models", description="NLP model cache directory")
+
+
 class Settings(BaseSettings):
     """Settings configs for AIWebFeeds."""
     # Core settings
@@ -121,6 +151,7 @@ class Settings(BaseSettings):
     search         : SearchSettings        = Field(default_factory=SearchSettings, description="Search configuration")
     recommendation : RecommendationSettings = Field(default_factory=RecommendationSettings, description="Recommendation configuration")
     phase3b        : Phase3BSettings        = Field(default_factory=Phase3BSettings, description="Phase 3B: Real-Time Monitoring configuration")
+    phase5         : Phase5Settings         = Field(default_factory=Phase5Settings, description="Phase 5: Advanced AI/NLP configuration")
 
     # Enable nested env vars, e.g.:
     # AIWF_LOGGING__LEVEL=DEBUG

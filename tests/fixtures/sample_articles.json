@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "Attention Is All You Need: The Transformer Revolution",
+    "content": "The Transformer architecture, introduced by Vaswani et al. in 2017, revolutionized natural language processing. Unlike previous approaches that relied on recurrent neural networks, Transformers use self-attention mechanisms to process entire sequences in parallel. This breakthrough enabled models like BERT and GPT to achieve state-of-the-art results across multiple benchmarks. The paper has been cited over 50,000 times, making it one of the most influential works in AI history. Key researchers include Ashish Vaswani from Google Brain and Ilya Sutskever from OpenAI.",
+    "published_at": "2023-01-15T10:00:00Z",
+    "feed_id": "arxiv-nlp",
+    "topics": ["NLP", "Transformers", "Attention Mechanisms"]
+  },
+  {
+    "id": 2,
+    "title": "RLHF and Alignment: A Critical Analysis",
+    "content": "Reinforcement Learning from Human Feedback (RLHF) has emerged as a crucial technique for aligning large language models with human values. However, recent research by Anthropic and OpenAI has revealed significant limitations. The alignment problem remains fundamentally unsolved, with models still exhibiting unexpected behaviors. Critics like Eliezer Yudkowsky have raised concerns about the long-term safety implications.",
+    "published_at": "2023-02-20T14:30:00Z",
+    "feed_id": "ai-safety",
+    "topics": ["AI Safety", "RLHF", "Alignment"]
+  },
+  {
+    "id": 3,
+    "title": "Short Article",
+    "content": "This is too short.",
+    "published_at": "2023-03-10T08:00:00Z",
+    "feed_id": "test",
+    "topics": []
+  }
+]

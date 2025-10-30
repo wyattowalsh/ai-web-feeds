@@ -20,7 +20,7 @@ from ai_web_feeds import (
 )
 
 # Import command modules
-from ai_web_feeds.cli.commands import analytics, search, recommend, monitor
+from ai_web_feeds.cli.commands import analytics, monitor, nlp, recommend, search
 
 app = typer.Typer(
     name="ai-web-feeds",
@@ -33,6 +33,7 @@ app.add_typer(analytics.app, name="analytics")
 app.add_typer(search.app, name="search")
 app.add_typer(recommend.app, name="recommend")
 app.add_typer(monitor.app, name="monitor")
+app.add_typer(nlp.app, name="nlp")
 
 console = Console()
 
