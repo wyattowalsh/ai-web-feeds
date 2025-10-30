@@ -22,6 +22,15 @@
   - RSSHub fallback for sites without native feeds (public or self-hosted instances)
   - Docling-based parsing for PDFs/unstructured documents linked from feeds (optional)
 
+- Advanced AI/NLP (Phase 5)
+  - **Quality Scoring**: Heuristic-based article quality assessment (0-100 score)
+  - **Entity Extraction**: spaCy NER for identifying people, organizations, techniques
+  - **Sentiment Analysis**: DistilBERT-based sentiment classification with trend tracking
+  - **Topic Modeling**: LDA-based subtopic discovery and evolution detection
+  - Batch processing via APScheduler (hourly/monthly jobs)
+  - Full-text search for entities (SQLite FTS5)
+  - Manual curation workflows for subtopics
+
 - Developer-friendly CLI (Typer)
   - Add/remove/list/search feeds and categories
   - Validate feeds and produce reports

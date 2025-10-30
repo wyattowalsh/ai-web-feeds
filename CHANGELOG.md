@@ -7,6 +7,110 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0-beta] - 2025-10-30
+
+### 🎉 Major Release: Advanced AI/NLP Features (Phase 5)
+
+This release introduces comprehensive NLP processing with quality scoring, entity extraction, sentiment analysis, and topic modeling.
+
+### ✨ Added
+
+#### Quality Scoring (Phase 5A)
+- **Heuristic Scoring**: Multi-dimensional quality assessment (depth, references, author, domain, engagement)
+- **Batch Processing**: Automatic scoring every 30 minutes via APScheduler
+- **Overall Score**: Weighted combination (0-100) of component scores
+- **CLI Commands**: `aiwebfeeds nlp quality`, `aiwebfeeds nlp stats`
+- **Database Tables**: `article_quality_scores` with 6 score components
+- **Test Coverage**: 25 tests, 95% coverage
+
+#### Entity Extraction (Phase 5B)
+- **spaCy NER**: Named entity recognition using `en_core_web_sm` model
+- **Entity Types**: person, organization, technique, dataset, concept
+- **Normalization**: Levenshtein distance-based entity merging
+- **FTS5 Search**: Full-text search across entities and aliases
+- **Batch Processing**: Hourly entity extraction jobs
+- **CLI Commands**: `aiwebfeeds nlp entities`, `list-entities`, `show-entity`, `add-alias`, `merge-entities`
+- **Database Tables**: `entities`, `entity_mentions`, `entities_fts`
+
+#### Sentiment Analysis (Phase 5C)
+- **DistilBERT Model**: Transformer-based sentiment classification
+- **Sentiment Scores**: Range from -1.0 (negative) to +1.0 (positive)
+- **Trend Tracking**: Daily sentiment aggregation by topic
+- **Shift Detection**: 7-day moving average for detecting sentiment changes
+- **Batch Processing**: Hourly sentiment analysis + aggregation
+- **CLI Commands**: `aiwebfeeds nlp sentiment`, `sentiment-trend`, `sentiment-shifts`, `sentiment-compare`
+- **Database Tables**: `article_sentiment`, `topic_sentiment_daily`
+
+#### Topic Modeling (Phase 5D)
+- **LDA Algorithm**: Gensim-based topic discovery
+- **Subtopic Extraction**: Automatic clustering of articles into subtopics
+- **Topic Evolution**: Detection of splits, merges, emergence, decline
+- **Coherence Scoring**: C_v metric for topic quality (threshold: 0.5)
+- **Manual Curation**: Approve/rename/delete workflow for subtopics
+- **Batch Processing**: Monthly topic modeling (1st of month, 3 AM)
+- **CLI Commands**: `aiwebfeeds nlp topics`, `review-subtopics`, `approve-subtopic`, `topic-evolution`
+- **Database Tables**: `subtopics`, `topic_evolution_events`
+
+#### Database Schema
+- **8 New Tables**: quality_scores, entities, entity_mentions, entities_fts, article_sentiment, topic_sentiment_daily, subtopics, topic_evolution_events
+- **Extended feed_entries**: Added 9 processing columns (quality_processed, entities_processed, etc.)
+- **FTS5 Integration**: Full-text search for entity names and aliases
+- **Triggers**: Automatic entity frequency updates, FTS5 sync
+- **Indexes**: Performance-optimized partial indexes for unprocessed articles
+
+#### NLP Infrastructure
+- **New Package**: `packages/ai_web_feeds/src/ai_web_feeds/nlp/`
+  - `quality_scorer.py` (235 LOC)
+  - `entity_extractor.py` (280 LOC)
+  - `sentiment_analyzer.py` (150 LOC)
+  - `topic_modeler.py` (350 LOC)
+  - `scheduler.py` (140 LOC)
+  - Jobs: `quality_job.py`, `entity_job.py`, `sentiment_job.py`, `topic_job.py`
+- **APScheduler Jobs**: Automated batch processing (hourly/monthly schedules)
+- **Model Management**: Automatic download of spaCy and Hugging Face models
+
+#### Documentation
+- **New Feature Docs**: 4 comprehensive MDX documentation files
+  - `/docs/features/quality-scoring.mdx`
+  - `/docs/features/entity-extraction.mdx`
+  - `/docs/features/sentiment-analysis.mdx`
+  - `/docs/features/topic-modeling.mdx`
+- **Architecture Diagrams**: Mermaid flowcharts for each NLP pipeline
+- **Usage Examples**: CLI commands, Python API, batch processing
+- **Troubleshooting Guides**: Common issues and solutions
+
+#### Configuration
+- **Phase5Settings**: Comprehensive config with batch sizes, schedules, thresholds
+- **Environment Variables**: `PHASE5_*` prefix for all NLP settings
+- **Model Configuration**: Configurable spaCy and transformer models
+
+### 🔧 Changed
+- **CLI Structure**: Added `nlp` subcommand group with 6 commands
+- **Storage Module**: Extended with 30+ CRUD methods for NLP tables
+- **Models**: Added 8 new SQLModel classes for NLP entities
+- **Config**: Added Phase5Settings to main Settings class
+
+### 📦 Dependencies
+- **spacy>=3.7.0**: NER and entity extraction
+- **transformers>=4.40.0**: Sentiment analysis models
+- **torch>=2.0.0**: PyTorch for transformers (CPU-only)
+- **gensim>=4.3.0**: LDA topic modeling
+- **langdetect>=1.0.9**: Language detection
+- **scikit-learn>=1.4.0**: TF-IDF and clustering
+
+### 📊 Performance
+- **Quality Scoring**: ~100 articles/minute
+- **Entity Extraction**: ~50 articles/hour (spaCy overhead)
+- **Sentiment Analysis**: ~100 articles/hour (DistilBERT inference)
+- **Topic Modeling**: ~5-10 minutes for 1000 articles
+
+### 🚀 Migration
+- **Migration Script**: `packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py`
+- **Run**: `uv run python packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py`
+- **Tables Created**: 7 main tables + 1 FTS5 virtual table
+
+---
+
 ## [0.2.0-beta] - 2025-10-27
 
 ### 🎉 Major Release: Real-Time Feed Monitoring & Alerts (Phase 3B)

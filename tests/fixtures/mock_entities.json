@@ -1,0 +1,17 @@
+{
+  "article_1": [
+    {"text": "Transformer", "type": "technique", "confidence": 0.95},
+    {"text": "Ashish Vaswani", "type": "person", "confidence": 0.92},
+    {"text": "Google Brain", "type": "organization", "confidence": 0.88},
+    {"text": "OpenAI", "type": "organization", "confidence": 0.91},
+    {"text": "Ilya Sutskever", "type": "person", "confidence": 0.89},
+    {"text": "BERT", "type": "technique", "confidence": 0.94},
+    {"text": "GPT", "type": "technique", "confidence": 0.96}
+  ],
+  "article_2": [
+    {"text": "RLHF", "type": "technique", "confidence": 0.97},
+    {"text": "Anthropic", "type": "organization", "confidence": 0.90},
+    {"text": "OpenAI", "type": "organization", "confidence": 0.91},
+    {"text": "Eliezer Yudkowsky", "type": "person", "confidence": 0.88}
+  ]
+}

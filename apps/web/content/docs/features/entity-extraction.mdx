@@ -1,0 +1,342 @@
+---
+title: Entity Extraction
+description: Named Entity Recognition and normalization using spaCy NER
+---
+
+# Entity Extraction
+
+Entity Extraction identifies and tracks people, organizations, techniques, datasets, and concepts mentioned in articles using spaCy's Named Entity Recognition (NER) models.
+
+## Overview
+
+The entity extractor:
+
+1. **Extracts** entities from article text using spaCy NER
+2. **Normalizes** entity names to canonical forms (e.g., "G. Hinton" → "Geoffrey Hinton")
+3. **Tracks** entity mentions across articles with confidence scores
+4. **Enables** full-text search across entities and aliases
+
+## Architecture
+
+```mermaid
+graph LR
+    A[Feed Entries] --> B[Entity Batch Job]
+    B --> C[spaCy NER]
+    C --> D[Entity Normalizer]
+    D --> E[entities + entity_mentions]
+    E --> F[FTS5 Search]
+```
+
+## Entity Types
+
+Supported entity types:
+
+- **person**: Geoffrey Hinton, Yann LeCun, Ilya Sutskever
+- **organization**: OpenAI, Google Brain, Anthropic
+- **technique**: Transformers, RLHF, LoRA, BERT
+- **dataset**: ImageNet, COCO, WikiText-103
+- **concept**: Attention mechanism, Backpropagation
+
+## Features
+
+### Named Entity Recognition
+
+Uses spaCy's `en_core_web_sm` model to detect entities:
+
+```python
+from ai_web_feeds.nlp import EntityExtractor
+
+extractor = EntityExtractor()
+
+article = {
+    "id": 1,
+    "title": "GPT-4 by OpenAI",
+    "content": "OpenAI released GPT-4, led by Sam Altman..."
+}
+
+entities = extractor.extract_entities(article)
+# Returns: [
+#     {"text": "OpenAI", "type": "organization", "confidence": 0.91},
+#     {"text": "GPT-4", "type": "technique", "confidence": 0.96},
+#     {"text": "Sam Altman", "type": "person", "confidence": 0.89}
+# ]
+```
+
+### Entity Normalization
+
+Automatically merges similar entities using Levenshtein distance:
+
+```python
+# "Geoffrey Hinton" vs "G. Hinton" → Merged (distance ≤ 2)
+# "OpenAI" vs "Open AI" → Merged (distance = 1)
+```
+
+**Algorithm**:
+1. Title-case normalization
+2. Compare to existing entities of same type
+3. If Levenshtein distance ≤ 2, use existing canonical name
+4. Otherwise, create new entity
+
+### Full-Text Search
+
+SQLite FTS5 virtual table enables fast entity search:
+
+```bash
+# Search entities by name, aliases, or description
+aiwebfeeds nlp search-entities "hinton"
+# Returns: Geoffrey Hinton, Geoff Hinton (alias)
+```
+
+## Usage
+
+### CLI Commands
+
+#### Extract Entities
+
+```bash
+aiwebfeeds nlp entities
+```
+
+**Options**:
+- `--batch-size`: Number of articles (default: 50)
+- `--force`: Reprocess all articles
+
+```bash
+# Process 25 articles
+aiwebfeeds nlp entities --batch-size 25
+```
+
+#### List Entities
+
+```bash
+# List top 10 entities by frequency
+aiwebfeeds nlp list-entities --limit 10
+```
+
+#### Show Entity Details
+
+```bash
+aiwebfeeds nlp show-entity "Geoffrey Hinton"
+```
+
+Shows:
+- Entity metadata (type, aliases, frequency)
+- Recent article mentions
+- Related entities
+
+#### Manage Entities
+
+**Add Alias**:
+```bash
+aiwebfeeds nlp add-alias "Geoffrey Hinton" "G. Hinton"
+```
+
+**Merge Duplicate Entities**:
+```bash
+aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
+```
+
+**Search Entities (FTS5)**:
+```bash
+aiwebfeeds nlp search-entities "transformer attention"
+```
+
+### Python API
+
+```python
+from ai_web_feeds.nlp import EntityExtractor
+from ai_web_feeds.storage import Storage
+
+extractor = EntityExtractor()
+storage = Storage()
+
+# Extract entities
+article = storage.get_article_by_id(123)
+entities = extractor.extract_entities(article)
+
+# Store entities
+for entity_data in entities:
+    # Normalize name
+    canonical_name = extractor.normalize_entity(
+        entity_data["text"],
+        entity_data["type"],
+        existing_entities=storage.list_all_entity_names()
+    )
+
+    # Get or create entity
+    entity = storage.get_entity_by_name(canonical_name)
+    if not entity:
+        entity = storage.create_entity(
+            canonical_name=canonical_name,
+            entity_type=entity_data["type"]
+        )
+
+    # Record mention
+    storage.create_entity_mention(
+        entity_id=entity.id,
+        article_id=article["id"],
+        confidence=entity_data["confidence"],
+        extraction_method="ner_model",
+        context=entity_data["context"]
+    )
+```
+
+### Batch Processing
+
+Entity extraction runs hourly via APScheduler:
+
+```python
+from ai_web_feeds.nlp.scheduler import NLPScheduler
+
+nlp_scheduler = NLPScheduler(scheduler)
+nlp_scheduler.register_jobs()
+# Registers: Entity extraction job (every hour)
+```
+
+## Database Schema
+
+### entities Table
+
+```sql
+CREATE TABLE entities (
+    id TEXT PRIMARY KEY,  -- UUID
+    canonical_name TEXT NOT NULL UNIQUE,
+    entity_type TEXT NOT NULL CHECK(entity_type IN ('person', 'organization', 'technique', 'dataset', 'concept')),
+    aliases TEXT,  -- JSON array
+    description TEXT,
+    metadata TEXT,  -- JSON object
+    frequency_count INTEGER DEFAULT 0,
+    first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### entity_mentions Table
+
+```sql
+CREATE TABLE entity_mentions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entity_id TEXT NOT NULL REFERENCES entities(id),
+    article_id INTEGER NOT NULL,
+    confidence REAL NOT NULL CHECK(confidence BETWEEN 0 AND 1),
+    extraction_method TEXT NOT NULL CHECK(extraction_method IN ('ner_model', 'rule_based', 'manual')),
+    context TEXT,  -- Surrounding text snippet
+    mentioned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (entity_id) REFERENCES entities(id),
+    FOREIGN KEY (article_id) REFERENCES feed_entries(id)
+);
+```
+
+### FTS5 Virtual Table
+
+```sql
+CREATE VIRTUAL TABLE entities_fts USING fts5(
+    entity_id UNINDEXED,
+    canonical_name,
+    aliases,
+    description
+);
+```
+
+## Model Installation
+
+The first run will download the spaCy model (~13MB):
+
+```bash
+# Manual download (optional)
+uv run python -m spacy download en_core_web_sm
+```
+
+**Model Info**:
+- Name: `en_core_web_sm`
+- Size: 13MB
+- Language: English
+- Accuracy: ~85% F1 score on OntoNotes 5.0
+
+## Configuration
+
+```python
+class Phase5Settings(BaseSettings):
+    entity_batch_size: int = 50
+    entity_cron: str = "0 * * * *"  # Every hour
+    entity_confidence_threshold: float = 0.7
+    spacy_model: str = "en_core_web_sm"
+```
+
+**Environment Variables**:
+```bash
+PHASE5_ENTITY_BATCH_SIZE=50
+PHASE5_ENTITY_CONFIDENCE_THRESHOLD=0.7
+PHASE5_SPACY_MODEL=en_core_web_sm
+```
+
+## Performance
+
+- **Throughput**: ~50 articles/hour
+- **Memory**: ~200MB (spaCy model loaded)
+- **Storage**: ~50 bytes per entity mention
+
+## Use Cases
+
+### Track Influential Researchers
+
+```bash
+# Find top AI researchers by mention frequency
+aiwebfeeds nlp list-entities --type person --limit 20
+```
+
+### Discover Emerging Techniques
+
+```bash
+# Find recently mentioned techniques
+aiwebfeeds nlp list-entities --type technique --sort recent
+```
+
+### Build Knowledge Graphs
+
+Connect entities by co-occurrence in articles:
+
+```python
+# Articles mentioning both "GPT-4" and "RLHF"
+storage.get_articles_mentioning_entities(["GPT-4", "RLHF"])
+```
+
+## Troubleshooting
+
+### Low Extraction Accuracy
+
+**Symptom**: Many entities missed or incorrectly classified.
+
+**Solutions**:
+1. Use larger spaCy model: `en_core_web_lg` (40MB, better accuracy)
+2. Add domain-specific rules for AI terminology
+3. Manual curation: Add aliases for common variations
+
+### Duplicate Entities
+
+**Symptom**: "Geoffrey Hinton" and "Geoff Hinton" as separate entities.
+
+**Solution**:
+```bash
+# Merge duplicates
+aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
+
+# Add alias
+aiwebfeeds nlp add-alias "Geoffrey Hinton" "Geoff Hinton"
+```
+
+### spaCy Model Not Found
+
+**Symptom**: `OSError: Can't find model 'en_core_web_sm'`
+
+**Solution**:
+```bash
+uv run python -m spacy download en_core_web_sm
+```
+
+## See Also
+
+- [Quality Scoring](/docs/features/quality-scoring) - Article quality assessment
+- [Sentiment Analysis](/docs/features/sentiment-analysis) - Sentiment classification
+- [Topic Modeling](/docs/features/topic-modeling) - Discover subtopics
