@@ -70,7 +70,8 @@
       "python-autodoc",
       "testing",
       "workflows",
-      "cli-workflows"
+      "cli-workflows",
+      "pre-commit-fixes"
     ]
   },
   "---Contributing": {

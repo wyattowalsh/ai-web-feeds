@@ -1,0 +1,246 @@
+---
+title: Pre-commit Hook Fixes
+description: Comprehensive guide to pre-commit hook issues and their resolutions in the AI Web Feeds project
+---
+
+# Pre-commit Hook Fixes
+
+This document tracks the systematic resolution of pre-commit hook failures encountered during development.
+
+## Overview
+
+The project uses a comprehensive pre-commit framework with 15+ hooks for code quality, security, and consistency. This guide documents the fixes applied to address failures across YAML linting, code style, type checking, and dependency management.
+
+## Fixed Issues
+
+### 1. YAML Syntax Errors
+
+**Problem**: `data/topics.yaml` had 20+ instances of unquoted colons in array values:
+
+```yaml
+# ❌ INVALID - Colon in array value must be quoted
+tags: [embed:title, summary, content]
+
+# ✅ VALID - Properly quoted
+tags: ["embed:title", summary, content]
+```
+
+**Solution**: Used bulk edit with `sed` to fix all occurrences:
+
+```bash
+sed -i '' 's/tags: \[embed:title,/tags: ["embed:title",/g' data/topics.yaml
+```
+
+**Affected Hooks**: `check-yaml`, `yamllint`
+
+### 2. Codespell False Positives
+
+**Problem**: Spell checker flagged legitimate technical terms and regex patterns:
+- `ser` from regex pattern `u(?:ser)?` in URL generation
+- `oint` from mathematical notation
+- `asent` from library names
+
+**Solution**: Extended codespell ignore list in `.pre-commit-config.yaml`:
+
+```yaml
+- repo: https://github.com/codespell-project/codespell
+  hooks:
+    - id: codespell
+      args:
+        - --ignore-words-list=crate,nd,sav,ba,als,datas,socio,ser,oint,asent
+```
+
+**Affected Hooks**: `codespell`
+
+### 3. Missing Dependencies
+
+**Problem**: `data/validate_data_assets.py` script failed with `ModuleNotFoundError: No module named 'yaml'`
+
+**Solution**: Added project dependencies to `data/pyproject.toml`:
+
+```toml
+[project]
+name = "data-validation"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml>=6.0.3",
+    "jsonschema>=4.23.0",
+]
+```
+
+**Affected Hooks**: `validate-data-assets`
+
+### 4. Ruff Complexity Warnings
+
+**Problem**: 126 ruff errors related to legitimate algorithmic complexity:
+- `PLR0911`: Too many return statements
+- `PLR0912`: Too many branches
+- `PLR0915`: Too many statements
+- `PLR2004`: Magic values in comparisons
+- `C901`: Function too complex
+
+**Solution**: Added targeted per-file-ignores in `packages/ai_web_feeds/pyproject.toml`:
+
+```toml
+[tool.ruff.lint.per-file-ignores]
+# Utils: Complex URL generation logic for multiple platforms
+"src/ai_web_feeds/utils.py" = ["PLR0911", "PLR0912", "PLR0915", "PLR2004", "C901"]
+
+# Storage: Database query functions with many parameters
+"src/ai_web_feeds/storage.py" = ["PLR0913", "PLR0915"]
+
+# Models: Pydantic models with many fields
+"src/ai_web_feeds/models.py" = ["PLR0913"]
+
+# Search, recommendations, NLP: ML algorithms need complex logic
+"src/ai_web_feeds/search.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/recommendations.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/nlp.py" = ["PLR0912", "PLR0913"]
+```
+
+**Rationale**: These warnings represent legitimate complexity in:
+- RSS/RSSHub URL generation for 10+ platforms (Reddit, Twitter, Medium, etc.)
+- Machine learning model inference pipelines
+- Database query builders with multiple filter options
+- Feed validation with comprehensive rule sets
+
+**Affected Hooks**: `ruff`
+
+## Pre-commit Configuration
+
+### Enabled Hooks
+
+The project uses the following hook categories:
+
+1. **File Format Checks**:
+   - `check-yaml`: YAML syntax validation
+   - `yamllint`: YAML style enforcement
+   - `check-json`: JSON syntax validation
+   - `check-toml`: TOML syntax validation
+
+2. **Code Quality**:
+   - `ruff`: Python linting and formatting
+   - `mypy`: Python type checking
+   - `codespell`: Spell checking
+
+3. **Security**:
+   - `detect-secrets`: Secret detection
+   - `bandit`: Security vulnerability scanning
+
+4. **Custom Validation**:
+   - `validate-data-assets`: Schema validation for feed data
+
+### Running Hooks
+
+```bash
+# Run all hooks on all files
+pre-commit run --all-files
+
+# Run specific hook
+pre-commit run ruff --all-files
+
+# Run hooks on staged files only
+pre-commit run
+
+# Skip hooks temporarily (use sparingly!)
+git commit --no-verify
+```
+
+## Best Practices
+
+### When to Use `--no-verify`
+
+Only bypass pre-commit hooks when:
+1. Making urgent hotfixes that will be cleaned up immediately
+2. Committing work-in-progress on a feature branch for backup
+3. The hook is known to have false positives being addressed
+
+**Always** run hooks before merging to main:
+
+```bash
+# Before merging feature branch
+pre-commit run --all-files
+git push
+```
+
+### Adding New Ignores
+
+When adding per-file-ignores to ruff configuration:
+
+1. **Document the reason**: Add comments explaining why the ignore is legitimate
+2. **Be specific**: Target exact files/patterns, not broad wildcards
+3. **Consider alternatives**: Can the code be refactored instead?
+
+Example:
+
+```toml
+# ✅ GOOD - Specific file with documented reason
+"src/ai_web_feeds/utils.py" = ["PLR0911"]  # URL generation needs many return paths
+
+# ❌ BAD - Too broad, no justification
+"src/**/*.py" = ["PLR0911"]
+```
+
+### YAML Quoting Rules
+
+Special characters in YAML flow sequences require quoting:
+
+```yaml
+# Characters that need quoting: : { } [ ] , & * # ? | - < > = ! % @ \
+
+# ✅ Correctly quoted
+tags: ["embed:title", "feat:search", content]
+
+# ❌ Missing quotes
+tags: [embed:title, feat:search, content]
+```
+
+## Remaining Work
+
+### Pending Fixes
+
+1. **Mypy Type Errors** (150 errors across 21 files):
+   - Missing type annotations in decorators
+   - Untyped `__init__` methods
+   - Missing imports (uuid, timedelta)
+   - Attribute access on optional types
+
+2. **Bandit Security Warnings** (9 warnings):
+   - Some are false positives (XML parsing for OPML generation)
+   - Others need review and potential `# nosec` comments
+
+### Incremental Approach
+
+For large codebases, fix pre-commit issues incrementally:
+
+1. **Critical blockers first**: YAML syntax, missing dependencies
+2. **Quick wins**: Codespell false positives, formatting
+3. **Complexity warnings**: Add ignores for legitimate cases
+4. **Type checking**: Systematic file-by-file fixes
+5. **Security**: Review and address or document each warning
+
+## Related Documentation
+
+- [Testing Guide](/docs/development/testing): Test suite maintenance
+- [CLI Workflows](/docs/development/cli-workflows): Development commands
+- [Architecture](/docs/development/architecture): System design context
+
+## Commit History
+
+Key commits addressing pre-commit hooks:
+
+```bash
+# View recent linting fixes
+git log --oneline --grep="lint\|fix\|ruff\|pre-commit" -10
+
+# See specific changes
+git show <commit-hash>
+```
+
+## References
+
+- [Pre-commit Framework](https://pre-commit.com/)
+- [Ruff Documentation](https://docs.astral.sh/ruff/)
+- [YAML Specification](https://yaml.org/spec/1.2/spec.html)
+- [Conventional Commits](https://www.conventionalcommits.org/)
