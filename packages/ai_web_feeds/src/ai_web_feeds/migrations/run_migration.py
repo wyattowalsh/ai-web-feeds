@@ -1,7 +1,7 @@
 """Database migration runner for Phase 5"""
 
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 from ai_web_feeds.config import Settings
 

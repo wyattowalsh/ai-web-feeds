@@ -1,9 +1,9 @@
 """Topic modeling using LDA/BERTopic (Phase 5D)."""
 
+import numpy as np
 from gensim import corpora
 from gensim.models import LdaModel
 from loguru import logger
-import numpy as np
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings

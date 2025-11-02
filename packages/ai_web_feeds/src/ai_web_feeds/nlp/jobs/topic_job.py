@@ -1,7 +1,7 @@
 """Batch job for topic modeling (Phase 5D)."""
 
-from datetime import datetime
 import json
+from datetime import datetime
 from uuid import uuid4
 
 from loguru import logger

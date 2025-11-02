@@ -1,8 +1,8 @@
 """Named entity extraction using spaCy (Phase 5B)."""
 
+import spacy
 from loguru import logger
 from pydantic import BaseModel, Field
-import spacy
 
 from ai_web_feeds.config import Settings
 

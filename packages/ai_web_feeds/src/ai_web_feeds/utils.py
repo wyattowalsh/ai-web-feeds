@@ -1,24 +1,23 @@
 """ai_web_feeds.utils -- Utility functions for enrichment, OPML, and schema generation"""
 
-from datetime import datetime
 import json
-from pathlib import Path
 import re
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 import httpx
+import yaml
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
-import yaml
 
 from ai_web_feeds.models import (
     FeedFormat,
     FeedSource,
 )
-
 
 # ============================================================================
 # RSSHub Integration

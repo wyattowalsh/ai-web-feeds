@@ -6,9 +6,9 @@ from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup
 import feedparser
 import httpx
+from bs4 import BeautifulSoup
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 

@@ -1,8 +1,8 @@
 """Initialize Alembic for database migrations"""
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def init_alembic():

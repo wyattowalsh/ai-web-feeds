@@ -28,7 +28,6 @@ from ai_web_feeds.models import (
     TopicStats,
 )
 
-
 settings = Settings()
 
 

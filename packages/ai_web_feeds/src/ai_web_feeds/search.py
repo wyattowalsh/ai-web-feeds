@@ -13,8 +13,8 @@ Uses SQLite FTS5 for full-text search and NumPy for vector similarity.
 
 from typing import Any
 
-from loguru import logger
 import numpy as np
+from loguru import logger
 from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
@@ -24,7 +24,6 @@ from ai_web_feeds.models import (
     SavedSearch,
     SearchQuery,
 )
-
 
 settings = Settings()
 

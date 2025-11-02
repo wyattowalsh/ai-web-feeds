@@ -5,9 +5,9 @@ This module implements Socket.IO server for real-time client-server communicatio
 
 from typing import Any
 
+import socketio
 from aiohttp import web
 from loguru import logger
-import socketio
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import Notification

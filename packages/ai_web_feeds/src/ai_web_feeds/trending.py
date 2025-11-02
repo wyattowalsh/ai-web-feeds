@@ -5,8 +5,8 @@ This module implements Z-score trending detection for real-time topic monitoring
 
 from datetime import datetime, timedelta
 
-from loguru import logger
 import numpy as np
+from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings

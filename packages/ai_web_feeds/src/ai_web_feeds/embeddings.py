@@ -7,17 +7,16 @@ This module provides embedding generation functions using:
 Embeddings are 384-dim vectors from all-MiniLM-L6-v2 model.
 """
 
-from functools import lru_cache
 import os
+from functools import lru_cache
 
-from loguru import logger
 import numpy as np
 import requests
+from loguru import logger
 from tqdm import tqdm
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEmbedding, FeedSource
-
 
 settings = Settings()
 

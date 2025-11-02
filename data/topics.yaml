@@ -21,7 +21,7 @@ topics:
     related_to: [ml, genai]
   examples: [general-ai, ai-news]
   rank_hint: 1.0
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   i18n:
     fr: {label: Intelligence Artificielle}
     es: {label: Inteligencia Artificial}
@@ -40,7 +40,7 @@ topics:
     related_to: [genai]
   examples: [supervised-learning, unsupervised-learning]
   rank_hint: 0.98
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q2539
     feeds:
@@ -61,7 +61,7 @@ topics:
     related_to: [llm, multimodal, diffusion]
   examples: [text-generation, image-synthesis]
   rank_hint: 0.96
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q10290214
   notes: Focus on contemporary generators (LLMs, diffusion).
@@ -77,7 +77,7 @@ topics:
     influences: [research]
   examples: [protein-design, materials-discovery]
   rank_hint: 0.72
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
   # =========================
   # Tasks & Methods
@@ -93,7 +93,7 @@ topics:
     related_to: [llm, retrieval, evaluation]
   examples: [tokenization, nlu, nlg]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q30642
     feeds:
@@ -112,7 +112,7 @@ topics:
     related_to: [context-engineering, agents, evaluation, inference, long-context, structured-generation, tool-use]
   examples: [pretraining, finetuning, rlhf, in-context-learning]
   rank_hint: 0.99
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q124351267
     feeds:
@@ -130,7 +130,7 @@ topics:
     related_to: [agents]
   examples: [chain-of-thought, self-consistency]
   rank_hint: 0.78
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: cv
   label: Computer Vision
@@ -143,7 +143,7 @@ topics:
     related_to: [multimodal, vlm, robotics, diffusion]
   examples: [segmentation, detection, classification]
   rank_hint: 0.87
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q11660
     feeds:
@@ -160,7 +160,7 @@ topics:
     related_to: [vlm, agents, diffusion]
   examples: [vision-language, audio-text, video-text]
   rank_hint: 0.86
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: vlm
   label: Vision-Language Models
@@ -172,7 +172,7 @@ topics:
     related_to: [evaluation]
   examples: [vqa, captioning]
   rank_hint: 0.8
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: audio-speech
   label: Audio & Speech
@@ -185,7 +185,7 @@ topics:
     related_to: [multimodal]
   examples: [speech-recognition, speech-synthesis, speaker-id]
   rank_hint: 0.78
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     feeds:
     - {kind: arxiv, ref: cs.SD}
@@ -202,7 +202,7 @@ topics:
     related_to: [agents, robotics, evaluation]
   examples: [policy-gradient, q-learning, rlhf]
   rank_hint: 0.82
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     wikidata: Q1063712
     feeds:
@@ -220,7 +220,7 @@ topics:
     related_to: [workflows, orchestration, reasoning-models, synthetic-agents, tool-use]
   examples: [planning, tool-calling, memory, reflection]
   rank_hint: 0.95
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: retrieval
   label: Retrieval
@@ -234,7 +234,7 @@ topics:
     related_to: [llm, knowledge-graphs]
   examples: [bm25, hybrid-search]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     feeds:
     - {kind: arxiv, ref: cs.IR}
@@ -250,7 +250,7 @@ topics:
     influences: [evaluation, context-engineering]
   examples: [knowledge-grounding]
   rank_hint: 0.94
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: diffusion
   label: Diffusion Models
@@ -262,7 +262,7 @@ topics:
     related_to: [cv, multimodal, optimization]
   examples: [image-diffusion, latent-diffusion, video-diffusion]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: long-context
   label: Long-context Modeling
@@ -274,7 +274,7 @@ topics:
     influences: [rag, agents]
   examples: [sliding-window, rematerialization, memory-kv]
   rank_hint: 0.84
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: tool-use
   label: Function Calling & Tool Use
@@ -287,7 +287,7 @@ topics:
     related_to: [workflows, orchestration]
   examples: [function-calling, toolformer, xml-json-io]
   rank_hint: 0.92
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: structured-generation
   label: Structured Generation
@@ -299,7 +299,7 @@ topics:
     related_to: [evaluation, ai-for-code]
   examples: [json-schema, constrained-decoding, grammar-guided]
   rank_hint: 0.82
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: evaluation
   label: Evaluation
@@ -312,7 +312,7 @@ topics:
     related_to: [llm, cv, vlm, agents, safety, benchops]
   examples: [mmlu, big-bench, eval-suites]
   rank_hint: 0.92
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     schema_org: CreativeWork
     feeds:
@@ -330,7 +330,7 @@ topics:
     related_to: [evaluation, safety]
   examples: [feature-attribution, mechanistic-interpretability]
   rank_hint: 0.83
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: context-engineering
   label: Context Engineering
@@ -344,7 +344,7 @@ topics:
     related_to: [agents, evaluation, structured-generation, tool-use]
   examples: [prompt-optimization, system-prompts]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: ai-for-code
   label: AI for Code
@@ -356,7 +356,7 @@ topics:
     related_to: [devtools, evaluation, structured-generation]
   examples: [code-generation, static-analysis, test-synthesis]
   rank_hint: 0.88
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     huggingface: task/code-generation
 
@@ -371,7 +371,7 @@ topics:
     related_to: [synthetic-data]
   examples: [simulators, digital-twins, env-generation]
   rank_hint: 0.76
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: synthetic-agents
   label: Synthetic Agents & Societies
@@ -383,7 +383,7 @@ topics:
     related_to: [safety, evaluation]
   examples: [multi-agent-simulation, emergent-behavior]
   rank_hint: 0.7
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: time-series
   label: Time-series ML
@@ -395,7 +395,7 @@ topics:
     related_to: [evaluation, optimization]
   examples: [forecasting, anomaly-detection, multivariate-ts]
   rank_hint: 0.75
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: geospatial-ml
   label: Geospatial ML
@@ -407,7 +407,7 @@ topics:
     related_to: [cv, robotics]
   examples: [satellite-imagery, landcover, routing]
   rank_hint: 0.68
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
   # =========================
   # Governance, Risk & Policy
@@ -423,7 +423,7 @@ topics:
     related_to: [alignment, evaluation, security, content-moderation]
   examples: [red-teaming, jailbreaks, hazard-detection]
   rank_hint: 0.9
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: alignment
   label: Alignment
@@ -435,7 +435,7 @@ topics:
     related_to: [ethics]
   examples: [rlhf, preference-modeling, constitutional-ai]
   rank_hint: 0.82
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: ethics
   label: Ethics
@@ -461,7 +461,7 @@ topics:
     related_to: [synthetic-data, pets]
   examples: [dp, federated-learning]
   rank_hint: 0.78
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: pets
   label: Privacy-Enhancing Technologies
@@ -473,7 +473,7 @@ topics:
     related_to: [synthetic-data, evaluation]
   examples: [homomorphic-encryption, secure-mpc, tee, k-anonymity]
   rank_hint: 0.78
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: security
   label: Security
@@ -485,7 +485,7 @@ topics:
     related_to: [privacy, supply-chain]
   examples: [prompt-injection, model-exfiltration, poisoning]
   rank_hint: 0.85
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: governance
   label: Governance
@@ -512,7 +512,7 @@ topics:
     influences: [regulation]
   examples: [lineage, catalog, access-controls, retention]
   rank_hint: 0.78
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: model-risk
   label: Model Risk Management
@@ -524,7 +524,7 @@ topics:
     related_to: [trust-audit, regulation]
   examples: [model-risk, sra, risk-registers]
   rank_hint: 0.76
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: copyright-ip
   label: Copyright & IP for AI
@@ -535,7 +535,7 @@ topics:
     related_to: [datasets, synthetic-data, regulation]
   examples: [copyright, fair-use, training-data-licensing]
   rank_hint: 0.7
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: regulation
   label: Regulation
@@ -559,7 +559,7 @@ topics:
     related_to: [regulation, safety, model-risk]
   examples: [transparency-reports, audit-trails]
   rank_hint: 0.7
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: content-moderation
   label: AI Content Moderation
@@ -571,7 +571,7 @@ topics:
     related_to: [ethics, privacy]
   examples: [toxicity-detection, policy-enforcement]
   rank_hint: 0.77
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
   # =========================
   # Data, Tooling & Infrastructure
@@ -586,7 +586,7 @@ topics:
     related_to: [labeling, synthetic-data, embeddings, data-centric-ai, knowledge-graphs]
   examples: [data-releases, dataset-cards]
   rank_hint: 0.88
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     schema_org: Dataset
 
@@ -601,7 +601,7 @@ topics:
     related_to: [genai, evaluation]
   examples: [synthetic-tabular, synthetic-images]
   rank_hint: 0.8
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: labeling
   label: Labeling & Annotation
@@ -614,7 +614,7 @@ topics:
     related_to: [active-learning, data-centric-ai]
   examples: [human-labeling, weak-supervision]
   rank_hint: 0.76
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: data
   label: Data Engineering
@@ -627,7 +627,7 @@ topics:
     related_to: [workflows, infra, data-governance]
   examples: [etl, pipelines, storage]
   rank_hint: 0.82
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: knowledge-graphs
   label: Knowledge Graphs
@@ -639,7 +639,7 @@ topics:
     related_to: [embeddings, evaluation]
   examples: [rdf, property-graphs, entity-linking]
   rank_hint: 0.8
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: data-centric-ai
   label: Data-Centric AI
@@ -651,7 +651,7 @@ topics:
     related_to: [labeling]
   examples: [data-quality, augmentation]
   rank_hint: 0.78
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: data-viz
   label: Data Visualization
@@ -662,7 +662,7 @@ topics:
     influences: [evaluation]
   examples: [dashboards, charts]
   rank_hint: 0.66
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: embeddings
   label: Embeddings
@@ -674,7 +674,7 @@ topics:
     related_to: [vector, rag]
   examples: [sentence-embeddings, image-embeddings]
   rank_hint: 0.86
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: vector
   label: Vector Infrastructure
@@ -687,7 +687,7 @@ topics:
     related_to: [embeddings, rag]
   examples: [faiss, hnsw, ivf, pq]
   rank_hint: 0.84
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: mlops
   label: MLOps
@@ -699,7 +699,7 @@ topics:
     related_to: [llmops, benchops, monitoring, incident-response]
   examples: [ci-cd, model-registry, monitoring]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: monitoring
   label: ML Monitoring & Observability
@@ -710,7 +710,7 @@ topics:
     related_to: [benchops, serving, incident-response]
   examples: [drift-detection, latency-slo, tracing]
   rank_hint: 0.86
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: llmops
   label: LLMOps
@@ -723,7 +723,7 @@ topics:
     related_to: [inference, context-engineering, monitoring]
   examples: [prompt-management, shadow-deployments]
   rank_hint: 0.9
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: benchops
   label: BenchOps / EvalOps
@@ -735,7 +735,7 @@ topics:
     related_to: [trust-audit, safety, monitoring]
   examples: [continuous-evaluation, scorecards]
   rank_hint: 0.82
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: orchestration
   label: Orchestration
@@ -747,7 +747,7 @@ topics:
     related_to: [agents, tool-use]
   examples: [task-graphs, schedulers]
   rank_hint: 0.74
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: workflows
   label: Workflows
@@ -758,7 +758,7 @@ topics:
     related_to: [orchestration]
   examples: [pipelines, automation, lineage, observability]
   rank_hint: 0.72
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: serving
   label: Model Serving
@@ -770,7 +770,7 @@ topics:
     related_to: [inference, optimization]
   examples: [rest, grpc, serverless, model-gateways]
   rank_hint: 0.87
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: inference
   label: Inference
@@ -783,7 +783,7 @@ topics:
     related_to: [training, small-models]
   examples: [speculative-decoding, dynamic-batching, tensor-parallel]
   rank_hint: 0.93
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: training
   label: Training
@@ -795,7 +795,7 @@ topics:
     related_to: [optimization]
   examples: [pretraining, finetuning, sft, dpo]
   rank_hint: 0.91
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: optimization
   label: Optimization
@@ -808,7 +808,7 @@ topics:
     contrasts_with: [training]
   examples: [quantization, pruning, distillation, kernel-fusion]
   rank_hint: 0.88
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: small-models
   label: Small & Efficient Models
@@ -820,7 +820,7 @@ topics:
     related_to: [on-device, mobile]
   examples: [tiny-llm, qlora, lora, sparse-experts]
   rank_hint: 0.86
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: compilers
   label: ML Compilers
@@ -832,7 +832,7 @@ topics:
     related_to: [accelerators]
   examples: [xla, tvm, iree, triton]
   rank_hint: 0.85
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: ai-infra-stacks
   label: AI Infrastructure Stacks
@@ -844,7 +844,7 @@ topics:
     related_to: [inference, serving]
   examples: [vllm, ray, k8s-operators, tensorrt-llm, tgi]
   rank_hint: 0.83
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: infra-economics
   label: AI Infrastructure Economics
@@ -869,7 +869,7 @@ topics:
     related_to: [governance, trust-audit]
   examples: [rollback, hotfix, feature-flags]
   rank_hint: 0.78
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
   # =========================
   # Modalities & Platforms
@@ -884,7 +884,7 @@ topics:
     related_to: [rl, cv, edge]
   examples: [control, sim2real, manipulation]
   rank_hint: 0.79
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: edge
   label: Edge AI
@@ -896,7 +896,7 @@ topics:
     related_to: [on-device, mobile]
   examples: [embedded, iot, offline-inference]
   rank_hint: 0.76
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: mobile
   label: Mobile AI
@@ -908,7 +908,7 @@ topics:
     related_to: [small-models]
   examples: [android, ios, on-device-llm]
   rank_hint: 0.7
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: on-device
   label: On-device ML
@@ -920,7 +920,7 @@ topics:
     related_to: [mobile, small-models]
   examples: [npu, tinyml]
   rank_hint: 0.73
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: hardware
   label: Hardware
@@ -932,7 +932,7 @@ topics:
     related_to: [accelerators, compilers]
   examples: [gpus, tpus, accelerators]
   rank_hint: 0.89
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: accelerators
   label: Accelerators
@@ -944,7 +944,7 @@ topics:
     related_to: [optimization]
   examples: [cuda, rocm, vllm, tensorrt]
   rank_hint: 0.88
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
   # =========================
   # Ecosystem & Media
@@ -959,7 +959,7 @@ topics:
     related_to: [evaluation, interpretability]
   examples: [arxiv, conferences, workshops]
   rank_hint: 0.83
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     schema_org: CreativeWork
     feeds:
@@ -975,7 +975,7 @@ topics:
     related_to: [product, open-source, governance]
   examples: [product-announcements, funding, partnerships]
   rank_hint: 0.8
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: product
   label: Product
@@ -986,7 +986,7 @@ topics:
     related_to: [devtools, community]
   examples: [roadmap, changelogs]
   rank_hint: 0.82
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: education
   label: Education
@@ -997,7 +997,7 @@ topics:
     related_to: [research, community]
   examples: [course, tutorial, bootcamp]
   rank_hint: 0.75
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: community
   label: Community
@@ -1008,7 +1008,7 @@ topics:
     related_to: [open-source, newsletters, podcasts, videos, blogs]
   examples: [meetups, hackathons]
   rank_hint: 0.68
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: open-source
   label: Open Source
@@ -1019,7 +1019,7 @@ topics:
     related_to: [devtools, industry]
   examples: [releases, roadmaps]
   rank_hint: 0.8
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: healthcare-ai
   label: Healthcare AI
@@ -1031,7 +1031,7 @@ topics:
     related_to: [ai-for-science, ethics]
   examples: [medical-imaging, clinical-nlp, fda-clearance]
   rank_hint: 0.7
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
 - id: finance-ai
   label: Finance AI
@@ -1042,7 +1042,7 @@ topics:
     related_to: [model-risk, regulation, time-series]
   examples: [fraud, risk-scoring, algo-trading]
   rank_hint: 0.66
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: legal-ai
   label: Legal AI
@@ -1053,7 +1053,7 @@ topics:
     related_to: [copyright-ip, governance]
   examples: [contract-analysis, e-discovery]
   rank_hint: 0.62
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: edtech-ai
   label: EdTech AI
@@ -1064,7 +1064,7 @@ topics:
     related_to: [education, evaluation]
   examples: [adaptive-learning, ai-tutors]
   rank_hint: 0.58
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: papers
   label: Papers
@@ -1076,7 +1076,7 @@ topics:
     same_as: []
   examples: [preprints, peer-reviewed]
   rank_hint: 0.71
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
   mappings:
     schema_org: ScholarlyArticle
     feeds:
@@ -1091,7 +1091,7 @@ topics:
     related_to: [newsletters, videos, blogs]
   examples: [interviews, talk-series]
   rank_hint: 0.55
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: newsletters
   label: Newsletters
@@ -1102,7 +1102,7 @@ topics:
     related_to: [blogs, podcasts]
   examples: [weekly-digests]
   rank_hint: 0.62
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: videos
   label: Videos
@@ -1113,7 +1113,7 @@ topics:
     related_to: [education, conferences]
   examples: [talks, tutorials, livestreams]
   rank_hint: 0.64
-  tags: [embed:title, summary]
+  tags: ["embed:title", summary]
 
 - id: blogs
   label: Blogs
@@ -1124,7 +1124,7 @@ topics:
     related_to: [newsletters, product]
   examples: [engineering-blogs, product-blogs]
   rank_hint: 0.7
-  tags: [embed:title, summary, content]
+  tags: ["embed:title", summary, content]
 
   # =========================
   # Deprecated (Lifecycle)

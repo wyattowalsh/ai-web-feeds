@@ -3,8 +3,8 @@
 from pathlib import Path
 from typing import Any
 
-from loguru import logger
 import yaml
+from loguru import logger
 
 
 def load_feeds(path: Path | str) -> dict[str, Any]:

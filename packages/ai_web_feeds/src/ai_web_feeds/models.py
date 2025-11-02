@@ -10,7 +10,6 @@ from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
 
-
 # ============================================================================
 # Enums
 # ============================================================================

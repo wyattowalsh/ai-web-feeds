@@ -152,7 +152,7 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
-    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio]
+    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent]
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================

@@ -12,11 +12,11 @@ Implements Phase 1 recommendation strategy:
 - 10% serendipity (random high-quality feeds)
 """
 
-from datetime import datetime
 import random
+from datetime import datetime
 
-from loguru import logger
 import numpy as np
+from loguru import logger
 from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
@@ -26,7 +26,6 @@ from ai_web_feeds.models import (
     RecommendationInteraction,
     UserProfile,
 )
-
 
 settings = Settings()
 
