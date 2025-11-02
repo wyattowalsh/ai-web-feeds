@@ -1,9 +1,10 @@
 """Unit tests for Entity Extractor (Phase 5B)"""
 
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 from ai_web_feeds.config import Settings
+from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 
 
 class TestEntityExtractor:
@@ -12,7 +13,7 @@ class TestEntityExtractor:
     @pytest.fixture
     def extractor(self):
         """Create EntityExtractor instance for testing"""
-        with patch('ai_web_feeds.nlp.entity_extractor.spacy.load') as mock_load:
+        with patch("ai_web_feeds.nlp.entity_extractor.spacy.load") as mock_load:
             # Mock spaCy model
             mock_nlp = MagicMock()
             mock_load.return_value = mock_nlp
@@ -27,9 +28,9 @@ class TestEntityExtractor:
             "id": 1,
             "title": "Attention Is All You Need",
             "content": "The Transformer architecture, introduced by Vaswani et al. in 2017, "
-                      "revolutionized natural language processing. Unlike previous approaches that "
-                      "relied on recurrent neural networks, Transformers use self-attention mechanisms. "
-                      "Key researchers include Ashish Vaswani from Google Brain and Ilya Sutskever from OpenAI."
+            "revolutionized natural language processing. Unlike previous approaches that "
+            "relied on recurrent neural networks, Transformers use self-attention mechanisms. "
+            "Key researchers include Ashish Vaswani from Google Brain and Ilya Sutskever from OpenAI.",
         }
 
     def test_initialization(self, extractor):
@@ -43,7 +44,7 @@ class TestEntityExtractor:
         settings = Settings()
         settings.phase5.spacy_model = "en_core_web_md"
 
-        with patch('ai_web_feeds.nlp.entity_extractor.spacy.load') as mock_load:
+        with patch("ai_web_feeds.nlp.entity_extractor.spacy.load") as mock_load:
             mock_nlp = MagicMock()
             mock_load.return_value = mock_nlp
             extractor = EntityExtractor(settings)
@@ -134,7 +135,9 @@ class TestEntityExtractor:
     def test_extract_context(self, extractor):
         """Test context extraction"""
         mock_doc = Mock()
-        mock_doc.text = "This is a test sentence with Geoffrey Hinton mentioned in the middle of the text."
+        mock_doc.text = (
+            "This is a test sentence with Geoffrey Hinton mentioned in the middle of the text."
+        )
 
         mock_ent = Mock()
         mock_ent.start_char = 30
@@ -203,7 +206,7 @@ class TestEntityExtractor:
         """Test extraction truncates very long content"""
         article = {
             "id": 1,
-            "content": "A" * 20000  # 20k characters
+            "content": "A" * 20000,  # 20k characters
         }
 
         mock_doc = Mock()
@@ -235,7 +238,7 @@ class TestEntityNormalization:
     @pytest.fixture
     def extractor(self):
         """Create EntityExtractor instance"""
-        with patch('ai_web_feeds.nlp.entity_extractor.spacy.load') as mock_load:
+        with patch("ai_web_feeds.nlp.entity_extractor.spacy.load") as mock_load:
             mock_nlp = MagicMock()
             mock_load.return_value = mock_nlp
             extractor = EntityExtractor()

@@ -5,9 +5,9 @@ This module implements Socket.IO server for real-time client-server communicatio
 
 from typing import Any
 
-import socketio
 from aiohttp import web
 from loguru import logger
+import socketio
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import Notification
@@ -28,22 +28,21 @@ class WebSocketServer:
             db: Database manager instance
             settings: Application settings
         """
-        self.db       = db
+        self.db = db
         self.settings = settings
-        self.port     = settings.phase3b.websocket_port
+        self.port = settings.phase3b.websocket_port
 
         # Parse CORS origins
         cors_origins = [
-            origin.strip()
-            for origin in settings.phase3b.websocket_cors_origins.split(",")
+            origin.strip() for origin in settings.phase3b.websocket_cors_origins.split(",")
         ]
 
         # Create Socket.IO server
         self.sio = socketio.AsyncServer(
-            async_mode       ="aiohttp",
+            async_mode="aiohttp",
             cors_allowed_origins=cors_origins,
-            logger           =False,
-            engineio_logger  =False,
+            logger=False,
+            engineio_logger=False,
         )
 
         # Create aiohttp app
@@ -103,9 +102,7 @@ class WebSocketServer:
         logger.info(f"Client {sid} authenticated as user {user_id}")
 
         # Send unread notifications
-        notifications = self.db.get_user_notifications(
-            user_id, unread_only=True, limit=50
-        )
+        notifications = self.db.get_user_notifications(user_id, unread_only=True, limit=50)
         await self.sio.emit(
             "notifications_history",
             {"notifications": [self._serialize_notification(n) for n in notifications]},
@@ -140,9 +137,7 @@ class WebSocketServer:
             self.db.dismiss_notification(notification_id)
             logger.debug(f"Dismissed notification {notification_id}")
 
-    async def broadcast_notification(
-        self, user_id: str, notification: Notification
-    ) -> None:
+    async def broadcast_notification(self, user_id: str, notification: Notification) -> None:
         """Broadcast notification to user via WebSocket.
 
         Args:
@@ -170,10 +165,10 @@ class WebSocketServer:
         await self.sio.emit(
             "trending_alert",
             {
-                "topic_id"     : topic_id,
-                "z_score"      : z_score,
+                "topic_id": topic_id,
+                "z_score": z_score,
                 "article_count": article_count,
-                "timestamp"    : int(logger._core.now().timestamp() * 1000),
+                "timestamp": int(logger._core.now().timestamp() * 1000),
             },
             room=user_id,
         )
@@ -189,14 +184,15 @@ class WebSocketServer:
             Serialized notification dict
         """
         return {
-            "id"          : notification.id,
-            "type"        : notification.type.value,
-            "title"       : notification.title,
-            "message"     : notification.message,
-            "action_url"  : notification.action_url,
+            "id": notification.id,
+            "type": notification.type.value,
+            "title": notification.title,
+            "message": notification.message,
+            "action_url": notification.action_url,
             "context_data": notification.context_data,
-            "read_at"     : notification.read_at.isoformat() if notification.read_at else None,
-            "dismissed_at": notification.dismissed_at.isoformat() if notification.dismissed_at else None,
-            "created_at"  : notification.created_at.isoformat(),
+            "read_at": notification.read_at.isoformat() if notification.read_at else None,
+            "dismissed_at": notification.dismissed_at.isoformat()
+            if notification.dismissed_at
+            else None,
+            "created_at": notification.created_at.isoformat(),
         }
-

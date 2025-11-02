@@ -1,16 +1,17 @@
 # Quickstart: Phase 2 - Data Discovery & Analytics
 
-**Feature Branch**: `002-data-discovery-analytics`  
-**Date**: 2025-10-22  
+**Feature Branch**: `002-data-discovery-analytics`\
+**Date**: 2025-10-22\
 **Status**: Ready for Implementation
 
----
+______________________________________________________________________
 
 ## Overview
 
-This quickstart guide covers setting up the development environment, running the Phase 2 implementation, and verifying analytics, search, and recommendation features.
+This quickstart guide covers setting up the development environment, running the Phase 2
+implementation, and verifying analytics, search, and recommendation features.
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
@@ -29,7 +30,7 @@ This quickstart guide covers setting up the development environment, running the
   - 1000 requests/day on free tier
   - Not required (local embeddings work by default)
 
----
+______________________________________________________________________
 
 ## Setup Instructions
 
@@ -60,6 +61,7 @@ uv run aiwebfeeds --version
 ```
 
 **Installed Dependencies** (from `pyproject.toml`):
+
 - `sqlmodel` - Type-safe ORM
 - `sentence-transformers` - Local embeddings
 - `scikit-learn` - Collaborative filtering (Phase 2)
@@ -83,6 +85,7 @@ pnpm next --version  # Should be 15+
 ```
 
 **Installed Dependencies** (from `package.json`):
+
 - `next@15` - React framework
 - `react@19` - UI library
 - `tailwindcss@4` - CSS framework
@@ -102,6 +105,7 @@ nano .env
 ```
 
 **Required Configuration**:
+
 ```bash
 # Database
 AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
@@ -119,6 +123,7 @@ AIWF_DATA_DIR=data
 ```
 
 **Optional Configuration** (Embedding Provider):
+
 ```bash
 # Embedding settings (local is default)
 AIWF_EMBEDDING__PROVIDER=local  # "local" or "huggingface"
@@ -131,6 +136,7 @@ AIWF_EMBEDDING__HF_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ```
 
 **Optional Configuration** (Analytics Caching):
+
 ```bash
 # Analytics settings
 AIWF_ANALYTICS__STATIC_CACHE_TTL=3600   # 1 hour
@@ -152,13 +158,14 @@ uv run aiwebfeeds db stats
 ```
 
 **Expected Output**:
+
 ```
 ✓ Database initialized: data/aiwebfeeds.db
 ✓ Loaded 1000 feeds from data/feeds.yaml
 ✓ Tables: sources(1000), validations(0), embeddings(0)
 ```
 
----
+______________________________________________________________________
 
 ## Development Workflow
 
@@ -215,6 +222,7 @@ uv run python -c "from ai_web_feeds.storage import DatabaseManager; db = Databas
 ```
 
 **Optional: Test Hugging Face API**
+
 ```bash
 # Set HF API token in .env
 AIWF_EMBEDDING__PROVIDER=huggingface
@@ -263,11 +271,13 @@ pnpm dev
 ```
 
 **Test Routes**:
+
 - `/analytics` - Analytics dashboard
 - `/search` - Search interface
 - `/recommendations` - Recommendations page
 
 **API Routes** (test with curl):
+
 ```bash
 # Analytics summary
 curl "http://localhost:3000/api/analytics/summary?date_range=30d"
@@ -279,7 +289,7 @@ curl "http://localhost:3000/api/search?q=transformer&search_type=full_text"
 curl "http://localhost:3000/api/recommendations?user_id=test-user&limit=10"
 ```
 
----
+______________________________________________________________________
 
 ## Verification Checklist
 
@@ -288,7 +298,8 @@ curl "http://localhost:3000/api/recommendations?user_id=test-user&limit=10"
 #### Analytics Dashboard
 
 - [ ] Dashboard loads within 2 seconds on 4G connection
-- [ ] Displays key metrics: total feeds, success rate, avg response time, health distribution
+- [ ] Displays key metrics: total feeds, success rate, avg response time, health
+  distribution
 - [ ] Time range filters work (7d, 30d, 90d, custom)
 - [ ] Topic filter dropdown populated from topics.yaml
 - [ ] Trending topics chart shows top 10 topics ranked by validation frequency
@@ -333,6 +344,7 @@ uv run pytest tests/ --cov --cov-report=html
 ```
 
 **Test Breakdown**:
+
 - `test_analytics.py` - Analytics calculation, caching, trending topics
 - `test_search.py` - Full-text search, FTS5 index, autocomplete
 - `test_embeddings.py` - Local embeddings, HF API embeddings, hybrid fallback
@@ -346,15 +358,16 @@ uv run python scripts/benchmark_phase1.py
 ```
 
 **Expected Performance**:
-| Operation | Target | Actual |
-|-----------|--------|--------|
-| Analytics dashboard load | <2s | ___ |
-| Search autocomplete | <200ms | ___ |
-| Full-text search | <500ms | ___ |
-| Semantic search | <3s | ___ |
-| Recommendation generation | <1s | ___ |
 
----
+| Operation                 | Target  | Actual |
+| ------------------------- | ------- | ------ |
+| Analytics dashboard load  | \<2s    | \_\_\_ |
+| Search autocomplete       | \<200ms | \_\_\_ |
+| Full-text search          | \<500ms | \_\_\_ |
+| Semantic search           | \<3s    | \_\_\_ |
+| Recommendation generation | \<1s    | \_\_\_ |
+
+______________________________________________________________________
 
 ## Common Issues & Troubleshooting
 
@@ -363,6 +376,7 @@ uv run python scripts/benchmark_phase1.py
 **Symptom**: `sqlite3.OperationalError: database is locked`
 
 **Solution**:
+
 ```bash
 # Enable WAL mode (should be automatic, but verify)
 uv run python -c "from ai_web_feeds.storage import DatabaseManager; db = DatabaseManager(); db.enable_wal_mode()"
@@ -373,6 +387,7 @@ uv run python -c "from ai_web_feeds.storage import DatabaseManager; db = Databas
 **Symptom**: >200ms per feed for local embeddings
 
 **Solution**:
+
 ```bash
 # Use HF API for faster embedding generation (optional)
 AIWF_EMBEDDING__PROVIDER=huggingface
@@ -386,6 +401,7 @@ uv run aiwebfeeds embeddings generate --batch-size 64
 **Symptom**: Semantic search always returns 0 results
 
 **Solution**:
+
 ```bash
 # Verify embeddings are generated
 uv run python -c "from ai_web_feeds.storage import DatabaseManager; db = DatabaseManager(); print(f'Embeddings: {db.get_embedding_count()}')"
@@ -399,6 +415,7 @@ uv run aiwebfeeds embeddings generate --provider local
 **Symptom**: Full-text search missing obvious matches
 
 **Solution**:
+
 ```bash
 # Rebuild FTS5 index
 uv run aiwebfeeds search rebuild-index
@@ -412,6 +429,7 @@ uv run python -c "import sqlite3; conn = sqlite3.connect('data/aiwebfeeds.db'); 
 **Symptom**: Analytics dashboard shows "Loading..." indefinitely
 
 **Solution**:
+
 ```bash
 # Check API route logs
 cd apps/web
@@ -423,25 +441,31 @@ curl http://localhost:3000/api/analytics/summary
 # Verify database path in .env matches actual database location
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 Once Phase 2 implementation is complete and all acceptance criteria are met:
 
 1. **Run `/speckit.analyze`** to perform cross-artifact consistency check
-2. **Fix any identified issues** from the analysis report
-3. **Merge to main** after code review and CI/CD pipeline passes
-4. **Deploy to production** (optional, staging first recommended)
-5. **Monitor metrics** for first 30 days:
+
+1. **Fix any identified issues** from the analysis report
+
+1. **Merge to main** after code review and CI/CD pipeline passes
+
+1. **Deploy to production** (optional, staging first recommended)
+
+1. **Monitor metrics** for first 30 days:
+
    - Analytics dashboard usage (target: 80% weekly curator engagement)
    - Search CTR (target: ≥40%)
    - Recommendation CTR (target: ≥15%)
-   - Zero-result queries (target: <30%)
+   - Zero-result queries (target: \<30%)
 
-6. **Iterate based on feedback** and prepare for Phase 3 (User Accounts & Collaborative Filtering)
+1. **Iterate based on feedback** and prepare for Phase 3 (User Accounts & Collaborative
+   Filtering)
 
----
+______________________________________________________________________
 
 ## Additional Resources
 
@@ -450,18 +474,20 @@ Once Phase 2 implementation is complete and all acceptance criteria are met:
 - **Technology Research**: [`research.md`](./research.md)
 - **Data Model**: [`data-model.md`](./data-model.md)
 - **API Contracts**: [`contracts/openapi.yaml`](./contracts/openapi.yaml)
-- **Project Constitution**: [`/.specify/memory/constitution.md`](/.specify/memory/constitution.md)
-- **Core Package Docs**: [`packages/ai_web_feeds/AGENTS.md`](../../packages/ai_web_feeds/AGENTS.md)
+- **Project Constitution**:
+  [`/.specify/memory/constitution.md`](/.specify/memory/constitution.md)
+- **Core Package Docs**:
+  [`packages/ai_web_feeds/AGENTS.md`](../../packages/ai_web_feeds/AGENTS.md)
 - **Web App Docs**: [`apps/web/AGENTS.md`](../../apps/web/AGENTS.md)
 
----
+______________________________________________________________________
 
 **Need Help?**
+
 - Open an issue: [GitHub Issues](https://github.com/wyattowalsh/ai-web-feeds/issues)
 - Read the contributing guide: [`CONTRIBUTING.md`](/CONTRIBUTING.md)
 - Check the FAQ: [aiwebfeeds.com/docs/faq](https://aiwebfeeds.com/docs/faq)
 
----
+______________________________________________________________________
 
 **Version**: 0.2.0 (Phase 2) | **Last Updated**: 2025-10-22
-

@@ -1,51 +1,54 @@
 # Test Coverage Checklist
 
-**Feature**: Phase 1 - Data Discovery & Analytics  
-**Branch**: `002-data-discovery-analytics`  
+**Feature**: Phase 1 - Data Discovery & Analytics\
+**Branch**: `002-data-discovery-analytics`\
 **Target**: ≥90% coverage per constitution (Principle IV)
 
----
+______________________________________________________________________
 
 ## Module Coverage Targets
 
 ### Phase 3: US1 Analytics
 
-| Module | Functions | Unit Tests | Integration Tests | Coverage Target | Current |
-|--------|-----------|------------|-------------------|-----------------|---------|
-| `analytics.py` | 7 | T060a-g | T060h-j | ≥90% | ☐ |
-| `storage.py` (analytics extensions) | 4 | Covered in analytics tests | T060h | ≥90% | ☐ |
-| **Total** | **11** | **7** | **3** | **≥90%** | **☐** |
+| Module                              | Functions | Unit Tests                 | Integration Tests | Coverage Target | Current |
+| ----------------------------------- | --------- | -------------------------- | ----------------- | --------------- | ------- |
+| `analytics.py`                      | 7         | T060a-g                    | T060h-j           | ≥90%            | ☐       |
+| `storage.py` (analytics extensions) | 4         | Covered in analytics tests | T060h             | ≥90%            | ☐       |
+| **Total**                           | **11**    | **7**                      | **3**             | **≥90%**        | **☐**   |
 
 **Files to Create**:
+
 - [ ] `tests/tests/packages/ai_web_feeds/test_analytics.py`
 
 ### Phase 4: US2 Search & Discovery
 
-| Module | Functions | Unit Tests | Integration Tests | Coverage Target | Current |
-|--------|-----------|------------|-------------------|-----------------|---------|
-| `embeddings.py` | 6 | T117a-f | T117r | ≥90% | ☐ |
-| `search.py` | 9 | T117g-l | T117q, T117s | ≥90% | ☐ |
-| `autocomplete.py` | 4 | T117m-p | - | ≥90% | ☐ |
-| `storage.py` (search extensions) | 5 | Covered in search tests | T117t | ≥90% | ☐ |
-| **Total** | **24** | **16** | **4** | **≥90%** | **☐** |
+| Module                           | Functions | Unit Tests              | Integration Tests | Coverage Target | Current |
+| -------------------------------- | --------- | ----------------------- | ----------------- | --------------- | ------- |
+| `embeddings.py`                  | 6         | T117a-f                 | T117r             | ≥90%            | ☐       |
+| `search.py`                      | 9         | T117g-l                 | T117q, T117s      | ≥90%            | ☐       |
+| `autocomplete.py`                | 4         | T117m-p                 | -                 | ≥90%            | ☐       |
+| `storage.py` (search extensions) | 5         | Covered in search tests | T117t             | ≥90%            | ☐       |
+| **Total**                        | **24**    | **16**                  | **4**             | **≥90%**        | **☐**   |
 
 **Files to Create**:
+
 - [ ] `tests/tests/packages/ai_web_feeds/test_embeddings.py`
 - [ ] `tests/tests/packages/ai_web_feeds/test_search.py`
 - [ ] `tests/tests/packages/ai_web_feeds/test_autocomplete.py`
 
 ### Phase 5: US3 Recommendations
 
-| Module | Functions | Unit Tests | Integration Tests | Coverage Target | Current |
-|--------|-----------|------------|-------------------|-----------------|---------|
-| `recommendations.py` | 12 | T156a-j | T156k | ≥90% | ☐ |
-| `storage.py` (recommendations extensions) | 3 | Covered in recommendations tests | T156l, T156m | ≥90% | ☐ |
-| **Total** | **15** | **10** | **3** | **≥90%** | **☐** |
+| Module                                    | Functions | Unit Tests                       | Integration Tests | Coverage Target | Current |
+| ----------------------------------------- | --------- | -------------------------------- | ----------------- | --------------- | ------- |
+| `recommendations.py`                      | 12        | T156a-j                          | T156k             | ≥90%            | ☐       |
+| `storage.py` (recommendations extensions) | 3         | Covered in recommendations tests | T156l, T156m      | ≥90%            | ☐       |
+| **Total**                                 | **15**    | **10**                           | **3**             | **≥90%**        | **☐**   |
 
 **Files to Create**:
+
 - [ ] `tests/tests/packages/ai_web_feeds/test_recommendations.py`
 
----
+______________________________________________________________________
 
 ## Per-Function Test Checklist
 
@@ -54,35 +57,40 @@
 For each function, ensure these test scenarios exist:
 
 #### Happy Path Tests
+
 - [ ] Test with typical valid input
 - [ ] Test with minimal valid input
 - [ ] Test with maximal valid input
 
 #### Edge Case Tests
+
 - [ ] Test with empty input (if applicable)
 - [ ] Test with single-item input (if applicable)
 - [ ] Test with boundary values (0, -1, MAX_INT, etc.)
 - [ ] Test with Unicode/special characters (if string handling)
 
 #### Error Condition Tests
+
 - [ ] Test with invalid input types
 - [ ] Test with null/None input
 - [ ] Test with out-of-range values
 - [ ] Test with malformed data
 
 #### Concurrency Tests (if applicable)
+
 - [ ] Test with concurrent reads
 - [ ] Test with concurrent writes
 - [ ] Test for race conditions
 - [ ] Test for deadlocks
 
 #### Performance Tests (if critical path)
+
 - [ ] Test with small dataset (< 100 items)
 - [ ] Test with medium dataset (1K-10K items)
 - [ ] Test with large dataset (50K+ items)
 - [ ] Verify O(n) complexity claims
 
----
+______________________________________________________________________
 
 ## Test Quality Criteria
 
@@ -91,7 +99,8 @@ For each function, ensure these test scenarios exist:
 - [ ] **Isolation**: All external dependencies mocked (network, DB, filesystem, time)
 - [ ] **Determinism**: Tests pass consistently (no flaky tests)
 - [ ] **Speed**: Unit tests complete in < 1 second each
-- [ ] **Clarity**: Test names follow `test_<function>_<scenario>_<expected_outcome>` format
+- [ ] **Clarity**: Test names follow `test_<function>_<scenario>_<expected_outcome>`
+  format
 - [ ] **Specificity**: Assertions are precise (not just `assert result`)
 - [ ] **Independence**: Tests can run in any order
 
@@ -105,12 +114,13 @@ For each function, ensure these test scenarios exist:
 
 ### Property-Based Test Requirements (using Hypothesis)
 
-- [ ] **Strategies**: Use appropriate Hypothesis strategies (`st.text()`, `st.integers()`, etc.)
+- [ ] **Strategies**: Use appropriate Hypothesis strategies (`st.text()`,
+  `st.integers()`, etc.)
 - [ ] **Invariants**: Test properties that should always hold
 - [ ] **Edge Cases**: Let Hypothesis discover edge cases automatically
 - [ ] **Shrinking**: Verify minimal failing examples are reported
 
----
+______________________________________________________________________
 
 ## Coverage Measurement Commands
 
@@ -151,7 +161,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=term-missing
 uv run pytest --cov=ai_web_feeds --cov-report=json -o tests/reports/coverage.json
 ```
 
----
+______________________________________________________________________
 
 ## Coverage Enforcement
 
@@ -179,7 +189,7 @@ uv run pytest --cov=ai_web_feeds --cov-fail-under=90
     fail_ci_if_error: true
 ```
 
----
+______________________________________________________________________
 
 ## Coverage Gaps Analysis
 
@@ -196,14 +206,14 @@ uv run pytest --cov=ai_web_feeds --cov-report=annotate
 ### Common Reasons for Coverage Gaps
 
 1. **Error handling branches**: Test with invalid inputs to trigger `except` blocks
-2. **Edge case branches**: Test boundary conditions to trigger `if` conditions
-3. **Defensive code**: Test with None, empty, or malformed data
-4. **Async code**: Ensure all `await` paths are tested
-5. **Configuration code**: Test with different config values
+1. **Edge case branches**: Test boundary conditions to trigger `if` conditions
+1. **Defensive code**: Test with None, empty, or malformed data
+1. **Async code**: Ensure all `await` paths are tested
+1. **Configuration code**: Test with different config values
 
 ### Acceptable Coverage Exceptions
 
-The following may have <90% coverage with justification:
+The following may have \<90% coverage with justification:
 
 - [ ] **Generated code**: Auto-generated files (migrations, protobuf)
 - [ ] **Trivial code**: Simple getters/setters with no logic
@@ -212,28 +222,28 @@ The following may have <90% coverage with justification:
 
 **Document exceptions in**: `tests/COVERAGE_EXCEPTIONS.md`
 
----
+______________________________________________________________________
 
 ## Test Execution Matrix
 
 ### By Test Type
 
-| Test Type | Command | Expected Duration | Pass Criteria |
-|-----------|---------|-------------------|---------------|
-| **Unit** | `uv run pytest -m unit` | < 30 seconds | 100% pass |
-| **Integration** | `uv run pytest -m integration` | < 2 minutes | 100% pass |
-| **E2E** | `uv run pytest -m e2e` | < 5 minutes | 100% pass |
-| **Property-Based** | `uv run pytest -m property` | < 1 minute | 100% pass |
+| Test Type          | Command                        | Expected Duration | Pass Criteria |
+| ------------------ | ------------------------------ | ----------------- | ------------- |
+| **Unit**           | `uv run pytest -m unit`        | < 30 seconds      | 100% pass     |
+| **Integration**    | `uv run pytest -m integration` | < 2 minutes       | 100% pass     |
+| **E2E**            | `uv run pytest -m e2e`         | < 5 minutes       | 100% pass     |
+| **Property-Based** | `uv run pytest -m property`    | < 1 minute        | 100% pass     |
 
 ### By Phase
 
-| Phase | Test Files | Task IDs | Coverage Target |
-|-------|------------|----------|-----------------|
-| **Phase 3 (Analytics)** | `test_analytics.py` | T060a-j | ≥90% |
-| **Phase 4 (Search)** | `test_embeddings.py`, `test_search.py`, `test_autocomplete.py` | T117a-t | ≥90% |
-| **Phase 5 (Recommendations)** | `test_recommendations.py` | T156a-m | ≥90% |
+| Phase                         | Test Files                                                     | Task IDs | Coverage Target |
+| ----------------------------- | -------------------------------------------------------------- | -------- | --------------- |
+| **Phase 3 (Analytics)**       | `test_analytics.py`                                            | T060a-j  | ≥90%            |
+| **Phase 4 (Search)**          | `test_embeddings.py`, `test_search.py`, `test_autocomplete.py` | T117a-t  | ≥90%            |
+| **Phase 5 (Recommendations)** | `test_recommendations.py`                                      | T156a-m  | ≥90%            |
 
----
+______________________________________________________________________
 
 ## Coverage Reporting
 
@@ -265,7 +275,7 @@ The following may have <90% coverage with justification:
 - ✅ All integration tests passing consistently
 ```
 
----
+______________________________________________________________________
 
 ## Quick Reference
 
@@ -290,8 +300,8 @@ The following may have <90% coverage with justification:
 ### When to Write Tests
 
 1. **Before code** (TDD): Write failing test → Implement → Test passes ✅
-2. **With code** (concurrent): Implement function → Write tests immediately ✅
-3. **After code** (reactive): Implement → Tests later ⚠️ (not recommended)
+1. **With code** (concurrent): Implement function → Write tests immediately ✅
+1. **After code** (reactive): Implement → Tests later ⚠️ (not recommended)
 
-**Constitution Principle IV**: "Tests MUST be written before or concurrently with implementation"
-
+**Constitution Principle IV**: "Tests MUST be written before or concurrently with
+implementation"

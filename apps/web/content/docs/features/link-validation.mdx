@@ -4,11 +4,11 @@ description: Ensure all links in your documentation are correct and working
 icon: Link
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Link as LinkIcon, Hash, FileText, FolderOpen } from 'lucide-react';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { Link as LinkIcon, Hash, FileText, FolderOpen } from "lucide-react";
 
 Automatically validate all links in your documentation to ensure they're correct and working.
 
@@ -17,22 +17,10 @@ Automatically validate all links in your documentation to ensure they're correct
 Link validation uses [`next-validate-link`](https://next-validate-link.vercel.app) to check:
 
 <Cards>
-  <Card icon={<Link />}>
-    **Internal Links**
-    Links between documentation pages
-  </Card>
-  <Card icon={<Hash />}>
-    **Anchor Links**
-    Links to headings within pages
-  </Card>
-  <Card icon={<FileText />}>
-    **MDX Components**
-    Links in Cards and other components
-  </Card>
-  <Card icon={<FolderOpen />}>
-    **Relative Paths**
-    File path references
-  </Card>
+  <Card icon={<Link />}>**Internal Links** Links between documentation pages</Card>
+  <Card icon={<Hash />}>**Anchor Links** Links to headings within pages</Card>
+  <Card icon={<FileText />}>**MDX Components** Links in Cards and other components</Card>
+  <Card icon={<FolderOpen />}>**Relative Paths** File path references</Card>
 </Cards>
 
 ## Features
@@ -53,23 +41,26 @@ Link validation uses [`next-validate-link`](https://next-validate-link.vercel.ap
     ```bash
     pnpm lint:links
     ```
-    
+
     Uses the Node.js/tsx runtime (no additional installation required).
+
   </Tab>
   <Tab value="Bun">
     ```bash
     # Install Bun first (if not already installed)
     curl -fsSL https://bun.sh/install | bash
-    
+
     # Run with Bun
     pnpm lint:links:bun
     ```
-    
+
     Uses the Bun runtime for faster execution.
+
   </Tab>
 </Tabs>
 
 This will scan all documentation files and validate:
+
 - Links to other documentation pages
 - Anchor links to headings
 - Links in Card components
@@ -78,6 +69,7 @@ This will scan all documentation files and validate:
 ### Expected Output
 
 **All links valid:**
+
 ```
 🔍 Scanning URLs and validating links...
 
@@ -85,6 +77,7 @@ This will scan all documentation files and validate:
 ```
 
 **Broken links found:**
+
 ```
 🔍 Scanning URLs and validating links...
 
@@ -151,12 +144,13 @@ apps/web/
       });
 
       printErrors(errors, true);
-      
+
       if (errors.length > 0) {
         process.exit(1);
       }
     }
     ```
+
   </Tab>
   <Tab value="Bun (Optional)">
     The `scripts/lint.ts` file runs with Bun runtime:
@@ -193,36 +187,33 @@ apps/web/
       });
 
       printErrors(errors, true);
-      
+
       if (errors.length > 0) {
         process.exit(1);
       }
     }
     ```
-    
+
     Requires Bun preload setup (see below).
+
   </Tab>
 </Tabs>
 
 ### Bun Runtime Loader
 
-<Callout type="info">
-  Only required if using the Bun runtime (`pnpm lint:links:bun`). The default Node.js version doesn't need this.
-</Callout>
+<Callout type="info">Only required if using the Bun runtime (`pnpm lint:links:bun`). The default Node.js version doesn't need this.</Callout>
 
 The `scripts/preload.ts` enables MDX processing in Bun:
 
 ```typescript title="scripts/preload.ts"
-import { createMdxPlugin } from 'fumadocs-mdx/bun';
+import { createMdxPlugin } from "fumadocs-mdx/bun";
 
 Bun.plugin(createMdxPlugin());
 ```
 
 ### Bun Configuration
 
-<Callout type="info">
-  Only required for Bun runtime. Not needed for default Node.js execution.
-</Callout>
+<Callout type="info">Only required for Bun runtime. Not needed for default Node.js execution.</Callout>
 
 The `bunfig.toml` loads the preload script:
 
@@ -289,14 +280,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-      
+
       - name: Install dependencies
         run: pnpm install
-        
+
       - name: Validate links
         run: pnpm lint:links
 ```
@@ -333,11 +324,11 @@ const errors = await validateFiles(await getFiles(), {
   scanned,
   markdown: {
     components: {
-      Card: { attributes: ['href'] },
+      Card: { attributes: ["href"] },
     },
   },
-  checkRelativePaths: 'as-url',
-  
+  checkRelativePaths: "as-url",
+
   // Custom filter
   filter: (file) => {
     // Skip draft files
@@ -353,18 +344,18 @@ Skip certain files or paths:
 ```typescript title="scripts/lint.ts"
 async function getFiles(): Promise<FileObject[]> {
   const allPages = source.getPages();
-  
+
   // Filter out test files
-  const pages = allPages.filter(
-    (page) => !page.absolutePath.includes('/test/')
+  const pages = allPages.filter((page) => !page.absolutePath.includes("/test/"));
+
+  const promises = pages.map(
+    async (page): Promise<FileObject> => ({
+      path: page.absolutePath,
+      content: await page.data.getText("raw"),
+      url: page.url,
+      data: page.data,
+    }),
   );
-  
-  const promises = pages.map(async (page): Promise<FileObject> => ({
-    path: page.absolutePath,
-    content: await page.data.getText('raw'),
-    url: page.url,
-    data: page.data,
-  }));
 
   return Promise.all(promises);
 }
@@ -377,27 +368,30 @@ async function getFiles(): Promise<FileObject[]> {
 <Tabs items={['Internal Links', 'Anchor Links', 'Component Links']}>
   <Tab value="Internal Links">
     **Problem:** Link to `/docs/invalid-page` not found
-    
+
     **Solutions:**
     - Check the page exists in `content/docs/`
     - Verify the URL path matches the file structure
     - Ensure `meta.json` includes the page
+
   </Tab>
   <Tab value="Anchor Links">
     **Problem:** Anchor `#section-name` not found
-    
+
     **Solutions:**
     - Check heading exists in target page
     - Verify anchor matches heading slug
     - Headings are auto-slugified (spaces become `-`)
+
   </Tab>
   <Tab value="Component Links">
     **Problem:** Card href `/docs/page` not found
-    
+
     **Solutions:**
     - Verify Card component uses `href` attribute
     - Check link target exists
     - Add component to validation config if custom
+
   </Tab>
 </Tabs>
 
@@ -406,20 +400,26 @@ async function getFiles(): Promise<FileObject[]> {
 Some links may be valid but flagged as errors:
 
 **External Links**
+
 ```mdx
 <!-- External links are not validated by default -->
+
 [GitHub](https://github.com/user/repo)
 ```
 
 **Dynamic Routes**
+
 ```mdx
 <!-- May need manual configuration for complex routes -->
+
 [User Profile](/users/[id])
 ```
 
 **API Routes**
+
 ```mdx
 <!-- API routes may not be scanned -->
+
 [Search API](/api/search)
 ```
 
@@ -427,13 +427,15 @@ Some links may be valid but flagged as errors:
 
 <Callout type="info">
   The default `pnpm lint:links` command uses Node.js/tsx and doesn't require Bun.
-  
-  If you want to use the faster Bun runtime, install it:
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-  
-  Then use: `pnpm lint:links:bun`
+
+If you want to use the faster Bun runtime, install it:
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Then use: `pnpm lint:links:bun`
+
 </Callout>
 
 ### Script Errors
@@ -491,9 +493,11 @@ Keep a consistent link style:
 
 ```mdx
 <!-- Good: Absolute paths -->
+
 [Features](/docs/features/pdf-export)
 
 <!-- Avoid: Relative paths for internal links -->
+
 [Features](../features/pdf-export)
 ```
 
@@ -526,6 +530,7 @@ pnpm lint:links
 ```
 
 **Expected output:**
+
 ```
 ❌ /Users/.../content/docs/test.mdx
   Line 6: Link to /docs/does-not-exist not found
@@ -548,10 +553,12 @@ This anchor is broken: [Missing Section](#does-not-exist)
 ### Optimization Tips
 
 1. **Cache Results**
+
    - Validation results can be cached between runs
    - Only re-validate changed files
 
 2. **Parallel Processing**
+
    - Script processes files in parallel
    - Scales with CPU cores
 
@@ -564,11 +571,11 @@ This anchor is broken: [Missing Section](#does-not-exist)
 Typical validation times:
 
 | Pages | Time |
-|-------|------|
-| 10 | ~2s |
-| 50 | ~5s |
-| 100 | ~10s |
-| 500 | ~30s |
+| ----- | ---- |
+| 10    | ~2s  |
+| 50    | ~5s  |
+| 100   | ~10s |
+| 500   | ~30s |
 
 ## Related Documentation
 

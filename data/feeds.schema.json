@@ -53,7 +53,7 @@
       "additionalProperties": false,
       "required": ["url", "topics"],
       "properties": {
-        "url":    { 
+        "url":    {
           "$ref": "#/$defs/http_uri",
           "description": "Any URL: direct RSS/Atom feed, website homepage, or platform URL (x.com/username, youtube.com/channel/ID, reddit.com/r/subreddit, github.com/owner/repo, etc.). System auto-detects platform and enriches."
         },
@@ -65,14 +65,14 @@
           "items": { "$ref": "#/$defs/topic_id" },
           "description": "1-6 topic IDs from topics.yaml that categorize this source."
         },
-        "title":  { 
-          "type": "string", 
-          "minLength": 1, 
+        "title":  {
+          "type": "string",
+          "minLength": 1,
           "maxLength": 160,
           "description": "Optional custom title. If not provided, title will be auto-extracted from the feed during enrichment."
         },
-        "notes":  { 
-          "type": "string", 
+        "notes":  {
+          "type": "string",
           "maxLength": 500,
           "description": "Optional contributor notes about this source (quality, update frequency, special considerations, etc.)"
         }

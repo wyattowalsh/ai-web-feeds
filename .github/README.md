@@ -1,8 +1,10 @@
 # GitHub Infrastructure
 
-All documentation for GitHub workflows, issue templates, and automation has been integrated into the main documentation site.
+All documentation for GitHub workflows, issue templates, and automation has been
+integrated into the main documentation site.
 
-📖 **[View Full Documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure)**
+📖
+**[View Full Documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure)**
 
 ## Quick Links
 
@@ -24,4 +26,6 @@ python scripts/test-feed-submission.py \
   --source-type "blog"
 ```
 
-See the [full documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure#helper-scripts) for more details.
+See the
+[full documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure#helper-scripts)
+for more details.

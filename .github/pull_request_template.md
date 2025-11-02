@@ -8,7 +8,8 @@
 
 - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
 - [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not
+  work as expected)
 - [ ] 📝 Documentation update
 - [ ] 🔖 Feed addition/update
 - [ ] 🎨 Code style/formatting
@@ -22,8 +23,7 @@
 
 <!-- Link related issues here using #issue_number -->
 
-Fixes #
-Relates to #
+Fixes # Relates to #
 
 ## Changes Made
 
@@ -71,8 +71,8 @@ uv run aiwebfeeds --help
 <!-- Describe specific test cases -->
 
 1.
-2.
-3.
+1.
+1.
 
 ## Documentation
 
@@ -91,7 +91,8 @@ uv run aiwebfeeds --help
 - [ ] Feed entry validates against `feeds.schema.json`
 - [ ] Topics are from canonical `topics.yaml` list
 - [ ] Platform configuration is correct (if applicable)
-- [ ] Feed URL is accessible and working (tested with `uv run aiwebfeeds validate --feeds <url>`)
+- [ ] Feed URL is accessible and working (tested with
+  `uv run aiwebfeeds validate --feeds <url>`)
 - [ ] Feed ID is unique and follows naming conventions
 - [ ] Feed parsing succeeds (`uv run aiwebfeeds fetch --url <url>`)
 
@@ -148,7 +149,8 @@ uv run aiwebfeeds <command>
 - [ ] Workflow YAML is valid
 - [ ] Workflow uses CLI commands (not duplicated logic)
 - [ ] Workflow has proper error messages
-- [ ] Workflow documentation updated in `apps/web/content/docs/development/workflows.mdx`
+- [ ] Workflow documentation updated in
+  `apps/web/content/docs/development/workflows.mdx`
 
 ## Checklist
 
@@ -211,7 +213,7 @@ uv run aiwebfeeds <command>
 - [ ] Performance is acceptable
 - [ ] Breaking changes are documented
 
----
+______________________________________________________________________
 
 **Automated Checks**: This PR will automatically run:
 

@@ -1,6 +1,6 @@
 /**
  * GET /api/trending - Get current trending topics
- * 
+ *
  * Query params:
  * - limit: Max topics to return (default: 10)
  */
@@ -13,13 +13,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/trending?limit=${limit}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = await fetch(`${backendUrl}/storage/trending?limit=${limit}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
 
     if (!response.ok) {
       throw new Error(`Backend responded with ${response.status}`);
@@ -35,12 +32,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Failed to fetch trending topics:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch trending topics",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

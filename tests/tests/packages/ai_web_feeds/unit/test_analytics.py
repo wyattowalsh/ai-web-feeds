@@ -1,7 +1,8 @@
 """Unit tests for ai_web_feeds.analytics module."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 @pytest.mark.unit
@@ -12,6 +13,7 @@ class TestAnalytics:
         """Test that analytics module can be imported."""
         try:
             from ai_web_feeds import analytics
+
             assert analytics is not None
         except ImportError:
             pytest.skip("Analytics module not yet implemented")
@@ -20,14 +22,14 @@ class TestAnalytics:
         """Test feed health score calculation."""
         try:
             from ai_web_feeds.analytics import calculate_feed_health_score
-            
+
             # Mock feed with good metrics
             score = calculate_feed_health_score(
                 recent_fetches=10,
                 success_rate=0.95,
                 avg_items_per_fetch=15,
             )
-            
+
             assert 0.0 <= score <= 1.0
             assert score > 0.7  # Should be healthy
         except ImportError:
@@ -37,13 +39,10 @@ class TestAnalytics:
         """Test update frequency calculation."""
         try:
             from ai_web_feeds.analytics import calculate_update_frequency
-            
+
             # Daily updates
-            timestamps = [
-                datetime.now() - timedelta(days=i)
-                for i in range(7)
-            ]
-            
+            timestamps = [datetime.now() - timedelta(days=i) for i in range(7)]
+
             frequency = calculate_update_frequency(timestamps)
             assert frequency is not None
         except ImportError:
@@ -58,7 +57,7 @@ class TestFeedStatistics:
         """Test calculating statistics for a feed."""
         try:
             from ai_web_feeds.analytics import calculate_feed_statistics
-            
+
             stats = calculate_feed_statistics(sample_feed_source)
             assert stats is not None
         except ImportError:
@@ -73,7 +72,7 @@ class TestTopicStatistics:
         """Test calculating statistics for a topic."""
         try:
             from ai_web_feeds.analytics import calculate_topic_statistics
-            
+
             stats = calculate_topic_statistics(sample_topic)
             assert stats is not None
         except ImportError:

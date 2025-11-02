@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { isMarkdownPreferred, rewritePath } from 'fumadocs-core/negotiation';
+import { NextRequest, NextResponse } from "next/server";
+import { isMarkdownPreferred, rewritePath } from "fumadocs-core/negotiation";
 
-const { rewrite: rewriteLLM } = rewritePath('/docs/*path', '/llms.mdx/*path');
+const { rewrite: rewriteLLM } = rewritePath("/docs/*path", "/llms.mdx/*path");
 
 export function middleware(request: NextRequest) {
   // Check if client prefers markdown content (AI agents typically do)
@@ -26,6 +26,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - llms (already markdown routes)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|llms).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|llms).*)",
   ],
 };

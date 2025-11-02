@@ -119,3 +119,47 @@ directory = "reports/coverage"
 [tool.pytest_timeout]
 timeout = 300
 timeout_method = "thread"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF"]
+ignore = ["ANN101", "ANN102", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files: Allow test-specific patterns
+"tests/**" = [
+    "S101",      # assert statements (required for tests)
+    "PLR2004",   # magic values (common in test data)
+    "ANN",       # type annotations (less critical in tests)
+    "INP001",    # implicit namespace packages (tests structure)
+    "SLF001",    # private member access (testing internals)
+    "DTZ001",    # datetime without tzinfo (test fixtures)
+    "DTZ003",    # datetime.utcnow() (test fixtures)
+    "ARG001",    # unused fixture arguments (pytest pattern)
+    "ARG002",    # unused fixture arguments (pytest pattern)
+    "ARG005",    # unused lambda arguments (test mocks)
+    "S105",      # hardcoded passwords (test data)
+    "S314",      # XML parsing (test data)
+    "T201",      # print statements (benchmark output)
+    "BLE001",    # broad exception catching (test robustness)
+    "E712",      # == True comparisons (explicit test assertions)
+    "SIM105",    # try-except-pass (test error handling)
+    "SIM108",    # if-else-block vs ternary (test clarity)
+    "SIM117",    # nested with statements (test setup)
+    "RUF003",    # ambiguous characters (test comments)
+    "F401",      # unused imports (dynamic CLI imports)
+    "F821",      # undefined names (test isolation)
+    "F841",      # unused variable (benchmark tests)
+    "E501",      # line too long (test output strings)
+    "B017",      # pytest.raises(Exception) (test patterns)
+    "C401",      # unnecessary generator (test clarity)
+    "NPY002",    # numpy legacy (test compatibility)
+    "PTH123",    # open() usage (test files)
+    "RET504",    # unnecessary assignment (test clarity)
+    "S110",      # try-except-pass (test patterns)
+]
+# conftest.py: pytest configuration patterns
+"conftest.py" = ["ANN001", "ANN201"]

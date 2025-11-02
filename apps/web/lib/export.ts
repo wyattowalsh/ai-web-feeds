@@ -1,12 +1,12 @@
 /**
  * Data Export Utilities
- * 
+ *
  * Export all data in various formats:
  * - JSON: Complete backup of all data
  * - CSV: Articles list for spreadsheets
  * - OPML: Feed subscriptions for other readers
  * - HTML: Static website for offline browsing
- * 
+ *
  * All exports generated client-side, no backend required
  */
 
@@ -60,7 +60,7 @@ export async function exportJSON(): Promise<Blob> {
  */
 export async function exportCSV(): Promise<Blob> {
   const allArticles = await articles.getAll();
-  
+
   const headers = [
     'Title',
     'Feed',
@@ -391,4 +391,3 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
-

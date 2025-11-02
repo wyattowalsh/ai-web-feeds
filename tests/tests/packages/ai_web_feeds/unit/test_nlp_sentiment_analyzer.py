@@ -1,9 +1,10 @@
 """Unit tests for Sentiment Analyzer (Phase 5C)"""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from ai_web_feeds.nlp.sentiment_analyzer import SentimentAnalyzer
 from ai_web_feeds.config import Settings
+from ai_web_feeds.nlp.sentiment_analyzer import SentimentAnalyzer
 
 
 class TestSentimentAnalyzer:
@@ -12,7 +13,7 @@ class TestSentimentAnalyzer:
     @pytest.fixture
     def analyzer(self):
         """Create SentimentAnalyzer instance for testing"""
-        with patch('ai_web_feeds.nlp.sentiment_analyzer.pipeline') as mock_pipeline:
+        with patch("ai_web_feeds.nlp.sentiment_analyzer.pipeline") as mock_pipeline:
             # Mock transformer pipeline
             mock_pipe = MagicMock()
             mock_pipeline.return_value = mock_pipe
@@ -27,8 +28,8 @@ class TestSentimentAnalyzer:
             "id": 1,
             "title": "Breakthrough in AI",
             "content": "Researchers have achieved remarkable success with new AI models. "
-                      "The breakthrough technology shows great promise and exceeds expectations. "
-                      "This is an exciting development that will benefit humanity."
+            "The breakthrough technology shows great promise and exceeds expectations. "
+            "This is an exciting development that will benefit humanity.",
         }
 
     @pytest.fixture
@@ -38,8 +39,8 @@ class TestSentimentAnalyzer:
             "id": 2,
             "title": "AI Safety Concerns",
             "content": "Critics have raised serious concerns about AI safety. "
-                      "The dangerous implications of unaligned systems pose significant risks. "
-                      "This alarming trend threatens our future."
+            "The dangerous implications of unaligned systems pose significant risks. "
+            "This alarming trend threatens our future.",
         }
 
     @pytest.fixture
@@ -49,8 +50,8 @@ class TestSentimentAnalyzer:
             "id": 3,
             "title": "AI Research Paper",
             "content": "The paper describes a method for training neural networks. "
-                      "Results show comparable performance to baseline approaches. "
-                      "Further research is needed."
+            "Results show comparable performance to baseline approaches. "
+            "Further research is needed.",
         }
 
     def test_initialization(self, analyzer):
@@ -64,7 +65,7 @@ class TestSentimentAnalyzer:
         settings = Settings()
         settings.phase5.sentiment_model = "custom-model"
 
-        with patch('ai_web_feeds.nlp.sentiment_analyzer.pipeline') as mock_pipeline:
+        with patch("ai_web_feeds.nlp.sentiment_analyzer.pipeline") as mock_pipeline:
             mock_pipe = MagicMock()
             mock_pipeline.return_value = mock_pipe
             analyzer = SentimentAnalyzer(settings)
@@ -74,10 +75,7 @@ class TestSentimentAnalyzer:
     def test_analyze_positive_sentiment(self, analyzer, positive_article):
         """Test positive sentiment classification"""
         # Mock pipeline response
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.92
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.92}]
 
         result = analyzer.analyze_sentiment(positive_article)
 
@@ -89,10 +87,7 @@ class TestSentimentAnalyzer:
     def test_analyze_negative_sentiment(self, analyzer, negative_article):
         """Test negative sentiment classification"""
         # Mock pipeline response
-        analyzer.pipeline.return_value = [{
-            "label": "NEGATIVE",
-            "score": 0.89
-        }]
+        analyzer.pipeline.return_value = [{"label": "NEGATIVE", "score": 0.89}]
 
         result = analyzer.analyze_sentiment(negative_article)
 
@@ -103,20 +98,14 @@ class TestSentimentAnalyzer:
     def test_analyze_neutral_sentiment(self, analyzer, neutral_article):
         """Test neutral sentiment classification"""
         # Mock pipeline response - low confidence positive
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.55
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.55}]
 
         result = analyzer.analyze_sentiment(neutral_article)
 
         # With score 0.55, sentiment_score = 0.55, which is > 0.3, so classified as positive
         # But if we want neutral, we need score < 0.3
         # Let me adjust the test
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.25
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.25}]
 
         result = analyzer.analyze_sentiment(neutral_article)
 
@@ -142,10 +131,7 @@ class TestSentimentAnalyzer:
 
     def test_sentiment_score_range(self, analyzer, positive_article):
         """Test sentiment score is within valid range"""
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.95
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.95}]
 
         result = analyzer.analyze_sentiment(positive_article)
 
@@ -153,10 +139,7 @@ class TestSentimentAnalyzer:
 
     def test_classification_threshold_positive(self, analyzer, positive_article):
         """Test positive classification threshold (>0.3)"""
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.85
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.85}]
 
         result = analyzer.analyze_sentiment(positive_article)
 
@@ -165,10 +148,7 @@ class TestSentimentAnalyzer:
 
     def test_classification_threshold_negative(self, analyzer, negative_article):
         """Test negative classification threshold (<-0.3)"""
-        analyzer.pipeline.return_value = [{
-            "label": "NEGATIVE",
-            "score": 0.78
-        }]
+        analyzer.pipeline.return_value = [{"label": "NEGATIVE", "score": 0.78}]
 
         result = analyzer.analyze_sentiment(negative_article)
 
@@ -177,10 +157,7 @@ class TestSentimentAnalyzer:
 
     def test_classification_threshold_neutral(self, analyzer, neutral_article):
         """Test neutral classification threshold (-0.3 to 0.3)"""
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.20
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.20}]
 
         result = analyzer.analyze_sentiment(neutral_article)
 
@@ -191,13 +168,10 @@ class TestSentimentAnalyzer:
         """Test analysis truncates long content"""
         article = {
             "id": 1,
-            "content": "A" * 10000  # Very long content
+            "content": "A" * 10000,  # Very long content
         }
 
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.80
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.80}]
 
         result = analyzer.analyze_sentiment(article)
 
@@ -210,10 +184,7 @@ class TestSentimentAnalyzer:
 
     def test_model_name_in_result(self, analyzer, positive_article):
         """Test model name is included in result"""
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.85
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.85}]
 
         result = analyzer.analyze_sentiment(positive_article)
 
@@ -222,10 +193,7 @@ class TestSentimentAnalyzer:
 
     def test_confidence_in_result(self, analyzer, positive_article):
         """Test confidence is included and valid"""
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.88
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.88}]
 
         result = analyzer.analyze_sentiment(positive_article)
 
@@ -240,7 +208,7 @@ class TestSentimentEdgeCases:
     @pytest.fixture
     def analyzer(self):
         """Create SentimentAnalyzer instance"""
-        with patch('ai_web_feeds.nlp.sentiment_analyzer.pipeline') as mock_pipeline:
+        with patch("ai_web_feeds.nlp.sentiment_analyzer.pipeline") as mock_pipeline:
             mock_pipe = MagicMock()
             mock_pipeline.return_value = mock_pipe
             analyzer = SentimentAnalyzer()
@@ -271,10 +239,7 @@ class TestSentimentEdgeCases:
         """Test very high confidence positive"""
         article = {"id": 1, "content": "Amazing wonderful fantastic excellent!" * 20}
 
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.99
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.99}]
 
         result = analyzer.analyze_sentiment(article)
 
@@ -285,10 +250,7 @@ class TestSentimentEdgeCases:
         """Test very high confidence negative"""
         article = {"id": 1, "content": "Terrible horrible awful disastrous!" * 20}
 
-        analyzer.pipeline.return_value = [{
-            "label": "NEGATIVE",
-            "score": 0.98
-        }]
+        analyzer.pipeline.return_value = [{"label": "NEGATIVE", "score": 0.98}]
 
         result = analyzer.analyze_sentiment(article)
 
@@ -300,10 +262,7 @@ class TestSentimentEdgeCases:
         article = {"id": 1, "content": "This is okay I guess." * 10}
 
         # Exactly at threshold: 0.31
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.31
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.31}]
 
         result = analyzer.analyze_sentiment(article)
 
@@ -315,10 +274,7 @@ class TestSentimentEdgeCases:
         article = {"id": 1, "content": "This is somewhat concerning." * 10}
 
         # Exactly at threshold: -0.31
-        analyzer.pipeline.return_value = [{
-            "label": "NEGATIVE",
-            "score": 0.31
-        }]
+        analyzer.pipeline.return_value = [{"label": "NEGATIVE", "score": 0.31}]
 
         result = analyzer.analyze_sentiment(article)
 
@@ -327,15 +283,9 @@ class TestSentimentEdgeCases:
 
     def test_unicode_content(self, analyzer):
         """Test sentiment analysis with unicode content"""
-        article = {
-            "id": 1,
-            "content": "This is great! 🎉 Amazing progress in AI research. 🚀" * 10
-        }
+        article = {"id": 1, "content": "This is great! 🎉 Amazing progress in AI research. 🚀" * 10}
 
-        analyzer.pipeline.return_value = [{
-            "label": "POSITIVE",
-            "score": 0.90
-        }]
+        analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.90}]
 
         result = analyzer.analyze_sentiment(article)
 

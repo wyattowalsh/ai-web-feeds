@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import sqlite3
+
 from ai_web_feeds.config import Settings
 
 
@@ -80,10 +81,10 @@ def run_migration_005():
         except sqlite3.OperationalError as e:
             error_msg = str(e).lower()
             # Ignore "already exists" errors, fail on others
-            if 'already exists' not in error_msg and 'duplicate' not in error_msg:
+            if "already exists" not in error_msg and "duplicate" not in error_msg:
                 print(f"❌ Migration error: {e}")
                 raise
-            print(f"⚠️  Skipped already existing objects")
+            print("⚠️  Skipped already existing objects")
         print("✅ Migration 005 completed: NLP tables added")
 
         # Verify tables were created

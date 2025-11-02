@@ -1,33 +1,52 @@
 # Implementation Plan: Client-Side Power Features
 
-**Branch**: `004-client-side-features` | **Date**: 2025-11-01 | **Spec**: `/specs/004-client-side-features/spec.md`
-**Input**: Feature specification from `/specs/004-client-side-features/spec.md`
+**Branch**: `004-client-side-features` | **Date**: 2025-11-01 | **Spec**:
+`/specs/004-client-side-features/spec.md` **Input**: Feature specification from
+`/specs/004-client-side-features/spec.md`
 
 ## Summary
 
-Deliver a suite of Phase 4 client-side enhancements for AI Web Feeds, including offline feed reading, instant in-browser search, advanced feed organization, a browser extension, and comprehensive export tools. All functionality must execute entirely in the browser using Service Workers, IndexedDB, localStorage, Web Workers, and optional client-side ML, honoring the zero-backend mandate while sustaining performance targets (<50 ms search latency, <5 s exports) and offline reliability.
+Deliver a suite of Phase 4 client-side enhancements for AI Web Feeds, including offline
+feed reading, instant in-browser search, advanced feed organization, a browser
+extension, and comprehensive export tools. All functionality must execute entirely in
+the browser using Service Workers, IndexedDB, localStorage, Web Workers, and optional
+client-side ML, honoring the zero-backend mandate while sustaining performance targets
+(\<50 ms search latency, \<5 s exports) and offline reliability.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9 (strict) with React 19 on Next.js 15 App Router  
-**Primary Dependencies**: Next.js 15, React 19, FumaDocs UI, Chart.js, Dexie.js 4, `onnxruntime-web`, Service Worker/Web Worker APIs  
-**Storage**: IndexedDB (articles, search index, annotations), Cache Storage (assets), localStorage (preferences, folders)  
-**Testing**: Playwright (offline/PWA E2E) + Vitest w/ Testing Library (unit/integration) with coverage instrumentation to maintain ≥90 %  
-**Target Platform**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+, mobile equivalents) with graceful degradation when APIs unavailable  
-**Project Type**: Web application (Next.js App Router with client-heavy features)  
-**Performance Goals**: Search <50 ms for 10k articles; exports <5 s for 50 MB; UI updates <16 ms; offline load <200 ms; background sync non-blocking  
-**Constraints**: Client-side only; no new backend endpoints; offline-first operation; storage quota management (warn at 80 %); privacy-first logging (local export)  
-**Scale/Scope**: Single-user per device model with up to ~10k articles cached, multi-week roadmap (Phase 4A–4D) covering offline, search, PWA, AI, and extension deliverables
+**Language/Version**: TypeScript 5.9 (strict) with React 19 on Next.js 15 App Router\
+**Primary Dependencies**: Next.js 15, React 19, FumaDocs UI, Chart.js, Dexie.js 4,
+`onnxruntime-web`, Service Worker/Web Worker APIs\
+**Storage**: IndexedDB (articles, search index, annotations), Cache Storage (assets),
+localStorage (preferences, folders)\
+**Testing**: Playwright (offline/PWA E2E) + Vitest w/ Testing Library (unit/integration)
+with coverage instrumentation to maintain ≥90 %\
+**Target Platform**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+, mobile
+equivalents) with graceful degradation when APIs unavailable\
+**Project Type**: Web application (Next.js App Router with client-heavy features)\
+**Performance Goals**: Search \<50 ms for 10k articles; exports \<5 s for 50 MB; UI
+updates \<16 ms; offline load \<200 ms; background sync non-blocking\
+**Constraints**: Client-side only; no new backend endpoints; offline-first operation;
+storage quota management (warn at 80 %); privacy-first logging (local export)\
+**Scale/Scope**: Single-user per device model with up to ~10k articles cached,
+multi-week roadmap (Phase 4A–4D) covering offline, search, PWA, AI, and extension
+deliverables
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **Documentation-First Delivery (MUST)** — PASS: Spec present; plan to document implementation details via `apps/web/content/docs/*.mdx` updates during delivery.  
-- **Client-Side Integrity (MUST)** — PASS: Scope explicitly excludes backend work; all storage stays in browser; plan will validate no server dependencies introduced.  
-- **Test-First Quality Gates (MUST)** — PASS: Playwright + Vitest testing strategy selected with coverage plan (see research.md).  
-- **Performance & Reliability (SHOULD)** — PASS WITH ACTIONS: Performance targets defined; will formalize measurement hooks during design.  
-- **Privacy & Data Ownership (MUST)** — PASS: Exports remain local; no telemetry without opt-in; log export mechanic planned.
+- **Documentation-First Delivery (MUST)** — PASS: Spec present; plan to document
+  implementation details via `apps/web/content/docs/*.mdx` updates during delivery.
+- **Client-Side Integrity (MUST)** — PASS: Scope explicitly excludes backend work; all
+  storage stays in browser; plan will validate no server dependencies introduced.
+- **Test-First Quality Gates (MUST)** — PASS: Playwright + Vitest testing strategy
+  selected with coverage plan (see research.md).
+- **Performance & Reliability (SHOULD)** — PASS WITH ACTIONS: Performance targets
+  defined; will formalize measurement hooks during design.
+- **Privacy & Data Ownership (MUST)** — PASS: Exports remain local; no telemetry without
+  opt-in; log export mechanic planned.
 
 Gate status: All gates satisfied post-Phase-1 design review (2025-11-01).
 
@@ -80,7 +99,10 @@ apps/web/
     └── integration/search.spec.ts
 ```
 
-**Structure Decision**: Extend `apps/web` with dedicated offline/search/AI modules, workers, and service-worker assets while keeping documentation in MDX and adding end-to-end tests under `apps/web/tests`. No backend directories touched, preserving client-only scope.
+**Structure Decision**: Extend `apps/web` with dedicated offline/search/AI modules,
+workers, and service-worker assets while keeping documentation in MDX and adding
+end-to-end tests under `apps/web/tests`. No backend directories touched, preserving
+client-only scope.
 
 ## Complexity Tracking
 

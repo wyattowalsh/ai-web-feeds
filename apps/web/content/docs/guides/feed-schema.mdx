@@ -36,7 +36,7 @@ sources:
   - id: "feed-1"
     feed: "https://example.com/feed.xml"
     # ... feed properties
-  
+
   - id: "feed-2"
     site: "https://example.org"
     discover: true
@@ -53,7 +53,7 @@ groups:
     - id: "openai-blog"
       feed: "https://openai.com/blog/rss/"
       # ...
-  
+
   HuggingFace:
     - id: "hf-blog"
       feed: "huggingface/blog"
@@ -64,11 +64,11 @@ groups:
 
 Every feed entry **must** include one of:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `feed` | String | Direct feed URL, alias, or CURIE |
-| `site` | String | Homepage URL (triggers discovery) |
-| `discover` | Boolean/Object | Discovery configuration |
+| Property   | Type           | Description                       |
+| ---------- | -------------- | --------------------------------- |
+| `feed`     | String         | Direct feed URL, alias, or CURIE  |
+| `site`     | String         | Homepage URL (triggers discovery) |
+| `discover` | Boolean/Object | Discovery configuration           |
 
 ### Additional Requirements
 
@@ -88,6 +88,7 @@ id: "example-blog"
 ```
 
 **Rules:**
+
 - Pattern: `^[a-z0-9._-]+$`
 - Lowercase alphanumeric, dots, underscores, hyphens
 - Should be stable (don't change once published)
@@ -110,6 +111,7 @@ feed: "wikidata:Q2539"
 ```
 
 **Formats:**
+
 - HTTP(S) URLs: `^https?://`
 - Aliases: `^[a-z0-9._-]+/[a-z0-9._-]+$`
 - CURIEs: `^[a-z][a-z0-9._-]*:[^\s]+$`
@@ -124,6 +126,7 @@ discover: true
 ```
 
 **Rules:**
+
 - Must be valid HTTP(S) URL
 - Used for discovery if `feed` is not provided
 - Can coexist with `feed` for cross-reference
@@ -137,6 +140,7 @@ title: "OpenAI Blog - Latest Research"
 ```
 
 **Rules:**
+
 - Min length: 1
 - Max length: 160 characters
 - Should be clear and descriptive
@@ -158,8 +162,8 @@ discover: false  # Disable discovery
 
 ```yaml
 discover:
-  backend: "default"           # default | feedparser | rsshub | browserless
-  strategy: "html-link"        # auto | html-link | rsshub | well-known
+  backend: "default" # default | feedparser | rsshub | browserless
+  strategy: "html-link" # auto | html-link | rsshub | well-known
   strategy_detail: "Optional hint for tuning"
   hints: ["rss", "atom", "blog"]
   limit: 3
@@ -170,14 +174,14 @@ discover:
 
 **Properties:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `backend` | String | Discovery backend engine |
-| `strategy` | String | Discovery method |
-| `strategy_detail` | String | Freeform hint (max 160 chars) |
-| `hints` | Array | Search keywords (max 8) |
-| `limit` | Integer | Max feeds to find (1-10) |
-| `fallbacks` | Array | Backup feed URLs (max 5) |
+| Property          | Type    | Description                   |
+| ----------------- | ------- | ----------------------------- |
+| `backend`         | String  | Discovery backend engine      |
+| `strategy`        | String  | Discovery method              |
+| `strategy_detail` | String  | Freeform hint (max 160 chars) |
+| `hints`           | Array   | Search keywords (max 8)       |
+| `limit`           | Integer | Max feeds to find (1-10)      |
+| `fallbacks`       | Array   | Backup feed URLs (max 5)      |
 
 ### Topics and Classification
 
@@ -190,6 +194,7 @@ topics: ["ml", "nlp", "open-source"]
 ```
 
 **Rules:**
+
 - Min items: 1
 - Max items: 6
 - Each ID must match: `^[a-z0-9]+(?:-[a-z0-9]+)*$`
@@ -197,16 +202,16 @@ topics: ["ml", "nlp", "open-source"]
 
 **Common Topics:**
 
-| ID | Description |
-|----|-------------|
-| `ml` | Machine Learning |
-| `nlp` | Natural Language Processing |
-| `cv` | Computer Vision |
-| `rl` | Reinforcement Learning |
-| `llm` | Large Language Models |
-| `research` | Academic Research |
-| `industry` | Industry News |
-| `open-source` | Open Source Projects |
+| ID            | Description                 |
+| ------------- | --------------------------- |
+| `ml`          | Machine Learning            |
+| `nlp`         | Natural Language Processing |
+| `cv`          | Computer Vision             |
+| `rl`          | Reinforcement Learning      |
+| `llm`         | Large Language Models       |
+| `research`    | Academic Research           |
+| `industry`    | Industry News               |
+| `open-source` | Open Source Projects        |
 
 #### `topic_weights`
 
@@ -220,6 +225,7 @@ topic_weights:
 ```
 
 **Rules:**
+
 - Keys must be valid topic IDs
 - Values: 0.0 to 1.0
 - Higher = more relevant
@@ -236,29 +242,29 @@ source_type: "blog"
 
 **Valid Types:**
 
-| Type | Description |
-|------|-------------|
-| `blog` | Blog or article site |
-| `newsletter` | Email newsletter |
-| `podcast` | Audio podcast |
-| `journal` | Academic journal |
-| `preprint` | Preprint server (arXiv, etc.) |
-| `organization` | Company/org announcements |
-| `aggregator` | News aggregator |
-| `video` | Video platform |
-| `docs` | Documentation site |
-| `forum` | Discussion forum |
-| `dataset` | Dataset repository |
-| `code-repo` | Code repository |
-| `newsroom` | News organization |
-| `education` | Educational content |
-| `reddit` | Reddit community |
-| `medium` | Medium publication |
-| `youtube` | YouTube channel |
-| `github` | GitHub repository |
-| `substack` | Substack newsletter |
-| `devto` | Dev.to publication |
-| `hackernews` | Hacker News |
+| Type           | Description                   |
+| -------------- | ----------------------------- |
+| `blog`         | Blog or article site          |
+| `newsletter`   | Email newsletter              |
+| `podcast`      | Audio podcast                 |
+| `journal`      | Academic journal              |
+| `preprint`     | Preprint server (arXiv, etc.) |
+| `organization` | Company/org announcements     |
+| `aggregator`   | News aggregator               |
+| `video`        | Video platform                |
+| `docs`         | Documentation site            |
+| `forum`        | Discussion forum              |
+| `dataset`      | Dataset repository            |
+| `code-repo`    | Code repository               |
+| `newsroom`     | News organization             |
+| `education`    | Educational content           |
+| `reddit`       | Reddit community              |
+| `medium`       | Medium publication            |
+| `youtube`      | YouTube channel               |
+| `github`       | GitHub repository             |
+| `substack`     | Substack newsletter           |
+| `devto`        | Dev.to publication            |
+| `hackernews`   | Hacker News                   |
 
 #### `mediums`
 
@@ -269,6 +275,7 @@ mediums: ["text", "code", "video"]
 ```
 
 **Valid Values:**
+
 - `text` - Written content
 - `audio` - Podcasts, audio recordings
 - `video` - Video content
@@ -284,6 +291,7 @@ tags: ["official", "community", "tutorials"]
 ```
 
 **Rules:**
+
 - Pattern: `^[a-z0-9-]{1,32}$`
 - Lowercase, alphanumeric, hyphens
 - Max 12 tags
@@ -302,8 +310,8 @@ platform_config:
   platform: "reddit"
   reddit:
     subreddit: "MachineLearning"
-    sort: "hot"              # hot | new | top | rising
-    time: "day"              # hour | day | week | month | year | all
+    sort: "hot" # hot | new | top | rising
+    time: "day" # hour | day | week | month | year | all
 ```
 
 **Medium Example:**
@@ -340,8 +348,8 @@ platform_config:
   github:
     owner: "pytorch"
     repo: "pytorch"
-    feed_type: "releases"   # releases | commits | tags | activity
-    branch: "main"          # optional, for commits
+    feed_type: "releases" # releases | commits | tags | activity
+    branch: "main" # optional, for commits
 ```
 
 **Substack Example:**
@@ -374,7 +382,7 @@ platform_config:
   hackernews:
     username: "pg"
     # OR
-    feed_type: "frontpage"  # frontpage | newest | best | ask | show | jobs
+    feed_type: "frontpage" # frontpage | newest | best | ask | show | jobs
 ```
 
 ### Metadata
@@ -395,14 +403,14 @@ meta:
 
 **Properties:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `language` | String | IETF BCP-47 code (e.g., 'en', 'en-US') |
-| `format` | String | rss \| atom \| jsonfeed \| unknown |
-| `updated` | String | Last human review date (YYYY-MM-DD) |
-| `last_validated` | String | Last automated validation (YYYY-MM-DD) |
-| `verified` | Boolean | Trust/accuracy flag |
-| `contributor` | String | GitHub username (1-80 chars) |
+| Property         | Type    | Description                            |
+| ---------------- | ------- | -------------------------------------- |
+| `language`       | String  | IETF BCP-47 code (e.g., 'en', 'en-US') |
+| `format`         | String  | rss \| atom \| jsonfeed \| unknown     |
+| `updated`        | String  | Last human review date (YYYY-MM-DD)    |
+| `last_validated` | String  | Last automated validation (YYYY-MM-DD) |
+| `verified`       | Boolean | Trust/accuracy flag                    |
+| `contributor`    | String  | GitHub username (1-80 chars)           |
 
 ### Curation
 
@@ -421,13 +429,13 @@ curation:
 
 **Properties:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `status` | String | verified \| unverified \| archived \| experimental \| inactive |
-| `since` | String | Status assignment date (YYYY-MM-DD) |
-| `by` | String | Curator GitHub username |
-| `quality_score` | Number | 0.0 to 1.0 quality rating |
-| `notes` | String | Curation notes (max 500 chars) |
+| Property        | Type   | Description                                                    |
+| --------------- | ------ | -------------------------------------------------------------- |
+| `status`        | String | verified \| unverified \| archived \| experimental \| inactive |
+| `since`         | String | Status assignment date (YYYY-MM-DD)                            |
+| `by`            | String | Curator GitHub username                                        |
+| `quality_score` | Number | 0.0 to 1.0 quality rating                                      |
+| `notes`         | String | Curation notes (max 500 chars)                                 |
 
 ### Relationships
 
@@ -448,12 +456,12 @@ relations:
 
 **Properties:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `mirror_of` | String | Feed is a mirror/copy of another |
-| `derived_from` | String | Feed is derived from another source |
-| `syndicates` | Array | Syndicated to these feeds (max 8) |
-| `related_feeds` | Array | Related feeds (max 8, legacy) |
+| Property        | Type   | Description                         |
+| --------------- | ------ | ----------------------------------- |
+| `mirror_of`     | String | Feed is a mirror/copy of another    |
+| `derived_from`  | String | Feed is derived from another source |
+| `syndicates`    | Array  | Syndicated to these feeds (max 8)   |
+| `related_feeds` | Array  | Related feeds (max 8, legacy)       |
 
 ### Provenance
 
@@ -463,7 +471,7 @@ Origin and licensing information.
 
 ```yaml
 provenance:
-  source: "manual"           # manual | automation | import
+  source: "manual" # manual | automation | import
   from: "https://example.com"
   license: "CC-BY-4.0"
 ```
@@ -497,6 +505,7 @@ extensions:
 ```
 
 **Rules:**
+
 - Any structure allowed
 - Reserved for future features
 - Won't cause validation errors
@@ -512,6 +521,7 @@ notes: "Official blog with weekly ML research summaries"
 ```
 
 **Rules:**
+
 - Max 500 characters
 - Markdown not supported
 
@@ -532,39 +542,39 @@ notes: "Official blog with weekly ML research summaries"
   feed: "huggingface/blog"
   site: "https://huggingface.co/blog"
   title: "Hugging Face Blog"
-  
+
   topics: ["open-source", "nlp", "ml"]
   topic_weights:
     open-source: 0.95
     nlp: 0.90
     ml: 0.80
-  
+
   source_type: "blog"
   mediums: ["text", "code"]
   tags: ["official", "community", "tutorials"]
-  
+
   meta:
     language: "en"
     format: "rss"
     updated: "2025-10-15"
     verified: true
     contributor: "wyattowalsh"
-  
+
   curation:
     status: "verified"
     since: "2025-10-15"
     by: "wyattowalsh"
     quality_score: 0.98
     notes: "High-quality official blog"
-  
+
   provenance:
     source: "manual"
     from: "https://huggingface.co"
     license: "CC-BY-4.0"
-  
+
   mappings:
     wikidata: "Q107561822"
-  
+
   notes: "Official Hugging Face blog with ML tutorials and research"
 ```
 
@@ -592,17 +602,17 @@ notes: "Official blog with weekly ML research summaries"
   title: "r/MachineLearning"
   topics: ["ml", "community"]
   source_type: "reddit"
-  
+
   platform_config:
     platform: "reddit"
     reddit:
       subreddit: "MachineLearning"
       sort: "hot"
-  
+
   meta:
     language: "en"
     updated: "2025-10-15"
-  
+
   notes: "Active ML community discussions"
 ```
 
@@ -649,11 +659,13 @@ Limit to 6 topics maximum.
 ### Choosing Feed vs Site
 
 **Use `feed` when:**
+
 - You know the exact feed URL
 - The feed is stable and unlikely to change
 - You want maximum reliability
 
 **Use `site` + `discover` when:**
+
 - Feed URL is unknown
 - Site may have multiple feeds
 - You want automatic feed updates
@@ -668,6 +680,7 @@ Limit to 6 topics maximum.
 ### Quality Guidelines
 
 **High-Quality Entries:**
+
 - ✅ Accurate, verified feed URLs
 - ✅ Descriptive titles
 - ✅ Relevant topics with weights
@@ -676,6 +689,7 @@ Limit to 6 topics maximum.
 - ✅ Notes explaining value
 
 **Avoid:**
+
 - ❌ Generic titles
 - ❌ Too many topics
 - ❌ Unverified feeds

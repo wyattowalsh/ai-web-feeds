@@ -4,8 +4,8 @@ description: Render beautiful mathematical equations in your documentation using
 icon: Calculator
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 ## Overview
 
@@ -280,6 +280,7 @@ a\!b \quad a\,b \quad a\:b \quad a\;b \quad a\ b \quad a\quad b \quad a\qquad b
     ```math
     P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}
     ```
+
   </Tab>
   <Tab value="Not Ideal ⚠️">
     Cramped or unclear notation:
@@ -287,6 +288,7 @@ a\!b \quad a\,b \quad a\:b \quad a\;b \quad a\ b \quad a\quad b \quad a\qquad b
     ```math
     P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}
     ```
+
   </Tab>
 </Tabs>
 
@@ -322,28 +324,28 @@ Use text annotations to explain components:
 
 ### Basic Operations
 
-| Syntax | Result | Description |
-|--------|--------|-------------|
-| `x + y` | $x + y$ | Addition |
-| `x - y` | $x - y$ | Subtraction |
-| `x \times y` | $x \times y$ | Multiplication |
-| `x \div y` | $x \div y$ | Division |
-| `\frac{x}{y}` | $\frac{x}{y}$ | Fraction |
-| `x^y` | $x^y$ | Superscript |
-| `x_y` | $x_y$ | Subscript |
-| `\sqrt{x}` | $\sqrt{x}$ | Square root |
-| `\sqrt[n]{x}` | $\sqrt[n]{x}$ | nth root |
+| Syntax        | Result        | Description    |
+| ------------- | ------------- | -------------- |
+| `x + y`       | $x + y$       | Addition       |
+| `x - y`       | $x - y$       | Subtraction    |
+| `x \times y`  | $x \times y$  | Multiplication |
+| `x \div y`    | $x \div y$    | Division       |
+| `\frac{x}{y}` | $\frac{x}{y}$ | Fraction       |
+| `x^y`         | $x^y$         | Superscript    |
+| `x_y`         | $x_y$         | Subscript      |
+| `\sqrt{x}`    | $\sqrt{x}$    | Square root    |
+| `\sqrt[n]{x}` | $\sqrt[n]{x}$ | nth root       |
 
 ### Delimiters
 
-| Syntax | Result | Description |
-|--------|--------|-------------|
-| `(x)` | $(x)$ | Parentheses |
-| `[x]` | $[x]$ | Brackets |
-| `\{x\}` | $\{x\}$ | Braces |
+| Syntax              | Result              | Description    |
+| ------------------- | ------------------- | -------------- |
+| `(x)`               | $(x)$               | Parentheses    |
+| `[x]`               | $[x]$               | Brackets       |
+| `\{x\}`             | $\{x\}$             | Braces         |
 | `\langle x \rangle` | $\langle x \rangle$ | Angle brackets |
-| `\lvert x \rvert` | $\lvert x \rvert$ | Absolute value |
-| `\lVert x \rVert` | $\lVert x \rVert$ | Norm |
+| `\lvert x \rvert`   | $\lvert x \rvert$   | Absolute value |
+| `\lVert x \rVert`   | $\lVert x \rVert$   | Norm           |
 
 ## Troubleshooting
 
@@ -371,7 +373,8 @@ Use \$ for a dollar sign, not $\$$ in math mode.
 <Callout type="info" title="Pro Tip">
   You can copy equations from Wikipedia - they're already in LaTeX format and work directly with KaTeX!
 
-  Try it: Visit any Wikipedia math article, right-click an equation, and select "Copy LaTeX code".
+Try it: Visit any Wikipedia math article, right-click an equation, and select "Copy LaTeX code".
+
 </Callout>
 
 ## Resources

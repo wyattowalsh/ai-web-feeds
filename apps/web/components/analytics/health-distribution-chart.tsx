@@ -1,14 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  Title,
-} from 'chart.js';
+import { useEffect, useState } from "react";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -18,7 +12,10 @@ interface HealthDistribution {
   unhealthy: number;
 }
 
-export function HealthDistributionChart({ dateRange = '30d', topic }: {
+export function HealthDistributionChart({
+  dateRange = "30d",
+  topic,
+}: {
   dateRange?: string;
   topic?: string;
 }) {
@@ -28,18 +25,18 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
   useEffect(() => {
     const fetchDistribution = async () => {
       setLoading(true);
-      
+
       try {
         const params = new URLSearchParams({ date_range: dateRange });
-        if (topic) params.set('topic', topic);
-        
+        if (topic) params.set("topic", topic);
+
         const response = await fetch(`/api/analytics/summary?${params}`);
-        if (!response.ok) throw new Error('Failed to fetch data');
-        
+        if (!response.ok) throw new Error("Failed to fetch data");
+
         const data = await response.json();
         setDistribution(data.health_distribution);
       } catch (err) {
-        console.error('Error fetching health distribution:', err);
+        console.error("Error fetching health distribution:", err);
       } finally {
         setLoading(false);
       }
@@ -59,21 +56,17 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
   const total = distribution.healthy + distribution.moderate + distribution.unhealthy;
 
   const chartData = {
-    labels: ['Healthy (≥0.8)', 'Moderate (0.5-0.8)', 'Unhealthy (<0.5)'],
+    labels: ["Healthy (≥0.8)", "Moderate (0.5-0.8)", "Unhealthy (<0.5)"],
     datasets: [
       {
-        label: 'Feed Count',
+        label: "Feed Count",
         data: [distribution.healthy, distribution.moderate, distribution.unhealthy],
         backgroundColor: [
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(251, 191, 36, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
+          "rgba(16, 185, 129, 0.8)",
+          "rgba(251, 191, 36, 0.8)",
+          "rgba(239, 68, 68, 0.8)",
         ],
-        borderColor: [
-          'rgb(16, 185, 129)',
-          'rgb(251, 191, 36)',
-          'rgb(239, 68, 68)',
-        ],
+        borderColor: ["rgb(16, 185, 129)", "rgb(251, 191, 36)", "rgb(239, 68, 68)"],
         borderWidth: 2,
       },
     ],
@@ -84,14 +77,14 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: "bottom" as const,
       },
       title: {
         display: true,
-        text: 'Feed Health Distribution',
+        text: "Feed Health Distribution",
         font: {
           size: 16,
-          weight: 'bold',
+          weight: "bold",
         },
       },
       tooltip: {
@@ -111,7 +104,7 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
       <div className="h-96">
         <Pie data={chartData} options={options} />
       </div>
-      
+
       <div className="mt-4 grid grid-cols-3 gap-4 text-center">
         <div className="bg-green-50 rounded p-3">
           <p className="text-sm font-semibold text-gray-600">Healthy</p>
@@ -120,7 +113,7 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
             {((distribution.healthy / total) * 100).toFixed(1)}%
           </p>
         </div>
-        
+
         <div className="bg-yellow-50 rounded p-3">
           <p className="text-sm font-semibold text-gray-600">Moderate</p>
           <p className="text-2xl font-bold text-yellow-600">{distribution.moderate}</p>
@@ -128,7 +121,7 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
             {((distribution.moderate / total) * 100).toFixed(1)}%
           </p>
         </div>
-        
+
         <div className="bg-red-50 rounded p-3">
           <p className="text-sm font-semibold text-gray-600">Unhealthy</p>
           <p className="text-2xl font-bold text-red-600">{distribution.unhealthy}</p>
@@ -140,4 +133,3 @@ export function HealthDistributionChart({ dateRange = '30d', topic }: {
     </div>
   );
 }
-

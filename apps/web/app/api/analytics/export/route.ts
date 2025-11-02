@@ -1,23 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const date_range = searchParams.get('date_range') || '30d';
-  const format = searchParams.get('format') || 'csv';
+  const date_range = searchParams.get("date_range") || "30d";
+  const format = searchParams.get("format") || "csv";
 
   try {
-    if (format !== 'csv') {
-      return NextResponse.json(
-        { error: 'Only CSV format is supported' },
-        { status: 400 }
-      );
+    if (format !== "csv") {
+      return NextResponse.json({ error: "Only CSV format is supported" }, { status: 400 });
     }
 
     // In production, this would call the Python backend export function
     // For now, we'll generate mock CSV data
-    
+
     const csv = `Analytics Summary
 Metric,Value
 Date Range,${date_range}
@@ -59,17 +56,13 @@ Date,Validation Count
 
     return new NextResponse(csv, {
       headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="analytics_export_${date_range}.csv"`,
-        'Cache-Control': 'no-cache',
+        "Content-Type": "text/csv",
+        "Content-Disposition": `attachment; filename="analytics_export_${date_range}.csv"`,
+        "Cache-Control": "no-cache",
       },
     });
   } catch (error) {
-    console.error('Error exporting analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to export analytics' },
-      { status: 500 }
-    );
+    console.error("Error exporting analytics:", error);
+    return NextResponse.json({ error: "Failed to export analytics" }, { status: 500 });
   }
 }
-

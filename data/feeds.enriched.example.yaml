@@ -1,0 +1,429 @@
+schema_version: feeds-2.1.0
+document_meta:
+  created: '2025-11-02'
+  updated: '2025-11-02'
+  generated_with:
+    tool: aiwebfeeds-cli
+    version: 0.1.0
+  notes: |
+    Example enriched feeds showing full metadata structure with auto-discovered
+    content from platform detection, feed parsing, and AI analysis.
+
+sources:
+  # Example 1: Fully enriched blog feed (OpenAI)
+- id: openai-blog
+  feed: https://openai.com/blog/rss/
+  site: https://openai.com/blog
+  title: OpenAI Blog
+  source_type: blog
+  mediums:
+  - text
+  tags:
+  - chatgpt
+  - gpt-4
+  - foundation-models
+  topics:
+  - industry
+  - product
+  - llm
+  - research
+  topic_weights:
+    industry: 0.9
+    product: 0.85
+    llm: 0.95
+    research: 0.7
+  meta:
+    language: en
+    format: rss
+    updated: '2025-11-02T10:30:00Z'
+    last_validated: '2025-11-02T09:15:00Z'
+    verified: true
+    contributor: aiwebfeeds-curator
+    popularity_score: 0.95
+    validation_count: 247
+    description: Official blog covering OpenAI's latest research, product announcements, and technical insights into GPT models and AI safety.
+    author: OpenAI Team
+    icon_url: https://openai.com/favicon.ico
+    logo_url: https://openai.com/assets/social.png
+    detected_platform: WordPress
+    platform_metadata:
+      cms: WordPress
+      theme: custom
+      plugins: []
+    health_score: 0.98
+    quality_score: 0.92
+    completeness_score: 0.95
+    reliability_score: 0.99
+    freshness_score: 0.88
+    entry_count: 142
+    has_full_content: true
+    avg_content_length: 3500
+    content_types:
+    - article
+    - announcement
+    - research-summary
+    estimated_frequency: weekly
+    last_updated: '2025-11-01T14:22:00Z'
+    update_regularity: 0.82
+    response_time_ms: 245
+    availability_score: 0.99
+    uptime_percentage: 99.7
+    suggested_topics:
+    - alignment
+    - evaluation
+    - safety
+    topic_confidence:
+      alignment: 0.72
+      evaluation: 0.68
+      safety: 0.85
+    auto_keywords:
+    - gpt-4
+    - chatgpt
+    - reinforcement-learning
+    - safety
+    - alignment
+    has_itunes: false
+    has_media_rss: false
+    has_dublin_core: true
+    has_geo: false
+    seo_title: OpenAI Blog - Latest Research and Product Updates
+    seo_description: Stay updated on OpenAI's latest advances in artificial intelligence, including GPT models, DALL-E, and AI safety research.
+    og_image: https://openai.com/assets/og-image.png
+    twitter_card: summary_large_image
+    encoding: UTF-8
+    generator: WordPress 6.4
+    ttl: 60
+    uses_https: true
+    has_valid_ssl: true
+  curation:
+    status: verified
+    since: '2025-01-15T00:00:00Z'
+    by: admin
+    quality_score: 0.92
+    notes: High-quality source with authoritative content. Regular updates with full-text articles. Recommended for all AI practitioners.
+  provenance:
+    source: aiwebfeeds-core
+    from: https://github.com/wyattowalsh/ai-web-feeds
+    license: Public
+  discover:
+    enabled: true
+    strategy: rss-autodiscovery
+    params: {}
+  relations:
+    related:
+    - anthropic-blog
+    - google-ai-blog
+    - meta-ai-blog
+  mappings:
+    wikidata: Q21634357
+    crunchbase: openai
+    github: openai
+  notes: Flagship AI research lab blog. Essential reading for anyone following LLM developments.
+
+  # Example 2: Podcast feed with iTunes extensions (Latent Space)
+- id: latent-space-podcast
+  feed: https://www.latent.space/feed
+  site: https://www.latent.space
+  title: Latent Space - The AI Engineer Podcast
+  source_type: podcast
+  mediums:
+  - audio
+  tags:
+  - ai-engineering
+  - interviews
+  - technical
+  topics:
+  - podcasts
+  - industry
+  - product
+  - education
+  topic_weights:
+    podcasts: 1.0
+    industry: 0.85
+    product: 0.75
+    education: 0.8
+  meta:
+    language: en
+    format: rss
+    updated: '2025-11-02T08:00:00Z'
+    last_validated: '2025-11-02T07:30:00Z'
+    verified: true
+    contributor: community-curator-42
+    popularity_score: 0.87
+    validation_count: 156
+    description: Practical AI engineering insights from founders and builders. Weekly interviews covering LLMOps, agents, and production ML systems.
+    author: swyx & Alessio
+    icon_url: https://www.latent.space/favicon.ico
+    logo_url: https://www.latent.space/podcast-art.jpg
+    detected_platform: Substack
+    platform_metadata:
+      host: Substack
+      podcast_hosting: Substack
+    health_score: 0.94
+    quality_score: 0.89
+    completeness_score: 0.92
+    reliability_score: 0.96
+    freshness_score: 0.91
+    entry_count: 87
+    has_full_content: true
+    avg_content_length: 1200
+    content_types:
+    - podcast-episode
+    - show-notes
+    estimated_frequency: weekly
+    last_updated: '2025-10-30T12:00:00Z'
+    update_regularity: 0.94
+    response_time_ms: 180
+    availability_score: 0.98
+    uptime_percentage: 98.9
+    suggested_topics:
+    - llmops
+    - agents
+    - serving
+    topic_confidence:
+      llmops: 0.88
+      agents: 0.82
+      serving: 0.75
+    auto_keywords:
+    - llmops
+    - ai-engineering
+    - production-ml
+    - agents
+    - infrastructure
+    has_itunes: true
+    has_media_rss: true
+    has_dublin_core: false
+    has_geo: false
+    seo_title: Latent Space Podcast - AI Engineering Insights
+    seo_description: Weekly conversations with AI engineers and founders building production LLM systems.
+    og_image: https://www.latent.space/og-image.jpg
+    twitter_card: summary
+    encoding: UTF-8
+    generator: Substack RSS
+    ttl: 120
+    uses_https: true
+    has_valid_ssl: true
+  curation:
+    status: verified
+    since: '2025-02-10T00:00:00Z'
+    by: curator-team
+    quality_score: 0.89
+    notes: Excellent technical depth with practical insights from practitioners. Strong focus on production ML and LLMOps.
+  provenance:
+    source: community-submission
+    from: https://github.com/wyattowalsh/ai-web-feeds/issues/42
+    license: CC-BY-4.0
+  discover:
+    enabled: true
+    strategy: rss-autodiscovery
+  relations:
+    related:
+    - data-exchange-podcast
+    - practical-ai-podcast
+  mappings:
+    spotify: 6jNJu8Qsqwub3KmjYJtfFX
+    apple_podcasts: id1673418726
+    youtube: '@latentspace'
+
+  # Example 3: Research feed (arXiv cs.LG)
+- id: arxiv-cs-lg
+  feed: http://export.arxiv.org/rss/cs.LG
+  site: https://arxiv.org/list/cs.LG/recent
+  title: arXiv cs.LG - Machine Learning
+  source_type: preprint
+  mediums:
+  - text
+  tags:
+  - preprints
+  - academic
+  - peer-review
+  topics:
+  - research
+  - papers
+  - ml
+  topic_weights:
+    research: 1.0
+    papers: 1.0
+    ml: 0.95
+  meta:
+    language: en
+    format: rss
+    updated: '2025-11-02T12:00:00Z'
+    last_validated: '2025-11-02T11:45:00Z'
+    verified: true
+    contributor: aiwebfeeds-core
+    popularity_score: 0.92
+    validation_count: 1247
+    description: Daily preprints in machine learning from arXiv.org. Includes deep learning, reinforcement learning, statistical learning theory, and applications.
+    author: arXiv.org
+    icon_url: https://arxiv.org/favicon.ico
+    detected_platform: arXiv
+    platform_metadata:
+      repository: arXiv
+      category: cs.LG
+      primary_category: true
+    health_score: 1.0
+    quality_score: 0.85
+    completeness_score: 0.78
+    reliability_score: 1.0
+    freshness_score: 0.99
+    entry_count: 14570
+    has_full_content: false
+    avg_content_length: 450
+    content_types:
+    - abstract
+    - preprint
+    estimated_frequency: daily
+    last_updated: '2025-11-02T11:30:00Z'
+    update_regularity: 0.99
+    response_time_ms: 120
+    availability_score: 1.0
+    uptime_percentage: 99.99
+    suggested_topics:
+    - training
+    - optimization
+    - evaluation
+    topic_confidence:
+      training: 0.78
+      optimization: 0.82
+      evaluation: 0.71
+    auto_keywords:
+    - deep-learning
+    - neural-networks
+    - optimization
+    - theory
+    - applications
+    has_itunes: false
+    has_media_rss: false
+    has_dublin_core: true
+    has_geo: false
+    encoding: UTF-8
+    generator: arXiv RSS Generator
+    uses_https: false
+    has_valid_ssl: false
+  curation:
+    status: verified
+    since: '2025-01-01T00:00:00Z'
+    by: admin
+    quality_score: 0.85
+    notes: Canonical source for ML research preprints. High volume, variable quality. Abstracts only.
+  provenance:
+    source: aiwebfeeds-core
+    from: https://arxiv.org
+    license: CC0-1.0
+  discover:
+    enabled: false
+  relations:
+    related:
+    - arxiv-cs-cl
+    - arxiv-cs-cv
+    - arxiv-cs-ai
+  mappings:
+    arxiv_category: cs.LG
+    wikidata: Q817765
+
+  # Example 4: GitHub releases feed
+- id: pytorch-releases
+  feed: https://github.com/pytorch/pytorch/releases.atom
+  site: https://github.com/pytorch/pytorch
+  title: PyTorch Releases
+  source_type: code-repo
+  mediums:
+  - text
+  - code
+  tags:
+  - releases
+  - framework
+  - deep-learning
+  topics:
+  - open-source
+  - ml
+  - product
+  - training
+  topic_weights:
+    open-source: 0.95
+    ml: 0.9
+    product: 0.85
+    training: 0.8
+  meta:
+    language: en
+    format: atom
+    updated: '2025-11-02T06:00:00Z'
+    last_validated: '2025-11-02T05:30:00Z'
+    verified: true
+    contributor: github-sync
+    popularity_score: 0.96
+    validation_count: 342
+    description: Official PyTorch framework releases with changelogs, bug fixes, and new features.
+    author: PyTorch Team
+    icon_url: https://pytorch.org/favicon.ico
+    logo_url: https://pytorch.org/assets/images/pytorch-logo.png
+    detected_platform: GitHub
+    platform_metadata:
+      repository: pytorch/pytorch
+      stars: 78542
+      watchers: 2156
+      forks: 21345
+      language: Python
+    health_score: 0.99
+    quality_score: 0.94
+    completeness_score: 0.88
+    reliability_score: 0.98
+    freshness_score: 0.75
+    entry_count: 89
+    has_full_content: true
+    avg_content_length: 2800
+    content_types:
+    - release-notes
+    - changelog
+    estimated_frequency: monthly
+    last_updated: '2025-10-25T09:00:00Z'
+    update_regularity: 0.72
+    response_time_ms: 95
+    availability_score: 0.99
+    uptime_percentage: 99.8
+    suggested_topics:
+    - compilers
+    - optimization
+    - accelerators
+    topic_confidence:
+      compilers: 0.65
+      optimization: 0.78
+      accelerators: 0.72
+    auto_keywords:
+    - pytorch
+    - deep-learning
+    - gpu
+    - distributed
+    - cuda
+    has_itunes: false
+    has_media_rss: false
+    has_dublin_core: false
+    has_geo: false
+    encoding: UTF-8
+    generator: GitHub Atom Feed
+    uses_https: true
+    has_valid_ssl: true
+  curation:
+    status: verified
+    since: '2025-01-15T00:00:00Z'
+    by: admin
+    quality_score: 0.94
+    notes: Essential for tracking PyTorch framework updates. Well-documented releases with detailed changelogs.
+  provenance:
+    source: github-official
+    from: https://github.com/pytorch/pytorch
+    license: BSD-3-Clause
+  discover:
+    enabled: true
+    strategy: auto
+    params:
+      feed_type: releases
+  relations:
+    related:
+    - tensorflow-releases
+    - jax-releases
+  mappings:
+    github: pytorch/pytorch
+    pypi: torch
+    conda: pytorch

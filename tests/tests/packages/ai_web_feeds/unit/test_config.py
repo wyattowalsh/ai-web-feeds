@@ -1,9 +1,6 @@
 """Unit tests for ai_web_feeds.config module."""
 
 import pytest
-import os
-from pathlib import Path
-
 from ai_web_feeds.config import Settings
 
 
@@ -20,7 +17,7 @@ class TestSettings:
         """Test loading settings from environment variables."""
         monkeypatch.setenv("AIWF_LOGGING__LEVEL", "DEBUG")
         monkeypatch.setenv("AIWF_LOGGING__FILE", "True")
-        
+
         settings = Settings()
         assert settings.logging.level == "DEBUG"
         assert settings.logging.file is True

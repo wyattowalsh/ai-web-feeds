@@ -8,23 +8,23 @@ body:
     attributes:
       value: |
         ## Bug Report
-        
+
         Thanks for taking the time to report a bug! Please fill out the sections below.
-        
+
         ### 🔍 Before Reporting
-        
+
         **Please check**:
         - [ ] Search [existing issues](https://github.com/wyattowalsh/ai-web-feeds/issues) for duplicates
         - [ ] Try the latest version (`git pull origin main && uv sync`)
         - [ ] Review [troubleshooting guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
-        
+
         ### 🛠️ Debugging Tips
-        
+
         **For CLI issues**, run with debug logging:
         ```bash
         AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
         ```
-        
+
         **For workflow issues**, check the workflow logs in GitHub Actions.
 
   - type: dropdown
@@ -91,7 +91,7 @@ body:
       label: Logs/Error Messages
       description: |
         Please paste any relevant log output or error messages.
-        
+
         **Tip**: Run with debug logging for more details:
         ```bash
         AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose 2>&1 | tee error.log
@@ -119,19 +119,19 @@ body:
       label: Environment
       description: |
         Please provide details about your environment.
-        
+
         **Quick method** - Run these commands and paste output:
         ```bash
         # System info
         uname -a
-        
+
         # Python/uv version
         uv --version
         python --version
-        
+
         # Package versions
         uv pip list | grep -E "(ai-web-feeds|ruff|mypy)"
-        
+
         # For web issues
         node --version
         pnpm --version
@@ -153,7 +153,7 @@ body:
       label: CLI Command Output (if applicable)
       description: |
         If this is a CLI bug, paste the full command and output.
-        
+
         **Include**:
         - The exact command you ran
         - Full output (including stack trace)
@@ -206,7 +206,7 @@ body:
       label: Additional Context
       description: |
         Add any other context about the problem here.
-        
+
         **Helpful information**:
         - Screenshots or screen recordings
         - Related issues or PRs
@@ -220,9 +220,9 @@ body:
     attributes:
       value: |
         ---
-        
+
         ### 🚀 What Happens Next?
-        
+
         1. **Triage**: Issue will be labeled and assigned priority
         2. **Investigation**: Maintainers will attempt to reproduce
         3. **Fix**: PR will be created to address the bug
@@ -233,13 +233,13 @@ body:
            uv run mypy .
            ```
         5. **Release**: Fix will be included in next release
-        
+
         ### 🛠️ Want to Help?
-        
+
         - 🐛 Create a failing test case that reproduces the bug
         - 🔧 Submit a PR with a fix (see [Contributing Guide](../../CONTRIBUTING.md))
         - 📝 Improve documentation to prevent similar issues
-        
+
         Thank you for helping improve AI Web Feeds! 🙏
         - OS (macOS, Linux, Windows)
         - Python version (if CLI)

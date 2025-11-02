@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import type { FeedSource } from '@/lib/feeds';
-import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from '@/lib/feeds';
+import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import type { FeedSource } from "@/lib/feeds";
+import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds";
 
 interface FeedCatalogProps {
   feeds: FeedSource[];
@@ -11,10 +11,10 @@ interface FeedCatalogProps {
 }
 
 export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
-  const [selectedType, setSelectedType]       = useState<string | null>(null);
-  const [selectedTopic, setSelectedTopic]     = useState<string | null>(null);
-  const [verifiedOnly, setVerifiedOnly]       = useState<boolean>(false);
-  const [searchQuery, setSearchQuery]         = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Get all topics from feeds
   const allTopics = useMemo(() => getTopics(feeds), [feeds]);
@@ -35,11 +35,11 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result      = result.filter(
+      result = result.filter(
         (feed) =>
           feed.title?.toLowerCase().includes(query) ||
           feed.description?.toLowerCase().includes(query) ||
-          feed.url.toLowerCase().includes(query)
+          feed.url.toLowerCase().includes(query),
       );
     }
 
@@ -69,12 +69,10 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
 
         {/* Source Type Filter */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">
-            Source Type
-          </label>
+          <label className="block text-sm font-medium mb-2">Source Type</label>
           <div className="flex flex-wrap gap-2">
             <Button
-              variant={selectedType === null ? 'default' : 'outline'}
+              variant={selectedType === null ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedType(null)}
             >
@@ -85,7 +83,7 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
               return (
                 <Button
                   key={type}
-                  variant={selectedType === type ? 'default' : 'outline'}
+                  variant={selectedType === type ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedType(type)}
                 >
@@ -102,7 +100,7 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
             <label className="block text-sm font-medium mb-2">Topic</label>
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={selectedTopic === null ? 'default' : 'outline'}
+                variant={selectedTopic === null ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedTopic(null)}
               >
@@ -111,7 +109,7 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
               {allTopics.slice(0, 10).map((topic) => (
                 <Button
                   key={topic}
-                  variant={selectedTopic === topic ? 'default' : 'outline'}
+                  variant={selectedTopic === topic ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedTopic(topic)}
                 >
@@ -166,9 +164,7 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
             </div>
 
             {feed.description && (
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                {feed.description}
-              </p>
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{feed.description}</p>
             )}
 
             <div className="space-y-2 text-sm">
@@ -226,11 +222,9 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
 
       {filteredFeeds.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          No feeds found matching your filters. Try adjusting your search
-          criteria.
+          No feeds found matching your filters. Try adjusting your search criteria.
         </div>
       )}
     </div>
   );
 }
-

@@ -30,3 +30,21 @@ dependencies = [
     "torch>=2.0.0",
     "transformers>=4.40.0",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF", "ASYNC"]
+ignore = ["ANN101", "ANN102", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+# Utils: OPML generation uses datetime.utcnow() for RFC compliance
+"src/ai_web_feeds/utils.py" = ["DTZ003", "S318", "E501", "RET504"]
+# Validate: Legitimate patterns for validation module
+"src/ai_web_feeds/validate.py" = ["ANN204", "FBT001", "FBT002", "A001", "ASYNC109", "DTZ005", "PLR2004", "BLE001"]
+# WebSocket: Server patterns need specific exceptions
+"src/ai_web_feeds/websocket_server.py" = ["ANN204", "S104", "ARG002", "SLF001"]
+# Alembic: Generated migration files
+"**/alembic/**" = ["INP001", "ERA001", "PLR0915"]

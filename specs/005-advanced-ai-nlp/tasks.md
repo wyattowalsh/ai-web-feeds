@@ -1,11 +1,11 @@
 # Implementation Tasks: Phase 5 - Advanced AI/NLP
 
-**Branch**: `005-advanced-ai-nlp`  
-**Total Tasks**: 127  
-**Estimated Effort**: 5 weeks  
+**Branch**: `005-advanced-ai-nlp`\
+**Total Tasks**: 127\
+**Estimated Effort**: 5 weeks\
 **Last Updated**: 2025-10-27
 
----
+______________________________________________________________________
 
 ## Task Notation
 
@@ -15,7 +15,7 @@
 - 🔄 **In Progress**
 - ⏸️ **Blocked** (waiting for dependency)
 
----
+______________________________________________________________________
 
 ## Phase 5: Setup & Foundation (Tasks 001-015)
 
@@ -24,6 +24,7 @@
 **File**: `packages/ai_web_feeds/pyproject.toml`
 
 **Changes**:
+
 ```toml
 [project]
 dependencies = [
@@ -45,45 +46,47 @@ dev = [
 
 **Acceptance**: `uv sync` completes successfully
 
----
+______________________________________________________________________
 
 ### T002: Extend Config with Phase5Settings (🔵 Parallel)
 
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/config.py`
 
 **Changes**:
+
 ```python
 class Phase5Settings(BaseSettings):
     """Phase 5: Advanced AI/NLP Configuration"""
-    
+
     # Batch Processing
     quality_batch_size: int = 100
     entity_batch_size: int = 50
     sentiment_batch_size: int = 100
-    
+
     # Schedule (cron expressions)
     quality_cron: str = "*/30 * * * *"  # Every 30 minutes
     entity_cron: str = "0 * * * *"  # Every hour
     sentiment_cron: str = "0 * * * *"  # Every hour
     topic_modeling_cron: str = "0 3 1 * *"  # 3 AM on 1st of month
-    
+
     # Models
     spacy_model: str = "en_core_web_sm"
     sentiment_model: str = "distilbert-base-uncased-finetuned-sst-2-english"
     topic_model: str = "lda"
-    
+
     # Thresholds
     quality_min_words: int = 100
     entity_confidence_threshold: float = 0.7
     sentiment_shift_threshold: float = 0.3
     topic_coherence_min: float = 0.5
-    
+
     # Resources
     nlp_workers: int = 4
     model_cache_dir: str = "~/.cache/ai_web_feeds/models"
-    
+
     class Config:
         env_prefix = "PHASE5_"
+
 
 class Settings(BaseSettings):
     # ... existing settings ...
@@ -92,13 +95,14 @@ class Settings(BaseSettings):
 
 **Acceptance**: Config loads with `settings.phase5.quality_batch_size == 100`
 
----
+______________________________________________________________________
 
 ### T003: Update Environment Variables (🔵 Parallel)
 
 **File**: `env.example`
 
 **Changes**:
+
 ```bash
 # Phase 5: Advanced AI/NLP Configuration
 PHASE5_QUALITY_BATCH_SIZE=100
@@ -112,43 +116,51 @@ PHASE5_MODEL_CACHE_DIR=~/.cache/ai_web_feeds/models
 
 **Acceptance**: `.env` file contains Phase 5 variables
 
----
+______________________________________________________________________
 
 ### T004: Run Database Migration (🟡 After T001-T003)
 
-**File**: Create `packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables.sql`
+**File**: Create
+`packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables.sql`
 
 **Content**: Use SQL from `plan.md` (complete migration script)
 
 **File**: Create `packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py`
 
 **Content**:
+
 ```python
 from pathlib import Path
 import sqlite3
 from ai_web_feeds.config import Settings
 
+
 def run_migration_005():
     """Run Phase 5 migration: Add NLP tables"""
     settings = Settings()
     migration_sql = Path(__file__).parent / "005_add_nlp_tables.sql"
-    
+
     with sqlite3.connect(settings.database_url.replace("sqlite:///", "")) as conn:
         conn.executescript(migration_sql.read_text())
         print("✅ Migration 005 completed: NLP tables added")
+
 
 if __name__ == "__main__":
     run_migration_005()
 ```
 
-**Run**: `uv run python packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py`
+**Run**:
+`uv run python packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py`
 
-**Acceptance**: 
-- 8 new tables created: `article_quality_scores`, `entities`, `entity_mentions`, `article_sentiment`, `topic_sentiment_daily`, `subtopics`, `topic_evolution_events`, `entities_fts`
+**Acceptance**:
+
+- 8 new tables created: `article_quality_scores`, `entities`, `entity_mentions`,
+  `article_sentiment`, `topic_sentiment_daily`, `subtopics`, `topic_evolution_events`,
+  `entities_fts`
 - `feed_entries` extended with `*_processed` columns
 - Verify with: `sqlite3 data/aiwebfeeds.db ".tables"`
 
----
+______________________________________________________________________
 
 ### T005: Add SQLModel Classes for Phase 5 Tables (🟡 After T004)
 
@@ -162,10 +174,11 @@ from datetime import datetime
 from typing import Optional
 import uuid
 
+
 # Quality Scoring
 class ArticleQualityScore(SQLModel, table=True):
     __tablename__ = "article_quality_scores"
-    
+
     article_id: int = Field(foreign_key="feed_entries.id", primary_key=True)
     overall_score: int = Field(ge=0, le=100)
     depth_score: Optional[int] = Field(default=None, ge=0, le=100)
@@ -175,10 +188,11 @@ class ArticleQualityScore(SQLModel, table=True):
     engagement_score: Optional[int] = Field(default=None, ge=0, le=100)
     computed_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 # Entity Extraction
 class Entity(SQLModel, table=True):
     __tablename__ = "entities"
-    
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     canonical_name: str = Field(unique=True)
     entity_type: str = Field(regex="^(person|organization|technique|dataset|concept)$")
@@ -190,9 +204,10 @@ class Entity(SQLModel, table=True):
     last_seen: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class EntityMention(SQLModel, table=True):
     __tablename__ = "entity_mentions"
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     entity_id: str = Field(foreign_key="entities.id")
     article_id: int = Field(foreign_key="feed_entries.id")
@@ -201,10 +216,11 @@ class EntityMention(SQLModel, table=True):
     context: Optional[str] = Field(default=None)
     mentioned_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 # Sentiment Analysis
 class ArticleSentiment(SQLModel, table=True):
     __tablename__ = "article_sentiment"
-    
+
     article_id: int = Field(foreign_key="feed_entries.id", primary_key=True)
     sentiment_score: float = Field(ge=-1.0, le=1.0)
     classification: str = Field(regex="^(positive|neutral|negative)$")
@@ -212,9 +228,10 @@ class ArticleSentiment(SQLModel, table=True):
     confidence: float = Field(ge=0.0, le=1.0)
     computed_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class TopicSentimentDaily(SQLModel, table=True):
     __tablename__ = "topic_sentiment_daily"
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     topic: str
     date: str  # DATE string
@@ -224,10 +241,11 @@ class TopicSentimentDaily(SQLModel, table=True):
     neutral_count: int = Field(default=0)
     negative_count: int = Field(default=0)
 
+
 # Topic Modeling
 class Subtopic(SQLModel, table=True):
     __tablename__ = "subtopics"
-    
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     parent_topic: str
     name: str
@@ -238,9 +256,10 @@ class Subtopic(SQLModel, table=True):
     approved: bool = Field(default=False)
     created_by: str = Field(default="system")
 
+
 class TopicEvolutionEvent(SQLModel, table=True):
     __tablename__ = "topic_evolution_events"
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     event_type: str = Field(regex="^(split|merge|emergence|decline)$")
     source_topic: Optional[str] = Field(default=None)
@@ -250,9 +269,10 @@ class TopicEvolutionEvent(SQLModel, table=True):
     detected_at: datetime = Field(default_factory=datetime.utcnow)
 ```
 
-**Acceptance**: Models import successfully: `from ai_web_feeds.models import ArticleQualityScore, Entity`
+**Acceptance**: Models import successfully:
+`from ai_web_feeds.models import ArticleQualityScore, Entity`
 
----
+______________________________________________________________________
 
 ### T006: Extend Storage with Phase 5 CRUD Methods (🟡 After T005)
 
@@ -271,9 +291,10 @@ from ai_web_feeds.models import (
     TopicEvolutionEvent,
 )
 
+
 class Storage:
     # ... existing methods ...
-    
+
     # -------------------------------------------------------------------------
     # Quality Scoring
     # -------------------------------------------------------------------------
@@ -300,11 +321,11 @@ class Storage:
         self.session.add(quality)
         self.session.commit()
         return quality
-    
+
     def get_quality_score(self, article_id: int) -> Optional[ArticleQualityScore]:
         """Get quality score for article"""
         return self.session.get(ArticleQualityScore, article_id)
-    
+
     def get_unprocessed_articles_for_quality(self, limit: int = 100) -> list:
         """Get articles that haven't been quality scored"""
         query = """
@@ -317,7 +338,7 @@ class Storage:
         """
         result = self.session.execute(text(query), {"limit": limit})
         return [dict(row._mapping) for row in result]
-    
+
     def mark_quality_processed(self, article_id: int) -> None:
         """Mark article as quality processed"""
         query = """
@@ -328,7 +349,7 @@ class Storage:
         """
         self.session.execute(text(query), {"article_id": article_id})
         self.session.commit()
-    
+
     # -------------------------------------------------------------------------
     # Entity Extraction
     # -------------------------------------------------------------------------
@@ -342,7 +363,7 @@ class Storage:
     ) -> Entity:
         """Create new entity"""
         import json
-        
+
         entity = Entity(
             canonical_name=canonical_name,
             entity_type=entity_type,
@@ -353,12 +374,12 @@ class Storage:
         self.session.add(entity)
         self.session.commit()
         return entity
-    
+
     def get_entity_by_name(self, canonical_name: str) -> Optional[Entity]:
         """Get entity by canonical name"""
         stmt = select(Entity).where(Entity.canonical_name == canonical_name)
         return self.session.exec(stmt).first()
-    
+
     def search_entities_fts(self, query: str, limit: int = 20) -> list[Entity]:
         """Full-text search entities"""
         sql = """
@@ -371,7 +392,7 @@ class Storage:
         """
         result = self.session.execute(text(sql), {"query": query, "limit": limit})
         return [Entity.model_validate(dict(row._mapping)) for row in result]
-    
+
     def create_entity_mention(
         self,
         entity_id: str,
@@ -391,8 +412,10 @@ class Storage:
         self.session.add(mention)
         self.session.commit()
         return mention
-    
-    def get_entity_mentions(self, entity_id: str, limit: int = 50) -> list[EntityMention]:
+
+    def get_entity_mentions(
+        self, entity_id: str, limit: int = 50
+    ) -> list[EntityMention]:
         """Get all mentions of entity"""
         stmt = (
             select(EntityMention)
@@ -401,7 +424,7 @@ class Storage:
             .limit(limit)
         )
         return list(self.session.exec(stmt))
-    
+
     def get_unprocessed_articles_for_entities(self, limit: int = 50) -> list:
         """Get articles that haven't been entity processed"""
         query = """
@@ -414,7 +437,7 @@ class Storage:
         """
         result = self.session.execute(text(query), {"limit": limit})
         return [dict(row._mapping) for row in result]
-    
+
     def mark_entities_processed(self, article_id: int) -> None:
         """Mark article as entity processed"""
         query = """
@@ -425,7 +448,7 @@ class Storage:
         """
         self.session.execute(text(query), {"article_id": article_id})
         self.session.commit()
-    
+
     # -------------------------------------------------------------------------
     # Sentiment Analysis
     # -------------------------------------------------------------------------
@@ -448,7 +471,7 @@ class Storage:
         self.session.add(sentiment)
         self.session.commit()
         return sentiment
-    
+
     def get_unprocessed_articles_for_sentiment(self, limit: int = 100) -> list:
         """Get articles that haven't been sentiment analyzed"""
         query = """
@@ -461,7 +484,7 @@ class Storage:
         """
         result = self.session.execute(text(query), {"limit": limit})
         return [dict(row._mapping) for row in result]
-    
+
     def mark_sentiment_processed(self, article_id: int) -> None:
         """Mark article as sentiment processed"""
         query = """
@@ -472,7 +495,7 @@ class Storage:
         """
         self.session.execute(text(query), {"article_id": article_id})
         self.session.commit()
-    
+
     def upsert_topic_sentiment_daily(
         self,
         topic: str,
@@ -489,33 +512,36 @@ class Storage:
             (topic, date, avg_sentiment, article_count, positive_count, neutral_count, negative_count)
             VALUES (:topic, :date, :avg_sentiment, :article_count, :positive_count, :neutral_count, :negative_count)
         """
-        self.session.execute(text(query), {
-            "topic": topic,
-            "date": date,
-            "avg_sentiment": avg_sentiment,
-            "article_count": article_count,
-            "positive_count": positive_count,
-            "neutral_count": neutral_count,
-            "negative_count": negative_count,
-        })
+        self.session.execute(
+            text(query),
+            {
+                "topic": topic,
+                "date": date,
+                "avg_sentiment": avg_sentiment,
+                "article_count": article_count,
+                "positive_count": positive_count,
+                "neutral_count": neutral_count,
+                "negative_count": negative_count,
+            },
+        )
         self.session.commit()
-        
+
         # Return the created/updated record
         stmt = select(TopicSentimentDaily).where(
             TopicSentimentDaily.topic == topic,
             TopicSentimentDaily.date == date,
         )
         return self.session.exec(stmt).first()
-    
+
     def get_topic_sentiment_trend(
         self, topic: str, days: int = 30
     ) -> list[TopicSentimentDaily]:
         """Get sentiment trend for topic over N days"""
         from datetime import datetime, timedelta
-        
+
         end_date = datetime.utcnow().date()
         start_date = end_date - timedelta(days=days)
-        
+
         stmt = (
             select(TopicSentimentDaily)
             .where(
@@ -526,7 +552,7 @@ class Storage:
             .order_by(TopicSentimentDaily.date.asc())
         )
         return list(self.session.exec(stmt))
-    
+
     # -------------------------------------------------------------------------
     # Topic Modeling
     # -------------------------------------------------------------------------
@@ -540,7 +566,7 @@ class Storage:
     ) -> Subtopic:
         """Create detected subtopic"""
         import json
-        
+
         subtopic = Subtopic(
             parent_topic=parent_topic,
             name=name,
@@ -551,18 +577,18 @@ class Storage:
         self.session.add(subtopic)
         self.session.commit()
         return subtopic
-    
+
     def get_unapproved_subtopics(self) -> list[Subtopic]:
         """Get subtopics awaiting manual approval"""
         stmt = select(Subtopic).where(Subtopic.approved == False)
         return list(self.session.exec(stmt))
-    
+
     def approve_subtopic(self, subtopic_id: str) -> None:
         """Approve subtopic"""
         query = "UPDATE subtopics SET approved = TRUE WHERE id = :id"
         self.session.execute(text(query), {"id": subtopic_id})
         self.session.commit()
-    
+
     def create_topic_evolution_event(
         self,
         event_type: str,
@@ -573,7 +599,7 @@ class Storage:
     ) -> TopicEvolutionEvent:
         """Record topic evolution event"""
         import json
-        
+
         event = TopicEvolutionEvent(
             event_type=event_type,
             source_topic=source_topic,
@@ -587,13 +613,14 @@ class Storage:
 ```
 
 **Acceptance**: Storage methods work:
+
 ```python
 storage = Storage()
 storage.add_quality_score(article_id=1, overall_score=85)
 assert storage.get_quality_score(1).overall_score == 85
 ```
 
----
+______________________________________________________________________
 
 ### T007: Create NLP Package Structure (🔵 Parallel)
 
@@ -610,6 +637,7 @@ touch packages/ai_web_feeds/src/ai_web_feeds/nlp/utils.py
 ```
 
 **`nlp/__init__.py`**:
+
 ```python
 """NLP processing modules for Phase 5"""
 
@@ -628,13 +656,14 @@ __all__ = [
 
 **Acceptance**: Import works: `from ai_web_feeds.nlp import QualityScorer`
 
----
+______________________________________________________________________
 
 ### T008: Create Test Fixtures (🔵 Parallel)
 
 **Files**: Create test data:
 
 **`tests/fixtures/sample_articles.json`**:
+
 ```json
 [
   {
@@ -665,6 +694,7 @@ __all__ = [
 ```
 
 **`tests/fixtures/mock_entities.json`**:
+
 ```json
 {
   "article_1": [
@@ -687,7 +717,7 @@ __all__ = [
 
 **Acceptance**: Fixtures load successfully in tests
 
----
+______________________________________________________________________
 
 ### T009-T015: Test Infrastructure Setup (🔵 Parallel)
 
@@ -701,9 +731,10 @@ Create test files with placeholder tests:
 - T014: `tests/tests/packages/ai_web_feeds/nlp/__init__.py`
 - T015: Update `tests/conftest.py` with NLP-specific fixtures
 
-**Acceptance**: `uv run pytest tests/tests/packages/ai_web_feeds/nlp/` runs (even if tests are empty)
+**Acceptance**: `uv run pytest tests/tests/packages/ai_web_feeds/nlp/` runs (even if
+tests are empty)
 
----
+______________________________________________________________________
 
 ## Phase 5A: Quality Scoring (Tasks 016-035)
 
@@ -712,7 +743,8 @@ Create test files with placeholder tests:
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/nlp/quality_scorer.py`
 
 **Content**:
-```python
+
+````python
 """Quality scoring for articles based on heuristics"""
 
 from typing import Optional
@@ -722,18 +754,18 @@ from ai_web_feeds.config import Settings
 
 class QualityScorer:
     """Compute article quality scores using heuristic analysis"""
-    
+
     def __init__(self, settings: Optional[Settings] = None):
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-    
+
     def score_article(self, article: dict) -> dict:
         """
         Compute overall quality score and component scores
-        
+
         Args:
             article: Dict with keys: id, title, content, feed_id
-        
+
         Returns:
             Dict with scores: {
                 "overall_score": 85,
@@ -746,28 +778,28 @@ class QualityScorer:
         """
         content = article.get("content", "")
         title = article.get("title", "")
-        
+
         # Component scores
         depth = self._compute_depth_score(content, title)
         references = self._compute_reference_score(content)
         author = self._compute_author_score(article)
         domain = self._compute_domain_score(article.get("feed_id"))
         engagement = self._compute_engagement_score(article)
-        
+
         # Weighted overall score
         overall = int(
-            depth * 0.25 +
-            references * 0.20 +
-            author * 0.15 +
-            domain * 0.25 +
-            engagement * 0.15
+            depth * 0.25
+            + references * 0.20
+            + author * 0.15
+            + domain * 0.25
+            + engagement * 0.15
         )
-        
+
         logger.debug(
             f"Quality scored article {article.get('id')}: "
             f"overall={overall}, depth={depth}, refs={references}"
         )
-        
+
         return {
             "overall_score": overall,
             "depth_score": depth,
@@ -776,14 +808,14 @@ class QualityScorer:
             "domain_score": domain,
             "engagement_score": engagement,
         }
-    
+
     def _compute_depth_score(self, content: str, title: str) -> int:
         """Score based on content depth (word count, structure)"""
         words = len(content.split())
         paragraphs = content.count("\n\n") + 1
-        
+
         score = 0
-        
+
         # Word count: >1500 words = +20
         if words >= 1500:
             score += 20
@@ -793,92 +825,94 @@ class QualityScorer:
             score += 10
         elif words >= 200:
             score += 5
-        
+
         # Paragraph structure: >5 paragraphs = +10
         if paragraphs >= 5:
             score += 10
         elif paragraphs >= 3:
             score += 5
-        
+
         # Code blocks: presence of ``` or <code> = +10
         if "```" in content or "<code>" in content:
             score += 10
-        
+
         # Images/diagrams: ![...] or <img> = +5
         if "![" in content or "<img" in content:
             score += 5
-        
+
         # Headings: presence of ## or <h2> = +10
         if "##" in content or "<h2" in content:
             score += 10
-        
+
         return min(score, 100)
-    
+
     def _compute_reference_score(self, content: str) -> int:
         """Score based on external references"""
         import re
-        
+
         # Count external links
         url_pattern = r'https?://[^\s<>"{}|\\^`[\]]+'
         urls = re.findall(url_pattern, content)
-        
+
         score = 0
-        
+
         # External links: ≥3 = +15
         if len(urls) >= 3:
             score += 15
         elif len(urls) >= 1:
             score += 10
-        
+
         # Academic citations: DOI, arXiv, etc.
         if "doi.org" in content or "arxiv.org" in content:
             score += 10
-        
+
         # Reputable domains: .edu, .org
         reputable_count = sum(1 for url in urls if ".edu" in url or ".org" in url)
         if reputable_count >= 1:
             score += 5
-        
+
         return min(score, 100)
-    
+
     def _compute_author_score(self, article: dict) -> int:
         """Score based on author authority (placeholder for now)"""
         # TODO: Implement author bio detection, credentials, h-index
         # For now, return default score
         return 50
-    
+
     def _compute_domain_score(self, feed_id: str) -> int:
         """Score based on feed reputation (placeholder for now)"""
         # TODO: Implement feed reputation scoring
         # For now, return default score based on feed type
         if not feed_id:
             return 50
-        
+
         # Simple heuristic: certain feeds are high quality
         high_quality_feeds = ["arxiv", "nature", "science", "acm"]
         if any(hq in feed_id.lower() for hq in high_quality_feeds):
             return 90
-        
+
         return 60
-    
+
     def _compute_engagement_score(self, article: dict) -> int:
         """Score based on engagement signals (placeholder for now)"""
         # TODO: Implement read time tracking, shares, etc.
         # For now, return default score
         return 50
-```
+````
 
-**Acceptance**: 
+**Acceptance**:
+
 - `scorer = QualityScorer()` initializes
 - `scorer.score_article(sample_article)` returns dict with 6 scores
 
----
+______________________________________________________________________
 
 ### T017-T022: Implement QualityScorer Tests (🔵 Parallel after T016)
 
 **File**: `tests/tests/packages/ai_web_feeds/nlp/test_quality_scorer.py`
 
 Tests to implement:
+
 - T017: `test_score_high_quality_article` (long, well-structured, many links)
 - T018: `test_score_low_quality_article` (short, no links, poor structure)
 - T019: `test_depth_score_calculation` (various word counts)
@@ -888,13 +922,14 @@ Tests to implement:
 
 **Acceptance**: All quality scorer tests pass with ≥90% coverage
 
----
+______________________________________________________________________
 
 ### T023: Create Quality Scoring Batch Job (🟡 After T016)
 
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/nlp_scheduler.py` (create new file)
 
 **Content**:
+
 ```python
 """NLP batch processing jobs for APScheduler"""
 
@@ -907,20 +942,20 @@ from ai_web_feeds.nlp import QualityScorer
 
 class NLPScheduler:
     """Manage NLP batch processing jobs"""
-    
+
     def __init__(self, scheduler: AsyncIOScheduler, settings: Settings = None):
         self.scheduler = scheduler
         self.settings = settings or Settings()
         self.config = self.settings.phase5
         self.storage = Storage()
-        
+
         # Initialize NLP modules
         self.quality_scorer = QualityScorer(self.settings)
-    
+
     def register_jobs(self):
         """Register all NLP batch jobs"""
         logger.info("Registering NLP batch jobs")
-        
+
         # Quality scoring: every 30 minutes
         self.scheduler.add_job(
             self._process_quality_batch,
@@ -929,89 +964,89 @@ class NLPScheduler:
             id="nlp_quality_batch",
             replace_existing=True,
         )
-        
+
         logger.info("✅ NLP jobs registered")
-    
+
     async def _process_quality_batch(self):
         """Process batch of articles for quality scoring"""
         batch_size = self.config.quality_batch_size
         logger.info(f"Starting quality scoring batch (size={batch_size})")
-        
+
         try:
             # Get unprocessed articles
             articles = self.storage.get_unprocessed_articles_for_quality(batch_size)
-            
+
             if not articles:
                 logger.debug("No articles to process for quality scoring")
                 return
-            
+
             success_count = 0
             failure_count = 0
-            
+
             for article in articles:
                 try:
                     # Compute quality scores
                     scores = self.quality_scorer.score_article(article)
-                    
+
                     # Store in database
-                    self.storage.add_quality_score(
-                        article_id=article["id"],
-                        **scores
-                    )
-                    
+                    self.storage.add_quality_score(article_id=article["id"], **scores)
+
                     # Mark as processed
                     self.storage.mark_quality_processed(article["id"])
-                    
+
                     success_count += 1
-                    
+
                 except Exception as e:
                     logger.error(f"Failed to score article {article['id']}: {e}")
                     failure_count += 1
-            
+
             logger.info(
                 f"Quality scoring batch complete: "
                 f"{success_count} success, {failure_count} failed"
             )
-            
+
         except Exception as e:
             logger.error(f"Quality scoring batch failed: {e}")
 ```
 
 **Acceptance**: Scheduler registers quality job
 
----
+______________________________________________________________________
 
 ### T024: Integrate NLP Scheduler with Main Scheduler (🟡 After T023)
 
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/scheduler.py`
 
 **Changes**:
+
 ```python
 from ai_web_feeds.nlp_scheduler import NLPScheduler
+
 
 class SchedulerManager:
     def __init__(self):
         # ... existing init ...
         self.nlp_scheduler = NLPScheduler(self.scheduler, self.settings)
-    
+
     def start(self):
         # ... existing jobs ...
-        
+
         # Register NLP jobs
         self.nlp_scheduler.register_jobs()
-        
+
         # ... rest of start method ...
 ```
 
 **Acceptance**: `scheduler.start()` registers NLP jobs without errors
 
----
+______________________________________________________________________
 
 ### T025-T030: CLI Commands for Quality Scoring (🔵 Parallel after T023)
 
 **File**: `apps/cli/ai_web_feeds/cli/commands/nlp.py` (create new file)
 
 **Content**:
+
 ```python
 """CLI commands for NLP operations"""
 
@@ -1025,29 +1060,34 @@ from ai_web_feeds.nlp import QualityScorer
 app = typer.Typer(help="NLP processing commands")
 console = Console()
 
+
 @app.command()
 def process_quality(
-    batch_size: int = typer.Option(100, "--batch-size", "-b", help="Number of articles to process"),
+    batch_size: int = typer.Option(
+        100, "--batch-size", "-b", help="Number of articles to process"
+    ),
 ):
     """Manually trigger quality scoring batch"""
-    console.print(f"[blue]Processing quality scores for {batch_size} articles...[/blue]")
-    
+    console.print(
+        f"[blue]Processing quality scores for {batch_size} articles...[/blue]"
+    )
+
     settings = Settings()
     storage = Storage()
     scorer = QualityScorer(settings)
-    
+
     articles = storage.get_unprocessed_articles_for_quality(batch_size)
-    
+
     if not articles:
         console.print("[yellow]No articles to process[/yellow]")
         return
-    
+
     for article in articles:
         scores = scorer.score_article(article)
         storage.add_quality_score(article_id=article["id"], **scores)
         storage.mark_quality_processed(article["id"])
         console.print(f"✅ Article {article['id']}: {scores['overall_score']}/100")
-    
+
     console.print(f"[green]Processed {len(articles)} articles[/green]")
 
 
@@ -1055,7 +1095,7 @@ def process_quality(
 def stats():
     """Show NLP processing statistics"""
     storage = Storage()
-    
+
     # Query stats
     query = """
         SELECT 
@@ -1066,47 +1106,49 @@ def stats():
         FROM feed_entries
     """
     result = storage.session.execute(query).first()
-    
+
     table = Table(title="NLP Processing Stats")
     table.add_column("Metric", style="cyan")
     table.add_column("Count", style="magenta", justify="right")
     table.add_column("Percentage", style="green", justify="right")
-    
+
     total = result[0]
     table.add_row("Total Articles", str(total), "100%")
     table.add_row(
-        "Quality Processed", 
-        str(result[1]), 
-        f"{result[1] / total * 100:.1f}%" if total > 0 else "0%"
+        "Quality Processed",
+        str(result[1]),
+        f"{result[1] / total * 100:.1f}%" if total > 0 else "0%",
     )
     table.add_row(
-        "Entities Processed", 
-        str(result[2]), 
-        f"{result[2] / total * 100:.1f}%" if total > 0 else "0%"
+        "Entities Processed",
+        str(result[2]),
+        f"{result[2] / total * 100:.1f}%" if total > 0 else "0%",
     )
     table.add_row(
-        "Sentiment Processed", 
-        str(result[3]), 
-        f"{result[3] / total * 100:.1f}%" if total > 0 else "0%"
+        "Sentiment Processed",
+        str(result[3]),
+        f"{result[3] / total * 100:.1f}%" if total > 0 else "0%",
     )
-    
+
     console.print(table)
 
 
 # More commands will be added in subsequent tasks...
 ```
 
-**Acceptance**: 
+**Acceptance**:
+
 - `aiwebfeeds nlp process-quality` runs
 - `aiwebfeeds nlp stats` shows processing stats
 
----
+______________________________________________________________________
 
 ### T031: Register NLP CLI Module (🟡 After T025)
 
 **File**: `apps/cli/ai_web_feeds/cli/__init__.py`
 
 **Changes**:
+
 ```python
 from ai_web_feeds.cli.commands import nlp
 
@@ -1116,7 +1158,7 @@ app.add_typer(nlp.app, name="nlp")
 
 **Acceptance**: `aiwebfeeds nlp --help` shows available commands
 
----
+______________________________________________________________________
 
 ### T032-T035: Documentation for Quality Scoring (🔵 Parallel)
 
@@ -1127,26 +1169,28 @@ app.add_typer(nlp.app, name="nlp")
 
 **Acceptance**: Documentation site builds, quality-scoring page renders
 
----
+______________________________________________________________________
 
 ## Phase 5B: Entity Extraction (Tasks 036-060)
 
 ### T036: Install spaCy Model (🔵)
 
-**Command**: 
+**Command**:
+
 ```bash
 uv run python -m spacy download en_core_web_sm
 ```
 
 **Acceptance**: Model downloads successfully (~13MB)
 
----
+______________________________________________________________________
 
 ### T037: Implement EntityExtractor Class (🟡 After T036)
 
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/nlp/entity_extractor.py`
 
 **Content**:
+
 ```python
 """Entity extraction using spaCy NER"""
 
@@ -1159,30 +1203,30 @@ from Levenshtein import distance as levenshtein_distance
 
 class EntityExtractor:
     """Extract and normalize entities from article text"""
-    
+
     def __init__(self, settings: Optional[Settings] = None):
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        
+
         # Load spaCy model
         try:
             self.nlp = spacy.load(self.config.spacy_model)
             logger.info(f"Loaded spaCy model: {self.config.spacy_model}")
         except OSError:
             logger.warning(
-                f"spaCy model '{self.config.spacy_model}' not found. "
-                "Downloading..."
+                f"spaCy model '{self.config.spacy_model}' not found. " "Downloading..."
             )
             import subprocess
-            subprocess.run([
-                "python", "-m", "spacy", "download", self.config.spacy_model
-            ])
+
+            subprocess.run(
+                ["python", "-m", "spacy", "download", self.config.spacy_model]
+            )
             self.nlp = spacy.load(self.config.spacy_model)
-    
+
     def extract_entities(self, article: dict) -> List[Dict]:
         """
         Extract entities from article content
-        
+
         Returns:
             List of dicts: [
                 {
@@ -1195,29 +1239,33 @@ class EntityExtractor:
             ]
         """
         content = article.get("content", "")
-        
+
         if len(content) < 100:
             logger.debug(f"Article {article.get('id')} too short for entity extraction")
             return []
-        
+
         # Run spaCy NER
         doc = self.nlp(content[:10000])  # Limit to 10k chars to avoid OOM
-        
+
         entities = []
         for ent in doc.ents:
             entity_type = self._map_spacy_label(ent.label_)
-            
+
             if entity_type:  # Only keep mapped entity types
-                entities.append({
-                    "text": ent.text,
-                    "type": entity_type,
-                    "confidence": self._compute_confidence(ent),
-                    "context": self._extract_context(ent, doc),
-                })
-        
-        logger.debug(f"Extracted {len(entities)} entities from article {article.get('id')}")
+                entities.append(
+                    {
+                        "text": ent.text,
+                        "type": entity_type,
+                        "confidence": self._compute_confidence(ent),
+                        "context": self._extract_context(ent, doc),
+                    }
+                )
+
+        logger.debug(
+            f"Extracted {len(entities)} entities from article {article.get('id')}"
+        )
         return entities
-    
+
     def _map_spacy_label(self, label: str) -> Optional[str]:
         """Map spaCy entity labels to our schema"""
         mapping = {
@@ -1231,7 +1279,7 @@ class EntityExtractor:
             "EVENT": None,  # Events - skip for now
         }
         return mapping.get(label)
-    
+
     def _compute_confidence(self, ent) -> float:
         """Compute confidence score for entity"""
         # spaCy doesn't provide confidence directly
@@ -1239,28 +1287,30 @@ class EntityExtractor:
         length_bonus = min(len(ent.text.split()) / 5, 0.2)
         base_confidence = 0.75
         return min(base_confidence + length_bonus, 1.0)
-    
+
     def _extract_context(self, ent, doc, window=50) -> str:
         """Extract surrounding context for entity"""
         start = max(0, ent.start_char - window)
         end = min(len(doc.text), ent.end_char + window)
         return doc.text[start:end]
-    
-    def normalize_entity(self, text: str, entity_type: str, existing_entities: List[str]) -> str:
+
+    def normalize_entity(
+        self, text: str, entity_type: str, existing_entities: List[str]
+    ) -> str:
         """
         Normalize entity name by finding similar canonical names
-        
+
         Args:
             text: Raw entity text
             entity_type: Entity type (person, organization, etc.)
             existing_entities: List of existing canonical names
-        
+
         Returns:
             Normalized canonical name (either existing or new)
         """
         # Simple normalization: title case
         normalized = text.strip().title()
-        
+
         # Check for similar existing entities (Levenshtein distance ≤2)
         threshold = 2
         for existing in existing_entities:
@@ -1269,9 +1319,9 @@ class EntityExtractor:
                 if dist <= threshold:
                     logger.debug(f"Merged '{normalized}' → '{existing}' (dist={dist})")
                     return existing
-        
+
         return normalized
-    
+
     def _infer_type(self, canonical_name: str) -> str:
         """Infer entity type from canonical name (placeholder)"""
         # TODO: Implement smarter type inference
@@ -1283,14 +1333,16 @@ class EntityExtractor:
 ```
 
 **Acceptance**:
+
 - `extractor = EntityExtractor()` initializes
 - `extractor.extract_entities(sample_article)` returns list of entity dicts
 
----
+______________________________________________________________________
 
 ### T038-T045: Implement EntityExtractor Tests (🔵 Parallel after T037)
 
 Tests to implement:
+
 - T038: `test_extract_entities_from_article`
 - T039: `test_extract_entities_empty_content`
 - T040: `test_map_spacy_labels`
@@ -1302,7 +1354,7 @@ Tests to implement:
 
 **Acceptance**: All entity extractor tests pass with ≥90% coverage
 
----
+______________________________________________________________________
 
 ### T046: Create Entity Extraction Batch Job (🟡 After T037)
 
@@ -1398,13 +1450,14 @@ async def _process_entities_batch(self):
 
 **Acceptance**: Scheduler registers entity job
 
----
+______________________________________________________________________
 
 ### T047-T052: CLI Commands for Entity Extraction (🔵 Parallel after T046)
 
 **File**: `apps/cli/ai_web_feeds/cli/commands/nlp.py`
 
 Add commands:
+
 - T047: `process-entities` - Manually trigger entity extraction batch
 - T048: `list-entities` - List top entities by frequency
 - T049: `show-entity <name>` - Show entity details, articles, mentions
@@ -1414,7 +1467,7 @@ Add commands:
 
 **Acceptance**: All entity CLI commands work
 
----
+______________________________________________________________________
 
 ### T053-T060: Documentation for Entity Extraction (🔵 Parallel)
 
@@ -1429,7 +1482,7 @@ Add commands:
 
 **Acceptance**: Documentation site builds, entity-extraction page renders
 
----
+______________________________________________________________________
 
 ## Phase 5C: Sentiment Analysis (Tasks 061-085)
 
@@ -1438,6 +1491,7 @@ Add commands:
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/nlp/sentiment_analyzer.py`
 
 **Content**:
+
 ```python
 """Sentiment analysis using Hugging Face transformers"""
 
@@ -1449,11 +1503,11 @@ from ai_web_feeds.config import Settings
 
 class SentimentAnalyzer:
     """Classify article sentiment using transformer models"""
-    
+
     def __init__(self, settings: Optional[Settings] = None):
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        
+
         # Load sentiment model
         try:
             self.pipeline = pipeline(
@@ -1465,11 +1519,11 @@ class SentimentAnalyzer:
         except Exception as e:
             logger.error(f"Failed to load sentiment model: {e}")
             raise
-    
+
     def analyze_sentiment(self, article: dict) -> Dict:
         """
         Classify article sentiment
-        
+
         Returns:
             Dict: {
                 "sentiment_score": 0.75,  # -1.0 to +1.0
@@ -1479,21 +1533,23 @@ class SentimentAnalyzer:
             }
         """
         content = article.get("content", "")
-        
+
         if len(content) < 100:
-            logger.debug(f"Article {article.get('id')} too short for sentiment analysis")
+            logger.debug(
+                f"Article {article.get('id')} too short for sentiment analysis"
+            )
             return None
-        
+
         # Truncate to first 512 tokens (BERT limit)
         truncated = content[:2000]
-        
+
         # Run sentiment analysis
         result = self.pipeline(truncated)[0]
-        
+
         # Map label to score
         label = result["label"]
         confidence = result["score"]
-        
+
         if label == "POSITIVE":
             sentiment_score = confidence  # 0.0 to 1.0
             classification = "positive"
@@ -1503,7 +1559,7 @@ class SentimentAnalyzer:
         else:
             sentiment_score = 0.0
             classification = "neutral"
-        
+
         # Apply classification thresholds
         if sentiment_score > 0.3:
             classification = "positive"
@@ -1511,12 +1567,12 @@ class SentimentAnalyzer:
             classification = "negative"
         else:
             classification = "neutral"
-        
+
         logger.debug(
             f"Sentiment for article {article.get('id')}: "
             f"{classification} ({sentiment_score:.2f})"
         )
-        
+
         return {
             "sentiment_score": sentiment_score,
             "classification": classification,
@@ -1526,14 +1582,16 @@ class SentimentAnalyzer:
 ```
 
 **Acceptance**:
+
 - `analyzer = SentimentAnalyzer()` initializes (downloads model ~67MB)
 - `analyzer.analyze_sentiment(sample_article)` returns sentiment dict
 
----
+______________________________________________________________________
 
 ### T062-T068: Implement SentimentAnalyzer Tests (🔵 Parallel after T061)
 
 Tests to implement:
+
 - T062: `test_analyze_positive_sentiment`
 - T063: `test_analyze_negative_sentiment`
 - T064: `test_analyze_neutral_sentiment`
@@ -1544,7 +1602,7 @@ Tests to implement:
 
 **Acceptance**: All sentiment analyzer tests pass with ≥90% coverage
 
----
+______________________________________________________________________
 
 ### T069: Create Sentiment Batch Job (🟡 After T061)
 
@@ -1685,13 +1743,14 @@ async def _aggregate_sentiment_daily(self):
 
 **Acceptance**: Scheduler registers sentiment + aggregation jobs
 
----
+______________________________________________________________________
 
 ### T070-T075: CLI Commands for Sentiment Analysis (🔵 Parallel after T069)
 
 **File**: `apps/cli/ai_web_feeds/cli/commands/nlp.py`
 
 Add commands:
+
 - T070: `process-sentiment` - Manually trigger sentiment batch
 - T071: `sentiment <topic>` - Show sentiment trend for topic (30/90/365 days)
 - T072: `sentiment-shifts` - Show recent sentiment shifts (>0.3 change)
@@ -1701,7 +1760,7 @@ Add commands:
 
 **Acceptance**: All sentiment CLI commands work
 
----
+______________________________________________________________________
 
 ### T076-T085: Documentation for Sentiment Analysis (🔵 Parallel)
 
@@ -1718,7 +1777,7 @@ Add commands:
 
 **Acceptance**: Documentation site builds, sentiment-analysis page renders
 
----
+______________________________________________________________________
 
 ## Phase 5D: Topic Modeling (Tasks 086-110)
 
@@ -1726,9 +1785,11 @@ Add commands:
 
 **File**: `packages/ai_web_feeds/src/ai_web_feeds/nlp/topic_modeler.py`
 
-**Content**: Implement LDA topic modeling with Gensim (detailed implementation ~300 lines)
+**Content**: Implement LDA topic modeling with Gensim (detailed implementation ~300
+lines)
 
 Key methods:
+
 - `train_lda_model(articles, num_topics=10)` - Train LDA on corpus
 - `extract_subtopics(parent_topic, articles)` - Extract subtopics for parent
 - `detect_evolution(current_topics, previous_topics)` - Detect splits/merges
@@ -1736,7 +1797,7 @@ Key methods:
 
 **Acceptance**: `modeler = TopicModeler()` initializes, can train LDA
 
----
+______________________________________________________________________
 
 ### T087-T095: Implement TopicModeler Tests (🔵 Parallel after T086)
 
@@ -1744,7 +1805,7 @@ Tests to implement (9 tests for topic modeling)
 
 **Acceptance**: All topic modeler tests pass with ≥90% coverage
 
----
+______________________________________________________________________
 
 ### T096: Create Topic Modeling Batch Job (🟡 After T086)
 
@@ -1754,11 +1815,12 @@ Add monthly topic modeling job (runs on 1st of month at 3 AM)
 
 **Acceptance**: Scheduler registers topic modeling job
 
----
+______________________________________________________________________
 
 ### T097-T103: CLI Commands for Topic Modeling (🔵 Parallel after T096)
 
 Add commands:
+
 - T097: `process-topics` - Manually trigger topic modeling
 - T098: `review-subtopics` - Review unapproved subtopics
 - T099: `approve-subtopic <id>` - Approve subtopic
@@ -1769,7 +1831,7 @@ Add commands:
 
 **Acceptance**: All topic modeling CLI commands work
 
----
+______________________________________________________________________
 
 ### T104-T110: Documentation for Topic Modeling (🔵 Parallel)
 
@@ -1783,7 +1845,7 @@ Add commands:
 
 **Acceptance**: Documentation site builds, topic-modeling page renders
 
----
+______________________________________________________________________
 
 ## Phase 5E: Testing & Documentation (Tasks 111-127)
 
@@ -1797,7 +1859,7 @@ Add commands:
 
 **Acceptance**: All integration tests pass
 
----
+______________________________________________________________________
 
 ### T116-T120: Performance Benchmarks (🔵 Parallel)
 
@@ -1809,11 +1871,12 @@ Add commands:
 
 **Acceptance**: All benchmarks meet performance targets
 
----
+______________________________________________________________________
 
 ### T121: CLI Validation (🟡 After all CLI tasks)
 
 **Test all CLI commands**:
+
 ```bash
 aiwebfeeds nlp --help
 aiwebfeeds nlp process-quality --batch-size 10
@@ -1825,11 +1888,12 @@ aiwebfeeds nlp review-subtopics
 
 **Acceptance**: All CLI commands work without errors
 
----
+______________________________________________________________________
 
 ### T122: Coverage Report (🟡 After all tests)
 
 **Run**:
+
 ```bash
 cd tests
 uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=term
@@ -1837,7 +1901,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=term
 
 **Acceptance**: Coverage ≥90% for all `nlp/` modules
 
----
+______________________________________________________________________
 
 ### T123: Update Root Documentation (🔵 Parallel)
 
@@ -1847,7 +1911,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=term
 
 **Acceptance**: Root docs updated
 
----
+______________________________________________________________________
 
 ### T124: Update Web Documentation (🔵 Parallel)
 
@@ -1857,11 +1921,12 @@ uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=term
 
 **Acceptance**: Web docs site builds, navigation works
 
----
+______________________________________________________________________
 
 ### T125: Final Testing (🟡 After T121-T124)
 
 **Full test suite**:
+
 ```bash
 uv run pytest
 cd apps/web && pnpm build
@@ -1870,11 +1935,12 @@ cd apps/cli && aiwebfeeds --help
 
 **Acceptance**: All tests pass, builds succeed, CLI works
 
----
+______________________________________________________________________
 
 ### T126: Commit & Tag (🟡 After T125)
 
 **Git operations**:
+
 ```bash
 git add .
 git commit -m "feat(phase5): complete advanced AI/NLP features
@@ -1895,11 +1961,12 @@ git tag v0.4.0-beta -m "Phase 5: Advanced AI/NLP Features"
 
 **Acceptance**: Commit created, tag added
 
----
+______________________________________________________________________
 
 ### T127: Merge to Main (🟡 After T126)
 
 **Git operations**:
+
 ```bash
 git checkout main
 git merge 005-advanced-ai-nlp --no-ff
@@ -1909,24 +1976,24 @@ git push origin v0.4.0-beta
 
 **Acceptance**: Merged to main, pushed to remote
 
----
+______________________________________________________________________
 
 ## Summary
 
-**Total Tasks**: 127  
-**Phases**: 5 (5A-5E)  
-**Estimated Timeline**: 5 weeks  
+**Total Tasks**: 127\
+**Phases**: 5 (5A-5E)\
+**Estimated Timeline**: 5 weeks\
 **Dependencies**: Phase 3B (feed_entries table, APScheduler)
 
 **Parallelization Opportunities**:
+
 - Setup tasks (T001-T015): All parallel
 - Quality scoring tests (T017-T022): All parallel after T016
 - Entity extraction tests (T038-T045): All parallel after T037
 - Sentiment analysis tests (T062-T068): All parallel after T061
 - Documentation tasks: All parallel within each phase
 
-**Critical Path**:
-T001-T007 → T016 → T023 → T024 → T037 → T046 → T061 → T069 → T086 → T096 → T125 → T126 → T127
+**Critical Path**: T001-T007 → T016 → T023 → T024 → T037 → T046 → T061 → T069 → T086 →
+T096 → T125 → T126 → T127
 
 **Status**: ✅ Ready for Implementation
-

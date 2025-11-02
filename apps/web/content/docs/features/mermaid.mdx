@@ -4,8 +4,8 @@ description: Render beautiful diagrams in your documentation using Mermaid synta
 icon: Workflow
 ---
 
-import { Mermaid } from '@/components/mdx/mermaid';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Mermaid } from "@/components/mdx/mermaid";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 ## Overview
 
@@ -102,7 +102,7 @@ sequenceDiagram
     participant Client
     participant Server
     participant Database
-    
+
     Client->>Server: Request data
     activate Server
     Server->>Database: Query
@@ -234,53 +234,9 @@ gitGraph
 
 Organize complex diagrams with subgraphs:
 
-<Tabs items={['Diagram', 'Code']}>
-  <Tab value="Diagram">
-    ```mermaid
-    graph TB
-        subgraph Frontend
-            A[React App]
-            B[Vue App]
-        end
-        subgraph Backend
-            C[API Server]
-            D[Auth Service]
-        end
-        subgraph Database
-            E[(PostgreSQL)]
-            F[(Redis)]
-        end
-        A --> C
-        B --> C
-        C --> D
-        C --> E
-        D --> F
-    ```
-  </Tab>
-  <Tab value="Code">
-    ````md
-    ```mermaid
-    graph TB
-        subgraph Frontend
-            A[React App]
-            B[Vue App]
-        end
-        subgraph Backend
-            C[API Server]
-            D[Auth Service]
-        end
-        subgraph Database
-            E[(PostgreSQL)]
-            F[(Redis)]
-        end
-        A --> C
-        B --> C
-        C --> D
-        C --> E
-        D --> F
-    ```
-    ````
-  </Tab>
+<Tabs items={["Diagram", "Code"]}>
+  <Tab value="Diagram">```mermaid graph TB subgraph Frontend A[React App] B[Vue App] end subgraph Backend C[API Server] D[Auth Service] end subgraph Database E[(PostgreSQL)] F[(Redis)] end A --> C B --> C C --> D C --> E D --> F ```</Tab>
+  <Tab value="Code">````md ```mermaid graph TB subgraph Frontend A[React App] B[Vue App] end subgraph Backend C[API Server] D[Auth Service] end subgraph Database E[(PostgreSQL)] F[(Redis)] end A --> C B --> C C --> D C --> E D --> F ``` ````</Tab>
 </Tabs>
 
 ### Styling

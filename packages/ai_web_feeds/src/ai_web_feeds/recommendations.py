@@ -12,12 +12,11 @@ Implements Phase 1 recommendation strategy:
 - 10% serendipity (random high-quality feeds)
 """
 
-import random
 from datetime import datetime
-from typing import Any
+import random
 
-import numpy as np
 from loguru import logger
+import numpy as np
 from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
@@ -27,6 +26,7 @@ from ai_web_feeds.models import (
     RecommendationInteraction,
     UserProfile,
 )
+
 
 settings = Settings()
 
@@ -98,9 +98,7 @@ def get_similar_feeds_by_topic(
     logger.debug(f"Finding feeds with topics: {topics}")
 
     # Get all feeds
-    statement = select(FeedSource).where(
-        FeedSource.id.not_in(exclude_ids)
-    )
+    statement = select(FeedSource).where(FeedSource.id.not_in(exclude_ids))
     all_feeds = list(session.exec(statement).all())
 
     if not all_feeds:
@@ -153,9 +151,7 @@ def calculate_popularity_scores(
     """
     logger.debug(f"Calculating popularity scores for {len(feed_ids)} feeds")
 
-    feeds = session.exec(
-        select(FeedSource).where(FeedSource.id.in_(feed_ids))
-    ).all()
+    feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(feed_ids))).all()
 
     scores = {}
 
@@ -170,17 +166,15 @@ def calculate_popularity_scores(
         validation_success = feed.popularity_score or 0.0
 
         # Component 2: Validation frequency (normalized)
-        validation_frequency = (feed.validation_count or 0) / max_validation_count if max_validation_count > 0 else 0.0
+        validation_frequency = (
+            (feed.validation_count or 0) / max_validation_count if max_validation_count > 0 else 0.0
+        )
 
         # Component 3: Verified status
         verified_bonus = 1.0 if feed.verified else 0.5
 
         # Weighted average
-        popularity = (
-            0.4 * validation_success +
-            0.3 * validation_frequency +
-            0.3 * verified_bonus
-        )
+        popularity = 0.4 * validation_success + 0.3 * validation_frequency + 0.3 * verified_bonus
 
         scores[feed.id] = popularity
 
@@ -347,18 +341,14 @@ def generate_recommendations(
     # 2. Popularity-based recommendations
     if popularity_count > 0:
         current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
-        popularity_recs = get_popular_feeds(
-            session, current_exclude, popularity_count
-        )
+        popularity_recs = get_popular_feeds(session, current_exclude, popularity_count)
         for feed in popularity_recs:
             recommendations.append((feed, popularity_weight, "popular"))
 
     # 3. Serendipity recommendations
     if serendipity_count > 0:
         current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
-        serendipity_recs = get_serendipity_feeds(
-            session, current_exclude, serendipity_count
-        )
+        serendipity_recs = get_serendipity_feeds(session, current_exclude, serendipity_count)
         for feed in serendipity_recs:
             recommendations.append((feed, serendipity_weight, "discover"))
 
@@ -447,9 +437,7 @@ def get_user_recommendations(
             seed_feed_ids = user_profile.subscribed_feeds[:5]  # Top 5
         # Extract topics from subscribed feeds
         if seed_feed_ids:
-            feeds = session.exec(
-                select(FeedSource).where(FeedSource.id.in_(seed_feed_ids))
-            ).all()
+            feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(seed_feed_ids))).all()
             all_topics = []
             for feed in feeds:
                 if feed.topics:
@@ -457,6 +445,7 @@ def get_user_recommendations(
             # Get most common topics
             if all_topics:
                 from collections import Counter
+
                 topic_counts = Counter(all_topics)
                 seed_topics = [topic for topic, _ in topic_counts.most_common(5)]
 
@@ -468,4 +457,3 @@ def get_user_recommendations(
         seed_topics=seed_topics,
         limit=limit,
     )
-

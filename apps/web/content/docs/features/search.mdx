@@ -5,8 +5,8 @@ description: Intelligent feed search with autocomplete, faceted filtering, and s
 
 # Search & Discovery
 
-> **Status**: ✅ Fully Implemented  
-> **Phase**: Phase 1 (MVP)  
+> **Status**: ✅ Fully Implemented
+> **Phase**: Phase 1 (MVP)
 > **Completion**: 100%
 
 The Search & Discovery feature enables users to find feeds through full-text search, autocomplete suggestions, faceted filtering, and semantic similarity.
@@ -20,6 +20,7 @@ Single search bar at `/search` with real-time autocomplete (<200ms response time
 ### Full-Text Search
 
 Powered by SQLite FTS5 with Porter stemming:
+
 - **Search Across**: Feed titles, descriptions, recent article titles (if cached)
 - **Ranking**: TF-IDF scoring with boost factors:
   - Verified feeds: +20%
@@ -30,6 +31,7 @@ Powered by SQLite FTS5 with Porter stemming:
 ### Autocomplete Suggestions
 
 Within 200ms, get:
+
 - **Top 5 matching feeds**
 - **Top 3 matching topics**
 - **Top 3 recent searches** (user-specific, localStorage)
@@ -39,6 +41,7 @@ Powered by pre-built Trie index (in-memory, <10ms response).
 ### Faceted Filtering
 
 Filter results by multiple criteria (AND logic):
+
 - **Source Type**: blog, podcast, newsletter, video, social, other
 - **Topics**: Multi-select from topic taxonomy
 - **Verified Status**: Toggle verified-only filter
@@ -49,6 +52,7 @@ Filter results by multiple criteria (AND logic):
 ### Semantic Search
 
 Toggle "Include similar results" to enable vector similarity search:
+
 - **Embeddings**: Sentence-BERT (384-dim all-MiniLM-L6-v2 model)
 - **Similarity Threshold**: ≥0.7 cosine similarity
 - **Configurable Modes**:
@@ -98,6 +102,7 @@ AIWF_EMBEDDING__EMBEDDING_CACHE_SIZE=1000
 ### Web Interface
 
 Navigate to `/search`:
+
 1. Type query in search bar
 2. Select autocomplete suggestion or press Enter
 3. Apply faceted filters (left sidebar)
@@ -105,6 +110,7 @@ Navigate to `/search`:
 5. Click "Save Search" to store query for later
 
 **Keyboard Shortcuts**:
+
 - `Cmd/Ctrl+K`: Focus search bar
 - `Arrow keys`: Navigate autocomplete suggestions
 - `Enter`: Execute search
@@ -129,24 +135,24 @@ uv run aiwebfeeds search save --name "ML Research" --query "deep learning" --top
 
 ```typescript
 // Full-text search
-const response = await fetch('/api/search?q=transformer&limit=20');
+const response = await fetch("/api/search?q=transformer&limit=20");
 const results = await response.json();
 
 // Semantic search
-const semanticResults = await fetch('/api/search?q=neural networks&semantic=true&threshold=0.7');
+const semanticResults = await fetch("/api/search?q=neural networks&semantic=true&threshold=0.7");
 
 // Autocomplete
-const suggestions = await fetch('/api/search/autocomplete?prefix=mach');
+const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
 
 // Save search
-await fetch('/api/search/saved', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/search/saved", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    name: 'AI Research',
-    query: 'artificial intelligence',
-    filters: { source_type: ['blog'], topics: ['llm', 'agents'] }
-  })
+    name: "AI Research",
+    query: "artificial intelligence",
+    filters: { source_type: ["blog"], topics: ["llm", "agents"] },
+  }),
 });
 ```
 
@@ -160,6 +166,7 @@ await fetch('/api/search/saved', {
 ## Zero Results Handling
 
 When no results found, display:
+
 - Spelling suggestions
 - "Browse by topic" link
 - "Suggest a feed" link → GitHub issue template
@@ -178,4 +185,3 @@ When no results found, display:
 - [Analytics Dashboard](./analytics) - View search analytics and popular queries
 - [Recommendations](./recommendations) - AI-powered feed suggestions
 - [Data Model](/docs/development/data-model#searchquery) - SearchQuery and SavedSearch schemas
-

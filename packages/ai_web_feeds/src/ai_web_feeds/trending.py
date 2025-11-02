@@ -4,12 +4,10 @@ This module implements Z-score trending detection for real-time topic monitoring
 """
 
 from datetime import datetime, timedelta
-from typing import Any
 
-import numpy as np
 from loguru import logger
-from sqlalchemy import func, text
-from sqlmodel import Session, select
+import numpy as np
+from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, TrendingTopic
@@ -30,11 +28,11 @@ class TrendingDetector:
             db: Database manager instance
             settings: Application settings
         """
-        self.db                = db
-        self.settings          = settings
-        self.baseline_days     = settings.phase3b.trending_baseline_days
-        self.z_threshold       = settings.phase3b.trending_z_score_threshold
-        self.min_articles      = settings.phase3b.trending_min_articles
+        self.db = db
+        self.settings = settings
+        self.baseline_days = settings.phase3b.trending_baseline_days
+        self.z_threshold = settings.phase3b.trending_z_score_threshold
+        self.min_articles = settings.phase3b.trending_min_articles
         self.update_interval_h = settings.phase3b.trending_update_interval_hours
 
     async def detect_trending_topics(self) -> list[TrendingTopic]:
@@ -50,16 +48,16 @@ class TrendingDetector:
         Returns:
             List of TrendingTopic objects ordered by rank
         """
-        now         = datetime.utcnow()
-        period_start= now - timedelta(hours=1)
+        now = datetime.utcnow()
+        period_start = now - timedelta(hours=1)
         baseline_start = now - timedelta(days=self.baseline_days)
 
         # Get topic counts for current period and baseline
-        current_counts  = await self._get_topic_counts(period_start, now)
-        baseline_stats  = await self._get_baseline_stats(baseline_start, now)
+        current_counts = await self._get_topic_counts(period_start, now)
+        baseline_stats = await self._get_baseline_stats(baseline_start, now)
 
         trending_topics = []
-        rank            = 1
+        rank = 1
 
         for topic_id, current_count in current_counts.items():
             if current_count < self.min_articles:
@@ -85,14 +83,14 @@ class TrendingDetector:
                 )
 
                 trending_topic = TrendingTopic(
-                    topic_id             =topic_id,
-                    period_start         =period_start,
-                    period_end           =now,
-                    article_count        =current_count,
-                    baseline_mean        =baseline_mean,
-                    baseline_std         =baseline_std,
-                    z_score              =z_score,
-                    rank                 =rank,
+                    topic_id=topic_id,
+                    period_start=period_start,
+                    period_end=now,
+                    article_count=current_count,
+                    baseline_mean=baseline_mean,
+                    baseline_std=baseline_std,
+                    z_score=z_score,
+                    rank=rank,
                     representative_articles=article_ids,
                 )
                 trending_topics.append(trending_topic)
@@ -112,9 +110,7 @@ class TrendingDetector:
 
         return trending_topics
 
-    async def _get_topic_counts(
-        self, start: datetime, end: datetime
-    ) -> dict[str, int]:
+    async def _get_topic_counts(self, start: datetime, end: datetime) -> dict[str, int]:
         """Get article counts per topic for a period.
 
         Args:
@@ -163,7 +159,7 @@ class TrendingDetector:
 
             # Group by topic and day
             daily_counts: dict[str, list[int]] = {}
-            current_day  = None
+            current_day = None
             day_topics: dict[str, int] = {}
 
             for entry in sorted(entries, key=lambda e: e.discovered_at):
@@ -176,7 +172,7 @@ class TrendingDetector:
                                 daily_counts[topic] = []
                             daily_counts[topic].append(count)
                     current_day = entry_day
-                    day_topics  = {}
+                    day_topics = {}
 
                 # Count categories for this day
                 for category in entry.categories:
@@ -193,8 +189,8 @@ class TrendingDetector:
             baseline_stats = {}
             for topic, counts in daily_counts.items():
                 if len(counts) >= 2:  # Need at least 2 days for std dev
-                    mean   = float(np.mean(counts))
-                    std_dev= float(np.std(counts))
+                    mean = float(np.mean(counts))
+                    std_dev = float(np.std(counts))
                     baseline_stats[topic] = (mean, std_dev)
 
             return baseline_stats
@@ -236,4 +232,3 @@ class TrendingDetector:
                         break
 
             return article_ids
-

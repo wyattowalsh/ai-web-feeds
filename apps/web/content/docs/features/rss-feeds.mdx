@@ -4,30 +4,18 @@ description: Subscribe to documentation updates via RSS, Atom, or JSON feeds
 icon: Rss
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Subscribe to AI Web Feeds documentation updates using RSS, Atom, or JSON feeds.
 
 ## Available Feeds
 
 <Cards>
-  <Card icon={<Globe />}>
-    **Sitewide Feed**
-    All content from the entire site
-  </Card>
-  <Card icon={<BookOpen />}>
-    **Documentation Feed**
-    Only documentation pages
-  </Card>
-  <Card icon={<FileText />}>
-    **Multiple Formats**
-    RSS 2.0, Atom 1.0, and JSON Feed
-  </Card>
-  <Card icon={<Zap />}>
-    **Auto-Updated**
-    Refreshed hourly with latest content
-  </Card>
+  <Card icon={<Globe />}>**Sitewide Feed** All content from the entire site</Card>
+  <Card icon={<BookOpen />}>**Documentation Feed** Only documentation pages</Card>
+  <Card icon={<FileText />}>**Multiple Formats** RSS 2.0, Atom 1.0, and JSON Feed</Card>
+  <Card icon={<Zap />}>**Auto-Updated** Refreshed hourly with latest content</Card>
 </Cards>
 
 ## Feed URLs
@@ -36,47 +24,20 @@ Subscribe to AI Web Feeds documentation updates using RSS, Atom, or JSON feeds.
 
 Subscribe to all content:
 
-<Tabs items={['RSS 2.0', 'Atom 1.0', 'JSON Feed']}>
-  <Tab value="RSS 2.0">
-    ```
-    https://yourdomain.com/rss.xml
-    ```
-    Standard RSS 2.0 format, compatible with most feed readers.
-  </Tab>
-  <Tab value="Atom 1.0">
-    ```
-    https://yourdomain.com/atom.xml
-    ```
-    Atom 1.0 format with extended metadata support.
-  </Tab>
-  <Tab value="JSON Feed">
-    ```
-    https://yourdomain.com/feed.json
-    ```
-    Modern JSON-based feed format.
-  </Tab>
+<Tabs items={["RSS 2.0", "Atom 1.0", "JSON Feed"]}>
+  <Tab value="RSS 2.0">``` https://yourdomain.com/rss.xml ``` Standard RSS 2.0 format, compatible with most feed readers.</Tab>
+  <Tab value="Atom 1.0">``` https://yourdomain.com/atom.xml ``` Atom 1.0 format with extended metadata support.</Tab>
+  <Tab value="JSON Feed">``` https://yourdomain.com/feed.json ``` Modern JSON-based feed format.</Tab>
 </Tabs>
 
 ### Documentation Feeds
 
 Subscribe to documentation updates only:
 
-<Tabs items={['RSS 2.0', 'Atom 1.0', 'JSON Feed']}>
-  <Tab value="RSS 2.0">
-    ```
-    https://yourdomain.com/docs/rss.xml
-    ```
-  </Tab>
-  <Tab value="Atom 1.0">
-    ```
-    https://yourdomain.com/docs/atom.xml
-    ```
-  </Tab>
-  <Tab value="JSON Feed">
-    ```
-    https://yourdomain.com/docs/feed.json
-    ```
-  </Tab>
+<Tabs items={["RSS 2.0", "Atom 1.0", "JSON Feed"]}>
+  <Tab value="RSS 2.0">``` https://yourdomain.com/docs/rss.xml ```</Tab>
+  <Tab value="Atom 1.0">``` https://yourdomain.com/docs/atom.xml ```</Tab>
+  <Tab value="JSON Feed">``` https://yourdomain.com/docs/feed.json ```</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -116,14 +77,14 @@ curl https://yourdomain.com/feed.json | jq
 
 Each feed item contains:
 
-| Field | Description |
-|-------|-------------|
-| **Title** | Page title |
-| **Description** | Page description or excerpt |
-| **Link** | Full URL to the page |
-| **Date** | Last modified date |
-| **Category** | Content category (Features, Guides, etc.) |
-| **Author** | AI Web Feeds Team |
+| Field           | Description                               |
+| --------------- | ----------------------------------------- |
+| **Title**       | Page title                                |
+| **Description** | Page description or excerpt               |
+| **Link**        | Full URL to the page                      |
+| **Date**        | Last modified date                        |
+| **Category**    | Content category (Features, Guides, etc.) |
+| **Author**      | AI Web Feeds Team                         |
 
 ### Categories
 
@@ -140,16 +101,16 @@ Content is categorized automatically:
 Feeds are generated using the [feed](https://www.npmjs.com/package/feed) package:
 
 ```typescript title="lib/rss.ts"
-import { Feed } from 'feed';
-import { source } from '@/lib/source';
+import { Feed } from "feed";
+import { source } from "@/lib/source";
 
 export function getDocsRSS() {
   const feed = new Feed({
-    title: 'AI Web Feeds - Documentation',
+    title: "AI Web Feeds - Documentation",
     id: `${baseUrl}/docs`,
     link: `${baseUrl}/docs`,
-    language: 'en',
-    description: 'Documentation updates...',
+    language: "en",
+    description: "Documentation updates...",
   });
 
   for (const page of source.getPages()) {
@@ -171,17 +132,17 @@ export function getDocsRSS() {
 Next.js route handlers serve the feeds:
 
 ```typescript title="app/docs/rss.xml/route.ts"
-import { getDocsRSS } from '@/lib/rss';
+import { getDocsRSS } from "@/lib/rss";
 
 export const revalidate = 3600; // Revalidate every hour
 
 export function GET() {
   const feed = getDocsRSS();
-  
+
   return new Response(feed.rss2(), {
     headers: {
-      'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },
   });
 }
@@ -195,10 +156,10 @@ Feeds are discoverable via metadata:
 export const metadata: Metadata = {
   alternates: {
     types: {
-      'application/rss+xml': [
+      "application/rss+xml": [
         {
-          title: 'AI Web Feeds - Documentation',
-          url: '/docs/rss.xml',
+          title: "AI Web Feeds - Documentation",
+          url: "/docs/rss.xml",
         },
       ],
     },
@@ -210,15 +171,13 @@ export const metadata: Metadata = {
 
 Feeds are cached for performance:
 
-| Cache Layer | Duration | Purpose |
-|-------------|----------|---------|
-| **Browser** | 1 hour | Client-side caching |
-| **CDN** | 24 hours | Edge caching |
-| **Revalidation** | 1 hour | Server regeneration |
+| Cache Layer      | Duration | Purpose             |
+| ---------------- | -------- | ------------------- |
+| **Browser**      | 1 hour   | Client-side caching |
+| **CDN**          | 24 hours | Edge caching        |
+| **Revalidation** | 1 hour   | Server regeneration |
 
-<Callout>
-  Feeds are revalidated every hour to ensure fresh content while maintaining performance.
-</Callout>
+<Callout>Feeds are revalidated every hour to ensure fresh content while maintaining performance.</Callout>
 
 ## Testing
 
@@ -227,33 +186,36 @@ Feeds are cached for performance:
 <Tabs items={['Browser', 'cURL', 'Feed Validator']}>
   <Tab value="Browser">
     Visit the feed URLs directly in your browser:
-    
+
     - http://localhost:3000/rss.xml
     - http://localhost:3000/docs/rss.xml
     - http://localhost:3000/feed.json
+
   </Tab>
   <Tab value="cURL">
     ```bash
     # Test RSS feed
     curl http://localhost:3000/rss.xml | head -50
-    
+
     # Test Atom feed
     curl http://localhost:3000/atom.xml | head -50
-    
+
     # Test JSON feed
     curl http://localhost:3000/feed.json | jq
-    
+
     # Check headers
     curl -I http://localhost:3000/rss.xml
     ```
+
   </Tab>
   <Tab value="Feed Validator">
     Use the [W3C Feed Validator](https://validator.w3.org/feed/):
-    
+
     1. Visit https://validator.w3.org/feed/
     2. Enter your feed URL
     3. Click "Check"
     4. Review validation results
+
   </Tab>
 </Tabs>
 
@@ -292,9 +254,9 @@ Edit `lib/rss.ts`:
 
 ```typescript
 const feed = new Feed({
-  title: 'Your Custom Title',
-  description: 'Your custom description',
-  copyright: 'All rights reserved 2025, Your Name',
+  title: "Your Custom Title",
+  description: "Your custom description",
+  copyright: "All rights reserved 2025, Your Name",
   // Add more fields...
 });
 ```
@@ -310,7 +272,7 @@ feed.addItem({
   description: page.data.description,
   link: `${baseUrl}${page.url}`,
   date: new Date(page.data.lastModified),
-  
+
   // Custom fields
   image: page.data.image,
   content: await getPageContent(page),
@@ -323,9 +285,10 @@ feed.addItem({
 Control which pages appear in feeds:
 
 ```typescript
-const pages = source.getPages()
-  .filter(page => !page.data.draft) // Exclude drafts
-  .filter(page => page.url.startsWith('/docs')); // Only docs
+const pages = source
+  .getPages()
+  .filter((page) => !page.data.draft) // Exclude drafts
+  .filter((page) => page.url.startsWith("/docs")); // Only docs
 ```
 
 ## Best Practices
@@ -358,9 +321,7 @@ description: Subscribe to documentation updates via RSS, Atom, or JSON feeds
 Organize content with meaningful categories:
 
 ```typescript
-category: page.url.includes('/api/') 
-  ? [{ name: 'API Reference' }]
-  : [{ name: 'Guides' }]
+category: page.url.includes("/api/") ? [{ name: "API Reference" }] : [{ name: "Guides" }];
 ```
 
 ### 4. Cache Appropriately
@@ -375,13 +336,7 @@ export const revalidate = 3600; // 1 hour
 
 ### Feed Not Updating
 
-<Callout type="warn">
-  Clear the Next.js cache:
-  ```bash
-  rm -rf .next/
-  pnpm dev
-  ```
-</Callout>
+<Callout type="warn">Clear the Next.js cache: ```bash rm -rf .next/ pnpm dev ```</Callout>
 
 ### Invalid XML
 

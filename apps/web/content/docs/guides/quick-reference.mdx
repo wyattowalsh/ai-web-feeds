@@ -4,7 +4,7 @@ description: Essential commands and endpoints at a glance
 icon: Zap
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 Quick reference for common tasks, commands, and endpoints.
 
@@ -12,26 +12,24 @@ Quick reference for common tasks, commands, and endpoints.
 
 ### AI & LLM
 
-| URL | Purpose | For |
-|-----|---------|-----|
-| `/llms.txt` | Discovery file | AI agents |
+| URL              | Purpose                     | For         |
+| ---------------- | --------------------------- | ----------- |
+| `/llms.txt`      | Discovery file              | AI agents   |
 | `/llms-full.txt` | All docs, structured format | RAG systems |
-| `/docs/page.mdx` | Page as markdown | AI tools |
-| `/docs/page.md` | Page as markdown (alt) | AI tools |
+| `/docs/page.mdx` | Page as markdown            | AI tools    |
+| `/docs/page.md`  | Page as markdown (alt)      | AI tools    |
 
-<Callout type="info">
-  `/llms-full.txt` has enhanced structure with metadata, TOC, and clear separators. See [Format Documentation](/docs/features/llms-full-format).
-</Callout>
+<Callout type="info">`/llms-full.txt` has enhanced structure with metadata, TOC, and clear separators. See [Format Documentation](/docs/features/llms-full-format).</Callout>
 
 ### RSS Feeds
 
-| URL | Format | Content |
-|-----|--------|---------|
-| `/rss.xml` | RSS 2.0 | Sitewide |
-| `/atom.xml` | Atom 1.0 | Sitewide |
-| `/feed.json` | JSON Feed | Sitewide |
-| `/docs/rss.xml` | RSS 2.0 | Docs only |
-| `/docs/atom.xml` | Atom 1.0 | Docs only |
+| URL               | Format    | Content   |
+| ----------------- | --------- | --------- |
+| `/rss.xml`        | RSS 2.0   | Sitewide  |
+| `/atom.xml`       | Atom 1.0  | Sitewide  |
+| `/feed.json`      | JSON Feed | Sitewide  |
+| `/docs/rss.xml`   | RSS 2.0   | Docs only |
+| `/docs/atom.xml`  | Atom 1.0  | Docs only |
 | `/docs/feed.json` | JSON Feed | Docs only |
 
 <Callout type="info">
@@ -145,38 +143,34 @@ import { LLMCopyButton, ViewOptions } from '@/components/page-actions';
 <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
 
 // View options dropdown
-<ViewOptions 
+<ViewOptions
   markdownUrl={`${page.url}.mdx`}
-  githubUrl="https://github.com/user/repo/blob/main/..." 
+  githubUrl="https://github.com/user/repo/blob/main/..."
 />
 ```
 
 ### Cards and Callouts
 
 ```mdx
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { Callout } from "fumadocs-ui/components/callout";
 
 <Cards>
   <Card title="Title" description="Description" href="/link" />
 </Cards>
 
-<Callout type="info">
-  Information message
-</Callout>
+<Callout type="info">Information message</Callout>
 
-<Callout type="warn">
-  Warning message
-</Callout>
+<Callout type="warn">Warning message</Callout>
 ```
 
 ### Tabs and Steps
 
 ```mdx
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 
-<Tabs items={['Tab 1', 'Tab 2']}>
+<Tabs items={["Tab 1", "Tab 2"]}>
   <Tab value="Tab 1">Content 1</Tab>
   <Tab value="Tab 2">Content 2</Tab>
 </Tabs>
@@ -191,13 +185,13 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `middleware.ts` | Content negotiation |
-| `next.config.mjs` | URL rewrites |
-| `source.config.ts` | MDX processing |
-| `app/llms.txt/route.ts` | Discovery endpoint |
-| `components/page-actions.tsx` | AI UI components |
+| File                          | Purpose             |
+| ----------------------------- | ------------------- |
+| `middleware.ts`               | Content negotiation |
+| `next.config.mjs`             | URL rewrites        |
+| `source.config.ts`            | MDX processing      |
+| `app/llms.txt/route.ts`       | Discovery endpoint  |
+| `components/page-actions.tsx` | AI UI components    |
 
 ### Environment Variables
 
@@ -237,8 +231,8 @@ Edit `scripts/export-pdf.ts`:
 
 ```typescript
 await page.pdf({
-  width: '950px',
-  margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+  width: "950px",
+  margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
 });
 ```
 
@@ -253,7 +247,7 @@ const content = `# Your Custom Title
 
 ## Documentation Pages
 
-${pages.map(page => `- [${page.data.title}](${origin}${page.url}.mdx): ${page.data.description ?? ''}`).join('\n')}
+${pages.map((page) => `- [${page.data.title}](${origin}${page.url}.mdx): ${page.data.description ?? ""}`).join("\n")}
 `;
 ```
 
@@ -290,11 +284,11 @@ ${pages.map(page => `- [${page.data.title}](${origin}${page.url}.mdx): ${page.da
 
 ### Caching Strategy
 
-| Resource | Cache-Control |
-|----------|---------------|
-| `/llms.txt` | `s-maxage=86400` (24h) |
+| Resource         | Cache-Control                  |
+| ---------------- | ------------------------------ |
+| `/llms.txt`      | `s-maxage=86400` (24h)         |
 | `/llms-full.txt` | `revalidate=false` (permanent) |
-| `*.mdx` routes | `immutable` (forever) |
+| `*.mdx` routes   | `immutable` (forever)          |
 
 ### Build Optimization
 
@@ -364,7 +358,7 @@ cat next.config.mjs | grep -A 10 "rewrites"
 
 ## Status
 
-✅ All features implemented and tested  
-✅ Following Fumadocs official guidelines  
-✅ Performance optimized with caching  
+✅ All features implemented and tested
+✅ Following Fumadocs official guidelines
+✅ Performance optimized with caching
 ✅ Production ready

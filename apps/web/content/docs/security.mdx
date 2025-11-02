@@ -4,30 +4,26 @@ description: Security guidelines, vulnerability reporting, and best practices fo
 icon: Shield
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Steps } from 'fumadocs-ui/components/steps';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 ## Supported Versions
 
 We release patches for security vulnerabilities in the following versions:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x.x   | ✅ Yes             |
-| < 1.0   | ❌ No              |
+| Version | Supported |
+| ------- | --------- |
+| 1.x.x   | ✅ Yes    |
+| < 1.0   | ❌ No     |
 
-<Callout type="info">
-  We recommend always using the latest stable version to ensure you have the most recent security updates.
-</Callout>
+<Callout type="info">We recommend always using the latest stable version to ensure you have the most recent security updates.</Callout>
 
 ## Reporting a Vulnerability
 
 We take the security of AI Web Feeds seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
-<Callout type="warn">
-  **Please do not report security vulnerabilities through public GitHub issues.**
-</Callout>
+<Callout type="warn">**Please do not report security vulnerabilities through public GitHub issues.**</Callout>
 
 ### How to Report
 
@@ -59,24 +55,26 @@ Please include the following information in your report:
 - **Proof-of-concept**: Exploit code or PoC (if possible)
 - **Impact assessment**: How an attacker might exploit the vulnerability
 
-<Callout type="info">
-  The more detail you provide, the faster we can validate and fix the issue.
-</Callout>
+<Callout type="info">The more detail you provide, the faster we can validate and fix the issue.</Callout>
 
 ### Response Timeline
 
 <Steps>
 
 ### Initial Acknowledgment
+
 We will acknowledge receipt of your vulnerability report **within 48 hours**.
 
 ### Detailed Response
+
 We will send a detailed response **within 7 days** indicating next steps and requesting any additional information needed.
 
 ### Progress Updates
+
 We will keep you informed of progress towards a fix and full announcement.
 
 ### Coordinated Disclosure
+
 We will coordinate with you on the timing of public disclosure.
 
 </Steps>
@@ -95,22 +93,23 @@ We support safe harbor for security researchers who:
 <Steps>
 
 ### Act in Good Faith
+
 - Avoid privacy violations, data destruction, or service interruption
 - Only interact with accounts you own or have explicit permission to test
 
 ### Report Responsibly
+
 - Do not exploit security issues you discover for any reason
 - Report vulnerabilities as soon as you discover them
 
 ### Follow Guidelines
+
 - Respect our disclosure policy
 - Provide reasonable time for remediation before any public disclosure
 
 </Steps>
 
-<Callout type="info">
-  Researchers acting in good faith under these guidelines will not face legal action for security testing.
-</Callout>
+<Callout type="info">Researchers acting in good faith under these guidelines will not face legal action for security testing.</Callout>
 
 ## Scope
 
@@ -119,7 +118,7 @@ We support safe harbor for security researchers who:
 The following components are **in scope** for security reports:
 
 - AI Web Feeds CLI tool
-- AI Web Feeds web application  
+- AI Web Feeds web application
 - Feed processing and validation logic
 - Data schema and validation
 - CI/CD workflows that could impact security
@@ -144,75 +143,79 @@ When contributing to AI Web Feeds, follow these security best practices:
 <Tabs items={['Input Validation', 'Dependencies', 'Secrets', 'Code Review']}>
   <Tab value="Input Validation">
     ### Input Validation
-    
+
     - Always validate and sanitize user input
     - Use schema validation for all external data
     - Implement proper type checking
     - Escape output for different contexts (HTML, SQL, shell, etc.)
-    
+
     ```python
     from pydantic import BaseModel, HttpUrl, validator
-    
+
     class FeedInput(BaseModel):
         url: HttpUrl
         name: str
-        
+
         @validator('name')
         def validate_name(cls, v):
             if len(v) > 200:
                 raise ValueError('Name too long')
             return v.strip()
     ```
+
   </Tab>
-  
+
   <Tab value="Dependencies">
     ### Dependencies
-    
+
     - Keep all dependencies up to date
     - Review security advisories for dependencies
     - Use `pip-audit` or similar tools to scan for vulnerabilities
     - Pin dependency versions in production
-    
+
     ```bash
     # Check for vulnerabilities
     pip-audit
-    
+
     # Update dependencies safely
     pip install --upgrade package-name
     ```
+
   </Tab>
-  
+
   <Tab value="Secrets">
     ### Secrets Management
-    
+
     - **Never** commit API keys, passwords, or secrets to version control
     - Use environment variables for sensitive configuration
     - Use `.env` files (add to `.gitignore`)
     - Rotate secrets regularly
-    
+
     ```python
     import os
     from dotenv import load_dotenv
-    
+
     load_dotenv()
     api_key = os.getenv('API_KEY')  # Never hardcode!
     ```
+
   </Tab>
-  
+
   <Tab value="Code Review">
     ### Code Review
-    
+
     - All code changes require review before merging
     - Include security considerations in review checklist
     - Test for common vulnerabilities (OWASP Top 10)
     - Document security implications of changes
-    
+
     **Review Checklist:**
     - ✅ Input validation implemented
     - ✅ No hardcoded secrets
     - ✅ Dependencies are up to date
     - ✅ Tests include security scenarios
     - ✅ Documentation updated
+
   </Tab>
 </Tabs>
 
@@ -238,20 +241,18 @@ We use several automated tools to maintain security:
 - **Secret Scanning**: Prevents accidental secret commits
 - **Security Policy Enforcement**: Automated checks for security requirements
 
-<Callout type="info">
-  All pull requests are automatically scanned for security issues before merging.
-</Callout>
+<Callout type="info">All pull requests are automatically scanned for security issues before merging.</Callout>
 
 ## Security Updates
 
 Security updates are released according to severity:
 
-| Severity | Response Time | Release Type |
-|----------|---------------|--------------|
-| **Critical** | Immediate | Patch version (within 24h) |
-| **High** | Within 7 days | Patch version |
-| **Medium** | Within 30 days | Minor version |
-| **Low** | Next planned release | Minor/Patch version |
+| Severity     | Response Time        | Release Type               |
+| ------------ | -------------------- | -------------------------- |
+| **Critical** | Immediate            | Patch version (within 24h) |
+| **High**     | Within 7 days        | Patch version              |
+| **Medium**   | Within 30 days       | Minor version              |
+| **Low**      | Next planned release | Minor/Patch version        |
 
 ### Security Advisories
 
@@ -259,6 +260,7 @@ Security advisories are published at:
 [github.com/wyattowalsh/ai-web-feeds/security/advisories](https://github.com/wyattowalsh/ai-web-feeds/security/advisories)
 
 Subscribe to receive notifications:
+
 - Watch the repository
 - Enable security alerts in your GitHub settings
 - Subscribe to release notifications
@@ -275,11 +277,11 @@ from pydantic import HttpUrl
 def add_feed(url: str) -> FeedSource:
     # Pydantic validates URL format
     validated_url = HttpUrl(url)
-    
+
     # Additional checks
     if validated_url.scheme not in ['http', 'https']:
         raise ValueError("Invalid URL scheme")
-    
+
     return FeedSource(url=str(validated_url))
 ```
 
@@ -324,9 +326,7 @@ Contributors who report valid security issues will be:
 - ✅ **Recognized** in our Hall of Fame
 - ✅ **Eligible** for potential rewards (to be determined)
 
-<Callout type="info">
-  Thank you for helping keep AI Web Feeds and our users safe!
-</Callout>
+<Callout type="info">Thank you for helping keep AI Web Feeds and our users safe!</Callout>
 
 ## Additional Resources
 
@@ -338,5 +338,6 @@ Contributors who report valid security issues will be:
 ## Contact
 
 For general security questions (not vulnerability reports):
+
 - Open a [GitHub Discussion](https://github.com/wyattowalsh/ai-web-feeds/discussions)
 - Email: wyattowalsh@gmail.com

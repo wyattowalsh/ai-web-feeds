@@ -2,10 +2,10 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import Field, HttpUrl
+from pydantic import Field
 from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
@@ -80,7 +80,7 @@ class Medium(str, Enum):
 
 class FeedSource(SQLModel, table=True):
     """Feed source with full metadata - main table.
-    
+
     Represents a single feed source (blog, newsletter, podcast, etc.) with comprehensive
     metadata including classification, curation status, quality metrics, and relationships.
     """
@@ -91,9 +91,7 @@ class FeedSource(SQLModel, table=True):
     id: str = SQLField(primary_key=True, description="Stable unique feed identifier")
 
     # Core feed info
-    feed: str | None = SQLField(
-        default=None, description="Direct feed URL, alias, or CURIE"
-    )
+    feed: str | None = SQLField(default=None, description="Direct feed URL, alias, or CURIE")
     site: str | None = SQLField(default=None, description="Site homepage/section URL")
     title: str = SQLField(description="Feed/source title")
 
@@ -119,9 +117,7 @@ class FeedSource(SQLModel, table=True):
     # Metadata
     language: str | None = SQLField(default="en")
     format: FeedFormat | None = SQLField(default=FeedFormat.UNKNOWN)
-    updated: datetime | None = SQLField(
-        default=None, description="Last human/automation review"
-    )
+    updated: datetime | None = SQLField(default=None, description="Last human/automation review")
     last_validated: datetime | None = SQLField(
         default=None, description="Last successful validation"
     )
@@ -130,7 +126,11 @@ class FeedSource(SQLModel, table=True):
 
     # NEW Phase 1: Search & Recommendation fields
     popularity_score: float = SQLField(
-        default=0.0, ge=0.0, le=1.0, index=True, description="Computed popularity score for recommendations"
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        index=True,
+        description="Computed popularity score for recommendations",
     )
     validation_count: int = SQLField(
         default=0, description="Number of successful validations for trending analysis"
@@ -150,9 +150,7 @@ class FeedSource(SQLModel, table=True):
 
     # Discovery config
     discover_enabled: bool = SQLField(default=False)
-    discover_config: dict[str, Any] = SQLField(
-        default_factory=dict, sa_column=Column(JSON)
-    )
+    discover_config: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Relations (stored as JSON)
     relations: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
@@ -168,7 +166,7 @@ class FeedSource(SQLModel, table=True):
 
 class FeedItem(SQLModel, table=True):
     """Individual feed item/entry.
-    
+
     Represents a single article, post, or entry from a feed source with full content,
     metadata, timestamps, and categorization.
     """
@@ -196,9 +194,7 @@ class FeedItem(SQLModel, table=True):
     # Additional data
     categories: list[str] = SQLField(default_factory=list, sa_column=Column(JSON))
     tags: list[str] = SQLField(default_factory=list, sa_column=Column(JSON))
-    enclosures: list[dict[str, Any]] = SQLField(
-        default_factory=list, sa_column=Column(JSON)
-    )
+    enclosures: list[dict[str, Any]] = SQLField(default_factory=list, sa_column=Column(JSON))
     extra_data: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Timestamps
@@ -211,7 +207,7 @@ class FeedItem(SQLModel, table=True):
 
 class FeedFetchLog(SQLModel, table=True):
     """Log of feed fetch attempts and responses.
-    
+
     Tracks every fetch operation including success/failure status, response metrics,
     performance data, and error information for monitoring and debugging.
     """
@@ -247,9 +243,7 @@ class FeedFetchLog(SQLModel, table=True):
     fetch_duration_ms: int | None = SQLField(default=None)
 
     # Response data (stored as JSON for analysis)
-    response_headers: dict[str, str] = SQLField(
-        default_factory=dict, sa_column=Column(JSON)
-    )
+    response_headers: dict[str, str] = SQLField(default_factory=dict, sa_column=Column(JSON))
     extra_data: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Relationships
@@ -280,7 +274,7 @@ class Topic(SQLModel, table=True):
 
 class FeedEnrichmentData(SQLModel, table=True):
     """Comprehensive enrichment data for feed sources.
-    
+
     Stores AI-generated and automatically discovered metadata including quality scores,
     platform detection, content analysis, SEO data, and security assessments.
     """
@@ -335,7 +329,7 @@ class FeedEnrichmentData(SQLModel, table=True):
     last_updated: datetime | None = SQLField(default=None)
     update_regularity: float | None = SQLField(default=None, ge=0.0, le=1.0)
     update_intervals: list[int] = SQLField(default_factory=list, sa_column=Column(JSON))
-    
+
     # Performance metrics
     response_time_ms: float | None = SQLField(default=None)
     availability_score: float | None = SQLField(default=None, ge=0.0, le=1.0)
@@ -365,7 +359,7 @@ class FeedEnrichmentData(SQLModel, table=True):
     generator: str | None = SQLField(default=None)
     ttl: int | None = SQLField(default=None, description="Time-to-live in minutes")
     cloud: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
-    
+
     # Link analysis
     internal_links: int | None = SQLField(default=None)
     external_links: int | None = SQLField(default=None)
@@ -389,7 +383,7 @@ class FeedEnrichmentData(SQLModel, table=True):
 
 class FeedValidationResult(SQLModel, table=True):
     """Feed validation results and checks.
-    
+
     Comprehensive validation results including schema compliance, accessibility checks,
     content validation, link verification, security assessment, and recommendations.
     """
@@ -466,7 +460,7 @@ class FeedValidationResult(SQLModel, table=True):
 
 class FeedAnalytics(SQLModel, table=True):
     """Analytics and metrics for feed sources.
-    
+
     Time-series analytics tracking volume, frequency, content quality, reliability,
     performance, engagement proxies, and topic distributions over defined periods.
     """
@@ -616,22 +610,24 @@ class OPMLDocument(SQLModel):
 
 class FeedEmbedding(SQLModel, table=True):
     """Vector embeddings for semantic similarity search.
-    
+
     Stores 384-dim embeddings from all-MiniLM-L6-v2 model for semantic search
     and content-based recommendations.
     """
 
     __tablename__ = "feed_embeddings"
 
-    feed_id: str = SQLField(foreign_key="sources.id", primary_key=True, description="Feed source ID")
-    embedding: bytes = SQLField(description="384-dim float32 array serialized as bytes (1536 bytes)")
+    feed_id: str = SQLField(
+        foreign_key="sources.id", primary_key=True, description="Feed source ID"
+    )
+    embedding: bytes = SQLField(
+        description="384-dim float32 array serialized as bytes (1536 bytes)"
+    )
     embedding_model: str = SQLField(
-        default="sentence-transformers/all-MiniLM-L6-v2",
-        description="Embedding model version"
+        default="sentence-transformers/all-MiniLM-L6-v2", description="Embedding model version"
     )
     embedding_provider: str = SQLField(
-        default="local",
-        description="Embedding provider: 'local' or 'huggingface'"
+        default="local", description="Embedding provider: 'local' or 'huggingface'"
     )
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
@@ -639,7 +635,7 @@ class FeedEmbedding(SQLModel, table=True):
 
 class AnalyticsSnapshot(SQLModel, table=True):
     """Aggregated analytics metrics stored daily for historical trending.
-    
+
     JSON snapshots of key metrics for efficient dashboard rendering without
     real-time aggregation queries.
     """
@@ -652,19 +648,17 @@ class AnalyticsSnapshot(SQLModel, table=True):
     validation_success_rate: float = SQLField(ge=0.0, le=1.0, description="Validation success rate")
     avg_response_time: float = SQLField(description="Average validation response time (ms)")
     trending_topics: list[dict[str, Any]] = SQLField(
-        sa_column=Column(JSON),
-        description="Top topics by validation frequency"
+        sa_column=Column(JSON), description="Top topics by validation frequency"
     )
     health_distribution: dict[str, int] = SQLField(
-        sa_column=Column(JSON),
-        description="Feed counts by health category"
+        sa_column=Column(JSON), description="Feed counts by health category"
     )
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class TopicStats(SQLModel, table=True):
     """Topic-level analytics for trending and Most Active Topics.
-    
+
     Tracks validation frequency and health scores per topic for analytics dashboard.
     """
 
@@ -683,7 +677,7 @@ class TopicStats(SQLModel, table=True):
 
 class SearchQuery(SQLModel, table=True):
     """User search interactions for analytics and personalization.
-    
+
     Logs search queries, filters, and clicked results for search analytics
     and improvement.
     """
@@ -691,26 +685,26 @@ class SearchQuery(SQLModel, table=True):
     __tablename__ = "search_queries"
 
     id: UUID = SQLField(default_factory=uuid4, primary_key=True)
-    user_id: str | None = SQLField(default=None, index=True, description="User ID (optional, localStorage key)")
+    user_id: str | None = SQLField(
+        default=None, index=True, description="User ID (optional, localStorage key)"
+    )
     query_text: str = SQLField(description="Search query text")
     search_type: str = SQLField(description="Search type: 'full_text' or 'semantic'")
     filters_applied: dict[str, Any] = SQLField(
         default_factory=dict,
         sa_column=Column(JSON),
-        description="Applied filters (source_type, topics, verified, active)"
+        description="Applied filters (source_type, topics, verified, active)",
     )
     result_count: int = SQLField(description="Number of results returned")
     clicked_results: list[str] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Feed IDs clicked by user"
+        default_factory=list, sa_column=Column(JSON), description="Feed IDs clicked by user"
     )
     timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
 
 
 class SavedSearch(SQLModel, table=True):
     """User-saved search queries for one-click replay.
-    
+
     Stores search query + filters for quick access from sidebar.
     """
 
@@ -721,9 +715,7 @@ class SavedSearch(SQLModel, table=True):
     search_name: str = SQLField(description="User-provided name for saved search")
     query_text: str = SQLField(description="Search query text")
     filters: dict[str, Any] = SQLField(
-        default_factory=dict,
-        sa_column=Column(JSON),
-        description="Saved filters"
+        default_factory=dict, sa_column=Column(JSON), description="Saved filters"
     )
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     last_used_at: datetime = SQLField(default_factory=datetime.utcnow)
@@ -731,7 +723,7 @@ class SavedSearch(SQLModel, table=True):
 
 class RecommendationInteraction(SQLModel, table=True):
     """User feedback on recommendations for model training and evaluation.
-    
+
     Tracks impressions, clicks, likes, and dismisses for recommendation
     performance metrics.
     """
@@ -747,14 +739,14 @@ class RecommendationInteraction(SQLModel, table=True):
     context: dict[str, Any] = SQLField(
         default_factory=dict,
         sa_column=Column(JSON),
-        description="Additional context (explanation, position, etc.)"
+        description="Additional context (explanation, position, etc.)",
     )
     timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
 
 
 class UserProfile(SQLModel, table=True):
     """User interests and preferences for personalization.
-    
+
     Phase 1: Stored in localStorage. Phase 2: Migrate to database with user accounts.
     """
 
@@ -762,24 +754,18 @@ class UserProfile(SQLModel, table=True):
 
     user_id: str = SQLField(primary_key=True, description="User ID (localStorage key)")
     followed_feeds: list[str] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Feed IDs user follows"
+        default_factory=list, sa_column=Column(JSON), description="Feed IDs user follows"
     )
     preferred_topics: list[str] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Topic IDs user prefers"
+        default_factory=list, sa_column=Column(JSON), description="Topic IDs user prefers"
     )
     blocked_topics: list[str] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Topic IDs user blocked"
+        default_factory=list, sa_column=Column(JSON), description="Topic IDs user blocked"
     )
     interaction_history: dict[str, Any] = SQLField(
         default_factory=dict,
         sa_column=Column(JSON),
-        description="Interaction history for recommendations"
+        description="Interaction history for recommendations",
     )
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
@@ -787,7 +773,7 @@ class UserProfile(SQLModel, table=True):
 
 class CollaborativeMatrix(SQLModel, table=True):
     """Precomputed feed co-occurrence matrix for collaborative filtering.
-    
+
     Phase 2: Used when user accounts exist. Phase 1: Placeholder for future.
     """
 
@@ -797,9 +783,7 @@ class CollaborativeMatrix(SQLModel, table=True):
     feed_id_1: str = SQLField(foreign_key="sources.id", index=True)
     feed_id_2: str = SQLField(foreign_key="sources.id", index=True)
     co_occurrence_score: float = SQLField(
-        ge=0.0,
-        le=1.0,
-        description="Co-occurrence score based on user interactions"
+        ge=0.0, le=1.0, description="Co-occurrence score based on user interactions"
     )
     support: int = SQLField(description="Number of users who interacted with both feeds")
     last_updated: datetime = SQLField(default_factory=datetime.utcnow)
@@ -813,141 +797,139 @@ class CollaborativeMatrix(SQLModel, table=True):
 class PollStatus(str, Enum):
     """Feed poll job status values."""
 
-    PENDING  = "pending"
-    RUNNING  = "running"
-    SUCCESS  = "success"
-    FAILURE  = "failure"
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILURE = "failure"
 
 
 class NotificationType(str, Enum):
     """Notification type values."""
 
-    NEW_ARTICLE    = "new_article"
+    NEW_ARTICLE = "new_article"
     TRENDING_TOPIC = "trending_topic"
-    FEED_UPDATED   = "feed_updated"
-    SYSTEM_ALERT   = "system_alert"
+    FEED_UPDATED = "feed_updated"
+    SYSTEM_ALERT = "system_alert"
 
 
 class DeliveryMethod(str, Enum):
     """Notification delivery method."""
 
     WEBSOCKET = "websocket"
-    EMAIL     = "email"
-    IN_APP    = "in_app"
+    EMAIL = "email"
+    IN_APP = "in_app"
 
 
 class NotificationFrequency(str, Enum):
     """Notification frequency preferences."""
 
     INSTANT = "instant"
-    HOURLY  = "hourly"
-    DAILY   = "daily"
-    WEEKLY  = "weekly"
-    OFF     = "off"
+    HOURLY = "hourly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    OFF = "off"
 
 
 class ScheduleType(str, Enum):
     """Email digest schedule type."""
 
-    DAILY  = "daily"
+    DAILY = "daily"
     WEEKLY = "weekly"
     CUSTOM = "custom"
 
 
 class FeedEntry(SQLModel, table=True):
     """Individual feed articles/entries from polling.
-    
+
     Stores article metadata discovered during feed polling for notification
     targeting and historical tracking.
     """
 
     __tablename__ = "feed_entries"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     feed_id: str = SQLField(foreign_key="sources.id", index=True)
     guid: str = SQLField(unique=True, index=True, description="Article GUID (globally unique)")
     link: str = SQLField(max_length=2048, description="Article URL")
     title: str = SQLField(max_length=512)
-    summary: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
-    content_html: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
+    summary: str | None = SQLField(default=None, sa_column=Column(JSON))
+    content_html: str | None = SQLField(default=None, sa_column=Column(JSON))
     pub_date: datetime = SQLField(index=True, description="Article publication date")
-    author: Optional[str] = SQLField(default=None, max_length=255)
+    author: str | None = SQLField(default=None, max_length=255)
     categories: list[str] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Article categories/tags"
+        default_factory=list, sa_column=Column(JSON), description="Article categories/tags"
     )
     discovered_at: datetime = SQLField(default_factory=datetime.utcnow)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    
+
     # Phase 5: NLP processing flags
     quality_processed: bool = SQLField(default=False, description="Quality scoring completed")
     entities_processed: bool = SQLField(default=False, description="Entity extraction completed")
     sentiment_processed: bool = SQLField(default=False, description="Sentiment analysis completed")
     topics_processed: bool = SQLField(default=False, description="Topic modeling completed")
-    quality_processed_at: Optional[datetime] = None
-    entities_processed_at: Optional[datetime] = None
-    sentiment_processed_at: Optional[datetime] = None
-    nlp_failures: Optional[str] = SQLField(default=None, description="JSON: failure counts by type")
-    last_failure_reason: Optional[str] = None
+    quality_processed_at: datetime | None = None
+    entities_processed_at: datetime | None = None
+    sentiment_processed_at: datetime | None = None
+    nlp_failures: str | None = SQLField(default=None, description="JSON: failure counts by type")
+    last_failure_reason: str | None = None
 
 
 class FeedPollJob(SQLModel, table=True):
     """Feed polling job tracking for monitoring and debugging.
-    
+
     Logs each polling attempt with status, timing, and error information
     for feed health monitoring.
     """
 
     __tablename__ = "feed_poll_jobs"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     feed_id: str = SQLField(foreign_key="sources.id", index=True)
     scheduled_at: datetime
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     status: PollStatus = SQLField(index=True)
-    error_message: Optional[str] = SQLField(default=None, sa_column=Column(JSON))
+    error_message: str | None = SQLField(default=None, sa_column=Column(JSON))
     articles_discovered: int = SQLField(default=0, ge=0)
-    response_time_ms: Optional[int] = SQLField(default=None, ge=0)
+    response_time_ms: int | None = SQLField(default=None, ge=0)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class Notification(SQLModel, table=True):
     """User notifications for real-time and in-app delivery.
-    
+
     Stores notification messages with metadata for WebSocket broadcasting
     and notification center display.
     """
 
     __tablename__ = "notifications"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
     type: NotificationType = SQLField(index=True)
     title: str = SQLField(max_length=255)
     message: str = SQLField(max_length=1000)
-    action_url: Optional[str] = SQLField(default=None, max_length=2048)
+    action_url: str | None = SQLField(default=None, max_length=2048)
     context_data: dict[str, Any] = SQLField(
         default_factory=dict,
         sa_column=Column(JSON),
-        description="Additional context (feed_id, article_id, trend_score)"
+        description="Additional context (feed_id, article_id, trend_score)",
     )
-    read_at: Optional[datetime] = None
-    dismissed_at: Optional[datetime] = None
+    read_at: datetime | None = None
+    dismissed_at: datetime | None = None
     created_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
 
 
 class UserFeedFollow(SQLModel, table=True):
     """User feed follow relationships for notification targeting.
-    
+
     Stores which feeds a user follows to determine notification recipients
     and personalize feed recommendations.
     """
 
     __tablename__ = "user_feed_follows"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
     feed_id: str = SQLField(foreign_key="sources.id", index=True)
     followed_at: datetime = SQLField(default_factory=datetime.utcnow)
@@ -955,14 +937,14 @@ class UserFeedFollow(SQLModel, table=True):
 
 class TrendingTopic(SQLModel, table=True):
     """Detected trending topics with statistical metrics.
-    
+
     Stores topic trends with Z-score calculations for alerting and
     discovery features.
     """
 
     __tablename__ = "trending_topics"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     topic_id: str = SQLField(index=True, description="Topic ID from taxonomy")
     period_start: datetime = SQLField(index=True)
     period_end: datetime
@@ -972,58 +954,54 @@ class TrendingTopic(SQLModel, table=True):
     z_score: float = SQLField(description="Z-score (trending if >2.0)")
     rank: int = SQLField(ge=1, description="Ranking by Z-score")
     representative_articles: list[int] = SQLField(
-        default_factory=list,
-        sa_column=Column(JSON),
-        description="Top 3 article IDs"
+        default_factory=list, sa_column=Column(JSON), description="Top 3 article IDs"
     )
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class NotificationPreference(SQLModel, table=True):
     """User notification preferences per feed and delivery method.
-    
+
     Configures notification delivery settings with quiet hours and
     frequency preferences.
     """
 
     __tablename__ = "notification_preferences"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
-    feed_id: Optional[str] = SQLField(
-        default=None,
-        foreign_key="sources.id",
-        description="NULL for global preferences"
+    feed_id: str | None = SQLField(
+        default=None, foreign_key="sources.id", description="NULL for global preferences"
     )
     delivery_method: DeliveryMethod
     frequency: NotificationFrequency
-    quiet_hours_start: Optional[str] = SQLField(default=None, description="HH:MM format")
-    quiet_hours_end: Optional[str] = SQLField(default=None, description="HH:MM format")
+    quiet_hours_start: str | None = SQLField(default=None, description="HH:MM format")
+    quiet_hours_end: str | None = SQLField(default=None, description="HH:MM format")
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class EmailDigest(SQLModel, table=True):
     """Email digest subscriptions with engagement tracking.
-    
+
     Stores digest schedule and tracks open/click metrics for
     optimization and analytics.
     """
 
     __tablename__ = "email_digests"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
     email: str = SQLField(max_length=255)
     schedule_type: ScheduleType
     schedule_cron: str = SQLField(max_length=50, description="Cron expression: '0 9 * * *'")
     timezone: str = SQLField(default="UTC", max_length=50, description="IANA timezone")
-    last_sent_at: Optional[datetime] = None
+    last_sent_at: datetime | None = None
     next_send_at: datetime = SQLField(index=True)
     article_count: int = SQLField(default=0, ge=0, description="Total articles sent")
     open_count: int = SQLField(default=0, ge=0, description="Digest opens")
     click_count: int = SQLField(default=0, ge=0, description="Article clicks")
-    unsubscribed_at: Optional[datetime] = None
+    unsubscribed_at: datetime | None = None
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
@@ -1034,7 +1012,7 @@ class EmailDigest(SQLModel, table=True):
 
 class ArticleQualityScore(SQLModel, table=True):
     """Quality scores for article content analysis.
-    
+
     Stores heuristic-based quality metrics including content depth,
     references, author authority, and domain reputation.
     """
@@ -1043,17 +1021,27 @@ class ArticleQualityScore(SQLModel, table=True):
 
     article_id: int = SQLField(foreign_key="feed_entries.id", primary_key=True)
     overall_score: int = SQLField(ge=0, le=100, description="Weighted overall quality score")
-    depth_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Content depth (words, structure)")
-    reference_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="External links and citations")
-    author_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Author authority and credentials")
-    domain_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Feed reputation score")
-    engagement_score: Optional[int] = SQLField(default=None, ge=0, le=100, description="Read time and shares")
+    depth_score: int | None = SQLField(
+        default=None, ge=0, le=100, description="Content depth (words, structure)"
+    )
+    reference_score: int | None = SQLField(
+        default=None, ge=0, le=100, description="External links and citations"
+    )
+    author_score: int | None = SQLField(
+        default=None, ge=0, le=100, description="Author authority and credentials"
+    )
+    domain_score: int | None = SQLField(
+        default=None, ge=0, le=100, description="Feed reputation score"
+    )
+    engagement_score: int | None = SQLField(
+        default=None, ge=0, le=100, description="Read time and shares"
+    )
     computed_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
 
 
 class Entity(SQLModel, table=True):
     """Extracted entities with normalization and metadata.
-    
+
     Stores canonical entity names with aliases, descriptions, and
     frequency tracking for entity-based navigation and search.
     """
@@ -1063,42 +1051,42 @@ class Entity(SQLModel, table=True):
     id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     canonical_name: str = SQLField(unique=True, max_length=255, index=True)
     entity_type: str = SQLField(
-        max_length=50,
-        description="Entity type: person, organization, technique, dataset, concept"
+        max_length=50, description="Entity type: person, organization, technique, dataset, concept"
     )
-    aliases: Optional[str] = SQLField(default=None, description="JSON array of name variants")
-    description: Optional[str] = None
-    entity_metadata: Optional[str] = SQLField(default=None, description="JSON: {bio, affiliation, h_index, wikipedia_url}")
+    aliases: str | None = SQLField(default=None, description="JSON array of name variants")
+    description: str | None = None
+    entity_metadata: str | None = SQLField(
+        default=None, description="JSON: {bio, affiliation, h_index, wikipedia_url}"
+    )
     frequency_count: int = SQLField(default=0, index=True, ge=0)
     first_seen: datetime = SQLField(default_factory=datetime.utcnow)
-    last_seen: Optional[datetime] = None
+    last_seen: datetime | None = None
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class EntityMention(SQLModel, table=True):
     """Links entities to articles with extraction metadata.
-    
+
     Records entity occurrences in articles with confidence scores
     and extraction context for quality assessment.
     """
 
     __tablename__ = "entity_mentions"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     entity_id: str = SQLField(foreign_key="entities.id", index=True)
     article_id: int = SQLField(foreign_key="feed_entries.id", index=True)
     confidence: float = SQLField(ge=0.0, le=1.0, description="Extraction confidence score")
     extraction_method: str = SQLField(
-        max_length=50,
-        description="Method used: ner_model, rule_based, manual"
+        max_length=50, description="Method used: ner_model, rule_based, manual"
     )
-    context: Optional[str] = SQLField(default=None, description="Surrounding text snippet")
+    context: str | None = SQLField(default=None, description="Surrounding text snippet")
     mentioned_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 
 class ArticleSentiment(SQLModel, table=True):
     """Sentiment classification for articles.
-    
+
     Stores transformer-based sentiment scores with model tracking
     for reproducibility and trend analysis.
     """
@@ -1106,10 +1094,11 @@ class ArticleSentiment(SQLModel, table=True):
     __tablename__ = "article_sentiment"
 
     article_id: int = SQLField(foreign_key="feed_entries.id", primary_key=True)
-    sentiment_score: float = SQLField(ge=-1.0, le=1.0, description="Sentiment score: -1 (negative) to +1 (positive)")
+    sentiment_score: float = SQLField(
+        ge=-1.0, le=1.0, description="Sentiment score: -1 (negative) to +1 (positive)"
+    )
     classification: str = SQLField(
-        max_length=20,
-        description="Classification: positive, neutral, negative"
+        max_length=20, description="Classification: positive, neutral, negative"
     )
     model_name: str = SQLField(max_length=255, description="Hugging Face model identifier")
     confidence: float = SQLField(ge=0.0, le=1.0, description="Model confidence score")
@@ -1118,14 +1107,14 @@ class ArticleSentiment(SQLModel, table=True):
 
 class TopicSentimentDaily(SQLModel, table=True):
     """Aggregated daily sentiment scores by topic.
-    
+
     Time-series data for sentiment trend analysis and shift detection.
     Enables charting and alerting on sentiment changes.
     """
 
     __tablename__ = "topic_sentiment_daily"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     topic: str = SQLField(max_length=255, index=True)
     date: str = SQLField(max_length=10, description="Date in YYYY-MM-DD format")
     avg_sentiment: float = SQLField(description="Average sentiment score for the day")
@@ -1137,7 +1126,7 @@ class TopicSentimentDaily(SQLModel, table=True):
 
 class Subtopic(SQLModel, table=True):
     """Discovered subtopics from topic modeling.
-    
+
     Stores LDA/BERTopic results with keywords and manual curation flags.
     Enables hierarchical topic taxonomy and evolution tracking.
     """
@@ -1148,7 +1137,7 @@ class Subtopic(SQLModel, table=True):
     parent_topic: str = SQLField(max_length=255, index=True)
     name: str = SQLField(max_length=255)
     keywords: str = SQLField(description="JSON array of representative keywords")
-    description: Optional[str] = None
+    description: str | None = None
     article_count: int = SQLField(default=0, ge=0, index=True)
     detected_at: datetime = SQLField(default_factory=datetime.utcnow)
     approved: bool = SQLField(default=False, index=True, description="Manual curation flag")
@@ -1157,20 +1146,21 @@ class Subtopic(SQLModel, table=True):
 
 class TopicEvolutionEvent(SQLModel, table=True):
     """Topic evolution events for tracking topic lifecycle.
-    
+
     Records splits, merges, emergence, and decline events for
     strategic foresight and research trend identification.
     """
 
     __tablename__ = "topic_evolution_events"
 
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: int | None = SQLField(default=None, primary_key=True)
     event_type: str = SQLField(
-        max_length=50,
-        description="Event type: split, merge, emergence, decline"
+        max_length=50, description="Event type: split, merge, emergence, decline"
     )
-    source_topic: Optional[str] = SQLField(default=None, max_length=255)
-    target_topics: Optional[str] = SQLField(default=None, description="JSON array of subtopic IDs")
+    source_topic: str | None = SQLField(default=None, max_length=255)
+    target_topics: str | None = SQLField(default=None, description="JSON array of subtopic IDs")
     article_count: int = SQLField(ge=0, description="Articles involved in the event")
-    growth_rate: Optional[float] = SQLField(default=None, description="Month-over-month growth percentage")
+    growth_rate: float | None = SQLField(
+        default=None, description="Month-over-month growth percentage"
+    )
     detected_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)

@@ -3,11 +3,10 @@
 This module handles email digest subscriptions, content generation, and SMTP delivery.
 """
 
-import smtplib
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any
+import smtplib
 
 from croniter import croniter
 from loguru import logger
@@ -31,14 +30,14 @@ class DigestManager:
             db: Database manager instance
             settings: Application settings
         """
-        self.db            = db
-        self.settings      = settings
-        self.smtp_host     = settings.phase3b.smtp_host
-        self.smtp_port     = settings.phase3b.smtp_port
-        self.smtp_user     = settings.phase3b.smtp_user
+        self.db = db
+        self.settings = settings
+        self.smtp_host = settings.phase3b.smtp_host
+        self.smtp_port = settings.phase3b.smtp_port
+        self.smtp_user = settings.phase3b.smtp_user
         self.smtp_password = settings.phase3b.smtp_password
-        self.smtp_from     = settings.phase3b.smtp_from
-        self.max_articles  = settings.phase3b.digest_max_articles
+        self.smtp_from = settings.phase3b.smtp_from
+        self.max_articles = settings.phase3b.digest_max_articles
 
     async def send_due_digests(self) -> int:
         """Send all digests due for delivery.
@@ -46,7 +45,7 @@ class DigestManager:
         Returns:
             Number of digests sent
         """
-        now       = datetime.utcnow()
+        now = datetime.utcnow()
         due_digests = self.db.get_due_digests(now)
 
         sent_count = 0
@@ -57,9 +56,7 @@ class DigestManager:
 
                 # Update digest schedule
                 digest.last_sent_at = now
-                digest.next_send_at = self._calculate_next_send(
-                    digest.schedule_cron, now
-                )
+                digest.next_send_at = self._calculate_next_send(digest.schedule_cron, now)
                 self.db.update_email_digest(digest)
 
             except Exception as e:
@@ -78,12 +75,10 @@ class DigestManager:
         user_feeds = self.db.get_user_follows(digest.user_id)
 
         # Get recent articles from followed feeds
-        since      = digest.last_sent_at or (datetime.utcnow() - timedelta(days=1))
-        articles   = []
+        since = digest.last_sent_at or (datetime.utcnow() - timedelta(days=1))
+        articles = []
         for feed_id in user_feeds:
-            feed_articles = self.db.get_feed_entries(
-                feed_id, limit=self.max_articles
-            )
+            feed_articles = self.db.get_feed_entries(feed_id, limit=self.max_articles)
             articles.extend([a for a in feed_articles if a.pub_date >= since])
 
         # Sort by pub_date (most recent first)
@@ -98,10 +93,10 @@ class DigestManager:
         html_content = self._generate_html(digest, articles)
 
         # Send email
-        msg                    = MIMEMultipart("alternative")
-        msg["Subject"]         = f"AI Web Feeds Digest - {datetime.now().strftime('%Y-%m-%d')}"
-        msg["From"]            = self.smtp_from
-        msg["To"]              = digest.email
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"AI Web Feeds Digest - {datetime.now().strftime('%Y-%m-%d')}"
+        msg["From"] = self.smtp_from
+        msg["To"] = digest.email
         msg.attach(MIMEText(html_content, "html"))
 
         with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
@@ -115,9 +110,7 @@ class DigestManager:
 
         logger.info(f"Sent digest {digest.id} with {len(articles)} articles to {digest.email}")
 
-    def _generate_html(
-        self, digest: EmailDigest, articles: list[FeedEntry]
-    ) -> str:
+    def _generate_html(self, digest: EmailDigest, articles: list[FeedEntry]) -> str:
         """Generate HTML email content.
 
         Args:
@@ -182,7 +175,6 @@ class DigestManager:
         Returns:
             Next scheduled send time
         """
-        cron    = croniter(cron_expr, from_time)
+        cron = croniter(cron_expr, from_time)
         next_dt = cron.get_next(datetime)
         return next_dt
-

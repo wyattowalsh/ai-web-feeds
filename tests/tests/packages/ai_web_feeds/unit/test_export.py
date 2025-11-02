@@ -6,15 +6,14 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
-
 from ai_web_feeds.export import (
     _add_feed_outline,
     export_all_formats,
     export_to_json,
     export_to_opml,
 )
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 @pytest.mark.unit
@@ -104,12 +103,7 @@ class TestExportToJson:
     )
     def test_export_json_property_based(self, feed_count):
         """Property-based test for JSON export."""
-        data = {
-            "sources": [
-                {"id": f"feed-{i}", "title": f"Feed {i}"}
-                for i in range(feed_count)
-            ]
-        }
+        data = {"sources": [{"id": f"feed-{i}", "title": f"Feed {i}"} for i in range(feed_count)]}
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "feeds.json"

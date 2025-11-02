@@ -1,9 +1,9 @@
 """Unit tests for ai_web_feeds.polling module"""
 
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, FeedPollJob, PollStatus
 from ai_web_feeds.polling import FeedPoller
@@ -14,13 +14,15 @@ from ai_web_feeds.storage import DatabaseManager
 def mock_db():
     """Mock database manager"""
     db = MagicMock(spec=DatabaseManager)
-    db.create_poll_job = MagicMock(return_value=FeedPollJob(
-        id=1,
-        feed_id="test-feed",
-        scheduled_at=datetime.utcnow(),
-        started_at=datetime.utcnow(),
-        status=PollStatus.RUNNING,
-    ))
+    db.create_poll_job = MagicMock(
+        return_value=FeedPollJob(
+            id=1,
+            feed_id="test-feed",
+            scheduled_at=datetime.utcnow(),
+            started_at=datetime.utcnow(),
+            status=PollStatus.RUNNING,
+        )
+    )
     db.update_poll_job = MagicMock()
     db.add_feed_entry = MagicMock()
     return db
@@ -183,4 +185,3 @@ class TestFeedPoller:
         result = poller._parse_date(None)
 
         assert isinstance(result, datetime)
-

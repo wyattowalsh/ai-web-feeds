@@ -39,6 +39,7 @@ Evaluates content depth based on:
 - **Headings**: Recognition of structured content with markdown headings
 
 **Example**:
+
 ```python
 # Article with 1500 words, 5 paragraphs, code blocks → Depth Score: 85
 ```
@@ -52,6 +53,7 @@ Assesses external citations:
 - **Reputable Domains**: .edu, .org domains receive bonus points
 
 **Example**:
+
 ```python
 # Article with 5 links, 2 from arxiv.org → Reference Score: 75
 ```
@@ -91,6 +93,7 @@ aiwebfeeds nlp quality
 ```
 
 **Options**:
+
 - `--batch-size`: Number of articles to process (default: 100)
 - `--force`: Reprocess all articles, ignoring existing scores
 
@@ -189,6 +192,7 @@ class Phase5Settings(BaseSettings):
 ```
 
 **Environment Variables**:
+
 ```bash
 PHASE5_QUALITY_BATCH_SIZE=100
 PHASE5_QUALITY_MIN_WORDS=100
@@ -216,6 +220,7 @@ Planned improvements for quality scoring:
 **Symptom**: `aiwebfeeds nlp stats` shows 0 quality processed.
 
 **Solution**:
+
 ```bash
 # Check if articles exist
 aiwebfeeds feeds list

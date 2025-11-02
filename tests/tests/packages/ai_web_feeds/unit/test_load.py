@@ -5,10 +5,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from ai_web_feeds.load import load_feeds, load_topics, save_feeds, save_topics
 from hypothesis import given
 from hypothesis import strategies as st
-
-from ai_web_feeds.load import load_feeds, load_topics, save_feeds, save_topics
 
 
 @pytest.mark.unit
@@ -18,7 +17,7 @@ class TestLoadFeeds:
     def test_load_feeds_success(self, temp_yaml_file):
         """Test successful feed loading."""
         data = load_feeds(temp_yaml_file)
-        
+
         assert isinstance(data, dict)
         assert "feeds" in data
         assert isinstance(data["feeds"], list)
@@ -28,7 +27,7 @@ class TestLoadFeeds:
     def test_load_feeds_with_path_object(self, temp_yaml_file):
         """Test loading with Path object."""
         data = load_feeds(Path(temp_yaml_file))
-        
+
         assert isinstance(data, dict)
         assert "feeds" in data
 
@@ -36,7 +35,7 @@ class TestLoadFeeds:
         """Test loading from non-existent file."""
         with pytest.raises(FileNotFoundError) as exc_info:
             load_feeds("/nonexistent/path/feeds.yaml")
-        
+
         assert "Feeds file not found" in str(exc_info.value)
 
     def test_load_feeds_invalid_yaml(self):
@@ -44,7 +43,7 @@ class TestLoadFeeds:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content:\n  - malformed")
             temp_path = Path(f.name)
-        
+
         try:
             with pytest.raises(yaml.YAMLError):
                 load_feeds(temp_path)
@@ -56,7 +55,7 @@ class TestLoadFeeds:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("")
             temp_path = Path(f.name)
-        
+
         try:
             data = load_feeds(temp_path)
             # Empty YAML should return None, which we handle
@@ -75,7 +74,7 @@ sources:
     title: Feed Two
 """)
             temp_path = Path(f.name)
-        
+
         try:
             data = load_feeds(temp_path)
             assert "sources" in data
@@ -85,7 +84,9 @@ sources:
 
     def test_load_feeds_unicode_content(self):
         """Test loading feeds with Unicode characters."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as f:
             f.write("""
 feeds:
   - id: unicode-feed
@@ -93,7 +94,7 @@ feeds:
     description: "Émotions et IA"
 """)
             temp_path = Path(f.name)
-        
+
         try:
             data = load_feeds(temp_path)
             assert data["feeds"][0]["title"] == "AI研究 - 人工智能 🤖"
@@ -116,7 +117,7 @@ topics:
     description: AI research and applications
 """)
             temp_path = Path(f.name)
-        
+
         try:
             data = load_topics(temp_path)
             assert isinstance(data, dict)
@@ -130,7 +131,7 @@ topics:
         """Test loading from non-existent file."""
         with pytest.raises(FileNotFoundError) as exc_info:
             load_topics("/nonexistent/path/topics.yaml")
-        
+
         assert "Topics file not found" in str(exc_info.value)
 
     def test_load_topics_with_relations(self):
@@ -151,7 +152,7 @@ topics:
     parent: ai
 """)
             temp_path = Path(f.name)
-        
+
         try:
             data = load_topics(temp_path)
             assert len(data["topics"]) == 3
@@ -166,7 +167,7 @@ topics:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("topics: []\n")
             temp_path = Path(f.name)
-        
+
         try:
             data = load_topics(temp_path)
             assert data["topics"] == []
@@ -190,13 +191,13 @@ class TestSaveFeeds:
                 }
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "output" / "feeds.yaml"
             save_feeds(data, output_path)
-            
+
             assert output_path.exists()
-            
+
             # Verify content
             loaded_data = load_feeds(output_path)
             assert loaded_data["sources"][0]["id"] == "test-feed"
@@ -204,11 +205,11 @@ class TestSaveFeeds:
     def test_save_feeds_creates_directories(self):
         """Test that save_feeds creates parent directories."""
         data = {"sources": []}
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "deep" / "nested" / "path" / "feeds.yaml"
             save_feeds(data, output_path)
-            
+
             assert output_path.exists()
             assert output_path.parent.exists()
 
@@ -223,11 +224,11 @@ class TestSaveFeeds:
                 }
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "feeds.yaml"
             save_feeds(data, output_path)
-            
+
             # Verify Unicode is preserved
             loaded_data = load_feeds(output_path)
             assert loaded_data["sources"][0]["title"] == "AI研究 - 人工智能 🤖"
@@ -248,18 +249,20 @@ class TestSaveFeeds:
                 }
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "feeds.yaml"
             save_feeds(data, output_path)
-            
+
             loaded_data = load_feeds(output_path)
             assert loaded_data["document_meta"]["version"] == "1.0"
             assert loaded_data["sources"][0]["tags"] == ["ai", "ml"]
 
     @given(
         feed_count=st.integers(min_value=0, max_value=10),
-        feed_id_prefix=st.text(min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("L", "N"))),
+        feed_id_prefix=st.text(
+            min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("L", "N"))
+        ),
     )
     def test_save_feeds_property_based(self, feed_count, feed_id_prefix):
         """Property-based test for save_feeds."""
@@ -272,11 +275,11 @@ class TestSaveFeeds:
                 for i in range(feed_count)
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "feeds.yaml"
             save_feeds(data, output_path)
-            
+
             assert output_path.exists()
             loaded_data = load_feeds(output_path)
             assert len(loaded_data["sources"]) == feed_count
@@ -297,13 +300,13 @@ class TestSaveTopics:
                 }
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "topics.yaml"
             save_topics(data, output_path)
-            
+
             assert output_path.exists()
-            
+
             # Verify content
             loaded_data = load_topics(output_path)
             assert loaded_data["topics"][0]["id"] == "ai"
@@ -324,11 +327,11 @@ class TestSaveTopics:
                 },
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "topics.yaml"
             save_topics(data, output_path)
-            
+
             loaded_data = load_topics(output_path)
             ai_topic = next(t for t in loaded_data["topics"] if t["id"] == "ai")
             assert ai_topic["children"] == ["ml", "dl"]
@@ -336,11 +339,11 @@ class TestSaveTopics:
     def test_save_topics_empty_list(self):
         """Test saving empty topics list."""
         data = {"topics": []}
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "topics.yaml"
             save_topics(data, output_path)
-            
+
             assert output_path.exists()
             loaded_data = load_topics(output_path)
             assert loaded_data["topics"] == []
@@ -348,11 +351,11 @@ class TestSaveTopics:
     def test_save_topics_creates_directories(self):
         """Test that save_topics creates parent directories."""
         data = {"topics": []}
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "deep" / "nested" / "topics.yaml"
             save_topics(data, output_path)
-            
+
             assert output_path.exists()
             assert output_path.parent.exists()
 
@@ -380,14 +383,14 @@ class TestLoadSaveRoundTrip:
                 },
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "feeds.yaml"
-            
+
             # Save and load
             save_feeds(original_data, path)
             loaded_data = load_feeds(path)
-            
+
             # Verify data is preserved
             assert loaded_data == original_data
 
@@ -407,14 +410,14 @@ class TestLoadSaveRoundTrip:
                 },
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "topics.yaml"
-            
+
             # Save and load
             save_topics(original_data, path)
             loaded_data = load_topics(path)
-            
+
             # Verify data is preserved
             assert loaded_data == original_data
 
@@ -429,12 +432,15 @@ class TestLoadSaveRoundTrip:
                 }
             ],
         }
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "feeds.yaml"
-            
+
             save_feeds(original_data, path)
             loaded_data = load_feeds(path)
-            
+
             assert loaded_data["sources"][0]["title"] == original_data["sources"][0]["title"]
-            assert loaded_data["sources"][0]["description"] == original_data["sources"][0]["description"]
+            assert (
+                loaded_data["sources"][0]["description"]
+                == original_data["sources"][0]["description"]
+            )

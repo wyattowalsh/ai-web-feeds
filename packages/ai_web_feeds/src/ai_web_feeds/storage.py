@@ -2,21 +2,18 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
-from uuid import UUID
+from typing import Any
 
 from loguru import logger
-from sqlalchemy import create_engine, desc, text
-from sqlmodel import SQLModel, select, Session
+from sqlalchemy import create_engine, desc
+from sqlmodel import Session, SQLModel, select
 
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
-    CollaborativeMatrix,
     EmailDigest,
     FeedAnalytics,
-    FeedEmbedding,
-    FeedEntry,
     FeedEnrichmentData,
+    FeedEntry,
     FeedFetchLog,
     FeedItem,
     FeedPollJob,
@@ -24,14 +21,11 @@ from ai_web_feeds.models import (
     FeedValidationResult,
     Notification,
     NotificationPreference,
-    RecommendationInteraction,
     SavedSearch,
-    SearchQuery,
     Topic,
     TopicStats,
     TrendingTopic,
     UserFeedFollow,
-    UserProfile,
 )
 
 
@@ -48,9 +42,7 @@ class DatabaseManager:
         self.engine = create_engine(
             database_url,
             echo=False,  # Set to True for SQL debugging
-            connect_args={"check_same_thread": False}
-            if database_url.startswith("sqlite")
-            else {},
+            connect_args={"check_same_thread": False} if database_url.startswith("sqlite") else {},
         )
         logger.info(f"Database initialized: {database_url}")
 
@@ -151,7 +143,7 @@ class DatabaseManager:
             session.commit()
             session.refresh(log)
             return log
-    
+
     # Alias for backwards compatibility
     def add_fetch_log(self, log: FeedFetchLog) -> FeedFetchLog:
         """Add a feed fetch log entry (alias).
@@ -163,7 +155,7 @@ class DatabaseManager:
             Added FeedFetchLog
         """
         return self.add_feed_fetch_log(log)
-    
+
     def get_feed_items(self, feed_source_id: str) -> list[FeedItem]:
         """Get all feed items for a feed source.
 
@@ -176,7 +168,7 @@ class DatabaseManager:
         with self.get_session() as session:
             statement = select(FeedItem).where(FeedItem.feed_source_id == feed_source_id)
             return list(session.exec(statement).all())
-    
+
     def get_fetch_logs(self, feed_source_id: str) -> list[FeedFetchLog]:
         """Get fetch logs for a feed source.
 
@@ -215,7 +207,7 @@ class DatabaseManager:
         with self.get_session() as session:
             statement = select(Topic)
             return list(session.exec(statement).all())
-    
+
     def get_topic(self, topic_id: str) -> Topic | None:
         """Get a topic by ID.
 
@@ -253,9 +245,7 @@ class DatabaseManager:
 
     # ===== ENRICHMENT DATA METHODS =====
 
-    def add_enrichment_data(
-        self, enrichment: FeedEnrichmentData
-    ) -> FeedEnrichmentData:
+    def add_enrichment_data(self, enrichment: FeedEnrichmentData) -> FeedEnrichmentData:
         """Add or update feed enrichment data.
 
         Args:
@@ -268,14 +258,10 @@ class DatabaseManager:
             session.add(enrichment)
             session.commit()
             session.refresh(enrichment)
-            logger.info(
-                f"Added enrichment data for feed: {enrichment.feed_source_id}"
-            )
+            logger.info(f"Added enrichment data for feed: {enrichment.feed_source_id}")
             return enrichment
 
-    def get_enrichment_data(
-        self, feed_source_id: str
-    ) -> FeedEnrichmentData | None:
+    def get_enrichment_data(self, feed_source_id: str) -> FeedEnrichmentData | None:
         """Get latest enrichment data for a feed source.
 
         Args:
@@ -292,9 +278,7 @@ class DatabaseManager:
             )
             return session.exec(statement).first()
 
-    def get_all_enrichment_data(
-        self, feed_source_id: str
-    ) -> list[FeedEnrichmentData]:
+    def get_all_enrichment_data(self, feed_source_id: str) -> list[FeedEnrichmentData]:
         """Get all enrichment data for a feed source.
 
         Args:
@@ -311,9 +295,7 @@ class DatabaseManager:
             )
             return list(session.exec(statement).all())
 
-    def delete_old_enrichments(
-        self, feed_source_id: str, keep_count: int = 5
-    ) -> int:
+    def delete_old_enrichments(self, feed_source_id: str, keep_count: int = 5) -> int:
         """Delete old enrichment data, keeping only recent entries.
 
         Args:
@@ -344,16 +326,12 @@ class DatabaseManager:
                 session.delete(enrichment)
 
             session.commit()
-            logger.info(
-                f"Deleted {len(old_enrichments)} old enrichments for {feed_source_id}"
-            )
+            logger.info(f"Deleted {len(old_enrichments)} old enrichments for {feed_source_id}")
             return len(old_enrichments)
 
     # ===== VALIDATION RESULT METHODS =====
 
-    def add_validation_result(
-        self, validation: FeedValidationResult
-    ) -> FeedValidationResult:
+    def add_validation_result(self, validation: FeedValidationResult) -> FeedValidationResult:
         """Add a feed validation result.
 
         Args:
@@ -366,14 +344,10 @@ class DatabaseManager:
             session.add(validation)
             session.commit()
             session.refresh(validation)
-            logger.info(
-                f"Added validation result for feed: {validation.feed_source_id}"
-            )
+            logger.info(f"Added validation result for feed: {validation.feed_source_id}")
             return validation
 
-    def get_validation_result(
-        self, feed_source_id: str
-    ) -> FeedValidationResult | None:
+    def get_validation_result(self, feed_source_id: str) -> FeedValidationResult | None:
         """Get latest validation result for a feed source.
 
         Args:
@@ -390,9 +364,7 @@ class DatabaseManager:
             )
             return session.exec(statement).first()
 
-    def get_all_validation_results(
-        self, feed_source_id: str
-    ) -> list[FeedValidationResult]:
+    def get_all_validation_results(self, feed_source_id: str) -> list[FeedValidationResult]:
         """Get all validation results for a feed source.
 
         Args:
@@ -439,11 +411,11 @@ class DatabaseManager:
         limit: int = 10,
     ) -> list[FeedValidationResult]:
         """Get validation history for a feed source.
-        
+
         Args:
             feed_source_id: Feed source ID
             limit: Maximum number of results to return (most recent first)
-        
+
         Returns:
             List of FeedValidationResult (newest first)
         """
@@ -494,24 +466,16 @@ class DatabaseManager:
             List of FeedAnalytics (newest first)
         """
         with self.get_session() as session:
-            statement = select(FeedAnalytics).where(
-                FeedAnalytics.feed_source_id == feed_source_id
-            )
+            statement = select(FeedAnalytics).where(FeedAnalytics.feed_source_id == feed_source_id)
 
             if period_type:
-                statement = statement.where(
-                    FeedAnalytics.period_type == period_type
-                )
+                statement = statement.where(FeedAnalytics.period_type == period_type)
 
-            statement = statement.order_by(
-                FeedAnalytics.period_end.desc()
-            ).limit(limit)
+            statement = statement.order_by(FeedAnalytics.period_end.desc()).limit(limit)
 
             return list(session.exec(statement).all())
 
-    def get_all_analytics(
-        self, period_type: str | None = None
-    ) -> list[FeedAnalytics]:
+    def get_all_analytics(self, period_type: str | None = None) -> list[FeedAnalytics]:
         """Get all analytics across all feeds.
 
         Args:
@@ -524,9 +488,7 @@ class DatabaseManager:
             statement = select(FeedAnalytics)
 
             if period_type:
-                statement = statement.where(
-                    FeedAnalytics.period_type == period_type
-                )
+                statement = statement.where(FeedAnalytics.period_type == period_type)
 
             statement = statement.order_by(FeedAnalytics.period_end.desc())
             return list(session.exec(statement).all())
@@ -550,9 +512,7 @@ class DatabaseManager:
             "recent_items": self.get_recent_feed_items(feed_source_id, limit=10),
         }
 
-    def get_recent_feed_items(
-        self, feed_source_id: str, limit: int = 10
-    ) -> list[FeedItem]:
+    def get_recent_feed_items(self, feed_source_id: str, limit: int = 10) -> list[FeedItem]:
         """Get recent feed items for a source.
 
         Args:
@@ -597,19 +557,13 @@ class DatabaseManager:
                 "total_feeds": total_feeds,
                 "feeds_with_health_data": len(health_scores),
                 "avg_health_score": (
-                    sum(health_scores) / len(health_scores)
-                    if health_scores
-                    else None
+                    sum(health_scores) / len(health_scores) if health_scores else None
                 ),
                 "avg_quality_score": (
-                    sum(quality_scores) / len(quality_scores)
-                    if quality_scores
-                    else None
+                    sum(quality_scores) / len(quality_scores) if quality_scores else None
                 ),
                 "feeds_healthy": len([s for s in health_scores if s >= 0.7]),
-                "feeds_warning": len(
-                    [s for s in health_scores if 0.4 <= s < 0.7]
-                ),
+                "feeds_warning": len([s for s in health_scores if 0.4 <= s < 0.7]),
                 "feeds_critical": len([s for s in health_scores if s < 0.4]),
             }
 
@@ -697,9 +651,7 @@ class DatabaseManager:
             )
 
             if feed_source_id:
-                statement = statement.where(
-                    FeedValidationResult.feed_source_id == feed_source_id
-                )
+                statement = statement.where(FeedValidationResult.feed_source_id == feed_source_id)
 
             return list(session.exec(statement).all())
 
@@ -724,13 +676,12 @@ class DatabaseManager:
                 session.refresh(existing)
                 logger.info(f"Updated analytics snapshot for {snapshot.snapshot_date}")
                 return existing
-            else:
-                # Create new
-                session.add(snapshot)
-                session.commit()
-                session.refresh(snapshot)
-                logger.info(f"Created analytics snapshot for {snapshot.snapshot_date}")
-                return snapshot
+            # Create new
+            session.add(snapshot)
+            session.commit()
+            session.refresh(snapshot)
+            logger.info(f"Created analytics snapshot for {snapshot.snapshot_date}")
+            return snapshot
 
     def get_latest_analytics_snapshot(self) -> AnalyticsSnapshot | None:
         """Get the most recent analytics snapshot.
@@ -740,9 +691,7 @@ class DatabaseManager:
         """
         with self.get_session() as session:
             statement = (
-                select(AnalyticsSnapshot)
-                .order_by(AnalyticsSnapshot.snapshot_date.desc())
-                .limit(1)
+                select(AnalyticsSnapshot).order_by(AnalyticsSnapshot.snapshot_date.desc()).limit(1)
             )
             return session.exec(statement).first()
 
@@ -773,9 +722,10 @@ class DatabaseManager:
 
             if search_type == "semantic":
                 threshold = filters.get("threshold", 0.7) if filters else 0.7
-                return semantic_search(session, query, threshold=threshold, limit=limit, filters=filters)
-            else:
-                return full_text_search(session, query, limit=limit, filters=filters)
+                return semantic_search(
+                    session, query, threshold=threshold, limit=limit, filters=filters
+                )
+            return full_text_search(session, query, limit=limit, filters=filters)
 
     def autocomplete_search(
         self,
@@ -868,7 +818,7 @@ class DatabaseManager:
     def initialize_search_tables(self):
         """Initialize FTS5 table and Trie index."""
         with self.get_session() as session:
-            from ai_web_feeds.search import create_fts_table, build_trie_index
+            from ai_web_feeds.search import build_trie_index, create_fts_table
 
             create_fts_table(session)
             build_trie_index(session)
@@ -959,10 +909,10 @@ class DatabaseManager:
     # T015: Feed Entries
     def add_feed_entry(self, entry: FeedEntry) -> FeedEntry:
         """Add new feed entry (article) from polling.
-        
+
         Args:
             entry: FeedEntry to add
-            
+
         Returns:
             Added FeedEntry with ID
         """
@@ -972,16 +922,14 @@ class DatabaseManager:
             session.refresh(entry)
             return entry
 
-    def get_feed_entries(
-        self, feed_id: str, limit: int = 20, offset: int = 0
-    ) -> list[FeedEntry]:
+    def get_feed_entries(self, feed_id: str, limit: int = 20, offset: int = 0) -> list[FeedEntry]:
         """Get recent entries for a feed.
-        
+
         Args:
             feed_id: Feed ID
             limit: Max entries to return
             offset: Pagination offset
-            
+
         Returns:
             List of FeedEntry objects
         """
@@ -995,15 +943,13 @@ class DatabaseManager:
             )
             return list(session.exec(statement).all())
 
-    def get_recent_entries(
-        self, since: datetime, limit: int = 100
-    ) -> list[FeedEntry]:
+    def get_recent_entries(self, since: datetime, limit: int = 100) -> list[FeedEntry]:
         """Get entries discovered since a timestamp.
-        
+
         Args:
             since: Timestamp to filter from
             limit: Max entries to return
-            
+
         Returns:
             List of recent FeedEntry objects
         """
@@ -1019,10 +965,10 @@ class DatabaseManager:
     # T016: Poll Jobs
     def create_poll_job(self, job: FeedPollJob) -> FeedPollJob:
         """Create new feed poll job.
-        
+
         Args:
             job: FeedPollJob to create
-            
+
         Returns:
             Created FeedPollJob with ID
         """
@@ -1034,10 +980,10 @@ class DatabaseManager:
 
     def update_poll_job(self, job: FeedPollJob) -> FeedPollJob:
         """Update existing poll job status.
-        
+
         Args:
             job: FeedPollJob with updated fields
-            
+
         Returns:
             Updated FeedPollJob
         """
@@ -1047,15 +993,13 @@ class DatabaseManager:
             session.refresh(job)
             return job
 
-    def get_poll_jobs(
-        self, feed_id: str, limit: int = 10
-    ) -> list[FeedPollJob]:
+    def get_poll_jobs(self, feed_id: str, limit: int = 10) -> list[FeedPollJob]:
         """Get recent poll jobs for a feed.
-        
+
         Args:
             feed_id: Feed ID
             limit: Max jobs to return
-            
+
         Returns:
             List of FeedPollJob objects
         """
@@ -1071,10 +1015,10 @@ class DatabaseManager:
     # T017: Notifications
     def create_notification(self, notification: Notification) -> Notification:
         """Create new notification.
-        
+
         Args:
             notification: Notification to create
-            
+
         Returns:
             Created Notification with ID
         """
@@ -1088,12 +1032,12 @@ class DatabaseManager:
         self, user_id: str, unread_only: bool = False, limit: int = 50
     ) -> list[Notification]:
         """Get notifications for a user.
-        
+
         Args:
             user_id: User ID (localStorage UUID)
             unread_only: Filter to unread only
             limit: Max notifications to return
-            
+
         Returns:
             List of Notification objects
         """
@@ -1106,7 +1050,7 @@ class DatabaseManager:
 
     def mark_notification_read(self, notification_id: int) -> None:
         """Mark notification as read.
-        
+
         Args:
             notification_id: Notification ID
         """
@@ -1119,7 +1063,7 @@ class DatabaseManager:
 
     def dismiss_notification(self, notification_id: int) -> None:
         """Dismiss notification.
-        
+
         Args:
             notification_id: Notification ID
         """
@@ -1133,7 +1077,7 @@ class DatabaseManager:
     # T018: Trending Topics
     def save_trending_topics(self, topics: list[TrendingTopic]) -> None:
         """Bulk save trending topics.
-        
+
         Args:
             topics: List of TrendingTopic objects
         """
@@ -1144,30 +1088,24 @@ class DatabaseManager:
 
     def get_trending_topics(self, limit: int = 10) -> list[TrendingTopic]:
         """Get current trending topics.
-        
+
         Args:
             limit: Max topics to return
-            
+
         Returns:
             List of TrendingTopic objects ordered by rank
         """
         with self.get_session() as session:
-            statement = (
-                select(TrendingTopic)
-                .order_by(TrendingTopic.rank)
-                .limit(limit)
-            )
+            statement = select(TrendingTopic).order_by(TrendingTopic.rank).limit(limit)
             return list(session.exec(statement).all())
 
     # T019: Notification Preferences
-    def save_notification_preference(
-        self, pref: NotificationPreference
-    ) -> NotificationPreference:
+    def save_notification_preference(self, pref: NotificationPreference) -> NotificationPreference:
         """Save or update notification preference.
-        
+
         Args:
             pref: NotificationPreference to save
-            
+
         Returns:
             Saved NotificationPreference with ID
         """
@@ -1180,10 +1118,10 @@ class DatabaseManager:
 
     def get_user_preferences(self, user_id: str) -> list[NotificationPreference]:
         """Get all notification preferences for a user.
-        
+
         Args:
             user_id: User ID (localStorage UUID)
-            
+
         Returns:
             List of NotificationPreference objects
         """
@@ -1196,10 +1134,10 @@ class DatabaseManager:
     # T020: Email Digests
     def create_email_digest(self, digest: EmailDigest) -> EmailDigest:
         """Create email digest subscription.
-        
+
         Args:
             digest: EmailDigest to create
-            
+
         Returns:
             Created EmailDigest with ID
         """
@@ -1209,12 +1147,12 @@ class DatabaseManager:
             session.refresh(digest)
             return digest
 
-    def get_email_digest(self, digest_id: int) -> Optional[EmailDigest]:
+    def get_email_digest(self, digest_id: int) -> EmailDigest | None:
         """Get email digest by ID.
-        
+
         Args:
             digest_id: Digest ID
-            
+
         Returns:
             EmailDigest if found, None otherwise
         """
@@ -1223,10 +1161,10 @@ class DatabaseManager:
 
     def get_user_digests(self, user_id: str) -> list[EmailDigest]:
         """Get all digest subscriptions for a user.
-        
+
         Args:
             user_id: User ID
-            
+
         Returns:
             List of EmailDigest objects
         """
@@ -1237,10 +1175,10 @@ class DatabaseManager:
 
     def update_email_digest(self, digest: EmailDigest) -> EmailDigest:
         """Update email digest subscription.
-        
+
         Args:
             digest: EmailDigest with updated fields
-            
+
         Returns:
             Updated EmailDigest
         """
@@ -1252,10 +1190,10 @@ class DatabaseManager:
 
     def get_due_digests(self, now: datetime) -> list[EmailDigest]:
         """Get digests due for sending.
-        
+
         Args:
             now: Current datetime
-            
+
         Returns:
             List of EmailDigest objects due for sending
         """
@@ -1270,11 +1208,11 @@ class DatabaseManager:
     # T020b: User Feed Follows
     def follow_feed(self, user_id: str, feed_id: str) -> UserFeedFollow:
         """Create user-feed follow relationship.
-        
+
         Args:
             user_id: User ID (localStorage UUID)
             feed_id: Feed ID
-            
+
         Returns:
             Created UserFeedFollow
         """
@@ -1287,7 +1225,7 @@ class DatabaseManager:
 
     def unfollow_feed(self, user_id: str, feed_id: str) -> None:
         """Remove user-feed follow relationship.
-        
+
         Args:
             user_id: User ID (localStorage UUID)
             feed_id: Feed ID
@@ -1304,30 +1242,26 @@ class DatabaseManager:
 
     def get_feed_followers(self, feed_id: str) -> list[str]:
         """Get user IDs following a feed.
-        
+
         Args:
             feed_id: Feed ID
-            
+
         Returns:
             List of user IDs
         """
         with self.get_session() as session:
-            statement = select(UserFeedFollow.user_id).where(
-                UserFeedFollow.feed_id == feed_id
-            )
+            statement = select(UserFeedFollow.user_id).where(UserFeedFollow.feed_id == feed_id)
             return list(session.exec(statement).all())
 
     def get_user_follows(self, user_id: str) -> list[str]:
         """Get feed IDs a user follows.
-        
+
         Args:
             user_id: User ID (localStorage UUID)
-            
+
         Returns:
             List of feed IDs
         """
         with self.get_session() as session:
-            statement = select(UserFeedFollow.feed_id).where(
-                UserFeedFollow.user_id == user_id
-            )
+            statement = select(UserFeedFollow.feed_id).where(UserFeedFollow.user_id == user_id)
             return list(session.exec(statement).all())

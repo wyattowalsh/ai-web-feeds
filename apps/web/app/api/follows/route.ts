@@ -1,6 +1,6 @@
 /**
  * Feed follows API
- * 
+ *
  * GET /api/follows?user_id=<uuid> - Get feeds followed by user
  * POST /api/follows - Follow a feed
  * DELETE /api/follows?user_id=<uuid>&feed_id=<id> - Unfollow a feed
@@ -13,21 +13,15 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("user_id");
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "Missing user_id parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
   }
 
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/follows?user_id=${userId}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = await fetch(`${backendUrl}/storage/follows?user_id=${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
 
     if (!response.ok) {
       throw new Error(`Backend responded with ${response.status}`);
@@ -43,11 +37,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Failed to fetch follows:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch follows",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -60,24 +54,21 @@ export async function POST(request: NextRequest) {
     if (!user_id || !feed_id) {
       return NextResponse.json(
         { error: "Missing required fields: user_id, feed_id" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Call Python backend
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/follows`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id, feed_id }),
-      }
-    );
+    const response = await fetch(`${backendUrl}/storage/follows`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id, feed_id }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      
+
       // Handle duplicate follow (already following)
       if (response.status === 409) {
         return NextResponse.json({
@@ -100,11 +91,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Failed to follow feed:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to follow feed",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -117,7 +108,7 @@ export async function DELETE(request: NextRequest) {
   if (!userId || !feedId) {
     return NextResponse.json(
       { error: "Missing required parameters: user_id, feed_id" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -128,7 +119,7 @@ export async function DELETE(request: NextRequest) {
       {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -143,12 +134,11 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error("Failed to unfollow feed:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to unfollow feed",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

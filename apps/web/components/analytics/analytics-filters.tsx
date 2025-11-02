@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 interface AnalyticsFiltersProps {
   dateRange: string;
@@ -18,17 +18,15 @@ export function AnalyticsFilters({
   onExport,
 }: AnalyticsFiltersProps) {
   const dateRanges = [
-    { value: '7d', label: 'Last 7 days' },
-    { value: '30d', label: 'Last 30 days' },
-    { value: '90d', label: 'Last 90 days' },
+    { value: "7d", label: "Last 7 days" },
+    { value: "30d", label: "Last 30 days" },
+    { value: "90d", label: "Last 90 days" },
   ];
 
   return (
     <div className="bg-white rounded-lg border p-4 flex flex-wrap items-center gap-4">
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Time Range
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Time Range</label>
         <select
           value={dateRange}
           onChange={(e) => onDateRangeChange(e.target.value)}
@@ -43,12 +41,10 @@ export function AnalyticsFilters({
       </div>
 
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Topic Filter
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Topic Filter</label>
         <input
           type="text"
-          value={topic || ''}
+          value={topic || ""}
           onChange={(e) => onTopicChange(e.target.value || undefined)}
           placeholder="e.g., llm, agents, training"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -72,4 +68,3 @@ export function AnalyticsFilters({
     </div>
   );
 }
-

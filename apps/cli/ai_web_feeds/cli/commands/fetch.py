@@ -1,7 +1,6 @@
 """ai_web_feeds.cli.commands.fetch -- Fetch feeds with enhanced metadata extraction"""
 
 import asyncio
-from pathlib import Path
 
 import typer
 from loguru import logger
@@ -60,9 +59,7 @@ def fetch_one(
         task = progress.add_task("Fetching and analyzing...", total=None)
 
         try:
-            fetch_log, metadata, items = asyncio.run(
-                fetcher.fetch_feed(feed.feed)
-            )
+            fetch_log, metadata, items = asyncio.run(fetcher.fetch_feed(feed.feed))
             progress.update(task, completed=True)
 
         except Exception as e:
@@ -81,7 +78,10 @@ def fetch_one(
 
         summary_table.add_row("Status Code", str(fetch_log.status_code))
         summary_table.add_row("Content Type", fetch_log.content_type or "N/A")
-        summary_table.add_row("Content Size", f"{fetch_log.content_length:,} bytes" if fetch_log.content_length else "N/A")
+        summary_table.add_row(
+            "Content Size",
+            f"{fetch_log.content_length:,} bytes" if fetch_log.content_length else "N/A",
+        )
         summary_table.add_row("Duration", f"{fetch_log.fetch_duration_ms} ms")
         summary_table.add_row("Items Found", str(len(items)))
 
@@ -93,7 +93,12 @@ def fetch_one(
         metadata_table.add_column("Value", style="yellow")
 
         metadata_table.add_row("Title", metadata.title or "N/A")
-        metadata_table.add_row("Description", (metadata.description[:100] + "...") if metadata.description and len(metadata.description) > 100 else (metadata.description or "N/A"))
+        metadata_table.add_row(
+            "Description",
+            (metadata.description[:100] + "...")
+            if metadata.description and len(metadata.description) > 100
+            else (metadata.description or "N/A"),
+        )
         metadata_table.add_row("Language", metadata.language or "N/A")
         metadata_table.add_row("Author", metadata.author or "N/A")
         metadata_table.add_row("Total Items", str(metadata.total_items))
@@ -116,6 +121,7 @@ def fetch_one(
         if show_metadata:
             console.print("\n[bold cyan]📊 Detailed Metadata:[/bold cyan]\n")
             import json
+
             console.print(json.dumps(metadata.to_dict(), indent=2, default=str))
 
         # Save to database
@@ -188,9 +194,7 @@ def fetch_all(
             task = progress.add_task(f"Fetching {feed.title}...", total=None)
 
             try:
-                fetch_log, metadata, items = asyncio.run(
-                    fetcher.fetch_feed(feed.feed)
-                )
+                fetch_log, metadata, items = asyncio.run(fetcher.fetch_feed(feed.feed))
 
                 if fetch_log.success:
                     results["success"] += 1
@@ -227,7 +231,9 @@ def fetch_all(
     results_table.add_row("Total Feeds", str(len(feeds)))
     results_table.add_row("Successful", str(results["success"]))
     results_table.add_row("Failed", str(results["failed"]))
-    results_table.add_row("Success Rate", f"{results['success'] / len(feeds) * 100:.1f}%" if feeds else "0%")
+    results_table.add_row(
+        "Success Rate", f"{results['success'] / len(feeds) * 100:.1f}%" if feeds else "0%"
+    )
     results_table.add_row("Total Items Fetched", str(results["total_items"]))
 
     console.print(results_table)

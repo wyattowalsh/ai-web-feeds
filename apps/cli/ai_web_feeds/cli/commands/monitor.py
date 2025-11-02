@@ -1,12 +1,8 @@
 """Monitor command -- Start/stop real-time feed monitoring"""
 
 import asyncio
-import signal
-import sys
-from pathlib import Path
 
 import typer
-from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
@@ -15,7 +11,7 @@ from ai_web_feeds.scheduler import SchedulerManager
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.websocket_server import WebSocketServer
 
-app     = typer.Typer(help="Real-time feed monitoring commands")
+app = typer.Typer(help="Real-time feed monitoring commands")
 console = Console()
 
 
@@ -46,7 +42,11 @@ def start_monitoring(
 
     # Initialize components
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
     db.create_db_and_tables()
 
     # Override WebSocket port if provided
@@ -54,8 +54,8 @@ def start_monitoring(
         settings.phase3b.websocket_port = websocket_port
 
     # Create scheduler and WebSocket server
-    scheduler       = SchedulerManager(db, settings)
-    websocket_server= WebSocketServer(db, settings)
+    scheduler = SchedulerManager(db, settings)
+    websocket_server = WebSocketServer(db, settings)
 
     if background:
         console.print("[yellow]Background mode not implemented yet. Running in foreground.[/]")
@@ -105,8 +105,12 @@ def stop_monitoring():
 def monitoring_status():
     """Show monitoring server status."""
     # Initialize components
-    settings  = Settings()
-    db        = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    settings = Settings()
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
     scheduler = SchedulerManager(db, settings)
 
     console.print("[bold]Monitoring Server Status[/]\n")
@@ -154,7 +158,11 @@ def follow_feed(
 ):
     """Follow a feed to receive notifications."""
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     try:
         follow = db.follow_feed(user_id, feed_id)
@@ -173,7 +181,11 @@ def unfollow_feed(
 ):
     """Unfollow a feed to stop receiving notifications."""
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     try:
         db.unfollow_feed(user_id, feed_id)
@@ -189,7 +201,11 @@ def list_follows(
 ):
     """List feeds followed by a user."""
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     try:
         follows = db.get_user_follows(user_id)
@@ -209,47 +225,51 @@ def list_follows(
 
 @app.command("subscribe-digest")
 def subscribe_digest(
-    user_id: str     = typer.Argument(..., help="User ID (localStorage UUID)"),
-    email: str       = typer.Argument(..., help="Email address"),
-    schedule: str    = typer.Option("daily", help="Digest schedule (daily/weekly)"),
-    timezone: str    = typer.Option("UTC", help="Timezone (e.g., 'America/New_York')"),
+    user_id: str = typer.Argument(..., help="User ID (localStorage UUID)"),
+    email: str = typer.Argument(..., help="Email address"),
+    schedule: str = typer.Option("daily", help="Digest schedule (daily/weekly)"),
+    timezone: str = typer.Option("UTC", help="Timezone (e.g., 'America/New_York')"),
 ):
     """Subscribe to email digests."""
     from ai_web_feeds.models import EmailDigest
     from datetime import datetime, timedelta
-    
+
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     # Map schedule to cron expression
     cron_map = {
-        "daily": "0 9 * * *",      # 9:00 AM daily
-        "weekly": "0 9 * * 1",     # 9:00 AM Monday
-        "hourly": "0 * * * *",     # Top of each hour
+        "daily": "0 9 * * *",  # 9:00 AM daily
+        "weekly": "0 9 * * 1",  # 9:00 AM Monday
+        "hourly": "0 * * * *",  # Top of each hour
     }
-    
+
     if schedule not in cron_map:
         console.print(f"[red]✗ Invalid schedule. Choose from: {', '.join(cron_map.keys())}[/]")
         raise typer.Exit(1)
 
     try:
         digest = EmailDigest(
-            user_id       =user_id,
-            email         =email,
-            schedule_type =schedule,
-            schedule_cron =cron_map[schedule],
-            timezone      =timezone,
-            next_send_at  =datetime.utcnow() + timedelta(days=1),
-            is_active     =True,
+            user_id=user_id,
+            email=email,
+            schedule_type=schedule,
+            schedule_cron=cron_map[schedule],
+            timezone=timezone,
+            next_send_at=datetime.utcnow() + timedelta(days=1),
+            is_active=True,
         )
-        
+
         created = db.create_email_digest(digest)
         console.print(f"[green]✓ Subscribed to {schedule} digest[/]")
         console.print(f"Email: {email}")
         console.print(f"Schedule: {schedule} ({cron_map[schedule]})")
         console.print(f"Timezone: {timezone}")
         console.print(f"Next send: {created.next_send_at}")
-        
+
     except Exception as e:
         console.print(f"[red]✗ Failed to subscribe: {e}[/]")
         raise typer.Exit(1)
@@ -261,9 +281,13 @@ def unsubscribe_digest(
 ):
     """Unsubscribe from email digests."""
     from datetime import datetime
-    
+
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     try:
         # Mark as unsubscribed
@@ -271,13 +295,13 @@ def unsubscribe_digest(
         if not digest:
             console.print(f"[red]✗ Digest {digest_id} not found[/]")
             raise typer.Exit(1)
-        
+
         digest.unsubscribed_at = datetime.utcnow()
-        digest.is_active       = False
+        digest.is_active = False
         db.update_email_digest(digest)
-        
+
         console.print(f"[green]✓ Unsubscribed from digest {digest_id}[/]")
-        
+
     except Exception as e:
         console.print(f"[red]✗ Failed to unsubscribe: {e}[/]")
         raise typer.Exit(1)
@@ -289,7 +313,11 @@ def list_digests(
 ):
     """List email digest subscriptions for a user."""
     settings = Settings()
-    db       = DatabaseManager(settings.database_url if hasattr(settings, 'database_url') else "sqlite:///data/aiwebfeeds.db")
+    db = DatabaseManager(
+        settings.database_url
+        if hasattr(settings, "database_url")
+        else "sqlite:///data/aiwebfeeds.db"
+    )
 
     try:
         digests = db.get_user_digests(user_id)
@@ -299,18 +327,20 @@ def list_digests(
             return
 
         console.print(f"\n[bold]Email Digest Subscriptions ({len(digests)})[/]\n")
-        
+
         table = Table()
         table.add_column("ID", style="cyan")
         table.add_column("Email", style="green")
         table.add_column("Schedule", style="yellow")
         table.add_column("Status", style="magenta")
         table.add_column("Next Send", style="blue")
-        
+
         for digest in digests:
             status = "[green]Active[/]" if digest.is_active else "[red]Inactive[/]"
-            next_send = digest.next_send_at.strftime("%Y-%m-%d %H:%M") if digest.next_send_at else "N/A"
-            
+            next_send = (
+                digest.next_send_at.strftime("%Y-%m-%d %H:%M") if digest.next_send_at else "N/A"
+            )
+
             table.add_row(
                 str(digest.id),
                 digest.email,
@@ -318,10 +348,9 @@ def list_digests(
                 status,
                 next_send,
             )
-        
+
         console.print(table)
 
     except Exception as e:
         console.print(f"[red]✗ Failed to list digests: {e}[/]")
         raise typer.Exit(1)
-

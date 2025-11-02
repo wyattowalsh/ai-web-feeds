@@ -23,6 +23,7 @@ Our GitHub setup includes:
 The feed submission form (`.github/ISSUE_TEMPLATE/feed-submission.yml`) provides a structured way to submit new feeds to the registry.
 
 **Features:**
+
 - Validates feed URLs and site URLs
 - Ensures topic selection from canonical list
 - Collects metadata (language, format, source type)
@@ -31,21 +32,22 @@ The feed submission form (`.github/ISSUE_TEMPLATE/feed-submission.yml`) provides
 
 **Fields:**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Feed ID | Text | ✅ | Unique identifier (slug format) |
-| Feed URL | Text | Optional | Direct RSS/Atom/JSON feed URL |
-| Site URL | Text | Optional | Homepage or section URL |
-| Title | Text | ✅ | Descriptive title for the feed |
-| Topics | Dropdown | ✅ | 1-6 canonical topics |
-| Source Type | Dropdown | ✅ | blog, newsletter, podcast, etc. |
-| Content Mediums | Checkboxes | Optional | text, audio, video, code, data |
-| Language | Text | Optional | ISO 639-1 code (e.g., 'en') |
-| Feed Format | Dropdown | Optional | RSS, Atom, JSONFeed |
+| Field           | Type       | Required | Description                     |
+| --------------- | ---------- | -------- | ------------------------------- |
+| Feed ID         | Text       | ✅       | Unique identifier (slug format) |
+| Feed URL        | Text       | Optional | Direct RSS/Atom/JSON feed URL   |
+| Site URL        | Text       | Optional | Homepage or section URL         |
+| Title           | Text       | ✅       | Descriptive title for the feed  |
+| Topics          | Dropdown   | ✅       | 1-6 canonical topics            |
+| Source Type     | Dropdown   | ✅       | blog, newsletter, podcast, etc. |
+| Content Mediums | Checkboxes | Optional | text, audio, video, code, data  |
+| Language        | Text       | Optional | ISO 639-1 code (e.g., 'en')     |
+| Feed Format     | Dropdown   | Optional | RSS, Atom, JSONFeed             |
 
 **Usage Example:**
 
 When a user submits a feed through the form:
+
 1. GitHub creates an issue with all structured data
 2. Issue is auto-labeled `feed-submission`
 3. Validation workflow can parse the issue body
@@ -56,6 +58,7 @@ When a user submits a feed through the form:
 Standard bug report template (`.github/ISSUE_TEMPLATE/bug-report.yml`) for reporting issues.
 
 **Fields:**
+
 - Bug description
 - Steps to reproduce
 - Expected vs actual behavior
@@ -67,6 +70,7 @@ Standard bug report template (`.github/ISSUE_TEMPLATE/bug-report.yml`) for repor
 Feature request template (`.github/ISSUE_TEMPLATE/feature-request.yml`) for suggesting enhancements.
 
 **Fields:**
+
 - Feature description
 - Use case/motivation
 - Proposed solution
@@ -77,6 +81,7 @@ Feature request template (`.github/ISSUE_TEMPLATE/feature-request.yml`) for sugg
 Documentation template (`.github/ISSUE_TEMPLATE/documentation.yml`) for doc improvements.
 
 **Fields:**
+
 - Documentation area
 - Issue description
 - Proposed changes
@@ -89,6 +94,7 @@ Documentation template (`.github/ISSUE_TEMPLATE/documentation.yml`) for doc impr
 Located at `.github/pull_request_template.md`, provides:
 
 **Structure:**
+
 - Description section with placeholder
 - Type of change checkboxes (bug fix, feature, docs, etc.)
 - Comprehensive checklist:
@@ -105,23 +111,27 @@ Located at `.github/pull_request_template.md`, provides:
 ## Checklist
 
 ### Code Quality
+
 - [ ] Code follows project style guidelines
 - [ ] Self-review completed
 - [ ] Comments added for complex code
 - [ ] No new warnings generated
 
 ### Testing
+
 - [ ] Tests added/updated for changes
 - [ ] All tests pass locally
 - [ ] Edge cases covered
 
 ### Documentation
+
 - [ ] README updated (if needed)
 - [ ] API docs updated (if needed)
 - [ ] Changelog updated
 - [ ] Comments/docstrings added
 
 ### Feed Changes (if applicable)
+
 - [ ] Schema validation passes
 - [ ] Feed URLs validated
 - [ ] Topics match canonical list
@@ -129,6 +139,7 @@ Located at `.github/pull_request_template.md`, provides:
 - [ ] Follows feeds.yaml format
 
 ### Breaking Changes
+
 - [ ] No breaking changes OR
 - [ ] Breaking changes documented
 - [ ] Migration guide provided
@@ -141,6 +152,7 @@ Located at `.github/pull_request_template.md`, provides:
 **File:** `.github/workflows/validate-feeds.yml`
 
 **Triggers:**
+
 - Manual dispatch (`workflow_dispatch`)
 - Pull requests modifying `data/feeds.yaml`
 - Issues with label `feed-submission`
@@ -160,7 +172,7 @@ name: Validate Feeds
 on:
   pull_request:
     paths:
-      - 'data/feeds.yaml'
+      - "data/feeds.yaml"
   workflow_dispatch:
 
 jobs:
@@ -173,12 +185,12 @@ jobs:
           uv run python -c "
           import json, yaml
           from jsonschema import validate
-          
+
           with open('data/feeds.yaml') as f:
               feeds = yaml.safe_load(f)
           with open('data/feeds.schema.json') as f:
               schema = json.load(f)
-          
+
           validate(instance=feeds, schema=schema)
           print('✅ Schema validation passed')
           "
@@ -193,6 +205,7 @@ jobs:
 **Schedule:** Runs weekly (configurable)
 
 **Features:**
+
 - Checks HTTP status codes
 - Validates feed format
 - Updates `curation.status` field
@@ -200,6 +213,7 @@ jobs:
 - Updates feed metadata
 
 **Status Values:**
+
 - `verified` - Feed is accessible and valid
 - `unverified` - Feed not yet checked
 - `archived` - Feed intentionally archived
@@ -234,6 +248,7 @@ python scripts/test-feed-submission.py \
 ```
 
 **Features:**
+
 - ✅ Validates feed ID format
 - ✅ Checks feed URL accessibility
 - ✅ Validates topics against canonical list
@@ -280,6 +295,7 @@ bash scripts/setup-github-infra.sh
 ```
 
 **Actions:**
+
 1. Creates `.github/` directory structure
 2. Generates all issue templates
 3. Creates PR templates
@@ -287,6 +303,7 @@ bash scripts/setup-github-infra.sh
 5. Configures GitHub settings (via API)
 
 **Requirements:**
+
 - GitHub CLI (`gh`) for API access
 - Repository write permissions
 
@@ -370,6 +387,7 @@ graph TD
 **Issue: "Schema validation failed"**
 
 Solution:
+
 ```bash
 # Validate schema locally
 uv run python -c "
@@ -392,6 +410,7 @@ except Exception as e:
 **Issue: "Feed URL not accessible"**
 
 Solution:
+
 ```bash
 # Test feed URL
 curl -I https://example.com/feed.xml
@@ -408,6 +427,7 @@ print(f'Content-Type: {resp.headers.get(\"content-type\")}')
 **Issue: "Topics not found in canonical list"**
 
 Solution:
+
 ```bash
 # List valid topics
 cat data/topics.yaml | grep "^  - id:"

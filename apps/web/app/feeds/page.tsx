@@ -1,31 +1,30 @@
-import type { Metadata } from 'next';
-import { loadFeeds, getSourceTypes, getFeedStats } from '@/lib/feeds';
-import { FeedCatalog } from './feed-catalog';
+import type { Metadata } from "next";
+import { loadFeeds, getSourceTypes, getFeedStats } from "@/lib/feeds";
+import { FeedCatalog } from "./feed-catalog";
 
 export const metadata: Metadata = {
-  title: 'Feed Catalog - AIWebFeeds',
+  title: "Feed Catalog - AIWebFeeds",
   description:
-    'Browse and download curated AI/ML feeds for your RSS reader. High-quality feeds from blogs, podcasts, newsletters, preprints, and more.',
+    "Browse and download curated AI/ML feeds for your RSS reader. High-quality feeds from blogs, podcasts, newsletters, preprints, and more.",
   openGraph: {
-    title: 'Feed Catalog - AIWebFeeds',
-    description:
-      'Browse and download curated AI/ML feeds for your RSS reader.',
+    title: "Feed Catalog - AIWebFeeds",
+    description: "Browse and download curated AI/ML feeds for your RSS reader.",
   },
 };
 
 export default async function FeedsPage() {
   const feedsData = await loadFeeds();
-  const feeds     = feedsData.sources;
-  const types     = getSourceTypes(feeds);
-  const stats     = getFeedStats(feeds);
+  const feeds = feedsData.sources;
+  const types = getSourceTypes(feeds);
+  const stats = getFeedStats(feeds);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Feed Catalog</h1>
         <p className="text-lg text-muted-foreground">
-          Browse {stats.total} curated AI/ML feeds. Filter by source type,
-          topic, or verification status.
+          Browse {stats.total} curated AI/ML feeds. Filter by source type, topic, or verification
+          status.
         </p>
       </div>
 
@@ -38,7 +37,7 @@ export default async function FeedsPage() {
         <div className="border rounded-lg p-4">
           <div className="text-sm text-muted-foreground">Verified</div>
           <div className="text-2xl font-bold">
-            {stats.verified}{' '}
+            {stats.verified}{" "}
             <span className="text-sm text-muted-foreground">
               ({Math.round((stats.verified / stats.total) * 100)}%)
             </span>
@@ -47,7 +46,7 @@ export default async function FeedsPage() {
         <div className="border rounded-lg p-4">
           <div className="text-sm text-muted-foreground">Active</div>
           <div className="text-2xl font-bold">
-            {stats.active}{' '}
+            {stats.active}{" "}
             <span className="text-sm text-muted-foreground">
               ({Math.round((stats.active / stats.total) * 100)}%)
             </span>
@@ -64,4 +63,3 @@ export default async function FeedsPage() {
     </div>
   );
 }
-

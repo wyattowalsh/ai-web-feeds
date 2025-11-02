@@ -4,9 +4,9 @@ description: Complete guide to installing and using AI Web Feeds - from setup to
 icon: Rocket
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from "fumadocs-ui/components/steps";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 
 This guide will help you get started with AI Web Feeds, from installation to your first analytics report.
 
@@ -49,6 +49,7 @@ chmod +x setup-enhanced-features.sh
 ```
 
 This will:
+
 - Install the core library
 - Install the CLI
 - Create the data directory
@@ -131,6 +132,7 @@ ai-web-feeds enrich all
 ```
 
 This will:
+
 - Validate feed URLs
 - Discover feeds for sites without direct feed URLs
 - Detect feed formats
@@ -224,7 +226,7 @@ For known platforms, you can use just the site URL:
   discover: true
   platform_config:
     reddit:
-      sort: "hot"  # or "top", "new"
+      sort: "hot" # or "top", "new"
 
 # YouTube channel
 - id: "youtube-channel"
@@ -237,7 +239,7 @@ For known platforms, you can use just the site URL:
   discover: true
   platform_config:
     github:
-      feed_type: "releases"  # or "commits", "tags"
+      feed_type: "releases" # or "commits", "tags"
 ```
 
 See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.

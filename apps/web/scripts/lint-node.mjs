@@ -33,7 +33,7 @@ async function getFiles() {
 
   const promises = pages.map(async (page) => {
     const content = await readFile(page.absolutePath, 'utf-8');
-    
+
     return {
       path: page.absolutePath,
       content,

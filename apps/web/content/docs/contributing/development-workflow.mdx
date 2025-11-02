@@ -1,0 +1,660 @@
+---
+title: Development Workflow
+description: Complete guide to the development workflow and tooling in AI Web Feeds
+---
+
+## Overview
+
+AI Web Feeds uses a modern, automated development workflow that ensures code quality, consistency, and maintainability. This guide covers the complete development process from setup to deployment.
+
+## Quick Start
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/wyattowalsh/ai-web-feeds.git
+cd ai-web-feeds
+uv sync
+
+# 2. Install pre-commit hooks
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# 3. Create a feature branch
+git checkout -b feat/your-feature
+
+# 4. Make changes and commit
+git add .
+git commit -m "feat(scope): description"
+
+# 5. Push and create PR
+git push origin feat/your-feature
+```
+
+## Development Environment
+
+### Prerequisites
+
+- **Python 3.13+** - Core language
+- **Node.js 20.11+** - For web app and tooling
+- **uv** - Python package manager (REQUIRED - do not use pip)
+- **pnpm** - Node package manager (REQUIRED - do not use npm/yarn)
+- **Git** - Version control
+
+### ⚠️ Package Manager Requirements
+
+**CRITICAL: You MUST use the correct package managers:**
+
+- **Python:** ONLY `uv` ✅ (NEVER `pip`, `pip install`, `python -m pip`) ❌
+- **Node.js:** ONLY `pnpm` ✅ (NEVER `npm install`, `yarn`) ❌
+
+**Why?**
+
+- `uv` is 10-100x faster than pip and correctly handles workspace dependencies
+- `pnpm` uses efficient disk space with symlinks and has superior monorepo support
+
+**Examples:**
+
+✅ **CORRECT:**
+
+```bash
+uv sync                    # Install Python dependencies
+uv add package            # Add Python package
+uv run pytest             # Run Python commands
+pnpm install              # Install Node dependencies
+pnpm add package          # Add Node package
+```
+
+❌ **FORBIDDEN:**
+
+```bash
+pip install package       # NEVER
+npm install               # NEVER
+yarn add package          # NEVER
+python -m pip install     # NEVER
+```
+
+### Initial Setup
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install pnpm (if not already installed)
+npm install -g pnpm
+
+# Clone repository
+git clone https://github.com/wyattowalsh/ai-web-feeds.git
+cd ai-web-feeds
+
+# Install Python dependencies
+uv sync
+
+# Install web dependencies
+cd apps/web && pnpm install
+
+# Install pre-commit hooks
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Install commitlint (optional, for interactive commits)
+npm install -g @commitlint/cli @commitlint/config-conventional
+npm install -g commitizen cz-conventional-changelog
+```
+
+## Project Structure
+
+```
+ai-web-feeds/
+├── packages/
+│   └── ai_web_feeds/          # Core Python package
+│       ├── src/               # Source code
+│       │   ├── models.py      # Data models
+│       │   ├── load.py        # Feed loading
+│       │   ├── validate.py    # Validation
+│       │   ├── export.py      # Export functions
+│       │   └── ...
+│       └── tests/             # Test suite
+├── apps/
+│   ├── cli/                   # Command-line interface
+│   └── web/                   # Documentation website
+│       ├── app/               # Next.js app
+│       ├── content/docs/      # MDX documentation
+│       ├── components/        # React components
+│       └── ...
+├── data/                      # Data files
+│   ├── feeds.yaml            # Feed definitions
+│   ├── topics.yaml           # Topic taxonomy
+│   ├── *.schema.json         # JSON schemas
+│   └── aiwebfeeds.db         # SQLite database
+├── tests/                     # Integration tests
+└── .github/                   # GitHub workflows
+```
+
+## Development Workflow
+
+### 1. Branch Strategy
+
+We use **GitHub Flow** with feature branches:
+
+```bash
+# Main branch (protected)
+main
+
+# Feature branches
+feat/feature-name
+fix/bug-name
+docs/doc-update
+refactor/refactor-name
+```
+
+**Rules:**
+
+- All changes via pull requests
+- Feature branches from `main`
+- Delete branches after merge
+- Use descriptive branch names
+
+### 2. Making Changes
+
+#### Python Development
+
+```bash
+# Navigate to package
+cd packages/ai_web_feeds
+
+# Make changes to source
+vim src/models.py
+
+# Run tests
+uv run pytest tests/
+
+# Run with coverage
+uv run pytest tests/ --cov=src --cov-report=term
+
+# Type check
+uv run mypy src/
+
+# Lint and format
+uv run ruff check .
+uv run ruff format .
+```
+
+#### Web Development
+
+```bash
+# Navigate to web app
+cd apps/web
+
+# Start dev server
+pnpm dev
+
+# Visit http://localhost:3000
+
+# Lint and format
+pnpm lint
+pnpm prettier --write .
+
+# Type check
+pnpm tsc --noEmit
+
+# Build
+pnpm build
+```
+
+#### CLI Development
+
+```bash
+# Navigate to CLI
+cd apps/cli
+
+# Run CLI
+uv run aiwebfeeds --help
+
+# Test commands
+uv run aiwebfeeds fetch --url https://example.com/feed
+uv run aiwebfeeds validate --all
+uv run aiwebfeeds export --format json
+```
+
+### 3. Testing
+
+#### Unit Tests
+
+```bash
+# Run all tests
+cd packages/ai_web_feeds
+uv run pytest tests/
+
+# Run specific test file
+uv run pytest tests/test_models.py
+
+# Run specific test
+uv run pytest tests/test_models.py::test_source_model
+
+# Run with coverage
+uv run pytest tests/ --cov=src --cov-report=html
+open htmlcov/index.html
+```
+
+#### Integration Tests
+
+```bash
+# Run integration tests
+cd tests
+uv run pytest tests/
+
+# Test CLI commands
+cd apps/cli
+uv run pytest tests/
+```
+
+#### Coverage Requirements
+
+- **Minimum:** 90% coverage
+- **Target:** 95%+ coverage
+- Enforced by CI and pre-commit hooks
+
+### 4. Committing Changes
+
+#### Option A: Interactive (Recommended)
+
+```bash
+# Stage changes
+git add .
+
+# Interactive commit
+npx cz
+
+# Follow prompts:
+# 1. Select type (feat, fix, docs, etc.)
+# 2. Enter scope (core, cli, web, etc.)
+# 3. Write short description
+# 4. Add longer description (optional)
+# 5. Mark breaking changes (if any)
+# 6. Reference issues (if any)
+```
+
+#### Option B: Manual
+
+```bash
+# Stage changes
+git add .
+
+# Commit with conventional format
+git commit -m "feat(core): add RSS feed parser"
+
+# Pre-commit hooks run automatically:
+# ✓ Ruff (Python linting/formatting)
+# ✓ MyPy (type checking)
+# ✓ ESLint (TypeScript linting)
+# ✓ Prettier (code formatting)
+# ✓ Tests (if Python files changed)
+# ✓ Secrets detection
+# ✓ Conventional commits validation
+```
+
+#### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+**Examples:**
+
+```bash
+# Feature
+git commit -m "feat(analytics): add topic trending analysis"
+
+# Bug fix
+git commit -m "fix(load): handle malformed RSS dates"
+
+# Documentation
+git commit -m "docs(api): update fetch examples"
+
+# Breaking change
+git commit -m "feat(api)!: redesign validation endpoint
+
+BREAKING CHANGE: validation response format changed"
+```
+
+See [Conventional Commits](/docs/contributing/conventional-commits) guide for details.
+
+### 5. Pre-commit Hooks
+
+Hooks run automatically on `git commit`:
+
+- **Python:** ruff, mypy, bandit, pytest
+- **TypeScript:** eslint, prettier, tsc
+- **General:** trailing whitespace, line endings, YAML/JSON validation
+- **Security:** secrets detection
+- **Commits:** conventional commits validation
+
+**Manual run:**
+
+```bash
+# Run all hooks
+uv run pre-commit run --all-files
+
+# Run specific hook
+uv run pre-commit run ruff --all-files
+```
+
+See [Pre-commit Hooks](/docs/contributing/pre-commit-hooks) guide for details.
+
+### 6. Pushing Changes
+
+```bash
+# Push to your branch
+git push origin feat/your-feature
+
+# First push of new branch
+git push -u origin feat/your-feature
+```
+
+### 7. Creating Pull Requests
+
+#### Via GitHub UI
+
+1. Go to [repository](https://github.com/wyattowalsh/ai-web-feeds)
+2. Click "Pull requests" → "New pull request"
+3. Select your branch
+4. Fill out PR template
+5. Request reviews
+
+#### Via GitHub CLI
+
+```bash
+# Install gh (if not already)
+brew install gh
+
+# Authenticate
+gh auth login
+
+# Create PR
+gh pr create \
+  --title "feat(core): add RSS parser" \
+  --body "Implements RSS 2.0 parser with validation"
+
+# Create draft PR
+gh pr create --draft
+```
+
+#### PR Template Checklist
+
+- [ ] Tests pass locally
+- [ ] Coverage ≥90%
+- [ ] Conventional commits used
+- [ ] Documentation updated
+- [ ] Pre-commit hooks pass
+- [ ] No new linting warnings
+- [ ] Type hints added
+- [ ] CHANGELOG.md updated (if significant)
+
+### 8. CI/CD Pipeline
+
+On PR creation, GitHub Actions runs:
+
+1. **Python Linting** - Ruff, MyPy, Bandit
+2. **Python Tests** - Pytest across Python 3.11-3.13, Linux/Mac/Windows
+3. **Coverage Check** - Minimum 90% required
+4. **TypeScript Linting** - ESLint, Prettier
+5. **TypeScript Build** - Next.js build
+6. **Data Validation** - Schema validation
+7. **Conventional Commits** - Commit message validation
+
+**View results:** PR → Checks tab
+
+**All checks must pass** before merge.
+
+### 9. Code Review
+
+#### For Authors
+
+- Respond to all comments
+- Make requested changes
+- Push updates to same branch
+- Request re-review when ready
+
+#### For Reviewers
+
+- Review within 24-48 hours
+- Be constructive and specific
+- Suggest alternatives
+- Approve when satisfied
+
+### 10. Merging
+
+**Merge strategies:**
+
+- **Squash and merge** (default) - Clean history
+- **Rebase and merge** - Linear history
+- **Merge commit** - Preserve branch history
+
+**After merge:**
+
+```bash
+# Switch to main
+git checkout main
+
+# Pull latest
+git pull origin main
+
+# Delete local branch
+git branch -d feat/your-feature
+
+# Delete remote branch (auto-deleted on GitHub)
+git push origin --delete feat/your-feature
+```
+
+## Code Quality Standards
+
+### Python
+
+- **Style:** PEP 8 via Ruff
+- **Type hints:** Required with strict MyPy
+- **Docstrings:** Google style
+- **Line length:** 100 characters
+- **Imports:** Sorted via Ruff (isort rules)
+- **Complexity:** Max 10 (McCabe)
+
+### TypeScript
+
+- **Style:** Standard via ESLint
+- **Strict mode:** Enabled
+- **Formatting:** Prettier
+- **Line length:** 100 characters
+- **React:** Hooks, functional components
+
+### Documentation
+
+- **Format:** MDX for web docs
+- **Location:** `apps/web/content/docs/`
+- **Style:** Clear, concise, with examples
+- **Code blocks:** With language and titles
+
+### Testing
+
+- **Framework:** Pytest (Python), Jest (TypeScript)
+- **Coverage:** ≥90% required
+- **Style:** Descriptive test names
+- **Structure:** Arrange-Act-Assert
+- **Fixtures:** Use conftest.py
+
+## Tools Reference
+
+### Python Tools
+
+```bash
+# Package management
+uv sync                    # Install dependencies
+uv add package            # Add dependency
+uv remove package         # Remove dependency
+
+# Testing
+uv run pytest             # Run tests
+uv run pytest --cov       # With coverage
+uv run pytest -v          # Verbose
+uv run pytest -k test_name  # Run specific test
+
+# Linting & formatting
+uv run ruff check .       # Lint
+uv run ruff format .      # Format
+uv run mypy src/          # Type check
+
+# Security
+uv run bandit -r src/     # Security scan
+```
+
+### Web Tools
+
+```bash
+# Package management
+pnpm install              # Install dependencies
+pnpm add package          # Add dependency
+pnpm remove package       # Remove dependency
+
+# Development
+pnpm dev                  # Start dev server
+pnpm build                # Production build
+pnpm start                # Start production server
+
+# Linting & formatting
+pnpm lint                 # Lint
+pnpm lint --fix           # Lint with auto-fix
+pnpm prettier --write .   # Format
+pnpm tsc --noEmit         # Type check
+```
+
+### Git Tools
+
+```bash
+# Pre-commit
+uv run pre-commit run --all-files    # Run all hooks
+uv run pre-commit autoupdate         # Update hooks
+
+# Commitizen
+npx cz                    # Interactive commit
+git cz                    # Alternative
+
+# Commitlint
+npx commitlint --from HEAD~1         # Validate last commit
+echo "msg" | npx commitlint          # Test message
+```
+
+## Troubleshooting
+
+### Pre-commit Hooks Failing
+
+```bash
+# Reinstall hooks
+uv run pre-commit uninstall
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Clean and reinstall environments
+uv run pre-commit clean
+uv run pre-commit install-hooks
+```
+
+### Tests Failing
+
+```bash
+# Run in verbose mode
+uv run pytest -vv
+
+# Show print statements
+uv run pytest -s
+
+# Stop on first failure
+uv run pytest -x
+
+# Run last failed tests
+uv run pytest --lf
+```
+
+### Type Checking Issues
+
+```bash
+# Run with verbose output
+uv run mypy src/ --verbose
+
+# Show error codes
+uv run mypy src/ --show-error-codes
+
+# Ignore missing imports
+uv run mypy src/ --ignore-missing-imports
+```
+
+### Build Issues
+
+```bash
+# Python: Clear cache
+rm -rf .pytest_cache .mypy_cache .ruff_cache __pycache__
+uv sync
+
+# Web: Clear cache
+cd apps/web
+rm -rf .next node_modules
+pnpm install
+pnpm build
+```
+
+## Resources
+
+- [Contributing Guide](/docs/contributing)
+- [Conventional Commits](/docs/contributing/conventional-commits)
+- [Pre-commit Hooks](/docs/contributing/pre-commit-hooks)
+- [Testing Guide](/docs/contributing/testing)
+- [GitHub Repository](https://github.com/wyattowalsh/ai-web-feeds)
+
+## FAQ
+
+### How do I run the full CI pipeline locally?
+
+```bash
+# Run pre-commit (close to CI)
+uv run pre-commit run --all-files
+
+# Run tests with coverage
+cd packages/ai_web_feeds
+uv run pytest tests/ --cov=src --cov-fail-under=90
+
+# Build web app
+cd apps/web
+pnpm build
+```
+
+### Can I skip pre-commit hooks?
+
+**Not recommended.** CI will still enforce all checks. If needed:
+
+```bash
+git commit --no-verify
+```
+
+### How do I update dependencies?
+
+```bash
+# Python
+uv add package@latest
+
+# Web
+cd apps/web && pnpm update package
+```
+
+### What's the release process?
+
+See [Release Process](/docs/contributing/release-process) (coming soon).
+
+## Support
+
+Need help?
+
+- **Documentation:** Check this guide and related docs
+- **Issues:** [GitHub Issues](https://github.com/wyattowalsh/ai-web-feeds/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/wyattowalsh/ai-web-feeds/discussions)
+- **Contact:** See [README](https://github.com/wyattowalsh/ai-web-feeds#readme)

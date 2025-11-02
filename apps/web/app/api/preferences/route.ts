@@ -1,6 +1,6 @@
 /**
  * Notification preferences API
- * 
+ *
  * GET /api/preferences?user_id=<uuid> - Get user preferences
  * POST /api/preferences - Create/update preference
  */
@@ -12,21 +12,15 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("user_id");
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "Missing user_id parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
   }
 
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/preferences?user_id=${userId}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = await fetch(`${backendUrl}/storage/preferences?user_id=${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
 
     if (!response.ok) {
       throw new Error(`Backend responded with ${response.status}`);
@@ -42,11 +36,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Failed to fetch preferences:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch preferences",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,20 +48,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      user_id,
-      feed_id,
-      delivery_method,
-      frequency,
-      quiet_hours_start,
-      quiet_hours_end,
-    } = body;
+    const { user_id, feed_id, delivery_method, frequency, quiet_hours_start, quiet_hours_end } =
+      body;
 
     // Validate required fields
     if (!user_id || !delivery_method || !frequency) {
       return NextResponse.json(
         { error: "Missing required fields: user_id, delivery_method, frequency" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -78,34 +66,31 @@ export async function POST(request: NextRequest) {
     if (!validDeliveryMethods.includes(delivery_method)) {
       return NextResponse.json(
         { error: `Invalid delivery_method. Must be one of: ${validDeliveryMethods.join(", ")}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!validFrequencies.includes(frequency)) {
       return NextResponse.json(
         { error: `Invalid frequency. Must be one of: ${validFrequencies.join(", ")}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Call Python backend
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/preferences`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id,
-          feed_id: feed_id || null,
-          delivery_method,
-          frequency,
-          quiet_hours_start: quiet_hours_start || null,
-          quiet_hours_end: quiet_hours_end || null,
-        }),
-      }
-    );
+    const response = await fetch(`${backendUrl}/storage/preferences`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id,
+        feed_id: feed_id || null,
+        delivery_method,
+        frequency,
+        quiet_hours_start: quiet_hours_start || null,
+        quiet_hours_end: quiet_hours_end || null,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Backend responded with ${response.status}`);
@@ -120,12 +105,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Failed to save preference:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to save preference",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -1,9 +1,10 @@
 """Unit tests for Topic Modeler (Phase 5D)"""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from ai_web_feeds.nlp.topic_modeler import TopicModeler
 from ai_web_feeds.config import Settings
+from ai_web_feeds.nlp.topic_modeler import TopicModeler
 
 
 class TestTopicModeler:
@@ -13,7 +14,7 @@ class TestTopicModeler:
     def modeler(self):
         """Create TopicModeler instance for testing"""
         modeler = TopicModeler()
-        yield modeler
+        return modeler
 
     @pytest.fixture
     def sample_articles(self):
@@ -22,28 +23,28 @@ class TestTopicModeler:
             {
                 "id": 1,
                 "content": "Transformer models use self-attention mechanisms for NLP tasks. "
-                          "BERT and GPT are popular transformer architectures."
+                "BERT and GPT are popular transformer architectures.",
             },
             {
                 "id": 2,
                 "content": "Reinforcement learning from human feedback improves model alignment. "
-                          "RLHF helps AI systems behave according to human values."
+                "RLHF helps AI systems behave according to human values.",
             },
             {
                 "id": 3,
                 "content": "Computer vision models process images using convolutional neural networks. "
-                          "CNNs extract features from visual data."
+                "CNNs extract features from visual data.",
             },
             {
                 "id": 4,
                 "content": "Natural language processing enables machines to understand text. "
-                          "NLP techniques include tokenization and embedding."
+                "NLP techniques include tokenization and embedding.",
             },
             {
                 "id": 5,
                 "content": "Deep learning neural networks learn hierarchical representations. "
-                          "Training requires large datasets and computational resources."
-            }
+                "Training requires large datasets and computational resources.",
+            },
         ]
 
     def test_initialization(self, modeler):
@@ -100,8 +101,8 @@ class TestTopicModeler:
 
         assert tokens == []
 
-    @patch('ai_web_feeds.nlp.topic_modeler.models.LdaModel')
-    @patch('ai_web_feeds.nlp.topic_modeler.corpora.Dictionary')
+    @patch("ai_web_feeds.nlp.topic_modeler.models.LdaModel")
+    @patch("ai_web_feeds.nlp.topic_modeler.corpora.Dictionary")
     def test_extract_subtopics_basic(self, mock_dict, mock_lda, modeler, sample_articles):
         """Test basic subtopic extraction"""
         # Mock dictionary
@@ -117,16 +118,14 @@ class TestTopicModeler:
             ("attention", 0.12),
             ("bert", 0.10),
             ("gpt", 0.08),
-            ("model", 0.07)
+            ("model", 0.07),
         ]
         mock_lda.return_value = mock_model
 
         # Mock coherence
-        with patch.object(modeler, '_compute_coherence', return_value=0.65):
+        with patch.object(modeler, "_compute_coherence", return_value=0.65):
             subtopics = modeler.extract_subtopics(
-                parent_topic="NLP",
-                articles=sample_articles,
-                num_topics=2
+                parent_topic="NLP", articles=sample_articles, num_topics=2
             )
 
         assert isinstance(subtopics, list)
@@ -137,25 +136,17 @@ class TestTopicModeler:
         """Test extraction with too few articles"""
         articles = [
             {"id": 1, "content": "Short article one."},
-            {"id": 2, "content": "Short article two."}
+            {"id": 2, "content": "Short article two."},
         ]
 
-        subtopics = modeler.extract_subtopics(
-            parent_topic="Test",
-            articles=articles,
-            num_topics=5
-        )
+        subtopics = modeler.extract_subtopics(parent_topic="Test", articles=articles, num_topics=5)
 
         # Should return empty list if not enough articles
         assert subtopics == []
 
     def test_extract_subtopics_empty_articles(self, modeler):
         """Test extraction with empty articles list"""
-        subtopics = modeler.extract_subtopics(
-            parent_topic="Test",
-            articles=[],
-            num_topics=5
-        )
+        subtopics = modeler.extract_subtopics(parent_topic="Test", articles=[], num_topics=5)
 
         assert subtopics == []
 
@@ -181,7 +172,7 @@ class TestTopicModeler:
         assert len(description) > 0
         assert parent_topic.lower() in description.lower()
 
-    @patch('ai_web_feeds.nlp.topic_modeler.CoherenceModel')
+    @patch("ai_web_feeds.nlp.topic_modeler.CoherenceModel")
     def test_compute_coherence(self, mock_coherence_model, modeler):
         """Test coherence computation"""
         mock_cm = MagicMock()
@@ -201,7 +192,7 @@ class TestTopicModeler:
         """Test evolution detection with no previous topics"""
         current_topics = [
             {"name": "Topic1", "keywords": ["a", "b"]},
-            {"name": "Topic2", "keywords": ["c", "d"]}
+            {"name": "Topic2", "keywords": ["c", "d"]},
         ]
 
         events = modeler.detect_evolution(current_topics, previous_topics=[])
@@ -218,7 +209,7 @@ class TestTopicModeler:
 
         current_topics = [
             {"name": "OldTopic", "keywords": ["old", "keywords"], "article_count": 12},
-            {"name": "NewTopic", "keywords": ["new", "topic"], "article_count": 25}
+            {"name": "NewTopic", "keywords": ["new", "topic"], "article_count": 25},
         ]
 
         events = modeler.detect_evolution(current_topics, previous_topics)
@@ -306,15 +297,13 @@ class TestTopicModelingEdgeCases:
         articles = [
             {"id": 1, "content": "Same content repeated" * 50},
             {"id": 2, "content": "Same content repeated" * 50},
-            {"id": 3, "content": "Same content repeated" * 50}
+            {"id": 3, "content": "Same content repeated" * 50},
         ]
 
         # Should not crash
         try:
             subtopics = modeler.extract_subtopics(
-                parent_topic="Test",
-                articles=articles,
-                num_topics=2
+                parent_topic="Test", articles=articles, num_topics=2
             )
             # If it succeeds, that's fine
             assert isinstance(subtopics, list)
@@ -338,9 +327,7 @@ class TestTopicModelingEdgeCases:
 
     def test_detect_evolution_identical_topics(self, modeler):
         """Test evolution detection with identical topics"""
-        topics = [
-            {"name": "Topic1", "keywords": ["a", "b"], "article_count": 10}
-        ]
+        topics = [{"name": "Topic1", "keywords": ["a", "b"], "article_count": 10}]
 
         events = modeler.detect_evolution(topics, topics)
 

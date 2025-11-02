@@ -21,6 +21,7 @@ ai_web_feeds/analytics/
 ```
 
 **Core Analytics** (`analytics/core.py`):
+
 - Feed statistics and distributions
 - Quality metrics
 - Content analysis
@@ -30,8 +31,9 @@ ai_web_feeds/analytics/
 - Benchmarking
 
 **Advanced Analytics** (`analytics/advanced.py`):
+
 - Predictive feed health modeling
-- Content similarity and clustering  
+- Content similarity and clustering
 - ML-powered pattern detection
 - Topic relationship analysis
 - Recommendation engine
@@ -39,12 +41,14 @@ ai_web_feeds/analytics/
 ### 2. Database Models
 
 **Core Models** (`models.py`):
+
 - `FeedSource` - Feed metadata and configuration
 - `FeedItem` - Individual feed entries
 - `FeedFetchLog` - Fetch attempt history
 - `Topic` - Topic taxonomy
 
 **Advanced Models** (`models_advanced.py`):
+
 - `FeedValidationHistory` - Validation tracking over time
 - `FeedHealthMetric` - Health scores and metrics
 - `DataQualityMetric` - Multi-dimensional quality tracking
@@ -58,11 +62,12 @@ ai_web_feeds/analytics/
 Robust ETL pipeline for YAML ↔ Database (`data_sync.py`):
 
 - **FeedDataLoader**: Load `feeds.yaml` → Database
-- **TopicDataLoader**: Load `topics.yaml` → Database  
+- **TopicDataLoader**: Load `topics.yaml` → Database
 - **DataExporter**: Export Database → `feeds.enriched.yaml`
 - **DataSyncOrchestrator**: Full bidirectional sync
 
 Features:
+
 - Upsert operations (insert or update)
 - Batch processing
 - Progress tracking
@@ -75,17 +80,20 @@ Features:
 Location: `packages/ai_web_feeds/alembic/`
 
 Initialize Alembic:
+
 ```bash
 cd packages/ai_web_feeds
 uv run alembic init alembic
 ```
 
 Create migration:
+
 ```bash
 uv run alembic revision --autogenerate -m "description"
 ```
 
 Apply migrations:
+
 ```bash
 uv run alembic upgrade head
 ```
@@ -139,6 +147,7 @@ Topic definitions:
 #### `feed_validation_history`
 
 Tracks validation attempts over time:
+
 - Validation timestamp and status
 - Schema version used
 - Validation errors (JSON)
@@ -147,6 +156,7 @@ Tracks validation attempts over time:
 #### `feed_health_metrics`
 
 Monitors feed health with component scores:
+
 - Overall health score
 - Availability score
 - Freshness score
@@ -156,6 +166,7 @@ Monitors feed health with component scores:
 #### `data_quality_metrics`
 
 Multi-dimensional quality tracking:
+
 - Quality dimension (completeness, accuracy, consistency, timeliness, uniqueness, validity)
 - Quality score and threshold
 - Record counts (total vs. valid)
@@ -164,6 +175,7 @@ Multi-dimensional quality tracking:
 #### `content_embeddings`
 
 Store embeddings for semantic search:
+
 - Embedding vector (JSON array)
 - Model name and version
 - Dimension count
@@ -172,6 +184,7 @@ Store embeddings for semantic search:
 #### `topic_relationships`
 
 Computed topic associations:
+
 - Source and target topics
 - Relationship type (parent, related, similar, prerequisite, inverse)
 - Strength score (0.0-1.0)
@@ -180,6 +193,7 @@ Computed topic associations:
 #### `user_feed_preferences`
 
 User interactions and preferences:
+
 - User and feed identifiers
 - Preference type (subscription, bookmark, like, hide, report)
 - Preference value (JSON)
@@ -188,6 +202,7 @@ User interactions and preferences:
 #### `analytics_cache_entries`
 
 Cache expensive analytics computations:
+
 - Cache key and value (JSON)
 - Computation timestamp
 - TTL (seconds)
@@ -285,5 +300,5 @@ metric = DataQualityMetric(
 
 ---
 
-**Version**: 0.1.0  
+**Version**: 0.1.0
 **Last Updated**: October 15, 2025

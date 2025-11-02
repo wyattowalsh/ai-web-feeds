@@ -1,8 +1,8 @@
-import type { MetadataRoute } from 'next';
-import { source } from '@/lib/source';
+import type { MetadataRoute } from "next";
+import { source } from "@/lib/source";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ai-web-feeds.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 
   // Get all documentation pages
   const pages = source.getPages();
@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const docUrls: MetadataRoute.Sitemap = pages.map((page) => ({
     url: `${baseUrl}${page.url}`,
     lastModified: new Date(),
-    changeFrequency: 'weekly',
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
@@ -19,13 +19,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1,
     },
     {
       url: `${baseUrl}/docs`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 0.9,
     },
   ];

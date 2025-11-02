@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wyattowalsh/ai-web-feeds/raw/main/data/schema/feeds.enriched.schema.json",
+  "title": "AIWebFeeds — Enriched Feeds Schema",
+  "description": "Comprehensive schema for enriched feed sources with full metadata, curation, provenance, and relationship data. Auto-enriched from minimal contributor sources via platform detection, feed discovery, and AI analysis.",
+  "type": "object",
+  "required": ["schema_version", "sources"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version for this file format.",
+      "pattern": "^feeds-2\\.[0-9]+\\.[0-9]+$",
+      "default": "feeds-2.1.0"
+    },
+    "document_meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "created": { "type": "string", "format": "date" },
+        "updated": { "type": "string", "format": "date" },
+        "generated_with": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tool": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/enriched_source" }
+    }
+  },
+  "$defs": {
+    "http_uri": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Any HTTP(S) URL"
+    },
+    "topic_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Canonical topic id from data/topics.yaml"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "blog", "newsletter", "podcast", "journal", "preprint",
+        "organization", "aggregator", "video", "docs", "forum",
+        "dataset", "code-repo", "newsroom", "education", "reddit",
+        "medium", "youtube", "github", "substack", "devto",
+        "hackernews", "twitter", "arxiv"
+      ],
+      "description": "Detected or manually specified source type"
+    },
+    "medium": {
+      "type": "string",
+      "enum": ["text", "audio", "video", "code", "data"],
+      "description": "Content medium type"
+    },
+    "feed_format": {
+      "type": "string",
+      "enum": ["rss", "atom", "jsonfeed", "unknown"],
+      "description": "Detected feed format"
+    },
+    "curation_status": {
+      "type": "string",
+      "enum": ["verified", "unverified", "archived", "experimental", "inactive"],
+      "description": "Curation status"
+    },
+    "meta_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Enriched metadata block with auto-discovered and AI-generated content",
+      "properties": {
+        "language": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$", "default": "en" },
+        "format": { "$ref": "#/$defs/feed_format" },
+        "updated": { "type": "string", "format": "date-time", "description": "Last enrichment or manual review" },
+        "last_validated": { "type": "string", "format": "date-time", "description": "Last successful validation" },
+        "verified": { "type": "boolean", "default": false },
+        "contributor": { "type": "string", "description": "Original contributor username" },
+        "popularity_score": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Computed popularity for recommendations" },
+        "validation_count": { "type": "integer", "minimum": 0, "description": "Successful validation count" },
+        "description": { "type": "string", "maxLength": 500, "description": "Auto-extracted or manual description" },
+        "author": { "type": "string", "description": "Detected author/publisher" },
+        "icon_url": { "$ref": "#/$defs/http_uri" },
+        "logo_url": { "$ref": "#/$defs/http_uri" },
+        "image_url": { "$ref": "#/$defs/http_uri" },
+        "favicon_url": { "$ref": "#/$defs/http_uri" },
+        "detected_platform": { "type": "string", "description": "Platform detection result (Substack, Medium, WordPress, etc.)" },
+        "platform_metadata": { "type": "object", "description": "Platform-specific metadata" },
+        "health_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "quality_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "completeness_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "reliability_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "freshness_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "entry_count": { "type": "integer", "minimum": 0 },
+        "has_full_content": { "type": "boolean" },
+        "avg_content_length": { "type": "number", "minimum": 0 },
+        "content_types": { "type": "array", "items": { "type": "string" } },
+        "estimated_frequency": { "type": "string", "description": "daily, weekly, monthly, irregular" },
+        "last_updated": { "type": "string", "format": "date-time" },
+        "update_regularity": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "response_time_ms": { "type": "number", "minimum": 0 },
+        "availability_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "uptime_percentage": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "suggested_topics": { "type": "array", "items": { "$ref": "#/$defs/topic_id" } },
+        "topic_confidence": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0.0, "maximum": 1.0 } },
+        "auto_keywords": { "type": "array", "items": { "type": "string" } },
+        "has_itunes": { "type": "boolean" },
+        "has_media_rss": { "type": "boolean" },
+        "has_dublin_core": { "type": "boolean" },
+        "has_geo": { "type": "boolean" },
+        "seo_title": { "type": "string" },
+        "seo_description": { "type": "string" },
+        "og_image": { "$ref": "#/$defs/http_uri" },
+        "twitter_card": { "type": "string" },
+        "encoding": { "type": "string" },
+        "generator": { "type": "string" },
+        "ttl": { "type": "integer", "description": "Time-to-live in minutes" },
+        "uses_https": { "type": "boolean" },
+        "has_valid_ssl": { "type": "boolean" }
+      }
+    },
+    "curation_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Curation metadata and quality assessment",
+      "properties": {
+        "status": { "$ref": "#/$defs/curation_status" },
+        "since": { "type": "string", "format": "date-time" },
+        "by": { "type": "string", "description": "Curator username" },
+        "quality_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "notes": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "provenance_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Source provenance and attribution",
+      "properties": {
+        "source": { "type": "string", "description": "Original source/collection name" },
+        "from": { "$ref": "#/$defs/http_uri", "description": "Origin URL" },
+        "license": { "type": "string", "description": "License identifier (CC-BY, MIT, etc.)" }
+      }
+    },
+    "discover_config": {
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "strategy": { "type": "string", "enum": ["auto", "rss-autodiscovery", "rsshub", "api", "custom"] },
+            "params": { "type": "object" },
+            "fallback": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "enriched_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "topics"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Stable unique identifier" },
+        "feed": { "$ref": "#/$defs/http_uri", "description": "Direct feed URL or alias" },
+        "site": { "$ref": "#/$defs/http_uri", "description": "Site homepage/section URL" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "source_type": { "$ref": "#/$defs/source_type" },
+        "mediums": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/medium" }
+        },
+        "tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        },
+        "topics": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/topic_id" }
+        },
+        "topic_weights": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "description": "Topic relevance weights (normalized)"
+        },
+        "meta": { "$ref": "#/$defs/meta_block" },
+        "curation": { "$ref": "#/$defs/curation_block" },
+        "provenance": { "$ref": "#/$defs/provenance_block" },
+        "discover": { "$ref": "#/$defs/discover_config" },
+        "relations": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Relationships to other feeds",
+          "properties": {
+            "parent": { "type": "string" },
+            "children": { "type": "array", "items": { "type": "string" } },
+            "related": { "type": "array", "items": { "type": "string" } },
+            "supersedes": { "type": "array", "items": { "type": "string" } },
+            "superseded_by": { "type": "string" },
+            "mirrors": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "mappings": {
+          "type": "object",
+          "description": "External identifier mappings",
+          "additionalProperties": { "type": "string" }
+        },
+        "notes": { "type": "string", "maxLength": 1000 }
+      }
+    }
+  }
+}

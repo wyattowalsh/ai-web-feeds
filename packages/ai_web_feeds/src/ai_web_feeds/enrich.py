@@ -2,13 +2,13 @@
 
 import asyncio
 from collections import Counter
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
+from bs4 import BeautifulSoup
 import feedparser
 import httpx
-from bs4 import BeautifulSoup
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -67,7 +67,7 @@ class FeedEnrichment:
         self.has_dublin_core: bool = False
 
         # Metadata
-        self.enriched_at: datetime = datetime.now(timezone.utc)
+        self.enriched_at: datetime = datetime.now(UTC)
         self.enrichment_version: str = "1.0.0"
 
     def to_dict(self) -> dict[str, Any]:
@@ -101,9 +101,7 @@ class FeedEnrichment:
             },
             "updates": {
                 "estimated_frequency": self.estimated_frequency,
-                "last_updated": self.last_updated.isoformat()
-                if self.last_updated
-                else None,
+                "last_updated": self.last_updated.isoformat() if self.last_updated else None,
                 "update_regularity": round(self.update_regularity, 2),
             },
             "performance": {
@@ -112,9 +110,7 @@ class FeedEnrichment:
             },
             "topics": {
                 "suggested": self.suggested_topics,
-                "confidence": {
-                    k: round(v, 2) for k, v in self.topic_confidence.items()
-                },
+                "confidence": {k: round(v, 2) for k, v in self.topic_confidence.items()},
             },
             "extensions": {
                 "itunes": self.has_itunes,
@@ -151,9 +147,7 @@ class AdvancedEnricher:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
     )
-    async def enrich_from_url(
-        self, url: str, url_type: str = "feed"
-    ) -> FeedEnrichment:
+    async def enrich_from_url(self, url: str, url_type: str = "feed") -> FeedEnrichment:
         """Enrich feed data from URL.
 
         Args:
@@ -178,26 +172,20 @@ class AdvancedEnricher:
         # Calculate scores
         enrichment.quality_score = self._calculate_quality_score(enrichment)
         enrichment.health_score = self._calculate_health_score(enrichment)
-        enrichment.completeness_score = self._calculate_completeness_score(
-            enrichment
-        )
+        enrichment.completeness_score = self._calculate_completeness_score(enrichment)
 
         return enrichment
 
-    async def _enrich_from_feed(
-        self, feed_url: str, enrichment: FeedEnrichment
-    ) -> None:
+    async def _enrich_from_feed(self, feed_url: str, enrichment: FeedEnrichment) -> None:
         """Enrich from feed URL."""
         try:
-            start_time = datetime.now(timezone.utc)
+            start_time = datetime.now(UTC)
 
-            async with httpx.AsyncClient(
-                timeout=self.timeout, follow_redirects=True
-            ) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.get(feed_url)
 
                 # Performance metrics
-                elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+                elapsed = (datetime.now(UTC) - start_time).total_seconds()
                 enrichment.response_time_ms = elapsed * 1000
 
                 if response.status_code == 200:
@@ -276,9 +264,7 @@ class AdvancedEnricher:
                                     content_types.add("audio")
 
                     if content_lengths:
-                        enrichment.avg_content_length = sum(content_lengths) / len(
-                            content_lengths
-                        )
+                        enrichment.avg_content_length = sum(content_lengths) / len(content_lengths)
 
                     if has_full:
                         enrichment.has_full_content = sum(has_full) / len(has_full) > 0.5
@@ -301,14 +287,10 @@ class AdvancedEnricher:
             logger.error(f"Error enriching from feed {feed_url}: {e}")
             enrichment.availability_score = 0.0
 
-    async def _enrich_from_site(
-        self, site_url: str, enrichment: FeedEnrichment
-    ) -> None:
+    async def _enrich_from_site(self, site_url: str, enrichment: FeedEnrichment) -> None:
         """Enrich from website URL."""
         try:
-            async with httpx.AsyncClient(
-                timeout=self.timeout, follow_redirects=True
-            ) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.get(site_url)
 
                 if response.status_code != 200:
@@ -368,9 +350,7 @@ class AdvancedEnricher:
 
         return None
 
-    def _extract_favicon(
-        self, soup: BeautifulSoup, base_url: str
-    ) -> str | None:
+    def _extract_favicon(self, soup: BeautifulSoup, base_url: str) -> str | None:
         """Extract favicon URL."""
         for rel in ["icon", "shortcut icon", "apple-touch-icon"]:
             icon = soup.find("link", rel=rel)
@@ -378,9 +358,8 @@ class AdvancedEnricher:
                 href = icon.get("href")
                 if href.startswith("http"):
                     return href
-                else:
-                    parsed = urlparse(base_url)
-                    return f"{parsed.scheme}://{parsed.netloc}/{href.lstrip('/')}"
+                parsed = urlparse(base_url)
+                return f"{parsed.scheme}://{parsed.netloc}/{href.lstrip('/')}"
 
         parsed = urlparse(base_url)
         return f"{parsed.scheme}://{parsed.netloc}/favicon.ico"
@@ -407,7 +386,7 @@ class AdvancedEnricher:
                 from time import mktime
 
                 timestamp = mktime(date_tuple)
-                dates.append(datetime.fromtimestamp(timestamp, tz=timezone.utc))
+                dates.append(datetime.fromtimestamp(timestamp, tz=UTC))
 
         if not dates:
             return
@@ -438,16 +417,10 @@ class AdvancedEnricher:
                 else:
                     enrichment.estimated_frequency = "infrequent"
 
-                variance = sum((i - avg_interval) ** 2 for i in intervals) / len(
-                    intervals
-                )
-                enrichment.update_regularity = max(
-                    0.0, 1.0 - (variance / (avg_interval + 1))
-                )
+                variance = sum((i - avg_interval) ** 2 for i in intervals) / len(intervals)
+                enrichment.update_regularity = max(0.0, 1.0 - (variance / (avg_interval + 1)))
 
-    async def _suggest_topics(
-        self, entries: list[Any], enrichment: FeedEnrichment
-    ) -> None:
+    async def _suggest_topics(self, entries: list[Any], enrichment: FeedEnrichment) -> None:
         """Suggest topics based on content analysis."""
         topic_keywords = {
             "machine-learning": [
@@ -552,9 +525,7 @@ class AdvancedEnricher:
         score += enrichment.availability_score * 0.40
 
         if enrichment.last_updated:
-            days_old = (
-                datetime.now(timezone.utc) - enrichment.last_updated
-            ).days
+            days_old = (datetime.now(UTC) - enrichment.last_updated).days
             if days_old <= 7:
                 score += 0.40
             elif days_old <= 30:
@@ -575,9 +546,7 @@ class AdvancedEnricher:
 
         return min(1.0, score)
 
-    def _calculate_completeness_score(
-        self, enrichment: FeedEnrichment
-    ) -> float:
+    def _calculate_completeness_score(self, enrichment: FeedEnrichment) -> float:
         """Calculate metadata completeness score."""
         total_fields = 10
         filled_fields = 0

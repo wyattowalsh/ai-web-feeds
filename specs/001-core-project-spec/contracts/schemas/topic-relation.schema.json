@@ -73,4 +73,3 @@
     "not": "Self-loops are not allowed (source_topic_id cannot equal target_topic_id)"
   }
 }
-

@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { NextResponse } from "next/server";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-export const dynamic = 'force-dynamic'; // Always run fresh
+export const dynamic = "force-dynamic"; // Always run fresh
 
 /**
  * Validation stats API endpoint
@@ -15,7 +15,7 @@ export async function GET() {
     // Get validation stats from Python CLI
     // In a real implementation, this would query the database directly
     // For now, we'll return mock data based on the feed collection
-    
+
     const stats = {
       total_feeds: 0,
       validated_feeds: 0,
@@ -32,13 +32,13 @@ export async function GET() {
     // Try to get real data from database via Python
     try {
       const { stdout } = await execAsync(
-        'cd ../.. && uv run python -c "from ai_web_feeds import DatabaseManager; import json; db = DatabaseManager(); feeds = db.get_all_feed_sources(); print(json.dumps({\'total\': len(feeds)}))"',
-        { timeout: 5000 }
+        "cd ../.. && uv run python -c \"from ai_web_feeds import DatabaseManager; import json; db = DatabaseManager(); feeds = db.get_all_feed_sources(); print(json.dumps({'total': len(feeds)}))\"",
+        { timeout: 5000 },
       );
-      
+
       const data = JSON.parse(stdout.trim());
       stats.total_feeds = data.total;
-      
+
       // TODO: Add actual validation metrics from database
       // For now, use estimates
       stats.validated_feeds = Math.floor(data.total * 0.8);
@@ -48,7 +48,6 @@ export async function GET() {
       stats.avg_response_time_ms = 450;
       stats.healthy_feeds = Math.floor(data.total * 0.75);
       stats.avg_health_score = 0.82;
-      
     } catch (error) {
       // Fallback to mock data
       stats.total_feeds = 100;
@@ -63,15 +62,11 @@ export async function GET() {
 
     return NextResponse.json(stats, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
   } catch (error) {
-    console.error('Error fetching validation stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch validation stats' },
-      { status: 500 }
-    );
+    console.error("Error fetching validation stats:", error);
+    return NextResponse.json({ error: "Failed to fetch validation stats" }, { status: 500 });
   }
 }
-

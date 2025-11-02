@@ -1,13 +1,13 @@
 """Unit tests for ai_web_feeds.trending module"""
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
+import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, TrendingTopic
-from ai_web_feeds.trending import TrendingDetector
+from ai_web_feeds.models import FeedEntry
 from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.trending import TrendingDetector
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def sample_entries():
     """Sample feed entries with categories"""
     base_time = datetime.utcnow()
     entries = []
-    
+
     # Create entries with different categories
     categories_list = [
         ["AI", "Machine Learning"],
@@ -50,7 +50,7 @@ def sample_entries():
         ["Blockchain"],
         ["AI", "Ethics"],
     ]
-    
+
     for i, categories in enumerate(categories_list):
         entry = FeedEntry(
             id=i + 1,
@@ -59,12 +59,12 @@ def sample_entries():
             link=f"http://example.com/article-{i+1}",
             title=f"Article {i+1}",
             summary=f"Summary {i+1}",
-            pub_date=base_time - timedelta(minutes=i*10),
-            discovered_at=base_time - timedelta(minutes=i*10),
+            pub_date=base_time - timedelta(minutes=i * 10),
+            discovered_at=base_time - timedelta(minutes=i * 10),
             categories=categories,
         )
         entries.append(entry)
-    
+
     return entries
 
 
@@ -87,14 +87,14 @@ class TestTrendingDetector:
         mock_session.exec = MagicMock(return_value=MagicMock(all=lambda: sample_entries))
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
-        
+
         detector.db.get_session = MagicMock(return_value=mock_session)
-        
+
         now = datetime.utcnow()
         start = now - timedelta(hours=1)
-        
+
         counts = await detector._get_topic_counts(start, now)
-        
+
         # Verify counts
         assert counts["AI"] == 4  # 4 entries have "AI" category
         assert counts["Machine Learning"] == 1
@@ -108,7 +108,7 @@ class TestTrendingDetector:
         # Create entries spread over 3 days
         now = datetime.utcnow()
         entries = []
-        
+
         # Day 1: 10 AI articles
         for i in range(10):
             entry = FeedEntry(
@@ -122,7 +122,7 @@ class TestTrendingDetector:
                 categories=["AI"],
             )
             entries.append(entry)
-        
+
         # Day 2: 12 AI articles
         for i in range(12):
             entry = FeedEntry(
@@ -136,7 +136,7 @@ class TestTrendingDetector:
                 categories=["AI"],
             )
             entries.append(entry)
-        
+
         # Day 3: 8 AI articles
         for i in range(8):
             entry = FeedEntry(
@@ -150,18 +150,18 @@ class TestTrendingDetector:
                 categories=["AI"],
             )
             entries.append(entry)
-        
+
         # Mock session
         mock_session = MagicMock()
         mock_session.exec = MagicMock(return_value=MagicMock(all=lambda: entries))
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
-        
+
         detector.db.get_session = MagicMock(return_value=mock_session)
-        
+
         start = now - timedelta(days=3)
         stats = await detector._get_baseline_stats(start, now)
-        
+
         # Verify stats for "AI" category
         assert "AI" in stats
         mean, std_dev = stats["AI"]
@@ -174,17 +174,17 @@ class TestTrendingDetector:
         # Mock session
         mock_session = MagicMock()
         mock_session.exec = MagicMock(return_value=MagicMock(all=lambda: [1, 2, 3, 4, 5]))
-        mock_session.get = MagicMock(side_effect=lambda model, id: sample_entries[id-1])
+        mock_session.get = MagicMock(side_effect=lambda model, id: sample_entries[id - 1])
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
-        
+
         detector.db.get_session = MagicMock(return_value=mock_session)
-        
+
         now = datetime.utcnow()
         start = now - timedelta(hours=1)
-        
+
         article_ids = await detector._get_representative_articles("AI", start, now, limit=3)
-        
+
         # Should return up to 3 article IDs with "AI" category
         assert len(article_ids) <= 3
         assert len(article_ids) > 0
@@ -192,23 +192,26 @@ class TestTrendingDetector:
     @pytest.mark.asyncio
     async def test_detect_trending_topics_with_spike(self, detector):
         """Test trending detection with significant spike"""
+
         # Mock _get_topic_counts to return high current count
         async def mock_current_counts(*args):
             return {"AI": 50}  # High current count
-        
+
         # Mock _get_baseline_stats to return low baseline
         async def mock_baseline_stats(*args):
             return {"AI": (10.0, 2.0)}  # Mean=10, StdDev=2
-        
+
         # Mock _get_representative_articles
         async def mock_articles(*args, **kwargs):
             return [1, 2, 3]
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
-                with patch.object(detector, "_get_representative_articles", side_effect=mock_articles):
+                with patch.object(
+                    detector, "_get_representative_articles", side_effect=mock_articles
+                ):
                     trending = await detector.detect_trending_topics()
-        
+
         # Should detect "AI" as trending
         assert len(trending) == 1
         assert trending[0].topic_id == "AI"
@@ -219,78 +222,83 @@ class TestTrendingDetector:
     @pytest.mark.asyncio
     async def test_detect_trending_topics_no_spike(self, detector):
         """Test trending detection with no significant spike"""
+
         # Mock _get_topic_counts to return normal count
         async def mock_current_counts(*args):
             return {"AI": 12}  # Normal count
-        
+
         # Mock _get_baseline_stats
         async def mock_baseline_stats(*args):
             return {"AI": (10.0, 5.0)}  # Mean=10, StdDev=5
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
                 trending = await detector.detect_trending_topics()
-        
+
         # Should not detect trending (z-score = (12-10)/5 = 0.4 < threshold)
         assert len(trending) == 0
 
     @pytest.mark.asyncio
     async def test_detect_trending_topics_min_articles_filter(self, detector):
         """Test minimum articles threshold"""
+
         # Mock _get_topic_counts to return count below minimum
         async def mock_current_counts(*args):
             return {"AI": 3}  # Below min_articles (5)
-        
+
         # Mock _get_baseline_stats
         async def mock_baseline_stats(*args):
             return {"AI": (1.0, 0.5)}  # Would have high z-score but low count
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
                 trending = await detector.detect_trending_topics()
-        
+
         # Should not detect due to min_articles filter
         assert len(trending) == 0
 
     @pytest.mark.asyncio
     async def test_detect_trending_topics_no_baseline(self, detector):
         """Test trending detection when no baseline exists"""
+
         # Mock _get_topic_counts
         async def mock_current_counts(*args):
             return {"NewTopic": 50}
-        
+
         # Mock _get_baseline_stats with no data for NewTopic
         async def mock_baseline_stats(*args):
             return {}  # No baseline
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
                 trending = await detector.detect_trending_topics()
-        
+
         # Should not detect without baseline
         assert len(trending) == 0
 
     @pytest.mark.asyncio
     async def test_detect_trending_topics_zero_std(self, detector):
         """Test trending detection with zero standard deviation"""
+
         # Mock _get_topic_counts
         async def mock_current_counts(*args):
             return {"AI": 50}
-        
+
         # Mock _get_baseline_stats with zero std dev
         async def mock_baseline_stats(*args):
             return {"AI": (10.0, 0.0)}  # StdDev=0
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
                 trending = await detector.detect_trending_topics()
-        
+
         # Should skip due to zero variance
         assert len(trending) == 0
 
     @pytest.mark.asyncio
     async def test_detect_trending_topics_ranking(self, detector):
         """Test trending topics are ranked by z-score"""
+
         # Mock _get_topic_counts
         async def mock_current_counts(*args):
             return {
@@ -298,24 +306,26 @@ class TestTrendingDetector:
                 "Blockchain": 30,
                 "IoT": 40,
             }
-        
+
         # Mock _get_baseline_stats
         async def mock_baseline_stats(*args):
             return {
-                "AI": (10.0, 2.0),         # Z-score = (50-10)/2 = 20
-                "Blockchain": (15.0, 3.0), # Z-score = (30-15)/3 = 5
-                "IoT": (8.0, 1.0),         # Z-score = (40-8)/1 = 32
+                "AI": (10.0, 2.0),  # Z-score = (50-10)/2 = 20
+                "Blockchain": (15.0, 3.0),  # Z-score = (30-15)/3 = 5
+                "IoT": (8.0, 1.0),  # Z-score = (40-8)/1 = 32
             }
-        
+
         # Mock _get_representative_articles
         async def mock_articles(*args, **kwargs):
             return [1, 2, 3]
-        
+
         with patch.object(detector, "_get_topic_counts", side_effect=mock_current_counts):
             with patch.object(detector, "_get_baseline_stats", side_effect=mock_baseline_stats):
-                with patch.object(detector, "_get_representative_articles", side_effect=mock_articles):
+                with patch.object(
+                    detector, "_get_representative_articles", side_effect=mock_articles
+                ):
                     trending = await detector.detect_trending_topics()
-        
+
         # Should be ranked by z-score: IoT (32) > AI (20) > Blockchain (5)
         assert len(trending) == 3
         assert trending[0].topic_id == "IoT"
@@ -324,4 +334,3 @@ class TestTrendingDetector:
         assert trending[1].rank == 2
         assert trending[2].topic_id == "Blockchain"
         assert trending[2].rank == 3
-

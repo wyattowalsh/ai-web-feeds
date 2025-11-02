@@ -33,7 +33,7 @@ jobs:
   process-feeds:
     name: Process Feed Sources
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,12 +67,12 @@ jobs:
           import sys
           sys.path.insert(0, 'src')
           from ai_web_feeds import load_feeds, validate_feeds
-          
+
           print('🔍 Loading feeds.yaml...')
           feeds = load_feeds(Path('../../data/feeds.yaml'))
           source_count = len(feeds.get('sources', []))
           print(f'✓ Loaded {source_count} sources')
-          
+
           print('\\n🔍 Validating schema...')
           result = validate_feeds(feeds, Path('../../data/feeds.schema.json'))
           if result.valid:
@@ -90,19 +90,19 @@ jobs:
           cd apps/cli
           SKIP_ENRICHMENT=${{ github.event.inputs.skip_enrichment || 'true' }}
           EXPORT_FORMATS=${{ github.event.inputs.export_formats || 'true' }}
-          
+
           if [ "$SKIP_ENRICHMENT" = "true" ]; then
             ENRICH_FLAG="--skip-enrichment"
           else
             ENRICH_FLAG=""
           fi
-          
+
           if [ "$EXPORT_FORMATS" = "true" ]; then
             EXPORT_FLAG="--export"
           else
             EXPORT_FLAG="--no-export"
           fi
-          
+
           uv run aiwebfeeds process \
             --input ../../data/feeds.yaml \
             --output ../../data/feeds.enriched.yaml \
@@ -114,16 +114,16 @@ jobs:
         run: |
           echo "📊 Verifying generated files..."
           ls -lh data/*.{yaml,json,opml,db} 2>/dev/null || true
-          
+
           if [ -f data/feeds.json ]; then
             SOURCES=$(jq '.sources | length' data/feeds.json)
             echo "✓ feeds.json: $SOURCES sources"
           fi
-          
+
           if [ -f data/feeds.enriched.yaml ]; then
             echo "✓ feeds.enriched.yaml generated"
           fi
-          
+
           if [ -f data/aiwebfeeds.db ]; then
             SIZE=$(stat -f%z data/aiwebfeeds.db 2>/dev/null || stat -c%s data/aiwebfeeds.db)
             echo "✓ aiwebfeeds.db: $SIZE bytes"
@@ -145,9 +145,9 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           git add data/feeds.enriched.yaml data/feeds.json data/*.opml data/aiwebfeeds.db || true
-          
+
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -174,13 +174,13 @@ jobs:
           script: |
             const fs = require('fs');
             let comment = '## 📊 Feed Processing Results\n\n';
-            
+
             if (fs.existsSync('data/feeds.json')) {
               const data = JSON.parse(fs.readFileSync('data/feeds.json', 'utf8'));
               const sourceCount = data.sources?.length || 0;
               comment += `✅ Successfully processed **${sourceCount}** feed sources\n\n`;
             }
-            
+
             comment += '### Generated Files\n';
             const files = ['feeds.enriched.yaml', 'feeds.json', 'feeds.opml', 'feeds.categorized.opml', 'aiwebfeeds.db'];
             for (const file of files) {
@@ -191,7 +191,7 @@ jobs:
                 comment += `- ✓ \`${file}\` (${size} KB)\n`;
               }
             }
-            
+
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

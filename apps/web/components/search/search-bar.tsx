@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 interface AutocompleteSuggestion {
   feeds: Array<{ id: string; title: string; type: string; url: string }>;
@@ -9,7 +9,7 @@ interface AutocompleteSuggestion {
 
 export function SearchBar({
   onSearch,
-  initialQuery = '',
+  initialQuery = "",
 }: {
   onSearch: (query: string) => void;
   initialQuery?: string;
@@ -31,14 +31,16 @@ export function SearchBar({
 
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search/autocomplete?prefix=${encodeURIComponent(query)}`);
+        const response = await fetch(
+          `/api/search/autocomplete?prefix=${encodeURIComponent(query)}`,
+        );
         if (response.ok) {
           const data = await response.json();
           setSuggestions(data);
           setShowSuggestions(true);
         }
       } catch (error) {
-        console.error('Autocomplete error:', error);
+        console.error("Autocomplete error:", error);
       }
     }, 300); // Debounce 300ms
 
@@ -49,19 +51,19 @@ export function SearchBar({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const totalSuggestions = suggestions.feeds.length + suggestions.topics.length;
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev < totalSuggestions - 1 ? prev + 1 : prev));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (selectedIndex >= 0 && selectedIndex < totalSuggestions) {
         // Select suggestion
         const allSuggestions = [...suggestions.feeds, ...suggestions.topics];
         const selected = allSuggestions[selectedIndex];
-        if ('title' in selected) {
+        if ("title" in selected) {
           setQuery(selected.title);
           onSearch(selected.title);
         } else {
@@ -73,7 +75,7 @@ export function SearchBar({
         onSearch(query);
         setShowSuggestions(false);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setShowSuggestions(false);
       setSelectedIndex(-1);
     }
@@ -92,8 +94,8 @@ export function SearchBar({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,9 +120,7 @@ export function SearchBar({
             placeholder="Search feeds by title, topic, or keyword..."
             className="w-full px-4 py-3 pl-12 pr-24 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
-            🔍
-          </span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
           <button
             type="submit"
             className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -150,7 +150,7 @@ export function SearchBar({
                     setShowSuggestions(false);
                   }}
                   className={`w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 ${
-                    selectedIndex === idx ? 'bg-blue-50' : ''
+                    selectedIndex === idx ? "bg-blue-50" : ""
                   }`}
                 >
                   <div className="font-medium text-gray-900">{feed.title}</div>
@@ -174,7 +174,7 @@ export function SearchBar({
                     setShowSuggestions(false);
                   }}
                   className={`w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 ${
-                    selectedIndex === suggestions.feeds.length + idx ? 'bg-blue-50' : ''
+                    selectedIndex === suggestions.feeds.length + idx ? "bg-blue-50" : ""
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -190,4 +190,3 @@ export function SearchBar({
     </div>
   );
 }
-

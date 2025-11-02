@@ -1,28 +1,23 @@
 """Unit tests for ai_web_feeds.utils module - Feed URL generation and platform detection."""
 
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
-from pathlib import Path
-
+from ai_web_feeds.models import FeedSource, SourceType
 from ai_web_feeds.utils import (
-    generate_rsshub_url,
     detect_platform,
-    generate_reddit_feed_url,
-    generate_medium_feed_url,
-    generate_youtube_feed_url,
-    generate_github_feed_url,
-    generate_substack_feed_url,
-    generate_devto_feed_url,
-    generate_hackernews_feed_url,
-    generate_twitter_feed_url,
     generate_arxiv_feed_url,
-    generate_platform_feed_url,
-    generate_opml,
     generate_categorized_opml,
+    generate_devto_feed_url,
+    generate_github_feed_url,
+    generate_medium_feed_url,
+    generate_opml,
+    generate_platform_feed_url,
+    generate_reddit_feed_url,
+    generate_rsshub_url,
+    generate_substack_feed_url,
+    generate_youtube_feed_url,
     load_feeds_yaml,
     save_feeds_yaml,
 )
-from ai_web_feeds.models import FeedSource, SourceType, Medium
 
 
 @pytest.mark.unit
@@ -64,22 +59,25 @@ class TestRSSHubURLGeneration:
 class TestPlatformDetection:
     """Test platform detection from URLs."""
 
-    @pytest.mark.parametrize("url,expected", [
-        ("https://reddit.com/r/machinelearning", "reddit"),
-        ("https://www.reddit.com/r/python", "reddit"),
-        ("https://medium.com/@author/post", "medium"),
-        ("https://youtube.com/watch?v=123", "youtube"),
-        ("https://www.youtube.com/channel/UC123", "youtube"),
-        ("https://github.com/user/repo", "github"),
-        ("https://substack.com", "substack"),
-        ("https://author.substack.com", "substack"),
-        ("https://dev.to/username", "devto"),
-        ("https://news.ycombinator.com", "hackernews"),
-        ("https://x.com/username", "twitter"),
-        ("https://twitter.com/username", "twitter"),
-        ("https://arxiv.org/abs/2301.00001", "arxiv"),
-        ("https://unknown.com", None),
-    ])
+    @pytest.mark.parametrize(
+        "url,expected",
+        [
+            ("https://reddit.com/r/machinelearning", "reddit"),
+            ("https://www.reddit.com/r/python", "reddit"),
+            ("https://medium.com/@author/post", "medium"),
+            ("https://youtube.com/watch?v=123", "youtube"),
+            ("https://www.youtube.com/channel/UC123", "youtube"),
+            ("https://github.com/user/repo", "github"),
+            ("https://substack.com", "substack"),
+            ("https://author.substack.com", "substack"),
+            ("https://dev.to/username", "devto"),
+            ("https://news.ycombinator.com", "hackernews"),
+            ("https://x.com/username", "twitter"),
+            ("https://twitter.com/username", "twitter"),
+            ("https://arxiv.org/abs/2301.00001", "arxiv"),
+            ("https://unknown.com", None),
+        ],
+    )
     def test_detect_platform(self, url, expected):
         """Test platform detection for various URLs."""
         result = detect_platform(url)
@@ -281,7 +279,12 @@ class TestOPMLGeneration:
     def test_generate_opml_multiple_sources(self):
         """Test generating OPML with multiple sources."""
         sources = [
-            FeedSource(id=f"test{i}", title=f"Feed {i}", feed=f"https://example.com/feed{i}.xml", source_type=SourceType.BLOG)
+            FeedSource(
+                id=f"test{i}",
+                title=f"Feed {i}",
+                feed=f"https://example.com/feed{i}.xml",
+                source_type=SourceType.BLOG,
+            )
             for i in range(3)
         ]
         result = generate_opml(sources, "Multiple Feeds")
@@ -323,11 +326,12 @@ class TestYAMLOperations:
         """Test loading feeds from YAML file."""
         test_file = tmp_path / "test.yaml"
         test_data = {"sources": [{"id": "test", "title": "Test"}]}
-        
+
         import yaml
+
         with open(test_file, "w") as f:
             yaml.dump(test_data, f)
-        
+
         result = load_feeds_yaml(test_file)
         assert result == test_data
         assert "sources" in result
@@ -336,12 +340,13 @@ class TestYAMLOperations:
         """Test saving feeds to YAML file."""
         test_file = tmp_path / "output.yaml"
         test_data = {"sources": [{"id": "test", "title": "Test"}]}
-        
+
         save_feeds_yaml(test_data, test_file)
         assert test_file.exists()
-        
+
         # Verify content
         import yaml
+
         with open(test_file) as f:
             loaded = yaml.safe_load(f)
         assert loaded == test_data

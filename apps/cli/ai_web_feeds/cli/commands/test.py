@@ -24,9 +24,14 @@ def get_project_root() -> Path:
         if pyproject.exists():
             try:
                 import tomllib
+
                 with open(pyproject, "rb") as f:
                     data = tomllib.load(f)
-                    if "tool" in data and "uv" in data["tool"] and "workspace" in data["tool"]["uv"]:
+                    if (
+                        "tool" in data
+                        and "uv" in data["tool"]
+                        and "workspace" in data["tool"]["uv"]
+                    ):
                         return parent
             except Exception:
                 pass
@@ -50,7 +55,7 @@ def run_uv_command(args: list[str], cwd: Optional[Path] = None) -> int:
     cmd = ["uv", "run"] + args
     logger.debug(f"Running: {' '.join(cmd)}")
     logger.debug(f"Working directory: {cwd or Path.cwd()}")
-    
+
     result = subprocess.run(
         cmd,
         cwd=cwd,
@@ -68,22 +73,24 @@ def test_all(
 ):
     """Run all tests."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-v" if verbose else "-q"]
-    
+
     if coverage:
-        args.extend([
-            "--cov=ai_web_feeds",
-            "--cov-report=html",
-            "--cov-report=term-missing",
-        ])
-    
+        args.extend(
+            [
+                "--cov=ai_web_feeds",
+                "--cov-report=html",
+                "--cov-report=term-missing",
+            ]
+        )
+
     if parallel:
         args.extend(["-n", "auto"])
-    
+
     typer.echo(f"🧪 Running all tests from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ All tests passed!", fg=typer.colors.GREEN, bold=True)
         if coverage:
@@ -91,7 +98,7 @@ def test_all(
             typer.echo(f"📊 Coverage report: {coverage_path}")
     else:
         typer.secho("❌ Some tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -102,18 +109,18 @@ def test_unit(
 ):
     """Run unit tests only."""
     tests_dir = get_tests_dir()
-    
+
     marker = "unit and not slow" if fast else "unit"
     args = ["pytest", "-v" if verbose else "-q", "-m", marker]
-    
+
     typer.echo(f"⚡ Running unit tests from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ Unit tests passed!", fg=typer.colors.GREEN, bold=True)
     else:
         typer.secho("❌ Unit tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -123,17 +130,17 @@ def test_integration(
 ):
     """Run integration tests."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-v" if verbose else "-q", "-m", "integration"]
-    
+
     typer.echo(f"🔗 Running integration tests from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ Integration tests passed!", fg=typer.colors.GREEN, bold=True)
     else:
         typer.secho("❌ Integration tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -143,49 +150,52 @@ def test_e2e(
 ):
     """Run end-to-end tests."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-v" if verbose else "-q", "-m", "e2e"]
-    
+
     typer.echo(f"🎯 Running E2E tests from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ E2E tests passed!", fg=typer.colors.GREEN, bold=True)
     else:
         typer.secho("❌ E2E tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
 @app.command("coverage")
 def test_coverage(
     html: bool = typer.Option(True, "--html/--no-html", help="Generate HTML report"),
-    open_browser: bool = typer.Option(False, "--open", "-o", help="Open coverage report in browser"),
+    open_browser: bool = typer.Option(
+        False, "--open", "-o", help="Open coverage report in browser"
+    ),
 ):
     """Run tests with coverage report."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-v", "--cov=ai_web_feeds", "--cov-report=term-missing"]
-    
+
     if html:
         args.append("--cov-report=html")
-    
+
     typer.echo(f"📊 Running tests with coverage from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ Tests passed!", fg=typer.colors.GREEN, bold=True)
-        
+
         if html:
             coverage_path = tests_dir / "reports" / "coverage" / "index.html"
             typer.echo(f"📊 Coverage report: {coverage_path}")
-            
+
             if open_browser and coverage_path.exists():
                 import webbrowser
+
                 webbrowser.open(str(coverage_path))
     else:
         typer.secho("❌ Tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -193,12 +203,12 @@ def test_coverage(
 def test_watch():
     """Run tests in watch mode (re-run on file changes)."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest-watch", "--", "-v"]
-    
+
     typer.echo(f"👀 Running tests in watch mode from {tests_dir}")
     typer.echo("Press Ctrl+C to stop")
-    
+
     try:
         exit_code = run_uv_command(args, cwd=tests_dir)
         sys.exit(exit_code)
@@ -211,17 +221,17 @@ def test_watch():
 def test_quick():
     """Quick test run (unit tests, fail fast, no coverage)."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-x", "-q", "-m", "unit and not slow", "--no-cov", "--tb=short"]
-    
+
     typer.echo(f"🚀 Running quick tests from {tests_dir}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ Quick tests passed!", fg=typer.colors.GREEN, bold=True)
     else:
         typer.secho("❌ Quick tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -229,24 +239,26 @@ def test_quick():
 def test_file(
     file_path: str = typer.Argument(..., help="Path to test file or directory"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
-    keywords: Optional[str] = typer.Option(None, "--keywords", "-k", help="Run tests matching keywords"),
+    keywords: Optional[str] = typer.Option(
+        None, "--keywords", "-k", help="Run tests matching keywords"
+    ),
 ):
     """Run specific test file or directory."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-v" if verbose else "-q", file_path]
-    
+
     if keywords:
         args.extend(["-k", keywords])
-    
+
     typer.echo(f"🎯 Running tests in {file_path}")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     if exit_code == 0:
         typer.secho("✅ Tests passed!", fg=typer.colors.GREEN, bold=True)
     else:
         typer.secho("❌ Tests failed!", fg=typer.colors.RED, bold=True)
-    
+
     sys.exit(exit_code)
 
 
@@ -256,15 +268,15 @@ def test_debug(
 ):
     """Run tests in debug mode (with pdb)."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "-vv", "-s", "--pdb", "-x"]
-    
+
     if file_path:
         args.append(file_path)
-    
-    typer.echo(f"🐛 Running tests in debug mode")
+
+    typer.echo("🐛 Running tests in debug mode")
     exit_code = run_uv_command(args, cwd=tests_dir)
-    
+
     sys.exit(exit_code)
 
 
@@ -272,9 +284,9 @@ def test_debug(
 def list_markers():
     """List available test markers."""
     tests_dir = get_tests_dir()
-    
+
     args = ["pytest", "--markers"]
-    
+
     typer.echo("📋 Available test markers:")
     run_uv_command(args, cwd=tests_dir)
 

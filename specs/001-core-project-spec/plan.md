@@ -1,15 +1,25 @@
 # Implementation Plan: AIWebFeeds - AI/ML Feed Aggregator Platform
 
-**Branch**: `001-core-project-spec` | **Date**: 2025-10-22 | **Spec**: [spec.md](./spec.md)  
+**Branch**: `001-core-project-spec` | **Date**: 2025-10-22 | **Spec**:
+[spec.md](./spec.md)\
 **Input**: Feature specification from `/specs/001-core-project-spec/spec.md`
 
-**Note**: This plan documents the technical implementation approach for the AIWebFeeds platform, translating the technology-agnostic specification into concrete architectural decisions and development workflows.
+**Note**: This plan documents the technical implementation approach for the AIWebFeeds
+platform, translating the technology-agnostic specification into concrete architectural
+decisions and development workflows.
 
 ## Summary
 
-AIWebFeeds is a comprehensive AI/ML feed aggregation platform combining curated feed collection (1000+ sources), quality assurance (validation, enrichment, health scoring), and multiple distribution formats (OPML, JSON, YAML). The system uses a **Python backend with uv** for feed management, validation, and data generation, producing static assets that a **FumaDocs/Next.js documentation site** renders. The platform serves three user personas: feed consumers (importing OPML), community contributors (submitting feeds via CLI/PRs), and developers (integrating via API).
+AIWebFeeds is a comprehensive AI/ML feed aggregation platform combining curated feed
+collection (1000+ sources), quality assurance (validation, enrichment, health scoring),
+and multiple distribution formats (OPML, JSON, YAML). The system uses a **Python backend
+with uv** for feed management, validation, and data generation, producing static assets
+that a **FumaDocs/Next.js documentation site** renders. The platform serves three user
+personas: feed consumers (importing OPML), community contributors (submitting feeds via
+CLI/PRs), and developers (integrating via API).
 
 **Technical Approach**:
+
 - Hybrid monorepo structure (Python with `uv` + TypeScript with `pnpm`)
 - Python backend (`packages/ai_web_feeds/`) generates JSON/OPML/YAML assets
 - Next.js 15 + FumaDocs documentation site (`apps/web/`) renders assets
@@ -17,38 +27,49 @@ AIWebFeeds is a comprehensive AI/ML feed aggregation platform combining curated 
 - SQLite database (development) / PostgreSQL (production) for caching and validation
 - Comprehensive testing with pytest (90%+ coverage requirement)
 
----
+______________________________________________________________________
 
 ## Technical Context
 
-**Language/Version**: Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web)  
+**Language/Version**: Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web)\
 **Primary Dependencies**:
-- **Python**: uv (package management), Pydantic v2 (validation), pydantic-settings (config), SQLAlchemy 2.0 + SQLModel (ORM), httpx (HTTP), tenacity (retries), feedparser (parsing), Loguru (logging), Typer (CLI), tqdm (progress bars), Ruff (linting)
-- **TypeScript**: Next.js 15, React 19, FumaDocs (docs framework), Tailwind CSS 4, ESLint 9
 
-**Storage**: SQLite (development), PostgreSQL (production option) for validation cache, enrichment data, and feed entry metadata  
-**Testing**: pytest 8.3+ with pytest-cov, pytest-asyncio, pytest-xdist (parallel), Hypothesis (property-based)  
-**Target Platform**: Linux/macOS servers (Python backend), web browsers (Chrome/Firefox/Safari/Edge current+previous)  
-**Project Type**: Hybrid monorepo - Python library + CLI + Next.js documentation site  
+- **Python**: uv (package management), Pydantic v2 (validation), pydantic-settings
+  (config), SQLAlchemy 2.0 + SQLModel (ORM), httpx (HTTP), tenacity (retries),
+  feedparser (parsing), Loguru (logging), Typer (CLI), tqdm (progress bars), Ruff
+  (linting)
+- **TypeScript**: Next.js 15, React 19, FumaDocs (docs framework), Tailwind CSS 4,
+  ESLint 9
+
+**Storage**: SQLite (development), PostgreSQL (production option) for validation cache,
+enrichment data, and feed entry metadata\
+**Testing**: pytest 8.3+ with pytest-cov, pytest-asyncio, pytest-xdist (parallel),
+Hypothesis (property-based)\
+**Target Platform**: Linux/macOS servers (Python backend), web browsers
+(Chrome/Firefox/Safari/Edge current+previous)\
+**Project Type**: Hybrid monorepo - Python library + CLI + Next.js documentation site\
 **Performance Goals**:
-- API p95 latency: <200ms
-- Page load time: <2 seconds
-- Feed validation: 1000+ feeds in <10 minutes
-- Search response: <500ms
+
+- API p95 latency: \<200ms
+- Page load time: \<2 seconds
+- Feed validation: 1000+ feeds in \<10 minutes
+- Search response: \<500ms
 
 **Constraints**:
-- Database queries: <100ms for 95% of filtered queries
-- OPML export generation: <5 seconds all formats
+
+- Database queries: \<100ms for 95% of filtered queries
+- OPML export generation: \<5 seconds all formats
 - Website uptime: 99.5% (excluding maintenance)
 - Test coverage: ≥90% for all Python modules
 
 **Scale/Scope**:
+
 - Feed collection: 1000-5000 feeds
 - API requests: 10,000+ per day
 - Concurrent website visitors: 1000+
 - Validation runs: 100+ per day
 
----
+______________________________________________________________________
 
 ## Constitution Check
 
@@ -56,24 +77,28 @@ AIWebFeeds is a comprehensive AI/ML feed aggregation platform combining curated 
 
 ### Pre-Design Evaluation
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| **I. Documentation-First Development** | ✅ PASS | Plan generates `.mdx` files in `apps/web/content/docs/` with frontmatter and `meta.json` updates |
-| **II. Component Isolation & Modularity** | ✅ PASS | Three isolated components: Core Package (Python), CLI (orchestration), Web (rendering). Each has `AGENTS.md` |
-| **III. Type Safety & Data Integrity** | ✅ PASS | Python with mypy strict mode, TypeScript strict mode, JSON Schemas for data validation, SQLModel for database |
-| **IV. Test-First Development** | ✅ PASS | pytest with 90%+ coverage requirement, TDD workflow documented, comprehensive test suite |
-| **V. Data Schema Compliance** | ✅ PASS | JSON Schemas defined for `feeds.yaml`, `topics.yaml`, `feeds.enriched.yaml` with validation |
-| **VI. Modern Stack Commitment** | ✅ PASS | Python 3.13+, Next.js 15+, React 19+, Pydantic v2, SQLAlchemy 2.0, uv, pnpm |
-| **VII. Code Quality & Conventions** | ✅ PASS | Ruff (Python), ESLint 9 (TypeScript), conventional commits, absolute imports, Google-style docstrings |
+| Principle                                | Status  | Notes                                                                                                         |
+| ---------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| **I. Documentation-First Development**   | ✅ PASS | Plan generates `.mdx` files in `apps/web/content/docs/` with frontmatter and `meta.json` updates              |
+| **II. Component Isolation & Modularity** | ✅ PASS | Three isolated components: Core Package (Python), CLI (orchestration), Web (rendering). Each has `AGENTS.md`  |
+| **III. Type Safety & Data Integrity**    | ✅ PASS | Python with mypy strict mode, TypeScript strict mode, JSON Schemas for data validation, SQLModel for database |
+| **IV. Test-First Development**           | ✅ PASS | pytest with 90%+ coverage requirement, TDD workflow documented, comprehensive test suite                      |
+| **V. Data Schema Compliance**            | ✅ PASS | JSON Schemas defined for `feeds.yaml`, `topics.yaml`, `feeds.enriched.yaml` with validation                   |
+| **VI. Modern Stack Commitment**          | ✅ PASS | Python 3.13+, Next.js 15+, React 19+, Pydantic v2, SQLAlchemy 2.0, uv, pnpm                                   |
+| **VII. Code Quality & Conventions**      | ✅ PASS | Ruff (Python), ESLint 9 (TypeScript), conventional commits, absolute imports, Google-style docstrings         |
 
 **Additional Standards**:
-- ✅ **Performance & Scalability**: Async/await for I/O, retry logic with tenacity, database indexes, Lighthouse ≥90
-- ✅ **Security & Privacy**: HTTPS only, input validation, dependency scanning, no secrets in repo
-- ✅ **Data Management**: Canonical feeds, DAG topic taxonomy, reversible migrations, multiple export formats
+
+- ✅ **Performance & Scalability**: Async/await for I/O, retry logic with tenacity,
+  database indexes, Lighthouse ≥90
+- ✅ **Security & Privacy**: HTTPS only, input validation, dependency scanning, no
+  secrets in repo
+- ✅ **Data Management**: Canonical feeds, DAG topic taxonomy, reversible migrations,
+  multiple export formats
 
 **Overall Status**: ✅ **ALL GATES PASS** - Proceed to Phase 0 research
 
----
+______________________________________________________________________
 
 ## Project Structure
 
@@ -180,58 +205,71 @@ ai-web-feeds/
 ```
 
 **Structure Decision**: Hybrid monorepo selected based on:
-1. **Existing structure**: Project already uses packages/ and apps/ organization
-2. **Component isolation**: Clear separation between library (packages/), CLI (apps/cli/), and web (apps/web/)
-3. **Unified deployment**: Python backend generates assets that Next.js consumes during build
-4. **Developer experience**: Single repository simplifies development, shared types, and coordinated releases
-5. **Technology alignment**: uv workspace for Python packages, pnpm workspace for TypeScript apps
 
----
+1. **Existing structure**: Project already uses packages/ and apps/ organization
+1. **Component isolation**: Clear separation between library (packages/), CLI
+   (apps/cli/), and web (apps/web/)
+1. **Unified deployment**: Python backend generates assets that Next.js consumes during
+   build
+1. **Developer experience**: Single repository simplifies development, shared types, and
+   coordinated releases
+1. **Technology alignment**: uv workspace for Python packages, pnpm workspace for
+   TypeScript apps
+
+______________________________________________________________________
 
 ## Complexity Tracking
 
 > No constitution violations - all principles satisfied by design.
 
 **Simplicity Decisions**:
+
 - ✅ Using existing monorepo structure (no new complexity)
 - ✅ Monorepo with unified deployment (simpler than microservices)
 - ✅ Static asset generation (no runtime API server needed initially)
 - ✅ SQLite for development (simpler than containerized PostgreSQL locally)
-- ✅ Last-write-wins concurrency (simpler than optimistic locking for low-conflict scenarios)
+- ✅ Last-write-wins concurrency (simpler than optimistic locking for low-conflict
+  scenarios)
 
 **Future Considerations** (out of current scope):
+
 - Separate API server deployment (if scaling requires it)
 - Optimistic locking (if concurrent edits become frequent)
 - Full content caching (planned for future phase)
 - Real-time feed monitoring (beyond daily validation runs)
 
----
+______________________________________________________________________
 
 ## Phase 0: Research & Technology Decisions
 
 **Status**: To be generated in `research.md`
 
 **Research Areas**:
-1. **Feed Parsing**: Best Python libraries for RSS/Atom/JSON Feed parsing
-2. **Topic Graph Storage**: Best approach for DAG storage and traversal (SQLAlchemy relations vs graph DB)
-3. **Observability Stack**: Logging (JSON format), metrics (Prometheus?), tracing (OpenTelemetry?), dashboards (Grafana?)
-4. **Contribution Workflow**: GitHub PR process, automated validation, curator review queue
-5. **OPML Generation**: Libraries and best practices for OPML 2.0 compliance
-6. **FumaDocs Integration**: How Python assets integrate with Next.js build process
-7. **Testing Strategy**: Hypothesis usage patterns, async test fixtures, mock strategies
 
----
+1. **Feed Parsing**: Best Python libraries for RSS/Atom/JSON Feed parsing
+1. **Topic Graph Storage**: Best approach for DAG storage and traversal (SQLAlchemy
+   relations vs graph DB)
+1. **Observability Stack**: Logging (JSON format), metrics (Prometheus?), tracing
+   (OpenTelemetry?), dashboards (Grafana?)
+1. **Contribution Workflow**: GitHub PR process, automated validation, curator review
+   queue
+1. **OPML Generation**: Libraries and best practices for OPML 2.0 compliance
+1. **FumaDocs Integration**: How Python assets integrate with Next.js build process
+1. **Testing Strategy**: Hypothesis usage patterns, async test fixtures, mock strategies
+
+______________________________________________________________________
 
 ## Phase 1: Design Artifacts
 
 **Status**: To be generated
 
 **Deliverables**:
+
 - `data-model.md`: Entity schemas, relationships, validation rules, state transitions
 - `contracts/`: OpenAPI spec for API routes, JSON schemas for data structures
 - `quickstart.md`: Setup instructions, development workflow, testing guide
 
----
+______________________________________________________________________
 
 ## Post-Design Constitution Re-Check
 
@@ -239,33 +277,43 @@ ai-web-feeds/
 
 ### Re-Evaluation Results
 
-| Principle | Status | Verification Evidence |
-|-----------|--------|----------------------|
-| **I. Documentation-First Development** | ✅ PASS | - Quickstart.md instructs creating `.mdx` files in `apps/web/content/docs/`<br>- Explicit prohibition of standalone `.md` files documented<br>- Navigation update via `meta.json` workflow defined |
-| **II. Component Isolation & Modularity** | ✅ PASS | - plan.md documents clear separation: Core (packages/), CLI (apps/cli/), Web (apps/web/)<br>- Each component has independent directory structure<br>- No circular dependencies in design<br>- AGENTS.md files updated for all three agents (cursor, copilot, codex) |
-| **III. Type Safety & Data Integrity** | ✅ PASS | - data-model.md uses SQLModel (type-safe ORM) for all entities<br>- contracts/ includes JSON Schemas for data validation<br>- contracts/openapi.yaml provides typed API contracts<br>- research.md specifies mypy strict mode + TypeScript strict mode |
-| **IV. Test-First Development** | ✅ PASS | - quickstart.md includes TDD workflow: write test → run (fail) → implement → run (pass)<br>- Test structure mirrors source structure (tests/packages/ai_web_feeds/unit/)<br>- pytest.ini configured with 90% coverage requirement (--cov-fail-under=90)<br>- research.md documents Hypothesis for property-based testing |
-| **V. Data Schema Compliance** | ✅ PASS | - contracts/schemas/ contains JSON Schemas for FeedSource, Topic, TopicRelation<br>- quickstart.md documents validation: `uv run aiwebfeeds validate schema --all`<br>- data-model.md includes validation rules for all entities |
-| **VI. Modern Stack Commitment** | ✅ PASS | - Python 3.13+, Next.js 15+, React 19+ specified in plan.md Technical Context<br>- Pydantic v2, SQLAlchemy 2.0, uv, pnpm documented in research.md<br>- Dependencies locked (uv.lock, pnpm-lock.yaml) mentioned in quickstart.md |
-| **VII. Code Quality & Conventions** | ✅ PASS | - quickstart.md documents Ruff (linting/formatting), mypy (type checking), ESLint 9<br>- Conventional commits format specified with examples<br>- Pre-commit hooks workflow documented<br>- Absolute imports required (mentioned in quickstart.md) |
+| Principle                                | Status  | Verification Evidence                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **I. Documentation-First Development**   | ✅ PASS | - Quickstart.md instructs creating `.mdx` files in `apps/web/content/docs/`<br>- Explicit prohibition of standalone `.md` files documented<br>- Navigation update via `meta.json` workflow defined                                                                                                                       |
+| **II. Component Isolation & Modularity** | ✅ PASS | - plan.md documents clear separation: Core (packages/), CLI (apps/cli/), Web (apps/web/)<br>- Each component has independent directory structure<br>- No circular dependencies in design<br>- AGENTS.md files updated for all three agents (cursor, copilot, codex)                                                      |
+| **III. Type Safety & Data Integrity**    | ✅ PASS | - data-model.md uses SQLModel (type-safe ORM) for all entities<br>- contracts/ includes JSON Schemas for data validation<br>- contracts/openapi.yaml provides typed API contracts<br>- research.md specifies mypy strict mode + TypeScript strict mode                                                                   |
+| **IV. Test-First Development**           | ✅ PASS | - quickstart.md includes TDD workflow: write test → run (fail) → implement → run (pass)<br>- Test structure mirrors source structure (tests/packages/ai_web_feeds/unit/)<br>- pytest.ini configured with 90% coverage requirement (--cov-fail-under=90)<br>- research.md documents Hypothesis for property-based testing |
+| **V. Data Schema Compliance**            | ✅ PASS | - contracts/schemas/ contains JSON Schemas for FeedSource, Topic, TopicRelation<br>- quickstart.md documents validation: `uv run aiwebfeeds validate schema --all`<br>- data-model.md includes validation rules for all entities                                                                                         |
+| **VI. Modern Stack Commitment**          | ✅ PASS | - Python 3.13+, Next.js 15+, React 19+ specified in plan.md Technical Context<br>- Pydantic v2, SQLAlchemy 2.0, uv, pnpm documented in research.md<br>- Dependencies locked (uv.lock, pnpm-lock.yaml) mentioned in quickstart.md                                                                                         |
+| **VII. Code Quality & Conventions**      | ✅ PASS | - quickstart.md documents Ruff (linting/formatting), mypy (type checking), ESLint 9<br>- Conventional commits format specified with examples<br>- Pre-commit hooks workflow documented<br>- Absolute imports required (mentioned in quickstart.md)                                                                       |
 
 **Additional Standards**:
-- ✅ **Performance & Scalability**: plan.md specifies performance goals (API <200ms p95, page load <2s, validation 1000+ feeds <10min)
-- ✅ **Security & Privacy**: research.md includes HTTPS-only, input validation, no secrets in repo
-- ✅ **Data Management**: data-model.md ensures feed canonicalization, DAG topic taxonomy (cycle detection algorithm), reversible migrations
+
+- ✅ **Performance & Scalability**: plan.md specifies performance goals (API \<200ms p95,
+  page load \<2s, validation 1000+ feeds \<10min)
+- ✅ **Security & Privacy**: research.md includes HTTPS-only, input validation, no
+  secrets in repo
+- ✅ **Data Management**: data-model.md ensures feed canonicalization, DAG topic taxonomy
+  (cycle detection algorithm), reversible migrations
 
 **Design Artifacts Compliance**:
+
 - ✅ **plan.md**: Technical context enforces Type Safety (III) and Modern Stack (VI)
-- ✅ **research.md**: Documents all technology decisions with rationale, aligns with Modern Stack (VI)
-- ✅ **data-model.md**: Entity schemas with Pydantic/SQLModel ensure Type Safety (III) and Data Schema Compliance (V)
-- ✅ **contracts/openapi.yaml**: REST API specification ensures Type Safety (III) for API layer
-- ✅ **contracts/schemas/*.json**: JSON Schemas enforce Data Schema Compliance (V)
-- ✅ **quickstart.md**: Documents Test-First Development (IV) workflow, quality checks, conventional commits (VII)
+- ✅ **research.md**: Documents all technology decisions with rationale, aligns with
+  Modern Stack (VI)
+- ✅ **data-model.md**: Entity schemas with Pydantic/SQLModel ensure Type Safety (III)
+  and Data Schema Compliance (V)
+- ✅ **contracts/openapi.yaml**: REST API specification ensures Type Safety (III) for API
+  layer
+- ✅ **contracts/schemas/\*.json**: JSON Schemas enforce Data Schema Compliance (V)
+- ✅ **quickstart.md**: Documents Test-First Development (IV) workflow, quality checks,
+  conventional commits (VII)
 
 **Compliance Score**: 7/7 core principles + 3/3 additional standards = **100% PASS**
 
-**Recommendation**: ✅ **APPROVED FOR IMPLEMENTATION** - All constitutional requirements satisfied
+**Recommendation**: ✅ **APPROVED FOR IMPLEMENTATION** - All constitutional requirements
+satisfied
 
----
+______________________________________________________________________
 
 *Plan Version*: 1.0.0 | *Created*: 2025-10-22 | *Last Updated*: 2025-10-22

@@ -154,19 +154,19 @@ db = DatabaseManager()
 
 with db.get_session() as session:
     analyzer = TimeSeriesAnalyzer(session)
-    
+
     # Forecast health
     forecast = analyzer.forecast_health_metric("feed_123", days_ahead=14)
     print(f"Forecast (next 14 days): {forecast.forecast_values}")
     print(f"Confidence Intervals: {forecast.confidence_intervals}")
     print(f"Model RMSE: {forecast.rmse:.3f}")
-    
+
     # Detect seasonality
     seasonality = analyzer.detect_seasonality("feed_123", lookback_days=90)
     if seasonality.has_seasonality:
         print(f"Seasonal Period: {seasonality.seasonal_period} hours/days")
         print(f"Seasonal Strength: {seasonality.seasonal_strength:.2f}")
-    
+
     # Analyze trend
     trend = analyzer.analyze_trend("feed_123", lookback_days=90)
     print(f"Trend Direction: {trend.trend_direction}")
@@ -196,13 +196,13 @@ db = DatabaseManager()
 
 with db.get_session() as session:
     analyzer = NetworkAnalyzer(session)
-    
+
     # Build topic network
     topic_graph = analyzer.build_topic_network()
     print(f"Topics: {topic_graph.stats['num_nodes']}")
     print(f"Relationships: {topic_graph.stats['num_edges']}")
     print(f"Density: {topic_graph.stats['density']:.3f}")
-    
+
     # Find influential topics
     influential = analyzer.find_influential_topics(topic_graph, top_n=10)
     for topic in influential:
@@ -237,10 +237,10 @@ with MetadataEnricher() as enricher:
     import yaml
     with open("data/feeds.yaml") as f:
         data = yaml.safe_load(f)
-    
+
     # Enrich all feeds
     enriched_sources = enricher.batch_enrich(data["sources"])
-    
+
     # Assess quality
     quality_analyzer = QualityAnalyzer()
     for feed in enriched_sources:
@@ -301,18 +301,18 @@ from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
 with db.get_session() as session:
     ts_analyzer = TimeSeriesAnalyzer(session)
     adv_analytics = AdvancedFeedAnalytics(session)
-    
+
     feed_id = "feed_123"
-    
+
     # Current health
     current_health = adv_analytics.get_current_health(feed_id)
-    
+
     # Future forecast
     forecast = ts_analyzer.forecast_health_metric(feed_id, days_ahead=7)
-    
+
     # Trend analysis
     trend = ts_analyzer.analyze_trend(feed_id, lookback_days=30)
-    
+
     dashboard = {
         "feed_id": feed_id,
         "current_health": current_health,
@@ -335,15 +335,19 @@ with db.get_session() as session:
 ### Common Issues
 
 **Language detection fails**
+
 - Ensure text is at least 10 characters; langdetect requires minimum text
 
 **Metadata extraction returns empty**
+
 - Check URL accessibility; some sites block scrapers (use crawlee-python)
 
 **Quality score too low**
+
 - Use `auto_fix_issues()` to automatically fix common problems
 
 **Forecasting insufficient data**
+
 - Need minimum 7 data points; ensure health metrics collected regularly
 
 ## Best Practices
@@ -374,5 +378,5 @@ Planned features:
 
 ---
 
-**Version**: 1.0  
+**Version**: 1.0
 **Last Updated**: October 15, 2025

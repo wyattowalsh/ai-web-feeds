@@ -14,6 +14,7 @@ AI Web Feeds provides native support for popular content platforms, automaticall
 Convert subreddit and user URLs to RSS feeds.
 
 **URL Formats:**
+
 - Subreddit: `https://reddit.com/r/{subreddit}`
 - User: `https://reddit.com/u/{username}`
 
@@ -29,11 +30,12 @@ Convert subreddit and user URLs to RSS feeds.
     platform: "reddit"
     reddit:
       subreddit: "MachineLearning"
-      sort: "hot"              # hot, new, top, rising
-      time: "day"              # hour, day, week, month, year, all (for top)
+      sort: "hot" # hot, new, top, rising
+      time: "day" # hour, day, week, month, year, all (for top)
 ```
 
 **Auto-generated feed:**
+
 - `hot`: `https://www.reddit.com/r/MachineLearning/hot/.rss`
 - `top`: `https://www.reddit.com/r/MachineLearning/top/.rss?t=day`
 - `new`: `https://www.reddit.com/r/MachineLearning/new/.rss`
@@ -43,6 +45,7 @@ Convert subreddit and user URLs to RSS feeds.
 Convert Medium publications and user profiles to RSS feeds.
 
 **URL Formats:**
+
 - Publication: `https://medium.com/{publication}`
 - User: `https://medium.com/@{username}`
 - Tag: `https://medium.com/tag/{tag}`
@@ -62,6 +65,7 @@ Convert Medium publications and user profiles to RSS feeds.
 ```
 
 **Auto-generated feed:**
+
 - Publication: `https://medium.com/feed/towards-data-science`
 - User: `https://medium.com/feed/@username`
 - Tag: `https://medium.com/feed/tag/ai`
@@ -71,6 +75,7 @@ Convert Medium publications and user profiles to RSS feeds.
 Convert YouTube channels and playlists to RSS feeds.
 
 **URL Formats:**
+
 - Channel: `https://youtube.com/channel/{channel_id}`
 - User: `https://youtube.com/@{username}`
 - Playlist: `https://youtube.com/playlist?list={playlist_id}`
@@ -90,6 +95,7 @@ Convert YouTube channels and playlists to RSS feeds.
 ```
 
 **Auto-generated feed:**
+
 - Channel: `https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg`
 - Playlist: `https://www.youtube.com/feeds/videos.xml?playlist_id=PLxxxxxx`
 
@@ -98,6 +104,7 @@ Convert YouTube channels and playlists to RSS feeds.
 Convert GitHub repositories to Atom feeds for releases, commits, and tags.
 
 **URL Format:**
+
 - Repository: `https://github.com/{owner}/{repo}`
 
 **Configuration:**
@@ -113,11 +120,12 @@ Convert GitHub repositories to Atom feeds for releases, commits, and tags.
     github:
       owner: "pytorch"
       repo: "pytorch"
-      feed_type: "releases"    # releases, commits, tags, activity
-      branch: "main"           # optional, for commits feed
+      feed_type: "releases" # releases, commits, tags, activity
+      branch: "main" # optional, for commits feed
 ```
 
 **Auto-generated feeds:**
+
 - Releases: `https://github.com/pytorch/pytorch/releases.atom`
 - Commits: `https://github.com/pytorch/pytorch/commits.atom`
 - Tags: `https://github.com/pytorch/pytorch/tags.atom`
@@ -128,6 +136,7 @@ Convert GitHub repositories to Atom feeds for releases, commits, and tags.
 Convert Substack publications to RSS feeds.
 
 **URL Format:**
+
 - Publication: `https://{publication}.substack.com`
 
 **Configuration:**
@@ -145,6 +154,7 @@ Convert Substack publications to RSS feeds.
 ```
 
 **Auto-generated feed:**
+
 - `https://importai.substack.com/feed`
 
 ### Dev.to
@@ -152,6 +162,7 @@ Convert Substack publications to RSS feeds.
 Convert Dev.to users, organizations, and tags to RSS feeds.
 
 **URL Formats:**
+
 - User: `https://dev.to/{username}`
 - Organization: `https://dev.to/{org}`
 - Tag: `https://dev.to/t/{tag}`
@@ -171,6 +182,7 @@ Convert Dev.to users, organizations, and tags to RSS feeds.
 ```
 
 **Auto-generated feeds:**
+
 - User: `https://dev.to/feed/username`
 - Tag: `https://dev.to/feed/tag/machinelearning`
 
@@ -189,10 +201,11 @@ Access Hacker News RSS feeds.
   platform_config:
     platform: "hackernews"
     hackernews:
-      feed_type: "frontpage"   # frontpage, newest, best, ask, show, jobs
+      feed_type: "frontpage" # frontpage, newest, best, ask, show, jobs
 ```
 
 **Auto-generated feeds:**
+
 - Frontpage: `https://news.ycombinator.com/rss`
 - Newest: `https://news.ycombinator.com/newest.rss`
 - Best: `https://news.ycombinator.com/best.rss`
@@ -231,9 +244,9 @@ Auto-generated feeds include metadata:
 
 ```yaml
 meta:
-  platform: "reddit"           # Platform name
-  platform_generated: true     # Feed URL was auto-generated
-  format: "rss"                # Detected feed format
+  platform: "reddit" # Platform name
+  platform_generated: true # Feed URL was auto-generated
+  format: "rss" # Detected feed format
   last_validated: "2025-10-15T12:00:00"
 ```
 

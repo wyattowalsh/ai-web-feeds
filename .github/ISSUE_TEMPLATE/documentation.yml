@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         ## Documentation Update
-        
+
         Help us improve our documentation!
 
   - type: dropdown

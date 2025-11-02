@@ -7,9 +7,6 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from sqlalchemy import create_engine
-from sqlmodel import Session, SQLModel
-
 from ai_web_feeds.models import (
     CurationStatus,
     FeedFetchLog,
@@ -19,7 +16,8 @@ from ai_web_feeds.models import (
     SourceType,
     Topic,
 )
-
+from sqlalchemy import create_engine
+from sqlmodel import Session, SQLModel
 
 # ============================================================================
 # Pytest Configuration

@@ -5,8 +5,8 @@ description: Personalized feed suggestions with content-based filtering, cold st
 
 # AI-Powered Recommendations
 
-> **Status**: ✅ Fully Implemented  
-> **Phase**: Phase 1 (MVP)  
+> **Status**: ✅ Fully Implemented
+> **Phase**: Phase 1 (MVP)
 > **Completion**: 100%
 
 AI-Powered Recommendations provide personalized feed suggestions based on user interests, content similarity, and popularity.
@@ -20,6 +20,7 @@ Navigate to `/recommendations` to see 10-20 personalized feed suggestions with i
 ### Cold Start Onboarding
 
 New users take a 3-5 topic selection quiz:
+
 - **Question**: "What AI/ML areas interest you?"
 - **Options**: Select from topic taxonomy (LLM, Computer Vision, Reinforcement Learning, etc.)
 - **Result**: Immediate recommendations based on selected topics
@@ -27,11 +28,13 @@ New users take a 3-5 topic selection quiz:
 ### Recommendation Algorithm (Phase 1)
 
 **70-20-10 Split**:
+
 - **70% Content-Based**: Topic overlap + embedding similarity with user interests
 - **20% Popularity-Based**: Most followed/verified feeds
 - **10% Serendipity**: Random high-quality feeds for discovery
 
 **Configurable** via environment variables:
+
 ```bash
 AIWF_RECOMMENDATION__CONTENT_WEIGHT=0.7
 AIWF_RECOMMENDATION__POPULARITY_WEIGHT=0.2
@@ -41,6 +44,7 @@ AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT=0.1
 ### Recommendation Explanations
 
 Each recommendation includes context:
+
 - "Because you follow **X**" (clickable link)
 - "Popular in **Y**" (topic badge)
 - "Similar to **Z**" (feed comparison)
@@ -48,6 +52,7 @@ Each recommendation includes context:
 ### User Feedback
 
 **Interactions**:
+
 - **Like** (👍): Boost topic weight +0.2
 - **Dismiss** (✖): Reduce feed weight -0.5
 - **Block Topic** (🚫): Exclude topic entirely
@@ -89,6 +94,7 @@ AIWF_EMBEDDING__LOCAL_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ### Web Interface
 
 Navigate to `/recommendations`:
+
 1. **First Visit**: Complete topic quiz (3-5 selections)
 2. **Browse**: Scroll through personalized suggestions
 3. **Interact**: Like, dismiss, or block topics
@@ -113,24 +119,24 @@ uv run aiwebfeeds recommendations coldstart --topics llm,agents,training --count
 
 ```typescript
 // Get personalized recommendations
-const response = await fetch('/api/recommendations?user_id=abc123&count=10');
+const response = await fetch("/api/recommendations?user_id=abc123&count=10");
 const recommendations = await response.json();
 
 // Submit feedback
-await fetch('/api/recommendations/feedback', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/recommendations/feedback", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    user_id: 'abc123',
-    feed_id: 'xyz789',
-    interaction_type: 'like'
-  })
+    user_id: "abc123",
+    feed_id: "xyz789",
+    interaction_type: "like",
+  }),
 });
 
 // Cold start quiz
-const coldStartResponse = await fetch('/api/recommendations/quiz', {
-  method: 'POST',
-  body: JSON.stringify({ topics: ['llm', 'agents', 'training'] })
+const coldStartResponse = await fetch("/api/recommendations/quiz", {
+  method: "POST",
+  body: JSON.stringify({ topics: ["llm", "agents", "training"] }),
 });
 ```
 
@@ -143,6 +149,7 @@ const coldStartResponse = await fetch('/api/recommendations/quiz', {
 ## Phase 2 Enhancements
 
 **Collaborative Filtering** (deferred until user accounts exist):
+
 - User-user similarity matrix
 - Item-item co-occurrence matrix
 - Hybrid content + collaborative model
@@ -164,4 +171,3 @@ const coldStartResponse = await fetch('/api/recommendations/quiz', {
 - [Analytics Dashboard](./analytics) - View recommendation performance metrics
 - [Search & Discovery](./search) - Find specific feeds by query
 - [Data Model](/docs/development/data-model#recommendationinteraction) - RecommendationInteraction and UserProfile schemas
-

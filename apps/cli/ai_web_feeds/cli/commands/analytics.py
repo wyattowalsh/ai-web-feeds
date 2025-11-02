@@ -1,6 +1,5 @@
 """CLI commands for analytics dashboard."""
 
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -12,7 +11,6 @@ from ai_web_feeds.analytics import (
     calculate_summary_metrics,
     export_analytics_csv,
     generate_analytics_snapshot,
-    get_health_distribution,
     get_publication_velocity,
     get_trending_topics,
 )
@@ -111,7 +109,9 @@ def analytics_trending(
         topics = get_trending_topics(session, limit=limit, date_range=date_range)
 
         if not topics:
-            console.print("[yellow]No topic stats found. Run 'aiwebfeeds analytics snapshot' first.[/yellow]")
+            console.print(
+                "[yellow]No topic stats found. Run 'aiwebfeeds analytics snapshot' first.[/yellow]"
+            )
             raise typer.Exit(1)
 
         table = Table(show_header=True)
@@ -189,7 +189,7 @@ def analytics_velocity(
 
         console.print(table)
 
-    console.print(f"\n[green]✓[/green] Velocity data displayed")
+    console.print("\n[green]✓[/green] Velocity data displayed")
 
 
 @app.command("snapshot")
@@ -237,7 +237,7 @@ def analytics_export(
     ),
 ):
     """Export analytics to CSV."""
-    console.print(f"[bold cyan]Exporting Analytics to CSV[/bold cyan]\n")
+    console.print("[bold cyan]Exporting Analytics to CSV[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
     with db.get_session() as session:

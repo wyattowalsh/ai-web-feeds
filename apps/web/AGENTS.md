@@ -1,21 +1,22 @@
 # Web Application - Agent Instructions
 
-> **Component**: Documentation Website & Web Features  
-> **Location**: `apps/web/`  
+> **Component**: Documentation Website & Web Features\
+> **Location**: `apps/web/`\
 > **Parent**: [Root AGENTS.md](../../AGENTS.md)
 
 ## 📍 Essential Links
 
 - **Full Documentation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)
-- **Web Reference**: [#file:web](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)
+- **Web Reference**: \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **FumaDocs**: [fumadocs.dev](https://fumadocs.dev)
 
----
+______________________________________________________________________
 
 ## 🎯 Purpose
 
 Next.js 15 documentation site providing:
+
 - **Documentation**: FumaDocs-powered MDX content
 - **LLM Formats**: `/llms-full.txt`, `/llms.txt`, `/llms.md`, `/llms.mdx`
 - **Data Explorer**: Interactive feeds/topics browser (`/explorer`)
@@ -25,9 +26,10 @@ Next.js 15 documentation site providing:
 
 **Stack**: Next.js 15+, React 19, FumaDocs, Tailwind 4, TypeScript 5.9+, pnpm
 
-**Data Integration**: Reads `data/feeds.yaml`, `data/topics.yaml`, `data/feeds.enriched.yaml`
+**Data Integration**: Reads `data/feeds.yaml`, `data/topics.yaml`,
+`data/feeds.enriched.yaml`
 
----
+______________________________________________________________________
 
 ## 🏗️ Architecture
 
@@ -59,9 +61,10 @@ apps/web/
     └── rss.ts                # Feed generation
 ```
 
-**See**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web) for complete structure
+**See**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web) for complete
+structure
 
----
+______________________________________________________________________
 
 ## 📐 Development Rules
 
@@ -78,6 +81,7 @@ apps/web/
 - ✅ **ALWAYS use proper frontmatter** with `title` and `description`
 
 **Examples of ABSOLUTELY FORBIDDEN files (DELETE IF FOUND):**
+
 ```
 ❌ packages/ai_web_feeds/DATABASE.md
 ❌ packages/ai_web_feeds/GUIDE.md
@@ -96,24 +100,27 @@ apps/web/
 **✅ CORRECT WORKFLOW FOR ANY DOCUMENTATION:**
 
 1. Create `.mdx` file in `content/docs/`
+
    - Development guides → `content/docs/development/*.mdx`
    - User guides → `content/docs/guides/*.mdx`
    - Features → `content/docs/features/*.mdx`
    - API reference → `content/docs/reference/*.mdx`
-   
-2. Add proper frontmatter:
+
+1. Add proper frontmatter:
+
    ```mdx
    ---
    title: Page Title
    description: SEO description (required)
    ---
-   
+
    # Page Title
-   
+
    Content here...
    ```
 
-3. Update `content/docs/meta.json`:
+1. Update `content/docs/meta.json`:
+
    ```json
    {
      "development": {
@@ -123,7 +130,7 @@ apps/web/
    }
    ```
 
-4. **NEVER** create a `.md` file as an alternative!
+1. **NEVER** create a `.md` file as an alternative!
 
 **Examples of CORRECT documentation locations:**
 
@@ -137,13 +144,13 @@ apps/web/
 ```
 
 **IF YOU SEE A SPURIOUS `.md` FILE:**
+
 1. Move its content to proper `.mdx` file in `content/docs/`
-2. Delete the `.md` file
-3. Update `meta.json`
-4. Never create them again!
-  }
-}
-```
+1. Delete the `.md` file
+1. Update `meta.json`
+1. Never create them again! } }
+
+````
 
 ### 2. Navigation
 Edit `content/docs/meta.json`:
@@ -152,22 +159,24 @@ Edit `content/docs/meta.json`:
   "title": "Section",
   "pages": ["page-slug"]
 }
-```
+````
 
 ### 3. MDX Components
+
 ```tsx
 // Use custom components in MDX
-import { Mermaid } from '@/components/mdx/mermaid';
+import { Mermaid } from "@/components/mdx/mermaid";
 
-<Mermaid chart={`graph TD; A-->B;`} />
+<Mermaid chart={`graph TD; A-->B;`} />;
 ```
 
 ### 4. LLM Docs
+
 - **Full docs**: Update in `app/llms-full.txt/route.ts`
 - **Concise**: Update in `app/llms.txt/route.ts`
 - Auto-generated from `content/docs/`
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -187,65 +196,71 @@ pnpm lint:links
 
 **See**: [../../tests/AGENTS.md](../../tests/AGENTS.md) for testing patterns
 
----
+______________________________________________________________________
 
 ## 🔄 Common Tasks
 
 ### Adding Documentation
+
 1. Create `content/docs/new-page.mdx`
-2. Add frontmatter (title, description)
-3. Update `content/docs/meta.json`
-4. Preview: `pnpm dev`
-5. Verify LLM formats: `/llms-full.txt`
+1. Add frontmatter (title, description)
+1. Update `content/docs/meta.json`
+1. Preview: `pnpm dev`
+1. Verify LLM formats: `/llms-full.txt`
 
 ### Adding Components
+
 1. Create in `components/` or `components/ui/`
-2. Export from component file
-3. Import in MDX or pages
-4. Document in `content/docs/development/`
+1. Export from component file
+1. Import in MDX or pages
+1. Document in `content/docs/development/`
 
 ### Updating Feeds
+
 - Edit `lib/rss.ts` for feed logic
 - Regenerate: Automatically on build
 
 ### OG Images
+
 - Auto-generated per page
 - Customize: Edit `app/docs/opengraph-image.tsx`
 
----
+______________________________________________________________________
 
 ## 🚨 Critical Patterns
 
 ### DO
-✅ Use FumaDocs content structure  
-✅ Add frontmatter to all MDX files  
-✅ Update `meta.json` for navigation  
-✅ Test LLM formats after doc changes  
-✅ Use TypeScript strict mode  
+
+✅ Use FumaDocs content structure\
+✅ Add frontmatter to all MDX files\
+✅ Update `meta.json` for navigation\
+✅ Test LLM formats after doc changes\
+✅ Use TypeScript strict mode\
 ✅ Run `pnpm lint` before commits
 
 ### DON'T
-❌ Create standalone `.md` files  
-❌ Skip frontmatter in MDX  
-❌ Hard-code navigation (use `meta.json`)  
-❌ Forget to update LLM docs  
-❌ Use `any` types  
+
+❌ Create standalone `.md` files\
+❌ Skip frontmatter in MDX\
+❌ Hard-code navigation (use `meta.json`)\
+❌ Forget to update LLM docs\
+❌ Use `any` types\
 ❌ Commit without linting
 
----
+______________________________________________________________________
 
 ## 📚 Reference
 
-**FumaDocs guide**: [fumadocs.dev/docs](https://fumadocs.dev/docs)  
-**Next.js 15 docs**: [nextjs.org/docs](https://nextjs.org/docs)  
-**Full implementation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)  
+**FumaDocs guide**: [fumadocs.dev/docs](https://fumadocs.dev/docs)\
+**Next.js 15 docs**: [nextjs.org/docs](https://nextjs.org/docs)\
+**Full implementation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)\
 **Root workflow**: [../../AGENTS.md](../../AGENTS.md#standard-workflow)
 
----
+______________________________________________________________________
 
-*Updated: October 15, 2025 · Version: 0.1.0*
+_Updated: October 15, 2025 · Version: 0.1.0_
 
----
+______________________________________________________________________
 
 ## 🆕 Recent Updates
 
@@ -271,7 +286,7 @@ New REST APIs:
 
 **Data Source**: `data/feeds.yaml`, `data/topics.yaml`, `data/feeds.enriched.yaml`
 
----
+______________________________________________________________________
 
 ## 🛠️ Development Guidelines
 
@@ -332,6 +347,7 @@ export const Component: FC<Props> = ({ title, description }) => {
 ```
 
 **File Naming**:
+
 - Components: `kebab-case.tsx` (e.g., `page-actions.tsx`)
 - Utilities: `kebab-case.ts` (e.g., `cn.ts`)
 - Routes: Next.js conventions (e.g., `page.tsx`, `layout.tsx`, `route.ts`)
@@ -348,7 +364,7 @@ pnpm lint:links
 pnpm lint:links:bun  # Using Bun runtime
 ```
 
----
+______________________________________________________________________
 
 ## 📝 Content Management
 
@@ -356,7 +372,7 @@ pnpm lint:links:bun  # Using Bun runtime
 
 1. **Create MDX file** in `content/docs/`:
 
-```mdx
+````mdx
 ---
 title: Page Title
 description: SEO description for this page
@@ -372,6 +388,7 @@ Your content here with **Markdown** formatting.
 def hello():
     print("Hello, world!")
 ```
+````
 
 ## Math
 
@@ -379,9 +396,7 @@ Inline math: $E = mc^2$
 
 Block math:
 
-$$
-\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-$$
+$$ \\int\_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2} $$
 
 ## Diagram
 
@@ -390,7 +405,8 @@ graph LR
     A[Start] --> B[Process]
     B --> C[End]
 ```
-```
+
+````
 
 2. **Update navigation** in `content/docs/meta.json`:
 
@@ -401,7 +417,7 @@ graph LR
     "pages": ["page-slug"]
   }
 }
-```
+````
 
 3. **Test locally**:
 
@@ -414,47 +430,37 @@ pnpm dev
 
 Custom components available in MDX:
 
-```mdx
-import { Callout } from 'fumadocs-ui/components/callout'
-import { Card, Cards } from 'fumadocs-ui/components/card'
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs'
+````mdx
+import { Callout } from "fumadocs-ui/components/callout";
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
-<Callout type="info">
-  Important information here
-</Callout>
+<Callout type="info">Important information here</Callout>
 
 <Cards>
   <Card title="Card 1" description="Description" href="/link" />
   <Card title="Card 2" description="Description" href="/link" />
 </Cards>
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
-  <Tab value="npm">
-    ```bash
-    npm install package
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add package
-    ```
-  </Tab>
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tab value="npm">```bash npm install package ```</Tab>
+  <Tab value="pnpm">```bash pnpm add package ```</Tab>
 </Tabs>
-```
+````
 
 ### FumaDocs Configuration
 
 Edit `source.config.ts`:
 
 ```typescript
-import { defineDocs, defineConfig } from 'fumadocs-mdx/config'
+import { defineDocs, defineConfig } from "fumadocs-mdx/config";
 
 export const { docs, meta } = defineDocs({
-  dir: 'content/docs',
-})
+  dir: "content/docs",
+});
 
 export default defineConfig({
-  lastModifiedTime: 'git',
+  lastModifiedTime: "git",
   mdxOptions: {
     rehypePlugins: [
       // Add rehype plugins
@@ -463,10 +469,10 @@ export default defineConfig({
       // Add remark plugins
     ],
   },
-})
+});
 ```
 
----
+______________________________________________________________________
 
 ## ✨ Special Features
 
@@ -475,12 +481,14 @@ export default defineConfig({
 The site generates LLM-friendly documentation:
 
 **`/llms-full.txt`**: Complete documentation in plain text
+
 - Implementation: `app/llms-full.txt/route.ts`
 - Concatenates all MDX content
 - Removes formatting, keeps structure
 - Perfect for AI context windows
 
 **`/llms.txt`**: Concise summary
+
 - Implementation: `app/llms.txt/route.ts`
 - Key information only
 - Quick reference format
@@ -492,16 +500,16 @@ Multiple feed formats automatically generated:
 **RSS 2.0**: `app/rss.xml/route.ts`
 
 ```typescript
-import RSS from 'rss'
-import { docs } from '@/lib/source'
+import RSS from "rss";
+import { docs } from "@/lib/source";
 
 export async function GET() {
   const feed = new RSS({
-    title: 'AI Web Feeds',
-    description: 'RSS/Atom feed management toolkit',
-    site_url: 'https://aiwebfeeds.com',
-    feed_url: 'https://aiwebfeeds.com/rss.xml',
-  })
+    title: "AI Web Feeds",
+    description: "RSS/Atom feed management toolkit",
+    site_url: "https://aiwebfeeds.com",
+    feed_url: "https://aiwebfeeds.com/rss.xml",
+  });
 
   for (const doc of docs) {
     feed.item({
@@ -509,16 +517,16 @@ export async function GET() {
       description: doc.description,
       url: `https://aiwebfeeds.com${doc.url}`,
       date: doc.date,
-    })
+    });
   }
 
   return new Response(feed.xml(), {
-    headers: { 'Content-Type': 'application/xml' },
-  })
+    headers: { "Content-Type": "application/xml" },
+  });
 }
 ```
 
-**Atom**: `app/atom.xml/route.ts`  
+**Atom**: `app/atom.xml/route.ts`\
 **JSON Feed**: `app/feed.json/route.ts`
 
 ### OpenGraph Images
@@ -531,7 +539,7 @@ import { ImageResponse } from 'next/og'
 
 export default async function Image({ params }: { params: { slug: string[] } }) {
   const page = await getPage(params.slug)
-  
+
   return new ImageResponse(
     (
       <div style={{
@@ -580,6 +588,7 @@ KaTeX for mathematical notation:
 Inline: $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$
 
 Block:
+
 $$
 \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 $$
@@ -587,20 +596,22 @@ $$
 
 ### Mermaid Diagrams
 
-```mdx
+````mdx
 ```mermaid
 sequenceDiagram
     participant User
     participant CLI
     participant Fetcher
     participant Database
-    
+
     User->>CLI: aiwebfeeds fetch
     CLI->>Fetcher: fetch_feed(url)
     Fetcher->>Database: store_feed()
     Database-->>User: Success
 ```
-```
+````
+
+````
 
 ---
 
@@ -620,7 +631,7 @@ sequenceDiagram
     "pages": ["index", "page-1", "page-2"]
   }
 }
-```
+````
 
 ### Adding a React Component
 
@@ -642,7 +653,7 @@ export const MyComponent: FC<MyComponentProps> = ({ title }) => {
 2. Use in MDX:
 
 ```mdx
-import { MyComponent } from '@/components/my-component'
+import { MyComponent } from "@/components/my-component";
 
 <MyComponent title="Hello" />
 ```
@@ -671,19 +682,19 @@ Create in `app/api/`:
 
 ```typescript
 // app/api/hello/route.ts
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  return NextResponse.json({ message: 'Hello, world!' })
+  return NextResponse.json({ message: "Hello, world!" });
 }
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  return NextResponse.json({ received: body })
+  const body = await request.json();
+  return NextResponse.json({ received: body });
 }
 ```
 
----
+______________________________________________________________________
 
 ## 🐛 Troubleshooting
 
@@ -731,7 +742,7 @@ pnpm dev --turbo
 next dev
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Resources
 
@@ -742,6 +753,6 @@ next dev
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [React 19 Docs](https://react.dev/)
 
----
+______________________________________________________________________
 
-*Last Updated: October 2025*
+_Last Updated: October 2025_

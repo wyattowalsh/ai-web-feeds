@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface SavedSearch {
   id: string;
@@ -21,7 +21,7 @@ export function SavedSearches({
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [searchName, setSearchName] = useState('');
+  const [searchName, setSearchName] = useState("");
 
   // Load saved searches
   useEffect(() => {
@@ -37,7 +37,7 @@ export function SavedSearches({
         setSearches(data);
       }
     } catch (error) {
-      console.error('Failed to load saved searches:', error);
+      console.error("Failed to load saved searches:", error);
     } finally {
       setLoading(false);
     }
@@ -48,18 +48,17 @@ export function SavedSearches({
   };
 
   const handleDeleteSearch = async (searchId: string) => {
-    if (!confirm('Are you sure you want to delete this saved search?')) return;
+    if (!confirm("Are you sure you want to delete this saved search?")) return;
 
     try {
-      const response = await fetch(
-        `/api/search/saved?id=${searchId}&user_id=${userId}`,
-        { method: 'DELETE' }
-      );
+      const response = await fetch(`/api/search/saved?id=${searchId}&user_id=${userId}`, {
+        method: "DELETE",
+      });
       if (response.ok) {
         setSearches(searches.filter((s) => s.id !== searchId));
       }
     } catch (error) {
-      console.error('Failed to delete saved search:', error);
+      console.error("Failed to delete saved search:", error);
     }
   };
 
@@ -86,9 +85,7 @@ export function SavedSearches({
       {searches.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <p className="text-sm">No saved searches yet</p>
-          <p className="text-xs mt-1">
-            Save a search to quickly access it later
-          </p>
+          <p className="text-xs mt-1">Save a search to quickly access it later</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -97,20 +94,13 @@ export function SavedSearches({
               key={search.id}
               className="group flex items-start justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
             >
-              <button
-                onClick={() => handleLoadSearch(search)}
-                className="flex-1 text-left"
-              >
-                <p className="font-medium text-gray-900 text-sm">
-                  {search.search_name}
-                </p>
-                <p className="text-xs text-gray-600 truncate">
-                  {search.query_text}
-                </p>
+              <button onClick={() => handleLoadSearch(search)} className="flex-1 text-left">
+                <p className="font-medium text-gray-900 text-sm">{search.search_name}</p>
+                <p className="text-xs text-gray-600 truncate">{search.query_text}</p>
                 {Object.keys(search.filters).length > 0 && (
                   <p className="text-xs text-gray-500 mt-1">
                     {Object.keys(search.filters).length} filter
-                    {Object.keys(search.filters).length !== 1 ? 's' : ''} applied
+                    {Object.keys(search.filters).length !== 1 ? "s" : ""} applied
                   </p>
                 )}
               </button>
@@ -128,4 +118,3 @@ export function SavedSearches({
     </div>
   );
 }
-

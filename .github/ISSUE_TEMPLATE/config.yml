@@ -3,28 +3,27 @@ contact_links:
   - name: 💬 Discussions
     url: https://github.com/wyattowalsh/ai-web-feeds/discussions
     about: Ask questions, share ideas, and discuss with the community
-  
+
   - name: 📖 Documentation
     url: https://aiwebfeeds.com/docs
     about: Read the complete documentation on our website
-  
+
   - name: 🛠️ CLI Reference
     url: https://aiwebfeeds.com/docs/development/cli
     about: Command-line tool documentation and usage examples
-  
+
   - name: 🔄 Workflow Docs
     url: https://aiwebfeeds.com/docs/development/workflows
     about: GitHub Actions workflow documentation and troubleshooting
-  
+
   - name: 🔍 Search Existing Issues
     url: https://github.com/wyattowalsh/ai-web-feeds/issues
     about: Search for existing issues before creating a new one
-  
+
   - name: 💡 Feature Discussions
     url: https://github.com/wyattowalsh/ai-web-feeds/discussions/categories/ideas
     about: Propose and discuss new features with the community
-  
+
   - name: 🆘 Troubleshooting Guide
     url: https://aiwebfeeds.com/docs/guides/troubleshooting
     about: Common issues and their solutions
-

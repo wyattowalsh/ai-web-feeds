@@ -134,6 +134,7 @@ chore: update dependencies
 ### Pull Request Process
 
 1. **Fork the repository** and create a feature branch:
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
@@ -145,6 +146,7 @@ chore: update dependencies
 4. **Update documentation** if needed
 
 5. **Run tests and linting**:
+
    ```bash
    uv run pytest
    uv run black --check .
@@ -165,6 +167,7 @@ chore: update dependencies
 3. Import and register in `__init__.py`
 
 Example:
+
 ```python
 # apps/cli/ai_web_feeds/cli/commands/mycommand.py
 import typer
@@ -193,10 +196,11 @@ app.add_typer(mycommand.app, name="mycommand")
 4. Create Alembic migration
 
 Example:
+
 ```python
 class NewTable(SQLModel, table=True):
     __tablename__ = "new_table"
-    
+
     id: UUID = SQLField(default_factory=uuid4, primary_key=True)
     name: str = SQLField(description="Name field")
     # ... other fields
@@ -228,6 +232,7 @@ tests/
 ```
 
 Example test:
+
 ```python
 import pytest
 from ai_web_feeds.models import FeedSource, SourceType
@@ -238,7 +243,7 @@ def test_feed_source_creation():
         title="Test Feed",
         source_type=SourceType.BLOG,
     )
-    
+
     assert feed.id == "test-feed"
     assert feed.source_type == SourceType.BLOG
 ```

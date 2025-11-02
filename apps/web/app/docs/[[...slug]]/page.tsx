@@ -1,17 +1,12 @@
-import { getPageImage, source } from '@/lib/source';
-import {
-  DocsBody,
-  DocsDescription,
-  DocsPage,
-  DocsTitle,
-} from 'fumadocs-ui/page';
-import { notFound } from 'next/navigation';
-import { getMDXComponents } from '@/mdx-components';
-import type { Metadata } from 'next';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { LLMCopyButton, ViewOptions } from '@/components/page-actions';
+import { getPageImage, source } from "@/lib/source";
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
+import { notFound } from "next/navigation";
+import { getMDXComponents } from "@/mdx-components";
+import type { Metadata } from "next";
+import { createRelativeLink } from "fumadocs-ui/mdx";
+import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
 
-export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
+export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
@@ -22,7 +17,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
-      
+
       {/* AI Page Actions */}
       <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6 mb-6">
         <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
@@ -48,14 +43,12 @@ export async function generateStaticParams() {
   return source.generateParams();
 }
 
-export async function generateMetadata(
-  props: PageProps<'/docs/[[...slug]]'>,
-): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ai-web-feeds.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
   const pageUrl = `${baseUrl}${page.url}`;
   const imageUrl = `${baseUrl}${getPageImage(page).url}`;
 
@@ -64,29 +57,29 @@ export async function generateMetadata(
     description: page.data.description,
     authors: [
       {
-        name: 'Wyatt Walsh',
-        url: 'https://github.com/wyattowalsh',
+        name: "Wyatt Walsh",
+        url: "https://github.com/wyattowalsh",
       },
     ],
-    creator: 'Wyatt Walsh',
-    publisher: 'AI Web Feeds',
+    creator: "Wyatt Walsh",
+    publisher: "AI Web Feeds",
     keywords: [
-      'documentation',
-      'AI',
-      'LLM',
-      'RSS feeds',
-      'Atom feeds',
-      'web feeds',
-      'AI agents',
-      'machine learning',
+      "documentation",
+      "AI",
+      "LLM",
+      "RSS feeds",
+      "Atom feeds",
+      "web feeds",
+      "AI agents",
+      "machine learning",
       page.data.title,
     ],
     openGraph: {
-      type: 'article',
+      type: "article",
       title: page.data.title,
       description: page.data.description,
       url: pageUrl,
-      siteName: 'AI Web Feeds',
+      siteName: "AI Web Feeds",
       images: [
         {
           url: imageUrl,
@@ -95,14 +88,14 @@ export async function generateMetadata(
           alt: page.data.title,
         },
       ],
-      locale: 'en_US',
+      locale: "en_US",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: page.data.title,
       description: page.data.description,
       images: [imageUrl],
-      creator: '@wyattowalsh',
+      creator: "@wyattowalsh",
     },
     robots: {
       index: true,
@@ -110,17 +103,17 @@ export async function generateMetadata(
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
     alternates: {
       canonical: pageUrl,
       types: {
-        'application/rss+xml': `${baseUrl}/docs/rss.xml`,
-        'application/atom+xml': `${baseUrl}/docs/atom.xml`,
-        'application/json': `${baseUrl}/docs/feed.json`,
+        "application/rss+xml": `${baseUrl}/docs/rss.xml`,
+        "application/atom+xml": `${baseUrl}/docs/atom.xml`,
+        "application/json": `${baseUrl}/docs/feed.json`,
       },
     },
   };

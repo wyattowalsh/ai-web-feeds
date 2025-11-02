@@ -1,7 +1,6 @@
 """ai_web_feeds.cli.commands.export -- Export data in various formats"""
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 from loguru import logger
@@ -43,13 +42,13 @@ def export_json(
         ) as progress:
             progress.add_task(description="Loading feeds...", total=None)
             feeds_data = load_feeds(input_file)
-            
+
             progress.add_task(description="Exporting to JSON...", total=None)
             export_to_json(feeds_data, output_file)
-        
+
         count = len(feeds_data.get("sources", []))
         console.print(f"[green]✓[/green] Exported {count} feeds to {output_file}")
-        
+
     except FileNotFoundError as e:
         console.print(f"[red]✗[/red] File not found: {e}")
         raise typer.Exit(code=1)
@@ -89,14 +88,14 @@ def export_opml(
         ) as progress:
             progress.add_task(description="Loading feeds...", total=None)
             feeds_data = load_feeds(input_file)
-            
+
             progress.add_task(description="Generating OPML...", total=None)
             export_to_opml(feeds_data, output_file, categorized=categorized)
-        
+
         count = len(feeds_data.get("sources", []))
         opml_type = "categorized" if categorized else "flat"
         console.print(f"[green]✓[/green] Exported {count} feeds to {output_file} ({opml_type})")
-        
+
     except FileNotFoundError as e:
         console.print(f"[red]✗[/red] File not found: {e}")
         raise typer.Exit(code=1)
@@ -130,16 +129,16 @@ def export_all(
         ) as progress:
             progress.add_task(description="Loading feeds...", total=None)
             feeds_data = load_feeds(input_file)
-            
+
             progress.add_task(description="Exporting all formats...", total=None)
             export_all_formats(feeds_data, output_dir)
-        
+
         count = len(feeds_data.get("sources", []))
         console.print(f"[green]✓[/green] Exported {count} feeds to:")
         console.print(f"  • {output_dir}/feeds.json")
         console.print(f"  • {output_dir}/all.opml")
         console.print(f"  • {output_dir}/categorized.opml")
-        
+
     except FileNotFoundError as e:
         console.print(f"[red]✗[/red] File not found: {e}")
         raise typer.Exit(code=1)
@@ -153,5 +152,7 @@ def export_all(
 def export_csv():
     """Export feed data as CSV (not yet implemented)."""
     console.print("[yellow]![/yellow] CSV export not yet implemented")
-    console.print("  Use JSON export and convert with: jq -r '.sources[] | [.id,.url,.title] | @csv'")
+    console.print(
+        "  Use JSON export and convert with: jq -r '.sources[] | [.id,.url,.title] | @csv'"
+    )
     raise typer.Exit(code=2)

@@ -4,7 +4,7 @@ info:
   version: 3.0.0
   description: |
     REST API for Phase 3B: Real-Time Feed Monitoring & Alerts
-    
+
     Features:
     - Notification management (list, mark read, dismiss)
     - Notification preferences (per-feed, global settings)
@@ -19,24 +19,24 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
-  - url: http://localhost:3000/api
-    description: Development server
-  - url: https://aiwebfeeds.com/api
-    description: Production server
+- url: http://localhost:3000/api
+  description: Development server
+- url: https://aiwebfeeds.com/api
+  description: Production server
 
 tags:
-  - name: Notifications
-    description: User notification management
-  - name: Follows
-    description: Feed follow/unfollow management
-  - name: Preferences
-    description: Notification preference settings
-  - name: Digests
-    description: Email digest subscriptions
-  - name: Trending
-    description: Trending topics discovery
-  - name: Polling
-    description: Feed polling management (admin)
+- name: Notifications
+  description: User notification management
+- name: Follows
+  description: Feed follow/unfollow management
+- name: Preferences
+  description: Notification preference settings
+- name: Digests
+  description: Email digest subscriptions
+- name: Trending
+  description: Trending topics discovery
+- name: Polling
+  description: Feed polling management (admin)
 
 paths:
   /notifications:
@@ -45,34 +45,34 @@ paths:
       summary: List user notifications
       description: Retrieve paginated list of notifications for authenticated user
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Anonymous user ID from localStorage
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
-          description: Number of notifications to return
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            default: 0
-            minimum: 0
-          description: Pagination offset
-        - name: unread_only
-          in: query
-          schema:
-            type: boolean
-            default: false
-          description: Filter to unread notifications only
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Anonymous user ID from localStorage
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+        description: Number of notifications to return
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+        description: Pagination offset
+      - name: unread_only
+        in: query
+        schema:
+          type: boolean
+          default: false
+        description: Filter to unread notifications only
       responses:
         '200':
           description: Successful response
@@ -88,12 +88,12 @@ paths:
       tags: [Notifications]
       summary: Mark notification as read
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: Notification ID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
       responses:
         '200':
           description: Notification marked as read
@@ -109,12 +109,12 @@ paths:
       tags: [Notifications]
       summary: Dismiss notification
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: Notification ID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
       responses:
         '200':
           description: Notification dismissed
@@ -131,13 +131,13 @@ paths:
       summary: List feeds user follows
       description: Retrieve all feeds that the user is following
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Anonymous user ID from localStorage
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Anonymous user ID from localStorage
       responses:
         '200':
           description: List of followed feeds
@@ -167,8 +167,8 @@ paths:
             schema:
               type: object
               required:
-                - user_id
-                - feed_id
+              - user_id
+              - feed_id
               properties:
                 user_id:
                   type: string
@@ -199,19 +199,19 @@ paths:
       summary: Unfollow a feed
       description: Remove a feed from user's followed feeds list
       parameters:
-        - name: feed_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Feed ID to unfollow
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Anonymous user ID
+      - name: feed_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Feed ID to unfollow
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Anonymous user ID
       responses:
         '204':
           description: Feed unfollowed successfully
@@ -223,13 +223,13 @@ paths:
       tags: [Preferences]
       summary: Get notification preferences
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Anonymous user ID
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Anonymous user ID
       responses:
         '200':
           description: User notification preferences
@@ -264,12 +264,12 @@ paths:
       tags: [Digests]
       summary: Get email digest subscription
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '200':
           description: Digest subscription details
@@ -303,12 +303,12 @@ paths:
       tags: [Digests]
       summary: Unsubscribe from email digest
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '204':
           description: Unsubscribed successfully
@@ -320,21 +320,21 @@ paths:
       tags: [Trending]
       summary: Get trending topics
       parameters:
-        - name: hours
-          in: query
-          schema:
-            type: integer
-            default: 24
-            minimum: 1
-            maximum: 168
-          description: Lookback window in hours
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
+      - name: hours
+        in: query
+        schema:
+          type: integer
+          default: 24
+          minimum: 1
+          maximum: 168
+        description: Lookback window in hours
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 50
       responses:
         '200':
           description: List of trending topics
@@ -350,14 +350,14 @@ paths:
       tags: [Polling]
       summary: Trigger manual feed poll (admin only)
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       parameters:
-        - name: feed_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Feed ID to poll
+      - name: feed_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Feed ID to poll
       responses:
         '202':
           description: Poll job queued
@@ -386,21 +386,21 @@ components:
         title:
           type: string
           maxLength: 255
-          example: "New article from AI Research Blog"
+          example: New article from AI Research Blog
         message:
           type: string
           maxLength: 1000
-          example: "Introducing GPT-5: The Next Generation Language Model"
+          example: 'Introducing GPT-5: The Next Generation Language Model'
         action_url:
           type: string
           format: uri
           nullable: true
-          example: "https://example.com/article/gpt-5"
+          example: https://example.com/article/gpt-5
         metadata:
           type: object
           additionalProperties: true
           example:
-            feed_id: "ai-research-blog"
+            feed_id: ai-research-blog
             article_id: 67890
             trend_score: 3.5
         read:
@@ -409,7 +409,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-10-22T14:30:00Z"
+          example: '2025-10-22T14:30:00Z'
 
     NotificationListResponse:
       type: object
@@ -436,8 +436,8 @@ components:
         feed_id:
           type: string
           nullable: true
-          example: "ai-research-blog"
-          description: "NULL for global preferences"
+          example: ai-research-blog
+          description: NULL for global preferences
         delivery_method:
           type: string
           enum: [websocket, email, in_app]
@@ -450,12 +450,12 @@ components:
           type: string
           format: time
           nullable: true
-          example: "22:00"
+          example: 22:00
         quiet_hours_end:
           type: string
           format: time
           nullable: true
-          example: "07:00"
+          example: 07:00
 
     NotificationPreferenceCreate:
       type: object
@@ -492,15 +492,15 @@ components:
         user_id:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          example: 550e8400-e29b-41d4-a716-446655440000
           description: Anonymous user ID from localStorage
         feed_id:
           type: string
-          example: "ai-research-blog"
+          example: ai-research-blog
         followed_at:
           type: string
           format: date-time
-          example: "2025-10-22T10:30:00Z"
+          example: '2025-10-22T10:30:00Z'
 
     EmailDigest:
       type: object
@@ -515,11 +515,11 @@ components:
           example: daily
         timezone:
           type: string
-          example: "America/Los_Angeles"
+          example: America/Los_Angeles
         next_send_at:
           type: string
           format: date-time
-          example: "2025-10-23T09:00:00Z"
+          example: '2025-10-23T09:00:00Z'
         open_rate:
           type: number
           format: float
@@ -546,17 +546,17 @@ components:
         email:
           type: string
           format: email
-          example: "user@example.com"
+          example: user@example.com
         schedule_type:
           type: string
           enum: [daily, weekly, custom]
         schedule_cron:
           type: string
-          example: "0 9 * * *"
-          description: "Cron expression (required for custom schedule)"
+          example: 0 9 * * *
+          description: Cron expression (required for custom schedule)
         timezone:
           type: string
-          example: "America/Los_Angeles"
+          example: America/Los_Angeles
 
     TrendingTopic:
       type: object
@@ -567,7 +567,7 @@ components:
           example: 1
         topic_name:
           type: string
-          example: "GPT-5"
+          example: GPT-5
         z_score:
           type: number
           format: float
@@ -581,16 +581,16 @@ components:
           type: number
           format: float
           example: 4.5
-          description: "mention_count / baseline_frequency"
+          description: mention_count / baseline_frequency
         spike_detected_at:
           type: string
           format: date-time
-          example: "2025-10-22T14:00:00Z"
+          example: '2025-10-22T14:00:00Z'
         related_feeds:
           type: array
           items:
             type: string
-          example: ["ai-research-blog", "ml-weekly"]
+          example: [ai-research-blog, ml-weekly]
         related_articles:
           type: array
           items:
@@ -606,7 +606,7 @@ components:
           example: 1
         feed_id:
           type: string
-          example: "ai-research-blog"
+          example: ai-research-blog
         status:
           type: string
           enum: [pending, running, success, failure]
@@ -614,7 +614,7 @@ components:
         scheduled_at:
           type: string
           format: date-time
-          example: "2025-10-22T15:00:00Z"
+          example: '2025-10-22T15:00:00Z'
 
     Error:
       type: object
@@ -622,10 +622,10 @@ components:
       properties:
         error:
           type: string
-          example: "bad_request"
+          example: bad_request
         message:
           type: string
-          example: "Invalid user_id format"
+          example: Invalid user_id format
         details:
           type: object
           additionalProperties: true
@@ -638,8 +638,8 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "bad_request"
-            message: "Invalid request parameters"
+            error: bad_request
+            message: Invalid request parameters
 
     Unauthorized:
       description: Unauthorized
@@ -648,8 +648,8 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "unauthorized"
-            message: "API key required for this endpoint"
+            error: unauthorized
+            message: API key required for this endpoint
 
     NotFound:
       description: Resource not found
@@ -658,8 +658,8 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "not_found"
-            message: "Resource not found"
+            error: not_found
+            message: Resource not found
 
   securitySchemes:
     ApiKeyAuth:
@@ -667,4 +667,3 @@ components:
       in: header
       name: X-API-Key
       description: Admin API key for polling endpoints
-

@@ -1,10 +1,12 @@
 # AI Web Feeds - Core Package
 
-Core library for managing AI/ML feed sources with SQLModel database, enrichment, and OPML generation.
+Core library for managing AI/ML feed sources with SQLModel database, enrichment, and
+OPML generation.
 
 ## Features
 
 ### 1. **Database Management** (`aiwebfeeds.db`)
+
 - SQLModel-based database with Alembic migrations
 - Tables for:
   - `feed_sources` - Feed metadata and configuration
@@ -13,17 +15,20 @@ Core library for managing AI/ML feed sources with SQLModel database, enrichment,
   - `topics` - Topic taxonomy
 
 ### 2. **Feed Enrichment** (`feeds.enriched.yaml`)
+
 - Automatic feed discovery from site URLs
 - Feed format detection (RSS, Atom, JSONFeed)
 - Metadata validation and enrichment
 - Quality scoring and curation tracking
 
 ### 3. **JSON Schema Generation** (`feeds.enriched.schema.json`)
+
 - Fully-specified schema for enriched data
 - Validation support for all feed properties
 - Backward-compatible with base schema
 
 ### 4. **OPML Generation**
+
 - **All feeds** (`all.opml`) - Flat list of all feeds
 - **Categorized** (`categorized.opml`) - Organized by source type
 - **Filtered** - Custom filters by topic, type, tag, verification status
@@ -99,6 +104,7 @@ aiwebfeeds stats show
 ```
 
 Output:
+
 ```
 📊 Feed Statistics
 ══════════════════════════════════════════════════
@@ -191,9 +197,11 @@ save_opml(opml_xml, "data/all.opml")
 opml_xml = generate_categorized_opml(feeds, title="AI Web Feeds - By Type")
 save_opml(opml_xml, "data/categorized.opml")
 
+
 # Generate filtered OPML
 def nlp_filter(feed):
     return "nlp" in feed.topics and feed.verified
+
 
 opml_xml = generate_filtered_opml(
     feeds,
@@ -236,6 +244,7 @@ feeds.yaml (source)
 ## Database Schema
 
 ### `feed_sources` Table
+
 - Core feed metadata (id, feed, site, title)
 - Classification (source_type, mediums, tags)
 - Topics and weights
@@ -245,18 +254,21 @@ feeds.yaml (source)
 - Relations and mappings (JSON)
 
 ### `feed_items` Table
+
 - Individual feed entries
 - Content (title, link, description, content)
 - Metadata (author, published, updated)
 - Categories, tags, enclosures
 
 ### `feed_fetch_logs` Table
+
 - Fetch attempt tracking
 - Response metadata (status, headers)
 - Error logging
 - Statistics (items found/new/updated)
 
 ### `topics` Table
+
 - Topic definitions
 - Hierarchical structure (parent_id)
 - Aliases and relations

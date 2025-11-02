@@ -1,0 +1,166 @@
+# EditorConfig helps maintain consistent coding styles
+# across different editors and IDEs
+# https://editorconfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# ============================================================================
+# Universal defaults for all files
+# ============================================================================
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# Python
+# ============================================================================
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+[*.{pyi,pyx}]
+indent_size = 4
+max_line_length = 100
+
+# ============================================================================
+# JavaScript/TypeScript
+# ============================================================================
+[*.{js,jsx,mjs,cjs}]
+indent_size = 2
+max_line_length = 100
+
+[*.{ts,tsx,mts,cts}]
+indent_size = 2
+max_line_length = 100
+
+# ============================================================================
+# JSON
+# ============================================================================
+[*.json]
+indent_size = 2
+insert_final_newline = false
+
+[*.json5]
+indent_size = 2
+
+[package.json]
+indent_size = 2
+
+[tsconfig*.json]
+indent_size = 2
+
+# ============================================================================
+# YAML
+# ============================================================================
+[*.{yml,yaml}]
+indent_size = 2
+
+[.pre-commit-config.yaml]
+indent_size = 2
+
+# ============================================================================
+# TOML
+# ============================================================================
+[*.toml]
+indent_size = 2
+
+[pyproject.toml]
+indent_size = 4
+
+# ============================================================================
+# Markdown
+# ============================================================================
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+max_line_length = off
+
+[README.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+[CHANGELOG.md]
+trim_trailing_whitespace = false
+max_line_length = off
+insert_final_newline = false
+
+# ============================================================================
+# Shell Scripts
+# ============================================================================
+[*.{sh,bash,zsh}]
+indent_size = 2
+end_of_line = lf
+
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+# ============================================================================
+# SQL
+# ============================================================================
+[*.sql]
+indent_size = 2
+max_line_length = 100
+
+# ============================================================================
+# HTML/CSS/SCSS
+# ============================================================================
+[*.html]
+indent_size = 2
+
+[*.{css,scss,sass,less}]
+indent_size = 2
+
+# ============================================================================
+# XML/SVG
+# ============================================================================
+[*.{xml,svg}]
+indent_size = 2
+
+# ============================================================================
+# Configuration Files
+# ============================================================================
+[.env*]
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{lock,lockb}]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[pnpm-lock.yaml]
+insert_final_newline = false
+indent_size = 2
+
+[uv.lock]
+insert_final_newline = false
+indent_size = 2
+
+# ============================================================================
+# Documentation
+# ============================================================================
+[*.rst]
+indent_size = 3
+max_line_length = 88
+
+[docs/**/*.md]
+trim_trailing_whitespace = false
+
+# ============================================================================
+# GitHub/Git
+# ============================================================================
+[.gitattributes]
+insert_final_newline = false
+
+[.gitignore]
+insert_final_newline = true
+
+[.github/**/*.{yml,yaml}]
+indent_size = 2
+
+[.github/PULL_REQUEST_TEMPLATE.md]
+trim_trailing_whitespace = false

@@ -1,6 +1,6 @@
 /**
  * IndexedDB Schema for AI Web Feeds
- * 
+ *
  * All data stored client-side for offline-first functionality.
  * No backend required - complete user privacy and instant performance.
  */
@@ -281,10 +281,10 @@ export async function getStorageQuota(): Promise<StorageQuota> {
     const usage = estimate.usage || 0;
     const quota = estimate.quota || 0;
     const percentage = quota > 0 ? (usage / quota) * 100 : 0;
-    
+
     return { usage, quota, percentage };
   }
-  
+
   return { usage: 0, quota: 0, percentage: 0 };
 }
 
@@ -307,4 +307,3 @@ export async function isPersistentStorageGranted(): Promise<boolean> {
   }
   return false;
 }
-

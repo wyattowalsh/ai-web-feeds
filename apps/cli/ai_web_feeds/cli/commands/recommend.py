@@ -59,7 +59,9 @@ def get_recommendations(
                 limit=limit,
             )
             if seed_topics:
-                console.print(f"Recommendations for topics: [bold]{', '.join(seed_topics)}[/bold]\n")
+                console.print(
+                    f"Recommendations for topics: [bold]{', '.join(seed_topics)}[/bold]\n"
+                )
             else:
                 console.print("General recommendations\n")
 
@@ -119,7 +121,9 @@ def get_recommendations(
 @app.command("track")
 def track_interaction(
     feed_id: str = typer.Argument(..., help="Feed ID"),
-    interaction: str = typer.Argument(..., help="Interaction type: view, click, subscribe, dismiss"),
+    interaction: str = typer.Argument(
+        ..., help="Interaction type: view, click, subscribe, dismiss"
+    ),
     database_url: str = typer.Option(
         settings.database_url,
         "--database-url",
@@ -191,4 +195,3 @@ def show_weights(
     console.print("  AIWF_RECOMMENDATION__CONTENT_WEIGHT")
     console.print("  AIWF_RECOMMENDATION__POPULARITY_WEIGHT")
     console.print("  AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT")
-

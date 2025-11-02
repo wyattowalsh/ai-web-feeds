@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 from typing import Any
-from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 from loguru import logger
 
@@ -27,7 +27,9 @@ def export_to_json(data: dict[str, Any], output_path: Path | str) -> None:
     logger.info(f"Exported {len(data.get('sources', []))} sources to {output_path}")
 
 
-def export_to_opml(data: dict[str, Any], output_path: Path | str, categorized: bool = False) -> None:
+def export_to_opml(
+    data: dict[str, Any], output_path: Path | str, categorized: bool = False
+) -> None:
     """Export feed data to OPML format.
 
     Args:

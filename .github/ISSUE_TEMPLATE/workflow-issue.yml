@@ -8,11 +8,11 @@ body:
     attributes:
       value: |
         ## Workflow/CI Issue
-        
+
         Report issues with GitHub Actions workflows, CI/CD pipelines, or automated processes.
-        
+
         ### 🔍 Quick Debugging
-        
+
         **Before reporting**:
         1. Check the [workflow logs](https://github.com/wyattowalsh/ai-web-feeds/actions) for details
         2. Try re-running the failed job
@@ -79,7 +79,7 @@ body:
       label: Failing Step
       description: |
         Which step is failing? Paste the step name and relevant log output.
-        
+
         **Include**:
         - Step name
         - Exit code
@@ -88,7 +88,7 @@ body:
       placeholder: |
         Step: Validate feeds
         Exit code: 1
-        
+
         Error:
         Run uv run aiwebfeeds validate --all --strict
         [2025-01-15 10:30:00] ERROR: Validation failed
@@ -103,14 +103,14 @@ body:
       label: CLI Command Being Run
       description: |
         What CLI command is failing in the workflow?
-        
+
         Copy from the workflow logs or the YAML file.
       placeholder: |
         uv run aiwebfeeds validate --all --strict
-        
+
         # Or
         uv run ruff check .
-        
+
         # Or
         cd apps/web && pnpm lint
       render: bash
@@ -123,14 +123,14 @@ body:
       label: Local Test Results
       description: |
         Did you try running the same command locally? What happened?
-        
+
         ```bash
         # Run the exact command from the workflow
         uv run aiwebfeeds validate --all --strict
         ```
       placeholder: |
         ✅ Works locally / ❌ Fails locally
-        
+
         Output:
         ...
       render: shell
@@ -160,7 +160,7 @@ body:
       label: Workflow Context
       description: |
         Provide relevant context about the workflow run.
-        
+
         **Helpful information**:
         - PR number (if applicable)
         - Branch name
@@ -171,7 +171,7 @@ body:
         PR: #123
         Branch: feature/new-feature
         Commit: abc123def456
-        
+
         This started failing after merging #120
       render: markdown
     validations:
@@ -236,7 +236,7 @@ body:
       label: Proposed Fix (Optional)
       description: |
         Do you have ideas on how to fix this?
-        
+
         Could include:
         - Workflow YAML changes
         - CLI command modifications
@@ -244,7 +244,7 @@ body:
         - Configuration changes
       placeholder: |
         Suggested fix:
-        
+
         ```yaml
         # Add timeout to prevent hanging
         - name: Validate feeds
@@ -276,7 +276,7 @@ body:
       label: Additional Information
       description: |
         Any other relevant information.
-        
+
         **Helpful additions**:
         - Screenshots of workflow logs
         - Links to similar issues
@@ -289,21 +289,21 @@ body:
     attributes:
       value: |
         ---
-        
+
         ### 🛠️ Workflow Debugging Resources
-        
+
         **Test workflows locally**:
         ```bash
         # Install act
         brew install act
-        
+
         # Run specific workflow
         act pull_request -W .github/workflows/quality-enforcement.yml
-        
+
         # Run with secrets
         act -s .secrets
         ```
-        
+
         **View workflow logs**:
         ```bash
         # Using GitHub CLI
@@ -311,28 +311,28 @@ body:
         gh run view <run-id> --log
         gh run watch <run-id>
         ```
-        
+
         **Common fixes**:
-        
+
         1. **Timeout issues**: Add `timeout-minutes` to step
         2. **Permission issues**: Check `permissions:` in workflow
         3. **Cache issues**: Clear cache in Actions settings
         4. **Flaky tests**: Add retries or increase timeout
         5. **CLI failures**: Test exact command locally first
-        
+
         ### 📚 Documentation
-        
+
         - [Workflow Documentation](https://aiwebfeeds.com/docs/development/workflows)
         - [CLI Integration Guide](https://aiwebfeeds.com/docs/development/cli-workflows)
         - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
-        
+
         ### 🤝 Contributing a Fix
-        
+
         If you'd like to fix this workflow issue:
-        
+
         1. Fork the repo
         2. Modify the workflow file
         3. Test with `act` if possible
         4. Submit a PR with your fix
-        
+
         Thank you for helping improve our CI/CD! 🚀

@@ -10,23 +10,27 @@ The Data Explorer provides an interactive web application for browsing, searchin
 ## Features
 
 ### Tabbed Interface
+
 - ✅ **Topics View**: Browse and search all available topics
 - ✅ **Feeds View**: Explore the complete catalog of RSS/Atom feeds
 - Switch seamlessly between views
 
 ### Advanced Search
+
 - **Full-text search** across titles, URLs, descriptions, and IDs
 - **Real-time filtering** as you type
 - Search works across both Topics and Feeds tabs
 - Instant results with optimized performance
 
 ### Topics Browser
+
 - View all available topics with their IDs, names, and descriptions
 - Sort by name or ID in ascending/descending order
 - Quick search to find specific topics
 - Hierarchical topic display
 
 ### Feeds Browser
+
 - Browse the complete catalog of RSS/Atom feeds
 - Filter by tags with one-click tag selection
 - Sort by title or URL
@@ -34,6 +38,7 @@ The Data Explorer provides an interactive web application for browsing, searchin
 - Visual tag badges for easy identification
 
 ### Tag Filtering
+
 - **Visual tag cloud** showing all available tags
 - **Multi-select filtering** - click multiple tags to narrow results
 - **Active tag highlighting** shows selected filters
@@ -41,12 +46,14 @@ The Data Explorer provides an interactive web application for browsing, searchin
 - Smart tag counting and sorting
 
 ### Sorting Options
+
 - Sort by multiple fields (name, ID, title, URL)
 - Toggle between ascending and descending order
 - Maintains sort preferences while filtering
 - Persistent sort state
 
 ### Performance Features
+
 - ✅ **Real-Time Updates**: Instant filtering and sorting with React hooks
 - ✅ **Performance Optimized**: Uses `useMemo` for efficient re-rendering
 - ✅ **Error Handling**: Graceful error states and loading indicators
@@ -62,24 +69,28 @@ The Data Explorer provides an interactive web application for browsing, searchin
 ### Searching
 
 **Example: Search for feeds**
+
 1. Select the **Feeds** tab
 2. Enter "AI" in search box
 3. Click tags like "machine-learning" or "nlp"
 4. Results update instantly
 
 **Example: Search for topics**
+
 1. Select the **Topics** tab
 2. Enter topic name or ID
 3. Sort by name or ID
 4. Browse filtered results
 
 ### Filtering by Tags (Feeds Only)
+
 1. Switch to the **Feeds** tab
 2. Click on one or more tags in the tag filter section
 3. Only feeds with selected tags will be displayed
 4. Click "Clear tag filters" to reset
 
 ### Sorting Results
+
 1. Select your preferred sort field from the dropdown
 2. Click the sort order button (↑ Asc / ↓ Desc) to toggle
 3. Results update immediately
@@ -90,16 +101,19 @@ The Data Explorer provides an interactive web application for browsing, searchin
 The explorer uses the following API endpoints:
 
 ### Topics API
+
 - **Endpoint**: `GET /api/topics`
 - **Source**: `topics.yaml`
 - **Returns**: JSON array of all topics
 
 ### Feeds API
+
 - **Endpoint**: `GET /api/feeds`
 - **Source**: `feeds.enriched.yaml` (fallback to `feeds.yaml`)
 - **Returns**: JSON array of all feeds
 
 Both endpoints include:
+
 - Static generation for performance
 - Cache headers (3600s max-age, 86400s stale-while-revalidate)
 - Error handling with proper status codes
@@ -118,6 +132,7 @@ curl http://localhost:3000/api/feeds
 ## Implementation Details
 
 ### Technology Stack
+
 - **React 19** with hooks for state management
 - **Next.js 15** App Router
 - **Client-side rendering** for instant interactivity
@@ -125,6 +140,7 @@ curl http://localhost:3000/api/feeds
 - **Optimized performance** with useMemo for filtering/sorting
 
 ### Components
+
 - `ExplorerPage`: Main page component with search and filter controls
 - `TopicsTable`: Displays topics in a sortable table
 - `FeedsTable`: Displays feeds with clickable URLs and tag badges
@@ -161,6 +177,7 @@ curl http://localhost:3000/api/feeds
 ### Type Safety
 
 All components use TypeScript with proper type annotations:
+
 - Event handlers have explicit types
 - Data structures are typed
 - API responses are validated
@@ -194,10 +211,12 @@ apps/web/
 ## Testing
 
 Tests can be added to:
+
 - `/tests/tests/apps/web/explorer/` - Component tests
 - `/tests/tests/apps/web/api/` - API route tests
 
 Example test structure:
+
 ```python
 def test_explorer_search():
     """Test search functionality"""
@@ -213,6 +232,7 @@ def test_tag_filtering():
 ## Future Enhancements
 
 Potential improvements:
+
 - [ ] Export filtered results to CSV/JSON
 - [ ] Saved filter presets
 - [ ] Advanced query builder

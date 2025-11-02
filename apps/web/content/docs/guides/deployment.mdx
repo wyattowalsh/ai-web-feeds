@@ -5,7 +5,7 @@ description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next
 
 # Deployment Guide - Phase 1: Data Discovery & Analytics
 
-> **For**: Production deployment of Phase 1 MVP  
+> **For**: Production deployment of Phase 1 MVP
 > **Stack**: Python 3.13+, Next.js 15, SQLite, pnpm, uv
 
 ---
@@ -13,6 +13,7 @@ description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next
 ## Prerequisites
 
 ### System Requirements
+
 - **Python**: 3.13+ (for backend)
 - **Node.js**: 20+ (for web)
 - **Package Managers**: `uv` (Python), `pnpm` (Node.js)
@@ -21,6 +22,7 @@ description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next
 - **Storage**: 500MB+ for dependencies + database
 
 ### Required Tools
+
 ```bash
 # Install uv (Python package manager)
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -171,6 +173,7 @@ netlify deploy --prod
 ## Production Checklist
 
 ### Security
+
 - [ ] Set `AIWF_LOGGING__DIAGNOSE=false` in production
 - [ ] Enable HTTPS/TLS
 - [ ] Set strong `AIWF_DATABASE_URL` if using PostgreSQL
@@ -178,6 +181,7 @@ netlify deploy --prod
 - [ ] Configure CORS if needed
 
 ### Performance
+
 - [ ] Enable SQLite WAL mode (already configured)
 - [ ] Set `AIWF_ANALYTICS__STATIC_CACHE_TTL=3600` for caching
 - [ ] Configure CDN for static assets
@@ -185,6 +189,7 @@ netlify deploy --prod
 - [ ] Set up database backups
 
 ### Monitoring
+
 - [ ] Configure log aggregation (Loguru → file)
 - [ ] Set up error tracking (Sentry optional)
 - [ ] Monitor API response times
@@ -192,6 +197,7 @@ netlify deploy --prod
 - [ ] Set up uptime monitoring
 
 ### Testing
+
 - [ ] Run test suite: `cd tests && uv run pytest`
 - [ ] Run E2E tests: `cd tests && uv run pytest -m e2e`
 - [ ] Run performance benchmarks: `uv run pytest -m benchmark`
@@ -203,19 +209,23 @@ netlify deploy --prod
 ## Scaling Considerations
 
 ### Database
+
 - **SQLite (Current)**: Good for 1K-50K feeds, 100-1K concurrent users
 - **PostgreSQL (Future)**: For >50K feeds or >1K concurrent users
 - **Migration Path**: SQLModel supports both, change `DATABASE_URL`
 
 ### Caching
+
 - **Current**: Python `functools.lru_cache` + SQLite temp tables
 - **Future**: Redis for distributed caching
 
 ### Search
+
 - **Current**: SQLite FTS5 (in-process)
 - **Future**: Elasticsearch/Meilisearch for advanced search
 
 ### Embeddings
+
 - **Current**: Local Sentence-Transformers
 - **Future**: Dedicated embedding service or cloud API
 
@@ -236,6 +246,7 @@ gzip data/backups/aiwebfeeds-$(date +%Y%m%d).db
 ### Log Rotation
 
 Loguru handles this automatically with configuration:
+
 ```python
 AIWF_LOGGING__FILE_ROTATION="10 MB"
 AIWF_LOGGING__FILE_RETENTION="14 days"
@@ -264,7 +275,9 @@ uv run aiwebfeeds analytics export --range 30d
 ## Troubleshooting
 
 ### "FTS5 not available"
+
 **Solution**: Upgrade SQLite to 3.35+
+
 ```bash
 # Check SQLite version
 sqlite3 --version
@@ -274,7 +287,9 @@ sudo apt-get update && sudo apt-get install sqlite3
 ```
 
 ### "Sentence-transformers model download fails"
+
 **Solution**: Pre-download model or use HF API
+
 ```bash
 # Pre-download model
 uv run python -c "
@@ -285,14 +300,18 @@ print('✓ Model downloaded')
 ```
 
 ### "Out of memory during embedding generation"
+
 **Solution**: Reduce batch size
+
 ```python
 # In embeddings.py, change:
 generate_all_feed_embeddings(feeds, batch_size=16)  # was 32
 ```
 
 ### "Next.js build fails"
+
 **Solution**: Check Node.js version and clear cache
+
 ```bash
 node --version  # Should be 20+
 pnpm store prune
@@ -325,7 +344,7 @@ export default {
   poweredByHeader: false,
   generateEtags: true,
   reactStrictMode: true,
-}
+};
 ```
 
 ---
@@ -369,8 +388,8 @@ vercel --prod
 **✅ Deployment Complete!**
 
 Your Phase 1 MVP is now live with:
+
 - Analytics Dashboard
 - Search & Discovery
 - AI-Powered Recommendations
 - 100% Free & Open Source Stack
-

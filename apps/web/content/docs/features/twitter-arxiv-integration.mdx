@@ -3,16 +3,14 @@ title: Twitter/X and arXiv Integration
 description: Generate RSS feeds from Twitter/X and arXiv for AI research tracking
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 ## Overview
 
 AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you to track AI researchers, discussions, and papers through RSS feeds.
 
-<Callout type="info">
-  Twitter/X integration uses **Nitter** instances (privacy-focused alternative Twitter frontend) to generate RSS feeds.
-</Callout>
+<Callout type="info">Twitter/X integration uses **Nitter** instances (privacy-focused alternative Twitter frontend) to generate RSS feeds.</Callout>
 
 ## Twitter/X Integration
 
@@ -21,7 +19,7 @@ AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you 
 <Tabs items={['User Timeline', 'List Feed', 'Search Query']}>
   <Tab value="User Timeline">
     Get tweets from a specific user.
-    
+
     ```yaml
     - id: "karpathy-twitter"
       site: "https://twitter.com/karpathy"
@@ -35,13 +33,14 @@ AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you 
           username: "karpathy"
           nitter_instance: "nitter.net"  # Optional, defaults to nitter.net
     ```
-    
+
     **Generated Feed URL**: `https://nitter.net/karpathy/rss`
+
   </Tab>
-  
+
   <Tab value="List Feed">
     Get tweets from a Twitter list.
-    
+
     ```yaml
     - id: "ai-researchers-list"
       site: "https://twitter.com/i/lists/1234567890"
@@ -53,13 +52,14 @@ AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you 
         twitter:
           list_id: "1234567890"
     ```
-    
+
     **Generated Feed URL**: `https://nitter.net/i/lists/1234567890/rss`
+
   </Tab>
-  
+
   <Tab value="Search Query">
     Get tweets matching a search query.
-    
+
     ```yaml
     - id: "twitter-llm-search"
       site: "https://twitter.com/search"
@@ -71,8 +71,9 @@ AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you 
         twitter:
           search_query: "LLM OR large language model"
     ```
-    
+
     **Generated Feed URL**: `https://nitter.net/search/rss?q=LLM+OR+large+language+model`
+
   </Tab>
 </Tabs>
 
@@ -80,11 +81,11 @@ AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you 
 
 The `platform_config.twitter` object supports:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `username` | string | Twitter username (without @) |
-| `list_id` | string | Twitter list ID |
-| `search_query` | string | Twitter search query |
+| Field             | Type   | Description                                 |
+| ----------------- | ------ | ------------------------------------------- |
+| `username`        | string | Twitter username (without @)                |
+| `list_id`         | string | Twitter list ID                             |
+| `search_query`    | string | Twitter search query                        |
 | `nitter_instance` | string | Nitter instance URL (default: `nitter.net`) |
 
 ### Alternative Nitter Instances
@@ -96,9 +97,7 @@ For reliability, you can use different Nitter instances:
 - `nitter.1d4.us`
 - `nitter.kavin.rocks`
 
-<Callout type="warn">
-  Nitter instances may have rate limits or availability issues. Consider using multiple instances for redundancy.
-</Callout>
+<Callout type="warn">Nitter instances may have rate limits or availability issues. Consider using multiple instances for redundancy.</Callout>
 
 ## arXiv Integration
 
@@ -107,7 +106,7 @@ For reliability, you can use different Nitter instances:
 <Tabs items={['Category Feed', 'Author Feed', 'Search Query']}>
   <Tab value="Category Feed">
     RSS feeds for specific arXiv categories.
-    
+
     ```yaml
     - id: "arxiv-cs-lg"
       site: "https://arxiv.org/list/cs.LG/recent"
@@ -120,13 +119,14 @@ For reliability, you can use different Nitter instances:
         arxiv:
           category: "cs.LG"
     ```
-    
+
     **Generated Feed URL**: `http://export.arxiv.org/rss/cs.LG`
+
   </Tab>
-  
+
   <Tab value="Author Feed">
     Papers by specific authors.
-    
+
     ```yaml
     - id: "arxiv-bengio"
       site: "https://arxiv.org"
@@ -139,13 +139,14 @@ For reliability, you can use different Nitter instances:
           author: "Yoshua Bengio"
           max_results: 50
     ```
-    
+
     **Generated Feed URL**: `http://export.arxiv.org/api/query?search_query=au:Yoshua+Bengio&max_results=50&sortBy=submittedDate&sortOrder=descending`
+
   </Tab>
-  
+
   <Tab value="Search Query">
     Advanced search capabilities.
-    
+
     ```yaml
     - id: "arxiv-transformer-search"
       site: "https://arxiv.org"
@@ -158,8 +159,9 @@ For reliability, you can use different Nitter instances:
           search_query: "all:transformer AND all:attention"
           max_results: 100
     ```
-    
+
     **Generated Feed URL**: `http://export.arxiv.org/api/query?search_query=all:transformer+AND+all:attention&max_results=100&sortBy=submittedDate&sortOrder=descending`
+
   </Tab>
 </Tabs>
 
@@ -167,12 +169,12 @@ For reliability, you can use different Nitter instances:
 
 The `platform_config.arxiv` object supports:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `category` | string | arXiv category (e.g., `cs.LG`, `stat.ML`) |
-| `author` | string | Author name for author-specific feeds |
-| `search_query` | string | Advanced search query |
-| `max_results` | integer | Maximum number of results (default: 50) |
+| Field          | Type    | Description                               |
+| -------------- | ------- | ----------------------------------------- |
+| `category`     | string  | arXiv category (e.g., `cs.LG`, `stat.ML`) |
+| `author`       | string  | Author name for author-specific feeds     |
+| `search_query` | string  | Advanced search query                     |
+| `max_results`  | integer | Maximum number of results (default: 50)   |
 
 ### Popular arXiv Categories for AI/ML
 
@@ -204,10 +206,12 @@ When using `search_query`, you can use arXiv's advanced search:
 The system automatically detects Twitter/X and arXiv URLs:
 
 **Twitter/X domains:**
+
 - `twitter.com`, `www.twitter.com`
 - `x.com`, `www.x.com`
 
 **arXiv domains:**
+
 - `arxiv.org`, `www.arxiv.org`
 - `export.arxiv.org`
 

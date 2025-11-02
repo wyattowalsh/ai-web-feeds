@@ -5,8 +5,8 @@ description: Real-time feed analytics with interactive visualizations, trending 
 
 # Analytics Dashboard
 
-> **Status**: ✅ Fully Implemented  
-> **Phase**: Phase 1 (MVP)  
+> **Status**: ✅ Fully Implemented
+> **Phase**: Phase 1 (MVP)
 > **Completion**: 100%
 
 The Analytics Dashboard provides curators with comprehensive metrics and insights for the AIWebFeeds collection.
@@ -23,18 +23,23 @@ The Analytics Dashboard provides curators with comprehensive metrics and insight
 ### Interactive Charts
 
 #### Most Active Topics
+
 Bar chart showing topics ranked by validation frequency (last 30 days), weighted by feed health scores.
 
 #### Publication Velocity
+
 Line chart displaying daily/weekly/monthly validation frequency trends, used as proxy for publication activity.
 
 #### Feed Health Distribution
+
 Pie chart showing distribution of feeds by health category:
+
 - **Healthy**: ≥0.8 health score
 - **Moderate**: 0.5-0.8 health score
 - **Unhealthy**: <0.5 health score
 
 #### Validation Success Over Time
+
 Area chart tracking validation success rate over time ranges (7d, 30d, 90d).
 
 ### Filtering
@@ -89,7 +94,7 @@ uv run aiwebfeeds analytics export --output metrics.csv
 
 ```typescript
 // Fetch analytics summary
-const response = await fetch('/api/analytics/summary?date_range=30d&topic=llm');
+const response = await fetch("/api/analytics/summary?date_range=30d&topic=llm");
 const data = await response.json();
 
 console.log(data.total_feeds);
@@ -116,4 +121,3 @@ console.log(data.trending_topics);
 - [Search & Discovery](./search) - Find feeds by keywords and semantic similarity
 - [Recommendations](./recommendations) - AI-powered feed suggestions
 - [Data Model](/docs/development/data-model#analyticssnapshot) - AnalyticsSnapshot entity schema
-

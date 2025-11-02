@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,17 +10,10 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface TrendingTopic {
   topic: string;
@@ -30,7 +23,7 @@ interface TrendingTopic {
 }
 
 export function TrendingTopicsChart({
-  dateRange = '30d',
+  dateRange = "30d",
   limit = 10,
 }: {
   dateRange?: string;
@@ -44,17 +37,17 @@ export function TrendingTopicsChart({
     const fetchTopics = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const response = await fetch(
-          `/api/analytics/trending?limit=${limit}&date_range=${dateRange}`
+          `/api/analytics/trending?limit=${limit}&date_range=${dateRange}`,
         );
-        if (!response.ok) throw new Error('Failed to fetch trending topics');
-        
+        if (!response.ok) throw new Error("Failed to fetch trending topics");
+
         const data = await response.json();
         setTopics(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -75,7 +68,7 @@ export function TrendingTopicsChart({
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
         <p className="font-semibold">No trending topics available</p>
-        <p className="text-sm">{error || 'Run analytics snapshot first'}</p>
+        <p className="text-sm">{error || "Run analytics snapshot first"}</p>
       </div>
     );
   }
@@ -84,10 +77,10 @@ export function TrendingTopicsChart({
     labels: topics.map((t) => t.topic.toUpperCase()),
     datasets: [
       {
-        label: 'Validation Frequency',
+        label: "Validation Frequency",
         data: topics.map((t) => t.validation_frequency),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: "rgba(59, 130, 246, 0.8)",
+        borderColor: "rgb(59, 130, 246)",
         borderWidth: 1,
       },
     ],
@@ -98,14 +91,14 @@ export function TrendingTopicsChart({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
         text: `Most Active Topics (${dateRange})`,
         font: {
           size: 16,
-          weight: 'bold',
+          weight: "bold",
         },
       },
       tooltip: {
@@ -125,13 +118,13 @@ export function TrendingTopicsChart({
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Validation Frequency',
+          text: "Validation Frequency",
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Topic',
+          text: "Topic",
         },
       },
     },
@@ -142,13 +135,11 @@ export function TrendingTopicsChart({
       <div className="h-96">
         <Bar data={chartData} options={options} />
       </div>
-      
+
       <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4">
         {topics.map((topic) => (
           <div key={topic.topic} className="text-center">
-            <p className="text-xs font-semibold text-gray-600 uppercase">
-              {topic.topic}
-            </p>
+            <p className="text-xs font-semibold text-gray-600 uppercase">{topic.topic}</p>
             <p className="text-sm text-gray-500">{topic.feed_count} feeds</p>
             <p className="text-xs text-gray-400">
               {(topic.avg_health_score * 100).toFixed(0)}% health
@@ -159,4 +150,3 @@ export function TrendingTopicsChart({
     </div>
   );
 }
-

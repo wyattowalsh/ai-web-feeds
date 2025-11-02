@@ -5,7 +5,6 @@ for real-time alerts.
 """
 
 from datetime import datetime, timedelta
-from typing import Any
 
 from loguru import logger
 
@@ -33,9 +32,9 @@ class NotificationManager:
             db: Database manager instance
             settings: Application settings
         """
-        self.db                    = db
-        self.settings              = settings
-        self.bundle_threshold      = settings.phase3b.notification_bundle_threshold
+        self.db = db
+        self.settings = settings
+        self.bundle_threshold = settings.phase3b.notification_bundle_threshold
         self.bundle_window_seconds = settings.phase3b.notification_bundle_window_seconds
 
     async def notify_new_articles(
@@ -65,15 +64,15 @@ class NotificationManager:
             # Send bundled notification
             for user_id in followers:
                 notification = Notification(
-                    user_id    =user_id,
-                    type       =NotificationType.FEED_UPDATED,
-                    title      =f"{len(articles)} new articles",
-                    message    =f"{len(articles)} new articles from {feed_id}",
-                    action_url =f"/feeds/{feed_id}",
+                    user_id=user_id,
+                    type=NotificationType.FEED_UPDATED,
+                    title=f"{len(articles)} new articles",
+                    message=f"{len(articles)} new articles from {feed_id}",
+                    action_url=f"/feeds/{feed_id}",
                     context_data={
-                        "feed_id"      : feed_id,
+                        "feed_id": feed_id,
                         "article_count": len(articles),
-                        "article_ids"  : [a.id for a in articles[:5]],
+                        "article_ids": [a.id for a in articles[:5]],
                     },
                 )
                 self.db.create_notification(notification)
@@ -84,22 +83,20 @@ class NotificationManager:
             for article in articles:
                 for user_id in followers:
                     notification = Notification(
-                        user_id    =user_id,
-                        type       =NotificationType.NEW_ARTICLE,
-                        title      =article.title,
-                        message    =article.summary or article.title,
-                        action_url =article.link,
+                        user_id=user_id,
+                        type=NotificationType.NEW_ARTICLE,
+                        title=article.title,
+                        message=article.summary or article.title,
+                        action_url=article.link,
                         context_data={
-                            "feed_id"   : feed_id,
+                            "feed_id": feed_id,
                             "article_id": article.id,
                         },
                     )
                     self.db.create_notification(notification)
                     await self._broadcast_notification(notification)
 
-        logger.info(
-            f"Created notifications for {len(articles)} articles to {len(followers)} users"
-        )
+        logger.info(f"Created notifications for {len(articles)} articles to {len(followers)} users")
 
     async def notify_trending_topic(
         self,
@@ -114,14 +111,14 @@ class NotificationManager:
         """
         for user_id in user_ids:
             notification = Notification(
-                user_id    =user_id,
-                type       =NotificationType.TRENDING_TOPIC,
-                title      =f"Trending: {topic.topic_id}",
-                message    =f"{topic.article_count} articles in the last hour (Z-score: {topic.z_score:.2f})",
-                action_url =f"/topics/{topic.topic_id}",
+                user_id=user_id,
+                type=NotificationType.TRENDING_TOPIC,
+                title=f"Trending: {topic.topic_id}",
+                message=f"{topic.article_count} articles in the last hour (Z-score: {topic.z_score:.2f})",
+                action_url=f"/topics/{topic.topic_id}",
                 context_data={
-                    "topic_id"  : topic.topic_id,
-                    "z_score"   : topic.z_score,
+                    "topic_id": topic.topic_id,
+                    "z_score": topic.z_score,
                     "article_ids": topic.representative_articles,
                 },
             )
@@ -140,9 +137,7 @@ class NotificationManager:
         """
         # TODO: Implement WebSocket broadcasting in websocket_server.py
         # For now, just log
-        logger.debug(
-            f"Broadcasting notification {notification.id} to user {notification.user_id}"
-        )
+        logger.debug(f"Broadcasting notification {notification.id} to user {notification.user_id}")
 
     def cleanup_old_notifications(self) -> int:
         """Delete notifications older than retention period.
@@ -151,10 +146,9 @@ class NotificationManager:
             Number of deleted notifications
         """
         retention_days = self.settings.phase3b.notification_retention_days
-        cutoff_date    = datetime.utcnow() - timedelta(days=retention_days)
+        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
 
         # TODO: Implement bulk delete in storage.py
         # For now, return 0
         logger.info(f"Cleaned up notifications older than {cutoff_date}")
         return 0
-

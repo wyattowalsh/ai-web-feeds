@@ -69,6 +69,7 @@ aiwebfeeds nlp sentiment
 ```
 
 **Options**:
+
 - `--batch-size`: Number of articles (default: 100)
 - `--force`: Reprocess all articles
 
@@ -85,6 +86,7 @@ aiwebfeeds nlp sentiment-trend "AI Safety" --days 30
 ```
 
 **Output**:
+
 ```
 AI Safety - Sentiment Trend (30 days)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -102,6 +104,7 @@ aiwebfeeds nlp sentiment-shifts
 ```
 
 **Output**:
+
 ```
 Recent Sentiment Shifts
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -246,6 +249,7 @@ class Phase5Settings(BaseSettings):
 ```
 
 **Environment Variables**:
+
 ```bash
 PHASE5_SENTIMENT_BATCH_SIZE=100
 PHASE5_SENTIMENT_SHIFT_THRESHOLD=0.3
@@ -316,6 +320,7 @@ aiwebfeeds nlp sentiment-compare "RLHF" "Constitutional AI"
 **Symptom**: `OSError: Can't find model`
 
 **Solution**:
+
 ```bash
 # Models auto-download to ~/.cache/huggingface/hub
 # Ensure internet connection and disk space (~67MB)
@@ -331,6 +336,7 @@ python -c "from transformers import pipeline; pipeline('sentiment-analysis', mod
 **Cause**: Threshold too high.
 
 **Solution**:
+
 ```bash
 # Lower threshold to 0.2
 export PHASE5_SENTIMENT_SHIFT_THRESHOLD=0.2

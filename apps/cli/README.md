@@ -51,6 +51,7 @@ aiwebfeeds enrich one <feed-id>
 ```
 
 **What it does:**
+
 - Discovers feed URLs from site URLs (if `discover: true`)
 - Detects feed format (RSS, Atom, JSONFeed)
 - Validates feed accessibility
@@ -107,6 +108,7 @@ aiwebfeeds stats show
 ```
 
 Example output:
+
 ```
 📊 Feed Statistics
 ══════════════════════════════════════════════════
@@ -237,6 +239,7 @@ aiwebfeeds test markers
 ```
 
 **Common Options:**
+
 - `--verbose, -v` - Verbose output
 - `--coverage, -c` - Generate coverage report
 - `--parallel, -p` - Run tests in parallel
@@ -244,6 +247,7 @@ aiwebfeeds test markers
 - `--open, -o` - Open coverage report in browser
 
 **Test Categories:**
+
 - `unit` - Fast, isolated component tests
 - `integration` - Multi-component tests
 - `e2e` - Full workflow tests
@@ -283,6 +287,7 @@ export AIWF_LOGGING__FILE_PATH=logs/aiwebfeeds.log
 ### File Locations
 
 By default, the CLI expects:
+
 - Input: `data/feeds.yaml`
 - Output: `data/feeds.enriched.yaml`
 - Schema: `data/feeds.enriched.schema.json`
@@ -307,6 +312,7 @@ aiwebfeeds opml filtered --help
 
 ## See Also
 
-- [Core Package README](../../packages/ai_web_feeds/README.md) - Python API documentation
+- [Core Package README](../../packages/ai_web_feeds/README.md) - Python API
+  documentation
 - [Feeds Schema](../../data/feeds.schema.json) - Input feed schema
 - [Enriched Schema](../../data/feeds.enriched.schema.json) - Output feed schema

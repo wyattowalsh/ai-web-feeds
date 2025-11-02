@@ -11,36 +11,36 @@ info:
     url: https://github.com/wyattowalsh/ai-web-feeds
 
 servers:
-  - url: http://localhost:8000/api
-    description: Local development server
-  - url: https://aiwebfeeds.com/api
-    description: Production server
+- url: http://localhost:8000/api
+  description: Local development server
+- url: https://aiwebfeeds.com/api
+  description: Production server
 
 paths:
   # ========================================
   # Analytics Endpoints
   # ========================================
-  
+
   /analytics/summary:
     get:
       summary: Get analytics summary
       description: Returns key metrics for the analytics dashboard
       operationId: getAnalyticsSummary
       tags:
-        - Analytics
+      - Analytics
       parameters:
-        - name: date_range
-          in: query
-          schema:
-            type: string
-            enum: [7d, 30d, 90d]
-            default: 30d
-          description: Time range for analytics (days)
-        - name: topic
-          in: query
-          schema:
-            type: string
-          description: Filter by specific topic
+      - name: date_range
+        in: query
+        schema:
+          type: string
+          enum: [7d, 30d, 90d]
+          default: 30d
+        description: Time range for analytics (days)
+      - name: topic
+        in: query
+        schema:
+          type: string
+        description: Filter by specific topic
       responses:
         '200':
           description: Analytics summary
@@ -52,29 +52,29 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalError'
-  
+
   /analytics/trending-topics:
     get:
       summary: Get trending topics
       description: Returns most active topics ranked by validation frequency
       operationId: getTrendingTopics
       tags:
-        - Analytics
+      - Analytics
       parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 10
-          description: Number of topics to return
-        - name: date_range
-          in: query
-          schema:
-            type: string
-            enum: [7d, 30d, 90d]
-            default: 30d
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+        description: Number of topics to return
+      - name: date_range
+        in: query
+        schema:
+          type: string
+          enum: [7d, 30d, 90d]
+          default: 30d
       responses:
         '200':
           description: List of trending topics
@@ -86,27 +86,27 @@ paths:
                   $ref: '#/components/schemas/TrendingTopic'
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /analytics/publication-velocity:
     get:
       summary: Get publication velocity metrics
       description: Returns daily/weekly/monthly posting frequency
       operationId: getPublicationVelocity
       tags:
-        - Analytics
+      - Analytics
       parameters:
-        - name: granularity
-          in: query
-          schema:
-            type: string
-            enum: [daily, weekly, monthly]
-            default: daily
-        - name: date_range
-          in: query
-          schema:
-            type: string
-            enum: [7d, 30d, 90d]
-            default: 30d
+      - name: granularity
+        in: query
+        schema:
+          type: string
+          enum: [daily, weekly, monthly]
+          default: daily
+      - name: date_range
+        in: query
+        schema:
+          type: string
+          enum: [7d, 30d, 90d]
+          default: 30d
       responses:
         '200':
           description: Publication velocity data
@@ -114,14 +114,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicationVelocity'
-  
+
   /analytics/health-distribution:
     get:
       summary: Get feed health distribution
       description: Returns count of feeds by health category
       operationId: getHealthDistribution
       tags:
-        - Analytics
+      - Analytics
       responses:
         '200':
           description: Health distribution
@@ -129,26 +129,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthDistribution'
-  
+
   /analytics/export:
     get:
       summary: Export analytics data
       description: Export analytics data as CSV
       operationId: exportAnalytics
       tags:
-        - Analytics
+      - Analytics
       parameters:
-        - name: date_range
-          in: query
-          schema:
-            type: string
-            enum: [7d, 30d, 90d]
-            default: 30d
-        - name: topic
-          in: query
-          schema:
-            type: string
-          description: Filter by specific topic
+      - name: date_range
+        in: query
+        schema:
+          type: string
+          enum: [7d, 30d, 90d]
+          default: 30d
+      - name: topic
+        in: query
+        schema:
+          type: string
+        description: Filter by specific topic
       responses:
         '200':
           description: CSV file
@@ -159,74 +159,74 @@ paths:
                 format: binary
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   # ========================================
   # Search Endpoints
   # ========================================
-  
+
   /search:
     get:
       summary: Search feeds
       description: Full-text and semantic search across feed catalog
       operationId: searchFeeds
       tags:
-        - Search
+      - Search
       parameters:
-        - name: q
-          in: query
-          required: true
-          schema:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 400
+        description: Search query
+      - name: search_type
+        in: query
+        schema:
+          type: string
+          enum: [full_text, semantic, hybrid]
+          default: full_text
+        description: Search algorithm to use
+      - name: source_type
+        in: query
+        schema:
+          type: array
+          items:
             type: string
-            maxLength: 400
-          description: Search query
-        - name: search_type
-          in: query
-          schema:
+            enum: [blog, podcast, newsletter, video, social, other]
+        description: Filter by source type (multi-select)
+      - name: topics
+        in: query
+        schema:
+          type: array
+          items:
             type: string
-            enum: [full_text, semantic, hybrid]
-            default: full_text
-          description: Search algorithm to use
-        - name: source_type
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-              enum: [blog, podcast, newsletter, video, social, other]
-          description: Filter by source type (multi-select)
-        - name: topics
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-          description: Filter by topics (multi-select, AND logic)
-        - name: verified
-          in: query
-          schema:
-            type: boolean
-          description: Filter verified feeds only
-        - name: active
-          in: query
-          schema:
-            type: boolean
-            default: true
-          description: Filter active feeds only
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Number of results per page
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Pagination offset
+        description: Filter by topics (multi-select, AND logic)
+      - name: verified
+        in: query
+        schema:
+          type: boolean
+        description: Filter verified feeds only
+      - name: active
+        in: query
+        schema:
+          type: boolean
+          default: true
+        description: Filter active feeds only
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        description: Number of results per page
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Pagination offset
       responses:
         '200':
           description: Search results
@@ -238,30 +238,30 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalError'
-  
+
   /search/autocomplete:
     get:
       summary: Autocomplete suggestions
       description: Returns autocomplete suggestions for search queries
       operationId: getAutocompleteSuggestions
       tags:
-        - Search
+      - Search
       parameters:
-        - name: q
-          in: query
-          required: true
-          schema:
-            type: string
-            maxLength: 100
-          description: Partial query
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 10
-            default: 5
-          description: Number of suggestions
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 100
+        description: Partial query
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        description: Number of suggestions
       responses:
         '200':
           description: Autocomplete suggestions
@@ -271,22 +271,22 @@ paths:
                 $ref: '#/components/schemas/AutocompleteSuggestions'
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /search/popular:
     get:
       summary: Get popular search queries
       description: Returns most common search queries (anonymized)
       operationId: getPopularSearches
       tags:
-        - Search
+      - Search
       parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 20
-            default: 10
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
       responses:
         '200':
           description: Popular searches
@@ -299,20 +299,20 @@ paths:
                   properties:
                     query: {type: string}
                     count: {type: integer}
-  
+
   /search/saved:
     get:
       summary: List saved searches
       description: Get user's saved searches
       operationId: listSavedSearches
       tags:
-        - Search
+      - Search
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: List of saved searches
@@ -322,13 +322,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SavedSearch'
-    
+
     post:
       summary: Save a search
       description: Save a search query for one-click replay
       operationId: saveSearch
       tags:
-        - Search
+      - Search
       requestBody:
         required: true
         content:
@@ -344,60 +344,60 @@ paths:
                 $ref: '#/components/schemas/SavedSearch'
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /search/saved/{search_id}:
     delete:
       summary: Delete saved search
       description: Remove a saved search
       operationId: deleteSavedSearch
       tags:
-        - Search
+      - Search
       parameters:
-        - name: search_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: search_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '204':
           description: Search deleted successfully
         '404':
           $ref: '#/components/responses/NotFound'
-  
+
   # ========================================
   # Recommendation Endpoints
   # ========================================
-  
+
   /recommendations:
     get:
       summary: Get personalized recommendations
       description: Returns AI-powered feed recommendations
       operationId: getRecommendations
       tags:
-        - Recommendations
+      - Recommendations
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: string
-          description: User ID (anonymous or authenticated)
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 20
-          description: Number of recommendations
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Pagination offset
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: User ID (anonymous or authenticated)
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+        description: Number of recommendations
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Pagination offset
       responses:
         '200':
           description: Recommendations
@@ -407,14 +407,14 @@ paths:
                 $ref: '#/components/schemas/RecommendationResults'
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /recommendations/cold-start:
     post:
       summary: Get cold start recommendations
       description: Generate recommendations for new users based on onboarding quiz
       operationId: getColdStartRecommendations
       tags:
-        - Recommendations
+      - Recommendations
       requestBody:
         required: true
         content:
@@ -430,14 +430,14 @@ paths:
                 $ref: '#/components/schemas/RecommendationResults'
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /recommendations/feedback:
     post:
       summary: Submit recommendation feedback
       description: User feedback on recommendations (like, dismiss, block topic)
       operationId: submitRecommendationFeedback
       tags:
-        - Recommendations
+      - Recommendations
       requestBody:
         required: true
         content:
@@ -449,27 +449,27 @@ paths:
           description: Feedback recorded successfully
         '400':
           $ref: '#/components/responses/BadRequest'
-  
+
   /recommendations/similar/{feed_id}:
     get:
       summary: Get similar feeds
       description: Find feeds similar to a given feed (content-based)
       operationId: getSimilarFeeds
       tags:
-        - Recommendations
+      - Recommendations
       parameters:
-        - name: feed_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 20
-            default: 10
+      - name: feed_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
       responses:
         '200':
           description: Similar feeds
@@ -489,7 +489,7 @@ paths:
 components:
   schemas:
     # ---- Analytics Schemas ----
-    
+
     AnalyticsSummary:
       type: object
       properties:
@@ -523,13 +523,13 @@ components:
           type: string
           format: date-time
           description: Last updated timestamp
-    
+
     TrendingTopic:
       type: object
       properties:
         topic:
           type: string
-          example: "LLM"
+          example: LLM
         feed_count:
           type: integer
           example: 45
@@ -546,7 +546,7 @@ components:
           format: float
           description: Growth rate (0.15 = 15% increase)
           example: 0.15
-    
+
     PublicationVelocity:
       type: object
       properties:
@@ -566,7 +566,7 @@ components:
               avg_per_feed:
                 type: number
                 format: float
-    
+
     HealthDistribution:
       type: object
       properties:
@@ -579,9 +579,9 @@ components:
         unhealthy:
           type: integer
           description: Feeds with health score < 0.5
-    
+
     # ---- Search Schemas ----
-    
+
     SearchResults:
       type: object
       properties:
@@ -601,7 +601,7 @@ components:
         execution_time_ms:
           type: number
           format: float
-    
+
     SearchResultItem:
       type: object
       properties:
@@ -641,7 +641,7 @@ components:
           format: float
           nullable: true
           description: Semantic similarity score (for semantic search)
-    
+
     AutocompleteSuggestions:
       type: object
       properties:
@@ -663,7 +663,7 @@ components:
               popularity:
                 type: number
                 format: float
-    
+
     SavedSearch:
       type: object
       properties:
@@ -686,13 +686,13 @@ components:
         last_used_at:
           type: string
           format: date-time
-    
+
     SaveSearchRequest:
       type: object
       required:
-        - user_id
-        - search_name
-        - query_text
+      - user_id
+      - search_name
+      - query_text
       properties:
         user_id:
           type: string
@@ -705,9 +705,9 @@ components:
         filters:
           type: object
           nullable: true
-    
+
     # ---- Recommendation Schemas ----
-    
+
     RecommendationResults:
       type: object
       properties:
@@ -722,7 +722,7 @@ components:
         algorithm:
           type: string
           enum: [content_based, collaborative, hybrid, cold_start]
-    
+
     RecommendationItem:
       type: object
       properties:
@@ -753,7 +753,7 @@ components:
         explanation:
           type: string
           description: Human-readable explanation
-          example: "Because you follow similar feeds"
+          example: Because you follow similar feeds
         explanation_links:
           type: array
           items:
@@ -766,12 +766,12 @@ components:
                 type: string
               name:
                 type: string
-    
+
     ColdStartRequest:
       type: object
       required:
-        - user_id
-        - selected_topics
+      - user_id
+      - selected_topics
       properties:
         user_id:
           type: string
@@ -786,13 +786,13 @@ components:
           minimum: 1
           maximum: 50
           default: 20
-    
+
     RecommendationFeedback:
       type: object
       required:
-        - user_id
-        - feed_id
-        - interaction_type
+      - user_id
+      - feed_id
+      - interaction_type
       properties:
         user_id:
           type: string
@@ -805,14 +805,14 @@ components:
           type: object
           nullable: true
           description: Additional metadata (recommendation_algorithm, score, etc.)
-    
+
     # ---- Error Schemas ----
-    
+
     Error:
       type: object
       required:
-        - code
-        - message
+      - code
+      - message
       properties:
         code:
           type: string
@@ -821,7 +821,7 @@ components:
         details:
           type: object
           nullable: true
-  
+
   responses:
     BadRequest:
       description: Bad request
@@ -830,9 +830,9 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            code: "BAD_REQUEST"
-            message: "Invalid query parameter"
-    
+            code: BAD_REQUEST
+            message: Invalid query parameter
+
     NotFound:
       description: Resource not found
       content:
@@ -840,9 +840,9 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            code: "NOT_FOUND"
-            message: "Resource not found"
-    
+            code: NOT_FOUND
+            message: Resource not found
+
     InternalError:
       description: Internal server error
       content:
@@ -850,14 +850,13 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            code: "INTERNAL_ERROR"
-            message: "An unexpected error occurred"
+            code: INTERNAL_ERROR
+            message: An unexpected error occurred
 
 tags:
-  - name: Analytics
-    description: Analytics dashboard endpoints
-  - name: Search
-    description: Intelligent search and discovery endpoints
-  - name: Recommendations
-    description: AI-powered feed recommendation endpoints
-
+- name: Analytics
+  description: Analytics dashboard endpoints
+- name: Search
+  description: Intelligent search and discovery endpoints
+- name: Recommendations
+  description: AI-powered feed recommendation endpoints

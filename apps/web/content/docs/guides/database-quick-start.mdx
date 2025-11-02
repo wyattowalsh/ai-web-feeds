@@ -49,15 +49,15 @@ db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
 
 with db.get_session() as session:
     analytics = FeedAnalytics(session)
-    
+
     # Overview statistics
     stats = analytics.get_overview_stats()
     print(f"Total feeds: {stats['total_feeds']}")
-    
+
     # Quality metrics
     quality = analytics.get_quality_metrics()
     print(f"Average quality score: {quality['avg_quality_score']:.2f}")
-    
+
     # Health report
     health = analytics.generate_health_report()
     print(f"Healthy feeds: {health['overall_stats']['healthy_count']}")
@@ -70,15 +70,15 @@ from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
 
 with db.get_session() as session:
     analytics = AdvancedFeedAnalytics(session)
-    
+
     # Predict feed health
     prediction = analytics.predict_feed_health("feed_id_123", days_ahead=7)
     print(f"Predicted health: {prediction['predicted_health']:.2f}")
-    
+
     # Cluster similar feeds
     clusters = analytics.cluster_feeds_by_similarity(similarity_threshold=0.6)
     print(f"Found {len(clusters)} clusters")
-    
+
     # Generate ML insights
     insights = analytics.generate_ml_insights_report()
     print(f"Top pattern: {insights['patterns'][0]['pattern_type']}")
@@ -124,7 +124,7 @@ with db.get_session() as session:
         content_quality_score=0.90
     )
     session.add(health)
-    
+
     # Store content embedding
     embedding = ContentEmbedding(
         feed_item_id="item_456",
@@ -133,7 +133,7 @@ with db.get_session() as session:
         dimension=1536
     )
     session.add(embedding)
-    
+
     session.commit()
 ```
 
@@ -152,16 +152,16 @@ db.create_db_and_tables()
 # Run analytics
 with db.get_session() as session:
     analytics = FeedAnalytics(session)
-    
+
     # Overview stats
     stats = analytics.get_overview_stats()
-    
+
     # Quality metrics
     quality = analytics.get_quality_metrics()
-    
+
     # Feed health
     health = analytics.get_feed_health_report("feed_xyz")
-    
+
     # Full report
     report = analytics.generate_full_report()
 ```
@@ -173,19 +173,19 @@ from ai_web_feeds.analytics.advanced import AdvancedFeedAnalytics
 
 with db.get_session() as session:
     analytics = AdvancedFeedAnalytics(session)
-    
+
     # Predict feed health 7 days ahead
     prediction = analytics.predict_feed_health("feed_xyz", days_ahead=7)
-    
+
     # Detect content patterns
     patterns = analytics.detect_content_patterns("feed_xyz")
-    
+
     # Find similar feeds
     similarity = analytics.compute_feed_similarity("feed_1", "feed_2")
-    
+
     # Cluster feeds
     clusters = analytics.cluster_feeds_by_similarity(similarity_threshold=0.6)
-    
+
     # ML insights report
     insights = analytics.generate_ml_insights_report()
 ```
@@ -332,14 +332,14 @@ uv run pytest -m "not slow" -v
 
 ## File Reference
 
-| File | Purpose |
-|------|---------|
-| `models.py` | Core database models (FeedSource, FeedItem, etc.) |
-| `models_advanced.py` | Advanced models (health, quality, embeddings) |
-| `analytics/core.py` | Core analytics functions |
-| `analytics/advanced.py` | ML-powered analytics |
-| `data_sync.py` | YAML ↔ Database synchronization |
-| `storage.py` | Database connection management |
+| File                    | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| `models.py`             | Core database models (FeedSource, FeedItem, etc.) |
+| `models_advanced.py`    | Advanced models (health, quality, embeddings)     |
+| `analytics/core.py`     | Core analytics functions                          |
+| `analytics/advanced.py` | ML-powered analytics                              |
+| `data_sync.py`          | YAML ↔ Database synchronization                  |
+| `storage.py`            | Database connection management                    |
 
 ## Related Documentation
 
@@ -350,5 +350,5 @@ uv run pytest -m "not slow" -v
 
 ---
 
-**Version**: 0.1.0  
+**Version**: 0.1.0
 **Last Updated**: October 15, 2025

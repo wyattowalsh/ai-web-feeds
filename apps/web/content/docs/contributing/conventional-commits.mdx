@@ -1,0 +1,448 @@
+---
+title: Conventional Commits
+description: Guide to using Conventional Commits specification in AI Web Feeds
+---
+
+## Overview
+
+AI Web Feeds uses the [Conventional Commits](https://www.conventionalcommits.org/) specification for all commit messages. This provides a structured format that enables automated changelog generation, semantic versioning, and clear project history.
+
+## Format
+
+Each commit message consists of a **header**, optional **body**, and optional **footer**:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+### Header (Required)
+
+The header has a special format that includes a **type**, optional **scope**, and **subject**:
+
+```
+<type>(<scope>): <subject>
+│       │            │
+│       │            └─> Summary in present tense. Not capitalized. No period at end.
+│       │
+│       └─> Scope: core|analytics|monitoring|nlp|cli|web|docs|tests|deps|ci|etc.
+│
+└─> Type: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+```
+
+**Rules:**
+
+- Maximum 100 characters
+- Type and subject are required
+- Scope is recommended but optional
+- Subject is lowercase, imperative mood ("add" not "added" or "adds")
+- No period at the end
+
+## Commit Types
+
+| Type       | Description                              | Changelog Section | Example                                           |
+| ---------- | ---------------------------------------- | ----------------- | ------------------------------------------------- |
+| `feat`     | New feature                              | Features          | `feat(core): add RSS feed parser`                 |
+| `fix`      | Bug fix                                  | Bug Fixes         | `fix(analytics): correct topic count calculation` |
+| `docs`     | Documentation only                       | Documentation     | `docs(api): update fetch endpoint examples`       |
+| `style`    | Code style/formatting (no logic change)  | -                 | `style(core): format with ruff`                   |
+| `refactor` | Code refactoring (no feature/fix)        | -                 | `refactor(storage): simplify query builder`       |
+| `perf`     | Performance improvement                  | Performance       | `perf(nlp): optimize embedding generation`        |
+| `test`     | Add/update tests                         | -                 | `test(validate): add edge case coverage`          |
+| `build`    | Build system/dependencies                | -                 | `build(deps): update pydantic to 2.5.0`           |
+| `ci`       | CI/CD changes                            | -                 | `ci(workflow): add caching for npm deps`          |
+| `chore`    | Other changes (no src/test modification) | -                 | `chore(release): bump version to 0.2.0`           |
+| `revert`   | Revert previous commit                   | -                 | `revert(feat): remove experimental feature`       |
+
+## Scopes
+
+Scopes indicate which part of the codebase is affected:
+
+### Core Package Scopes
+
+- `core` - Core functionality
+- `models` - Data models and schemas
+- `storage` - Database and persistence
+- `load` - Feed loading and fetching
+- `validate` - Validation logic
+- `export` - Export functionality
+- `enrich` - Enrichment pipeline
+- `logger` - Logging utilities
+- `utils` - Utility functions
+- `config` - Configuration management
+
+### Phase-Specific Scopes
+
+- `analytics` - Phase 002: Analytics & Discovery
+- `discovery` - Phase 002: Feed discovery
+- `monitoring` - Phase 003: Real-time monitoring
+- `realtime` - Phase 003: Real-time features
+- `nlp` - Phase 005: NLP/AI features
+- `ai` - Phase 005: AI-powered features
+
+### Component Scopes
+
+- `cli` - Command-line interface
+- `web` - Web documentation site
+- `api` - API endpoints
+
+### Infrastructure Scopes
+
+- `db` - Database changes
+- `schema` - Schema definitions
+- `migrations` - Database migrations
+- `data` - Data files (feeds.yaml, topics.yaml)
+
+### Meta Scopes
+
+- `docs` - Documentation
+- `tests` - Test infrastructure
+- `deps` - Dependencies
+- `ci` - CI/CD pipeline
+- `tooling` - Development tools
+- `release` - Release management
+
+## Examples
+
+### Feature Addition
+
+```bash
+feat(analytics): add topic trending analysis
+
+Implement z-score based trending detection for topics with
+configurable thresholds and time windows.
+
+Closes #123
+```
+
+### Bug Fix
+
+```bash
+fix(load): handle malformed RSS feed dates
+
+Parse dates with lenient mode and fallback to current timestamp
+when feed dates are invalid or missing.
+
+Fixes #456
+```
+
+### Documentation
+
+```bash
+docs(cli): add examples for export command
+
+Add usage examples for JSON, OPML, and CSV export formats
+with filtering options.
+```
+
+### Breaking Change
+
+```bash
+feat(api)!: redesign feed validation endpoint
+
+BREAKING CHANGE: The /validate endpoint now returns structured
+validation results instead of boolean. Update client code:
+
+Before:
+- GET /validate?url=<url> → { "valid": true }
+
+After:
+- GET /validate?url=<url> → { "status": "valid", "issues": [] }
+
+Closes #789
+```
+
+### Multiple Scopes
+
+```bash
+feat(core,analytics): integrate embedding generation
+
+Add sentence-transformers support for generating feed embeddings
+with batch processing and caching.
+```
+
+## Body Guidelines
+
+The body is optional but recommended for:
+
+- Complex changes requiring explanation
+- Breaking changes (required)
+- Performance impacts
+- Migration instructions
+
+**Format:**
+
+- Separate from header with blank line
+- Wrap at 100 characters
+- Use imperative mood
+- Explain "what" and "why", not "how"
+
+## Footer Guidelines
+
+Footers are optional and used for:
+
+### Issue References
+
+```bash
+Closes #123
+Fixes #456, #789
+Relates to #101
+```
+
+### Breaking Changes
+
+```bash
+BREAKING CHANGE: <description>
+```
+
+### Deprecations
+
+```bash
+DEPRECATED: <what is deprecated and alternative>
+```
+
+### Co-authors
+
+```bash
+Co-authored-by: Name <email@example.com>
+```
+
+## Interactive Commits with Commitizen
+
+For interactive commit creation, use commitizen:
+
+```bash
+# Initialize (one-time setup)
+npx commitizen init cz-conventional-changelog --save-dev --save-exact
+
+# Create commits interactively
+npx cz
+# or
+git cz
+```
+
+Commitizen will prompt you for:
+
+1. Type of change
+2. Scope of change
+3. Short description
+4. Longer description (optional)
+5. Breaking changes (optional)
+6. Issue references (optional)
+
+## Tools Integration
+
+### Pre-commit Hook
+
+Conventional commits are enforced via pre-commit hook:
+
+```yaml
+# .pre-commit-config.yaml
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v3.0.0
+  hooks:
+    - id: conventional-pre-commit
+      stages: [commit-msg]
+```
+
+### Commitlint
+
+Validation rules are defined in `commitlint.config.js`:
+
+```javascript
+module.exports = {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [2, 'always', ['feat', 'fix', 'docs', ...]],
+    'scope-enum': [2, 'always', ['core', 'analytics', ...]],
+    'subject-case': [2, 'never', ['sentence-case', 'start-case', ...]],
+    'header-max-length': [2, 'always', 100],
+  },
+};
+```
+
+### CI/CD Validation
+
+GitHub Actions validates commits on PRs:
+
+```yaml
+# .github/workflows/ci.yml
+conventional-commits:
+  name: Validate Conventional Commits
+  if: github.event_name == 'pull_request'
+  steps:
+    - name: Validate PR commits
+      run: |
+        npx commitlint --from ${{ github.event.pull_request.base.sha }} \
+                       --to ${{ github.event.pull_request.head.sha }}
+```
+
+## Common Patterns
+
+### Feature Development
+
+```bash
+feat(scope): add new capability
+feat(scope): enhance existing feature
+feat(scope): implement X support
+```
+
+### Bug Fixes
+
+```bash
+fix(scope): correct incorrect behavior
+fix(scope): handle edge case in X
+fix(scope): prevent Y when Z
+```
+
+### Refactoring
+
+```bash
+refactor(scope): simplify X logic
+refactor(scope): extract Y into separate module
+refactor(scope): rename X to Y for clarity
+```
+
+### Performance
+
+```bash
+perf(scope): optimize X operation
+perf(scope): cache Y results
+perf(scope): reduce memory usage in Z
+```
+
+### Documentation
+
+```bash
+docs(scope): add X documentation
+docs(scope): update Y examples
+docs(scope): clarify Z behavior
+```
+
+## Validation
+
+Test your commit message format:
+
+```bash
+# Test with commitlint
+echo "feat(core): test message" | npx commitlint
+
+# Validate last commit
+npx commitlint --from HEAD~1
+
+# Validate range
+npx commitlint --from HEAD~5 --to HEAD
+```
+
+## Best Practices
+
+### ✅ Good Commits
+
+```bash
+feat(analytics): add topic clustering algorithm
+fix(load): handle timeout for slow RSS feeds
+docs(api): add authentication examples
+perf(nlp): optimize embedding batch processing
+test(validate): add schema validation edge cases
+```
+
+### ❌ Bad Commits
+
+```bash
+# Too vague
+fix: bug fix
+
+# Not imperative mood
+feat(core): Added new parser
+
+# Capitalized subject
+feat(core): Add new parser
+
+# Period at end
+feat(core): add new parser.
+
+# Missing scope (when appropriate)
+feat: add trending analysis
+
+# Wrong type
+feat(core): fix typo in README
+```
+
+## Changelog Generation
+
+Conventional commits enable automated changelog generation:
+
+```bash
+# Generate changelog
+npx standard-version
+
+# Preview next version
+npx standard-version --dry-run
+
+# First release
+npx standard-version --first-release
+```
+
+## Resources
+
+- [Conventional Commits Specification](https://www.conventionalcommits.org/)
+- [Commitlint Documentation](https://commitlint.js.org/)
+- [Commitizen](https://github.com/commitizen/cz-cli)
+- [Standard Version](https://github.com/conventional-changelog/standard-version)
+
+## FAQ
+
+### Why conventional commits?
+
+1. **Automated Changelog**: Generate release notes automatically
+2. **Semantic Versioning**: Determine version bumps (major/minor/patch)
+3. **Clear History**: Understand changes at a glance
+4. **Better Collaboration**: Consistent format across team
+5. **Tooling Integration**: Enable automation and analysis
+
+### What if I forget the format?
+
+Use commitizen for interactive prompts:
+
+```bash
+npx cz
+```
+
+Or refer to this guide!
+
+### Can I use multiple scopes?
+
+Yes, separate with commas:
+
+```bash
+feat(core,cli): add new export format
+```
+
+### What about merge commits?
+
+Merge commits follow the same format:
+
+```bash
+Merge pull request #123 from feature-branch
+
+feat(analytics): add trending detection
+```
+
+### How do I indicate breaking changes?
+
+Three ways:
+
+1. `!` after scope: `feat(api)!: redesign endpoint`
+2. Footer: `BREAKING CHANGE: description`
+3. Both (recommended for visibility)
+
+## Support
+
+For questions or issues with conventional commits:
+
+- Check this documentation
+- Review [commitlint.config.js](https://github.com/wyattowalsh/ai-web-feeds/blob/main/commitlint.config.js)
+- Open an issue on [GitHub](https://github.com/wyattowalsh/ai-web-feeds/issues)

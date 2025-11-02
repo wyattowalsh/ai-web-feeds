@@ -7,18 +7,15 @@ This package contains modules for:
 - Topic modeling: LDA-based topic discovery and evolution tracking
 """
 
-from ai_web_feeds.nlp.quality_scorer import QualityScorer
 from ai_web_feeds.nlp.entity_extractor import EntityExtractor
+from ai_web_feeds.nlp.quality_scorer import QualityScorer
 from ai_web_feeds.nlp.sentiment_analyzer import SentimentAnalyzer
 from ai_web_feeds.nlp.topic_modeler import TopicModeler
 
+
 __all__ = [
-    "QualityScorer",
     "EntityExtractor",
+    "QualityScorer",
     "SentimentAnalyzer",
     "TopicModeler",
 ]
-
-
-
-

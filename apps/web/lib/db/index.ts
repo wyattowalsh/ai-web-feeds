@@ -1,6 +1,6 @@
 /**
  * IndexedDB Database Manager
- * 
+ *
  * Provides a clean API for all IndexedDB operations.
  * Handles connection management, transactions, and error handling.
  */
@@ -72,7 +72,7 @@ export async function get<T>(
   key: string | number
 ): Promise<T | undefined> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
@@ -88,7 +88,7 @@ export async function get<T>(
  */
 export async function getAll<T>(storeName: StoreName): Promise<T[]> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
@@ -104,7 +104,7 @@ export async function getAll<T>(storeName: StoreName): Promise<T[]> {
  */
 export async function put<T>(storeName: StoreName, value: T): Promise<void> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
@@ -120,7 +120,7 @@ export async function put<T>(storeName: StoreName, value: T): Promise<void> {
  */
 export async function del(storeName: StoreName, key: string | number): Promise<void> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
@@ -136,7 +136,7 @@ export async function del(storeName: StoreName, key: string | number): Promise<v
  */
 export async function clear(storeName: StoreName): Promise<void> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
@@ -156,7 +156,7 @@ export async function getByIndex<T>(
   value: string | number | boolean
 ): Promise<T[]> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
@@ -173,7 +173,7 @@ export async function getByIndex<T>(
  */
 export async function count(storeName: StoreName): Promise<number> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
@@ -189,7 +189,7 @@ export async function count(storeName: StoreName): Promise<number> {
  */
 export async function bulkPut<T>(storeName: StoreName, values: T[]): Promise<void> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
@@ -199,14 +199,14 @@ export async function bulkPut<T>(storeName: StoreName, values: T[]): Promise<voi
 
     values.forEach((value) => {
       const request = store.put(value);
-      
+
       request.onsuccess = () => {
         completed++;
         if (completed === total) {
           resolve();
         }
       };
-      
+
       request.onerror = () => reject(request.error);
     });
 
@@ -226,12 +226,12 @@ export async function getByRange<T>(
   upperBound?: number
 ): Promise<T[]> {
   const db = await openDB();
-  
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
     const index = store.index(indexName);
-    
+
     let range: IDBKeyRange | undefined;
     if (lowerBound !== undefined && upperBound !== undefined) {
       range = IDBKeyRange.bound(lowerBound, upperBound);
@@ -240,7 +240,7 @@ export async function getByRange<T>(
     } else if (upperBound !== undefined) {
       range = IDBKeyRange.upperBound(upperBound);
     }
-    
+
     const request = range ? index.getAll(range) : index.getAll();
 
     request.onsuccess = () => resolve(request.result as T[]);
@@ -263,7 +263,7 @@ export const articles = {
   getByFeed: (feedId: string) => getByIndex<Article>(STORES.ARTICLES, 'feedId', feedId),
   getUnread: () => getByIndex<Article>(STORES.ARTICLES, 'read', false),
   getStarred: () => getByIndex<Article>(STORES.ARTICLES, 'starred', true),
-  getByDateRange: (from: number, to: number) => 
+  getByDateRange: (from: number, to: number) =>
     getByRange<Article>(STORES.ARTICLES, 'pubDate', from, to),
   bulkPut: (articles: Article[]) => bulkPut(STORES.ARTICLES, articles),
   count: () => count(STORES.ARTICLES),
@@ -303,9 +303,9 @@ export const readingHistory = {
   getAll: () => getAll<ReadingHistoryEntry>(STORES.READING_HISTORY),
   put: (entry: ReadingHistoryEntry) => put(STORES.READING_HISTORY, entry),
   delete: (id: string) => del(STORES.READING_HISTORY, id),
-  getByArticle: (articleId: string) => 
+  getByArticle: (articleId: string) =>
     getByIndex<ReadingHistoryEntry>(STORES.READING_HISTORY, 'articleId', articleId),
-  getRecent: (from: number) => 
+  getRecent: (from: number) =>
     getByRange<ReadingHistoryEntry>(STORES.READING_HISTORY, 'timestamp', from),
   count: () => count(STORES.READING_HISTORY),
 };
@@ -318,9 +318,9 @@ export const annotations = {
   getAll: () => getAll<Annotation>(STORES.ANNOTATIONS),
   put: (annotation: Annotation) => put(STORES.ANNOTATIONS, annotation),
   delete: (id: string) => del(STORES.ANNOTATIONS, id),
-  getByArticle: (articleId: string) => 
+  getByArticle: (articleId: string) =>
     getByIndex<Annotation>(STORES.ANNOTATIONS, 'articleId', articleId),
-  getByType: (type: Annotation['type']) => 
+  getByType: (type: Annotation['type']) =>
     getByIndex<Annotation>(STORES.ANNOTATIONS, 'type', type),
   count: () => count(STORES.ANNOTATIONS),
 };
@@ -368,7 +368,7 @@ export const syncQueue = {
  */
 export async function initializeDB(): Promise<void> {
   await openDB();
-  
+
   // Ensure default preferences exist
   const prefs = await preferences.get();
   if (!prefs.id) {
@@ -390,4 +390,3 @@ export {
   type Preferences,
   type SyncQueueItem,
 } from './schema';
-

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js';
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -22,7 +22,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 interface VelocityData {
@@ -34,11 +34,11 @@ interface VelocityData {
 }
 
 export function VelocityChart({
-  dateRange = '30d',
-  granularity = 'daily',
+  dateRange = "30d",
+  granularity = "daily",
 }: {
   dateRange?: string;
-  granularity?: 'daily' | 'weekly' | 'monthly';
+  granularity?: "daily" | "weekly" | "monthly";
 }) {
   const [velocity, setVelocity] = useState<VelocityData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,17 +46,17 @@ export function VelocityChart({
   useEffect(() => {
     const fetchVelocity = async () => {
       setLoading(true);
-      
+
       try {
         const response = await fetch(
-          `/api/analytics/velocity?granularity=${granularity}&date_range=${dateRange}`
+          `/api/analytics/velocity?granularity=${granularity}&date_range=${dateRange}`,
         );
-        if (!response.ok) throw new Error('Failed to fetch velocity data');
-        
+        if (!response.ok) throw new Error("Failed to fetch velocity data");
+
         const data = await response.json();
         setVelocity(data);
       } catch (err) {
-        console.error('Error fetching velocity:', err);
+        console.error("Error fetching velocity:", err);
       } finally {
         setLoading(false);
       }
@@ -77,11 +77,11 @@ export function VelocityChart({
     labels: velocity.data_points.map((dp) => dp.date),
     datasets: [
       {
-        label: 'Validation Count',
+        label: "Validation Count",
         data: velocity.data_points.map((dp) => dp.count),
         fill: true,
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        borderColor: "rgb(16, 185, 129)",
         borderWidth: 2,
         tension: 0.4,
       },
@@ -93,18 +93,18 @@ export function VelocityChart({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
         text: `Publication Velocity (${granularity}, ${dateRange})`,
         font: {
           size: 16,
-          weight: 'bold',
+          weight: "bold",
         },
       },
       tooltip: {
-        mode: 'index' as const,
+        mode: "index" as const,
         intersect: false,
       },
     },
@@ -113,13 +113,13 @@ export function VelocityChart({
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Validation Count',
+          text: "Validation Count",
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Date',
+          text: "Date",
         },
         ticks: {
           maxRotation: 45,
@@ -134,31 +134,28 @@ export function VelocityChart({
       <div className="h-96">
         <Line data={chartData} options={options} />
       </div>
-      
+
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="bg-gray-50 rounded p-3">
           <p className="font-semibold text-gray-600">Average per Feed</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {velocity.avg_per_feed.toFixed(1)}
-          </p>
+          <p className="text-2xl font-bold text-blue-600">{velocity.avg_per_feed.toFixed(1)}</p>
         </div>
-        
+
         {velocity.most_active_feed && (
           <div className="bg-green-50 rounded p-3">
             <p className="font-semibold text-gray-600">Most Active</p>
             <p className="text-sm font-medium">{velocity.most_active_feed.title}</p>
-            <p className="text-xs text-gray-500">
-              {velocity.most_active_feed.count} validations
-            </p>
+            <p className="text-xs text-gray-500">{velocity.most_active_feed.count} validations</p>
           </div>
         )}
-        
+
         {velocity.least_active_feed && (
           <div className="bg-yellow-50 rounded p-3">
             <p className="font-semibold text-gray-600">Least Active</p>
             <p className="text-sm font-medium">{velocity.least_active_feed.title}</p>
             <p className="text-xs text-gray-500">
-              {velocity.least_active_feed.count} validation{velocity.least_active_feed.count !== 1 ? 's' : ''}
+              {velocity.least_active_feed.count} validation
+              {velocity.least_active_feed.count !== 1 ? "s" : ""}
             </p>
           </div>
         )}
@@ -166,4 +163,3 @@ export function VelocityChart({
     </div>
   );
 }
-

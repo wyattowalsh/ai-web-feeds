@@ -18,7 +18,7 @@ from io import StringIO
 from typing import Any
 
 from loguru import logger
-from sqlmodel import Session, func, select
+from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import (
@@ -98,7 +98,9 @@ def calculate_summary_metrics(
             else:
                 health_distribution["unhealthy"] += 1
 
-    logger.debug(f"Summary metrics calculated: {total_feeds} feeds, {validation_success_rate:.2%} success rate")
+    logger.debug(
+        f"Summary metrics calculated: {total_feeds} feeds, {validation_success_rate:.2%} success rate"
+    )
 
     return {
         "total_feeds": total_feeds,
@@ -137,9 +139,7 @@ def get_trending_topics(
 
     # Query TopicStats for the latest snapshot date
     latest_snapshot = session.exec(
-        select(TopicStats.snapshot_date)
-        .order_by(TopicStats.snapshot_date.desc())
-        .limit(1)
+        select(TopicStats.snapshot_date).order_by(TopicStats.snapshot_date.desc()).limit(1)
     ).first()
 
     if not latest_snapshot:
@@ -258,11 +258,11 @@ def _format_date_by_granularity(dt: datetime, granularity: str) -> str:
     """Format datetime by granularity."""
     if granularity == "daily":
         return dt.strftime("%Y-%m-%d")
-    elif granularity == "weekly":
+    if granularity == "weekly":
         # ISO week format
         return dt.strftime("%Y-W%W")
-    else:  # monthly
-        return dt.strftime("%Y-%m")
+    # monthly
+    return dt.strftime("%Y-%m")
 
 
 def get_health_distribution(session: Session) -> dict[str, int]:
@@ -426,12 +426,14 @@ def export_analytics_csv(
     writer.writerow(["Most Active Topics"])
     writer.writerow(["Topic", "Feed Count", "Validation Frequency", "Avg Health Score"])
     for topic in trending:
-        writer.writerow([
-            topic["topic"],
-            topic["feed_count"],
-            f"{topic['validation_frequency']:.2f}",
-            f"{topic['avg_health_score']:.2f}",
-        ])
+        writer.writerow(
+            [
+                topic["topic"],
+                topic["feed_count"],
+                f"{topic['validation_frequency']:.2f}",
+                f"{topic['avg_health_score']:.2f}",
+            ]
+        )
     writer.writerow([])
 
     # Publication velocity
@@ -445,4 +447,3 @@ def export_analytics_csv(
 
     logger.info(f"CSV export complete: {len(csv_content)} bytes")
     return csv_content
-

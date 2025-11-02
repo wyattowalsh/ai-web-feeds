@@ -3,21 +3,19 @@ title: Test Infrastructure
 description: Comprehensive test suite with pytest, uv, and advanced testing features
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 ## Overview
 
 AI Web Feeds includes a **production-ready test suite** with 100+ tests covering unit, integration, and end-to-end scenarios. The infrastructure uses modern tools for fast, reliable testing.
 
-<Callout type="info">
-  All tests use **uv** for execution (10-100x faster than pip) and **pytest** with 9+ advanced plugins.
-</Callout>
+<Callout type="info">All tests use **uv** for execution (10-100x faster than pip) and **pytest** with 9+ advanced plugins.</Callout>
 
 ## Test Execution Architecture
 
 <Callout type="info" title="Centralized Test Execution">
-All test execution logic is centralized using **uv scripts** defined in the workspace root `pyproject.toml`. The scripts delegate to the CLI for consistent test execution across all environments.
+  All test execution logic is centralized using **uv scripts** defined in the workspace root `pyproject.toml`. The scripts delegate to the CLI for consistent test execution across all environments.
 </Callout>
 
 ### Execution Flow
@@ -31,6 +29,7 @@ uv scripts (workspace pyproject.toml)
 ```
 
 **Alternative entry point for backward compatibility:**
+
 ```
 tests/run_tests.py → uv scripts → CLI → pytest
 ```
@@ -44,68 +43,71 @@ You can run tests using any of these methods:
     ```bash
     # Run all tests
     uv run test
-    
+
     # Run unit tests
     uv run test-unit
-    
+
     # Run unit tests (skip slow)
     uv run test-unit-fast
-    
+
     # Run with coverage and open in browser
     uv run test-coverage-open
-    
+
     # Quick test run
     uv run test-quick
-    
+
     # Debug mode
     uv run test-debug
-    
+
     # Watch mode
     uv run test-watch
-    
+
     # List available scripts
     uv run --help
     ```
+
   </Tab>
-  
+
   <Tab value="CLI Direct">
     ```bash
     # Run all tests
     uv run aiwebfeeds test all
-    
+
     # Run unit tests with options
     uv run aiwebfeeds test unit --fast
-    
+
     # Run with coverage
     uv run aiwebfeeds test coverage --open
-    
+
     # E2E tests only
     uv run aiwebfeeds test e2e
-    
+
     # Get help
     uv run aiwebfeeds test --help
     ```
+
   </Tab>
-  
+
   <Tab value="Legacy Wrapper">
     ```bash
     cd tests
-    
+
     # Run all tests
     ./run_tests.py all
-    
+
     # Run unit tests
     ./run_tests.py unit
-    
+
     # Run with coverage
     ./run_tests.py coverage
-    
+
     # Quick run
     ./run_tests.py quick
-    
+
     # Get help
     ./run_tests.py help
     ```
+
   </Tab>
 </Tabs>
 
@@ -118,45 +120,48 @@ You can run tests using any of these methods:
     ```bash
     # Quick test (TDD workflow)
     uv run test-quick
-    
+
     # Watch mode (auto-rerun)
     uv run test-watch
-    
+
     # Unit tests only
     uv run test-unit-fast
-    
+
     # With coverage
     uv run test-coverage-open
     ```
+
   </Tab>
-  
+
   <Tab value="CI/CD">
     ```bash
     # Full test suite with coverage
     uv run test-coverage
-    
+
     # All tests
     uv run test-all
-    
+
     # E2E tests only
     uv run test-e2e
-    
+
     # Integration tests
     uv run test-integration
     ```
+
   </Tab>
-  
+
   <Tab value="Debugging">
     ```bash
     # Debug mode (with pdb)
     uv run test-debug
-    
+
     # Or use CLI directly with specific test
     uv run aiwebfeeds test file test_models.py -k "twitter"
-    
+
     # Show local variables
     uv run aiwebfeeds test all --verbose
     ```
+
   </Tab>
 </Tabs>
 
@@ -230,20 +235,24 @@ def test_sanitize_text_property_based(text):
 Comprehensive fixtures in `conftest.py`:
 
 **Database Fixtures:**
+
 - `temp_db_path` - Temporary SQLite database
 - `db_engine` - Test database engine
 - `db_session` - Test database session
 
 **Model Fixtures:**
+
 - `sample_feed_source` - Single feed source
 - `sample_feed_items` - Multiple feed items (5)
 - `sample_topic` - Topic instance
 
 **Mock Fixtures:**
+
 - `mock_httpx_response` - Mocked HTTP response
 - `mock_feedparser_result` - Mocked feedparser
 
 **File Fixtures:**
+
 - `temp_yaml_file` - Temporary YAML
 - `sample_rss_feed` - Sample RSS XML
 - `sample_atom_feed` - Sample Atom XML
@@ -252,14 +261,14 @@ Comprehensive fixtures in `conftest.py`:
 
 Available markers for filtering:
 
-| Marker | Description |
-|--------|-------------|
-| `unit` | Unit tests (fast, no external dependencies) |
-| `integration` | Integration tests (multiple components) |
-| `e2e` | End-to-end tests (full workflows) |
-| `slow` | Slow running tests |
-| `network` | Tests requiring network access |
-| `database` | Tests requiring database |
+| Marker        | Description                                 |
+| ------------- | ------------------------------------------- |
+| `unit`        | Unit tests (fast, no external dependencies) |
+| `integration` | Integration tests (multiple components)     |
+| `e2e`         | End-to-end tests (full workflows)           |
+| `slow`        | Slow running tests                          |
+| `network`     | Tests requiring network access              |
+| `database`    | Tests requiring database                    |
 
 ```bash
 # List all markers
@@ -377,18 +386,18 @@ def run_uv_command(args: list[str], cwd: Optional[Path] = None) -> int:
 
 ### Available Subcommands
 
-| Command | Description | Options | uv Script |
-|---------|-------------|---------|-----------|
-| `test all` | Run all tests | `--verbose`, `--coverage`, `--parallel` | `uv run test` |
-| `test unit` | Unit tests only | `--fast` (skip slow) | `uv run test-unit` |
-| `test integration` | Integration tests | `--verbose` | `uv run test-integration` |
-| `test e2e` | E2E tests | `--verbose` | `uv run test-e2e` |
-| `test coverage` | With coverage | `--open` (open browser) | `uv run test-coverage` |
-| `test quick` | Fast unit tests | None | `uv run test-quick` |
-| `test watch` | Watch mode | None | `uv run test-watch` |
-| `test file <path>` | Specific file | `-k <keyword>` | N/A (use CLI) |
-| `test debug` | Debug mode | None | `uv run test-debug` |
-| `test markers` | List markers | None | `uv run test-markers` |
+| Command            | Description       | Options                                 | uv Script                 |
+| ------------------ | ----------------- | --------------------------------------- | ------------------------- |
+| `test all`         | Run all tests     | `--verbose`, `--coverage`, `--parallel` | `uv run test`             |
+| `test unit`        | Unit tests only   | `--fast` (skip slow)                    | `uv run test-unit`        |
+| `test integration` | Integration tests | `--verbose`                             | `uv run test-integration` |
+| `test e2e`         | E2E tests         | `--verbose`                             | `uv run test-e2e`         |
+| `test coverage`    | With coverage     | `--open` (open browser)                 | `uv run test-coverage`    |
+| `test quick`       | Fast unit tests   | None                                    | `uv run test-quick`       |
+| `test watch`       | Watch mode        | None                                    | `uv run test-watch`       |
+| `test file <path>` | Specific file     | `-k <keyword>`                          | N/A (use CLI)             |
+| `test debug`       | Debug mode        | None                                    | `uv run test-debug`       |
+| `test markers`     | List markers      | None                                    | `uv run test-markers`     |
 
 ### Examples
 
@@ -411,9 +420,7 @@ cd tests
 
 ### Benefits of This Architecture
 
-<Callout type="success">
-**Single Source of Truth**: All test execution logic lives in the CLI commands, with uv scripts providing convenient shortcuts. This eliminates duplication and makes maintenance easier.
-</Callout>
+<Callout type="success">**Single Source of Truth**: All test execution logic lives in the CLI commands, with uv scripts providing convenient shortcuts. This eliminates duplication and makes maintenance easier.</Callout>
 
 Key advantages:
 
@@ -437,13 +444,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      
+
       - name: Run tests with uv scripts
         run: uv run test-coverage
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
 ```
@@ -453,16 +460,19 @@ jobs:
 If you're updating CI/CD pipelines:
 
 **Before:**
+
 ```yaml
 - run: python tests/run_tests.py coverage
 ```
 
 **After (Recommended):**
+
 ```yaml
 - run: uv run test-coverage
 ```
 
 **Alternative:**
+
 ```yaml
 - run: uv run aiwebfeeds test coverage
 ```

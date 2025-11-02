@@ -11,7 +11,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-    
+
     steps:
       - name: Label issues by type
         if: github.event_name == 'issues'
@@ -21,15 +21,15 @@ jobs:
             const title = context.payload.issue.title.toLowerCase();
             const body = context.payload.issue.body || '';
             const labels = [];
-            
+
             // Check existing labels
             const existingLabels = context.payload.issue.labels.map(l => l.name);
-            
+
             // Skip if already labeled
             if (existingLabels.length > 0) {
               return;
             }
-            
+
             // Add size labels
             const bodyLength = body.length;
             if (bodyLength < 500) {
@@ -39,7 +39,7 @@ jobs:
             } else {
               labels.push('size/large');
             }
-            
+
             // Add component labels based on content
             if (body.includes('CLI') || body.includes('command line')) {
               labels.push('component/cli');
@@ -53,12 +53,12 @@ jobs:
             if (body.includes('documentation') || body.includes('docs')) {
               labels.push('component/docs');
             }
-            
+
             // Add priority labels
             if (title.includes('urgent') || title.includes('critical') || body.includes('blocking')) {
               labels.push('priority/high');
             }
-            
+
             if (labels.length > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
@@ -67,7 +67,7 @@ jobs:
                 labels: labels
               });
             }
-            
+
       - name: Label PRs by files changed
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -78,12 +78,12 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
+
             const labels = new Set();
-            
+
             for (const file of files) {
               const path = file.filename;
-              
+
               // Component labels
               if (path.startsWith('apps/cli/')) {
                 labels.add('component/cli');
@@ -109,12 +109,12 @@ jobs:
               if (path.includes('test')) {
                 labels.add('component/tests');
               }
-              
+
               // Size estimate based on changes
               const additions = file.additions || 0;
               const deletions = file.deletions || 0;
               const total = additions + deletions;
-              
+
               if (total < 50) {
                 labels.add('size/small');
               } else if (total < 250) {
@@ -123,7 +123,7 @@ jobs:
                 labels.add('size/large');
               }
             }
-            
+
             if (labels.size > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,

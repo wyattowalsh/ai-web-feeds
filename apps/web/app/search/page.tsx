@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { SearchBar } from '@/components/search/search-bar';
-import { SearchFilters } from '@/components/search/search-filters';
-import { SearchResults } from '@/components/search/search-results';
-import { SavedSearches } from '@/components/search/saved-searches';
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { SearchBar } from "@/components/search/search-bar";
+import { SearchFilters } from "@/components/search/search-filters";
+import { SearchResults } from "@/components/search/search-results";
+import { SavedSearches } from "@/components/search/saved-searches";
 
 interface SearchResult {
   id: string;
@@ -24,22 +24,20 @@ export default function SearchPage() {
   const router = useRouter();
 
   // Search state
-  const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [searchType, setSearchType] = useState<'full_text' | 'semantic'>(
-    (searchParams.get('type') as 'full_text' | 'semantic') || 'full_text'
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [searchType, setSearchType] = useState<"full_text" | "semantic">(
+    (searchParams.get("type") as "full_text" | "semantic") || "full_text",
   );
   const [sourceType, setSourceType] = useState<string | undefined>(
-    searchParams.get('source_type') || undefined
+    searchParams.get("source_type") || undefined,
   );
   const [topics, setTopics] = useState<string[]>(
-    searchParams.get('topics')?.split(',').filter(Boolean) || []
+    searchParams.get("topics")?.split(",").filter(Boolean) || [],
   );
   const [verified, setVerified] = useState<boolean | undefined>(
-    searchParams.get('verified') === 'true' ? true : undefined
+    searchParams.get("verified") === "true" ? true : undefined,
   );
-  const [threshold, setThreshold] = useState(
-    parseFloat(searchParams.get('threshold') || '0.7')
-  );
+  const [threshold, setThreshold] = useState(parseFloat(searchParams.get("threshold") || "0.7"));
 
   // Results state
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -47,20 +45,20 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
 
   // User ID (localStorage for Phase 1)
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     // Get or create user ID from localStorage
-    let id = localStorage.getItem('search_user_id');
+    let id = localStorage.getItem("search_user_id");
     if (!id) {
       id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('search_user_id', id);
+      localStorage.setItem("search_user_id", id);
     }
     setUserId(id);
 
     // Perform search if query is in URL
-    if (searchParams.get('q')) {
-      performSearch(searchParams.get('q')!);
+    if (searchParams.get("q")) {
+      performSearch(searchParams.get("q")!);
     }
   }, []);
 
@@ -72,26 +70,26 @@ export default function SearchPage() {
 
     // Update URL
     const params = new URLSearchParams();
-    params.set('q', searchQuery);
-    params.set('type', searchType);
-    if (sourceType) params.set('source_type', sourceType);
-    if (topics.length > 0) params.set('topics', topics.join(','));
-    if (verified !== undefined) params.set('verified', String(verified));
-    if (searchType === 'semantic') params.set('threshold', String(threshold));
+    params.set("q", searchQuery);
+    params.set("type", searchType);
+    if (sourceType) params.set("source_type", sourceType);
+    if (topics.length > 0) params.set("topics", topics.join(","));
+    if (verified !== undefined) params.set("verified", String(verified));
+    if (searchType === "semantic") params.set("threshold", String(threshold));
 
     router.push(`/search?${params.toString()}`);
 
     try {
       const response = await fetch(`/api/search?${params.toString()}`);
-      if (!response.ok) throw new Error('Search failed');
+      if (!response.ok) throw new Error("Search failed");
 
       const data = await response.json();
       setResults(data.results || []);
 
       // Log search
-      await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: searchQuery,
           type: searchType,
@@ -101,7 +99,7 @@ export default function SearchPage() {
         }),
       });
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       setResults([]);
     } finally {
       setLoading(false);
@@ -123,9 +121,9 @@ export default function SearchPage() {
 
   const handleResultClick = async (feedId: string) => {
     // Log click for analytics
-    await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch("/api/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query,
         type: searchType,
@@ -137,13 +135,13 @@ export default function SearchPage() {
   };
 
   const handleSaveSearch = async () => {
-    const name = prompt('Enter a name for this search:');
+    const name = prompt("Enter a name for this search:");
     if (!name) return;
 
     try {
-      await fetch('/api/search/saved', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/search/saved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: userId,
           search_name: name,
@@ -151,10 +149,10 @@ export default function SearchPage() {
           filters: { source_type: sourceType, topics, verified, threshold },
         }),
       });
-      alert('Search saved successfully!');
+      alert("Search saved successfully!");
     } catch (error) {
-      console.error('Failed to save search:', error);
-      alert('Failed to save search. Please try again.');
+      console.error("Failed to save search:", error);
+      alert("Failed to save search. Please try again.");
     }
   };
 
@@ -163,9 +161,7 @@ export default function SearchPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Search & Discovery
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Search & Discovery</h1>
           <p className="text-gray-600">
             Find feeds with full-text or semantic search, powered by SQLite FTS5 and embeddings
           </p>
@@ -192,9 +188,7 @@ export default function SearchPage() {
               onThresholdChange={setThreshold}
             />
 
-            {userId && (
-              <SavedSearches userId={userId} onLoadSearch={handleLoadSavedSearch} />
-            )}
+            {userId && <SavedSearches userId={userId} onLoadSearch={handleLoadSavedSearch} />}
           </div>
 
           {/* Main: Results */}
@@ -224,17 +218,21 @@ export default function SearchPage() {
 
             {!hasSearched && (
               <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-                <p className="text-xl font-semibold text-gray-900 mb-2">
-                  🔍 Start searching
-                </p>
+                <p className="text-xl font-semibold text-gray-900 mb-2">🔍 Start searching</p>
                 <p className="text-gray-600 mb-6">
                   Enter a query above to search through 1,000+ AI/ML feeds
                 </p>
                 <div className="space-y-3 text-sm text-gray-700 text-left inline-block">
-                  <p><strong>💡 Search Tips:</strong></p>
+                  <p>
+                    <strong>💡 Search Tips:</strong>
+                  </p>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>Use <strong>full-text</strong> for exact keyword matching</li>
-                    <li>Use <strong>semantic</strong> for conceptual similarity</li>
+                    <li>
+                      Use <strong>full-text</strong> for exact keyword matching
+                    </li>
+                    <li>
+                      Use <strong>semantic</strong> for conceptual similarity
+                    </li>
                     <li>Filter by topics, source type, and verification status</li>
                     <li>Save searches for one-click replay</li>
                     <li>Try: "machine learning", "transformers", "pytorch"</li>
@@ -248,4 +246,3 @@ export default function SearchPage() {
     </div>
   );
 }
-

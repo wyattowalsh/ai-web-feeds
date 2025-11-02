@@ -1,6 +1,6 @@
 /**
  * NotificationBell - Notification icon with unread count badge
- * 
+ *
  * Displays a bell icon with real-time unread count.
  * Clicking opens the NotificationCenter.
  */
@@ -64,4 +64,3 @@ export function NotificationBell({ onOpenCenter, className = "" }: NotificationB
     </button>
   );
 }
-

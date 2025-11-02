@@ -31,15 +31,15 @@ class FeedPoller:
             db: Database manager instance
             settings: Application settings
         """
-        self.db              = db
-        self.settings        = settings
-        self.poll_timeout    = settings.phase3b.feed_poll_timeout
-        self.max_concurrent  = settings.phase3b.feed_poll_max_concurrent
+        self.db = db
+        self.settings = settings
+        self.poll_timeout = settings.phase3b.feed_poll_timeout
+        self.max_concurrent = settings.phase3b.feed_poll_max_concurrent
 
     @retry(
-        stop    =stop_after_attempt(3),
-        wait    =wait_exponential(multiplier=1, min=2, max=10),
-        reraise =True,
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        reraise=True,
     )
     async def fetch_feed(self, feed_url: str) -> dict[str, Any]:
         """Fetch feed XML/JSON with retry logic.
@@ -68,20 +68,20 @@ class FeedPoller:
         Returns:
             FeedPollJob with polling results
         """
-        job         = FeedPollJob(
-            feed_id     =feed_id,
+        job = FeedPollJob(
+            feed_id=feed_id,
             scheduled_at=datetime.utcnow(),
-            started_at  =datetime.utcnow(),
-            status      =PollStatus.RUNNING,
+            started_at=datetime.utcnow(),
+            status=PollStatus.RUNNING,
         )
-        job         = self.db.create_poll_job(job)
+        job = self.db.create_poll_job(job)
 
         try:
-            start_ms        = datetime.utcnow().timestamp() * 1000
-            parsed_feed     = await self.fetch_feed(feed_url)
-            end_ms          = datetime.utcnow().timestamp() * 1000
+            start_ms = datetime.utcnow().timestamp() * 1000
+            parsed_feed = await self.fetch_feed(feed_url)
+            end_ms = datetime.utcnow().timestamp() * 1000
 
-            articles_count  = 0
+            articles_count = 0
             for entry in parsed_feed.entries:
                 if await self._is_new_entry(entry.get("id") or entry.get("link")):
                     feed_entry = self._parse_entry(entry, feed_id)
@@ -89,21 +89,19 @@ class FeedPoller:
                     articles_count += 1
 
             # Update job success
-            job.completed_at       = datetime.utcnow()
-            job.status             = PollStatus.SUCCESS
-            job.articles_discovered= articles_count
-            job.response_time_ms   = int(end_ms - start_ms)
+            job.completed_at = datetime.utcnow()
+            job.status = PollStatus.SUCCESS
+            job.articles_discovered = articles_count
+            job.response_time_ms = int(end_ms - start_ms)
             self.db.update_poll_job(job)
 
-            logger.info(
-                f"Feed poll success: {feed_id} ({articles_count} new articles)"
-            )
+            logger.info(f"Feed poll success: {feed_id} ({articles_count} new articles)")
             return job
 
         except Exception as e:
             # Update job failure
-            job.completed_at  = datetime.utcnow()
-            job.status        = PollStatus.FAILURE
+            job.completed_at = datetime.utcnow()
+            job.status = PollStatus.FAILURE
             job.error_message = str(e)
             self.db.update_poll_job(job)
 
@@ -134,15 +132,17 @@ class FeedPoller:
             FeedEntry model instance
         """
         return FeedEntry(
-            feed_id     =feed_id,
-            guid        =entry.get("id") or entry.get("link"),
-            link        =entry.get("link", ""),
-            title       =entry.get("title", "Untitled"),
-            summary     =entry.get("summary"),
-            content_html=entry.get("content", [{}])[0].get("value") if entry.get("content") else None,
-            pub_date    =self._parse_date(entry.get("published") or entry.get("updated")),
-            author      =entry.get("author"),
-            categories  =[tag.get("term", "") for tag in entry.get("tags", [])],
+            feed_id=feed_id,
+            guid=entry.get("id") or entry.get("link"),
+            link=entry.get("link", ""),
+            title=entry.get("title", "Untitled"),
+            summary=entry.get("summary"),
+            content_html=entry.get("content", [{}])[0].get("value")
+            if entry.get("content")
+            else None,
+            pub_date=self._parse_date(entry.get("published") or entry.get("updated")),
+            author=entry.get("author"),
+            categories=[tag.get("term", "") for tag in entry.get("tags", [])],
         )
 
     def _parse_date(self, date_str: str | None) -> datetime:
@@ -160,7 +160,7 @@ class FeedPoller:
         try:
             # feedparser provides parsed time tuple
             import time
+
             return datetime.fromtimestamp(time.mktime(feedparser._parse_date(date_str)))
         except Exception:
             return datetime.utcnow()
-

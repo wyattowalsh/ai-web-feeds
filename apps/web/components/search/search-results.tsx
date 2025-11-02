@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 interface SearchResult {
   id: string;
@@ -19,7 +19,7 @@ export function SearchResults({
   onResultClick,
 }: {
   results: SearchResult[];
-  searchType: 'full_text' | 'semantic';
+  searchType: "full_text" | "semantic";
   loading: boolean;
   onResultClick?: (feedId: string) => void;
 }) {
@@ -36,14 +36,12 @@ export function SearchResults({
   if (results.length === 0) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-        <p className="text-lg font-semibold text-yellow-900 mb-2">
-          No results found
-        </p>
-        <p className="text-sm text-yellow-800">
-          Try adjusting your search query or filters
-        </p>
+        <p className="text-lg font-semibold text-yellow-900 mb-2">No results found</p>
+        <p className="text-sm text-yellow-800">Try adjusting your search query or filters</p>
         <div className="mt-4 space-y-2 text-sm text-yellow-700">
-          <p>💡 <strong>Tips:</strong></p>
+          <p>
+            💡 <strong>Tips:</strong>
+          </p>
           <ul className="text-left inline-block">
             <li>• Use fewer filters</li>
             <li>• Try different keywords</li>
@@ -59,8 +57,8 @@ export function SearchResults({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-600">
-          Found <strong>{results.length}</strong> result{results.length !== 1 ? 's' : ''}
-          {searchType === 'semantic' && ' (sorted by similarity)'}
+          Found <strong>{results.length}</strong> result{results.length !== 1 ? "s" : ""}
+          {searchType === "semantic" && " (sorted by similarity)"}
         </p>
       </div>
 
@@ -72,12 +70,8 @@ export function SearchResults({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-semibold text-gray-500">
-                  #{idx + 1}
-                </span>
-                <h3 className="text-xl font-bold text-gray-900">
-                  {result.title}
-                </h3>
+                <span className="text-sm font-semibold text-gray-500">#{idx + 1}</span>
+                <h3 className="text-xl font-bold text-gray-900">{result.title}</h3>
                 {result.verified && (
                   <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full font-medium">
                     ✓ Verified
@@ -88,7 +82,7 @@ export function SearchResults({
                     Inactive
                   </span>
                 )}
-                {searchType === 'semantic' && result.similarity !== undefined && (
+                {searchType === "semantic" && result.similarity !== undefined && (
                   <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-mono">
                     {(result.similarity * 100).toFixed(1)}%
                   </span>
@@ -131,4 +125,3 @@ export function SearchResults({
     </div>
   );
 }
-

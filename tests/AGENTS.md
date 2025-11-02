@@ -1,21 +1,24 @@
 # Test Suite - Agent Instructions
 
-> **Component**: Comprehensive Test Suite  
-> **Location**: `tests/`  
+> **Component**: Comprehensive Test Suite\
+> **Location**: `tests/`\
 > **Parent**: [Root AGENTS.md](../AGENTS.md)
 
 ## 📍 Essential Links
 
-- **Full Documentation**: [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)
+- **Full Documentation**:
+  [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)
 - **Root Instructions**: [../AGENTS.md](../AGENTS.md)
-- **Core Package**: [../packages/ai_web_feeds/AGENTS.md](../packages/ai_web_feeds/AGENTS.md)
+- **Core Package**:
+  [../packages/ai_web_feeds/AGENTS.md](../packages/ai_web_feeds/AGENTS.md)
 - **Contributing**: [../CONTRIBUTING.md](../CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 ## 🎯 Purpose
 
 Comprehensive testing infrastructure:
+
 - **Unit Tests**: Isolated component tests
 - **Integration Tests**: Multi-component interactions
 - **E2E Tests**: Complete workflows
@@ -25,9 +28,10 @@ Comprehensive testing infrastructure:
 
 **Stack**: pytest 8.4+, pytest-cov, pytest-xdist, Hypothesis 6.141+
 
-**Test Data**: Uses `data/feeds.yaml`, `data/topics.yaml` fixtures with schema validation
+**Test Data**: Uses `data/feeds.yaml`, `data/topics.yaml` fixtures with schema
+validation
 
----
+______________________________________________________________________
 
 ## 🏗️ Architecture
 
@@ -59,61 +63,68 @@ tests/
         └── integration/
 ```
 
-**See**: [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing) for complete structure
+**See**: [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing) for
+complete structure
 
 **Recent Updates (October 2025)**:
+
 - ✅ Full test coverage for `load`, `validate`, `export`, `enrich`, `logger` modules
 - ✅ 1,600+ lines of new test code with comprehensive edge cases
 - ✅ Property-based tests with Hypothesis for robustness
 - ✅ Enhanced fixtures for validation results, feed/topic data structures
 - ✅ All tests lint-clean (Ruff) and type-checked (mypy)
 
----
+______________________________________________________________________
 
 ## 📐 Development Rules
 
 ### 1. Test Markers
+
 ```python
 # Use markers for test classification
 @pytest.mark.unit
-def test_function():
-    ...
+def test_function(): ...
+
 
 @pytest.mark.integration
-def test_workflow():
-    ...
+def test_workflow(): ...
+
 
 @pytest.mark.e2e
-def test_complete_flow():
-    ...
+def test_complete_flow(): ...
 ```
 
 ### 2. Fixtures
+
 ```python
 # Use fixtures for setup/teardown
 @pytest.fixture
 def sample_feed():
     return Feed(url="https://example.com/feed")
 
+
 def test_with_fixture(sample_feed):
     assert sample_feed.url
 ```
 
 ### 3. Mocking
+
 ```python
 # Mock external dependencies
 def test_fetch(mocker):
-    mock_get = mocker.patch('httpx.get')
+    mock_get = mocker.patch("httpx.get")
     mock_get.return_value.text = "<feed>...</feed>"
     result = fetch_feed("https://example.com")
     assert result
 ```
 
 ### 4. Property-Based
+
 ```python
 # Use Hypothesis for edge cases
 from hypothesis import given
 from hypothesis.strategies import text
+
 
 @given(text())
 def test_parse_any_text(input_text):
@@ -121,7 +132,7 @@ def test_parse_any_text(input_text):
     assert isinstance(result, str)
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Running Tests
 
@@ -145,56 +156,62 @@ uv run pytest --html=reports/test_report.html
 
 **See**: `pytest.ini` for all options
 
----
+______________________________________________________________________
 
 ## 🔄 Common Tasks
 
 ### Adding Unit Test
+
 1. Create `tests/packages/ai_web_feeds/unit/test_module.py`
-2. Add `@pytest.mark.unit` decorator
-3. Mock external dependencies
-4. Run: `uv run pytest -m unit`
+1. Add `@pytest.mark.unit` decorator
+1. Mock external dependencies
+1. Run: `uv run pytest -m unit`
 
 ### Adding Integration Test
+
 1. Create `tests/packages/ai_web_feeds/integration/test_feature.py`
-2. Add `@pytest.mark.integration` decorator
-3. Use test database fixtures
-4. Verify coverage: `uv run pytest --cov`
+1. Add `@pytest.mark.integration` decorator
+1. Use test database fixtures
+1. Verify coverage: `uv run pytest --cov`
 
 ### Adding Fixtures
+
 - Edit `conftest.py` for global fixtures
 - Or create local `conftest.py` in test subdirectory
 
----
+______________________________________________________________________
 
 ## 🚨 Critical Patterns
 
 ### DO
-✅ Write tests before implementation (TDD)  
-✅ Use appropriate markers (`@pytest.mark.unit`)  
-✅ Mock external dependencies  
-✅ Maintain ≥90% coverage  
-✅ Use descriptive test names  
+
+✅ Write tests before implementation (TDD)\
+✅ Use appropriate markers (`@pytest.mark.unit`)\
+✅ Mock external dependencies\
+✅ Maintain ≥90% coverage\
+✅ Use descriptive test names\
 ✅ Test edge cases with Hypothesis
 
 ### DON'T
-❌ Skip tests for new features  
-❌ Use real APIs in unit tests  
-❌ Hard-code test data  
-❌ Leave failing tests  
-❌ Commit without running tests  
+
+❌ Skip tests for new features\
+❌ Use real APIs in unit tests\
+❌ Hard-code test data\
+❌ Leave failing tests\
+❌ Commit without running tests\
 ❌ Skip coverage check
 
----
+______________________________________________________________________
 
 ## 📚 Reference
 
-**pytest docs**: [docs.pytest.org](https://docs.pytest.org)  
-**Hypothesis docs**: [hypothesis.readthedocs.io](https://hypothesis.readthedocs.io)  
-**Full testing guide**: [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)  
+**pytest docs**: [docs.pytest.org](https://docs.pytest.org)\
+**Hypothesis docs**: [hypothesis.readthedocs.io](https://hypothesis.readthedocs.io)\
+**Full testing guide**:
+[llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)\
 **Root workflow**: [../AGENTS.md](../AGENTS.md#standard-workflow)
 
----
+______________________________________________________________________
 
 ## 🆕 Recent Test Updates (October 2025)
 
@@ -203,37 +220,43 @@ uv run pytest --html=reports/test_report.html
 **New Comprehensive Test Files** (1,600+ lines):
 
 1. **`test_load.py`** (500+ lines)
+
    - Full coverage for `load_feeds()`, `load_topics()`, `save_feeds()`, `save_topics()`
    - YAML parsing, file I/O, encoding handling
    - Unicode support and round-trip validation
    - Property-based tests with Hypothesis
    - Error handling: FileNotFoundError, YAML syntax errors
 
-2. **`test_validate.py`** (490+ lines)
+1. **`test_validate.py`** (490+ lines)
+
    - `ValidationResult` class complete coverage
    - `validate_feeds()` and `validate_topics()` with JSON schema
    - Duplicate ID detection, required field validation
    - Schema loading and error accumulation
    - Integration with load module
 
-3. **`test_export.py`** (440+ lines)
+1. **`test_export.py`** (440+ lines)
+
    - `export_to_json()` with pretty-printing and Unicode
    - `export_to_opml()` flat and categorized structures
    - `export_all_formats()` multi-format output
    - Directory creation, round-trip verification
    - XML parsing and structure validation
 
-4. **`test_enrich.py`** (180+ lines)
+1. **`test_enrich.py`** (180+ lines)
+
    - `FeedEnrichment` class and `AdvancedEnricher`
    - Async enrichment with mocked HTTP requests
    - Quality, health, and completeness scoring algorithms
    - Edge cases and boundary testing
 
-5. **`test_logger.py`** (30+ lines)
+1. **`test_logger.py`** (30+ lines)
+
    - Logger configuration and import verification
    - Basic logging functionality tests
 
 **Enhanced Infrastructure**:
+
 - Updated `conftest.py` with new fixtures:
   - `sample_feeds_data` - Complete feed structure
   - `sample_topics_data` - Topic taxonomy with relations
@@ -243,6 +266,7 @@ uv run pytest --html=reports/test_report.html
 - Async test support with pytest-asyncio
 
 **Coverage Status**:
+
 - ✅ 11 test files covering all core modules
 - ✅ Unit tests: load, validate, export, enrich, logger, models, storage, config, utils
 - ✅ Property-based tests for robust edge case handling
@@ -277,15 +301,18 @@ def test_topics_schema_valid():
     jsonschema.validate(topics, schema)
 ```
 
----
+______________________________________________________________________
 
 *Updated: October 17, 2025 · Version: 0.1.0*
 
-    e2e: End-to-end tests (full workflows)
-    slow: Slow running tests
-    network: Tests requiring network access
-    database: Tests requiring database
 ```
+e2e: End-to-end tests (full workflows)
+slow: Slow running tests
+network: Tests requiring network access
+database: Tests requiring database
+```
+
+````
 
 ### Global Fixtures
 
@@ -341,9 +368,9 @@ def mock_httpx(mocker):
     """Mock httpx client for HTTP requests."""
     mock = mocker.patch("httpx.AsyncClient.get")
     return mock
-```
+````
 
----
+______________________________________________________________________
 
 ## ✍️ Writing Tests
 
@@ -360,7 +387,7 @@ from ai_web_feeds.fetcher import fetch_feed
 
 class TestFetchFeed:
     """Tests for fetch_feed function."""
-    
+
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_fetch_success(self, mock_httpx):
@@ -368,30 +395,30 @@ class TestFetchFeed:
         # Arrange
         url = "https://example.com/feed.xml"
         expected_content = "<rss version='2.0'>...</rss>"
-        
+
         mock_response = Mock(spec=httpx.Response)
         mock_response.text = expected_content
         mock_response.status_code = 200
         mock_httpx.return_value = mock_response
-        
+
         # Act
         response = await fetch_feed(url)
-        
+
         # Assert
         assert response.status_code == 200
         assert response.text == expected_content
         mock_httpx.assert_called_once()
-    
+
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_fetch_timeout(self, mock_httpx):
         """Test fetch with timeout error."""
         url = "https://slow.example.com/feed.xml"
         mock_httpx.side_effect = httpx.TimeoutException("Request timeout")
-        
+
         with pytest.raises(httpx.TimeoutException, match="Request timeout"):
             await fetch_feed(url, timeout=1)
-    
+
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_fetch_http_error(self, mock_httpx):
@@ -403,7 +430,7 @@ class TestFetchFeed:
             "Not Found", request=Mock(), response=mock_response
         )
         mock_httpx.return_value = mock_response
-        
+
         with pytest.raises(httpx.HTTPStatusError):
             await fetch_feed(url)
 ```
@@ -421,7 +448,7 @@ from ai_web_feeds.models import Feed
 
 class TestFeedIntegration:
     """Integration tests for feed operations."""
-    
+
     @pytest.mark.integration
     @pytest.mark.asyncio
     async def test_fetch_and_store(self, storage, mock_httpx):
@@ -436,29 +463,28 @@ class TestFeedIntegration:
             </channel>
         </rss>
         """
-        
+
         mock_response = Mock()
         mock_response.text = feed_xml
         mock_response.status_code = 200
         mock_httpx.return_value = mock_response
-        
+
         # Act
         response = await fetch_feed(url)
-        
+
         import feedparser
+
         parsed = feedparser.parse(response.text)
-        
+
         feed = Feed(
-            url=url,
-            title=parsed.feed.title,
-            description=parsed.feed.description
+            url=url, title=parsed.feed.title, description=parsed.feed.description
         )
         saved_feed = storage.add_feed(feed)
-        
+
         # Assert
         assert saved_feed is not None
         assert saved_feed.id is not None
-        
+
         # Verify in database
         retrieved = storage.get_feed_by_url(url)
         assert retrieved is not None
@@ -477,26 +503,23 @@ from ai_web_feeds.utils import generate_guid
 
 class TestUtils:
     """Property-based tests for utility functions."""
-    
+
     @pytest.mark.unit
     @given(
-        url=st.text(min_size=1, max_size=100),
-        title=st.text(min_size=1, max_size=100)
+        url=st.text(min_size=1, max_size=100), title=st.text(min_size=1, max_size=100)
     )
     def test_generate_guid_deterministic(self, url: str, title: str):
         """Property: GUID generation is deterministic."""
         guid1 = generate_guid(url, title)
         guid2 = generate_guid(url, title)
-        
+
         assert guid1 == guid2
         assert isinstance(guid1, str)
         assert len(guid1) == 64  # SHA256 hex length
-    
+
     @pytest.mark.unit
     @given(
-        url1=st.text(min_size=1),
-        url2=st.text(min_size=1),
-        title=st.text(min_size=1)
+        url1=st.text(min_size=1), url2=st.text(min_size=1), title=st.text(min_size=1)
     )
     def test_generate_guid_unique(self, url1: str, url2: str, title: str):
         """Property: Different URLs produce different GUIDs."""
@@ -510,17 +533,20 @@ class TestUtils:
 
 ```python
 @pytest.mark.unit
-@pytest.mark.parametrize("url,expected_valid", [
-    ("https://example.com/feed.xml", True),
-    ("http://example.com/feed.xml", True),
-    ("ftp://example.com/feed.xml", False),
-    ("invalid-url", False),
-    ("", False),
-])
+@pytest.mark.parametrize(
+    "url,expected_valid",
+    [
+        ("https://example.com/feed.xml", True),
+        ("http://example.com/feed.xml", True),
+        ("ftp://example.com/feed.xml", False),
+        ("invalid-url", False),
+        ("", False),
+    ],
+)
 def test_url_validation(url: str, expected_valid: bool):
     """Test URL validation with various inputs."""
     from ai_web_feeds.models import Feed
-    
+
     if expected_valid:
         feed = Feed(url=url)
         assert feed.url == url.lower().strip()
@@ -529,7 +555,7 @@ def test_url_validation(url: str, expected_valid: bool):
             Feed(url=url)
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 Running Tests
 
@@ -607,13 +633,14 @@ uv run pytest --cov --cov-report=term-missing
 uv run pytest --cov --cov-report=xml
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Coverage Requirements
 
 ### Target: ≥90% Coverage
 
 **Per Module Requirements**:
+
 - `fetcher.py`: ≥95%
 - `storage.py`: ≥95%
 - `models.py`: ≥90%
@@ -653,7 +680,7 @@ show_missing = true
 skip_covered = false
 ```
 
----
+______________________________________________________________________
 
 ## ✅ Best Practices
 
@@ -661,21 +688,20 @@ skip_covered = false
 
 ```python
 # Good: Descriptive test names
-def test_fetch_feed_with_valid_url_returns_response():
-    ...
+def test_fetch_feed_with_valid_url_returns_response(): ...
 
-def test_add_feed_with_duplicate_url_returns_none():
-    ...
 
-def test_calculate_stats_with_empty_database_returns_zeros():
-    ...
+def test_add_feed_with_duplicate_url_returns_none(): ...
+
+
+def test_calculate_stats_with_empty_database_returns_zeros(): ...
+
 
 # Avoid: Vague names
-def test_fetch():
-    ...
+def test_fetch(): ...
 
-def test_1():
-    ...
+
+def test_1(): ...
 ```
 
 ### Test Structure (AAA Pattern)
@@ -685,10 +711,10 @@ def test_example():
     # Arrange: Set up test data
     url = "https://example.com/feed.xml"
     feed = Feed(url=url, title="Test")
-    
+
     # Act: Execute the code being tested
     result = storage.add_feed(feed)
-    
+
     # Assert: Verify the outcome
     assert result is not None
     assert result.id is not None
@@ -702,11 +728,14 @@ def test_example():
 def sample_feed():
     return Feed(url="https://example.com/feed.xml", title="Test")
 
+
 def test_with_fixture(sample_feed):
     assert sample_feed.title == "Test"
 
+
 # Avoid: Global variables
 SAMPLE_FEED = Feed(url="...", title="Test")  # ❌
+
 
 def test_with_global():
     assert SAMPLE_FEED.title == "Test"  # ❌
@@ -721,6 +750,7 @@ async def test_fetch_with_mock(mock_httpx):
     mock_httpx.return_value = Mock(status_code=200, text="<rss/>")
     result = await fetch_feed("https://example.com/feed.xml")
     assert result.status_code == 200
+
 
 # Avoid: Real network calls in unit tests
 @pytest.mark.unit
@@ -737,11 +767,13 @@ def test_add_feed(storage):
     result = storage.add_feed(feed)
     assert result is not None
 
+
 def test_get_feed(storage):
     feed = Feed(url="https://example.com/feed.xml")
     storage.add_feed(feed)
     result = storage.get_feed_by_url(feed.url)
     assert result is not None
+
 
 # Avoid: Tests depending on each other
 def test_add_then_get(storage):  # ❌
@@ -749,7 +781,7 @@ def test_add_then_get(storage):  # ❌
     ...
 ```
 
----
+______________________________________________________________________
 
 ## 🐛 Troubleshooting
 
@@ -789,7 +821,7 @@ rm -rf .coverage reports/coverage
 uv run pytest --cov --cov-report=html
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Resources
 
@@ -798,6 +830,6 @@ uv run pytest --cov --cov-report=html
 - [pytest-cov Documentation](https://pytest-cov.readthedocs.io/)
 - [pytest-asyncio Documentation](https://pytest-asyncio.readthedocs.io/)
 
----
+______________________________________________________________________
 
 *Last Updated: October 2025*

@@ -46,6 +46,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Validate feed data, schemas, URLs, and parsing
 
 **Workflow Usage**:
+
 ```yaml
 # Validate all feeds
 - name: Validate all feeds
@@ -67,6 +68,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--all` - Validate all feeds in `data/feeds.yaml`
 - `--schema` - Schema validation only
 - `--check-urls` - Test URL accessibility
@@ -76,6 +78,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 - `--feeds` - Validate specific feed URLs
 
 **Exit Codes**:
+
 - `0` - All validations passed
 - `1` - Validation failures
 - `2` - Schema errors
@@ -87,6 +90,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Execute pytest test suite with coverage
 
 **Workflow Usage**:
+
 ```yaml
 # Full test suite
 - name: Run tests
@@ -102,12 +106,14 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--coverage` - Generate coverage report
 - `--quick` - Fast tests only (no slow/integration)
 - `--marker` - Run specific test markers (unit, integration, e2e)
 - `--verbose` - Detailed output
 
 **Output**:
+
 - Creates `reports/coverage/` directory
 - Generates `coverage.xml` for Codecov
 - Exit code 1 if tests fail or coverage below 90%
@@ -121,6 +127,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Calculate feed metrics and insights
 
 **Workflow Usage**:
+
 ```yaml
 # Generate analytics JSON
 - name: Generate analytics
@@ -138,12 +145,14 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--output` - Save to JSON file
 - `--format` - Output format (table, json, yaml)
 - `--metrics` - Specific metrics to calculate
 - `--changed-feeds` - Only analyze changed feeds
 
 **Metrics**:
+
 - Total feed count
 - Feeds per category
 - Language distribution
@@ -157,6 +166,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Show human-readable feed statistics
 
 **Workflow Usage**:
+
 ```yaml
 # Post stats as PR comment
 - name: Generate stats
@@ -180,6 +190,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--format` - markdown, table, or json
 - `--categories` - Show per-category stats
 - `--trends` - Include trend analysis
@@ -193,6 +204,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Generate output in various formats
 
 **Workflow Usage**:
+
 ```yaml
 # Export to JSON for artifacts
 - name: Export feeds
@@ -210,6 +222,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--format` - json, yaml, opml, csv
 - `--output` - Output file path
 - `--validate` - Validate before export
@@ -222,6 +235,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Import/export OPML feed lists
 
 **Workflow Usage**:
+
 ```yaml
 # Export to OPML
 - name: Generate OPML
@@ -241,11 +255,13 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Subcommands**:
+
 - `export` - Generate OPML from feeds.yaml
 - `import` - Import OPML into feeds.yaml
 - `validate` - Validate OPML structure
 
 **Options**:
+
 - `--categorized` - Group by categories
 - `--validate` - Validate structure
 - `--merge` - Merge with existing feeds
@@ -260,6 +276,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 **Purpose**: Add/update feed metadata automatically
 
 **Workflow Usage**:
+
 ```yaml
 # Enrich all feeds
 - name: Enrich feeds
@@ -281,6 +298,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 ```
 
 **Options**:
+
 - `--all` - Enrich all feeds
 - `--url` - Enrich specific feed URL
 - `--fix-schema` - Auto-fix schema violations
@@ -288,6 +306,7 @@ The **aiwebfeeds CLI** is the backbone of our CI/CD pipeline. Every workflow lev
 - `--metadata-only` - Fetch metadata without full parsing
 
 **Enrichment Process**:
+
 1. Fetches feed content
 2. Extracts title, description, language
 3. Detects feed type (RSS/Atom)
@@ -309,7 +328,7 @@ name: Validate Changed Feeds
 on:
   pull_request:
     paths:
-      - 'data/feeds.yaml'
+      - "data/feeds.yaml"
 
 jobs:
   validate:
@@ -317,7 +336,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need history for diff
+          fetch-depth: 0 # Need history for diff
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -358,7 +377,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      
+
       - name: Generate feed matrix
         id: feeds
         run: |
@@ -384,7 +403,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      
+
       - name: Validate chunk ${{ matrix.chunk }}
         run: |
           # Get feeds for this chunk
@@ -480,7 +499,7 @@ name: Post Feed Stats
 on:
   pull_request:
     paths:
-      - 'data/feeds.yaml'
+      - "data/feeds.yaml"
 
 jobs:
   stats:
@@ -489,7 +508,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      
+
       - name: Generate stats
         id: stats
         run: |
@@ -498,7 +517,7 @@ jobs:
             uv run aiwebfeeds stats --format markdown
             echo EOF
           } >> $GITHUB_OUTPUT
-      
+
       - name: Generate analytics
         id: analytics
         run: |
@@ -507,25 +526,25 @@ jobs:
             uv run aiwebfeeds analytics --format table
             echo EOF
           } >> $GITHUB_OUTPUT
-      
+
       - name: Comment PR
         uses: actions/github-script@v7
         with:
           script: |
             const stats = `${{ steps.stats.outputs.stats }}`;
             const analytics = `${{ steps.analytics.outputs.analytics }}`;
-            
+
             const body = `## 📊 Feed Statistics
-            
+
             ${stats}
-            
+
             ## 📈 Analytics
-            
+
             \`\`\`
             ${analytics}
             \`\`\`
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -545,7 +564,7 @@ name: Generate Feed Reports
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday
+    - cron: "0 0 * * 0" # Weekly on Sunday
 
 jobs:
   reports:
@@ -554,27 +573,27 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      
+
       - name: Generate reports
         run: |
           mkdir -p reports
-          
+
           # Analytics report
           uv run aiwebfeeds analytics --output reports/analytics.json
-          
+
           # Export feeds
           uv run aiwebfeeds export --format json --output reports/feeds.json
-          
+
           # OPML export
           uv run aiwebfeeds opml export --output reports/feeds.opml
           uv run aiwebfeeds opml export --categorized --output reports/feeds-categorized.opml
-          
+
           # Validation report
           uv run aiwebfeeds validate --all > reports/validation.txt || true
-          
+
           # Stats
           uv run aiwebfeeds stats --format markdown > reports/stats.md
-      
+
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
@@ -609,10 +628,10 @@ def report(
     """Generate workflow report for PR."""
     from ai_web_feeds.analytics import calculate_metrics
     from ai_web_feeds.storage import get_changed_feeds
-    
+
     changed = get_changed_feeds(pr_number)
     metrics = calculate_metrics(changed)
-    
+
     if format == "markdown":
         console.print(f"## Changed Feeds: {len(changed)}")
         console.print(f"**Categories**: {', '.join(metrics['categories'])}")
@@ -623,6 +642,7 @@ def report(
 ```
 
 **Workflow Usage**:
+
 ```yaml
 - name: Generate PR report
   run: uv run aiwebfeeds workflow report --pr-number ${{ github.event.number }}
@@ -709,11 +729,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      
+
       - name: Benchmark CLI commands
         run: |
           echo "## CLI Performance" > benchmark.md
-          
+
           time_command() {
             START=$(date +%s.%N)
             $1
@@ -721,11 +741,11 @@ jobs:
             DURATION=$(echo "$END - $START" | bc)
             echo "- $1: ${DURATION}s" >> benchmark.md
           }
-          
+
           time_command "uv run aiwebfeeds validate --schema"
           time_command "uv run aiwebfeeds analytics"
           time_command "uv run aiwebfeeds export --format json"
-          
+
           cat benchmark.md
 ```
 
@@ -740,4 +760,4 @@ jobs:
 
 ---
 
-*Last Updated: October 2025*
+_Last Updated: October 2025_

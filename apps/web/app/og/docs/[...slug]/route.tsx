@@ -1,13 +1,10 @@
-import { getPageImage, source } from '@/lib/source';
-import { notFound } from 'next/navigation';
-import { ImageResponse } from 'next/og';
+import { getPageImage, source } from "@/lib/source";
+import { notFound } from "next/navigation";
+import { ImageResponse } from "next/og";
 
 export const revalidate = false;
 
-export async function GET(
-  _req: Request,
-  { params }: RouteContext<'/og/docs/[...slug]'>,
-) {
+export async function GET(_req: Request, { params }: RouteContext<"/og/docs/[...slug]">) {
   const { slug } = await params;
   const page = source.getPage(slug.slice(0, -1));
   if (!page) notFound();
@@ -16,45 +13,45 @@ export async function GET(
     (
       <div
         style={{
-          height: '100%',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          backgroundColor: '#0a0a0a',
-          padding: '60px 80px',
-          fontFamily: 'Inter, system-ui, sans-serif',
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          backgroundColor: "#0a0a0a",
+          padding: "60px 80px",
+          fontFamily: "Inter, system-ui, sans-serif",
         }}
       >
         {/* Header with Logo/Brand */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
           }}
         >
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
+              width: "48px",
+              height: "48px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "28px",
             }}
           >
             🤖
           </div>
           <div
             style={{
-              fontSize: '32px',
+              fontSize: "32px",
               fontWeight: 700,
-              color: '#ffffff',
-              letterSpacing: '-0.02em',
+              color: "#ffffff",
+              letterSpacing: "-0.02em",
             }}
           >
             AI Web Feeds
@@ -64,22 +61,22 @@ export async function GET(
         {/* Main Content */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-            maxWidth: '900px',
+            display: "flex",
+            flexDirection: "column",
+            gap: "24px",
+            maxWidth: "900px",
           }}
         >
           {/* Title */}
           <div
             style={{
-              fontSize: '72px',
+              fontSize: "72px",
               fontWeight: 800,
-              color: '#ffffff',
+              color: "#ffffff",
               lineHeight: 1.1,
-              letterSpacing: '-0.03em',
-              display: 'flex',
-              flexWrap: 'wrap',
+              letterSpacing: "-0.03em",
+              display: "flex",
+              flexWrap: "wrap",
             }}
           >
             {page.data.title}
@@ -89,11 +86,11 @@ export async function GET(
           {page.data.description && (
             <div
               style={{
-                fontSize: '28px',
+                fontSize: "28px",
                 fontWeight: 400,
-                color: '#a1a1aa',
+                color: "#a1a1aa",
                 lineHeight: 1.4,
-                display: 'flex',
+                display: "flex",
               }}
             >
               {page.data.description}
@@ -104,29 +101,29 @@ export async function GET(
         {/* Footer with category/badge */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
           }}
         >
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
             }}
           >
             <div
               style={{
-                padding: '8px 16px',
-                backgroundColor: '#18181b',
-                border: '1px solid #27272a',
-                borderRadius: '8px',
-                fontSize: '20px',
+                padding: "8px 16px",
+                backgroundColor: "#18181b",
+                border: "1px solid #27272a",
+                borderRadius: "8px",
+                fontSize: "20px",
                 fontWeight: 600,
-                color: '#a1a1aa',
-                display: 'flex',
+                color: "#a1a1aa",
+                display: "flex",
               }}
             >
               📚 Documentation
@@ -134,9 +131,9 @@ export async function GET(
           </div>
           <div
             style={{
-              fontSize: '20px',
-              color: '#52525b',
-              display: 'flex',
+              fontSize: "20px",
+              color: "#52525b",
+              display: "flex",
             }}
           >
             ai-web-feeds.vercel.app

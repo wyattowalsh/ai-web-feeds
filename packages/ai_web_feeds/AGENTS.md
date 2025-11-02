@@ -1,7 +1,7 @@
 # Core Package - Agent Instructions
 
-> **Component**: `ai_web_feeds` - Core Python library for feed management  
-> **Location**: `packages/ai_web_feeds/`  
+> **Component**: `ai_web_feeds` - Core Python library for feed management\
+> **Location**: `packages/ai_web_feeds/`\
 > **Parent**: [Root AGENTS.md](../../AGENTS.md)
 
 ## ⚠️ CRITICAL: Documentation Policy - READ THIS FIRST!
@@ -15,11 +15,12 @@
    - API guides → `apps/web/content/docs/guides/api-usage.mdx`
    - Architecture → `apps/web/content/docs/development/architecture.mdx`
    - Features → `apps/web/content/docs/features/*.mdx`
-2. ✅ Add frontmatter: `title` and `description`
-3. ✅ Update `../../apps/web/content/docs/meta.json`
-4. ❌ NEVER create `.md` files here - EVER!
+1. ✅ Add frontmatter: `title` and `description`
+1. ✅ Update `../../apps/web/content/docs/meta.json`
+1. ❌ NEVER create `.md` files here - EVER!
 
 **❌ FORBIDDEN FILES IN THIS PACKAGE:**
+
 ```
 ❌ packages/ai_web_feeds/DATABASE.md
 ❌ packages/ai_web_feeds/GUIDE.md
@@ -32,6 +33,7 @@
 ```
 
 **✅ ONLY ALLOWED IN THIS PACKAGE:**
+
 - Python source code: `src/ai_web_feeds/*.py`
 - Configuration: `pyproject.toml`, `.python-version`
 - This file: `AGENTS.md`
@@ -41,16 +43,18 @@
 
 ## 📍 Essential Links
 
-- **Full Documentation**: [llms-full.txt#core-package](https://aiwebfeeds.com/llms-full.txt#core-package)
+- **Full Documentation**:
+  [llms-full.txt#core-package](https://aiwebfeeds.com/llms-full.txt#core-package)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **Testing Guide**: [../../tests/AGENTS.md](../../tests/AGENTS.md)
 - **Contributing**: [../../CONTRIBUTING.md](../../CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 ## 🎯 Purpose
 
 Core library providing:
+
 - **Fetching**: HTTP client with retry logic (`fetcher.py`)
 - **Parsing**: RSS/Atom XML processing (`feedparser`)
 - **Storage**: SQLAlchemy ORM + migrations (`storage.py`, `models.py`)
@@ -64,7 +68,7 @@ Core library providing:
 
 **Data**: YAML/JSON feeds, topic graphs, JSON Schema validation, SQLite cache
 
----
+______________________________________________________________________
 
 ## 🏗️ Architecture
 
@@ -82,31 +86,35 @@ src/ai_web_feeds/
 └── validate.py       # JSON schema validation ✅ test_validate.py
 ```
 
-**Testing**: All core modules have comprehensive test coverage in `../../tests/tests/packages/ai_web_feeds/unit/`
+**Testing**: All core modules have comprehensive test coverage in
+`../../tests/tests/packages/ai_web_feeds/unit/`
 
 **Recent Updates (October 2025)**:
+
 - ✅ Complete test synchronization across all modules
 - ✅ New modules: `load.py`, `validate.py`, `export.py`, `enrich.py`
 - ✅ 100% module coverage with 1,600+ lines of test code
 
-**See**: [llms-full.txt](https://aiwebfeeds.com/llms-full.txt) for detailed module documentation
+**See**: [llms-full.txt](https://aiwebfeeds.com/llms-full.txt) for detailed module
+documentation
 
----
+______________________________________________________________________
 
 ## 📐 Development Rules
 
 ### 1. Type Safety
+
 ```python
 # ✅ Always include type hints
-def fetch_feed(url: str, timeout: int = 30) -> Optional[Feed]:
-    ...
+def fetch_feed(url: str, timeout: int = 30) -> Optional[Feed]: ...
+
 
 # ❌ Never omit types
-def fetch_feed(url, timeout=30):
-    ...
+def fetch_feed(url, timeout=30): ...
 ```
 
 ### 2. Pydantic Models
+
 ```python
 # Use for validation, not just ORM
 class FeedMetadata(BaseModel):
@@ -116,14 +124,15 @@ class FeedMetadata(BaseModel):
 ```
 
 ### 3. Error Handling
+
 ```python
 # Use tenacity for retries
 @retry(stop=stop_after_attempt(3), wait=wait_exponential())
-async def fetch_with_retry(url: str) -> bytes:
-    ...
+async def fetch_with_retry(url: str) -> bytes: ...
 ```
 
 ### 4. Database Patterns
+
 ```python
 # Use context managers
 with get_session() as session:
@@ -131,7 +140,7 @@ with get_session() as session:
     ...
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Testing Requirements
 
@@ -145,72 +154,83 @@ with get_session() as session:
 cd ../../tests && uv run pytest tests/packages/ai_web_feeds/ -v --cov=ai_web_feeds
 ```
 
----
+______________________________________________________________________
 
 ## 🔄 Common Tasks
 
 ### Adding a New Model
+
 1. Define in `models.py` (SQLModel + Pydantic)
-2. Create migration: `alembic revision --autogenerate -m "add_model"`
-3. Add tests in `tests/packages/ai_web_feeds/test_models.py`
-4. **REQUIRED**: Create/update `.mdx` in `apps/web/content/docs/development/` and update `meta.json`
-5. **FORBIDDEN**: Do NOT create `.md` files like `DATABASE.md` or `MODELS.md`
+1. Create migration: `alembic revision --autogenerate -m "add_model"`
+1. Add tests in `tests/packages/ai_web_feeds/test_models.py`
+1. **REQUIRED**: Create/update `.mdx` in `apps/web/content/docs/development/` and update
+   `meta.json`
+1. **FORBIDDEN**: Do NOT create `.md` files like `DATABASE.md` or `MODELS.md`
 
 ### Adding a New Fetcher Method
+
 1. Add to `fetcher.py` with type hints
-2. Add retry logic via `@retry` decorator
-3. Write unit tests with mocked HTTP
-4. **REQUIRED**: Document in `apps/web/content/docs/` as `.mdx` (not standalone `.md`)
+1. Add retry logic via `@retry` decorator
+1. Write unit tests with mocked HTTP
+1. **REQUIRED**: Document in `apps/web/content/docs/` as `.mdx` (not standalone `.md`)
 
 ### Modifying Database Schema
-1. Edit model in `models.py`
-2. Generate migration: `alembic revision --autogenerate`
-3. Review migration in `alembic/versions/`
-4. Test migration up/down
-5. Update seed data in `data/`
 
----
+1. Edit model in `models.py`
+1. Generate migration: `alembic revision --autogenerate`
+1. Review migration in `alembic/versions/`
+1. Test migration up/down
+1. Update seed data in `data/`
+
+______________________________________________________________________
 
 ## 🚨 Critical Patterns
 
 ### DO
-✅ Use type hints everywhere  
-✅ Validate inputs with Pydantic  
-✅ Use context managers for DB sessions  
-✅ Log errors with structured data (Loguru)  
-✅ Add docstrings (Google style)  
-✅ Write tests before implementation (TDD)
-✅ **Update web docs** at `apps/web/content/docs/*.mdx` with navigation in `meta.json`
+
+✅ Use type hints everywhere\
+✅ Validate inputs with Pydantic\
+✅ Use context managers for DB sessions\
+✅ Log errors with structured data (Loguru)\
+✅ Add docstrings (Google style)\
+✅ Write tests before implementation (TDD) ✅ **Update web docs** at
+`apps/web/content/docs/*.mdx` with navigation in `meta.json`
 
 ### DON'T
-❌ Commit without tests  
-❌ Skip type hints  
-❌ Use bare `except:` clauses  
-❌ Leave TODO comments without issues  
-❌ Modify DB schema without migrations  
-❌ Import from `src/` (use package name)
-❌ **NEVER create standalone `.md` files** for documentation (use web docs `.mdx` only)
 
----
+❌ Commit without tests\
+❌ Skip type hints\
+❌ Use bare `except:` clauses\
+❌ Leave TODO comments without issues\
+❌ Modify DB schema without migrations\
+❌ Import from `src/` (use package name) ❌ **NEVER create standalone `.md` files** for
+documentation (use web docs `.mdx` only)
+
+______________________________________________________________________
 
 ## 📚 Reference
 
-**Full implementation details**: [llms-full.txt](https://aiwebfeeds.com/llms-full.txt#core-package)  
-**Testing patterns**: [../../tests/AGENTS.md](../../tests/AGENTS.md)  
+**Full implementation details**:
+[llms-full.txt](https://aiwebfeeds.com/llms-full.txt#core-package)\
+**Testing patterns**: [../../tests/AGENTS.md](../../tests/AGENTS.md)\
 **Root workflow**: [../../AGENTS.md](../../AGENTS.md#standard-workflow)
 
----
+______________________________________________________________________
 
 ## 📊 Data Management
 
 ### Topic Taxonomy (`data/topics.yaml`)
 
-**Purpose**: Graph-structured topic taxonomy for feed categorization and semantic search.
+**Purpose**: Graph-structured topic taxonomy for feed categorization and semantic
+search.
 
 **Structure**:
+
 - **Topics**: ID, label, facet, description, aliases
-- **Relations**: Graph edges (depends_on, implements, influences, related_to, contrasts_with)
-- **Facets**: Grouping by type (domain, task, methodology, governance, operational, etc.)
+- **Relations**: Graph edges (depends_on, implements, influences, related_to,
+  contrasts_with)
+- **Facets**: Grouping by type (domain, task, methodology, governance, operational,
+  etc.)
 - **Mappings**: External identifiers (Wikidata, ArXiv, HuggingFace, Schema.org)
 
 **Schema**: `data/topics.schema.json`
@@ -240,11 +260,12 @@ cd ../../tests && uv run pytest tests/packages/ai_web_feeds/ -v --cov=ai_web_fee
 **Schema**: `data/feeds.enriched.schema.json`
 
 **Key Fields**:
+
 - `inferred_topics`: Auto-assigned topics from taxonomy
 - `enrichment_metadata`: AI model version, confidence scores
 - `semantic_embeddings`: Vector representations for similarity search
 
----
+______________________________________________________________________
 
 *Updated: October 15, 2025 · Version: 0.1.0*
 
@@ -256,58 +277,51 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from loguru import logger
 
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10)
-)
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def fetch_feed(
-    url: str,
-    timeout: int = 30,
-    headers: Optional[dict[str, str]] = None
+    url: str, timeout: int = 30, headers: Optional[dict[str, str]] = None
 ) -> httpx.Response:
     """Fetch feed with retry logic and timeout handling.
-    
+
     Args:
         url: Feed URL to fetch
         timeout: Request timeout in seconds
         headers: Optional HTTP headers
-        
+
     Returns:
         HTTP response object
-        
+
     Raises:
         httpx.HTTPError: On request failure after retries
         httpx.TimeoutException: On timeout after retries
     """
     default_headers = {
         "User-Agent": "AIWebFeeds/0.1.0",
-        "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml"
+        "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml",
     }
     if headers:
         default_headers.update(headers)
-    
+
     logger.debug(f"Fetching feed from {url}")
-    
+
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            url,
-            timeout=timeout,
-            headers=default_headers,
-            follow_redirects=True
+            url, timeout=timeout, headers=default_headers, follow_redirects=True
         )
         response.raise_for_status()
-        
+
     logger.info(f"Successfully fetched feed from {url}")
     return response
 ```
 
----
+______________________________________________________________________
 
 ### `models.py` - Data Models
 
 **Purpose**: Type-safe data structures using Pydantic and SQLModel
 
 **Best Practices**:
+
 - Use `Optional` for nullable fields
 - Add `Field(index=True)` for frequently queried columns
 - Implement validators for data integrity
@@ -325,7 +339,7 @@ from typing import Optional
 
 class Feed(SQLModel, table=True):
     """RSS/Atom feed database model."""
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     url: str = Field(index=True, unique=True)
     title: Optional[str] = None
@@ -334,18 +348,18 @@ class Feed(SQLModel, table=True):
     last_modified: Optional[str] = None
     etag: Optional[str] = None
     is_active: bool = Field(default=True)
-    
-    @validator('url')
+
+    @validator("url")
     def validate_url(cls, v: str) -> str:
         """Ensure URL is valid and normalized."""
-        if not v.startswith(('http://', 'https://')):
-            raise ValueError('URL must start with http:// or https://')
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("URL must start with http:// or https://")
         return v.lower().strip()
 
 
 class FeedItem(SQLModel, table=True):
     """Individual feed entry/article."""
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     feed_id: int = Field(foreign_key="feed.id", index=True)
     title: Optional[str] = None
@@ -356,13 +370,14 @@ class FeedItem(SQLModel, table=True):
     guid: str = Field(unique=True, index=True)
 ```
 
----
+______________________________________________________________________
 
 ### `storage.py` - Database Layer
 
 **Purpose**: SQLAlchemy session management and CRUD operations
 
 **Key Patterns**:
+
 - Use context managers for session handling
 - Always commit within session context
 - Refresh objects after commit to get DB-assigned values
@@ -380,20 +395,18 @@ from loguru import logger
 
 class FeedStorage:
     """Database operations for feed management."""
-    
+
     def __init__(self, database_url: str = "sqlite:///data/aiwebfeeds.db"):
         """Initialize storage with database connection."""
         self.engine = create_engine(
-            database_url,
-            echo=False,
-            connect_args={"check_same_thread": False}
+            database_url, echo=False, connect_args={"check_same_thread": False}
         )
         SQLModel.metadata.create_all(self.engine)
         logger.info(f"Database initialized: {database_url}")
-    
+
     def add_feed(self, feed: Feed) -> Optional[Feed]:
         """Add a new feed to database.
-        
+
         Returns:
             Feed with database-assigned ID, or None if already exists
         """
@@ -407,7 +420,7 @@ class FeedStorage:
         except IntegrityError:
             logger.warning(f"Feed already exists: {feed.url}")
             return None
-    
+
     def get_all_feeds(self, active_only: bool = True) -> list[Feed]:
         """Retrieve all feeds."""
         with Session(self.engine) as session:
@@ -419,7 +432,7 @@ class FeedStorage:
             return feeds
 ```
 
----
+______________________________________________________________________
 
 ### `analytics.py` - Feed Analytics
 
@@ -437,7 +450,7 @@ from collections import Counter
 @dataclass
 class FeedStats:
     """Feed statistics container."""
-    
+
     total_feeds: int
     active_feeds: int
     total_items: int
@@ -448,15 +461,15 @@ class FeedStats:
 
 class FeedAnalytics:
     """Analytics engine for feed data."""
-    
+
     def __init__(self, storage: FeedStorage):
         self.storage = storage
-    
+
     def calculate_stats(self) -> FeedStats:
         """Calculate comprehensive feed statistics."""
         feeds = self.storage.get_all_feeds(active_only=False)
         active = [f for f in feeds if f.is_active]
-        
+
         # Calculate metrics
         return FeedStats(
             total_feeds=len(feeds),
@@ -464,11 +477,11 @@ class FeedAnalytics:
             total_items=0,  # Calculate from FeedItem table
             items_per_feed=0.0,
             most_recent_update=None,
-            most_active_feeds=[]
+            most_active_feeds=[],
         )
 ```
 
----
+______________________________________________________________________
 
 ### `config.py` - Configuration Management
 
@@ -481,25 +494,22 @@ from pathlib import Path
 
 class Settings(BaseSettings):
     """Application configuration."""
-    
+
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
-    
+
     # Database
     database_url: str = "sqlite:///data/aiwebfeeds.db"
-    
+
     # Logging
     log_level: str = "INFO"
-    
+
     # Fetching
     fetch_timeout: int = 30
     max_retries: int = 3
     user_agent: str = "AIWebFeeds/0.1.0"
-    
+
     # Paths
     data_dir: Path = Path("data")
 
@@ -507,7 +517,7 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
----
+______________________________________________________________________
 
 ### `logger.py` - Logging Configuration
 
@@ -522,26 +532,26 @@ from ai_web_feeds.config import settings
 def configure_logger() -> None:
     """Configure application logger."""
     logger.remove()
-    
+
     logger.add(
         sys.stderr,
         level=settings.log_level,
         colorize=True,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}"
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}",
     )
-    
+
     logger.add(
         settings.data_dir / "logs" / "aiwebfeeds.log",
         rotation="10 MB",
         retention="5 files",
-        level="DEBUG"
+        level="DEBUG",
     )
 
 
 configure_logger()
 ```
 
----
+______________________________________________________________________
 
 ## 🛠️ Development Guidelines
 
@@ -574,7 +584,7 @@ cd ../../tests
 uv run pytest tests/packages/ai_web_feeds/ --cov=ai_web_feeds
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Testing Requirements
 
@@ -605,15 +615,15 @@ from ai_web_feeds.storage import FeedStorage
 
 class TestFeedStorage:
     """Tests for FeedStorage class."""
-    
+
     @pytest.mark.unit
     def test_add_feed(self, test_db):
         """Test adding feed to database."""
         storage = FeedStorage(database_url=test_db)
         feed = Feed(url="https://example.com/feed.xml", title="Test")
-        
+
         saved_feed = storage.add_feed(feed)
-        
+
         assert saved_feed is not None
         assert saved_feed.id is not None
         assert saved_feed.url == feed.url
@@ -634,15 +644,15 @@ uv run pytest tests/packages/ai_web_feeds/ --cov=ai_web_feeds --cov-report=html
 uv run pytest tests/packages/ai_web_feeds/unit/test_fetcher.py -v
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Common Tasks
 
 ### Adding a New Module
 
 1. Create file in `src/ai_web_feeds/new_module.py`
-2. Add type hints and docstrings
-3. Export in `__init__.py`:
+1. Add type hints and docstrings
+1. Export in `__init__.py`:
 
 ```python
 from ai_web_feeds.new_module import NewClass
@@ -651,7 +661,7 @@ __all__ = ["NewClass", ...]
 ```
 
 4. Add tests in `tests/tests/packages/ai_web_feeds/unit/test_new_module.py`
-5. Update this AGENTS.md
+1. Update this AGENTS.md
 
 ### Adding Dependencies
 
@@ -661,7 +671,7 @@ uv add package-name
 uv sync
 ```
 
----
+______________________________________________________________________
 
 ## 🗄️ Database Management
 
@@ -686,7 +696,7 @@ uv run alembic upgrade head
 uv run alembic downgrade -1
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Resources
 
@@ -695,6 +705,6 @@ uv run alembic downgrade -1
 - [Loguru Documentation](https://loguru.readthedocs.io/)
 - [httpx Documentation](https://www.python-httpx.org/)
 
----
+______________________________________________________________________
 
 *Last Updated: October 2025*

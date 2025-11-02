@@ -4,8 +4,8 @@ description: Detailed specification of the enhanced llms-full.txt structured for
 icon: FileCode
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 The `/llms-full.txt` endpoint provides a comprehensive, structured format optimized for AI agents and RAG systems.
 
@@ -19,9 +19,7 @@ The enhanced format includes:
 - **Individual metadata** for each page
 - **AI-friendly formatting** for easy parsing
 
-<Callout type="info">
-  This format is designed to be both human-readable and machine-parsable, making it ideal for RAG systems, embeddings, and AI analysis.
-</Callout>
+<Callout type="info">This format is designed to be both human-readable and machine-parsable, making it ideal for RAG systems, embeddings, and AI analysis.</Callout>
 
 ## Format Structure
 
@@ -152,13 +150,13 @@ END OF PAGE 1
 
 ### Page Metadata Fields
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| `TITLE` | Page title | `Getting Started` |
-| `URL` | Full page URL | `https://yourdomain.com/docs` |
-| `MARKDOWN` | Markdown endpoint | `https://yourdomain.com/docs.mdx` |
-| `DESCRIPTION` | Page description | `Quick start guide...` |
-| `PATH` | Relative path | `/` |
+| Field         | Description       | Example                           |
+| ------------- | ----------------- | --------------------------------- |
+| `TITLE`       | Page title        | `Getting Started`                 |
+| `URL`         | Full page URL     | `https://yourdomain.com/docs`     |
+| `MARKDOWN`    | Markdown endpoint | `https://yourdomain.com/docs.mdx` |
+| `DESCRIPTION` | Page description  | `Quick start guide...`            |
+| `PATH`        | Relative path     | `/`                               |
 
 ## Footer Section
 
@@ -220,9 +218,7 @@ X-Content-Pages: 5
 X-Generated-Date: 2025-10-14T12:00:00.000Z
 ```
 
-<Callout>
-  Custom headers allow clients to access metadata without parsing the document body.
-</Callout>
+<Callout>Custom headers allow clients to access metadata without parsing the document body.</Callout>
 
 ## Usage Examples
 
@@ -256,14 +252,15 @@ X-Generated-Date: 2025-10-14T12:00:00.000Z
             # Extract page metadata
             title = page.split('TITLE: ')[1].split('\n')[0]
             url = page.split('URL: ')[1].split('\n')[0]
-            
+
             # Extract content
             content_start = page.find('CONTENT\n' + '-' * 80 + '\n\n')
             content_end = page.find('\n\n' + '-' * 80 + '\nEND OF PAGE')
             content = page[content_start:content_end]
-            
+
             print(f"Page {i}: {title}")
     ```
+
   </Tab>
   <Tab value="JavaScript">
     ```javascript
@@ -290,16 +287,17 @@ X-Generated-Date: 2025-10-14T12:00:00.000Z
         // Extract page metadata
         const title = page.split('TITLE: ')[1].split('\n')[0];
         const url = page.split('URL: ')[1].split('\n')[0];
-        
+
         // Extract content
         const contentStart = page.indexOf('CONTENT\n' + '-'.repeat(80) + '\n\n');
         const contentEnd = page.indexOf('\n\n' + '-'.repeat(80) + '\nEND OF PAGE');
         const content = page.substring(contentStart, contentEnd);
-        
+
         console.log(`Page ${index + 1}: ${title}`);
       }
     });
     ```
+
   </Tab>
   <Tab value="cURL">
     ```bash
@@ -321,6 +319,7 @@ X-Generated-Date: 2025-10-14T12:00:00.000Z
     curl https://yourdomain.com/llms-full.txt | \
       sed -n '/^PAGE 1 OF/,/^END OF PAGE 1/p'
     ```
+
   </Tab>
 </Tabs>
 
@@ -351,27 +350,27 @@ separator_dash = r'-{80}'
 def extract_pages(content: str) -> list:
     """Extract individual pages from llms-full.txt"""
     pages = []
-    
+
     # Find all page sections
     page_pattern = r'={80}\nPAGE (\d+) OF (\d+)={80}(.+?)(?=={80}\nPAGE |\Z)'
-    
+
     for match in re.finditer(page_pattern, content, re.DOTALL):
         page_num, total, page_content = match.groups()
-        
+
         # Extract metadata
         metadata = {}
         for line in page_content.split('\n'):
             if ':' in line and line.isupper().startswith(line.split(':')[0]):
                 key, value = line.split(':', 1)
                 metadata[key.strip()] = value.strip()
-        
+
         # Extract content
         content_match = re.search(
             r'CONTENT\n-{80}\n\n(.+?)\n\n-{80}',
             page_content,
             re.DOTALL
         )
-        
+
         if content_match:
             pages.append({
                 'page_number': int(page_num),
@@ -379,7 +378,7 @@ def extract_pages(content: str) -> list:
                 'metadata': metadata,
                 'content': content_match.group(1).strip()
             })
-    
+
     return pages
 ```
 
@@ -389,16 +388,16 @@ def extract_pages(content: str) -> list:
 def count_tokens_per_page(content: str) -> dict:
     """Estimate token count for each page"""
     import tiktoken
-    
+
     enc = tiktoken.get_encoding("cl100k_base")
     pages = extract_pages(content)
-    
+
     token_counts = {}
     for page in pages:
         page_content = page['content']
         tokens = len(enc.encode(page_content))
         token_counts[page['metadata']['TITLE']] = tokens
-    
+
     return token_counts
 ```
 
@@ -417,6 +416,7 @@ Content...
 ```
 
 **Limitations:**
+
 - No metadata header
 - No table of contents
 - Basic separators
@@ -441,6 +441,7 @@ MARKDOWN: ...
 ```
 
 **Improvements:**
+
 - ✅ Rich metadata header
 - ✅ Complete table of contents
 - ✅ 80-character separators

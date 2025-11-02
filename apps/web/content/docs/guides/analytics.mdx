@@ -4,8 +4,8 @@ description: Comprehensive guide to feed analytics, monitoring, and reporting ca
 icon: BarChart
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 AI Web Feeds provides robust analytics and monitoring capabilities to track feed health, performance, and content trends.
 
@@ -31,6 +31,7 @@ ai-web-feeds analytics overview
 ```
 
 **Provides:**
+
 - Total feeds, items, and topics
 - Feed status distribution (verified, active, inactive)
 - Recent activity (last 24 hours)
@@ -44,6 +45,7 @@ ai-web-feeds analytics distributions [--limit N]
 ```
 
 **Shows:**
+
 - Source type distribution (blog, newsletter, podcast, etc.)
 - Topic distribution across feeds
 - Language distribution
@@ -58,6 +60,7 @@ ai-web-feeds analytics quality
 ```
 
 **Displays:**
+
 - Average and median quality scores
 - Quality distribution (excellent/good/fair/poor)
 - High/low quality feed counts
@@ -81,6 +84,7 @@ ai-web-feeds analytics performance [--days N]
 ```
 
 **Metrics:**
+
 - Total fetches and success rate
 - Average fetch duration
 - Error type distribution
@@ -95,6 +99,7 @@ ai-web-feeds analytics content
 ```
 
 **Provides:**
+
 - Total items and content coverage
 - Author attribution rates
 - Enclosure/media usage
@@ -109,6 +114,7 @@ ai-web-feeds analytics trends [--days N]
 ```
 
 **Shows:**
+
 - Items per day
 - Publishing patterns by hour
 - Publishing patterns by weekday
@@ -123,12 +129,14 @@ ai-web-feeds analytics health <feed-id>
 ```
 
 **Includes:**
+
 - Overall health score and status
 - Fetch statistics and success rate
 - Content quality metrics
 - Publishing frequency
 
 **Health Status Levels:**
+
 - **Excellent** (0.8-1.0) - Feed is performing optimally
 - **Good** (0.6-0.8) - Feed is healthy with minor issues
 - **Fair** (0.4-0.6) - Feed has some problems
@@ -144,6 +152,7 @@ ai-web-feeds analytics contributors [--limit N]
 ```
 
 **Shows:**
+
 - Contributors ranked by feed count
 - Verification rates per contributor
 - Quality benchmarks
@@ -157,6 +166,7 @@ ai-web-feeds analytics report [--output FILE]
 ```
 
 Exports all analytics data in JSON format for:
+
 - Custom analysis
 - Integration with other tools
 - Long-term tracking
@@ -365,7 +375,7 @@ feeds = db.get_all_feed_sources()
 with open('feeds-export.csv', 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['ID', 'Title', 'Type', 'Quality', 'Verified'])
-    
+
     for feed in feeds:
         writer.writerow([
             feed.id,
@@ -389,14 +399,14 @@ from datetime import datetime
 def export_metrics():
     analytics = FeedAnalytics(session)
     stats = analytics.get_overview_stats()
-    
+
     metrics = {
         "timestamp": datetime.utcnow().isoformat(),
         "feeds_total": stats["totals"]["feeds"],
         "feeds_active": stats["feed_status"]["active"],
         "items_24h": stats["recent_activity_24h"]["new_items"]
     }
-    
+
     with open('/var/lib/grafana/metrics/ai-web-feeds.json', 'w') as f:
         json.dump(metrics, f)
 ```

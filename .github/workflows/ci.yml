@@ -1,0 +1,357 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.13'
+  NODE_VERSION: '20.11.0'
+  UV_VERSION: '0.1.0'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================================================
+  # Python - Linting & Type Checking
+  # ==========================================================================
+  python-lint:
+    name: Python Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies (packages)
+        run: |
+          cd packages/ai_web_feeds
+          uv sync --all-extras
+
+      - name: Run Ruff linter
+        run: |
+          cd packages/ai_web_feeds
+          uv run ruff check .
+
+      - name: Run Ruff formatter check
+        run: |
+          cd packages/ai_web_feeds
+          uv run ruff format --check .
+
+      - name: Run MyPy type checker
+        run: |
+          cd packages/ai_web_feeds
+          uv run mypy src/
+
+  # ==========================================================================
+  # Python - Tests
+  # ==========================================================================
+  python-test:
+    name: Python Tests (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ matrix.python-version }}-
+
+      - name: Install dependencies
+        run: |
+          cd packages/ai_web_feeds
+          uv sync --all-extras
+
+      - name: Run tests with coverage
+        run: |
+          cd packages/ai_web_feeds
+          uv run pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+
+      - name: Check coverage threshold (≥90%)
+        run: |
+          cd packages/ai_web_feeds
+          uv run pytest tests/ --cov=src --cov-fail-under=90 -q
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./packages/ai_web_feeds/coverage.xml
+          flags: python
+          name: python-${{ matrix.python-version }}
+          fail_ci_if_error: false
+
+  # ==========================================================================
+  # Python - Security Checks
+  # ==========================================================================
+  python-security:
+    name: Python Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: |
+          cd packages/ai_web_feeds
+          uv sync --all-extras
+
+      - name: Run Bandit security linter
+        run: |
+          cd packages/ai_web_feeds
+          uv run bandit -c pyproject.toml -r src/
+
+      - name: Run safety check
+        continue-on-error: true
+        run: |
+          pip install safety
+          safety check --json
+
+  # ==========================================================================
+  # TypeScript - Linting & Type Checking
+  # ==========================================================================
+  typescript-lint:
+    name: TypeScript Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: |
+          cd apps/web
+          pnpm lint
+
+      - name: Run TypeScript compiler
+        run: |
+          cd apps/web
+          pnpm tsc --noEmit
+
+  # ==========================================================================
+  # TypeScript - Build
+  # ==========================================================================
+  typescript-build:
+    name: Next.js Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Build Next.js app
+        run: |
+          cd apps/web
+          pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: apps/web/.next
+          retention-days: 7
+
+  # ==========================================================================
+  # Data Validation
+  # ==========================================================================
+  validate-data:
+    name: Validate Data Assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Validate JSON schemas
+        run: |
+          python -c "import json; import sys; import glob; [json.load(open(f)) for f in glob.glob('data/*.schema.json')]"
+
+      - name: Validate YAML files
+        run: |
+          pip install pyyaml jsonschema
+          python data/validate_data_assets.py
+
+  # ==========================================================================
+  # Conventional Commits
+  # ==========================================================================
+  conventional-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install commitlint
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: Validate PR commits
+        run: |
+          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  # ==========================================================================
+  # Documentation Build
+  # ==========================================================================
+  docs-build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Build documentation site
+        run: |
+          cd apps/web
+          pnpm build
+
+  # ==========================================================================
+  # Summary Job (required for branch protection)
+  # ==========================================================================
+  ci-success:
+    name: CI Success
+    needs:
+      - python-lint
+      - python-test
+      - python-security
+      - typescript-lint
+      - typescript-build
+      - validate-data
+      - docs-build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            echo "One or more jobs failed"
+            exit 1
+          elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "One or more jobs were cancelled"
+            exit 1
+          else
+            echo "All jobs passed"
+          fi

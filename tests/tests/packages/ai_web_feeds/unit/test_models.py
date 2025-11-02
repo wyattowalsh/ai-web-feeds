@@ -1,9 +1,8 @@
 """Unit tests for ai_web_feeds.models module."""
 
-import pytest
 from datetime import datetime
-from hypothesis import given, strategies as st
 
+import pytest
 from ai_web_feeds.models import (
     CurationStatus,
     FeedFetchLog,
@@ -14,6 +13,8 @@ from ai_web_feeds.models import (
     SourceType,
     Topic,
 )
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 @pytest.mark.unit
@@ -89,7 +90,7 @@ class TestFeedSource:
         # Filter out control characters
         feed_id = "".join(c for c in feed_id if c.isprintable())
         title = "".join(c for c in title if c.isprintable())
-        
+
         if feed_id and title:
             feed = FeedSource(id=feed_id, title=title)
             assert feed.id == feed_id
@@ -143,6 +144,7 @@ class TestFeedItem:
     def test_feed_item_timestamps(self):
         """Test FeedItem timestamp handling."""
         from datetime import UTC
+
         now = datetime.now(UTC)
         item = FeedItem(
             feed_source_id="test",
@@ -181,7 +183,7 @@ class TestFeedItem:
         feed_source_id = "".join(c for c in feed_source_id if c.isprintable()).strip()
         guid = "".join(c for c in guid if c.isprintable()).strip()
         title = "".join(c for c in title if c.isprintable()).strip()
-        
+
         if feed_source_id and guid and title:
             item = FeedItem(feed_source_id=feed_source_id, guid=guid, title=title)
             assert item.feed_source_id == feed_source_id
@@ -235,6 +237,7 @@ class TestFeedFetchLog:
     def test_fetch_log_failure(self):
         """Test FeedFetchLog for failed fetch."""
         from datetime import UTC
+
         log = FeedFetchLog(
             feed_source_id="test-feed",
             fetch_url="https://example.com/feed.xml",
@@ -251,6 +254,7 @@ class TestFeedFetchLog:
     def test_fetch_log_performance_metrics(self):
         """Test FeedFetchLog performance metrics."""
         from datetime import UTC
+
         log = FeedFetchLog(
             feed_source_id="test-feed",
             fetch_url="https://example.com/feed.xml",
@@ -273,6 +277,7 @@ class TestFeedFetchLog:
     def test_fetch_log_property_based(self, status_code, items_found, items_new):
         """Property-based test for FeedFetchLog."""
         from datetime import UTC
+
         log = FeedFetchLog(
             feed_source_id="test",
             fetch_url="https://example.com/feed.xml",
@@ -285,4 +290,8 @@ class TestFeedFetchLog:
         )
         assert log.status_code == status_code
         assert log.items_found == items_found
-        assert log.items_new is not None and log.items_found is not None and log.items_new <= log.items_found
+        assert (
+            log.items_new is not None
+            and log.items_found is not None
+            and log.items_new <= log.items_found
+        )

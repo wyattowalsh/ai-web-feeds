@@ -63,6 +63,7 @@ aiwebfeeds nlp topics
 ```
 
 **Options**:
+
 - `--parent-topic`: Parent topic to model (default: all)
 - `--num-topics`: Number of subtopics to discover (default: 10)
 - `--min-articles`: Minimum articles required (default: 100)
@@ -79,6 +80,7 @@ aiwebfeeds nlp review-subtopics
 ```
 
 **Interactive Workflow**:
+
 ```
 Unapproved Subtopics (3)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -121,6 +123,7 @@ aiwebfeeds nlp topic-evolution --days 30
 ```
 
 **Output**:
+
 ```
 Topic Evolution Events (Last 30 Days)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -221,21 +224,25 @@ CREATE TABLE topic_evolution_events (
 ### Evolution Types
 
 **Split**: One topic divides into multiple subtopics
+
 ```
 Transformers → [BERT-variants, GPT-variants, ViT]
 ```
 
 **Merge**: Multiple subtopics combine into one
+
 ```
 [Supervised Learning, Unsupervised Learning] → Machine Learning Fundamentals
 ```
 
 **Emergence**: New topic appears (growth rate > 100%)
+
 ```
 - → Constitutional AI (50 articles in 1 month)
 ```
 
 **Decline**: Topic activity decreases (growth rate < -50%)
+
 ```
 GANs → (declining mention frequency)
 ```
@@ -314,6 +321,7 @@ class Phase5Settings(BaseSettings):
 ```
 
 **Environment Variables**:
+
 ```bash
 PHASE5_TOPIC_MODEL=lda
 PHASE5_TOPIC_COHERENCE_MIN=0.5
@@ -343,16 +351,19 @@ aiwebfeeds nlp review-subtopics
 ### 3. Approve/Rename/Delete
 
 **Approve**:
+
 ```bash
 aiwebfeeds nlp approve-subtopic <id>
 ```
 
 **Rename**:
+
 ```bash
 aiwebfeeds nlp rename-subtopic <id> "Better Name"
 ```
 
 **Delete** (low coherence):
+
 ```bash
 aiwebfeeds nlp delete-subtopic <id>
 ```
@@ -400,11 +411,13 @@ aiwebfeeds articles list --subtopic "Transformer Architectures"
 **Symptom**: All subtopics have coherence < 0.5.
 
 **Causes**:
+
 1. Too few articles (< 100)
 2. Too many subtopics requested
 3. Poor text preprocessing
 
 **Solutions**:
+
 ```bash
 # Reduce number of topics
 aiwebfeeds nlp topics --num-topics 5
@@ -428,6 +441,7 @@ aiwebfeeds nlp topics --num-topics 15
 **Symptom**: `MemoryError` or training hangs.
 
 **Solution**:
+
 - Reduce batch size
 - Limit article count: `--max-articles 500`
 - Increase system memory or use cloud instance
@@ -445,11 +459,13 @@ subtopics = modeler.extract_subtopics(parent_topic="NLP", articles=articles)
 ```
 
 **Advantages**:
+
 - Better semantic understanding
 - No need to specify number of topics
 - Higher coherence scores
 
 **Trade-offs**:
+
 - Slower training (GPU recommended)
 - Higher memory usage (~2GB)
 

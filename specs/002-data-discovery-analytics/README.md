@@ -1,10 +1,10 @@
 # Phase 2: Data Discovery & Analytics - Specification
 
-> **Status**: ✅ Complete (195/209 tasks, 93%)  
-> **Branch**: `002-data-discovery-analytics` (merged to main)  
+> **Status**: ✅ Complete (195/209 tasks, 93%)\
+> **Branch**: `002-data-discovery-analytics` (merged to main)\
 > **Date**: October 22, 2025
 
----
+______________________________________________________________________
 
 ## Quick Links
 
@@ -17,11 +17,12 @@
 - **[Deployment](DEPLOYMENT.md)** - Production deployment guide
 - **[API Contracts](contracts/openapi.yaml)** - REST API specification (863 lines)
 
----
+______________________________________________________________________
 
 ## What Was Built
 
 ### User Story 1: Analytics Dashboard
+
 **45 tasks** - Backend analytics engine + CLI + API + Web UI
 
 - Summary metrics (total, active, verified feeds)
@@ -32,15 +33,17 @@
 - CSV export
 
 ### User Story 2: Search & Discovery
+
 **40 tasks** - Full-text + semantic search with autocomplete
 
-- SQLite FTS5 full-text search (<500ms)
-- Semantic search with 384-dim embeddings (<2s)
-- Trie-based autocomplete (<200ms)
+- SQLite FTS5 full-text search (\<500ms)
+- Semantic search with 384-dim embeddings (\<2s)
+- Trie-based autocomplete (\<200ms)
 - Saved searches with one-click replay
 - Faceted filtering (source, topics, verified)
 
 ### User Story 3: AI-Powered Recommendations
+
 **44 tasks** - Content-based + popularity + serendipity
 
 - 70% content similarity (topic overlap + embeddings)
@@ -50,6 +53,7 @@
 - Interaction logging (view/click/subscribe/dismiss)
 
 ### Testing & Documentation
+
 **41 tasks** - Comprehensive test suite + docs
 
 - 79 unit tests (search, embeddings, recommendations, analytics)
@@ -58,11 +62,12 @@
 - 4 performance benchmarks (SLA validation)
 - Complete feature documentation
 
----
+______________________________________________________________________
 
 ## Technology Stack
 
 ### Backend (Python 3.13+)
+
 - **ORM**: SQLModel (SQLAlchemy 2.0)
 - **Validation**: Pydantic v2
 - **Config**: pydantic-settings
@@ -75,26 +80,30 @@
 - **Testing**: pytest, pytest-cov, Hypothesis
 
 ### Frontend (TypeScript 5.9+)
+
 - **Framework**: Next.js 15 (App Router)
 - **UI**: React 19, Tailwind 4
 - **Charts**: Chart.js
 - **Testing**: Playwright (E2E)
 
 ### Database
+
 - **Primary**: SQLite (FTS5, JSON1, WAL mode)
 - **Features**: Full-text search, triggers, JSON support
-- **Performance**: <500ms search for 50K+ feeds
+- **Performance**: \<500ms search for 50K+ feeds
 
 ### CLI
+
 - **Framework**: Typer
 - **Output**: Rich (tables, progress bars, colors)
 - **Commands**: 14 commands across 3 modules
 
----
+______________________________________________________________________
 
 ## Key Metrics
 
 ### Implementation
+
 - **14,487 lines** added across 62 files
 - **4,300+ lines** Python backend
 - **3,500+ lines** React frontend
@@ -102,6 +111,7 @@
 - **2,000+ lines** documentation
 
 ### Features
+
 - **3 user stories** fully implemented
 - **12 API endpoints** (REST)
 - **14 CLI commands** (analytics, search, recommend)
@@ -109,22 +119,25 @@
 - **3 complete pages** (/analytics, /search, /recommendations)
 
 ### Testing
+
 - **85 test cases** total
 - **79 unit tests** (4 modules)
 - **6 integration tests** (workflows)
 - **≥90% coverage** target for critical paths
 
 ### Performance
-- **Full-text search**: <500ms for 50K+ feeds
-- **Autocomplete**: <200ms (Trie index)
-- **Semantic search**: <2s for 1K feeds
-- **Analytics**: <1s for summary metrics
 
----
+- **Full-text search**: \<500ms for 50K+ feeds
+- **Autocomplete**: \<200ms (Trie index)
+- **Semantic search**: \<2s for 1K feeds
+- **Analytics**: \<1s for summary metrics
+
+______________________________________________________________________
 
 ## Architecture Highlights
 
 ### Search Pipeline
+
 ```
 User Query
   ↓
@@ -142,6 +155,7 @@ Interaction Tracking (SearchQuery table)
 ```
 
 ### Recommendation Algorithm
+
 ```
 User Input (topics/feeds/profile)
   ↓
@@ -163,6 +177,7 @@ Interaction Tracking (RecommendationInteraction table)
 ```
 
 ### Analytics Flow
+
 ```
 FeedSource + FeedValidationResult
   ↓
@@ -177,7 +192,7 @@ Cache Results (AnalyticsSnapshot)
 Serve via API/CLI/Web
 ```
 
----
+______________________________________________________________________
 
 ## File Structure
 
@@ -201,11 +216,12 @@ specs/002-data-discovery-analytics/
     └── test-coverage.md        # Test tracking
 ```
 
----
+______________________________________________________________________
 
 ## Getting Started
 
 ### Prerequisites
+
 ```bash
 # Install package managers
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -213,6 +229,7 @@ npm install -g pnpm
 ```
 
 ### Backend Setup
+
 ```bash
 # Install Python dependencies
 uv sync
@@ -230,6 +247,7 @@ uv run aiwebfeeds recommend get --topics llm --limit 5
 ```
 
 ### Frontend Setup
+
 ```bash
 cd apps/web
 pnpm install
@@ -239,6 +257,7 @@ pnpm dev
 ```
 
 ### Run Tests
+
 ```bash
 cd tests
 uv run pytest --cov --cov-report=html
@@ -250,7 +269,7 @@ uv run pytest -m e2e
 uv run pytest -m benchmark
 ```
 
----
+______________________________________________________________________
 
 ## Configuration
 
@@ -275,52 +294,55 @@ AIWF_RECOMMENDATION__POPULARITY_WEIGHT=0.2
 AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT=0.1
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 ### Immediate (Phase 2 Polish)
+
 - [ ] Connect mock APIs to Python backend
 - [ ] Add user authentication
 - [ ] Deploy to production
 - [ ] Set up monitoring
 
 ### Phase 3 (Advanced Features)
+
 - [ ] Collaborative filtering for recommendations
 - [ ] Real-time feed updates (WebSocket)
 - [ ] Advanced analytics dashboards
 - [ ] Multi-user support with permissions
 
 ### Phase 4 (Scale & Performance)
+
 - [ ] Migrate to PostgreSQL for >50K feeds
 - [ ] Add Redis for distributed caching
 - [ ] Implement Elasticsearch for advanced search
 - [ ] Load balancing & horizontal scaling
 
----
+______________________________________________________________________
 
 ## Resources
 
-- **Documentation**: [apps/web/content/docs/features/](../../apps/web/content/docs/features/)
+- **Documentation**:
+  [apps/web/content/docs/features/](../../apps/web/content/docs/features/)
 - **Source Code**: [packages/ai_web_feeds/](../../packages/ai_web_feeds/)
 - **Tests**: [tests/tests/](../../tests/tests/)
 - **CLI**: [apps/cli/](../../apps/cli/)
 - **Web**: [apps/web/](../../apps/web/)
 
----
+______________________________________________________________________
 
 ## Success Metrics
 
-✅ **All 3 user stories** delivered  
-✅ **85 test cases** with ≥90% coverage target  
-✅ **Performance SLAs** met (<500ms search, <200ms autocomplete)  
-✅ **100% Free & Open Source** stack  
-✅ **Production-ready** architecture  
-✅ **Comprehensive documentation** (2,000+ lines)  
+✅ **All 3 user stories** delivered\
+✅ **85 test cases** with ≥90% coverage target\
+✅ **Performance SLAs** met (\<500ms search, \<200ms autocomplete)\
+✅ **100% Free & Open Source** stack\
+✅ **Production-ready** architecture\
+✅ **Comprehensive documentation** (2,000+ lines)
 
----
+______________________________________________________________________
 
 **Status**: ✅ Phase 2 Complete - Ready for Production Deployment
 
 **Achievement**: 195/209 tasks (93%) - MVP Successfully Delivered! 🎉
-

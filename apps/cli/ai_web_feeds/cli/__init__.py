@@ -20,7 +20,7 @@ from ai_web_feeds import (
 )
 
 # Import command modules
-from ai_web_feeds.cli.commands import analytics, monitor, nlp, recommend, search
+from ai_web_feeds.cli.commands import analytics, monitor, recommend, search
 
 app = typer.Typer(
     name="ai-web-feeds",
@@ -33,7 +33,15 @@ app.add_typer(analytics.app, name="analytics")
 app.add_typer(search.app, name="search")
 app.add_typer(recommend.app, name="recommend")
 app.add_typer(monitor.app, name="monitor")
-app.add_typer(nlp.app, name="nlp")
+
+# Optionally register NLP commands (may fail if heavy dependencies not installed)
+try:
+    from ai_web_feeds.cli.commands import nlp
+
+    if nlp is not None:
+        app.add_typer(nlp.app, name="nlp")
+except (ImportError, AttributeError) as e:
+    logger.warning(f"NLP commands not available: {e}")
 
 console = Console()
 
@@ -87,10 +95,31 @@ def process(
     console.print("[bold]Step 1:[/bold] Loading feeds...")
     try:
         feeds_data = load_feeds(input_file)
-        console.print(f"[green]✓[/green] Loaded {len(feeds_data.get('sources', []))} sources\n")
+        sources = feeds_data.get("sources", [])
+
+        # Auto-generate IDs and normalize feed fields
+        from hashlib import sha256
+
+        for source in sources:
+            url = source.get("url", "")
+
+            # Generate ID from URL if missing
+            if not source.get("id") and url:
+                source["id"] = sha256(url.encode()).hexdigest()[:16]
+                logger.debug(f"Generated ID {source['id']} for {url}")
+
+            # Copy url to feed field (enrichment expects 'feed' or 'site')
+            if url and not source.get("feed"):
+                source["feed"] = url
+
+            # Use URL as fallback title if missing
+            if not source.get("title"):
+                source["title"] = url or "Untitled"
+
+        console.print(f"[green]✓[/green] Loaded {len(sources)} sources\n")
     except Exception as e:
         console.print(f"[red]✗ Failed to load feeds: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
     # Step 2: Validate (initial)
     if not skip_validation:
@@ -110,13 +139,13 @@ def process(
             # Initialize database for enrichment persistence
             db = DatabaseManager(database_url)
             db.create_db_and_tables()
-            
+
             feeds_data = enrich_all_feeds(feeds_data, db=db)
             console.print("[green]✓ Enrichment complete[/green]\n")
         except Exception as e:
             console.print(f"[red]✗ Enrichment failed: {e}[/red]")
             logger.exception("Enrichment error")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     # Step 4: Validate (post-enrichment)
     if not skip_validation:
@@ -160,7 +189,7 @@ def process(
             try:
                 # Use URL as fallback ID if no explicit ID provided
                 source_id = source_data.get("id", source_data.get("url", ""))
-                
+
                 feed_source = FeedSource(
                     id=source_id,
                     feed=source_data.get("feed"),
@@ -184,7 +213,7 @@ def process(
                 logger.warning(f"Failed to store source: {error_msg}")
 
         console.print(f"[green]✓ Stored {stored_count}/{len(sources)} sources in database[/green]")
-        
+
         if errors and len(errors) <= 5:
             console.print("[yellow]⚠ Storage warnings:[/yellow]")
             for error in errors[:5]:
@@ -193,18 +222,18 @@ def process(
     except Exception as e:
         console.print(f"[red]✗ Database storage failed: {e}[/red]")
         logger.exception("Database error")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
     # Summary
     console.print("\n[bold green]✓ Processing complete![/bold green]")
-    console.print(f"\n[bold]Outputs:[/bold]")
+    console.print("\n[bold]Outputs:[/bold]")
     console.print(f"  • Enriched YAML: {output_file}")
     if export_formats:
         console.print(f"  • JSON: {output_file.parent}/feeds.json")
         console.print(f"  • OPML (flat): {output_file.parent}/feeds.opml")
         console.print(f"  • OPML (categorized): {output_file.parent}/feeds.categorized.opml")
     console.print(f"  • Database: {database_url}")
-    console.print(f"\n[bold]Statistics:[/bold]")
+    console.print("\n[bold]Statistics:[/bold]")
     console.print(f"  • Sources processed: {len(sources)}")
     console.print(f"  • Sources stored: {stored_count}")
     if errors:
@@ -222,7 +251,7 @@ def load(
         console.print(f"[green]✓ Loaded {len(sources)} feed sources from {input_file}[/green]")
     except Exception as e:
         console.print(f"[red]✗ Failed to load: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -231,6 +260,14 @@ def validate(
     schema_file: Path = typer.Option(None, "--schema", "-s", help="JSON schema file"),
 ) -> None:
     """Validate feeds against schema."""
+
+    def exit_on_validation_failure(errors: list[str]) -> None:
+        """Exit with error message on validation failure."""
+        console.print("[red]✗ Validation failed:[/red]")
+        for error in errors:
+            console.print(f"  - {error}")
+        raise typer.Exit(1)
+
     try:
         feeds_data = load_feeds(input_file)
         result = validate_feeds(feeds_data, schema_file)
@@ -238,14 +275,11 @@ def validate(
         if result.valid:
             console.print("[green]✓ Validation passed![/green]")
         else:
-            console.print("[red]✗ Validation failed:[/red]")
-            for error in result.errors:
-                console.print(f"  - {error}")
-            raise typer.Exit(1)
+            exit_on_validation_failure(result.errors)
 
     except Exception as e:
         console.print(f"[red]✗ Error: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -272,7 +306,7 @@ def enrich(
     except Exception as e:
         console.print(f"[red]✗ Error: {e}[/red]")
         logger.exception("Enrichment error")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -306,15 +340,15 @@ def export(
 
     except Exception as e:
         console.print(f"[red]✗ Error: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.callback()
-def callback():
+def callback() -> None:
     """AI Web Feeds CLI - Manage AI/ML feed sources."""
 
 
-def main():
+def main() -> None:
     """Entry point for the CLI."""
     app()
 

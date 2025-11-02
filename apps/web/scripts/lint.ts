@@ -1,33 +1,28 @@
-import {
-  type FileObject,
-  printErrors,
-  scanURLs,
-  validateFiles,
-} from 'next-validate-link';
-import type { InferPageType } from 'fumadocs-core/source';
-import { source } from '@/lib/source';
+import { type FileObject, printErrors, scanURLs, validateFiles } from "next-validate-link";
+import type { InferPageType } from "fumadocs-core/source";
+import { source } from "@/lib/source";
 
 /**
  * Validate all links in documentation files
- * 
+ *
  * This script checks:
  * - Internal links between documentation pages
  * - Anchor links to headings
  * - Links in MDX components (Cards, etc.)
  * - Relative paths
- * 
+ *
  * Usage: bun ./scripts/lint.ts
  */
 async function checkLinks() {
-  console.log('🔍 Scanning URLs and validating links...\n');
+  console.log("🔍 Scanning URLs and validating links...\n");
 
   // Scan all URLs from Next.js routes and documentation pages
   const scanned = await scanURLs({
     // Use Next.js preset for routing
-    preset: 'next',
+    preset: "next",
     // Populate dynamic routes with actual page data
     populate: {
-      'docs/[[...slug]]': source.getPages().map((page) => {
+      "docs/[[...slug]]": source.getPages().map((page) => {
         return {
           value: {
             slug: page.slugs,
@@ -45,11 +40,11 @@ async function checkLinks() {
     // Check href attributes in MDX components
     markdown: {
       components: {
-        Card: { attributes: ['href'] },
+        Card: { attributes: ["href"] },
       },
     },
     // Validate relative paths as URLs
-    checkRelativePaths: 'as-url',
+    checkRelativePaths: "as-url",
   });
 
   // Print validation results
@@ -60,7 +55,7 @@ async function checkLinks() {
     console.error(`\n❌ Found ${errors.length} link validation error(s)`);
     process.exit(1);
   } else {
-    console.log('\n✅ All links are valid!');
+    console.log("\n✅ All links are valid!");
   }
 }
 
@@ -78,7 +73,7 @@ async function getFiles(): Promise<FileObject[]> {
   const promises = source.getPages().map(
     async (page): Promise<FileObject> => ({
       path: page.absolutePath,
-      content: await page.data.getText('raw'),
+      content: await page.data.getText("raw"),
       url: page.url,
       data: page.data,
     }),

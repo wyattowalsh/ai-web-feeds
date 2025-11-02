@@ -1,0 +1,7 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# Validation script intentionally catches broad exceptions for robustness
+per-file-ignores = { "validate_data_assets.py" = ["BLE001", "S110"] }

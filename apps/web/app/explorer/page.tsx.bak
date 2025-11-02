@@ -226,7 +226,7 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-purple-200 dark:border-purple-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -239,7 +239,7 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-green-200 dark:border-green-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -252,7 +252,7 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-orange-200 dark:border-orange-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -286,8 +286,8 @@ export default function ExplorerPage() {
                 <span>Topics</span>
               </div>
               <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                tab === 'topics' 
-                  ? 'bg-white/20 text-white' 
+                tab === 'topics'
+                  ? 'bg-white/20 text-white'
                   : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
               }`}>
                 {filteredTopics.length}
@@ -306,8 +306,8 @@ export default function ExplorerPage() {
                 <span>Feeds</span>
               </div>
               <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                tab === 'feeds' 
-                  ? 'bg-white/20 text-white' 
+                tab === 'feeds'
+                  ? 'bg-white/20 text-white'
                   : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
               }`}>
                 {filteredFeeds.length}
@@ -390,7 +390,7 @@ export default function ExplorerPage() {
               <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <span className="text-2xl">🏷️</span> 
+                    <span className="text-2xl">🏷️</span>
                     <span>Filter by Tags</span>
                   </div>
                   {selectedTags.length > 0 && (

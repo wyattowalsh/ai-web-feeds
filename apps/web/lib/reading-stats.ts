@@ -1,13 +1,13 @@
 /**
  * Reading Statistics Tracker
- * 
+ *
  * Tracks and analyzes reading behavior:
  * - Articles read per day/week/month
  * - Reading time and completion rates
  * - Favorite topics and feeds
  * - Reading streaks
  * - Time-of-day patterns
- * 
+ *
  * All data stored client-side in IndexedDB
  */
 
@@ -430,4 +430,3 @@ export function formatReadingTime(minutes: number): string {
 export function formatCompletionRate(rate: number): string {
   return `${Math.round(rate)}%`;
 }
-

@@ -1,0 +1,653 @@
+---
+title: Pre-commit Hooks
+description: Guide to pre-commit hooks and code quality automation in AI Web Feeds
+---
+
+## Overview
+
+AI Web Feeds uses [pre-commit](https://pre-commit.com/) to automatically run code quality checks before each commit. This ensures consistent code style, catches common errors, and maintains high code quality across the project.
+
+## Installation
+
+Pre-commit is included in the dev dependencies. Install and activate hooks:
+
+```bash
+# Sync dependencies
+uv sync
+
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Install commit-msg hook (for conventional commits)
+uv run pre-commit install --hook-type commit-msg
+
+# Verify installation
+ls -la .git/hooks/pre-commit
+ls -la .git/hooks/commit-msg
+```
+
+## Configured Hooks
+
+### Python - Ruff (Linting & Formatting)
+
+**Fast, comprehensive Python linter and formatter**
+
+```yaml
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  hooks:
+    - id: ruff # Linting with auto-fix
+    - id: ruff-format # Code formatting
+```
+
+**Checks:**
+
+- Code style (PEP 8)
+- Import organization
+- Unused variables/imports
+- Type annotations
+- Security issues (bandit rules)
+- Complexity
+- And 100+ other rules
+
+**Manual run:**
+
+```bash
+uv run ruff check .              # Lint
+uv run ruff check --fix .        # Lint with auto-fix
+uv run ruff format .             # Format
+```
+
+### Python - MyPy (Type Checking)
+
+**Static type checking for Python**
+
+```yaml
+- repo: https://github.com/pre-commit/mirrors-mypy
+  hooks:
+    - id: mypy
+      name: mypy (packages)
+      files: ^packages/
+```
+
+**Checks:**
+
+- Type consistency
+- Type annotations
+- Return type validation
+- Optional handling
+
+**Manual run:**
+
+```bash
+cd packages/ai_web_feeds && uv run mypy src/
+cd apps/cli && uv run mypy .
+```
+
+### Python - Bandit (Security)
+
+**Security vulnerability scanner**
+
+```yaml
+- repo: https://github.com/PyCQA/bandit
+  hooks:
+    - id: bandit
+      args: [-c, pyproject.toml]
+```
+
+**Checks:**
+
+- SQL injection risks
+- Command injection
+- Unsafe deserialization
+- Hardcoded passwords
+- Weak cryptography
+
+**Manual run:**
+
+```bash
+uv run bandit -r src/ -c pyproject.toml
+```
+
+### TypeScript/JavaScript - ESLint
+
+**Linting for TypeScript and React code**
+
+```yaml
+- repo: https://github.com/pre-commit/mirrors-eslint
+  hooks:
+    - id: eslint
+      name: eslint (apps/web)
+      files: ^apps/web/.*\.[jt]sx?$
+      args: [--fix, --max-warnings=0]
+```
+
+**Checks:**
+
+- TypeScript errors
+- React best practices
+- Next.js patterns
+- Unused variables
+- Import issues
+
+**Manual run:**
+
+```bash
+cd apps/web && pnpm lint
+cd apps/web && pnpm lint --fix
+```
+
+### TypeScript/JavaScript - Prettier
+
+**Opinionated code formatter**
+
+```yaml
+- repo: https://github.com/pre-commit/mirrors-prettier
+  hooks:
+    - id: prettier
+      name: prettier (apps/web)
+      files: ^apps/web/.*\.(js|jsx|ts|tsx|json|css|scss|md|mdx)$
+```
+
+**Formats:**
+
+- JavaScript/TypeScript
+- JSON
+- CSS/SCSS
+- Markdown/MDX
+
+**Manual run:**
+
+```bash
+cd apps/web && pnpm prettier --write .
+```
+
+### YAML Formatting
+
+**YAML linting and formatting**
+
+```yaml
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  hooks:
+    - id: pretty-format-yaml
+      args: [--autofix, --indent, "2"]
+```
+
+**Manual run:**
+
+```bash
+yamllint data/feeds.yaml
+```
+
+### Markdown Formatting
+
+**Markdown linting and formatting**
+
+```yaml
+- repo: https://github.com/executablebooks/mdformat
+  hooks:
+    - id: mdformat
+      additional_dependencies:
+        - mdformat-gfm
+        - mdformat-black
+      args: [--wrap, "88"]
+```
+
+**Manual run:**
+
+```bash
+mdformat README.md
+```
+
+### Spell Checking
+
+**Catch common spelling mistakes**
+
+```yaml
+- repo: https://github.com/codespell-project/codespell
+  hooks:
+    - id: codespell
+      args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio]
+```
+
+**Manual run:**
+
+```bash
+codespell .
+```
+
+### Shell Scripts
+
+**Shell script linting**
+
+```yaml
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  hooks:
+    - id: shellcheck
+      args: [--severity=warning]
+```
+
+**Manual run:**
+
+```bash
+shellcheck scripts/*.sh
+```
+
+### SQL Formatting
+
+**SQL linting and formatting**
+
+```yaml
+- repo: https://github.com/sqlfluff/sqlfluff
+  hooks:
+    - id: sqlfluff-lint
+      args: [--dialect, sqlite]
+    - id: sqlfluff-fix
+      args: [--dialect, sqlite, --force]
+```
+
+**Manual run:**
+
+```bash
+sqlfluff lint data/*.sql
+sqlfluff fix data/*.sql
+```
+
+### Secrets Detection
+
+**Prevent committing secrets**
+
+```yaml
+- repo: https://github.com/Yelp/detect-secrets
+  hooks:
+    - id: detect-secrets
+      args: [--baseline, .secrets.baseline]
+```
+
+**Manual run:**
+
+```bash
+uv run detect-secrets scan
+uv run detect-secrets audit .secrets.baseline
+```
+
+### Conventional Commits
+
+**Enforce commit message format**
+
+```yaml
+- repo: https://github.com/compilerla/conventional-pre-commit
+  hooks:
+    - id: conventional-pre-commit
+      stages: [commit-msg]
+```
+
+**Manual test:**
+
+```bash
+echo "feat(core): test message" | npx commitlint
+```
+
+### General File Checks
+
+**Basic file hygiene**
+
+```yaml
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-yaml
+    - id: check-json
+    - id: check-toml
+    - id: check-added-large-files
+    - id: check-merge-conflict
+    - id: mixed-line-ending
+    - id: detect-private-key
+    - id: no-commit-to-branch
+```
+
+## Local Hooks (Project-Specific)
+
+### Python Tests
+
+```yaml
+- id: pytest
+  name: pytest (packages)
+  entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ -v'
+  files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
+```
+
+**Run tests when Python files change**
+
+### Python Coverage Check
+
+```yaml
+- id: pytest-cov
+  name: pytest coverage (≥90%)
+  entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ --cov=src --cov-fail-under=90'
+  stages: [push]
+```
+
+**Enforces 90% coverage threshold on push**
+
+### TypeScript Type Check
+
+```yaml
+- id: tsc
+  name: tsc (apps/web)
+  entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
+  files: ^apps/web/.*\.[jt]sx?$
+```
+
+**Type check TypeScript files**
+
+### Next.js Build Check
+
+```yaml
+- id: nextjs-build
+  name: next build check
+  entry: bash -c 'cd apps/web && pnpm build'
+  stages: [push]
+```
+
+**Verify Next.js builds successfully on push**
+
+### Data Assets Validation
+
+```yaml
+- id: validate-data-assets
+  name: validate data assets
+  entry: bash -c 'cd data && uv run python validate_data_assets.py'
+  files: ^data/(feeds|topics)\.(yaml|json|schema\.json)$
+```
+
+**Validate feeds.yaml and topics.yaml against schemas**
+
+## Usage
+
+### Automatic (Default)
+
+Hooks run automatically on `git commit`:
+
+```bash
+git add .
+git commit -m "feat(core): add new feature"
+# Pre-commit hooks run automatically
+```
+
+### Manual Run
+
+Run all hooks on all files:
+
+```bash
+uv run pre-commit run --all-files
+```
+
+Run specific hook:
+
+```bash
+uv run pre-commit run ruff --all-files
+uv run pre-commit run mypy --all-files
+uv run pre-commit run prettier --all-files
+```
+
+Run on specific files:
+
+```bash
+uv run pre-commit run --files src/models.py
+```
+
+### Skip Hooks (Not Recommended)
+
+Skip all hooks:
+
+```bash
+git commit --no-verify -m "message"
+# or
+git commit -n -m "message"
+```
+
+Skip specific hook by modifying `SKIP` env var:
+
+```bash
+SKIP=pytest git commit -m "message"
+```
+
+**⚠️ Warning:** Only skip hooks when absolutely necessary. CI will still run all checks.
+
+## Configuration
+
+### pyproject.toml
+
+Ruff, MyPy, Pytest, and Coverage are configured in `pyproject.toml`:
+
+```toml
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "ANN", "S", "B", ...]
+ignore = ["ANN101", "ANN102", "S101", ...]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--cov", "--cov-report=term-missing"]
+
+[tool.coverage.report]
+fail_under = 90
+```
+
+### .pre-commit-config.yaml
+
+Main pre-commit configuration:
+
+```yaml
+default_language_version:
+  python: python3.13
+  node: 20.11.0
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  # ... more hooks
+```
+
+### Update Hook Versions
+
+```bash
+# Update to latest versions
+uv run pre-commit autoupdate
+
+# Commit the changes
+git add .pre-commit-config.yaml
+git commit -m "chore(tooling): update pre-commit hook versions"
+```
+
+## Troubleshooting
+
+### Hooks Not Running
+
+```bash
+# Reinstall hooks
+uv run pre-commit uninstall
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+```
+
+### Hook Environment Issues
+
+```bash
+# Clean hook environments
+uv run pre-commit clean
+
+# Reinstall all hook environments
+uv run pre-commit install-hooks
+```
+
+### Specific Hook Failing
+
+```bash
+# Run in verbose mode
+uv run pre-commit run <hook-id> --all-files --verbose
+
+# Example
+uv run pre-commit run mypy --all-files --verbose
+```
+
+### Update Hook Dependencies
+
+```bash
+# For Python hooks
+uv sync
+
+# For Node hooks
+cd apps/web && pnpm install
+```
+
+### Skip Problematic Files
+
+Add to `.pre-commit-config.yaml`:
+
+```yaml
+- id: hook-id
+  exclude: ^path/to/exclude/
+```
+
+## CI Integration
+
+Pre-commit hooks also run in CI (`.github/workflows/ci.yml`):
+
+```yaml
+- name: Run pre-commit
+  run: |
+    pip install pre-commit
+    pre-commit run --all-files
+```
+
+CI runs are more comprehensive and cannot be skipped.
+
+## Performance
+
+### First Run
+
+First run is slow (installing hook environments):
+
+```bash
+# Install all environments upfront
+uv run pre-commit install-hooks
+```
+
+### Cached Runs
+
+Subsequent runs are fast (seconds):
+
+- Hooks only run on changed files
+- Environments are cached
+- Results are cached
+
+### Optimize Large Repos
+
+```bash
+# Run hooks in parallel
+uv run pre-commit run --all-files --verbose --parallel
+```
+
+## Best Practices
+
+### 1. Run Before Committing
+
+```bash
+# Run all hooks on staged changes
+uv run pre-commit run
+
+# Or commit normally (auto-runs)
+git commit
+```
+
+### 2. Fix Issues Early
+
+Don't skip hooks - fix the issues:
+
+```bash
+# Auto-fix what can be fixed
+uv run pre-commit run --all-files
+
+# Review and fix remaining issues
+```
+
+### 3. Keep Hooks Updated
+
+```bash
+# Monthly or quarterly
+uv run pre-commit autoupdate
+```
+
+### 4. Understand Each Hook
+
+Know what each hook does and why it's important.
+
+### 5. Add Project-Specific Hooks
+
+Add local hooks for project-specific validations.
+
+## Resources
+
+- [Pre-commit Documentation](https://pre-commit.com/)
+- [Supported Hooks](https://pre-commit.com/hooks.html)
+- [Ruff Documentation](https://docs.astral.sh/ruff/)
+- [MyPy Documentation](https://mypy.readthedocs.io/)
+- [ESLint Rules](https://eslint.org/docs/rules/)
+- [Prettier Options](https://prettier.io/docs/en/options.html)
+
+## FAQ
+
+### Why pre-commit hooks?
+
+- **Catch issues early** - Before CI, before review
+- **Consistent quality** - Same checks for everyone
+- **Fast feedback** - Seconds, not minutes
+- **Reduce CI load** - Less failed CI runs
+- **Learn best practices** - Hooks teach good patterns
+
+### Can I customize rules?
+
+Yes! Edit configuration files:
+
+- Python: `pyproject.toml`
+- TypeScript: `eslint.config.mjs`
+- Pre-commit: `.pre-commit-config.yaml`
+
+### What if a hook is too slow?
+
+- Run only on changed files (default)
+- Skip expensive hooks: `SKIP=pytest git commit`
+- Move slow checks to CI only: `stages: [push]`
+
+### How do I add a new hook?
+
+1. Find hook repo on [pre-commit.com/hooks.html](https://pre-commit.com/hooks.html)
+2. Add to `.pre-commit-config.yaml`
+3. Test: `uv run pre-commit run <hook-id> --all-files`
+4. Commit configuration
+
+### What about Windows?
+
+Pre-commit works on Windows with Git Bash or WSL.
+
+## Support
+
+For issues with pre-commit hooks:
+
+- Check this documentation
+- Review [.pre-commit-config.yaml](https://github.com/wyattowalsh/ai-web-feeds/blob/main/.pre-commit-config.yaml)
+- Run with `--verbose` flag
+- Open an issue on [GitHub](https://github.com/wyattowalsh/ai-web-feeds/issues)

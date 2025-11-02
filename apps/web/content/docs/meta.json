@@ -7,7 +7,28 @@
   "features": {
     "title": "Features",
     "icon": "Sparkles",
-    "pages": ["overview", "real-time-monitoring", "analytics", "search", "recommendations", "data-enrichment", "pdf-export", "ai-integration", "llms-full-format", "quality-scoring", "entity-extraction", "sentiment-analysis", "topic-modeling", "rss-feeds", "platform-integrations", "twitter-arxiv-integration", "link-validation", "seo-metadata", "mermaid", "math"]
+    "pages": [
+      "overview",
+      "real-time-monitoring",
+      "analytics",
+      "search",
+      "recommendations",
+      "data-enrichment",
+      "pdf-export",
+      "ai-integration",
+      "llms-full-format",
+      "quality-scoring",
+      "entity-extraction",
+      "sentiment-analysis",
+      "topic-modeling",
+      "rss-feeds",
+      "platform-integrations",
+      "twitter-arxiv-integration",
+      "link-validation",
+      "seo-metadata",
+      "mermaid",
+      "math"
+    ]
   },
   "---Guides": {
     "type": "separator"
@@ -16,15 +37,15 @@
     "title": "Guides",
     "icon": "BookOpen",
     "pages": [
-      "quick-reference", 
+      "quick-reference",
       "workflow-reference",
       "deployment",
       "data-explorer",
       "database-quick-start",
-      "testing", 
+      "testing",
       "---1",
-      "feed-schema", 
-      "github-infrastructure", 
+      "feed-schema",
+      "github-infrastructure",
       "github-setup-summary"
     ]
   },
@@ -32,8 +53,31 @@
     "type": "separator"
   },
   "development": {
-    "title": "Development", 
-    "icon": "Code", 
-    "pages": ["index", "architecture", "implementation", "database", "database-architecture", "database-enhancements", "database-storage", "refactoring-summary", "final-status", "cli", "python-api", "python-autodoc", "testing", "workflows", "cli-workflows", "contributing"]
+    "title": "Development",
+    "icon": "Code",
+    "pages": [
+      "index",
+      "architecture",
+      "implementation",
+      "database",
+      "database-architecture",
+      "database-enhancements",
+      "database-storage",
+      "refactoring-summary",
+      "final-status",
+      "cli",
+      "python-api",
+      "python-autodoc",
+      "testing",
+      "workflows",
+      "cli-workflows"
+    ]
+  },
+  "---Contributing": {
+    "type": "separator"
+  },
+  "contributing": {
+    "title": "Contributing",
+    "icon": "Users"
   }
 }

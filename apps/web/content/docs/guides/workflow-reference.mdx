@@ -32,8 +32,8 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'data/feeds.yaml'
-      - 'packages/**/*.py'
+      - "data/feeds.yaml"
+      - "packages/**/*.py"
 ```
 
 ### Trigger on PR
@@ -43,7 +43,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'data/feeds.yaml'
+      - "data/feeds.yaml"
 ```
 
 ### Scheduled Runs
@@ -51,8 +51,8 @@ on:
 ```yaml
 on:
   schedule:
-    - cron: '0 6 * * *'  # Daily at 6 AM UTC
-    - cron: '0 0 * * 0'  # Weekly on Sunday
+    - cron: "0 6 * * *" # Daily at 6 AM UTC
+    - cron: "0 0 * * 0" # Weekly on Sunday
 ```
 
 ---
@@ -159,7 +159,7 @@ uv run aiwebfeeds enrich --fix-schema --all
 - name: Setup Python
   uses: actions/setup-python@v5
   with:
-    python-version: '3.13'
+    python-version: "3.13"
 
 - name: Cache uv
   uses: actions/cache@v4
@@ -350,7 +350,7 @@ gh run rerun <run-id> --job <job-id>
 ```yaml
 strategy:
   matrix:
-    python-version: ['3.11', '3.12', '3.13']
+    python-version: ["3.11", "3.12", "3.13"]
     os: [ubuntu-latest, macos-latest]
 steps:
   - uses: actions/setup-python@v5
@@ -364,7 +364,7 @@ steps:
 ```yaml
 on:
   schedule:
-    - cron: '0 2 * * *'  # 2 AM UTC daily
+    - cron: "0 2 * * *" # 2 AM UTC daily
 
 jobs:
   validate:
@@ -404,6 +404,7 @@ jobs:
 **Error**: `aiwebfeeds: command not found`
 
 **Fix**: Use `uv run` prefix:
+
 ```yaml
 run: uv run aiwebfeeds validate --all
 ```
@@ -413,6 +414,7 @@ run: uv run aiwebfeeds validate --all
 **Error**: `Error: Permission to <repo> denied`
 
 **Fix**: Add permissions to workflow:
+
 ```yaml
 permissions:
   contents: write
@@ -424,6 +426,7 @@ permissions:
 **Error**: `Request timeout after 30s`
 
 **Fix**: Increase timeout:
+
 ```yaml
 run: uv run aiwebfeeds validate --check-urls --timeout 120
 ```
@@ -433,6 +436,7 @@ run: uv run aiwebfeeds validate --check-urls --timeout 120
 **Error**: `Coverage is below 90%`
 
 **Fix**: Add more tests or adjust threshold:
+
 ```yaml
 run: uv run pytest --cov --cov-fail-under=85
 ```
@@ -442,6 +446,7 @@ run: uv run pytest --cov --cov-fail-under=85
 **Error**: `Killed (OOM)`
 
 **Fix**: Use GitHub's larger runners:
+
 ```yaml
 runs-on: ubuntu-latest-8-cores
 ```
@@ -450,16 +455,16 @@ runs-on: ubuntu-latest-8-cores
 
 ## 📚 Workflow Files Reference
 
-| Workflow | File | Purpose | Trigger |
-|----------|------|---------|---------|
-| Quality Gate | `quality-enforcement.yml` | Comprehensive quality checks | PR to main/develop |
-| Python Quality | `python-quality.yml` | Python linting/testing | Push, PR |
-| Coverage | `coverage.yml` | Test coverage reporting | Push to main/develop, PR |
-| Feed Validation | `validate-all-feeds.yml` | Validate all feeds | Push to main, daily |
-| PR Validation | `pr-validation.yml` | PR-specific checks | PR events |
-| Auto-Fix | `auto-fix.yml` | Automated code fixes | Comment `/fix` |
-| Release | `release.yml` | Build and publish releases | Tag push |
-| Security | `codeql-analysis.yml` | Security scanning | Weekly, PR to main |
+| Workflow        | File                      | Purpose                      | Trigger                  |
+| --------------- | ------------------------- | ---------------------------- | ------------------------ |
+| Quality Gate    | `quality-enforcement.yml` | Comprehensive quality checks | PR to main/develop       |
+| Python Quality  | `python-quality.yml`      | Python linting/testing       | Push, PR                 |
+| Coverage        | `coverage.yml`            | Test coverage reporting      | Push to main/develop, PR |
+| Feed Validation | `validate-all-feeds.yml`  | Validate all feeds           | Push to main, daily      |
+| PR Validation   | `pr-validation.yml`       | PR-specific checks           | PR events                |
+| Auto-Fix        | `auto-fix.yml`            | Automated code fixes         | Comment `/fix`           |
+| Release         | `release.yml`             | Build and publish releases   | Tag push                 |
+| Security        | `codeql-analysis.yml`     | Security scanning            | Weekly, PR to main       |
 
 ---
 
@@ -472,4 +477,4 @@ runs-on: ubuntu-latest-8-cores
 
 ---
 
-*Last Updated: October 2025*
+_Last Updated: October 2025_

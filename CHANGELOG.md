@@ -392,4 +392,3 @@ Initial release with core feed management and analytics capabilities.
 - 📊 Performance - Performance improvements
 - 📝 Notes - Additional information
 - 🎯 Breaking Changes - Breaking changes
-

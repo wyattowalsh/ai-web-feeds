@@ -3,9 +3,6 @@
 This module manages APScheduler for feed polling, trending detection, and digest delivery.
 """
 
-import asyncio
-from typing import Callable
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -34,13 +31,13 @@ class SchedulerManager:
             db: Database manager instance
             settings: Application settings
         """
-        self.db              = db
-        self.settings        = settings
-        self.scheduler       = AsyncIOScheduler()
-        self.poller          = FeedPoller(db, settings)
-        self.notifier        = NotificationManager(db, settings)
-        self.trending        = TrendingDetector(db, settings)
-        self.digests         = DigestManager(db, settings)
+        self.db = db
+        self.settings = settings
+        self.scheduler = AsyncIOScheduler()
+        self.poller = FeedPoller(db, settings)
+        self.notifier = NotificationManager(db, settings)
+        self.trending = TrendingDetector(db, settings)
+        self.digests = DigestManager(db, settings)
 
         logger.info("Scheduler manager initialized")
 
@@ -50,9 +47,9 @@ class SchedulerManager:
         poll_interval_min = self.settings.phase3b.feed_poll_interval_min
         self.scheduler.add_job(
             self._poll_all_feeds,
-            trigger  =IntervalTrigger(minutes=poll_interval_min),
-            id       ="poll_feeds",
-            name     ="Poll all feeds",
+            trigger=IntervalTrigger(minutes=poll_interval_min),
+            id="poll_feeds",
+            name="Poll all feeds",
             max_instances=1,
             replace_existing=True,
         )
@@ -62,9 +59,9 @@ class SchedulerManager:
         trending_interval_h = self.settings.phase3b.trending_update_interval_hours
         self.scheduler.add_job(
             self._detect_trending,
-            trigger  =IntervalTrigger(hours=trending_interval_h),
-            id       ="detect_trending",
-            name     ="Detect trending topics",
+            trigger=IntervalTrigger(hours=trending_interval_h),
+            id="detect_trending",
+            name="Detect trending topics",
             max_instances=1,
             replace_existing=True,
         )
@@ -73,9 +70,9 @@ class SchedulerManager:
         # Job 3: Send email digests (check every minute for due digests)
         self.scheduler.add_job(
             self._send_digests,
-            trigger  =CronTrigger(minute="*/1"),  # Every minute
-            id       ="send_digests",
-            name     ="Send email digests",
+            trigger=CronTrigger(minute="*/1"),  # Every minute
+            id="send_digests",
+            name="Send email digests",
             max_instances=1,
             replace_existing=True,
         )
@@ -84,9 +81,9 @@ class SchedulerManager:
         # Job 4: Cleanup old notifications daily
         self.scheduler.add_job(
             self._cleanup_notifications,
-            trigger  =CronTrigger(hour=3, minute=0),  # 3:00 AM UTC
-            id       ="cleanup_notifications",
-            name     ="Cleanup old notifications",
+            trigger=CronTrigger(hour=3, minute=0),  # 3:00 AM UTC
+            id="cleanup_notifications",
+            name="Cleanup old notifications",
             max_instances=1,
             replace_existing=True,
         )
@@ -114,7 +111,7 @@ class SchedulerManager:
                 if not feed.get("active", True):
                     continue
 
-                feed_id  = feed["id"]
+                feed_id = feed["id"]
                 feed_url = feed["feed"]
 
                 try:
@@ -122,9 +119,7 @@ class SchedulerManager:
 
                     # If new articles discovered, send notifications
                     if job.articles_discovered > 0:
-                        articles = self.db.get_feed_entries(
-                            feed_id, limit=job.articles_discovered
-                        )
+                        articles = self.db.get_feed_entries(feed_id, limit=job.articles_discovered)
                         await self.notifier.notify_new_articles(feed_id, articles)
 
                 except Exception as e:
@@ -185,10 +180,10 @@ class SchedulerManager:
             return {"exists": False}
 
         return {
-            "exists"      : True,
-            "id"          : job.id,
-            "name"        : job.name,
-            "next_run"    : job.next_run_time.isoformat() if job.next_run_time else None,
+            "exists": True,
+            "id": job.id,
+            "name": job.name,
+            "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
             "max_instances": job.max_instances,
         }
 
@@ -200,11 +195,10 @@ class SchedulerManager:
         """
         return [
             {
-                "id"          : job.id,
-                "name"        : job.name,
-                "next_run"    : job.next_run_time.isoformat() if job.next_run_time else None,
-                "trigger"     : str(job.trigger),
+                "id": job.id,
+                "name": job.name,
+                "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
+                "trigger": str(job.trigger),
             }
             for job in self.scheduler.get_jobs()
         ]
-

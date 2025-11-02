@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         ## Feature Request
-        
+
         Thanks for suggesting a new feature! Please describe your idea below.
 
   - type: dropdown

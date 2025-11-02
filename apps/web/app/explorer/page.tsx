@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { GraphVisualizer } from '@/components/graph-visualizer';
+import React, { useState, useEffect, useMemo } from "react";
+import { GraphVisualizer } from "@/components/graph-visualizer";
 
 // Utility to fetch and parse JSON from API routes
 async function fetchData(url: string) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to fetch');
+  if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
 }
 
@@ -17,10 +17,7 @@ function useExplorerData() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetchData('/api/topics'),
-      fetchData('/api/feeds'),
-    ])
+    Promise.all([fetchData("/api/topics"), fetchData("/api/feeds")])
       .then(([topicsData, feedsData]) => {
         setTopics(topicsData);
         setFeeds(feedsData);
@@ -37,26 +34,26 @@ function useExplorerData() {
 
 export default function ExplorerPage() {
   const { topics, feeds, loading, error } = useExplorerData();
-  const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'topics' | 'feeds'>('topics');
-  const [view, setView] = useState<'table' | 'graph'>('graph');
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<"topics" | "feeds">("topics");
+  const [view, setView] = useState<"table" | "graph">("graph");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
 
   // Handler for deep linking between graphs
-  const handleNodeClick = (nodeId: string, nodeType: 'topic' | 'feed') => {
-    if (nodeType === 'topic' && tab === 'feeds') {
+  const handleNodeClick = (nodeId: string, nodeType: "topic" | "feed") => {
+    if (nodeType === "topic" && tab === "feeds") {
       // Clicked a topic from feeds graph - switch to topics tab and highlight
-      setTab('topics');
+      setTab("topics");
       setSearch(nodeId);
       setHighlightedNode(nodeId);
-    } else if (nodeType === 'feed' && tab === 'topics') {
+    } else if (nodeType === "feed" && tab === "topics") {
       // If we had feed info in topics graph, switch to feeds
-      setTab('feeds');
+      setTab("feeds");
       setHighlightedNode(nodeId);
-    } else if (nodeType === 'topic') {
+    } else if (nodeType === "topic") {
       // Clicked topic in topics graph - filter feeds by this topic
       setSearch(nodeId);
       setHighlightedNode(nodeId);
@@ -76,8 +73,8 @@ export default function ExplorerPage() {
       const feedTopics = f.topics || f.tags;
       if (Array.isArray(feedTopics)) {
         feedTopics.forEach((tag: string) => tagSet.add(tag));
-      } else if (typeof feedTopics === 'string') {
-        feedTopics.split(',').forEach((tag: string) => tagSet.add(tag.trim()));
+      } else if (typeof feedTopics === "string") {
+        feedTopics.split(",").forEach((tag: string) => tagSet.add(tag.trim()));
       }
     });
     return Array.from(tagSet).sort();
@@ -90,15 +87,15 @@ export default function ExplorerPage() {
       (t) =>
         t.label?.toLowerCase().includes(search.toLowerCase()) ||
         t.id?.toLowerCase().includes(search.toLowerCase()) ||
-        t.description?.toLowerCase().includes(search.toLowerCase())
+        t.description?.toLowerCase().includes(search.toLowerCase()),
     );
 
     result.sort((a, b) => {
-      const sortField = sortBy === 'name' ? 'label' : sortBy;
-      const aVal = a[sortField] || '';
-      const bVal = b[sortField] || '';
+      const sortField = sortBy === "name" ? "label" : sortBy;
+      const aVal = a[sortField] || "";
+      const bVal = b[sortField] || "";
       const comparison = aVal.localeCompare(bVal);
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return result;
@@ -118,8 +115,8 @@ export default function ExplorerPage() {
         const feedTopics = f.topics || f.tags;
         const topicsArray = Array.isArray(feedTopics)
           ? feedTopics
-          : typeof feedTopics === 'string'
-            ? feedTopics.split(',').map((t: string) => t.trim())
+          : typeof feedTopics === "string"
+            ? feedTopics.split(",").map((t: string) => t.trim())
             : [];
         return selectedTags.some((tag) => topicsArray.includes(tag));
       }
@@ -128,10 +125,10 @@ export default function ExplorerPage() {
     });
 
     result.sort((a, b) => {
-      const aVal = a[sortBy] || '';
-      const bVal = b[sortBy] || '';
+      const aVal = a[sortBy] || "";
+      const bVal = b[sortBy] || "";
       const comparison = String(aVal).localeCompare(String(bVal));
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return result;
@@ -139,7 +136,7 @@ export default function ExplorerPage() {
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
   };
 
@@ -206,7 +203,8 @@ export default function ExplorerPage() {
                 AI Web Feeds Explorer
               </h1>
               <p className="text-gray-700 dark:text-gray-300 text-lg max-w-4xl">
-                Interactive knowledge graph exploration • Discover connections in AI topics and RSS feeds
+                Interactive knowledge graph exploration • Discover connections in AI topics and RSS
+                feeds
               </p>
             </div>
           </div>
@@ -217,8 +215,12 @@ export default function ExplorerPage() {
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-blue-200 dark:border-blue-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">Total Topics</p>
-                <p className="text-4xl font-black text-blue-600 dark:text-blue-400 mt-2">{topics.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
+                  Total Topics
+                </p>
+                <p className="text-4xl font-black text-blue-600 dark:text-blue-400 mt-2">
+                  {topics.length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
                 🏷️
@@ -226,12 +228,16 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-purple-200 dark:border-purple-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">Total Feeds</p>
-                <p className="text-4xl font-black text-purple-600 dark:text-purple-400 mt-2">{feeds.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
+                  Total Feeds
+                </p>
+                <p className="text-4xl font-black text-purple-600 dark:text-purple-400 mt-2">
+                  {feeds.length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
                 📡
@@ -239,12 +245,16 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-green-200 dark:border-green-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">Unique Tags</p>
-                <p className="text-4xl font-black text-green-600 dark:text-green-400 mt-2">{allTags.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
+                  Unique Tags
+                </p>
+                <p className="text-4xl font-black text-green-600 dark:text-green-400 mt-2">
+                  {allTags.length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
                 🔖
@@ -252,13 +262,15 @@ export default function ExplorerPage() {
             </div>
             <div className="mt-3 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full"></div>
           </div>
-          
+
           <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-orange-200 dark:border-orange-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">Viewing</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
+                  Viewing
+                </p>
                 <p className="text-4xl font-black text-orange-600 dark:text-orange-400 mt-2">
-                  {tab === 'topics' ? filteredTopics.length : filteredFeeds.length}
+                  {tab === "topics" ? filteredTopics.length : filteredFeeds.length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
@@ -275,41 +287,45 @@ export default function ExplorerPage() {
           <div className="flex gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border-2 border-gray-200 dark:border-gray-700 w-full lg:w-auto">
             <button
               className={`group flex-1 lg:flex-none px-8 py-4 font-bold transition-all rounded-xl relative overflow-hidden ${
-                tab === 'topics'
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                tab === "topics"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
-              onClick={() => setTab('topics')}
+              onClick={() => setTab("topics")}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🏷️</span>
                 <span>Topics</span>
               </div>
-              <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                tab === 'topics' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-              }`}>
+              <span
+                className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
+                  tab === "topics"
+                    ? "bg-white/20 text-white"
+                    : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                }`}
+              >
                 {filteredTopics.length}
               </span>
             </button>
             <button
               className={`group flex-1 lg:flex-none px-8 py-4 font-bold transition-all rounded-xl relative overflow-hidden ${
-                tab === 'feeds'
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg scale-105'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                tab === "feeds"
+                  ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg scale-105"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
-              onClick={() => setTab('feeds')}
+              onClick={() => setTab("feeds")}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📡</span>
                 <span>Feeds</span>
               </div>
-              <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                tab === 'feeds' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-              }`}>
+              <span
+                className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
+                  tab === "feeds"
+                    ? "bg-white/20 text-white"
+                    : "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
+                }`}
+              >
                 {filteredFeeds.length}
               </span>
             </button>
@@ -318,22 +334,22 @@ export default function ExplorerPage() {
           {/* View Toggle */}
           <div className="flex gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border-2 border-gray-200 dark:border-gray-700 w-full lg:w-auto">
             <button
-              onClick={() => setView('graph')}
+              onClick={() => setView("graph")}
               className={`flex-1 lg:flex-none px-6 py-3 rounded-xl font-bold transition-all ${
-                view === 'graph'
-                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                view === "graph"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               <span className="mr-2">📊</span>
               Graph View
             </button>
             <button
-              onClick={() => setView('table')}
+              onClick={() => setView("table")}
               className={`flex-1 lg:flex-none px-6 py-3 rounded-xl font-bold transition-all ${
-                view === 'table'
-                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                view === "table"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               <span className="mr-2">📋</span>
@@ -343,7 +359,7 @@ export default function ExplorerPage() {
         </div>
 
         {/* Search and Controls - Only show for table view */}
-        {view === 'table' && (
+        {view === "table" && (
           <div className="mb-8 space-y-6">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-gray-200 dark:border-gray-700">
               <div className="flex flex-col lg:flex-row gap-4">
@@ -364,7 +380,7 @@ export default function ExplorerPage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white font-medium transition-all cursor-pointer"
                 >
-                  {tab === 'topics' ? (
+                  {tab === "topics" ? (
                     <>
                       <option value="name">📝 Sort by Name</option>
                       <option value="id">🔖 Sort by ID</option>
@@ -377,20 +393,20 @@ export default function ExplorerPage() {
                   )}
                 </select>
                 <button
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-2 border-blue-500 rounded-xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 font-bold transition-all shadow-lg hover:shadow-xl"
                 >
-                  {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
+                  {sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
                 </button>
               </div>
             </div>
 
             {/* Tag filter for feeds */}
-            {tab === 'feeds' && allTags.length > 0 && (
+            {tab === "feeds" && allTags.length > 0 && (
               <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <span className="text-2xl">🏷️</span> 
+                    <span className="text-2xl">🏷️</span>
                     <span>Filter by Tags</span>
                   </div>
                   {selectedTags.length > 0 && (
@@ -409,8 +425,8 @@ export default function ExplorerPage() {
                       onClick={() => toggleTag(tag)}
                       className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg ${
                         selectedTags.includes(tag)
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white scale-110 ring-4 ring-blue-300/50 dark:ring-blue-700/50'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white scale-110 ring-4 ring-blue-300/50 dark:ring-blue-700/50"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                       }`}
                     >
                       {tag}
@@ -428,7 +444,7 @@ export default function ExplorerPage() {
         )}
 
         {/* Content */}
-        {view === 'graph' ? (
+        {view === "graph" ? (
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="p-8 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-slate-800 dark:to-gray-800">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
@@ -438,10 +454,11 @@ export default function ExplorerPage() {
                   </div>
                   <div>
                     <h3 className="font-black text-gray-900 dark:text-white text-2xl">
-                      {tab === 'topics' ? 'Topics Knowledge Graph' : 'Feeds Network Graph'}
+                      {tab === "topics" ? "Topics Knowledge Graph" : "Feeds Network Graph"}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      <span className="font-semibold">Interactive visualization</span> • Pan with drag • Zoom with scroll • Click nodes for deep linking
+                      <span className="font-semibold">Interactive visualization</span> • Pan with
+                      drag • Zoom with scroll • Click nodes for deep linking
                     </p>
                   </div>
                 </div>
@@ -457,7 +474,7 @@ export default function ExplorerPage() {
             </div>
             <div className="p-4">
               <GraphVisualizer
-                data={tab === 'topics' ? filteredTopics : filteredFeeds}
+                data={tab === "topics" ? filteredTopics : filteredFeeds}
                 type={tab}
                 width={1500}
                 height={800}
@@ -467,7 +484,7 @@ export default function ExplorerPage() {
           </div>
         ) : (
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
-            {tab === 'topics' ? (
+            {tab === "topics" ? (
               <TopicsTable topics={filteredTopics} />
             ) : (
               <FeedsTable feeds={filteredFeeds} />
@@ -522,9 +539,7 @@ function TopicsTable({ topics }: { topics: any[] }) {
               <td className="px-6 py-4 font-mono text-sm text-gray-600 dark:text-gray-400">
                 {t.id}
               </td>
-              <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                {t.label}
-              </td>
+              <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{t.label}</td>
               <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                 {t.description}
               </td>
@@ -579,8 +594,8 @@ function FeedsTable({ feeds }: { feeds: any[] }) {
             const feedTopics = f.topics || f.tags || [];
             const topicsArray = Array.isArray(feedTopics)
               ? feedTopics
-              : typeof feedTopics === 'string'
-                ? feedTopics.split(',').map((t: string) => t.trim())
+              : typeof feedTopics === "string"
+                ? feedTopics.split(",").map((t: string) => t.trim())
                 : [];
 
             return (
@@ -589,7 +604,7 @@ function FeedsTable({ feeds }: { feeds: any[] }) {
                 className="hover:bg-purple-50 dark:hover:bg-gray-700/30 transition-colors"
               >
                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                  {f.title || 'Untitled Feed'}
+                  {f.title || "Untitled Feed"}
                 </td>
                 <td className="px-6 py-4 font-mono text-sm">
                   <a

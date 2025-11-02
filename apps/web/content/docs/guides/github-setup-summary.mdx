@@ -16,6 +16,7 @@ This document provides a complete overview of the GitHub infrastructure that has
 Structured form for submitting new feeds to the registry.
 
 **Features:**
+
 - ✅ Validates feed and site URLs
 - ✅ Topic selection from canonical list
 - ✅ Platform-specific configurations (Reddit, Medium, YouTube, etc.)
@@ -24,6 +25,7 @@ Structured form for submitting new feeds to the registry.
 - ✅ Assigns to feed-submissions project board
 
 **Fields:**
+
 - Feed ID (required, slug format)
 - Feed URL (optional)
 - Site URL (optional)
@@ -41,6 +43,7 @@ Structured form for submitting new feeds to the registry.
 Standard bug report template.
 
 **Fields:**
+
 - Bug description
 - Steps to reproduce
 - Expected behavior
@@ -53,6 +56,7 @@ Standard bug report template.
 Feature suggestion template.
 
 **Fields:**
+
 - Feature description
 - Problem/motivation
 - Proposed solution
@@ -64,6 +68,7 @@ Feature suggestion template.
 Documentation improvement template.
 
 **Fields:**
+
 - Documentation area
 - Issue description
 - Proposed changes
@@ -74,6 +79,7 @@ Documentation improvement template.
 Template for updating existing feeds.
 
 **Fields:**
+
 - Feed ID to update
 - Update type (URL, metadata, status)
 - New values
@@ -82,6 +88,7 @@ Template for updating existing feeds.
 #### Issue Template Config (`config.yml`)
 
 Configures the issue creation experience:
+
 - Disables blank issues
 - Adds links to Discussions and Documentation
 - Provides contact information
@@ -93,12 +100,14 @@ Configures the issue creation experience:
 Comprehensive PR template with:
 
 **Sections:**
+
 - Description
 - Type of change (checklist)
 - Related issues
 - Screenshots (if applicable)
 
 **Checklist Categories:**
+
 - Code quality (style, review, comments, warnings)
 - Testing (new tests, all pass, edge cases)
 - Documentation (README, API docs, changelog, docstrings)
@@ -110,11 +119,13 @@ Comprehensive PR template with:
 #### 1. Feed Validation (`validate-feeds.yml`)
 
 **Triggers:**
+
 - Pull requests modifying `data/feeds.yaml`
 - Issues labeled `feed-submission`
 - Manual dispatch
 
 **Jobs:**
+
 - ✅ Schema validation against `feeds.schema.json`
 - ✅ Feed URL accessibility checks
 - ✅ Topic validation against canonical list
@@ -127,6 +138,7 @@ Comprehensive PR template with:
 **Schedule:** Weekly (configurable)
 
 **Actions:**
+
 - ✅ Checks all feed URLs for accessibility
 - ✅ Validates feed formats
 - ✅ Updates `curation.status` field
@@ -134,6 +146,7 @@ Comprehensive PR template with:
 - ✅ Updates metadata timestamps
 
 **Status Values:**
+
 - `verified` - Feed accessible and valid
 - `inactive` - Feed returns errors
 - `archived` - Intentionally archived
@@ -147,6 +160,7 @@ Comprehensive PR template with:
 Local testing tool for feed submissions.
 
 **Features:**
+
 - ✅ Validates feed ID format
 - ✅ Checks URL accessibility
 - ✅ Validates topics
@@ -156,6 +170,7 @@ Local testing tool for feed submissions.
 - ✅ Optional append to `feeds.yaml`
 
 **Usage:**
+
 ```bash
 python scripts/test-feed-submission.py \
   --id "example-blog" \
@@ -170,27 +185,29 @@ python scripts/test-feed-submission.py \
 One-command setup for all infrastructure.
 
 **Actions:**
+
 - Creates directory structure
 - Generates all templates
 - Sets up workflows
 - Configures GitHub settings (with API access)
 
 **Usage:**
+
 ```bash
 bash scripts/setup-github-infra.sh
 ```
 
 ## 📋 Implementation Status
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Issue Templates | ✅ Complete | All 5 templates created |
-| PR Template | ✅ Complete | Comprehensive checklist |
-| Feed Validation Workflow | ✅ Complete | Schema + URL validation |
-| Status Checker Workflow | ✅ Complete | Weekly automated checks |
-| Test Script | ✅ Complete | Local validation tool |
-| Setup Script | ✅ Complete | Automated infrastructure setup |
-| Documentation | ✅ Complete | Integrated into Fumadocs |
+| Component                | Status      | Notes                          |
+| ------------------------ | ----------- | ------------------------------ |
+| Issue Templates          | ✅ Complete | All 5 templates created        |
+| PR Template              | ✅ Complete | Comprehensive checklist        |
+| Feed Validation Workflow | ✅ Complete | Schema + URL validation        |
+| Status Checker Workflow  | ✅ Complete | Weekly automated checks        |
+| Test Script              | ✅ Complete | Local validation tool          |
+| Setup Script             | ✅ Complete | Automated infrastructure setup |
+| Documentation            | ✅ Complete | Integrated into Fumadocs       |
 
 ## 🔄 Workflows Overview
 
@@ -233,12 +250,14 @@ graph TD
 ### For Contributors
 
 1. **Submit a Feed:**
+
    - Go to Issues → New Issue
    - Select "Submit New Feed"
    - Fill out the form
    - Submit
 
 2. **Test Locally First:**
+
    ```bash
    python scripts/test-feed-submission.py \
      --id "my-feed" \
@@ -255,11 +274,13 @@ graph TD
 ### For Maintainers
 
 1. **Review Submissions:**
+
    - Check issue labels
    - Review validation results
    - Approve or request changes
 
 2. **Merge Feeds:**
+
    - Create PR from approved issue
    - Ensure CI passes
    - Merge to main
@@ -285,7 +306,7 @@ All documentation has been integrated into the Fumadocs site:
 For GitHub Actions:
 
 ```yaml
-GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-provided
+GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Auto-provided
 ```
 
 ### Repository Settings
@@ -293,16 +314,19 @@ GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-provided
 Recommended settings:
 
 **Issues:**
+
 - ✅ Enable Issues
 - ✅ Use issue templates only
 - ✅ Enable project boards
 
 **Pull Requests:**
+
 - ✅ Allow squash merging
 - ✅ Require status checks
 - ✅ Require review before merge
 
 **Actions:**
+
 - ✅ Allow all actions
 - ✅ Enable workflow permissions (read/write)
 
@@ -310,16 +334,16 @@ Recommended settings:
 
 Recommended labels:
 
-| Label | Color | Description |
-|-------|-------|-------------|
-| `feed-submission` | `#0075ca` | New feed submissions |
-| `feed-update` | `#0e8a16` | Update existing feed |
-| `feed-broken` | `#d73a4a` | Broken/inactive feed |
-| `bug` | `#d73a4a` | Bug reports |
-| `enhancement` | `#a2eeef` | Feature requests |
-| `documentation` | `#0075ca` | Documentation updates |
-| `good first issue` | `#7057ff` | Good for newcomers |
-| `help wanted` | `#008672` | Extra attention needed |
+| Label              | Color     | Description            |
+| ------------------ | --------- | ---------------------- |
+| `feed-submission`  | `#0075ca` | New feed submissions   |
+| `feed-update`      | `#0e8a16` | Update existing feed   |
+| `feed-broken`      | `#d73a4a` | Broken/inactive feed   |
+| `bug`              | `#d73a4a` | Bug reports            |
+| `enhancement`      | `#a2eeef` | Feature requests       |
+| `documentation`    | `#0075ca` | Documentation updates  |
+| `good first issue` | `#7057ff` | Good for newcomers     |
+| `help wanted`      | `#008672` | Extra attention needed |
 
 ## 🎯 Next Steps
 
@@ -351,6 +375,7 @@ Recommended labels:
 **Cause:** Template config may be incorrect
 
 **Solution:**
+
 ```bash
 # Validate YAML syntax
 yamllint .github/ISSUE_TEMPLATE/*.yml
@@ -361,6 +386,7 @@ yamllint .github/ISSUE_TEMPLATE/*.yml
 **Cause:** Workflow file syntax error or permissions
 
 **Solution:**
+
 1. Check `.github/workflows/*.yml` syntax
 2. Verify Actions are enabled in settings
 3. Check workflow permissions
@@ -370,6 +396,7 @@ yamllint .github/ISSUE_TEMPLATE/*.yml
 **Cause:** Schema mismatch or URL issues
 
 **Solution:**
+
 ```bash
 # Test locally
 python scripts/test-feed-submission.py \
@@ -393,6 +420,6 @@ This infrastructure is part of the AI Web Feeds project and follows the same lic
 
 ---
 
-**Last Updated:** October 15, 2025  
-**Version:** 1.0.0  
+**Last Updated:** October 15, 2025
+**Version:** 1.0.0
 **Status:** ✅ Complete and Operational

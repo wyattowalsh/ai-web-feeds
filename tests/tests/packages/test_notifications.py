@@ -1,9 +1,9 @@
 """Unit tests for ai_web_feeds.notifications module"""
 
-import pytest
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
+import pytest
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, Notification, NotificationType, TrendingTopic
 from ai_web_feeds.notifications import NotificationManager
@@ -155,4 +155,3 @@ class TestNotificationManager:
 
         # Currently returns 0 (placeholder)
         assert result == 0
-

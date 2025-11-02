@@ -7,16 +7,17 @@ This module provides embedding generation functions using:
 Embeddings are 384-dim vectors from all-MiniLM-L6-v2 model.
 """
 
-import os
 from functools import lru_cache
+import os
 
+from loguru import logger
 import numpy as np
 import requests
-from loguru import logger
 from tqdm import tqdm
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEmbedding, FeedSource
+
 
 settings = Settings()
 
@@ -216,9 +217,7 @@ def generate_all_feed_embeddings(
     embeddings_array = np.vstack(all_embeddings)
 
     # Create mapping
-    embedding_map = {
-        feed_id: embeddings_array[i] for i, feed_id in enumerate(feed_ids)
-    }
+    embedding_map = {feed_id: embeddings_array[i] for i, feed_id in enumerate(feed_ids)}
 
     logger.info(f"Generated {len(embedding_map)} embeddings")
     return embedding_map
@@ -289,9 +288,7 @@ def refresh_all_embeddings(session, show_progress: bool = True):
     feeds = list(session.exec(select(FeedSource)).all())
 
     # Generate embeddings
-    embedding_map = generate_all_feed_embeddings(
-        feeds, batch_size=32, show_progress=show_progress
-    )
+    embedding_map = generate_all_feed_embeddings(feeds, batch_size=32, show_progress=show_progress)
 
     # Save to database
     provider = settings.embedding.provider
@@ -323,4 +320,3 @@ def bytes_to_embedding(embedding_bytes: bytes) -> np.ndarray:
 
 # Import datetime at the end to avoid circular import
 from datetime import datetime
-

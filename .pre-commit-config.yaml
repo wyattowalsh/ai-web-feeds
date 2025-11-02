@@ -1,105 +1,283 @@
 # Pre-commit hooks for AI Web Feeds project
-# Install with: pre-commit install
+# Install with: uv pip install pre-commit && pre-commit install
 # Run manually: pre-commit run --all-files
+# Docs: https://aiwebfeeds.com/docs/contributing/development#pre-commit-hooks
+
+default_language_version:
+  python: python3.13
+  node: 20.11.0
 
 repos:
-  # Ruff - Fast Python linter and formatter
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
-    hooks:
+  # ============================================================================
+  # Python - Ruff (linting and formatting)
+  # ============================================================================
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.8.4
+  hooks:
       # Run the linter
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-        types_or: [python, pyi, jupyter]
+  - id: ruff
+    args: [--fix, --exit-non-zero-on-fix]
+    types_or: [python, pyi, jupyter]
       # Run the formatter
-      - id: ruff-format
-        types_or: [python, pyi, jupyter]
+  - id: ruff-format
+    types_or: [python, pyi, jupyter]
 
-  # MyPy - Static type checker
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-PyYAML
-          - types-requests
-          - sqlalchemy[mypy]
-        args: [--config-file=pyproject.toml]
-        exclude: ^tests/
+  # ============================================================================
+  # Python - MyPy (static type checking)
+  # ============================================================================
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.13.0
+  hooks:
+  - id: mypy
+    name: mypy (packages)
+    files: ^packages/
+    exclude: ^tests/
+    additional_dependencies:
+    - types-PyYAML
+    - types-requests
+    - sqlalchemy[mypy]
+    - sqlmodel
+    - pydantic>=2.0
+    args: [--config-file=pyproject.toml, --strict]
+  - id: mypy
+    name: mypy (apps/cli)
+    files: ^apps/cli/
+    exclude: ^tests/
+    additional_dependencies:
+    - typer
+    - rich
+    - sqlmodel
+    args: [--config-file=apps/cli/pyproject.toml, --ignore-missing-imports]
 
-  # General pre-commit hooks
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: trailing-whitespace
-        exclude: ^.*\.(md|rst)$
-      - id: end-of-file-fixer
-      - id: check-yaml
-        args: [--allow-multiple-documents]
-      - id: check-json
-      - id: check-toml
-      - id: check-added-large-files
-        args: [--maxkb=1000]
-      - id: check-merge-conflict
-      - id: check-case-conflict
-      - id: check-docstring-first
-      - id: debug-statements
-      - id: mixed-line-ending
-        args: [--fix=lf]
-      - id: name-tests-test
-        args: [--pytest-test-first]
-        exclude: ^tests/(conftest|__init__|helpers|fixtures)\.py$
-      - id: requirements-txt-fixer
+  # ============================================================================
+  # Python - Security checks
+  # ============================================================================
+- repo: https://github.com/PyCQA/bandit
+  rev: 1.7.10
+  hooks:
+  - id: bandit
+    args: [-c, pyproject.toml]
+    additional_dependencies: ['bandit[toml]']
+    exclude: ^tests/
 
-  # Security checks
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
-    hooks:
-      - id: bandit
-        args: [-c, pyproject.toml]
-        additional_dependencies: ["bandit[toml]"]
-        exclude: ^tests/
+  # ============================================================================
+  # General file checks
+  # ============================================================================
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+    exclude: ^.*\.(md|rst)$
+  - id: end-of-file-fixer
+  - id: check-yaml
+    args: [--allow-multiple-documents, --unsafe]
+  - id: check-json
+    exclude: ^(\.vscode/.*\.json|tsconfig.*\.json)$
+  - id: check-toml
+  - id: check-added-large-files
+    args: [--maxkb=1000]
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: check-docstring-first
+  - id: debug-statements
+  - id: mixed-line-ending
+    args: [--fix=lf]
+  - id: name-tests-test
+    args: [--pytest-test-first]
+    exclude: ^tests/(conftest|__init__|helpers|fixtures)\.py$
+  - id: requirements-txt-fixer
+  - id: check-symlinks
+  - id: detect-private-key
+  - id: no-commit-to-branch
+    args: [--branch, main, --branch, production]
 
+  # ============================================================================
+  # TypeScript/JavaScript - ESLint
+  # ============================================================================
+- repo: https://github.com/pre-commit/mirrors-eslint
+  rev: v9.0.0-beta.0
+  hooks:
+  - id: eslint
+    name: eslint (apps/web)
+    files: ^apps/web/.*\.[jt]sx?$
+    types: [file]
+    args: [--fix, --max-warnings=0]
+    additional_dependencies:
+    - eslint@9.0.0
+    - '@next/eslint-plugin-next'
+    - typescript
+    - '@typescript-eslint/parser'
+    - '@typescript-eslint/eslint-plugin'
+
+  # ============================================================================
+  # TypeScript/JavaScript - Prettier
+  # ============================================================================
+- repo: https://github.com/pre-commit/mirrors-prettier
+  rev: v3.1.0
+  hooks:
+  - id: prettier
+    name: prettier (apps/web)
+    files: ^apps/web/.*\.(js|jsx|ts|tsx|json|css|scss|md|mdx)$
+    additional_dependencies:
+    - prettier@3.1.0
+    - prettier-plugin-tailwindcss
+
+  # ============================================================================
   # YAML formatting
-  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.14.0
-    hooks:
-      - id: pretty-format-yaml
-        args: [--autofix, --indent, '2']
-        exclude: ^\.github/
+  # ============================================================================
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2']
+    exclude: ^\.github/
 
+  # ============================================================================
   # Markdown formatting
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.21
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-black
-        args: [--wrap, '88']
+  # ============================================================================
+- repo: https://github.com/executablebooks/mdformat
+  rev: 0.7.21
+  hooks:
+  - id: mdformat
+    additional_dependencies:
+    - mdformat-gfm
+    - mdformat-black
+    args: [--wrap, '88']
+    exclude: ^(CHANGELOG\.md|apps/web/content/)$
 
-  # Check for common spelling mistakes
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
-    hooks:
-      - id: codespell
-        args: [--ignore-words-list=crate,nd,sav,ba]
-        exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg)$
+  # ============================================================================
+  # Spell checking
+  # ============================================================================
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.3.0
+  hooks:
+  - id: codespell
+    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio]
+    exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
+  # ============================================================================
   # Validate pyproject.toml
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.22
-    hooks:
-      - id: validate-pyproject
+  # ============================================================================
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.22
+  hooks:
+  - id: validate-pyproject
+    files: ^(packages/|apps/cli/|tests/).*pyproject\.toml$
 
+  # ============================================================================
+  # Shell scripts
+  # ============================================================================
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.9.0.6
+  hooks:
+    - id: shellcheck
+      args: [--severity=warning]
+
+  # ============================================================================
+  # SQL formatting
+  # ============================================================================
+- repo: https://github.com/sqlfluff/sqlfluff
+  rev: 3.2.5
+  hooks:
+    - id: sqlfluff-lint
+      args: [--dialect, sqlite]
+      files: \.sql$
+      exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+    - id: sqlfluff-fix
+      args: [--dialect, sqlite, --force]
+      files: \.sql$
+      exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+
+  # ============================================================================
+  # Secrets detection
+  # ============================================================================
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.5.0
+  hooks:
+    - id: detect-secrets
+      args: [--baseline, .secrets.baseline]
+      exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
+
+  # ============================================================================
+  # Conventional Commits
+  # ============================================================================
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v3.0.0
+  hooks:
+    - id: conventional-pre-commit
+      stages: [commit-msg]
+      args: []
+
+  # ============================================================================
+  # Local hooks (project-specific)
+  # ============================================================================
+- repo: local
+  hooks:
+    # Python tests
+    - id: pytest
+      name: pytest (packages)
+      entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ -v --tb=short'
+      language: system
+      pass_filenames: false
+      always_run: false
+      files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
+
+    # Python coverage check
+    - id: pytest-cov
+      name: pytest coverage (≥90%)
+      entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ --cov=src --cov-report=term --cov-fail-under=90 -q'
+      language: system
+      pass_filenames: false
+      always_run: false
+      files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
+      stages: [push]
+
+    # TypeScript type checking
+    - id: tsc
+      name: tsc (apps/web)
+      entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
+      language: system
+      pass_filenames: false
+      always_run: false
+      files: ^apps/web/.*\.[jt]sx?$
+
+    # Next.js build check (only on push)
+    - id: nextjs-build
+      name: next build check
+      entry: bash -c 'cd apps/web && pnpm build'
+      language: system
+      pass_filenames: false
+      always_run: false
+      files: ^apps/web/
+      stages: [push]
+
+    # JSON Schema validation
+    - id: validate-json-schemas
+      name: validate JSON schemas
+      entry: bash -c 'uv run python -c "import json; import sys; [json.load(open(f)) for f in sys.argv[1:]]"'
+      language: system
+      files: \.schema\.json$
+
+    # Data assets validation
+    - id: validate-data-assets
+      name: validate data assets
+      entry: bash -c 'cd data && uv run python validate_data_assets.py'
+      language: system
+      pass_filenames: false
+      always_run: false
+      files: ^data/(feeds|topics)\.(yaml|json|schema\.json)$
+
+# ============================================================================
+# CI Configuration
+# ============================================================================
 ci:
   autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit.com hooks
+    fix(ci): auto-fix pre-commit issues
 
-    for more information, see https://pre-commit.ci
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
   autofix_prs: true
   autoupdate_branch: ''
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_commit_msg: 'chore(deps): update pre-commit hooks'
   autoupdate_schedule: weekly
-  skip: []
+  skip: [pytest, pytest-cov, tsc, nextjs-build, validate-data-assets, shellcheck, sqlfluff-lint, sqlfluff-fix, detect-secrets]
   submodules: false

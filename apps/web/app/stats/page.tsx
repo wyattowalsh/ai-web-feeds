@@ -1,27 +1,26 @@
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Validation Stats - AIWebFeeds',
-  description:
-    'Feed validation statistics and health metrics for the AIWebFeeds collection.',
+  title: "Validation Stats - AIWebFeeds",
+  description: "Feed validation statistics and health metrics for the AIWebFeeds collection.",
   openGraph: {
-    title: 'Validation Stats - AIWebFeeds',
-    description: 'Feed validation statistics and health metrics',
+    title: "Validation Stats - AIWebFeeds",
+    description: "Feed validation statistics and health metrics",
   },
 };
 
 async function getValidationStats() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res     = await fetch(`${baseUrl}/api/stats/validation`, {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/stats/validation`, {
       next: { revalidate: 300 }, // Revalidate every 5 minutes
     });
-    
-    if (!res.ok) throw new Error('Failed to fetch stats');
-    
+
+    if (!res.ok) throw new Error("Failed to fetch stats");
+
     return await res.json();
   } catch (error) {
-    console.error('Error fetching validation stats:', error);
+    console.error("Error fetching validation stats:", error);
     // Return default stats on error
     return {
       total_feeds: 0,
@@ -55,46 +54,30 @@ export default async function StatsPage() {
         <div className="border rounded-lg p-6 bg-card">
           <div className="text-sm text-muted-foreground mb-1">Total Feeds</div>
           <div className="text-3xl font-bold">{stats.total_feeds}</div>
-          <div className="text-xs text-muted-foreground mt-2">
-            In collection
-          </div>
+          <div className="text-xs text-muted-foreground mt-2">In collection</div>
         </div>
 
         <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Success Rate
-          </div>
-          <div className="text-3xl font-bold text-green-600">
-            {stats.success_rate.toFixed(1)}%
-          </div>
+          <div className="text-sm text-muted-foreground mb-1">Success Rate</div>
+          <div className="text-3xl font-bold text-green-600">{stats.success_rate.toFixed(1)}%</div>
           <div className="text-xs text-muted-foreground mt-2">
             {stats.success_count} / {stats.validated_feeds} validated
           </div>
         </div>
 
         <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Avg Response Time
-          </div>
+          <div className="text-sm text-muted-foreground mb-1">Avg Response Time</div>
           <div className="text-3xl font-bold">
             {stats.avg_response_time_ms}
             <span className="text-lg">ms</span>
           </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            HTTP fetch time
-          </div>
+          <div className="text-xs text-muted-foreground mt-2">HTTP fetch time</div>
         </div>
 
         <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Health Score
-          </div>
-          <div className="text-3xl font-bold">
-            {stats.avg_health_score.toFixed(2)}
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            Average (0.0-1.0 scale)
-          </div>
+          <div className="text-sm text-muted-foreground mb-1">Health Score</div>
+          <div className="text-3xl font-bold">{stats.avg_health_score.toFixed(2)}</div>
+          <div className="text-xs text-muted-foreground mt-2">Average (0.0-1.0 scale)</div>
         </div>
       </div>
 
@@ -108,17 +91,13 @@ export default async function StatsPage() {
                 <div className="w-4 h-4 rounded-full bg-green-500"></div>
                 <span>Successful</span>
               </div>
-              <div className="text-lg font-semibold">
-                {stats.success_count}
-              </div>
+              <div className="text-lg font-semibold">{stats.success_count}</div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-green-500 h-2 rounded-full"
                 style={{
-                  width: `${
-                    (stats.success_count / stats.validated_feeds) * 100
-                  }%`,
+                  width: `${(stats.success_count / stats.validated_feeds) * 100}%`,
                 }}
               ></div>
             </div>
@@ -128,17 +107,13 @@ export default async function StatsPage() {
                 <div className="w-4 h-4 rounded-full bg-red-500"></div>
                 <span>Failed</span>
               </div>
-              <div className="text-lg font-semibold">
-                {stats.failure_count}
-              </div>
+              <div className="text-lg font-semibold">{stats.failure_count}</div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-red-500 h-2 rounded-full"
                 style={{
-                  width: `${
-                    (stats.failure_count / stats.validated_feeds) * 100
-                  }%`,
+                  width: `${(stats.failure_count / stats.validated_feeds) * 100}%`,
                 }}
               ></div>
             </div>
@@ -157,9 +132,7 @@ export default async function StatsPage() {
                 className="bg-gray-400 h-2 rounded-full"
                 style={{
                   width: `${
-                    ((stats.total_feeds - stats.validated_feeds) /
-                      stats.total_feeds) *
-                    100
+                    ((stats.total_feeds - stats.validated_feeds) / stats.total_feeds) * 100
                   }%`,
                 }}
               ></div>
@@ -173,9 +146,7 @@ export default async function StatsPage() {
             <div>
               <div className="flex justify-between mb-2">
                 <span className="text-sm">Healthy (≥0.8)</span>
-                <span className="text-sm font-semibold">
-                  {stats.healthy_feeds} feeds
-                </span>
+                <span className="text-sm font-semibold">{stats.healthy_feeds} feeds</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -189,9 +160,8 @@ export default async function StatsPage() {
 
             <div className="pt-4 border-t">
               <p className="text-sm text-muted-foreground">
-                Health score is calculated based on success rate (80%) and
-                response time (20%). Feeds with scores ≥0.8 are considered
-                healthy.
+                Health score is calculated based on success rate (80%) and response time (20%).
+                Feeds with scores ≥0.8 are considered healthy.
               </p>
             </div>
           </div>
@@ -208,19 +178,15 @@ export default async function StatsPage() {
           <code>uv run aiwebfeeds validate http</code>
         </pre>
         <p className="text-xs text-muted-foreground mt-3">
-          This will check HTTP accessibility, parse feeds, and store validation
-          results in the database.
+          This will check HTTP accessibility, parse feeds, and store validation results in the
+          database.
         </p>
       </div>
 
       {/* Footer Info */}
       <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>
-          Stats refreshed every 5 minutes. Last update:{' '}
-          {stats.last_validation_run || 'Never'}
-        </p>
+        <p>Stats refreshed every 5 minutes. Last update: {stats.last_validation_run || "Never"}</p>
       </div>
     </div>
   );
 }
-

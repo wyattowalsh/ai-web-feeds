@@ -4,11 +4,11 @@ description: Rich metadata and Open Graph images for improved discoverability
 icon: Search
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Image, FileText, Share2, Bot } from 'lucide-react';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { Image, FileText, Share2, Bot } from "lucide-react";
 
 Comprehensive SEO optimization with rich metadata, Open Graph images, and search engine discoverability.
 
@@ -17,22 +17,10 @@ Comprehensive SEO optimization with rich metadata, Open Graph images, and search
 AI Web Feeds implements Next.js Metadata API for:
 
 <Cards>
-  <Card icon={<Image />}>
-    **Dynamic OG Images**
-    Custom Open Graph images for every page
-  </Card>
-  <Card icon={<FileText />}>
-    **Rich Metadata**
-    Complete SEO tags for all content
-  </Card>
-  <Card icon={<Share2 />}>
-    **Social Sharing**
-    Optimized for Twitter, LinkedIn, Slack
-  </Card>
-  <Card icon={<Bot />}>
-    **AI-Friendly**
-    Special rules for AI crawlers
-  </Card>
+  <Card icon={<Image />}>**Dynamic OG Images** Custom Open Graph images for every page</Card>
+  <Card icon={<FileText />}>**Rich Metadata** Complete SEO tags for all content</Card>
+  <Card icon={<Share2 />}>**Social Sharing** Optimized for Twitter, LinkedIn, Slack</Card>
+  <Card icon={<Bot />}>**AI-Friendly** Special rules for AI crawlers</Card>
 </Cards>
 
 ## Features
@@ -57,11 +45,11 @@ Every documentation page gets a unique OG image:
 
 ```tsx title="lib/source.ts"
 export function getPageImage(page: InferPageType<typeof source>) {
-  const segments = [...page.slugs, 'image.png'];
+  const segments = [...page.slugs, "image.png"];
 
   return {
     segments,
-    url: `/og/docs/${segments.join('/')}`,
+    url: `/og/docs/${segments.join("/")}`,
   };
 }
 ```
@@ -84,34 +72,37 @@ Custom-designed OG images with:
     ```
     /og/docs/image.png
     ```
-    
+
     Main documentation landing page OG image
+
   </Tab>
   <Tab value="Feature Page">
     ```
     /og/docs/features/pdf-export/image.png
     ```
-    
+
     PDF Export feature page OG image
+
   </Tab>
   <Tab value="Guide Page">
     ```
     /og/docs/guides/quick-reference/image.png
     ```
-    
+
     Quick Reference guide OG image
+
   </Tab>
 </Tabs>
 
 ### Image Specifications
 
-| Property | Value |
-|----------|-------|
-| Width | 1200px |
-| Height | 630px |
-| Format | PNG |
-| Generation | Static at build time |
-| Caching | Permanent (`revalidate = false`) |
+| Property   | Value                            |
+| ---------- | -------------------------------- |
+| Width      | 1200px                           |
+| Height     | 630px                            |
+| Format     | PNG                              |
+| Generation | Static at build time             |
+| Caching    | Permanent (`revalidate = false`) |
 
 ## Metadata Structure
 
@@ -161,7 +152,7 @@ export async function generateMetadata(
   props: PageProps
 ): Promise<Metadata> {
   const page = source.getPage(params.slug);
-  
+
   return {
     title: page.data.title,
     description: page.data.description,
@@ -195,11 +186,11 @@ Auto-generated XML sitemap at `/sitemap.xml`:
 ```tsx title="app/sitemap.ts"
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = source.getPages();
-  
+
   return pages.map((page) => ({
     url: `${baseUrl}${page.url}`,
     lastModified: new Date(),
-    changeFrequency: 'weekly',
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 }
@@ -293,6 +284,7 @@ Progressive Web App configuration:
 When shared on social media, links display:
 
 **Twitter/X**
+
 - Large image (1200x630)
 - Page title
 - Description
@@ -300,12 +292,14 @@ When shared on social media, links display:
 - Creator handle
 
 **LinkedIn**
+
 - Large image
 - Page title
 - Description
 - Site URL
 
 **Slack/Discord**
+
 - Rich embed with image
 - Title and description
 - Site information
@@ -315,24 +309,27 @@ When shared on social media, links display:
 <Tabs items={['Twitter', 'LinkedIn', 'Facebook']}>
   <Tab value="Twitter">
     Use [Twitter Card Validator](https://cards-dev.twitter.com/validator):
-    
+
     1. Enter page URL
     2. Click "Preview card"
     3. Verify image and text
+
   </Tab>
   <Tab value="LinkedIn">
     Use [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/):
-    
+
     1. Enter page URL
     2. Click "Inspect"
     3. Review preview
+
   </Tab>
   <Tab value="Facebook">
     Use [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/):
-    
+
     1. Enter page URL
     2. Click "Debug"
     3. Scrape again if needed
+
   </Tab>
 </Tabs>
 
@@ -389,13 +386,15 @@ lib/
 ### Key Functions
 
 **Get Page Image URL**
+
 ```tsx
 const image = getPageImage(page);
-// { segments: ['features', 'pdf-export', 'image.png'], 
+// { segments: ['features', 'pdf-export', 'image.png'],
 //   url: '/og/docs/features/pdf-export/image.png' }
 ```
 
 **Generate Metadata**
+
 ```tsx
 export async function generateMetadata(props): Promise<Metadata> {
   const page = source.getPage(params.slug);
@@ -420,6 +419,7 @@ title: {
 ```
 
 Results in:
+
 - Homepage: "AI Web Feeds"
 - Docs page: "Getting Started | AI Web Feeds"
 
@@ -428,7 +428,7 @@ Results in:
 Keep descriptions under 160 characters:
 
 ```tsx
-description: 'Clear, concise description under 160 characters'
+description: "Clear, concise description under 160 characters";
 ```
 
 ### 3. Image Optimization
@@ -453,19 +453,14 @@ alternates: {
 Include relevant keywords:
 
 ```tsx
-keywords: ['specific', 'relevant', 'keywords']
+keywords: ["specific", "relevant", "keywords"];
 ```
 
 ## Troubleshooting
 
 ### OG Images Not Showing
 
-<Callout type="warn">
-  OG images are generated at build time. Rebuild after changes:
-  ```bash
-  pnpm build
-  ```
-</Callout>
+<Callout type="warn">OG images are generated at build time. Rebuild after changes: ```bash pnpm build ```</Callout>
 
 ### Social Media Cache
 
@@ -486,6 +481,7 @@ curl https://ai-web-feeds.vercel.app/docs | grep -i "twitter:"
 ```
 
 Expected tags:
+
 ```html
 <meta property="og:title" content="..." />
 <meta property="og:description" content="..." />
@@ -550,12 +546,12 @@ All OG images generated during build:
 
 ### Size Optimization
 
-| Asset | Size |
-|-------|------|
+| Asset          | Size      |
+| -------------- | --------- |
 | OG Image (PNG) | ~50-100KB |
-| Sitemap XML | ~5-10KB |
-| Manifest JSON | ~1KB |
-| Robots.txt | ~500B |
+| Sitemap XML    | ~5-10KB   |
+| Manifest JSON  | ~1KB      |
+| Robots.txt     | ~500B     |
 
 ## Related Documentation
 

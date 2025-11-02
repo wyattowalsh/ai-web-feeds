@@ -1,9 +1,9 @@
 """Unit tests for ai_web_feeds.enrich module."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
-from ai_web_feeds.enrich import FeedEnrichment, AdvancedEnricher
+import pytest
+from ai_web_feeds.enrich import AdvancedEnricher, FeedEnrichment
 from ai_web_feeds.models import FeedFormat
 
 
@@ -70,7 +70,7 @@ class TestAdvancedEnricher:
         # Mock client instances for both enrich and utils
         mock_client_instance = AsyncMock()
         mock_client_instance.get = AsyncMock(return_value=mock_response)
-        
+
         mock_enrich_client.return_value.__aenter__.return_value = mock_client_instance
         mock_utils_client.return_value.__aenter__.return_value = mock_client_instance
 

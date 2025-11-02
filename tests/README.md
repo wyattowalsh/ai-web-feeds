@@ -1,12 +1,14 @@
 # AI Web Feeds - Test Suite
 
-Comprehensive test suite for the ai-web-feeds project with unit, integration, and end-to-end tests.
+Comprehensive test suite for the ai-web-feeds project with unit, integration, and
+end-to-end tests.
 
 ## Running Tests
 
 ### Recommended: Use the CLI
 
-All test execution logic is now centralized in the CLI (`apps/cli/ai_web_feeds/cli/commands/test.py`).
+All test execution logic is now centralized in the CLI
+(`apps/cli/ai_web_feeds/cli/commands/test.py`).
 
 ```bash
 # From project root
@@ -83,36 +85,42 @@ tests/
 ## Test Categories
 
 ### Unit Tests (`@pytest.mark.unit`)
+
 - Test individual components in isolation
 - Fast execution
 - No external dependencies
 - Mock external services
 
 **Examples:**
+
 - Model validation
 - Database operations
 - Configuration loading
 - Feed parsing logic
 
 ### Integration Tests (`@pytest.mark.integration`)
+
 - Test multiple components working together
 - Database + Storage + Models
 - Fetcher + Parser + Storage
 - May use real database (SQLite in-memory)
 
 **Examples:**
+
 - Fetch and store workflow
 - Topic-feed relationships
 - Fetch logging
 - Data consistency
 
 ### E2E Tests (`@pytest.mark.e2e`)
+
 - Test complete user workflows
 - Full system integration
 - Real-world scenarios
 - May be slow
 
 **Examples:**
+
 - New user onboarding
 - Feed management
 - Bulk operations
@@ -121,12 +129,14 @@ tests/
 ## Running Tests
 
 ### Run All Tests
+
 ```bash
 cd tests
 pytest
 ```
 
 ### Run Specific Test Categories
+
 ```bash
 # Unit tests only (fast)
 pytest -m unit
@@ -145,6 +155,7 @@ pytest -m "not network"
 ```
 
 ### Run Specific Test Files
+
 ```bash
 # Test models
 pytest packages/ai_web_feeds/unit/test_models.py
@@ -157,6 +168,7 @@ pytest apps/cli/unit/test_commands.py
 ```
 
 ### Run Specific Test Classes or Functions
+
 ```bash
 # Run a specific test class
 pytest packages/ai_web_feeds/unit/test_models.py::TestFeedSource
@@ -171,6 +183,7 @@ pytest -k "feed_source"
 ## Coverage Reports
 
 ### Generate Coverage Report
+
 ```bash
 # HTML coverage report (opens in browser)
 pytest --cov=ai_web_feeds --cov-report=html
@@ -184,6 +197,7 @@ pytest --cov=ai_web_feeds --cov-report=html --cov-report=term-missing
 ```
 
 ### Coverage Targets
+
 - Overall: 80%+
 - Unit tests: 90%+
 - Integration tests: 75%+
@@ -192,12 +206,14 @@ pytest --cov=ai_web_feeds --cov-report=html --cov-report=term-missing
 ## Advanced Options
 
 ### Parallel Execution
+
 ```bash
 # Run tests in parallel (requires pytest-xdist)
 pytest -n auto
 ```
 
 ### Debugging
+
 ```bash
 # Drop into debugger on failure
 pytest --pdb
@@ -213,6 +229,7 @@ pytest --showlocals
 ```
 
 ### Performance
+
 ```bash
 # Show slowest tests
 pytest --durations=10
@@ -229,11 +246,13 @@ pytest --timeout=60
 Common fixtures available in `conftest.py`:
 
 ### Database Fixtures
+
 - `temp_db_path` - Temporary database file path
 - `db_engine` - Test database engine
 - `db_session` - Test database session
 
 ### Model Fixtures
+
 - `sample_feed_source` - Single feed source
 - `sample_feed_sources` - Multiple feed sources
 - `sample_feed_item` - Single feed item
@@ -242,10 +261,12 @@ Common fixtures available in `conftest.py`:
 - `sample_fetch_log` - Feed fetch log
 
 ### Mock Fixtures
+
 - `mock_httpx_response` - Mocked HTTP response
 - `mock_feedparser_result` - Mocked feed parser result
 
 ### File Fixtures
+
 - `temp_yaml_file` - Temporary YAML file
 - `temp_opml_file` - Temporary OPML file
 - `sample_rss_feed` - Sample RSS feed XML
@@ -257,6 +278,7 @@ Tests use [Hypothesis](https://hypothesis.readthedocs.io/) for property-based te
 
 ```python
 from hypothesis import given, strategies as st
+
 
 @given(
     feed_id=st.text(min_size=1, max_size=100),
@@ -270,13 +292,17 @@ def test_feed_source_property_based(self, feed_id, title):
 ## Continuous Integration
 
 ### GitHub Actions
+
 Tests run automatically on:
+
 - Every push to main
 - Every pull request
 - Scheduled daily runs
 
 ### Pre-commit Hooks
+
 Run tests before committing:
+
 ```bash
 # Install pre-commit
 pip install pre-commit
@@ -289,11 +315,13 @@ pre-commit run --all-files
 ## Writing New Tests
 
 ### Test Naming Convention
+
 - File: `test_<module>.py`
 - Class: `Test<Component>`
 - Function: `test_<feature>_<scenario>`
 
 ### Example Unit Test
+
 ```python
 @pytest.mark.unit
 class TestMyComponent:
@@ -302,7 +330,7 @@ class TestMyComponent:
         result = my_component.do_something(sample_fixture)
         assert result is not None
         assert result.status == "success"
-    
+
     def test_feature_failure(self):
         """Test feature handles errors gracefully."""
         with pytest.raises(ValueError):
@@ -310,6 +338,7 @@ class TestMyComponent:
 ```
 
 ### Example Integration Test
+
 ```python
 @pytest.mark.integration
 class TestComponentIntegration:
@@ -317,11 +346,11 @@ class TestComponentIntegration:
         """Test complete workflow across components."""
         db = DatabaseManager(f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
-        
+
         # Test workflow steps
         result = component_a.process()
         stored = component_b.store(result)
-        
+
         assert stored.id is not None
 ```
 
@@ -330,22 +359,26 @@ class TestComponentIntegration:
 ### Common Issues
 
 1. **Import Errors**: Ensure `ai_web_feeds` package is installed:
+
    ```bash
    cd packages/ai_web_feeds
    pip install -e .
    ```
 
-2. **Database Errors**: Clear test database:
+1. **Database Errors**: Clear test database:
+
    ```bash
    rm -rf tests/*.db
    ```
 
-3. **Coverage Not Working**: Reinstall coverage:
+1. **Coverage Not Working**: Reinstall coverage:
+
    ```bash
    pip install --upgrade pytest-cov
    ```
 
-4. **Slow Tests**: Run only unit tests:
+1. **Slow Tests**: Run only unit tests:
+
    ```bash
    pytest -m "unit and not slow"
    ```

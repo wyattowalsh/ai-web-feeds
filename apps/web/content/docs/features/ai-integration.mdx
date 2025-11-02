@@ -4,8 +4,8 @@ description: Comprehensive AI and LLM integration for your Fumadocs documentatio
 icon: Bot
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Complete AI and LLM integration following the official [Fumadocs guide](https://fumadocs.dev/docs/ui/llms), making your documentation easily consumable by AI agents and large language models.
 
@@ -14,22 +14,10 @@ Complete AI and LLM integration following the official [Fumadocs guide](https://
 This site provides multiple ways for AI agents to access documentation:
 
 <Cards>
-  <Card icon={<Search />}>
-    **Discovery**
-    `/llms.txt` endpoint lists all available docs
-  </Card>
-  <Card icon={<FileText />}>
-    **Full Docs**
-    `/llms-full.txt` provides complete documentation
-  </Card>
-  <Card icon={<Code />}>
-    **Markdown**
-    `.mdx` and `.md` extensions for any page
-  </Card>
-  <Card icon={<Sparkles />}>
-    **Smart Routing**
-    Automatic content negotiation
-  </Card>
+  <Card icon={<Search />}>**Discovery** `/llms.txt` endpoint lists all available docs</Card>
+  <Card icon={<FileText />}>**Full Docs** `/llms-full.txt` provides complete documentation</Card>
+  <Card icon={<Code />}>**Markdown** `.mdx` and `.md` extensions for any page</Card>
+  <Card icon={<Sparkles />}>**Smart Routing** Automatic content negotiation</Card>
 </Cards>
 
 ## Features
@@ -45,6 +33,7 @@ curl https://yourdomain.com/llms.txt
 ```
 
 **Response:**
+
 ```text
 # AI Web Feeds Documentation
 
@@ -65,11 +54,10 @@ All documentation in a single, structured text file optimized for RAG systems.
 curl https://yourdomain.com/llms-full.txt
 ```
 
-<Callout type="info">
-  The format includes metadata header, table of contents, and structured page sections. See [llms-full.txt Format](/docs/features/llms-full-format) for details.
-</Callout>
+<Callout type="info">The format includes metadata header, table of contents, and structured page sections. See [llms-full.txt Format](/docs/features/llms-full-format) for details.</Callout>
 
 **Key Features:**
+
 - Structured format with clear separators
 - Metadata header (date, page count, base URL)
 - Table of contents
@@ -80,25 +68,10 @@ curl https://yourdomain.com/llms-full.txt
 
 Access markdown source of any documentation page by appending `.mdx` or `.md`:
 
-<Tabs items={['.mdx Extension', '.md Extension', 'Content Negotiation']}>
-  <Tab value=".mdx Extension">
-    ```bash
-    curl https://yourdomain.com/docs/getting-started.mdx
-    ```
-    Returns the markdown source of the page.
-  </Tab>
-  <Tab value=".md Extension">
-    ```bash
-    curl https://yourdomain.com/docs/getting-started.md
-    ```
-    Alternative markdown extension (same as .mdx).
-  </Tab>
-  <Tab value="Content Negotiation">
-    ```bash
-    curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started
-    ```
-    Automatically serves markdown when AI agent requests it.
-  </Tab>
+<Tabs items={[".mdx Extension", ".md Extension", "Content Negotiation"]}>
+  <Tab value=".mdx Extension">```bash curl https://yourdomain.com/docs/getting-started.mdx ``` Returns the markdown source of the page.</Tab>
+  <Tab value=".md Extension">```bash curl https://yourdomain.com/docs/getting-started.md ``` Alternative markdown extension (same as .mdx).</Tab>
+  <Tab value="Content Negotiation">```bash curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started ``` Automatically serves markdown when AI agent requests it.</Tab>
 </Tabs>
 
 ### Content Negotiation
@@ -106,7 +79,7 @@ Access markdown source of any documentation page by appending `.mdx` or `.md`:
 Middleware automatically detects AI agents and serves markdown content:
 
 ```typescript title="middleware.ts"
-import { isMarkdownPreferred } from 'fumadocs-core/negotiation';
+import { isMarkdownPreferred } from "fumadocs-core/negotiation";
 
 if (isMarkdownPreferred(request)) {
   // Serve markdown version
@@ -114,9 +87,7 @@ if (isMarkdownPreferred(request)) {
 }
 ```
 
-<Callout>
-  When an AI agent sends `Accept: text/markdown` header, it automatically receives markdown content without changing the URL.
-</Callout>
+<Callout>When an AI agent sends `Accept: text/markdown` header, it automatically receives markdown content without changing the URL.</Callout>
 
 ### AI Page Actions
 
@@ -127,12 +98,13 @@ Interactive UI components on every documentation page:
 One-click copy of page markdown to clipboard:
 
 ```tsx
-import { LLMCopyButton } from '@/components/page-actions';
+import { LLMCopyButton } from "@/components/page-actions";
 
-<LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+<LLMCopyButton markdownUrl={`${page.url}.mdx`} />;
 ```
 
 **Features:**
+
 - Client-side caching for performance
 - Loading state feedback
 - Success confirmation with checkmark
@@ -147,12 +119,9 @@ Dropdown menu with links to AI tools:
 - **Open in ChatGPT** - Analyze content
 
 ```tsx
-import { ViewOptions } from '@/components/page-actions';
+import { ViewOptions } from "@/components/page-actions";
 
-<ViewOptions 
-  markdownUrl={`${page.url}.mdx`}
-  githubUrl="https://github.com/..." 
-/>
+<ViewOptions markdownUrl={`${page.url}.mdx`} githubUrl="https://github.com/..." />;
 ```
 
 ## Implementation
@@ -190,7 +159,7 @@ Already configured in `source.config.ts`:
 ```typescript title="source.config.ts"
 export const docs = defineDocs({
   docs: {
-    dir: 'content/docs',
+    dir: "content/docs",
     includeProcessedMarkdown: true, // ✅ Required for LLM support
   },
 });
@@ -219,35 +188,11 @@ async rewrites() {
 
 ### For AI Agents
 
-<Tabs items={['Discovery', 'Full Docs', 'Specific Page', 'Negotiation']}>
-  <Tab value="Discovery">
-    ```bash
-    # Discover all documentation
-    curl https://yourdomain.com/llms.txt
-    ```
-    Returns a list of all available pages with descriptions.
-  </Tab>
-  <Tab value="Full Docs">
-    ```bash
-    # Get complete documentation
-    curl https://yourdomain.com/llms-full.txt
-    ```
-    Returns all pages in a structured format.
-  </Tab>
-  <Tab value="Specific Page">
-    ```bash
-    # Get specific page as markdown
-    curl https://yourdomain.com/docs/getting-started.mdx
-    ```
-    Returns markdown source of the page.
-  </Tab>
-  <Tab value="Negotiation">
-    ```bash
-    # Use content negotiation
-    curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started
-    ```
-    Automatically receives markdown content.
-  </Tab>
+<Tabs items={["Discovery", "Full Docs", "Specific Page", "Negotiation"]}>
+  <Tab value="Discovery">```bash # Discover all documentation curl https://yourdomain.com/llms.txt ``` Returns a list of all available pages with descriptions.</Tab>
+  <Tab value="Full Docs">```bash # Get complete documentation curl https://yourdomain.com/llms-full.txt ``` Returns all pages in a structured format.</Tab>
+  <Tab value="Specific Page">```bash # Get specific page as markdown curl https://yourdomain.com/docs/getting-started.mdx ``` Returns markdown source of the page.</Tab>
+  <Tab value="Negotiation">```bash # Use content negotiation curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started ``` Automatically receives markdown content.</Tab>
 </Tabs>
 
 ### For Users
@@ -272,9 +217,9 @@ async rewrites() {
 #### Get LLM Text Programmatically
 
 ```typescript
-import { getLLMText, source } from '@/lib/source';
+import { getLLMText, source } from "@/lib/source";
 
-const page = source.getPage(['getting-started']);
+const page = source.getPage(["getting-started"]);
 const markdown = await getLLMText(page);
 ```
 
@@ -302,17 +247,15 @@ githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/conte
 
 All endpoints are optimized for performance:
 
-| Endpoint | Caching Strategy | Generation |
-|----------|-----------------|------------|
-| `/llms.txt` | `s-maxage=86400` (24h) | Dynamic |
-| `/llms-full.txt` | `revalidate=false` (permanent) | Dynamic |
-| `*.mdx` routes | `immutable` | Static |
-| Middleware | Minimal overhead | Runtime |
-| Copy button | Client-side cache | Client |
+| Endpoint         | Caching Strategy               | Generation |
+| ---------------- | ------------------------------ | ---------- |
+| `/llms.txt`      | `s-maxage=86400` (24h)         | Dynamic    |
+| `/llms-full.txt` | `revalidate=false` (permanent) | Dynamic    |
+| `*.mdx` routes   | `immutable`                    | Static     |
+| Middleware       | Minimal overhead               | Runtime    |
+| Copy button      | Client-side cache              | Client     |
 
-<Callout type="success">
-  Static generation ensures fast response times and minimal server load.
-</Callout>
+<Callout type="success">Static generation ensures fast response times and minimal server load.</Callout>
 
 ## Benefits
 

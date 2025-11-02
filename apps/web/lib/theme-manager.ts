@@ -1,6 +1,6 @@
 /**
  * Theme Manager
- * 
+ *
  * Manages app theming with support for:
  * - Light/Dark/System modes
  * - Custom color schemes
@@ -112,11 +112,11 @@ class ThemeManager {
    */
   private applyTheme(): void {
     const effectiveTheme = this.getEffectiveTheme();
-    
+
     // Update document class
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(effectiveTheme);
-    
+
     // Update meta theme-color
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
@@ -206,7 +206,7 @@ class ThemeManager {
    */
   private applyFontSettings(prefs: Preferences): void {
     const root = document.documentElement;
-    
+
     root.style.setProperty('--font-size-base', `${prefs.fontSize}px`);
     root.style.setProperty('--font-family', prefs.fontFamily);
   }
@@ -216,7 +216,7 @@ class ThemeManager {
    */
   private applyLayoutSettings(prefs: Preferences): void {
     const root = document.documentElement;
-    
+
     // Reading width
     const widthMap = {
       narrow: '600px',
@@ -425,4 +425,3 @@ export function useLayout() {
 
   return { layout, setLayout };
 }
-

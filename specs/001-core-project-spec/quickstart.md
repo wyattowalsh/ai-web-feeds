@@ -1,27 +1,29 @@
 # Quickstart Guide: AIWebFeeds Development
 
-**Feature**: AIWebFeeds - AI/ML Feed Aggregator Platform  
-**Branch**: `001-core-project-spec`  
-**Date**: 2025-10-22  
+**Feature**: AIWebFeeds - AI/ML Feed Aggregator Platform\
+**Branch**: `001-core-project-spec`\
+**Date**: 2025-10-22\
 **Status**: Complete
 
 ## Overview
 
-This guide provides step-by-step instructions for setting up the AIWebFeeds development environment, running tests, and contributing to the project. The project uses a hybrid monorepo structure with Python (managed by `uv`) and TypeScript (managed by `pnpm`).
+This guide provides step-by-step instructions for setting up the AIWebFeeds development
+environment, running tests, and contributing to the project. The project uses a hybrid
+monorepo structure with Python (managed by `uv`) and TypeScript (managed by `pnpm`).
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
 ### Required Software
 
-| Tool | Version | Purpose | Install |
-|------|---------|---------|---------|
-| **Python** | 3.13+ | Core package & CLI | [python.org](https://www.python.org/downloads/) |
-| **uv** | latest | Python package manager | `pip install uv` or `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| **Node.js** | 20+ | Web application | [nodejs.org](https://nodejs.org/) or `nvm install 20` |
-| **pnpm** | 8+ | TypeScript package manager | `npm install -g pnpm` |
-| **Git** | 2.30+ | Version control | [git-scm.com](https://git-scm.com/) |
+| Tool        | Version | Purpose                    | Install                                                                |
+| ----------- | ------- | -------------------------- | ---------------------------------------------------------------------- |
+| **Python**  | 3.13+   | Core package & CLI         | [python.org](https://www.python.org/downloads/)                        |
+| **uv**      | latest  | Python package manager     | `pip install uv` or `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| **Node.js** | 20+     | Web application            | [nodejs.org](https://nodejs.org/) or `nvm install 20`                  |
+| **pnpm**    | 8+      | TypeScript package manager | `npm install -g pnpm`                                                  |
+| **Git**     | 2.30+   | Version control            | [git-scm.com](https://git-scm.com/)                                    |
 
 ### Optional Tools
 
@@ -30,7 +32,7 @@ This guide provides step-by-step instructions for setting up the AIWebFeeds deve
 - **VS Code**: Recommended IDE with Python & TypeScript extensions
 - **pre-commit**: Git hooks for linting/formatting
 
----
+______________________________________________________________________
 
 ## Initial Setup
 
@@ -66,6 +68,7 @@ uv sync
 ```
 
 **What `uv sync` does**:
+
 - Creates a virtual environment in `.venv/`
 - Installs all workspace members (packages, apps)
 - Resolves and locks dependencies in `uv.lock`
@@ -123,7 +126,7 @@ pre-commit install
 pre-commit run --all-files
 ```
 
----
+______________________________________________________________________
 
 ## Development Workflow
 
@@ -206,16 +209,19 @@ uv run aiwebfeeds stats
 **Test-First Development (TDD)**:
 
 1. **Write test first** (in `tests/packages/ai_web_feeds/unit/`):
+
 ```python
 # tests/packages/ai_web_feeds/unit/test_new_feature.py
 import pytest
 from ai_web_feeds.new_feature import new_function
+
 
 @pytest.mark.unit
 def test_new_function_success():
     """Test new function with valid input."""
     result = new_function("input")
     assert result == "expected_output"
+
 
 @pytest.mark.unit
 def test_new_function_invalid_input():
@@ -225,38 +231,42 @@ def test_new_function_invalid_input():
 ```
 
 2. **Run test (should fail)**:
+
 ```bash
 uv run pytest tests/packages/ai_web_feeds/unit/test_new_feature.py -v
 ```
 
 3. **Implement feature** (in `packages/ai_web_feeds/src/ai_web_feeds/`):
+
 ```python
 # packages/ai_web_feeds/src/ai_web_feeds/new_feature.py
 def new_function(input: str) -> str:
     """
     Docstring explaining function purpose.
-    
+
     Args:
         input: Description of input parameter
-        
+
     Returns:
         Description of return value
-        
+
     Raises:
         ValueError: If input is empty
     """
     if not input:
         raise ValueError("Input cannot be empty")
-    
+
     return f"processed: {input}"
 ```
 
 4. **Run test (should pass)**:
+
 ```bash
 uv run pytest tests/packages/ai_web_feeds/unit/test_new_feature.py -v
 ```
 
 5. **Check coverage**:
+
 ```bash
 uv run pytest --cov=ai_web_feeds --cov-report=html
 # Open htmlcov/index.html in browser
@@ -333,7 +343,7 @@ uv add --dev pytest-mock
 uv sync --upgrade
 ```
 
----
+______________________________________________________________________
 
 ### TypeScript Development (Web Application)
 
@@ -420,7 +430,8 @@ pnpm preview
 **All documentation MUST be `.mdx` files in `apps/web/content/docs/`**:
 
 1. **Create `.mdx` file** (e.g., `apps/web/content/docs/guides/new-feature.mdx`):
-```mdx
+
+````mdx
 ---
 title: New Feature Guide
 description: Learn how to use the new feature
@@ -438,12 +449,13 @@ Description of the feature...
 
 ```bash
 uv run aiwebfeeds new-feature
-```
+````
 
 ## Examples
 
 ...
-```
+
+````
 
 2. **Update navigation** (`apps/web/content/docs/meta.json`):
 ```json
@@ -457,9 +469,10 @@ uv run aiwebfeeds new-feature
     ]
   }
 }
-```
+````
 
 3. **Verify in browser**:
+
 ```bash
 pnpm dev
 # Visit http://localhost:3000/docs/guides/new-feature
@@ -504,7 +517,7 @@ pnpm remove <package>
 pnpm install
 ```
 
----
+______________________________________________________________________
 
 ## Data Management
 
@@ -528,6 +541,7 @@ data/
 ### Editing Data Files
 
 **Feeds** (`data/feeds.yaml`):
+
 ```yaml
 - id: example-feed
   url: https://example.com/feed.xml
@@ -542,6 +556,7 @@ data/
 ```
 
 **Topics** (`data/topics.yaml`):
+
 ```yaml
 topics:
   - id: llm
@@ -585,7 +600,7 @@ uv run aiwebfeeds export opml --topic llm --output data/llm-feeds.opml
 uv run aiwebfeeds export opml --verified-only --output data/verified-feeds.opml
 ```
 
----
+______________________________________________________________________
 
 ## Quality Checks
 
@@ -636,6 +651,7 @@ git commit -m "chore(deps): update httpx to 0.25.0"
 ```
 
 **Types**:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -646,15 +662,17 @@ git commit -m "chore(deps): update httpx to 0.25.0"
 - `ci`: CI/CD changes
 - `build`: Build system changes
 
-**Scopes**: `validate`, `export`, `enrich`, `storage`, `cli`, `web`, `api`, `docs`, `test`
+**Scopes**: `validate`, `export`, `enrich`, `storage`, `cli`, `web`, `api`, `docs`,
+`test`
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
 ### Common Issues
 
 #### "uv: command not found"
+
 ```bash
 # Install uv
 pip install uv
@@ -667,6 +685,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 ```
 
 #### "Module 'ai_web_feeds' not found"
+
 ```bash
 # Ensure virtual environment is activated
 source .venv/bin/activate  # Linux/macOS
@@ -680,6 +699,7 @@ uv sync --refresh
 ```
 
 #### "pnpm: command not found"
+
 ```bash
 # Install pnpm
 npm install -g pnpm
@@ -689,6 +709,7 @@ pnpm --version
 ```
 
 #### "Database locked" Error
+
 ```bash
 # Close all applications accessing the database
 # Delete database file and recreate
@@ -697,6 +718,7 @@ uv run aiwebfeeds load data/feeds.yaml
 ```
 
 #### Type Errors with Mypy
+
 ```bash
 # Clear mypy cache
 rm -rf .mypy_cache/
@@ -709,6 +731,7 @@ uv run mypy --verbose packages/ai_web_feeds/src/ai_web_feeds/validate.py
 ```
 
 #### Next.js Build Failures
+
 ```bash
 # Clear Next.js cache
 cd apps/web
@@ -725,7 +748,7 @@ cd apps/web
 pnpm build
 ```
 
----
+______________________________________________________________________
 
 ## Useful Commands Reference
 
@@ -768,17 +791,17 @@ git checkout -b <branch>        # Create and switch to branch
 git merge <branch>              # Merge branch
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 1. **Read the Constitution**: `.specify/memory/constitution.md`
-2. **Review Component AGENTS.md**: Component-specific development patterns
-3. **Explore the Specification**: `specs/001-core-project-spec/spec.md`
-4. **Check the Data Model**: `specs/001-core-project-spec/data-model.md`
-5. **Review API Contracts**: `specs/001-core-project-spec/contracts/openapi.yaml`
+1. **Review Component AGENTS.md**: Component-specific development patterns
+1. **Explore the Specification**: `specs/001-core-project-spec/spec.md`
+1. **Check the Data Model**: `specs/001-core-project-spec/data-model.md`
+1. **Review API Contracts**: `specs/001-core-project-spec/contracts/openapi.yaml`
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -787,7 +810,6 @@ git merge <branch>              # Merge branch
 - **Contributing Guide**: CONTRIBUTING.md
 - **Component Docs**: See `AGENTS.md` files in each component
 
----
+______________________________________________________________________
 
 *Quickstart Version*: 1.0.0 | *Last Updated*: 2025-10-22
-

@@ -7,15 +7,15 @@ info:
     Web Workers, and in-app controllers. All endpoints execute locally inside
     the browser runtime (scheme `app://client`), never invoking a remote server.
 servers:
-  - url: app://client
-    description: Local browser runtime (Service Worker + IndexedDB)
+- url: app://client
+  description: Local browser runtime (Service Worker + IndexedDB)
 tags:
-  - name: Offline
-  - name: Search
-  - name: Organization
-  - name: Extension
-  - name: Export
-  - name: Diagnostics
+- name: Offline
+- name: Search
+- name: Organization
+- name: Extension
+- name: Export
+- name: Diagnostics
 
 paths:
   /offline/cache:
@@ -415,7 +415,7 @@ components:
         name:
           type: string
         filters:
-          $ref: './view-filters.schema.json'
+          $ref: ./view-filters.schema.json
         sort:
           type: string
           enum: [relevance, date, readTime]

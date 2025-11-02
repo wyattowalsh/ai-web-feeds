@@ -8,32 +8,32 @@ body:
     attributes:
       value: |
         ## Add a New AI/ML Feed
-        
+
         Thanks for contributing! This form will help you submit a new feed to the AI Web Feeds registry.
-        
+
         Your submission will be:
         1. ✅ Automatically validated against our schema
         2. 🔍 Tested for accessibility and parsing
         3. 📊 Enriched with metadata
         4. ✨ Added to `data/feeds.yaml` if approved
-        
+
         ### 🛠️ Validate Before Submitting
-        
+
         **Optional but recommended**: Test your feed URL locally first:
-        
+
         ```bash
         # Clone the repo and install CLI
         git clone https://github.com/wyattowalsh/ai-web-feeds.git
         cd ai-web-feeds
         uv sync
-        
+
         # Validate your feed
         uv run aiwebfeeds validate --feeds "YOUR_FEED_URL"
-        
+
         # Fetch and preview metadata
         uv run aiwebfeeds fetch --url "YOUR_FEED_URL" --metadata-only
         ```
-        
+
         This helps ensure faster approval! 🚀
 
   - type: input
@@ -42,9 +42,9 @@ body:
       label: Feed ID
       description: |
         Unique identifier (lowercase, alphanumeric, dashes/underscores only).
-        
+
         **Format**: `organization-name` or `publication-name`
-        
+
         **Examples**: `openai-blog`, `deepmind-research`, `huggingface-blog`
       placeholder: "e.g., openai-blog, deepmind-research"
     validations:
@@ -68,9 +68,9 @@ body:
       label: Feed URL
       description: |
         Direct RSS/Atom/JSON feed URL (preferred).
-        
+
         **How to find**: Look for RSS/feed icons, `/feed`, `/rss`, or `/atom.xml` in the site.
-        
+
         **Validation**: Run `uv run aiwebfeeds validate --feeds "URL"` to test locally.
       placeholder: "https://example.com/feed.xml"
     validations:
@@ -82,7 +82,7 @@ body:
       label: Website URL
       description: |
         Main website or blog section URL.
-        
+
         **Required if feed URL unknown** - we'll attempt auto-discovery.
       placeholder: "https://example.com/blog"
     validations:
@@ -258,48 +258,48 @@ body:
     attributes:
       value: |
         ---
-        
+
         ### 📋 What happens next?
-        
+
         1. **Automated Validation** - Our GitHub Actions workflow will:
            ```bash
            # Schema validation
            uv run aiwebfeeds validate --schema --strict
-           
+
            # URL accessibility check
            uv run aiwebfeeds validate --check-urls --feeds "YOUR_URL"
-           
+
            # Feed parsing test
            uv run aiwebfeeds validate --parse-feeds --feeds "YOUR_URL"
            ```
-        
+
         2. **Manual Review** - A maintainer will review the feed for:
            - Content quality and relevance to AI/ML
            - Feed reliability and update frequency
            - Proper categorization
-        
+
         3. **Enrichment** - If approved, the feed will be enriched:
            ```bash
            uv run aiwebfeeds enrich --url "YOUR_URL" --output data/feeds.yaml
            ```
-        
+
         4. **Automation** - The feed will be:
            - ✅ Added to `data/feeds.yaml`
            - 📊 Included in analytics
            - 📤 Exported to OPML files
            - 🌐 Published on the website
-        
+
         ### 🚀 Speed Up Approval
-        
+
         - ✅ Provide the direct feed URL (not just the website)
         - ✅ Test with CLI validation (see instructions at top)
         - ✅ Select accurate topics and categories
         - ✅ Provide platform details if applicable
-        
+
         ### 💡 Need Help?
-        
+
         - 📖 [Feed Schema Documentation](https://aiwebfeeds.com/docs/guides/feed-schema)
         - 🛠️ [CLI Validation Guide](https://aiwebfeeds.com/docs/development/cli)
         - 💬 [Join our Discord](https://discord.gg/aiwebfeeds)
-        
+
         Thank you for contributing to AI Web Feeds! 🎉

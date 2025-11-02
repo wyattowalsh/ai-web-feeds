@@ -1,6 +1,6 @@
 /**
  * TrendingTopics - Display current trending topics
- * 
+ *
  * Shows topics with high Z-scores and article counts.
  */
 
@@ -36,9 +36,7 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
       setTopics((prev) => {
         const newTopics = [...trendingAlerts, ...prev];
         // Deduplicate by topic_id
-        const unique = Array.from(
-          new Map(newTopics.map((t) => [t.topic_id, t])).values()
-        );
+        const unique = Array.from(new Map(newTopics.map((t) => [t.topic_id, t])).values());
         return unique.slice(0, limit);
       });
     }
@@ -48,9 +46,9 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
     try {
       setIsLoading(true);
       const response = await fetch(`/api/trending?limit=${limit}`);
-      
+
       if (!response.ok) throw new Error("Failed to fetch trending topics");
-      
+
       const data = await response.json();
       // Transform backend format to frontend format
       const transformed = data.trending.map((t: any) => ({
@@ -84,8 +82,18 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
   if (topics.length === 0) {
     return (
       <div className={`text-center py-8 text-gray-500 dark:text-gray-400 ${className}`}>
-        <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        <svg
+          className="w-12 h-12 mx-auto mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+          />
         </svg>
         <p className="text-sm">No trending topics yet</p>
       </div>
@@ -96,8 +104,18 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
     <div className={className}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          <svg
+            className="w-5 h-5 text-purple-600 dark:text-purple-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            />
           </svg>
           Trending Topics
         </h3>
@@ -135,14 +153,27 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
             <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 ml-8">
               <div className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 <span>{topic.article_count} articles</span>
               </div>
 
-              <div className="flex items-center gap-1" title={`Z-score: ${topic.z_score.toFixed(2)}`}>
+              <div
+                className="flex items-center gap-1"
+                title={`Z-score: ${topic.z_score.toFixed(2)}`}
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
                 </svg>
                 <span>Z: {topic.z_score.toFixed(1)}</span>
               </div>
@@ -153,4 +184,3 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
     </div>
   );
 }
-

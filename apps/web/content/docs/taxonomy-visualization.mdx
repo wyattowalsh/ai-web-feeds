@@ -103,7 +103,7 @@ graph TD
     llm["Large Language Models"]:::conceptual
     cv["Computer Vision"]:::conceptual
     multimodal["Multimodal"]:::conceptual
-    
+
     ai --> ml
     ai --> genai
     ml --> nlp
@@ -111,11 +111,11 @@ graph TD
     nlp --> llm
     ml --> cv
     genai --> multimodal
-    
+
     llm -.depends.-> training["Training"]:::technical
     llm -.depends.-> data["Data"]:::technical
     llm -.influences.-> product["Product"]:::contextual
-    
+
     classDef conceptual fill:#e1f5ff,stroke:#01579b,stroke-width:2px
     classDef technical fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef contextual fill:#fff9c4,stroke:#f57f17,stroke-width:2px
@@ -126,19 +126,19 @@ graph TD
 Topics are organized into four facet groups with distinct visual styling:
 
 <div className="grid grid-cols-2 gap-4 my-4">
-  <div className="p-4 rounded border" style={{ backgroundColor: '#e1f5ff', borderColor: '#01579b' }}>
+  <div className="p-4 rounded border" style={{ backgroundColor: "#e1f5ff", borderColor: "#01579b" }}>
     <strong>Conceptual</strong>
     <p className="text-sm text-gray-600">Core AI/ML concepts, domains, and tasks</p>
   </div>
-  <div className="p-4 rounded border" style={{ backgroundColor: '#e8f5e9', borderColor: '#2e7d32' }}>
+  <div className="p-4 rounded border" style={{ backgroundColor: "#e8f5e9", borderColor: "#2e7d32" }}>
     <strong>Technical</strong>
     <p className="text-sm text-gray-600">Infrastructure, tools, and technical components</p>
   </div>
-  <div className="p-4 rounded border" style={{ backgroundColor: '#fff9c4', borderColor: '#f57f17' }}>
+  <div className="p-4 rounded border" style={{ backgroundColor: "#fff9c4", borderColor: "#f57f17" }}>
     <strong>Contextual</strong>
     <p className="text-sm text-gray-600">Industry, governance, and application domains</p>
   </div>
-  <div className="p-4 rounded border" style={{ backgroundColor: '#fce4ec', borderColor: '#c2185b' }}>
+  <div className="p-4 rounded border" style={{ backgroundColor: "#fce4ec", borderColor: "#c2185b" }}>
     <strong>Communicative</strong>
     <p className="text-sm text-gray-600">Media types and communication channels</p>
   </div>

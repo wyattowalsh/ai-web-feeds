@@ -4,31 +4,19 @@ description: Export your Fumadocs documentation pages as high-quality PDF files
 icon: FileDown
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 
 Export your Fumadocs documentation pages as high-quality PDF files with automatic discovery and batch processing.
 
 ## Features
 
 <Cards>
-  <Card icon={<Check />}>
-    **Automatic Discovery**
-    Exports all documentation pages automatically
-  </Card>
-  <Card icon={<Eye />}>
-    **Clean Output**
-    Navigation and UI elements hidden in print mode
-  </Card>
-  <Card icon={<Layout />}>
-    **Interactive Content**
-    Accordions and tabs expanded to show all content
-  </Card>
-  <Card icon={<Zap />}>
-    **Batch Processing**
-    Concurrent exports with rate limiting
-  </Card>
+  <Card icon={<Check />}>**Automatic Discovery** Exports all documentation pages automatically</Card>
+  <Card icon={<Eye />}>**Clean Output** Navigation and UI elements hidden in print mode</Card>
+  <Card icon={<Layout />}>**Interactive Content** Accordions and tabs expanded to show all content</Card>
+  <Card icon={<Zap />}>**Batch Processing** Concurrent exports with rate limiting</Card>
 </Cards>
 
 ## Quick Start
@@ -45,25 +33,10 @@ Wait for the server to be ready at `http://localhost:3000`
 
 ### Export PDFs
 
-<Tabs items={['All Pages', 'Specific Pages', 'Production']}>
-  <Tab value="All Pages">
-    ```bash
-    pnpm export-pdf
-    ```
-    Exports all documentation pages to the `pdfs/` directory.
-  </Tab>
-  <Tab value="Specific Pages">
-    ```bash
-    pnpm export-pdf:specific /docs /docs/getting-started
-    ```
-    Export only the specified pages.
-  </Tab>
-  <Tab value="Production">
-    ```bash
-    pnpm export-pdf:build
-    ```
-    Automated build and export (recommended for final PDFs).
-  </Tab>
+<Tabs items={["All Pages", "Specific Pages", "Production"]}>
+  <Tab value="All Pages">```bash pnpm export-pdf ``` Exports all documentation pages to the `pdfs/` directory.</Tab>
+  <Tab value="Specific Pages">```bash pnpm export-pdf:specific /docs /docs/getting-started ``` Export only the specified pages.</Tab>
+  <Tab value="Production">```bash pnpm export-pdf:build ``` Automated build and export (recommended for final PDFs).</Tab>
 </Tabs>
 
 ### Find Your PDFs
@@ -93,7 +66,8 @@ Special CSS in `app/global.css` hides navigation elements and optimizes for prin
   #nd-sidebar {
     display: none;
   }
-  pre, img {
+  pre,
+  img {
     page-break-inside: avoid;
   }
 }
@@ -104,7 +78,7 @@ Special CSS in `app/global.css` hides navigation elements and optimizes for prin
 When `NEXT_PUBLIC_PDF_EXPORT=true`, interactive components render expanded:
 
 ```tsx title="mdx-components.tsx"
-const isPrinting = process.env.NEXT_PUBLIC_PDF_EXPORT === 'true';
+const isPrinting = process.env.NEXT_PUBLIC_PDF_EXPORT === "true";
 
 return {
   Accordion: isPrinting ? PrintingAccordion : Accordion,
@@ -112,9 +86,7 @@ return {
 };
 ```
 
-<Callout type="info">
-  **PrintingAccordion** and **PrintingTab** components expand all content so nothing is hidden in PDFs.
-</Callout>
+<Callout type="info">**PrintingAccordion** and **PrintingTab** components expand all content so nothing is hidden in PDFs.</Callout>
 
 ### Export Script
 
@@ -128,13 +100,13 @@ The `scripts/export-pdf.ts` script uses Puppeteer to:
 ```typescript title="scripts/export-pdf.ts"
 await page.pdf({
   path: outputPath,
-  width: '950px',
+  width: "950px",
   printBackground: true,
   margin: {
-    top: '20px',
-    right: '20px',
-    bottom: '20px',
-    left: '20px',
+    top: "20px",
+    right: "20px",
+    bottom: "20px",
+    left: "20px",
   },
 });
 ```
@@ -148,13 +120,14 @@ Edit `scripts/export-pdf.ts` to customize PDF output:
 ```typescript title="scripts/export-pdf.ts"
 await page.pdf({
   path: outputPath,
-  width: '950px',              // Page width
-  printBackground: true,       // Include backgrounds
-  margin: {                    // Page margins
-    top: '20px',
-    right: '20px',
-    bottom: '20px',
-    left: '20px',
+  width: "950px", // Page width
+  printBackground: true, // Include backgrounds
+  margin: {
+    // Page margins
+    top: "20px",
+    right: "20px",
+    bottom: "20px",
+    left: "20px",
   },
 });
 ```
@@ -167,9 +140,7 @@ Adjust parallel exports to match your server capacity:
 const CONCURRENCY = 3; // Export 3 pages at a time
 ```
 
-<Callout type="warn">
-  Higher concurrency = faster exports but more server load. Start with 3 and adjust based on your system.
-</Callout>
+<Callout type="warn">Higher concurrency = faster exports but more server load. Start with 3 and adjust based on your system.</Callout>
 
 ### Environment Variables
 
@@ -189,8 +160,8 @@ Modify `getAllDocUrls()` to filter pages:
 async function getAllDocUrls(): Promise<string[]> {
   const pages = source.getPages();
   return pages
-    .filter(page => page.url.startsWith('/docs/api')) // Only API docs
-    .map(page => page.url);
+    .filter((page) => page.url.startsWith("/docs/api")) // Only API docs
+    .map((page) => page.url);
 }
 ```
 
@@ -200,7 +171,7 @@ Change rendering viewport for different display sizes:
 
 ```typescript
 await page.setViewport({
-  width: 1920,  // Wider viewport
+  width: 1920, // Wider viewport
   height: 1080,
 });
 ```
@@ -225,28 +196,26 @@ await page.pdf({
 <Steps>
 
 ### Increase Timeout
+
 ```typescript
-timeout: 60000 // 60 seconds
+timeout: 60000; // 60 seconds
 ```
 
 ### Check Server
+
 ```bash
 curl http://localhost:3000/docs
 ```
 
 ### View Browser
+
 Set `headless: false` in launch options to see what's happening.
 
 </Steps>
 
 ### Missing Content
 
-<Callout type="warn">
-  Ensure `NEXT_PUBLIC_PDF_EXPORT=true` is set during build:
-  ```bash
-  NEXT_PUBLIC_PDF_EXPORT=true pnpm build
-  ```
-</Callout>
+<Callout type="warn">Ensure `NEXT_PUBLIC_PDF_EXPORT=true` is set during build: ```bash NEXT_PUBLIC_PDF_EXPORT=true pnpm build ```</Callout>
 
 ### Navigation Still Visible
 
@@ -269,11 +238,11 @@ Set `headless: false` in launch options to see what's happening.
 
 ## Scripts Reference
 
-| Script | Description |
-|--------|-------------|
-| `pnpm export-pdf` | Export all pages (requires server running) |
-| `pnpm export-pdf:specific <urls...>` | Export specific pages |
-| `pnpm export-pdf:build` | Build and export (automated) |
+| Script                               | Description                                |
+| ------------------------------------ | ------------------------------------------ |
+| `pnpm export-pdf`                    | Export all pages (requires server running) |
+| `pnpm export-pdf:specific <urls...>` | Export specific pages                      |
+| `pnpm export-pdf:build`              | Build and export (automated)               |
 
 ## Tips
 

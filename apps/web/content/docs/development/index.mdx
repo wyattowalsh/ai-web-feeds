@@ -16,12 +16,14 @@ A production-ready system with the following capabilities:
 **Technology:** SQLModel + SQLAlchemy + Alembic
 
 **Tables:**
+
 - `feed_sources` - Core feed metadata
-- `feed_items` - Individual feed entries  
+- `feed_items` - Individual feed entries
 - `feed_fetch_logs` - Fetch attempt tracking
 - `topics` - Topic taxonomy
 
 **Features:**
+
 - Full CRUD operations
 - Relationship management
 - Migration support via Alembic
@@ -30,17 +32,19 @@ A production-ready system with the following capabilities:
 ### 2. Feed Enrichment Pipeline (`feeds.enriched.yaml`)
 
 **Capabilities:**
+
 - Automatic feed URL discovery from site URLs
 - Feed format detection (RSS/Atom/JSONFeed)
 - Metadata validation and enrichment
 - Quality scoring and curation tracking
 
-**Input:** `data/feeds.yaml` (human-curated)  
+**Input:** `data/feeds.yaml` (human-curated)
 **Output:** `data/feeds.enriched.yaml` (fully enriched with automation data)
 
 ### 3. Schema Management (`feeds.enriched.schema.json`)
 
 **Features:**
+
 - Auto-generated JSON Schema for enriched feeds
 - Comprehensive validation rules
 - Extends base `feeds.schema.json`
@@ -49,6 +53,7 @@ A production-ready system with the following capabilities:
 ### 4. OPML Generation
 
 **Formats:**
+
 - **all.opml** - Flat list of all feeds
 - **categorized.opml** - Organized by source type
 - **Custom filtered** - By topic, type, tag, verification status
@@ -58,6 +63,7 @@ A production-ready system with the following capabilities:
 ### 5. CLI Interface
 
 **Commands:**
+
 ```bash
 aiwebfeeds enrich all          # Enrich feeds
 aiwebfeeds opml all            # Generate all.opml

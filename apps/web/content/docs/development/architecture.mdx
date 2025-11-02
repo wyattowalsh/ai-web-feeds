@@ -30,6 +30,7 @@ The project is organized into 8 primary modules:
 Handles all YAML loading and saving operations.
 
 **Functions:**
+
 - `load_feeds(path)` - Load feeds from YAML file
 - `load_topics(path)` - Load topics from YAML file
 - `save_feeds(data, path)` - Save feeds to YAML file
@@ -40,6 +41,7 @@ Handles all YAML loading and saving operations.
 Validates feeds against JSON schemas and performs additional checks.
 
 **Functions:**
+
 - `validate_feeds(data, schema_path)` - Validate feeds against schema
 - `validate_topics(data, schema_path)` - Validate topics against schema
 
@@ -50,6 +52,7 @@ Validates feeds against JSON schemas and performs additional checks.
 Enriches feeds with metadata, quality scores, and AI-generated content.
 
 **Functions:**
+
 - `enrich_all_feeds(feeds_data)` - Enrich all feed sources
 - `enrich_feed_source(source)` - Enrich a single feed source
 
@@ -58,6 +61,7 @@ Enriches feeds with metadata, quality scores, and AI-generated content.
 Exports data to various formats (JSON, OPML).
 
 **Functions:**
+
 - `export_to_json(data, output_path)` - Export to JSON
 - `export_to_opml(data, output_path, categorized)` - Export to OPML
 - `export_all_formats(data, base_path, prefix)` - Export to all formats
@@ -67,6 +71,7 @@ Exports data to various formats (JSON, OPML).
 Configures structured logging with loguru.
 
 **Features:**
+
 - Colored console output
 - File logging with rotation
 - Structured log messages
@@ -76,6 +81,7 @@ Configures structured logging with loguru.
 Data models using SQLModel (SQLAlchemy + Pydantic).
 
 **Main Models:**
+
 - `FeedSource` - Feed source with metadata
 - `Topic` - Topic with graph structure
 - `FeedItem` - Individual feed items
@@ -86,6 +92,7 @@ Data models using SQLModel (SQLAlchemy + Pydantic).
 Database operations and persistence.
 
 **DatabaseManager Methods:**
+
 - `create_db_and_tables()` - Initialize database
 - `add_feed_source(feed_source)` - Store feed source
 - `get_all_feed_sources()` - Retrieve all sources
@@ -96,6 +103,7 @@ Database operations and persistence.
 Helper functions for various operations.
 
 **Features:**
+
 - Platform-specific feed URL generation
 - Feed discovery
 - URL validation
@@ -112,6 +120,7 @@ ai-web-feeds process
 ```
 
 **Options:**
+
 - `--input`, `-i` - Input feeds YAML file (default: `data/feeds.yaml`)
 - `--output`, `-o` - Output enriched YAML file (default: `data/feeds.enriched.yaml`)
 - `--schema`, `-s` - JSON schema file for validation

@@ -1,0 +1,25 @@
+{
+  "name": "ai-web-feeds",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Curated, AI-enriched feeds from top sources in AI/ML, software engineering, and technology",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wyattowalsh/ai-web-feeds.git"
+  },
+  "scripts": {
+    "commit": "cz",
+    "prepare": "husky install || true"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0"
+  }
+}

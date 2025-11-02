@@ -1,8 +1,8 @@
 """ai_web_feeds.validate -- Validate feed data against schemas and URLs"""
 
 import asyncio
-import json
 from datetime import datetime, timedelta
+import json
 from pathlib import Path
 from typing import Any
 
@@ -17,8 +17,6 @@ from ai_web_feeds.models import FeedSource, FeedValidationResult
 
 class ValidationError(Exception):
     """Custom validation error."""
-
-    pass
 
 
 class ValidationResult:
@@ -80,11 +78,11 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
 
     # Additional validations
     sources = data.get("sources", [])
-    
+
     # Handle sources not being a list (schema validation should catch this)
     if not isinstance(sources, list):
         sources = []
-    
+
     logger.info(f"Validating {len(sources)} feed sources")
 
     # Check for duplicate IDs
@@ -116,7 +114,9 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
     return result
 
 
-def validate_topics(data: dict[str, Any], schema_path: Path | str | None = None) -> ValidationResult:
+def validate_topics(
+    data: dict[str, Any], schema_path: Path | str | None = None
+) -> ValidationResult:
     """Validate topics data against JSON schema.
 
     Args:
@@ -190,11 +190,11 @@ async def validate_feed_url(
     timeout: float = 30.0,
 ) -> dict[str, Any]:
     """Validate a feed URL with HTTP accessibility check and format parsing.
-    
+
     Args:
         feed_url: The feed URL to validate
         timeout: HTTP request timeout in seconds
-    
+
     Returns:
         Validation result dictionary with success, status_code, response_time, error_message, etc.
     """
@@ -209,74 +209,74 @@ async def validate_feed_url(
         "entry_count": 0,
         "validated_at": start_time,
     }
-    
+
     try:
         async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
             response = await client.get(feed_url)
-            
+
             # Record timing
             response_time = (datetime.now() - start_time).total_seconds() * 1000
             result["response_time_ms"] = round(response_time, 2)
             result["status_code"] = response.status_code
-            
+
             # Check HTTP status
             if response.status_code != 200:
                 result["error_message"] = f"HTTP {response.status_code}"
                 return result
-            
+
             # Parse feed content
             feed_content = response.text
             parsed_feed = feedparser.parse(feed_content)
-            
+
             # Check if feed is valid
-            if hasattr(parsed_feed, 'bozo') and parsed_feed.bozo:
+            if hasattr(parsed_feed, "bozo") and parsed_feed.bozo:
                 # Feed has parse errors
-                bozo_exception = getattr(parsed_feed, 'bozo_exception', None)
+                bozo_exception = getattr(parsed_feed, "bozo_exception", None)
                 result["error_message"] = f"Feed parse error: {bozo_exception}"
                 # Still might be usable, so don't return yet
-            
+
             # Detect feed format
             feed_format = "unknown"
-            if parsed_feed.get('version'):
-                version = parsed_feed['version'].lower()
-                if 'rss' in version:
+            if parsed_feed.get("version"):
+                version = parsed_feed["version"].lower()
+                if "rss" in version:
                     feed_format = "rss"
-                elif 'atom' in version:
+                elif "atom" in version:
                     feed_format = "atom"
-            
+
             result["feed_format"] = feed_format
-            result["entry_count"] = len(parsed_feed.get('entries', []))
-            
+            result["entry_count"] = len(parsed_feed.get("entries", []))
+
             # Success if we got entries or a valid feed structure
-            if result["entry_count"] > 0 or parsed_feed.get('feed', {}).get('title'):
+            if result["entry_count"] > 0 or parsed_feed.get("feed", {}).get("title"):
                 result["success"] = True
                 result["error_message"] = None
             else:
                 result["error_message"] = "No entries found in feed"
-            
+
     except httpx.TimeoutException:
         result["error_message"] = f"Timeout after {timeout}s"
     except httpx.RequestError as e:
-        result["error_message"] = f"Request error: {str(e)}"
+        result["error_message"] = f"Request error: {e!s}"
     except Exception as e:
-        result["error_message"] = f"Unexpected error: {str(e)}"
+        result["error_message"] = f"Unexpected error: {e!s}"
         logger.exception(f"Error validating feed {feed_url}")
-    
+
     return result
 
 
 async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
     """Validate a single feed source and return validation result model.
-    
+
     Args:
         feed_source: FeedSource model to validate
-    
+
     Returns:
         FeedValidationResult model
     """
     # Use feed URL, fallback to site URL
     url_to_validate = feed_source.feed or feed_source.site
-    
+
     if not url_to_validate:
         return FeedValidationResult(
             feed_source_id=feed_source.id,
@@ -284,10 +284,10 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
             error_message="No feed or site URL provided",
             validated_at=datetime.now(),
         )
-    
+
     # Validate URL
     result_dict = await validate_feed_url(url_to_validate)
-    
+
     # Convert to FeedValidationResult model
     return FeedValidationResult(
         feed_source_id=feed_source.id,
@@ -307,24 +307,24 @@ async def validate_all_feeds(
     show_progress: bool = True,
 ) -> list[FeedValidationResult]:
     """Validate multiple feeds with concurrency control and progress tracking.
-    
+
     Args:
         feed_sources: List of FeedSource models to validate
         concurrency_limit: Maximum concurrent HTTP requests
         show_progress: Whether to show progress bar
-    
+
     Returns:
         List of FeedValidationResult models
     """
     semaphore = asyncio.Semaphore(concurrency_limit)
-    
+
     async def validate_with_semaphore(feed: FeedSource) -> FeedValidationResult:
         async with semaphore:
             return await validate_feed(feed)
-    
+
     # Create validation tasks
     tasks = [validate_with_semaphore(feed) for feed in feed_sources]
-    
+
     # Execute with progress bar
     if show_progress:
         results = await async_tqdm.gather(
@@ -334,7 +334,7 @@ async def validate_all_feeds(
         )
     else:
         results = await asyncio.gather(*tasks)
-    
+
     return results
 
 
@@ -343,40 +343,37 @@ def calculate_health_score(
     max_results: int = 10,
 ) -> float:
     """Calculate health score based on recent validation history.
-    
+
     Args:
         validation_results: List of recent validation results (most recent first)
         max_results: Maximum number of results to consider
-    
+
     Returns:
         Health score between 0.0 and 1.0
     """
     if not validation_results:
         return 0.0
-    
+
     # Consider only recent results
     recent_results = validation_results[:max_results]
-    
+
     # Calculate success rate
     success_count = sum(1 for r in recent_results if r.success)
     success_rate = success_count / len(recent_results)
-    
+
     # Calculate average response time factor (lower is better)
-    response_times = [
-        r.response_time_ms for r in recent_results 
-        if r.response_time_ms is not None
-    ]
-    
+    response_times = [r.response_time_ms for r in recent_results if r.response_time_ms is not None]
+
     if response_times:
         avg_response_time = sum(response_times) / len(response_times)
         # Normalize response time: <1000ms = 1.0, >5000ms = 0.0
         response_time_score = max(0.0, min(1.0, 1.0 - (avg_response_time - 1000) / 4000))
     else:
         response_time_score = 0.5  # neutral
-    
+
     # Weighted score: 80% success rate, 20% response time
     health_score = (success_rate * 0.8) + (response_time_score * 0.2)
-    
+
     return round(health_score, 3)
 
 
@@ -386,34 +383,35 @@ def mark_inactive_feeds(
     inactive_threshold_days: int = 30,
 ) -> list[str]:
     """Mark feeds as inactive if they haven't had a successful validation in N days.
-    
+
     Args:
         feed_sources: List of feed sources to check
         validation_history: Dict mapping feed_source_id to validation results
         inactive_threshold_days: Days without success before marking inactive
-    
+
     Returns:
         List of feed source IDs marked as inactive
     """
     cutoff_date = datetime.now() - timedelta(days=inactive_threshold_days)
     marked_inactive = []
-    
+
     for feed in feed_sources:
         history = validation_history.get(feed.id, [])
-        
+
         if not history:
             # No validation history, skip
             continue
-        
+
         # Check if any recent validation was successful
         recent_success = any(
-            result.success and result.validated_at >= cutoff_date
-            for result in history
+            result.success and result.validated_at >= cutoff_date for result in history
         )
-        
+
         if not recent_success:
             feed.is_active = False
             marked_inactive.append(feed.id)
-            logger.warning(f"Marked feed {feed.id} as inactive (no success in {inactive_threshold_days} days)")
-    
+            logger.warning(
+                f"Marked feed {feed.id} as inactive (no success in {inactive_threshold_days} days)"
+            )
+
     return marked_inactive

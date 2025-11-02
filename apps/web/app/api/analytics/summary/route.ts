@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface AnalyticsSummaryParams {
   date_range?: string;
@@ -9,13 +9,13 @@ interface AnalyticsSummaryParams {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const date_range = searchParams.get('date_range') || '30d';
-  const topic = searchParams.get('topic') || undefined;
+  const date_range = searchParams.get("date_range") || "30d";
+  const topic = searchParams.get("topic") || undefined;
 
   try {
     // In production, this would call the Python backend API
     // For now, we'll return mock data matching the schema
-    
+
     const summary = {
       total_feeds: 1250,
       active_feeds: 1180,
@@ -33,17 +33,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json(summary, {
       headers: {
-        'Cache-Control': topic
-          ? 'public, s-maxage=300, stale-while-revalidate=600' // 5 min for filtered
-          : 'public, s-maxage=3600, stale-while-revalidate=7200', // 1 hour for unfiltered
+        "Cache-Control": topic
+          ? "public, s-maxage=300, stale-while-revalidate=600" // 5 min for filtered
+          : "public, s-maxage=3600, stale-while-revalidate=7200", // 1 hour for unfiltered
       },
     });
   } catch (error) {
-    console.error('Error fetching analytics summary:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch analytics summary' },
-      { status: 500 }
-    );
+    console.error("Error fetching analytics summary:", error);
+    return NextResponse.json({ error: "Failed to fetch analytics summary" }, { status: 500 });
   }
 }
-

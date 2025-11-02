@@ -5,13 +5,13 @@ import * as path from 'node:path';
 
 /**
  * Generate Python API documentation from JSON output
- * 
+ *
  * This script converts Python docstrings to MDX format using fumadocs-python.
- * 
+ *
  * Prerequisites:
  * 1. Install fumadocs-python: pip install fumadocs-python
  * 2. Generate JSON: fumapy-generate ai_web_feeds
- * 
+ *
  * Usage:
  *   pnpm generate:docs
  */
@@ -25,7 +25,7 @@ const BASE_URL = '/docs/api';
 async function generate() {
   try {
     console.log('🔍 Reading Python docs from:', JSON_PATH);
-    
+
     // Check if JSON file exists
     try {
       await fs.access(JSON_PATH);
@@ -43,7 +43,7 @@ async function generate() {
 
     // Read and parse JSON
     const content = JSON.parse((await fs.readFile(JSON_PATH)).toString());
-    
+
     // Convert to MDX
     console.log('🔄 Converting to MDX...');
     const converted = Python.convert(content, {

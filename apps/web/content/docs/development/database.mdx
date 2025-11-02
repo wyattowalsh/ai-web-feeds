@@ -171,12 +171,14 @@ engine = create_engine(
 All models are defined using SQLModel, which combines SQLAlchemy and Pydantic for type-safe database operations with automatic validation.
 
 **Core Models** (`models.py`):
+
 - `FeedSource` - Feed metadata and configuration
 - `FeedItem` - Individual feed entries
 - `FeedFetchLog` - Fetch attempt history
 - `Topic` - Topic taxonomy
 
 **Advanced Models** (`models_advanced.py`):
+
 - `FeedValidationHistory` - Validation tracking over time
 - `FeedHealthMetric` - Health scores and metrics
 - `DataQualityMetric` - Multi-dimensional quality tracking

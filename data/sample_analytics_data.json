@@ -1,0 +1,284 @@
+{
+  "sample_analytics_snapshots": [
+    {
+      "snapshot_date": "2025-11-01",
+      "total_feeds": 487,
+      "active_feeds": 453,
+      "validation_success_rate": 0.947,
+      "avg_response_time": 287.3,
+      "trending_topics": [
+        {
+          "topic": "llm",
+          "article_count": 342,
+          "z_score": 3.8,
+          "rank": 1,
+          "growth_rate": 0.42
+        },
+        {
+          "topic": "agents",
+          "article_count": 198,
+          "z_score": 2.9,
+          "rank": 2,
+          "growth_rate": 0.38
+        },
+        {
+          "topic": "inference",
+          "article_count": 156,
+          "z_score": 2.6,
+          "rank": 3,
+          "growth_rate": 0.24
+        },
+        {
+          "topic": "evaluation",
+          "article_count": 134,
+          "z_score": 2.4,
+          "rank": 4,
+          "growth_rate": 0.31
+        },
+        {
+          "topic": "safety",
+          "article_count": 112,
+          "z_score": 2.1,
+          "rank": 5,
+          "growth_rate": 0.19
+        }
+      ],
+      "health_distribution": {
+        "healthy": 387,
+        "moderate": 62,
+        "unhealthy": 4
+      }
+    },
+    {
+      "snapshot_date": "2025-10-31",
+      "total_feeds": 485,
+      "active_feeds": 451,
+      "validation_success_rate": 0.952,
+      "avg_response_time": 294.1,
+      "trending_topics": [
+        {
+          "topic": "llm",
+          "article_count": 287,
+          "z_score": 3.2,
+          "rank": 1,
+          "growth_rate": 0.35
+        },
+        {
+          "topic": "multimodal",
+          "article_count": 176,
+          "z_score": 2.7,
+          "rank": 2,
+          "growth_rate": 0.41
+        },
+        {
+          "topic": "agents",
+          "article_count": 165,
+          "z_score": 2.5,
+          "rank": 3,
+          "growth_rate": 0.28
+        },
+        {
+          "topic": "retrieval",
+          "article_count": 143,
+          "z_score": 2.3,
+          "rank": 4,
+          "growth_rate": 0.22
+        },
+        {
+          "topic": "training",
+          "article_count": 128,
+          "z_score": 2.1,
+          "rank": 5,
+          "growth_rate": 0.15
+        }
+      ],
+      "health_distribution": {
+        "healthy": 383,
+        "moderate": 64,
+        "unhealthy": 4
+      }
+    },
+    {
+      "snapshot_date": "2025-10-30",
+      "total_feeds": 483,
+      "active_feeds": 449,
+      "validation_success_rate": 0.941,
+      "avg_response_time": 301.8,
+      "trending_topics": [
+        {
+          "topic": "llm",
+          "article_count": 264,
+          "z_score": 3.1,
+          "rank": 1,
+          "growth_rate": 0.32
+        },
+        {
+          "topic": "evaluation",
+          "article_count": 189,
+          "z_score": 2.8,
+          "rank": 2,
+          "growth_rate": 0.44
+        },
+        {
+          "topic": "agents",
+          "article_count": 158,
+          "z_score": 2.4,
+          "rank": 3,
+          "growth_rate": 0.26
+        },
+        {
+          "topic": "optimization",
+          "article_count": 147,
+          "z_score": 2.3,
+          "rank": 4,
+          "growth_rate": 0.29
+        },
+        {
+          "topic": "open-source",
+          "article_count": 121,
+          "z_score": 2.0,
+          "rank": 5,
+          "growth_rate": 0.18
+        }
+      ],
+      "health_distribution": {
+        "healthy": 378,
+        "moderate": 67,
+        "unhealthy": 4
+      }
+    }
+  ],
+  "sample_topic_stats": [
+    {
+      "id": "a8c7f3e2-9d6b-4f1e-b3a2-7c8d1e5f9a3b",
+      "topic": "llm",
+      "feed_count": 287,
+      "validation_frequency": 0.947,
+      "avg_health_score": 0.91,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "b9d8e4f3-0e7c-5g2f-c4b3-8d9e2f6g0b4c",
+      "topic": "agents",
+      "feed_count": 142,
+      "validation_frequency": 0.892,
+      "avg_health_score": 0.88,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "c0e9f5g4-1f8d-6h3g-d5c4-9e0f3g7h1c5d",
+      "topic": "inference",
+      "feed_count": 198,
+      "validation_frequency": 0.934,
+      "avg_health_score": 0.90,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "d1f0g6h5-2g9e-7i4h-e6d5-0f1g4h8i2d6e",
+      "topic": "evaluation",
+      "feed_count": 176,
+      "validation_frequency": 0.918,
+      "avg_health_score": 0.89,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "e2g1h7i6-3h0f-8j5i-f7e6-1g2h5i9j3e7f",
+      "topic": "retrieval",
+      "feed_count": 154,
+      "validation_frequency": 0.905,
+      "avg_health_score": 0.87,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "f3h2i8j7-4i1g-9k6j-g8f7-2h3i6j0k4f8g",
+      "topic": "training",
+      "feed_count": 189,
+      "validation_frequency": 0.928,
+      "avg_health_score": 0.89,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "g4i3j9k8-5j2h-0l7k-h9g8-3i4j7k1l5g9h",
+      "topic": "optimization",
+      "feed_count": 167,
+      "validation_frequency": 0.912,
+      "avg_health_score": 0.88,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "h5j4k0l9-6k3i-1m8l-i0h9-4j5k8l2m6h0i",
+      "topic": "safety",
+      "feed_count": 98,
+      "validation_frequency": 0.885,
+      "avg_health_score": 0.86,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "i6k5l1m0-7l4j-2n9m-j1i0-5k6l9m3n7i1j",
+      "topic": "multimodal",
+      "feed_count": 134,
+      "validation_frequency": 0.901,
+      "avg_health_score": 0.87,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "j7l6m2n1-8m5k-3o0n-k2j1-6l7m0n4o8j2k",
+      "topic": "open-source",
+      "feed_count": 245,
+      "validation_frequency": 0.921,
+      "avg_health_score": 0.88,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "k8m7n3o2-9n6l-4p1o-l3k2-7m8n1o5p9k3l",
+      "topic": "research",
+      "feed_count": 312,
+      "validation_frequency": 0.938,
+      "avg_health_score": 0.90,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "l9n8o4p3-0o7m-5q2p-m4l3-8n9o2p6q0l4m",
+      "topic": "industry",
+      "feed_count": 278,
+      "validation_frequency": 0.925,
+      "avg_health_score": 0.89,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "m0o9p5q4-1p8n-6r3q-n5m4-9o0p3q7r1m5n",
+      "topic": "product",
+      "feed_count": 198,
+      "validation_frequency": 0.914,
+      "avg_health_score": 0.87,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "n1p0q6r5-2q9o-7s4r-o6n5-0p1q4r8s2n6o",
+      "topic": "mlops",
+      "feed_count": 187,
+      "validation_frequency": 0.908,
+      "avg_health_score": 0.86,
+      "snapshot_date": "2025-11-01"
+    },
+    {
+      "id": "o2q1r7s6-3r0p-8t5s-p7o6-1q2r5s9t3o7p",
+      "topic": "serving",
+      "feed_count": 143,
+      "validation_frequency": 0.897,
+      "avg_health_score": 0.85,
+      "snapshot_date": "2025-11-01"
+    }
+  ],
+  "metadata": {
+    "generated_at": "2025-11-02T10:30:00Z",
+    "format_version": "1.0",
+    "description": "Sample analytics data for testing AIWebFeeds dashboard functionality",
+    "notes": [
+      "Analytics snapshots show daily aggregated metrics",
+      "Topic stats track per-topic validation frequency and health",
+      "Trending topics include Z-score calculations for statistical significance",
+      "Health distribution categorizes feeds by quality scores"
+    ]
+  }
+}

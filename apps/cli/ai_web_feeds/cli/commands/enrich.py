@@ -48,13 +48,13 @@ def enrich_all(
 ):
     """Enrich all feed sources and save to database and YAML."""
     logger.info(f"Loading feeds from {input_path}")
-    
+
     # Load input feeds
     feeds_data = load_feeds_yaml(input_path)
     sources = feeds_data.get("sources", [])
-    
+
     logger.info(f"Enriching {len(sources)} feed sources...")
-    
+
     # Enrich each source
     enriched_sources = []
     for source in sources:
@@ -65,9 +65,10 @@ def enrich_all(
         except Exception as e:
             logger.error(f"✗ Failed to enrich {source.get('id', 'unknown')}: {e}")
             enriched_sources.append(source)  # Keep original
-    
+
     # Update document metadata
     from datetime import datetime
+
     enriched_data = {
         "schema_version": "feeds-enriched-1.0.0",
         "document_meta": {
@@ -77,20 +78,20 @@ def enrich_all(
         },
         "sources": enriched_sources,
     }
-    
+
     # Save enriched YAML
     save_feeds_yaml(enriched_data, output_path)
     logger.info(f"Saved enriched feeds to {output_path}")
-    
+
     # Generate and save schema
     schema = generate_enriched_schema()
     save_json_schema(schema, schema_path)
     logger.info(f"Saved enriched schema to {schema_path}")
-    
+
     # Save to database
     db = DatabaseManager(db_path)
     db.create_db_and_tables()
-    
+
     for source_data in enriched_sources:
         try:
             # Convert to FeedSource model
@@ -121,7 +122,7 @@ def enrich_all(
             db.add_feed_source(feed_source)
         except Exception as e:
             logger.error(f"Failed to save {source_data.get('id')} to database: {e}")
-    
+
     logger.info(f"✓ Saved {len(enriched_sources)} sources to database")
     typer.echo(f"✓ Enrichment complete: {len(enriched_sources)} sources processed")
 
@@ -139,16 +140,17 @@ def enrich_one(
     """Enrich a single feed source."""
     feeds_data = load_feeds_yaml(input_path)
     sources = feeds_data.get("sources", [])
-    
+
     # Find the feed
     feed = next((s for s in sources if s.get("id") == feed_id), None)
     if not feed:
         typer.echo(f"✗ Feed '{feed_id}' not found", err=True)
         raise typer.Exit(1)
-    
+
     logger.info(f"Enriching feed: {feed_id}")
     enriched = asyncio.run(enrich_feed_source(feed))
-    
+
     # Pretty print the enriched data
     import yaml
+
     typer.echo(yaml.dump(enriched, default_flow_style=False, sort_keys=False))

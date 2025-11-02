@@ -16,7 +16,7 @@ The database schema consists of 7 primary tables that store all possible data:
 ```python
 # Core data models
 FeedSource          # Feed definitions and metadata
-FeedItem            # Individual feed entries  
+FeedItem            # Individual feed entries
 FeedFetchLog        # Fetch history and logs
 Topic               # Topic taxonomy
 
@@ -57,86 +57,86 @@ class FeedEnrichmentData(SQLModel, table=True):
     feed_source_id: str        # Foreign key to FeedSource
     enriched_at: datetime      # Enrichment timestamp
     enrichment_version: str    # Version tracking
-    
+
     # Basic metadata
     discovered_title: str | None
     discovered_description: str | None
     discovered_language: str | None
     discovered_author: str | None
-    
+
     # Format and platform
     detected_format: FeedFormat | None
     detected_platform: str | None
     platform_metadata: dict
-    
+
     # Visual assets
     icon_url: str | None
     logo_url: str | None
     image_url: str | None
     favicon_url: str | None
     banner_url: str | None
-    
+
     # Quality and health scores
     health_score: float | None         # Feed health (0-1)
     quality_score: float | None        # Content quality (0-1)
     completeness_score: float | None   # Metadata completeness (0-1)
     reliability_score: float | None    # Update reliability (0-1)
     freshness_score: float | None      # Content freshness (0-1)
-    
+
     # Content analysis
     entry_count: int | None
     has_full_content: bool
     avg_content_length: float | None
     content_types: list[str]
     content_samples: list[str]
-    
+
     # Update patterns
     estimated_frequency: str | None
     last_updated: datetime | None
     update_regularity: float | None
     update_intervals: list[int]
-    
+
     # Performance metrics
     response_time_ms: float | None
     availability_score: float | None
     uptime_percentage: float | None
-    
+
     # Topic suggestions
     suggested_topics: list[str]
     topic_confidence: dict[str, float]
     auto_keywords: list[str]
-    
+
     # Feed extensions
     has_itunes: bool
     has_media_rss: bool
     has_dublin_core: bool
     has_geo: bool
     extension_data: dict
-    
+
     # SEO and social
     seo_title: str | None
     seo_description: str | None
     og_image: str | None
     twitter_card: str | None
     social_metadata: dict
-    
+
     # Technical details
     encoding: str | None
     generator: str | None
     ttl: int | None
     cloud: dict
-    
+
     # Link analysis
     internal_links: int | None
     external_links: int | None
     broken_links: int | None
     redirect_chains: list[str]
-    
+
     # Security
     uses_https: bool
     has_valid_ssl: bool
     security_headers: dict
-    
+
     # Flexible storage
     structured_data: dict
     raw_metadata: dict
@@ -151,37 +151,37 @@ Validation checks and results:
 class FeedValidationResult(SQLModel, table=True):
     feed_source_id: str
     validated_at: datetime
-    
+
     # Overall status
     is_valid: bool
     validation_level: str          # strict, moderate, lenient
-    
+
     # Schema validation
     schema_valid: bool
     schema_version: str | None
     schema_errors: list[str]
-    
+
     # Accessibility
     is_accessible: bool
     http_status: int | None
     redirect_count: int | None
-    
+
     # Content validation
     has_items: bool
     item_count: int | None
     has_required_fields: bool
     missing_fields: list[str]
-    
+
     # Link validation
     links_checked: int | None
     links_valid: int | None
     broken_link_urls: list[str]
-    
+
     # Security checks
     https_enabled: bool
     ssl_valid: bool
     security_issues: list[str]
-    
+
     # Recommendations
     warnings: list[str]
     recommendations: list[str]
@@ -198,33 +198,33 @@ class FeedAnalytics(SQLModel, table=True):
     period_start: datetime
     period_end: datetime
     period_type: str              # daily, weekly, monthly, yearly
-    
+
     # Volume metrics
     total_items: int
     new_items: int
     updated_items: int
-    
+
     # Update frequency
     update_count: int
     avg_update_interval_hours: float | None
-    
+
     # Content metrics
     avg_content_length: float | None
     has_images_count: int
     has_video_count: int
-    
+
     # Quality metrics
     items_with_full_content: int
     items_with_summary_only: int
-    
+
     # Reliability
     fetch_attempts: int
     fetch_successes: int
     uptime_percentage: float | None
-    
+
     # Performance
     avg_response_time_ms: float | None
-    
+
     # Distribution
     topic_distribution: dict[str, int]
     keyword_frequency: dict[str, int]

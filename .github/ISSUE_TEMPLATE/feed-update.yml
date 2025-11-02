@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         ## Update Existing Feed
-        
+
         Report an issue with an existing feed or suggest updates to its metadata.
 
   - type: input

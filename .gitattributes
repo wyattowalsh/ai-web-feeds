@@ -1,0 +1,225 @@
+# Git attributes for AI Web Feeds
+# Controls line endings, diff behavior, and merge strategies
+# https://git-scm.com/docs/gitattributes
+
+# ============================================================================
+# Auto-detect text files and normalize line endings to LF
+# ============================================================================
+* text=auto eol=lf
+
+# ============================================================================
+# Source Code - Force LF line endings
+# ============================================================================
+*.py text eol=lf
+*.pyi text eol=lf
+*.pyx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+
+# ============================================================================
+# Configuration Files - Force LF
+# ============================================================================
+*.json text eol=lf
+*.json5 text eol=lf
+*.jsonc text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.config text eol=lf
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# ============================================================================
+# Documentation - Force LF
+# ============================================================================
+*.md text eol=lf
+*.mdx text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+AUTHORS text eol=lf
+CHANGELOG text eol=lf
+CHANGES text eol=lf
+CONTRIBUTING text eol=lf
+COPYING text eol=lf
+INSTALL text eol=lf
+LICENSE text eol=lf
+NEWS text eol=lf
+README text eol=lf
+TODO text eol=lf
+
+# ============================================================================
+# Web Assets - Force LF
+# ============================================================================
+*.html text eol=lf
+*.htm text eol=lf
+*.xhtml text eol=lf
+*.xml text eol=lf
+*.svg text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+
+# ============================================================================
+# SQL - Force LF
+# ============================================================================
+*.sql text eol=lf
+
+# ============================================================================
+# Docker - Force LF
+# ============================================================================
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+docker-compose*.yml text eol=lf
+.dockerignore text eol=lf
+
+# ============================================================================
+# CI/CD - Force LF
+# ============================================================================
+.github/**/* text eol=lf
+.gitlab-ci.yml text eol=lf
+.travis.yml text eol=lf
+appveyor.yml text eol=lf
+Jenkinsfile text eol=lf
+
+# ============================================================================
+# Environment Files - Force LF
+# ============================================================================
+.env text eol=lf
+.env.* text eol=lf
+env.example text eol=lf
+
+# ============================================================================
+# Lock Files - Binary to prevent merge conflicts
+# ============================================================================
+package-lock.json binary
+pnpm-lock.yaml binary
+yarn.lock binary
+uv.lock binary
+poetry.lock binary
+Pipfile.lock binary
+
+# ============================================================================
+# Binary Files - Explicitly mark as binary
+# ============================================================================
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.avif binary
+*.svg binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.tar binary
+*.bz2 binary
+*.rar binary
+*.pdf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.otf binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+*.pyc binary
+*.pyo binary
+*.pyd binary
+*.so binary
+*.dll binary
+*.dylib binary
+*.exe binary
+*.bin binary
+
+# ============================================================================
+# Special Diff Strategies
+# ============================================================================
+# YAML files - use YAML-aware diff
+*.yaml diff=yaml
+*.yml diff=yaml
+
+# JSON files - use JSON-aware diff (requires Git 2.9+)
+*.json diff=json
+
+# Python files - use Python function context in diffs
+*.py diff=python
+
+# Jupyter Notebooks - strip output for cleaner diffs
+*.ipynb diff=jupyternotebook merge=union
+
+# Lockfiles - prefer union merge strategy
+package-lock.json merge=union
+pnpm-lock.yaml merge=union
+yarn.lock merge=union
+uv.lock merge=union
+
+# ============================================================================
+# Generated Files - Mark for export-ignore
+# ============================================================================
+.github/ export-ignore
+.vscode/ export-ignore
+tests/ export-ignore
+htmlcov/ export-ignore
+.coverage export-ignore
+coverage.xml export-ignore
+.pytest_cache/ export-ignore
+.mypy_cache/ export-ignore
+.ruff_cache/ export-ignore
+__pycache__/ export-ignore
+*.pyc export-ignore
+*.pyo export-ignore
+node_modules/ export-ignore
+.next/ export-ignore
+.turbo/ export-ignore
+dist/ export-ignore
+build/ export-ignore
+*.egg-info/ export-ignore
+.env* export-ignore
+.DS_Store export-ignore
+
+# ============================================================================
+# Linguist Overrides (GitHub language detection)
+# ============================================================================
+# Exclude generated files from language stats
+package-lock.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
+yarn.lock linguist-generated=true
+uv.lock linguist-generated=true
+*.min.js linguist-generated=true
+*.min.css linguist-generated=true
+
+# Mark test files appropriately
+tests/** linguist-detectable
+*_test.py linguist-detectable
+test_*.py linguist-detectable
+
+# Vendor dependencies
+node_modules/** linguist-vendored
+.venv/** linguist-vendored
+venv/** linguist-vendored
+
+# Documentation
+*.md linguist-documentation
+*.mdx linguist-documentation
+docs/** linguist-documentation

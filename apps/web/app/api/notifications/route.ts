@@ -1,6 +1,6 @@
 /**
  * GET /api/notifications - List user notifications
- * 
+ *
  * Query params:
  * - user_id: User ID (localStorage UUID)
  * - unread_only: Filter to unread only (default: false)
@@ -16,24 +16,21 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "50", 10);
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "Missing user_id parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
   }
 
   try {
     // Call Python backend storage API
     // For Phase 3B MVP, we'll use a simple HTTP fetch to Python service
     // In production, this could use direct database access or a proper API gateway
-    
+
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
     const response = await fetch(
       `${backendUrl}/storage/notifications?user_id=${userId}&unread_only=${unreadOnly}&limit=${limit}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -50,12 +47,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch notifications",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

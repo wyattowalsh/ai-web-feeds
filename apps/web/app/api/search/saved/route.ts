@@ -1,28 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Mock storage for saved searches (in production, this would use database)
 const savedSearches = new Map<string, any[]>();
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const user_id = searchParams.get('user_id') || 'anonymous';
+  const user_id = searchParams.get("user_id") || "anonymous";
 
   try {
     const searches = savedSearches.get(user_id) || [];
 
     return NextResponse.json(searches, {
       headers: {
-        'Cache-Control': 'private, no-cache', // User-specific, don't cache
+        "Cache-Control": "private, no-cache", // User-specific, don't cache
       },
     });
   } catch (error) {
-    console.error('Get saved searches error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve saved searches' },
-      { status: 500 }
-    );
+    console.error("Get saved searches error:", error);
+    return NextResponse.json({ error: "Failed to retrieve saved searches" }, { status: 500 });
   }
 }
 
@@ -33,8 +30,8 @@ export async function POST(request: Request) {
 
     if (!user_id || !search_name || !query_text) {
       return NextResponse.json(
-        { error: 'Missing required fields: user_id, search_name, query_text' },
-        { status: 400 }
+        { error: "Missing required fields: user_id, search_name, query_text" },
+        { status: 400 },
       );
     }
 
@@ -56,23 +53,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json(savedSearch, { status: 201 });
   } catch (error) {
-    console.error('Save search error:', error);
-    return NextResponse.json(
-      { error: 'Failed to save search' },
-      { status: 500 }
-    );
+    console.error("Save search error:", error);
+    return NextResponse.json({ error: "Failed to save search" }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const search_id = searchParams.get('id');
-  const user_id = searchParams.get('user_id');
+  const search_id = searchParams.get("id");
+  const user_id = searchParams.get("user_id");
 
   if (!search_id || !user_id) {
     return NextResponse.json(
-      { error: 'Missing required parameters: id, user_id' },
-      { status: 400 }
+      { error: "Missing required parameters: id, user_id" },
+      { status: 400 },
     );
   }
 
@@ -83,11 +77,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true, deleted: search_id });
   } catch (error) {
-    console.error('Delete saved search error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete saved search' },
-      { status: 500 }
-    );
+    console.error("Delete saved search error:", error);
+    return NextResponse.json({ error: "Failed to delete saved search" }, { status: 500 });
   }
 }
-

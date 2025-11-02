@@ -4,24 +4,26 @@ from pathlib import Path
 import subprocess
 import sys
 
+
 def init_alembic():
     """Initialize Alembic in the project."""
     # Get the project root
     project_root = Path(__file__).parent.parent.parent
     alembic_dir = project_root / "alembic"
-    
+
     if alembic_dir.exists():
         print(f"✓ Alembic directory already exists: {alembic_dir}")
         return
-    
+
     # Run alembic init
     result = subprocess.run(
         ["alembic", "init", "alembic"],
         cwd=project_root,
         capture_output=True,
         text=True,
+        check=False,
     )
-    
+
     if result.returncode == 0:
         print(f"✓ Initialized Alembic: {alembic_dir}")
         print("\nNext steps:")
@@ -32,6 +34,7 @@ def init_alembic():
     else:
         print(f"✗ Failed to initialize Alembic: {result.stderr}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     init_alembic()

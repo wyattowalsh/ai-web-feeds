@@ -72,6 +72,7 @@ Automatically merges similar entities using Levenshtein distance:
 ```
 
 **Algorithm**:
+
 1. Title-case normalization
 2. Compare to existing entities of same type
 3. If Levenshtein distance ≤ 2, use existing canonical name
@@ -98,6 +99,7 @@ aiwebfeeds nlp entities
 ```
 
 **Options**:
+
 - `--batch-size`: Number of articles (default: 50)
 - `--force`: Reprocess all articles
 
@@ -120,6 +122,7 @@ aiwebfeeds nlp show-entity "Geoffrey Hinton"
 ```
 
 Shows:
+
 - Entity metadata (type, aliases, frequency)
 - Recent article mentions
 - Related entities
@@ -127,16 +130,19 @@ Shows:
 #### Manage Entities
 
 **Add Alias**:
+
 ```bash
 aiwebfeeds nlp add-alias "Geoffrey Hinton" "G. Hinton"
 ```
 
 **Merge Duplicate Entities**:
+
 ```bash
 aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
 ```
 
 **Search Entities (FTS5)**:
+
 ```bash
 aiwebfeeds nlp search-entities "transformer attention"
 ```
@@ -249,6 +255,7 @@ uv run python -m spacy download en_core_web_sm
 ```
 
 **Model Info**:
+
 - Name: `en_core_web_sm`
 - Size: 13MB
 - Language: English
@@ -265,6 +272,7 @@ class Phase5Settings(BaseSettings):
 ```
 
 **Environment Variables**:
+
 ```bash
 PHASE5_ENTITY_BATCH_SIZE=50
 PHASE5_ENTITY_CONFIDENCE_THRESHOLD=0.7
@@ -309,6 +317,7 @@ storage.get_articles_mentioning_entities(["GPT-4", "RLHF"])
 **Symptom**: Many entities missed or incorrectly classified.
 
 **Solutions**:
+
 1. Use larger spaCy model: `en_core_web_lg` (40MB, better accuracy)
 2. Add domain-specific rules for AI terminology
 3. Manual curation: Add aliases for common variations
@@ -318,6 +327,7 @@ storage.get_articles_mentioning_entities(["GPT-4", "RLHF"])
 **Symptom**: "Geoffrey Hinton" and "Geoff Hinton" as separate entities.
 
 **Solution**:
+
 ```bash
 # Merge duplicates
 aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
@@ -331,6 +341,7 @@ aiwebfeeds nlp add-alias "Geoffrey Hinton" "Geoff Hinton"
 **Symptom**: `OSError: Can't find model 'en_core_web_sm'`
 
 **Solution**:
+
 ```bash
 uv run python -m spacy download en_core_web_sm
 ```

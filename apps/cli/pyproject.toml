@@ -15,3 +15,14 @@ aiwebfeeds = "ai_web_feeds.cli:main"
 
 [tool.uv.sources]
 ai_web_feeds = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# B008: Typer requires function calls in defaults for Option/Argument
+# FBT001/FBT003: Boolean flags are standard for CLI applications
+# PLR0912/PLR0915: Complex CLI commands can have many branches/statements
+# PLR2004: Magic numbers in comparisons are acceptable in CLI output formatting
+per-file-ignores = { "ai_web_feeds/cli/__init__.py" = ["B008", "FBT001", "FBT003", "PLR0912", "PLR0915", "PLR2004"] }

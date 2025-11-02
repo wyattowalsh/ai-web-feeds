@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 interface SearchFiltersProps {
-  searchType: 'full_text' | 'semantic';
-  onSearchTypeChange: (type: 'full_text' | 'semantic') => void;
+  searchType: "full_text" | "semantic";
+  onSearchTypeChange: (type: "full_text" | "semantic") => void;
   sourceType?: string;
   onSourceTypeChange: (type: string | undefined) => void;
   topics: string[];
@@ -26,18 +26,27 @@ export function SearchFilters({
   onThresholdChange,
 }: SearchFiltersProps) {
   const sourceTypes = [
-    { value: '', label: 'All Sources' },
-    { value: 'blog', label: 'Blog' },
-    { value: 'newsletter', label: 'Newsletter' },
-    { value: 'podcast', label: 'Podcast' },
-    { value: 'video', label: 'Video' },
-    { value: 'journal', label: 'Journal' },
-    { value: 'preprint', label: 'Preprint' },
+    { value: "", label: "All Sources" },
+    { value: "blog", label: "Blog" },
+    { value: "newsletter", label: "Newsletter" },
+    { value: "podcast", label: "Podcast" },
+    { value: "video", label: "Video" },
+    { value: "journal", label: "Journal" },
+    { value: "preprint", label: "Preprint" },
   ];
 
   const commonTopics = [
-    'llm', 'agents', 'training', 'inference', 'genai',
-    'ml', 'cv', 'nlp', 'rl', 'data', 'safety',
+    "llm",
+    "agents",
+    "training",
+    "inference",
+    "genai",
+    "ml",
+    "cv",
+    "nlp",
+    "rl",
+    "data",
+    "safety",
   ];
 
   const handleTopicToggle = (topic: string) => {
@@ -54,27 +63,27 @@ export function SearchFilters({
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Search Type</h3>
         <div className="flex gap-2">
           <button
-            onClick={() => onSearchTypeChange('full_text')}
+            onClick={() => onSearchTypeChange("full_text")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              searchType === 'full_text'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              searchType === "full_text"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Full-Text
           </button>
           <button
-            onClick={() => onSearchTypeChange('semantic')}
+            onClick={() => onSearchTypeChange("semantic")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              searchType === 'semantic'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              searchType === "semantic"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Semantic
           </button>
         </div>
-        {searchType === 'semantic' && (
+        {searchType === "semantic" && (
           <div className="mt-3">
             <label className="block text-xs text-gray-600 mb-1">
               Similarity Threshold: {threshold.toFixed(2)}
@@ -97,11 +106,9 @@ export function SearchFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
-          Source Type
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">Source Type</label>
         <select
-          value={sourceType || ''}
+          value={sourceType || ""}
           onChange={(e) => onSourceTypeChange(e.target.value || undefined)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
@@ -114,9 +121,7 @@ export function SearchFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
-          Topics
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">Topics</label>
         <div className="flex flex-wrap gap-2">
           {commonTopics.map((topic) => (
             <button
@@ -124,8 +129,8 @@ export function SearchFilters({
               onClick={() => handleTopicToggle(topic)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 topics.includes(topic)
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               {topic.toUpperCase()}
@@ -151,8 +156,8 @@ export function SearchFilters({
             onClick={() => onVerifiedChange(undefined)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               verified === undefined
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             All
@@ -161,8 +166,8 @@ export function SearchFilters({
             onClick={() => onVerifiedChange(true)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               verified === true
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             ✓ Verified
@@ -171,8 +176,8 @@ export function SearchFilters({
             onClick={() => onVerifiedChange(false)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               verified === false
-                ? 'bg-gray-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? "bg-gray-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Unverified
@@ -182,4 +187,3 @@ export function SearchFilters({
     </div>
   );
 }
-

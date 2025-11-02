@@ -1,10 +1,13 @@
 """ai_web_feeds.logger -- AIWebFeeds logging setup."""
-from loguru import logger
-from typing import Any
-import sys
-from pathlib import Path
-from ai_web_feeds.config import Settings
+
 import os
+from pathlib import Path
+import sys
+
+from loguru import logger
+
+from ai_web_feeds.config import Settings
+
 
 settings = Settings()
 

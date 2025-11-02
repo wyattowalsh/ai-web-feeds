@@ -1,6 +1,5 @@
 """CLI commands for search and discovery."""
 
-from pathlib import Path
 from typing import Optional
 
 import typer
@@ -156,9 +155,7 @@ def search_autocomplete(
     if suggestions["topics"]:
         console.print("\n[bold]Topic Suggestions:[/bold]")
         for topic in suggestions["topics"]:
-            console.print(
-                f"  • [green]{topic['label']}[/green] ({topic['feed_count']} feeds)"
-            )
+            console.print(f"  • [green]{topic['label']}[/green] ({topic['feed_count']} feeds)")
 
     if not suggestions["feeds"] and not suggestions["topics"]:
         console.print("[yellow]No suggestions found[/yellow]")
@@ -208,6 +205,7 @@ def search_embeddings(
     if provider:
         # Temporarily override config
         from ai_web_feeds.config import settings
+
         settings.embedding.provider = provider
         console.print(f"Using provider: [bold]{provider}[/bold]")
 
@@ -216,6 +214,7 @@ def search_embeddings(
     with console.status("[bold green]Generating embeddings..."):
         with db.get_session() as session:
             from ai_web_feeds.embeddings import refresh_all_embeddings
+
             refresh_all_embeddings(session, show_progress=True)
 
     console.print("\n[green]✓[/green] Embeddings generated successfully")
@@ -297,7 +296,9 @@ def list_saved_searches(
     table.add_column("Last Used", style="blue")
 
     for search in saved_searches:
-        filters_str = ", ".join(f"{k}={v}" for k, v in search.filters.items()) if search.filters else "-"
+        filters_str = (
+            ", ".join(f"{k}={v}" for k, v in search.filters.items()) if search.filters else "-"
+        )
         table.add_row(
             search.search_name,
             search.query_text,
@@ -307,4 +308,3 @@ def list_saved_searches(
 
     console.print(table)
     console.print(f"\n[green]✓[/green] Found {len(saved_searches)} saved searches")
-

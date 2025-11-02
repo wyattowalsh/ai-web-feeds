@@ -11,14 +11,11 @@ This module provides search functions including:
 Uses SQLite FTS5 for full-text search and NumPy for vector similarity.
 """
 
-import json
-from datetime import datetime
-from functools import lru_cache
 from typing import Any
 
-import numpy as np
 from loguru import logger
-from sqlmodel import Session, select, or_
+import numpy as np
+from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import (
@@ -27,6 +24,7 @@ from ai_web_feeds.models import (
     SavedSearch,
     SearchQuery,
 )
+
 
 settings = Settings()
 
@@ -356,7 +354,7 @@ def semantic_search(
 
     # Sort by similarity
     similarities.sort(key=lambda x: x[1], reverse=True)
-    top_feed_ids = [feed_id for feed_id, _ in similarities[:limit * 2]]
+    top_feed_ids = [feed_id for feed_id, _ in similarities[: limit * 2]]
 
     # Get feeds with filters
     statement = select(FeedSource).where(FeedSource.id.in_(top_feed_ids))
@@ -377,7 +375,7 @@ def semantic_search(
 
     # Combine feeds with similarity scores
     results = []
-    for feed_id, similarity in similarities[:limit * 2]:
+    for feed_id, similarity in similarities[: limit * 2]:
         if feed_id in feed_map:
             results.append((feed_map[feed_id], similarity))
 
@@ -421,23 +419,26 @@ def autocomplete(
         # Check if it's a topic (single word, lowercase)
         if len(word.split()) == 1 and word.islower():
             # Likely a topic
-            topic_suggestions.append({
-                "label": word.upper(),
-                "type": "topic",
-                "feed_count": len(feed_ids),
-            })
-        else:
-            # Feed title word
-            # Get first feed for this word
-            if feed_ids:
-                feed = session.get(FeedSource, feed_ids[0])
-                if feed:
-                    feed_suggestions.append({
+            topic_suggestions.append(
+                {
+                    "label": word.upper(),
+                    "type": "topic",
+                    "feed_count": len(feed_ids),
+                }
+            )
+        # Feed title word
+        # Get first feed for this word
+        elif feed_ids:
+            feed = session.get(FeedSource, feed_ids[0])
+            if feed:
+                feed_suggestions.append(
+                    {
                         "id": feed.id,
                         "title": feed.title,
                         "type": "feed",
                         "url": feed.feed or feed.site,
-                    })
+                    }
+                )
 
     # Return top 5 feeds and top 3 topics
     return {
@@ -549,4 +550,3 @@ def delete_saved_search(session: Session, search_id: str):
         session.delete(saved_search)
         session.commit()
         logger.info(f"Deleted saved search: {search_id}")
-

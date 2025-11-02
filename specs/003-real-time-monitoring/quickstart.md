@@ -1,18 +1,19 @@
 # Quickstart: Phase 3B - Real-Time Feed Monitoring & Alerts
 
-**Feature Branch**: `003-real-time-monitoring`  
-**Created**: 2025-10-22  
+**Feature Branch**: `003-real-time-monitoring`\
+**Created**: 2025-10-22\
 **Prerequisites**: Phase 1 & 2 complete, Python 3.13+, Node.js 20+
 
----
+______________________________________________________________________
 
 ## Overview
 
-This quickstart guide covers setting up the development environment, running the Phase 3B implementation, and verifying real-time notification features.
+This quickstart guide covers setting up the development environment, running the Phase
+3B implementation, and verifying real-time notification features.
 
 **Estimated Setup Time**: 15-20 minutes
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
@@ -33,7 +34,7 @@ pnpm --version     # Should be ≥8.0.0
 sqlite3 --version  # Should be ≥3.45.0
 ```
 
----
+______________________________________________________________________
 
 ## Part 1: Initial Setup
 
@@ -81,7 +82,7 @@ uv run alembic upgrade head
 sqlite3 ../../data/aiwebfeeds.db ".tables" | grep -E "feed_entries|notifications"
 ```
 
----
+______________________________________________________________________
 
 ## Part 2: Configuration
 
@@ -122,26 +123,28 @@ Edit `packages/ai_web_feeds/src/ai_web_feeds/config.py`:
 ```python
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     # WebSocket
     websocket_host: str = "localhost"
     websocket_port: int = 5000
-    
+
     # Polling
     feed_poll_interval_min: int = 30
     feed_poll_workers: int = 10
-    
+
     # Trending
     trending_min_mentions: int = 10
     trending_z_score_threshold: float = 2.0
-    
+
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
 ```
 
----
+______________________________________________________________________
 
 ## Part 3: Running Services
 
@@ -199,18 +202,19 @@ mailhog
 # SMTP server: localhost:1025
 ```
 
----
+______________________________________________________________________
 
 ## Part 4: Verification Steps
 
 ### Step 1: Verify WebSocket Connection
 
 1. Open browser to `http://localhost:3000`
-2. Open browser DevTools → Network → WS tab
-3. Look for WebSocket connection to `localhost:5000`
-4. Connection status should show `101 Switching Protocols`
+1. Open browser DevTools → Network → WS tab
+1. Look for WebSocket connection to `localhost:5000`
+1. Connection status should show `101 Switching Protocols`
 
 **Expected Console Output**:
+
 ```
 [WebSocket] Connected to server
 [WebSocket] Joined room: user:550e8400-e29b-41d4-a716-446655440000
@@ -232,11 +236,13 @@ uv run aiwebfeeds poll trigger ai-research-blog
 ### Step 3: Verify Notification Delivery
 
 **Check Browser**:
+
 1. Watch for toast notification in browser (top-right corner)
-2. Notification should appear within 60 seconds of poll completion
-3. Click notification → should navigate to article URL
+1. Notification should appear within 60 seconds of poll completion
+1. Click notification → should navigate to article URL
 
 **Check Database**:
+
 ```bash
 sqlite3 data/aiwebfeeds.db \
   "SELECT id, type, title FROM notifications ORDER BY created_at DESC LIMIT 5;"
@@ -270,11 +276,12 @@ uv run aiwebfeeds digest send-test user@example.com
 ```
 
 **Verify Email**:
-1. Open MailHog UI: `http://localhost:8025`
-2. Look for email from `notifications@aiwebfeeds.com`
-3. Verify email contains 10 articles with clickable links
 
----
+1. Open MailHog UI: `http://localhost:8025`
+1. Look for email from `notifications@aiwebfeeds.com`
+1. Verify email contains 10 articles with clickable links
+
+______________________________________________________________________
 
 ## Part 5: Testing
 
@@ -312,7 +319,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 # Open tests/reports/coverage/index.html for detailed report
 ```
 
----
+______________________________________________________________________
 
 ## Part 6: Development Workflow
 
@@ -372,7 +379,7 @@ uv run aiwebfeeds trending list --hours 24
 # 3. Diffusion Models (z-score: 2.5, 22 mentions, 2.8x spike)
 ```
 
----
+______________________________________________________________________
 
 ## Part 7: Troubleshooting
 
@@ -381,6 +388,7 @@ uv run aiwebfeeds trending list --hours 24
 **Symptoms**: Browser console shows `WebSocket connection failed`
 
 **Solutions**:
+
 ```bash
 # 1. Check WebSocket server is running
 lsof -i :5000  # Should show Python process
@@ -401,6 +409,7 @@ socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000'])
 **Symptoms**: Feed polled successfully but no notification appears
 
 **Debug Steps**:
+
 ```bash
 # 1. Verify user is following the feed
 sqlite3 data/aiwebfeeds.db \
@@ -426,6 +435,7 @@ uv run aiwebfeeds notify send-test --user-id <your-uuid>
 **Symptoms**: No trending alerts despite article spikes
 
 **Debug Steps**:
+
 ```bash
 # 1. Check trending detection is running
 ps aux | grep trending
@@ -453,6 +463,7 @@ for t in topics[:5]:
 **Symptoms**: Digest scheduled but not received
 
 **Debug Steps**:
+
 ```bash
 # 1. Check digest subscription
 sqlite3 data/aiwebfeeds.db \
@@ -473,7 +484,7 @@ curl http://localhost:8025/api/v2/messages
 uv run aiwebfeeds digest send-now --user-id <your-uuid>
 ```
 
----
+______________________________________________________________________
 
 ## Part 8: Production Deployment Checklist
 
@@ -494,9 +505,9 @@ Before deploying Phase 3B to production:
 - [ ] API contracts validated (OpenAPI spec)
 - [ ] WebSocket protocol tested (reconnection, fallback)
 - [ ] Security audit complete (CORS, input validation)
-- [ ] Performance benchmarks met (<60s notification latency)
+- [ ] Performance benchmarks met (\<60s notification latency)
 
----
+______________________________________________________________________
 
 ## Part 9: Common Commands Reference
 
@@ -529,19 +540,21 @@ uv run aiwebfeeds trending history             # Show historical trends
 uv run aiwebfeeds trending simulate <topic>    # Simulate trending (dev)
 ```
 
----
+______________________________________________________________________
 
 ## Part 10: Next Steps
 
 Once Phase 3B is working:
 
-1. **Monitor Metrics**: Track notification delivery latency, WebSocket connection stability, trending detection accuracy
-2. **Gather Feedback**: Survey early users on notification relevance and frequency
-3. **Optimize Performance**: Profile feed polling, database queries, WebSocket message serialization
-4. **Plan Scale-Out**: Prepare Redis pub/sub for >1000 concurrent connections
-5. **Document Learnings**: Update `apps/web/content/docs/` with production insights
+1. **Monitor Metrics**: Track notification delivery latency, WebSocket connection
+   stability, trending detection accuracy
+1. **Gather Feedback**: Survey early users on notification relevance and frequency
+1. **Optimize Performance**: Profile feed polling, database queries, WebSocket message
+   serialization
+1. **Plan Scale-Out**: Prepare Redis pub/sub for >1000 concurrent connections
+1. **Document Learnings**: Update `apps/web/content/docs/` with production insights
 
----
+______________________________________________________________________
 
-**Version**: 1.0.0 | **Status**: Development Guide Complete | **Last Updated**: 2025-10-22
-
+**Version**: 1.0.0 | **Status**: Development Guide Complete | **Last Updated**:
+2025-10-22

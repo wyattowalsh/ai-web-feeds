@@ -1,0 +1,1068 @@
+<?xml version="1.0" ?>
+<opml version="2.0">
+  <head>
+    <title>AI Web Feeds</title>
+  </head>
+  <body>
+    <outline text="accelerators" title="accelerators">
+      <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/"/>
+      <outline type="rss" text="TensorRT-LLM (GitHub)" title="TensorRT-LLM (GitHub)" xmlUrl="https://github.com/NVIDIA/TensorRT-LLM"/>
+      <outline type="rss" text="Qualcomm — AI Research/Engineering" title="Qualcomm — AI Research/Engineering" xmlUrl="https://www.qualcomm.com/research/artificial-intelligence"/>
+      <outline type="rss" text="Triton — Releases (Atom)" title="Triton — Releases (Atom)" xmlUrl="https://github.com/triton-lang/triton/releases.atom"/>
+      <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog" xmlUrl="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html"/>
+      <outline type="rss" text="NVIDIA Research — AI" title="NVIDIA Research — AI" xmlUrl="https://www.nvidia.com/en-us/research/ai/"/>
+      <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)" xmlUrl="https://semianalysis.substack.com/feed"/>
+      <outline type="rss" text="Chips and Cheese — RSS" title="Chips and Cheese — RSS" xmlUrl="https://chipsandcheese.com/feed/"/>
+      <outline type="rss" text="Groq — Blog" title="Groq — Blog" xmlUrl="https://groq.com/blog"/>
+      <outline type="rss" text="IREE — Blog (OpenXLA)" title="IREE — Blog (OpenXLA)" xmlUrl="https://iree.dev/blog/"/>
+      <outline type="rss" text="OpenXLA IREE — Releases (Atom)" title="OpenXLA IREE — Releases (Atom)" xmlUrl="https://github.com/openxla/iree/releases.atom"/>
+      <outline type="rss" text="NVIDIA FasterTransformer — Releases (Atom)" title="NVIDIA FasterTransformer — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/FasterTransformer/releases.atom"/>
+      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog"/>
+      <outline type="rss" text="AMD ROCm — Blogs" title="AMD ROCm — Blogs" xmlUrl="https://www.amd.com/en/technologies/rocm/blogs.html"/>
+      <outline type="rss" text="Arm — AI &amp; ML Blog" title="Arm — AI &amp; ML Blog" xmlUrl="https://community.arm.com/arm-community-blogs/b/ai-blog"/>
+      <outline type="rss" text="MLIR — The LLVM Project Blog" title="MLIR — The LLVM Project Blog" xmlUrl="https://blog.llvm.org/tags/mlir/"/>
+    </outline>
+    <outline text="agents" title="agents">
+      <outline type="rss" text="LMSYS — Blog" title="LMSYS — Blog" xmlUrl="https://lmsys.org/blog/"/>
+      <outline type="rss" text="LangChain — Blog" title="LangChain — Blog" xmlUrl="https://blog.langchain.com/"/>
+      <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog" xmlUrl="https://www.llamaindex.ai/blog"/>
+      <outline type="rss" text="Hamel Husain — Atom" title="Hamel Husain — Atom" xmlUrl="https://hamel.dev/atom.xml"/>
+      <outline type="rss" text="Jina AI — Blog" title="Jina AI — Blog" xmlUrl="https://jina.ai/blog/"/>
+      <outline type="rss" text="CrewAI — Blog" title="CrewAI — Blog" xmlUrl="https://www.crewai.com/blog"/>
+      <outline type="rss" text="Fireworks.ai — Blog" title="Fireworks.ai — Blog" xmlUrl="https://fireworks.ai/blog"/>
+      <outline type="rss" text="Baseten — Blog" title="Baseten — Blog" xmlUrl="https://www.baseten.co/blog"/>
+      <outline type="rss" text="LangGraph — GitHub" title="LangGraph — GitHub" xmlUrl="https://github.com/langchain-ai/langgraph"/>
+      <outline type="rss" text="LangChain — GitHub" title="LangChain — GitHub" xmlUrl="https://github.com/langchain-ai/langchain"/>
+      <outline type="rss" text="Microsoft AutoGen — Releases (Atom)" title="Microsoft AutoGen — Releases (Atom)" xmlUrl="https://github.com/microsoft/autogen/releases.atom"/>
+      <outline type="rss" text="OpenDevin — Releases (Atom)" title="OpenDevin — Releases (Atom)" xmlUrl="https://github.com/OpenDevin/OpenDevin/releases.atom"/>
+      <outline type="rss" text="Lilian Weng — Blog" title="Lilian Weng — Blog" xmlUrl="https://lilianweng.github.io/"/>
+      <outline type="rss" text="Agency — Substack" title="Agency — Substack" xmlUrl="https://blog.agen.cy"/>
+      <outline type="rss" text="LangChain — Changelog" title="LangChain — Changelog" xmlUrl="https://changelog.langchain.com/"/>
+      <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog" xmlUrl="https://blog.openrouter.ai/"/>
+      <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog" xmlUrl="https://devblogs.microsoft.com/autogen/"/>
+      <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui"/>
+      <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub" xmlUrl="https://github.com/FlowiseAI/Flowise"/>
+      <outline type="rss" text="OpenHands — GitHub" title="OpenHands — GitHub" xmlUrl="https://github.com/All-Hands-AI/openhands"/>
+      <outline type="rss" text="AutoGPT — GitHub" title="AutoGPT — GitHub" xmlUrl="https://github.com/Significant-Gravitas/AutoGPT"/>
+    </outline>
+    <outline text="ai" title="ai">
+      <outline type="rss" text="Andrej Karpathy" title="Andrej Karpathy" xmlUrl="https://x.com/karpathy"/>
+      <outline type="rss" text="Apple Machine Learning Research (Journal)" title="Apple Machine Learning Research (Journal)" xmlUrl="https://machinelearning.apple.com"/>
+      <outline type="rss" text="MIT CSAIL — News" title="MIT CSAIL — News" xmlUrl="https://www.csail.mit.edu/news"/>
+      <outline type="rss" text="arXiv — cs.AI RSS" title="arXiv — cs.AI RSS" xmlUrl="https://rss.arxiv.org/rss/cs.AI"/>
+      <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)" xmlUrl="https://www.jair.org"/>
+    </outline>
+    <outline text="ai-for-code" title="ai-for-code">
+      <outline type="rss" text="OpenDevin — Releases (Atom)" title="OpenDevin — Releases (Atom)" xmlUrl="https://github.com/OpenDevin/OpenDevin/releases.atom"/>
+      <outline type="rss" text="OpenHands — GitHub" title="OpenHands — GitHub" xmlUrl="https://github.com/All-Hands-AI/openhands"/>
+    </outline>
+    <outline text="ai-for-science" title="ai-for-science">
+      <outline type="rss" text="Microsoft Planetary Computer — Blog" title="Microsoft Planetary Computer — Blog" xmlUrl="https://planetarycomputer.microsoft.com/blog"/>
+      <outline type="rss" text="Radiant Earth — Blog" title="Radiant Earth — Blog" xmlUrl="https://www.radiant.earth/blog/"/>
+      <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog"/>
+      <outline type="rss" text="Microsoft Research — AI for Science (News &amp; Awards)" title="Microsoft Research — AI for Science (News &amp; Awards)" xmlUrl="https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/"/>
+    </outline>
+    <outline text="ai-infra-stacks" title="ai-infra-stacks">
+      <outline type="rss" text="Anyscale (Ray) — Blog" title="Anyscale (Ray) — Blog" xmlUrl="https://www.anyscale.com/blog"/>
+      <outline type="rss" text="Modal — Blog" title="Modal — Blog" xmlUrl="https://modal.com/blog"/>
+      <outline type="rss" text="Vespa.ai — Blog" title="Vespa.ai — Blog" xmlUrl="https://blog.vespa.ai"/>
+      <outline type="rss" text="SGLang — Releases (Atom)" title="SGLang — Releases (Atom)" xmlUrl="https://github.com/sgl-project/sglang/releases.atom"/>
+      <outline type="rss" text="Hazy Research — Blog" title="Hazy Research — Blog" xmlUrl="https://hazyresearch.stanford.edu/blog"/>
+      <outline type="rss" text="Groq — Blog" title="Groq — Blog" xmlUrl="https://groq.com/blog"/>
+      <outline type="rss" text="OctoAI — Blog" title="OctoAI — Blog" xmlUrl="https://octoai.cloud/blog"/>
+      <outline type="rss" text="KServe — GitHub" title="KServe — GitHub" xmlUrl="https://github.com/kserve/kserve"/>
+      <outline type="rss" text="vLLM — Blog" title="vLLM — Blog" xmlUrl="https://blog.vllm.ai/"/>
+      <outline type="rss" text="SkyPilot — Blog" title="SkyPilot — Blog" xmlUrl="https://blog.skypilot.so/"/>
+      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog"/>
+      <outline type="rss" text="Flyte — Blog" title="Flyte — Blog" xmlUrl="https://flyte.org/blog"/>
+      <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog" xmlUrl="https://blog.argoproj.io/"/>
+      <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML" xmlUrl="https://cloud.google.com/blog/topics/ai-ml"/>
+      <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML" xmlUrl="https://azure.microsoft.com/en-us/blog/topics/ai-ml/"/>
+    </outline>
+    <outline text="alignment" title="alignment">
+      <outline type="rss" text="Alignment Forum — RSS" title="Alignment Forum — RSS" xmlUrl="https://alignmentforum.org/rss"/>
+      <outline type="rss" text="Redwood Research — Blog" title="Redwood Research — Blog" xmlUrl="https://www.redwoodresearch.org/blog"/>
+      <outline type="rss" text="Transformer Circuits" title="Transformer Circuits" xmlUrl="https://transformer-circuits.pub/"/>
+    </outline>
+    <outline text="audio-speech" title="audio-speech">
+      <outline type="rss" text="AssemblyAI — Blog (RSS)" title="AssemblyAI — Blog (RSS)" xmlUrl="https://www.assemblyai.com/blog/rss/"/>
+      <outline type="rss" text="NVIDIA NeMo — Releases (Atom)" title="NVIDIA NeMo — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/NeMo/releases.atom"/>
+      <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog" xmlUrl="https://kyutai.org/blog"/>
+      <outline type="rss" text="Coqui — Blog" title="Coqui — Blog" xmlUrl="https://coqui.ai/blog"/>
+      <outline type="rss" text="whisper.cpp — GitHub" title="whisper.cpp — GitHub" xmlUrl="https://github.com/ggerganov/whisper.cpp"/>
+      <outline type="rss" text="OpenAI Whisper — GitHub" title="OpenAI Whisper — GitHub" xmlUrl="https://github.com/openai/whisper"/>
+      <outline type="rss" text="SpeechBrain — GitHub" title="SpeechBrain — GitHub" xmlUrl="https://github.com/speechbrain/speechbrain"/>
+      <outline type="rss" text="Coqui TTS — GitHub" title="Coqui TTS — GitHub" xmlUrl="https://github.com/coqui-ai/TTS"/>
+    </outline>
+    <outline text="benchops" title="benchops">
+      <outline type="rss" text="MLCommons — News (MLPerf)" title="MLCommons — News (MLPerf)" xmlUrl="https://mlcommons.org/news/"/>
+      <outline type="rss" text="Weights &amp; Biases — Release Notes (RSS)" title="Weights &amp; Biases — Release Notes (RSS)" xmlUrl="https://docs.wandb.ai/ref/release-notes/index.xml"/>
+      <outline type="rss" text="OpenAI — Evals" title="OpenAI — Evals" xmlUrl="https://evals.openai.com"/>
+      <outline type="rss" text="Gentrace — Blog" title="Gentrace — Blog" xmlUrl="https://blog.gentrace.ai/"/>
+    </outline>
+    <outline text="blogs" title="blogs">
+      <outline type="rss" text="Towards Data Science" title="Towards Data Science" xmlUrl="https://towardsdatascience.com"/>
+      <outline type="rss" text="https://dev.to/t/machinelearning" title="https://dev.to/t/machinelearning" xmlUrl="https://dev.to/t/machinelearning"/>
+      <outline type="rss" text="fast.ai — Blog" title="fast.ai — Blog" xmlUrl="http://www.fast.ai"/>
+      <outline type="rss" text="PyTorch — Engineering Blog" title="PyTorch — Engineering Blog" xmlUrl="https://pytorch.org/blog"/>
+      <outline type="rss" text="Lightning AI — Blog" title="Lightning AI — Blog" xmlUrl="https://lightning.ai/pages/blog"/>
+      <outline type="rss" text="LAION — Blog" title="LAION — Blog" xmlUrl="https://laion.ai/blog"/>
+      <outline type="rss" text="Weights &amp; Biases — Articles" title="Weights &amp; Biases — Articles" xmlUrl="https://wandb.com/articles"/>
+      <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog" xmlUrl="https://humanloop.com/blog"/>
+      <outline type="rss" text="Ragas — Blog" title="Ragas — Blog" xmlUrl="https://ragas.io/blog"/>
+      <outline type="rss" text="TruLens — Blog" title="TruLens — Blog" xmlUrl="https://www.trulens.org/blog"/>
+      <outline type="rss" text="DeepEval (Confident AI) — Blog" title="DeepEval (Confident AI) — Blog" xmlUrl="https://www.confident-ai.com/blog"/>
+      <outline type="rss" text="Redwood Research — Blog" title="Redwood Research — Blog" xmlUrl="https://www.redwoodresearch.org/blog"/>
+      <outline type="rss" text="FAR AI — Blog" title="FAR AI — Blog" xmlUrl="https://www.far.ai/blog"/>
+      <outline type="rss" text="Lilian Weng — Blog" title="Lilian Weng — Blog" xmlUrl="https://lilianweng.github.io/"/>
+      <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability" xmlUrl="https://www.neelnanda.io/blog"/>
+      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog"/>
+      <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog"/>
+      <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog" xmlUrl="https://www.ontotext.com/blog/"/>
+      <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics" xmlUrl="https://spectrum.ieee.org/topic/robotics"/>
+      <outline type="rss" text="DataHub — Blog" title="DataHub — Blog" xmlUrl="https://datahub.com/blog"/>
+      <outline type="rss" text="Microsoft Research — AI for Science (News &amp; Awards)" title="Microsoft Research — AI for Science (News &amp; Awards)" xmlUrl="https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog" xmlUrl="https://mozilla.ai/blog/"/>
+      <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog"/>
+      <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News" xmlUrl="https://www.ri.cmu.edu/news/"/>
+      <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog" xmlUrl="https://metr.org/blog"/>
+      <outline type="rss" text="Lakera — Blog" title="Lakera — Blog" xmlUrl="https://www.lakera.ai/blog"/>
+      <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub" xmlUrl="https://hiddenlayer.com/innovation-hub/"/>
+      <outline type="rss" text="Protect AI — MLSecOps Blog" title="Protect AI — MLSecOps Blog" xmlUrl="https://www.protectai.com/blog"/>
+      <outline type="rss" text="Bank Underground (Bank of England)" title="Bank Underground (Bank of England)" xmlUrl="https://bankunderground.co.uk/"/>
+      <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events" xmlUrl="https://ai.ethz.ch/news-and-events.html"/>
+      <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News" xmlUrl="https://is.mpg.de/news"/>
+      <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News" xmlUrl="https://www.tue.ai/news"/>
+      <outline type="rss" text="RIKEN AIP — News" title="RIKEN AIP — News" xmlUrl="https://aip.riken.jp/news-en/"/>
+      <outline type="rss" text="xAI — Blog" title="xAI — Blog" xmlUrl="https://x.ai/blog"/>
+      <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog" xmlUrl="https://sakana.ai/blog/"/>
+      <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog" xmlUrl="https://kyutai.org/blog"/>
+      <outline type="rss" text="Ollama — Blog" title="Ollama — Blog" xmlUrl="https://ollama.com/blog"/>
+      <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog" xmlUrl="https://lmstudio.ai/blog"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://blog.perplexity.ai/"/>
+      <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog" xmlUrl="https://blog.openrouter.ai/"/>
+      <outline type="rss" text="Chroma — Blog" title="Chroma — Blog" xmlUrl="https://trychroma.com/blog"/>
+      <outline type="rss" text="Nomic — Blog" title="Nomic — Blog" xmlUrl="https://blog.nomic.ai/"/>
+      <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog" xmlUrl="https://promptfoo.dev/blog/"/>
+      <outline type="rss" text="UpTrain — Blog" title="UpTrain — Blog" xmlUrl="https://www.uptrain.ai/blog"/>
+      <outline type="rss" text="Gentrace — Blog" title="Gentrace — Blog" xmlUrl="https://blog.gentrace.ai/"/>
+      <outline type="rss" text="Tecton — Blog" title="Tecton — Blog" xmlUrl="https://www.tecton.ai/blog/"/>
+      <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog" xmlUrl="https://www.hopsworks.ai/blog"/>
+      <outline type="rss" text="Flyte — Blog" title="Flyte — Blog" xmlUrl="https://flyte.org/blog"/>
+      <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog" xmlUrl="https://blog.argoproj.io/"/>
+      <outline type="rss" text="Prefect — Blog" title="Prefect — Blog" xmlUrl="https://www.prefect.io/blog"/>
+      <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog" xmlUrl="https://devblogs.microsoft.com/autogen/"/>
+      <outline type="rss" text="Guardrails AI — Blog" title="Guardrails AI — Blog" xmlUrl="https://blog.guardrailsai.com/"/>
+      <outline type="rss" text="Coqui — Blog" title="Coqui — Blog" xmlUrl="https://coqui.ai/blog"/>
+      <outline type="rss" text="Stability AI — News" title="Stability AI — News" xmlUrl="https://stability.ai/news"/>
+      <outline type="rss" text="OpenMMLab — Blog" title="OpenMMLab — Blog" xmlUrl="https://openmmlab.com/blog/"/>
+      <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog" xmlUrl="https://ultralytics.com/blog"/>
+      <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog" xmlUrl="https://blog.salesforceairesearch.com/"/>
+      <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog" xmlUrl="https://research.ibm.com/blog/ai"/>
+      <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML" xmlUrl="https://cloud.google.com/blog/topics/ai-ml"/>
+      <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML" xmlUrl="https://azure.microsoft.com/en-us/blog/topics/ai-ml/"/>
+      <outline type="rss" text="IBM — AI Blog" title="IBM — AI Blog" xmlUrl="https://www.ibm.com/blog/ai/"/>
+      <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog" xmlUrl="https://blog.englishtest.duolingo.com/"/>
+    </outline>
+    <outline text="community" title="community">
+      <outline type="rss" text="https://www.reddit.com/r/MachineLearning" title="https://www.reddit.com/r/MachineLearning" xmlUrl="https://www.reddit.com/r/MachineLearning"/>
+      <outline type="rss" text="NeurIPS — Official Blog" title="NeurIPS — Official Blog" xmlUrl="https://blog.neurips.cc"/>
+      <outline type="rss" text="ICLR — Official Blog" title="ICLR — Official Blog" xmlUrl="https://blog.iclr.cc"/>
+      <outline type="rss" text="Robohub — RSS" title="Robohub — RSS" xmlUrl="https://robohub.org/feed/"/>
+      <outline type="rss" text="https://www.reddit.com/r/LocalLLaMA" title="https://www.reddit.com/r/LocalLLaMA" xmlUrl="https://www.reddit.com/r/LocalLLaMA"/>
+      <outline type="rss" text="https://www.reddit.com/r/StableDiffusion" title="https://www.reddit.com/r/StableDiffusion" xmlUrl="https://www.reddit.com/r/StableDiffusion"/>
+    </outline>
+    <outline text="compilers" title="compilers">
+      <outline type="rss" text="https://openxla.org/blog" title="https://openxla.org/blog" xmlUrl="https://openxla.org/blog"/>
+      <outline type="rss" text="Apache TVM — Blog" title="Apache TVM — Blog" xmlUrl="https://tvm.apache.org/blog"/>
+      <outline type="rss" text="Triton — Releases (Atom)" title="Triton — Releases (Atom)" xmlUrl="https://github.com/triton-lang/triton/releases.atom"/>
+      <outline type="rss" text="ONNX — Blog" title="ONNX — Blog" xmlUrl="https://onnx.ai/blog"/>
+      <outline type="rss" text="JAX — GitHub" title="JAX — GitHub" xmlUrl="https://github.com/jax-ml/jax"/>
+      <outline type="rss" text="IREE — Blog (OpenXLA)" title="IREE — Blog (OpenXLA)" xmlUrl="https://iree.dev/blog/"/>
+      <outline type="rss" text="MLX — Releases (Atom)" title="MLX — Releases (Atom)" xmlUrl="https://github.com/ml-explore/mlx/releases.atom"/>
+      <outline type="rss" text="ONNX Runtime — Releases (Atom)" title="ONNX Runtime — Releases (Atom)" xmlUrl="https://github.com/microsoft/onnxruntime/releases.atom"/>
+      <outline type="rss" text="OpenXLA IREE — Releases (Atom)" title="OpenXLA IREE — Releases (Atom)" xmlUrl="https://github.com/openxla/iree/releases.atom"/>
+      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog"/>
+      <outline type="rss" text="MLIR — The LLVM Project Blog" title="MLIR — The LLVM Project Blog" xmlUrl="https://blog.llvm.org/tags/mlir/"/>
+    </outline>
+    <outline text="content-moderation" title="content-moderation">
+      <outline type="rss" text="Jigsaw — Blog" title="Jigsaw — Blog" xmlUrl="https://blog.jigsaw.google/"/>
+    </outline>
+    <outline text="cv" title="cv">
+      <outline type="rss" text="Robotics at Google — Blog" title="Robotics at Google — Blog" xmlUrl="https://robotics.googleblog.com/"/>
+      <outline type="rss" text="Roboflow — Blog" title="Roboflow — Blog" xmlUrl="https://blog.roboflow.com"/>
+      <outline type="rss" text="OpenCV — Blog" title="OpenCV — Blog" xmlUrl="https://opencv.org/blog"/>
+      <outline type="rss" text="Google Earth Engine — Developer Blog" title="Google Earth Engine — Developer Blog" xmlUrl="https://developers.google.com/earth-engine/blog"/>
+      <outline type="rss" text="arXiv — cs.CV RSS" title="arXiv — cs.CV RSS" xmlUrl="http://export.arxiv.org/rss/cs.CV"/>
+      <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics" xmlUrl="https://spectrum.ieee.org/topic/robotics"/>
+      <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News" xmlUrl="https://www.ri.cmu.edu/news/"/>
+      <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News" xmlUrl="https://is.mpg.de/news"/>
+      <outline type="rss" text="Stability AI — News" title="Stability AI — News" xmlUrl="https://stability.ai/news"/>
+      <outline type="rss" text="OpenMMLab — Blog" title="OpenMMLab — Blog" xmlUrl="https://openmmlab.com/blog/"/>
+      <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog" xmlUrl="https://ultralytics.com/blog"/>
+      <outline type="rss" text="https://www.reddit.com/r/StableDiffusion" title="https://www.reddit.com/r/StableDiffusion" xmlUrl="https://www.reddit.com/r/StableDiffusion"/>
+    </outline>
+    <outline text="data" title="data">
+      <outline type="rss" text="Eugene Yan — RSS" title="Eugene Yan — RSS" xmlUrl="https://eugeneyan.com/rss/"/>
+      <outline type="rss" text="Google Earth Engine — Developer Blog" title="Google Earth Engine — Developer Blog" xmlUrl="https://developers.google.com/earth-engine/blog"/>
+      <outline type="rss" text="Microsoft Planetary Computer — Blog" title="Microsoft Planetary Computer — Blog" xmlUrl="https://planetarycomputer.microsoft.com/blog"/>
+      <outline type="rss" text="Astronomer (Airflow) — Blog" title="Astronomer (Airflow) — Blog" xmlUrl="https://www.astronomer.io/blog"/>
+      <outline type="rss" text="dbt Labs — Blog" title="dbt Labs — Blog" xmlUrl="https://www.getdbt.com/blog"/>
+      <outline type="rss" text="DuckDB — News (RSS)" title="DuckDB — News (RSS)" xmlUrl="https://duckdb.org/feed.xml"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="Tecton — Blog" title="Tecton — Blog" xmlUrl="https://www.tecton.ai/blog/"/>
+      <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog" xmlUrl="https://www.hopsworks.ai/blog"/>
+    </outline>
+    <outline text="data-governance" title="data-governance">
+      <outline type="rss" text="OpenLineage — Blog" title="OpenLineage — Blog" xmlUrl="https://openlineage.io/blog/"/>
+      <outline type="rss" text="Great Expectations (GX) — Blog" title="Great Expectations (GX) — Blog" xmlUrl="https://greatexpectations.io/blog/"/>
+      <outline type="rss" text="Monte Carlo — Data Observability Blog" title="Monte Carlo — Data Observability Blog" xmlUrl="https://www.montecarlodata.com/blog/"/>
+      <outline type="rss" text="dbt Labs — Blog" title="dbt Labs — Blog" xmlUrl="https://www.getdbt.com/blog"/>
+      <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog" xmlUrl="https://open-metadata.medium.com/"/>
+      <outline type="rss" text="DataHub — Blog" title="DataHub — Blog" xmlUrl="https://datahub.com/blog"/>
+      <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog"/>
+      <outline type="rss" text="Tecton — Blog" title="Tecton — Blog" xmlUrl="https://www.tecton.ai/blog/"/>
+      <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog" xmlUrl="https://www.hopsworks.ai/blog"/>
+    </outline>
+    <outline text="datasets" title="datasets">
+      <outline type="rss" text="Radiant Earth — Blog" title="Radiant Earth — Blog" xmlUrl="https://www.radiant.earth/blog/"/>
+      <outline type="rss" text="LAION — Blog" title="LAION — Blog" xmlUrl="https://laion.ai/blog"/>
+      <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog"/>
+    </outline>
+    <outline text="diffusion" title="diffusion">
+      <outline type="rss" text="Stability AI — News" title="Stability AI — News" xmlUrl="https://stability.ai/news"/>
+      <outline type="rss" text="https://www.reddit.com/r/StableDiffusion" title="https://www.reddit.com/r/StableDiffusion" xmlUrl="https://www.reddit.com/r/StableDiffusion"/>
+    </outline>
+    <outline text="edge" title="edge">
+      <outline type="rss" text="Qualcomm — AI Research/Engineering" title="Qualcomm — AI Research/Engineering" xmlUrl="https://www.qualcomm.com/research/artificial-intelligence"/>
+      <outline type="rss" text="Edge Impulse — Blog" title="Edge Impulse — Blog" xmlUrl="https://www.edgeimpulse.com/blog"/>
+      <outline type="rss" text="tinyML Foundation — Blog" title="tinyML Foundation — Blog" xmlUrl="https://www.tinyml.org/blog/"/>
+      <outline type="rss" text="Arm — AI &amp; ML Blog" title="Arm — AI &amp; ML Blog" xmlUrl="https://community.arm.com/arm-community-blogs/b/ai-blog"/>
+    </outline>
+    <outline text="edtech-ai" title="edtech-ai">
+      <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog" xmlUrl="https://blog.englishtest.duolingo.com/"/>
+    </outline>
+    <outline text="education" title="education">
+      <outline type="rss" text="Towards Data Science" title="Towards Data Science" xmlUrl="https://towardsdatascience.com"/>
+      <outline type="rss" text="Two Minute Papers" title="Two Minute Papers" xmlUrl="https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg"/>
+      <outline type="rss" text="https://dev.to/t/machinelearning" title="https://dev.to/t/machinelearning" xmlUrl="https://dev.to/t/machinelearning"/>
+      <outline type="rss" text="Sebastian Raschka — RSS" title="Sebastian Raschka — RSS" xmlUrl="https://sebastianraschka.com/rss.xml"/>
+      <outline type="rss" text="Eugene Yan — RSS" title="Eugene Yan — RSS" xmlUrl="https://eugeneyan.com/rss/"/>
+      <outline type="rss" text="fast.ai — Blog" title="fast.ai — Blog" xmlUrl="http://www.fast.ai"/>
+      <outline type="rss" text="DeepLearning.AI — The Batch" title="DeepLearning.AI — The Batch" xmlUrl="https://www.deeplearning.ai/the-batch/"/>
+      <outline type="rss" text="Nixtla — Blog" title="Nixtla — Blog" xmlUrl="https://nixtla.github.io/blog"/>
+      <outline type="rss" text="OpenCV — Blog" title="OpenCV — Blog" xmlUrl="https://opencv.org/blog"/>
+      <outline type="rss" text="CMU Machine Learning Department — Blog (RSS)" title="CMU Machine Learning Department — Blog (RSS)" xmlUrl="https://blog.ml.cmu.edu/feed/"/>
+      <outline type="rss" text="MIT News — Machine Learning (RSS)" title="MIT News — Machine Learning (RSS)" xmlUrl="https://news.mit.edu/topic/mitmachine-learning-rss.xml"/>
+      <outline type="rss" text="Neptune.ai — Blog (RSS)" title="Neptune.ai — Blog (RSS)" xmlUrl="https://neptune.ai/blog/feed"/>
+      <outline type="rss" text="Google Earth Engine — Developer Blog" title="Google Earth Engine — Developer Blog" xmlUrl="https://developers.google.com/earth-engine/blog"/>
+      <outline type="rss" text="Microsoft Planetary Computer — Blog" title="Microsoft Planetary Computer — Blog" xmlUrl="https://planetarycomputer.microsoft.com/blog"/>
+      <outline type="rss" text="AssemblyAI — Blog (RSS)" title="AssemblyAI — Blog (RSS)" xmlUrl="https://www.assemblyai.com/blog/rss/"/>
+      <outline type="rss" text="Stanford AI Lab — SAIL Blog" title="Stanford AI Lab — SAIL Blog" xmlUrl="https://ai.stanford.edu/blog"/>
+      <outline type="rss" text="Lightning AI — Blog" title="Lightning AI — Blog" xmlUrl="https://lightning.ai/pages/blog"/>
+      <outline type="rss" text="Robohub — RSS" title="Robohub — RSS" xmlUrl="https://robohub.org/feed/"/>
+      <outline type="rss" text="Practical AI — Podcast (RSS)" title="Practical AI — Podcast (RSS)" xmlUrl="https://changelog.com/practicalai/feed"/>
+      <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog"/>
+      <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics" xmlUrl="https://spectrum.ieee.org/topic/robotics"/>
+      <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events" xmlUrl="https://ai.ethz.ch/news-and-events.html"/>
+      <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News" xmlUrl="https://www.tue.ai/news"/>
+      <outline type="rss" text="Yannic Kilcher — YouTube" title="Yannic Kilcher — YouTube" xmlUrl="https://www.youtube.com/@YannicKilcher"/>
+      <outline type="rss" text="Henry AI Labs — YouTube" title="Henry AI Labs — YouTube" xmlUrl="https://www.youtube.com/@HenryAILabs"/>
+      <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog" xmlUrl="https://blog.englishtest.duolingo.com/"/>
+    </outline>
+    <outline text="embeddings" title="embeddings">
+      <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml"/>
+      <outline type="rss" text="Neo4j Graph Data Science — Articles" title="Neo4j Graph Data Science — Articles" xmlUrl="https://neo4j.com/developer/graph-data-science/"/>
+      <outline type="rss" text="FAISS — Releases (Atom)" title="FAISS — Releases (Atom)" xmlUrl="https://github.com/facebookresearch/faiss/releases.atom"/>
+      <outline type="rss" text="Nomic — Blog" title="Nomic — Blog" xmlUrl="https://blog.nomic.ai/"/>
+    </outline>
+    <outline text="ethics" title="ethics">
+      <outline type="rss" text="The Alan Turing Institute — Blog" title="The Alan Turing Institute — Blog" xmlUrl="https://www.turing.ac.uk/blog"/>
+    </outline>
+    <outline text="evaluation" title="evaluation">
+      <outline type="rss" text="Stanford CRFM — RSS" title="Stanford CRFM — RSS" xmlUrl="https://crfm.stanford.edu/feed"/>
+      <outline type="rss" text="Databricks Blog — RSS" title="Databricks Blog — RSS" xmlUrl="https://www.databricks.com/feed"/>
+      <outline type="rss" text="LMSYS — Blog" title="LMSYS — Blog" xmlUrl="https://lmsys.org/blog/"/>
+      <outline type="rss" text="UK AI Safety Institute — News" title="UK AI Safety Institute — News" xmlUrl="https://www.aisafety.gov.uk/news"/>
+      <outline type="rss" text="MLCommons — News (MLPerf)" title="MLCommons — News (MLPerf)" xmlUrl="https://mlcommons.org/news/"/>
+      <outline type="rss" text="Allen Institute for AI — Blog" title="Allen Institute for AI — Blog" xmlUrl="https://allenai.org/blog"/>
+      <outline type="rss" text="Evidently AI — Blog" title="Evidently AI — Blog" xmlUrl="https://www.evidentlyai.com/blog"/>
+      <outline type="rss" text="Cohere — Research" title="Cohere — Research" xmlUrl="https://cohere.com/research"/>
+      <outline type="rss" text="Langfuse — Blog" title="Langfuse — Blog" xmlUrl="https://blog.langfuse.com"/>
+      <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog" xmlUrl="https://partnershiponai.org/blog/"/>
+      <outline type="rss" text="Vector Institute — Insights" title="Vector Institute — Insights" xmlUrl="https://vectorinstitute.ai/insights/"/>
+      <outline type="rss" text="Neptune.ai — Blog (RSS)" title="Neptune.ai — Blog (RSS)" xmlUrl="https://neptune.ai/blog/feed"/>
+      <outline type="rss" text="AI Incident Database — Blog" title="AI Incident Database — Blog" xmlUrl="https://incidentdatabase.ai/blog/"/>
+      <outline type="rss" text="Great Expectations (GX) — Blog" title="Great Expectations (GX) — Blog" xmlUrl="https://greatexpectations.io/blog/"/>
+      <outline type="rss" text="Center for AI Safety — Blog" title="Center for AI Safety — Blog" xmlUrl="https://www.safe.ai/blog"/>
+      <outline type="rss" text="ACL Rolling Review — Site" title="ACL Rolling Review — Site" xmlUrl="https://aclrollingreview.org"/>
+      <outline type="rss" text="Weights &amp; Biases — Articles" title="Weights &amp; Biases — Articles" xmlUrl="https://wandb.com/articles"/>
+      <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog" xmlUrl="https://humanloop.com/blog"/>
+      <outline type="rss" text="Ragas — Blog" title="Ragas — Blog" xmlUrl="https://ragas.io/blog"/>
+      <outline type="rss" text="TruLens — Blog" title="TruLens — Blog" xmlUrl="https://www.trulens.org/blog"/>
+      <outline type="rss" text="DeepEval (Confident AI) — Blog" title="DeepEval (Confident AI) — Blog" xmlUrl="https://www.confident-ai.com/blog"/>
+      <outline type="rss" text="OpenAI — Evals" title="OpenAI — Evals" xmlUrl="https://evals.openai.com"/>
+      <outline type="rss" text="U.S. AI Safety Institute (NIST)" title="U.S. AI Safety Institute (NIST)" xmlUrl="https://www.nist.gov/aisi"/>
+      <outline type="rss" text="FAR AI — Blog" title="FAR AI — Blog" xmlUrl="https://www.far.ai/blog"/>
+      <outline type="rss" text="Lilian Weng — Blog" title="Lilian Weng — Blog" xmlUrl="https://lilianweng.github.io/"/>
+      <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest" xmlUrl="https://www.aiverifyfoundation.sg/latest"/>
+      <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications" xmlUrl="https://genai.owasp.org/llm-top-10/"/>
+      <outline type="rss" text="Microsoft Research — AI for Science (News &amp; Awards)" title="Microsoft Research — AI for Science (News &amp; Awards)" xmlUrl="https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="LangChain — Changelog" title="LangChain — Changelog" xmlUrl="https://changelog.langchain.com/"/>
+      <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog" xmlUrl="https://metr.org/blog"/>
+      <outline type="rss" text="Lakera — Blog" title="Lakera — Blog" xmlUrl="https://www.lakera.ai/blog"/>
+      <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog" xmlUrl="https://promptfoo.dev/blog/"/>
+      <outline type="rss" text="UpTrain — Blog" title="UpTrain — Blog" xmlUrl="https://www.uptrain.ai/blog"/>
+      <outline type="rss" text="Gentrace — Blog" title="Gentrace — Blog" xmlUrl="https://blog.gentrace.ai/"/>
+      <outline type="rss" text="Guardrails AI — Blog" title="Guardrails AI — Blog" xmlUrl="https://blog.guardrailsai.com/"/>
+      <outline type="rss" text="Guardrails — GitHub" title="Guardrails — GitHub" xmlUrl="https://github.com/guardrails-ai/guardrails"/>
+      <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog" xmlUrl="https://blog.englishtest.duolingo.com/"/>
+    </outline>
+    <outline text="genai" title="genai">
+      <outline type="rss" text="Mila — News" title="Mila — News" xmlUrl="https://mila.quebec/en/news"/>
+    </outline>
+    <outline text="geospatial-ml" title="geospatial-ml">
+      <outline type="rss" text="Google Earth Engine — Developer Blog" title="Google Earth Engine — Developer Blog" xmlUrl="https://developers.google.com/earth-engine/blog"/>
+      <outline type="rss" text="Microsoft Planetary Computer — Blog" title="Microsoft Planetary Computer — Blog" xmlUrl="https://planetarycomputer.microsoft.com/blog"/>
+      <outline type="rss" text="Radiant Earth — Blog" title="Radiant Earth — Blog" xmlUrl="https://www.radiant.earth/blog/"/>
+      <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog"/>
+    </outline>
+    <outline text="governance" title="governance">
+      <outline type="rss" text="Stanford HAI — News" title="Stanford HAI — News" xmlUrl="https://hai.stanford.edu/news"/>
+      <outline type="rss" text="UK AI Safety Institute — News" title="UK AI Safety Institute — News" xmlUrl="https://www.aisafety.gov.uk/news"/>
+      <outline type="rss" text="AI Now Institute — News (RSS)" title="AI Now Institute — News (RSS)" xmlUrl="https://ainowinstitute.org/category/news/feed"/>
+      <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog" xmlUrl="https://partnershiponai.org/blog/"/>
+      <outline type="rss" text="The Alan Turing Institute — Blog" title="The Alan Turing Institute — Blog" xmlUrl="https://www.turing.ac.uk/blog"/>
+      <outline type="rss" text="AI Incident Database — Blog" title="AI Incident Database — Blog" xmlUrl="https://incidentdatabase.ai/blog/"/>
+      <outline type="rss" text="NIST — Cybersecurity Insights" title="NIST — Cybersecurity Insights" xmlUrl="https://www.nist.gov/blogs/cybersecurity-insights"/>
+      <outline type="rss" text="Center for AI Safety — Blog" title="Center for AI Safety — Blog" xmlUrl="https://www.safe.ai/blog"/>
+      <outline type="rss" text="U.S. AI Safety Institute (NIST)" title="U.S. AI Safety Institute (NIST)" xmlUrl="https://www.nist.gov/aisi"/>
+      <outline type="rss" text="OECD.AI Policy Observatory" title="OECD.AI Policy Observatory" xmlUrl="https://oecd.ai"/>
+      <outline type="rss" text="European AI Office — Policy &amp; News" title="European AI Office — Policy &amp; News" xmlUrl="https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office"/>
+      <outline type="rss" text="Georgetown CSET — Blog" title="Georgetown CSET — Blog" xmlUrl="https://cset.georgetown.edu/blog/"/>
+      <outline type="rss" text="Jigsaw — Blog" title="Jigsaw — Blog" xmlUrl="https://blog.jigsaw.google/"/>
+      <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest" xmlUrl="https://www.aiverifyfoundation.sg/latest"/>
+      <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications" xmlUrl="https://genai.owasp.org/llm-top-10/"/>
+      <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog" xmlUrl="https://mozilla.ai/blog/"/>
+      <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog" xmlUrl="https://metr.org/blog"/>
+      <outline type="rss" text="Bank Underground (Bank of England)" title="Bank Underground (Bank of England)" xmlUrl="https://bankunderground.co.uk/"/>
+      <outline type="rss" text="IBM — AI Blog" title="IBM — AI Blog" xmlUrl="https://www.ibm.com/blog/ai/"/>
+      <outline type="rss" text="Stanford CodeX — Legal Informatics" title="Stanford CodeX — Legal Informatics" xmlUrl="https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/"/>
+      <outline type="rss" text="FTC Business Blog — RSS" title="FTC Business Blog — RSS" xmlUrl="https://www.ftc.gov/feeds/blog-business.xml"/>
+    </outline>
+    <outline text="hardware" title="hardware">
+      <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)" xmlUrl="https://semianalysis.substack.com/feed"/>
+      <outline type="rss" text="Chips and Cheese — RSS" title="Chips and Cheese — RSS" xmlUrl="https://chipsandcheese.com/feed/"/>
+    </outline>
+    <outline text="healthcare-ai" title="healthcare-ai">
+      <outline type="rss" text="NEJM AI" title="NEJM AI" xmlUrl="https://ai.nejm.org"/>
+      <outline type="rss" text="NPJ Digital Medicine" title="NPJ Digital Medicine" xmlUrl="https://www.nature.com/npjdigitalmed/"/>
+    </outline>
+    <outline text="industry" title="industry">
+      <outline type="rss" text="https://openai.com/blog/rss/" title="https://openai.com/blog/rss/" xmlUrl="https://openai.com/blog/rss/"/>
+      <outline type="rss" text="https://www.latent.space/feed" title="https://www.latent.space/feed" xmlUrl="https://www.latent.space/feed"/>
+      <outline type="rss" text="https://importai.substack.com/feed" title="https://importai.substack.com/feed" xmlUrl="https://importai.substack.com/feed"/>
+      <outline type="rss" text="Anthropic News" title="Anthropic News" xmlUrl="https://www.anthropic.com/news"/>
+      <outline type="rss" text="Google AI Blog" title="Google AI Blog" xmlUrl="https://ai.googleblog.com"/>
+      <outline type="rss" text="Meta AI — Blog" title="Meta AI — Blog" xmlUrl="https://ai.meta.com/blog/"/>
+      <outline type="rss" text="AWS Machine Learning Blog — RSS" title="AWS Machine Learning Blog — RSS" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
+      <outline type="rss" text="Stanford HAI — News" title="Stanford HAI — News" xmlUrl="https://hai.stanford.edu/news"/>
+      <outline type="rss" text="Cohere — txt (RSS)" title="Cohere — txt (RSS)" xmlUrl="https://txt.cohere.ai/rss/"/>
+      <outline type="rss" text="Databricks Blog — RSS" title="Databricks Blog — RSS" xmlUrl="https://www.databricks.com/feed"/>
+      <outline type="rss" text="MLCommons — News (MLPerf)" title="MLCommons — News (MLPerf)" xmlUrl="https://mlcommons.org/news/"/>
+      <outline type="rss" text="DeepLearning.AI — The Batch" title="DeepLearning.AI — The Batch" xmlUrl="https://www.deeplearning.ai/the-batch/"/>
+      <outline type="rss" text="Microsoft AI — Blog" title="Microsoft AI — Blog" xmlUrl="https://www.microsoft.com/en-us/ai/blog/"/>
+      <outline type="rss" text="Vector Institute — Insights" title="Vector Institute — Insights" xmlUrl="https://vectorinstitute.ai/insights/"/>
+      <outline type="rss" text="Mistral AI — News" title="Mistral AI — News" xmlUrl="https://mistral.ai/news"/>
+      <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)" xmlUrl="https://semianalysis.substack.com/feed"/>
+      <outline type="rss" text="Together AI — Blog" title="Together AI — Blog" xmlUrl="https://www.together.ai/blog"/>
+      <outline type="rss" text="OECD.AI Policy Observatory" title="OECD.AI Policy Observatory" xmlUrl="https://oecd.ai"/>
+      <outline type="rss" text="OpenAI — News (RSS)" title="OpenAI — News (RSS)" xmlUrl="https://openai.com/news/rss.xml"/>
+      <outline type="rss" text="Georgetown CSET — Blog" title="Georgetown CSET — Blog" xmlUrl="https://cset.georgetown.edu/blog/"/>
+      <outline type="rss" text="Practical AI — Podcast (RSS)" title="Practical AI — Podcast (RSS)" xmlUrl="https://changelog.com/practicalai/feed"/>
+      <outline type="rss" text="The Data Exchange — Podcast (RSS)" title="The Data Exchange — Podcast (RSS)" xmlUrl="https://feeds.buzzsprout.com/682433.rss"/>
+      <outline type="rss" text="Agency — Substack" title="Agency — Substack" xmlUrl="https://blog.agen.cy"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog" xmlUrl="https://mozilla.ai/blog/"/>
+      <outline type="rss" text="Bank Underground (Bank of England)" title="Bank Underground (Bank of England)" xmlUrl="https://bankunderground.co.uk/"/>
+      <outline type="rss" text="xAI — Blog" title="xAI — Blog" xmlUrl="https://x.ai/blog"/>
+      <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog" xmlUrl="https://research.ibm.com/blog/ai"/>
+      <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML" xmlUrl="https://cloud.google.com/blog/topics/ai-ml"/>
+      <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML" xmlUrl="https://azure.microsoft.com/en-us/blog/topics/ai-ml/"/>
+      <outline type="rss" text="IBM — AI Blog" title="IBM — AI Blog" xmlUrl="https://www.ibm.com/blog/ai/"/>
+      <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI"/>
+      <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://www.perplexity.ai/hub"/>
+    </outline>
+    <outline text="inference" title="inference">
+      <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/"/>
+      <outline type="rss" text="AWS Machine Learning Blog — RSS" title="AWS Machine Learning Blog — RSS" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
+      <outline type="rss" text="TensorFlow Blog — RSS" title="TensorFlow Blog — RSS" xmlUrl="https://blog.tensorflow.org/feeds/posts/default?alt=rss"/>
+      <outline type="rss" text="Replicate Blog — RSS" title="Replicate Blog — RSS" xmlUrl="https://replicate.com/blog/rss"/>
+      <outline type="rss" text="vLLM (GitHub)" title="vLLM (GitHub)" xmlUrl="https://github.com/vllm-project/vllm"/>
+      <outline type="rss" text="TensorRT-LLM (GitHub)" title="TensorRT-LLM (GitHub)" xmlUrl="https://github.com/NVIDIA/TensorRT-LLM"/>
+      <outline type="rss" text="Apache TVM — Blog" title="Apache TVM — Blog" xmlUrl="https://tvm.apache.org/blog"/>
+      <outline type="rss" text="MLC LLM — Blog" title="MLC LLM — Blog" xmlUrl="https://llm.mlc.ai/blog"/>
+      <outline type="rss" text="llama.cpp — Releases (Atom)" title="llama.cpp — Releases (Atom)" xmlUrl="https://github.com/ggml-org/llama.cpp/releases.atom"/>
+      <outline type="rss" text="Hugging Face TGI — Releases (Atom)" title="Hugging Face TGI — Releases (Atom)" xmlUrl="https://github.com/huggingface/text-generation-inference/releases.atom"/>
+      <outline type="rss" text="MLC-LLM — Releases (Atom)" title="MLC-LLM — Releases (Atom)" xmlUrl="https://github.com/mlc-ai/mlc-llm/releases.atom"/>
+      <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog" xmlUrl="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html"/>
+      <outline type="rss" text="NVIDIA Research — AI" title="NVIDIA Research — AI" xmlUrl="https://www.nvidia.com/en-us/research/ai/"/>
+      <outline type="rss" text="PyTorch — Engineering Blog" title="PyTorch — Engineering Blog" xmlUrl="https://pytorch.org/blog"/>
+      <outline type="rss" text="Groq — Blog" title="Groq — Blog" xmlUrl="https://groq.com/blog"/>
+      <outline type="rss" text="Together AI — Blog" title="Together AI — Blog" xmlUrl="https://www.together.ai/blog"/>
+      <outline type="rss" text="OctoAI — Blog" title="OctoAI — Blog" xmlUrl="https://octoai.cloud/blog"/>
+      <outline type="rss" text="vLLM — Blog" title="vLLM — Blog" xmlUrl="https://blog.vllm.ai/"/>
+      <outline type="rss" text="ONNX Runtime — Releases (Atom)" title="ONNX Runtime — Releases (Atom)" xmlUrl="https://github.com/microsoft/onnxruntime/releases.atom"/>
+      <outline type="rss" text="NVIDIA FasterTransformer — Releases (Atom)" title="NVIDIA FasterTransformer — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/FasterTransformer/releases.atom"/>
+      <outline type="rss" text="FlashAttention — Releases (Atom)" title="FlashAttention — Releases (Atom)" xmlUrl="https://github.com/Dao-AILab/flash-attention/releases.atom"/>
+      <outline type="rss" text="Ollama — Blog" title="Ollama — Blog" xmlUrl="https://ollama.com/blog"/>
+      <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog" xmlUrl="https://lmstudio.ai/blog"/>
+      <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub" xmlUrl="https://github.com/ollama/ollama"/>
+      <outline type="rss" text="AutoAWQ — GitHub" title="AutoAWQ — GitHub" xmlUrl="https://github.com/casper-hansen/AutoAWQ"/>
+      <outline type="rss" text="ExLlamaV2 — GitHub" title="ExLlamaV2 — GitHub" xmlUrl="https://github.com/turboderp/exllamav2"/>
+      <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub" xmlUrl="https://github.com/LostRuins/koboldcpp"/>
+      <outline type="rss" text="AMD ROCm — Blogs" title="AMD ROCm — Blogs" xmlUrl="https://www.amd.com/en/technologies/rocm/blogs.html"/>
+    </outline>
+    <outline text="infra-economics" title="infra-economics">
+      <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)" xmlUrl="https://semianalysis.substack.com/feed"/>
+      <outline type="rss" text="Bank Underground (Bank of England)" title="Bank Underground (Bank of England)" xmlUrl="https://bankunderground.co.uk/"/>
+    </outline>
+    <outline text="interpretability" title="interpretability">
+      <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability" xmlUrl="https://www.neelnanda.io/blog"/>
+      <outline type="rss" text="Transformer Circuits" title="Transformer Circuits" xmlUrl="https://transformer-circuits.pub/"/>
+    </outline>
+    <outline text="knowledge-graphs" title="knowledge-graphs">
+      <outline type="rss" text="Neo4j — Developer Blog" title="Neo4j — Developer Blog" xmlUrl="https://neo4j.com/developer-blog/"/>
+      <outline type="rss" text="ArangoDB — Blog" title="ArangoDB — Blog" xmlUrl="https://www.arangodb.com/blog/"/>
+      <outline type="rss" text="Neo4j Graph Data Science — Articles" title="Neo4j Graph Data Science — Articles" xmlUrl="https://neo4j.com/developer/graph-data-science/"/>
+      <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog" xmlUrl="https://www.ontotext.com/blog/"/>
+    </outline>
+    <outline text="legal-ai" title="legal-ai">
+      <outline type="rss" text="Stanford CodeX — Legal Informatics" title="Stanford CodeX — Legal Informatics" xmlUrl="https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/"/>
+    </outline>
+    <outline text="llm" title="llm">
+      <outline type="rss" text="https://openai.com/blog/rss/" title="https://openai.com/blog/rss/" xmlUrl="https://openai.com/blog/rss/"/>
+      <outline type="rss" text="Anthropic News" title="Anthropic News" xmlUrl="https://www.anthropic.com/news"/>
+      <outline type="rss" text="Google AI Blog" title="Google AI Blog" xmlUrl="https://ai.googleblog.com"/>
+      <outline type="rss" text="DeepMind — Discover/Blog" title="DeepMind — Discover/Blog" xmlUrl="https://deepmind.google/discover/blog"/>
+      <outline type="rss" text="Meta AI — Blog" title="Meta AI — Blog" xmlUrl="https://ai.meta.com/blog/"/>
+      <outline type="rss" text="Microsoft Research Blog" title="Microsoft Research Blog" xmlUrl="https://www.microsoft.com/en-us/research/feed/"/>
+      <outline type="rss" text="Stanford CRFM — RSS" title="Stanford CRFM — RSS" xmlUrl="https://crfm.stanford.edu/feed"/>
+      <outline type="rss" text="Cohere — txt (RSS)" title="Cohere — txt (RSS)" xmlUrl="https://txt.cohere.ai/rss/"/>
+      <outline type="rss" text="LMSYS — Blog" title="LMSYS — Blog" xmlUrl="https://lmsys.org/blog/"/>
+      <outline type="rss" text="LangChain — Blog" title="LangChain — Blog" xmlUrl="https://blog.langchain.com/"/>
+      <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog" xmlUrl="https://www.llamaindex.ai/blog"/>
+      <outline type="rss" text="Sebastian Raschka — RSS" title="Sebastian Raschka — RSS" xmlUrl="https://sebastianraschka.com/rss.xml"/>
+      <outline type="rss" text="Allen Institute for AI — Blog" title="Allen Institute for AI — Blog" xmlUrl="https://allenai.org/blog"/>
+      <outline type="rss" text="EleutherAI — Blog" title="EleutherAI — Blog" xmlUrl="https://blog.eleuther.ai/"/>
+      <outline type="rss" text="Cohere — Research" title="Cohere — Research" xmlUrl="https://cohere.com/research"/>
+      <outline type="rss" text="Microsoft AI — Blog" title="Microsoft AI — Blog" xmlUrl="https://www.microsoft.com/en-us/ai/blog/"/>
+      <outline type="rss" text="Mistral AI — News" title="Mistral AI — News" xmlUrl="https://mistral.ai/news"/>
+      <outline type="rss" text="Together AI — Blog" title="Together AI — Blog" xmlUrl="https://www.together.ai/blog"/>
+      <outline type="rss" text="Transformers — GitHub" title="Transformers — GitHub" xmlUrl="https://github.com/huggingface/transformers"/>
+      <outline type="rss" text="OpenAI — News (RSS)" title="OpenAI — News (RSS)" xmlUrl="https://openai.com/news/rss.xml"/>
+      <outline type="rss" text="NVIDIA NeMo — Releases (Atom)" title="NVIDIA NeMo — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/NeMo/releases.atom"/>
+      <outline type="rss" text="Lilian Weng — Blog" title="Lilian Weng — Blog" xmlUrl="https://lilianweng.github.io/"/>
+      <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog" xmlUrl="https://mozilla.ai/blog/"/>
+      <outline type="rss" text="xAI — Blog" title="xAI — Blog" xmlUrl="https://x.ai/blog"/>
+      <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog" xmlUrl="https://kyutai.org/blog"/>
+      <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog" xmlUrl="https://blog.salesforceairesearch.com/"/>
+      <outline type="rss" text="Henry AI Labs — YouTube" title="Henry AI Labs — YouTube" xmlUrl="https://www.youtube.com/@HenryAILabs"/>
+      <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://www.perplexity.ai/hub"/>
+    </outline>
+    <outline text="llmops" title="llmops">
+      <outline type="rss" text="Hamel Husain — Atom" title="Hamel Husain — Atom" xmlUrl="https://hamel.dev/atom.xml"/>
+      <outline type="rss" text="Arize AI — Blog" title="Arize AI — Blog" xmlUrl="https://arize.com/blog"/>
+      <outline type="rss" text="Langfuse — Blog" title="Langfuse — Blog" xmlUrl="https://blog.langfuse.com"/>
+      <outline type="rss" text="Haystack (deepset) — Blog" title="Haystack (deepset) — Blog" xmlUrl="https://haystack.deepset.ai/blog"/>
+      <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog" xmlUrl="https://humanloop.com/blog"/>
+      <outline type="rss" text="Ragas — Blog" title="Ragas — Blog" xmlUrl="https://ragas.io/blog"/>
+      <outline type="rss" text="TruLens — Blog" title="TruLens — Blog" xmlUrl="https://www.trulens.org/blog"/>
+      <outline type="rss" text="DeepEval (Confident AI) — Blog" title="DeepEval (Confident AI) — Blog" xmlUrl="https://www.confident-ai.com/blog"/>
+      <outline type="rss" text="OpenAI — Evals" title="OpenAI — Evals" xmlUrl="https://evals.openai.com"/>
+      <outline type="rss" text="DataHub — Blog" title="DataHub — Blog" xmlUrl="https://datahub.com/blog"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="LangChain — Changelog" title="LangChain — Changelog" xmlUrl="https://changelog.langchain.com/"/>
+      <outline type="rss" text="Lakera — Blog" title="Lakera — Blog" xmlUrl="https://www.lakera.ai/blog"/>
+      <outline type="rss" text="Protect AI — MLSecOps Blog" title="Protect AI — MLSecOps Blog" xmlUrl="https://www.protectai.com/blog"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://blog.perplexity.ai/"/>
+      <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog" xmlUrl="https://blog.openrouter.ai/"/>
+      <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog" xmlUrl="https://promptfoo.dev/blog/"/>
+      <outline type="rss" text="UpTrain — Blog" title="UpTrain — Blog" xmlUrl="https://www.uptrain.ai/blog"/>
+      <outline type="rss" text="Gentrace — Blog" title="Gentrace — Blog" xmlUrl="https://blog.gentrace.ai/"/>
+      <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog" xmlUrl="https://devblogs.microsoft.com/autogen/"/>
+      <outline type="rss" text="Guardrails AI — Blog" title="Guardrails AI — Blog" xmlUrl="https://blog.guardrailsai.com/"/>
+      <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub" xmlUrl="https://github.com/FlowiseAI/Flowise"/>
+      <outline type="rss" text="LiteLLM — GitHub" title="LiteLLM — GitHub" xmlUrl="https://github.com/BerriAI/litellm"/>
+      <outline type="rss" text="Guardrails — GitHub" title="Guardrails — GitHub" xmlUrl="https://github.com/guardrails-ai/guardrails"/>
+    </outline>
+    <outline text="ml" title="ml">
+      <outline type="rss" text="http://export.arxiv.org/rss/cs.LG" title="http://export.arxiv.org/rss/cs.LG" xmlUrl="http://export.arxiv.org/rss/cs.LG"/>
+      <outline type="rss" text="https://www.reddit.com/r/MachineLearning" title="https://www.reddit.com/r/MachineLearning" xmlUrl="https://www.reddit.com/r/MachineLearning"/>
+      <outline type="rss" text="Towards Data Science" title="Towards Data Science" xmlUrl="https://towardsdatascience.com"/>
+      <outline type="rss" text="https://github.com/pytorch/pytorch" title="https://github.com/pytorch/pytorch" xmlUrl="https://github.com/pytorch/pytorch"/>
+      <outline type="rss" text="https://dev.to/t/machinelearning" title="https://dev.to/t/machinelearning" xmlUrl="https://dev.to/t/machinelearning"/>
+      <outline type="rss" text="Andrej Karpathy" title="Andrej Karpathy" xmlUrl="https://x.com/karpathy"/>
+      <outline type="rss" text="Yoshua Bengio - arXiv Papers" title="Yoshua Bengio - arXiv Papers" xmlUrl="https://arxiv.org/search/?searchtype=author&amp;query=Bengio%2C+Y"/>
+      <outline type="rss" text="DeepMind — Discover/Blog" title="DeepMind — Discover/Blog" xmlUrl="https://deepmind.google/discover/blog"/>
+      <outline type="rss" text="BAIR Blog (UC Berkeley) — RSS" title="BAIR Blog (UC Berkeley) — RSS" xmlUrl="https://bair.berkeley.edu/blog/feed.xml"/>
+      <outline type="rss" text="The Gradient — RSS" title="The Gradient — RSS" xmlUrl="https://thegradient.pub/rss/"/>
+      <outline type="rss" text="Sebastian Raschka — RSS" title="Sebastian Raschka — RSS" xmlUrl="https://sebastianraschka.com/rss.xml"/>
+      <outline type="rss" text="fast.ai — Blog" title="fast.ai — Blog" xmlUrl="http://www.fast.ai"/>
+      <outline type="rss" text="Nixtla — Blog" title="Nixtla — Blog" xmlUrl="https://nixtla.github.io/blog"/>
+      <outline type="rss" text="Mila — News" title="Mila — News" xmlUrl="https://mila.quebec/en/news"/>
+      <outline type="rss" text="CMU Machine Learning Department — Blog (RSS)" title="CMU Machine Learning Department — Blog (RSS)" xmlUrl="https://blog.ml.cmu.edu/feed/"/>
+      <outline type="rss" text="MIT News — Machine Learning (RSS)" title="MIT News — Machine Learning (RSS)" xmlUrl="https://news.mit.edu/topic/mitmachine-learning-rss.xml"/>
+      <outline type="rss" text="https://www.jmlr.org/jmlr.xml" title="https://www.jmlr.org/jmlr.xml" xmlUrl="https://www.jmlr.org/jmlr.xml"/>
+      <outline type="rss" text="Proceedings of Machine Learning Research (PMLR)" title="Proceedings of Machine Learning Research (PMLR)" xmlUrl="https://proceedings.mlr.press"/>
+      <outline type="rss" text="Transactions on Machine Learning Research (TMLR)" title="Transactions on Machine Learning Research (TMLR)" xmlUrl="https://jmlr.org/tmlr/"/>
+      <outline type="rss" text="Nature Machine Intelligence" title="Nature Machine Intelligence" xmlUrl="https://www.nature.com/natmachintell"/>
+      <outline type="rss" text="AssemblyAI — Blog (RSS)" title="AssemblyAI — Blog (RSS)" xmlUrl="https://www.assemblyai.com/blog/rss/"/>
+      <outline type="rss" text="Stanford AI Lab — SAIL Blog" title="Stanford AI Lab — SAIL Blog" xmlUrl="https://ai.stanford.edu/blog"/>
+      <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events" xmlUrl="https://ai.ethz.ch/news-and-events.html"/>
+      <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News" xmlUrl="https://is.mpg.de/news"/>
+      <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News" xmlUrl="https://www.tue.ai/news"/>
+      <outline type="rss" text="RIKEN AIP — News" title="RIKEN AIP — News" xmlUrl="https://aip.riken.jp/news-en/"/>
+      <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog" xmlUrl="https://sakana.ai/blog/"/>
+      <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog" xmlUrl="https://blog.salesforceairesearch.com/"/>
+      <outline type="rss" text="Yannic Kilcher — YouTube" title="Yannic Kilcher — YouTube" xmlUrl="https://www.youtube.com/@YannicKilcher"/>
+      <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube" xmlUrl="https://www.youtube.com/@GoogleDeepMind"/>
+      <outline type="rss" text="https://www.reddit.com/r/LocalLLaMA" title="https://www.reddit.com/r/LocalLLaMA" xmlUrl="https://www.reddit.com/r/LocalLLaMA"/>
+    </outline>
+    <outline text="mlops" title="mlops">
+      <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml"/>
+      <outline type="rss" text="https://huggingface.co/blog" title="https://huggingface.co/blog" xmlUrl="https://huggingface.co/blog"/>
+      <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/"/>
+      <outline type="rss" text="AWS Machine Learning Blog — RSS" title="AWS Machine Learning Blog — RSS" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
+      <outline type="rss" text="Replicate Blog — RSS" title="Replicate Blog — RSS" xmlUrl="https://replicate.com/blog/rss"/>
+      <outline type="rss" text="Databricks Blog — RSS" title="Databricks Blog — RSS" xmlUrl="https://www.databricks.com/feed"/>
+      <outline type="rss" text="Weaviate — Blog" title="Weaviate — Blog" xmlUrl="https://weaviate.io/blog"/>
+      <outline type="rss" text="Milvus — Blog" title="Milvus — Blog" xmlUrl="https://milvus.io/blog"/>
+      <outline type="rss" text="Qdrant — Articles" title="Qdrant — Articles" xmlUrl="https://qdrant.tech/articles/"/>
+      <outline type="rss" text="MLOps Community — Blog" title="MLOps Community — Blog" xmlUrl="https://mlops.community/blog"/>
+      <outline type="rss" text="Eugene Yan — RSS" title="Eugene Yan — RSS" xmlUrl="https://eugeneyan.com/rss/"/>
+      <outline type="rss" text="Hamel Husain — Atom" title="Hamel Husain — Atom" xmlUrl="https://hamel.dev/atom.xml"/>
+      <outline type="rss" text="Arize AI — Blog" title="Arize AI — Blog" xmlUrl="https://arize.com/blog"/>
+      <outline type="rss" text="Evidently AI — Blog" title="Evidently AI — Blog" xmlUrl="https://www.evidentlyai.com/blog"/>
+      <outline type="rss" text="WhyLabs — Blog" title="WhyLabs — Blog" xmlUrl="https://whylabs.ai/blog"/>
+      <outline type="rss" text="Neptune.ai — Blog (RSS)" title="Neptune.ai — Blog (RSS)" xmlUrl="https://neptune.ai/blog/feed"/>
+      <outline type="rss" text="OpenLineage — Blog" title="OpenLineage — Blog" xmlUrl="https://openlineage.io/blog/"/>
+      <outline type="rss" text="Great Expectations (GX) — Blog" title="Great Expectations (GX) — Blog" xmlUrl="https://greatexpectations.io/blog/"/>
+      <outline type="rss" text="Monte Carlo — Data Observability Blog" title="Monte Carlo — Data Observability Blog" xmlUrl="https://www.montecarlodata.com/blog/"/>
+      <outline type="rss" text="Edge Impulse — Blog" title="Edge Impulse — Blog" xmlUrl="https://www.edgeimpulse.com/blog"/>
+      <outline type="rss" text="Weights &amp; Biases — Release Notes (RSS)" title="Weights &amp; Biases — Release Notes (RSS)" xmlUrl="https://docs.wandb.ai/ref/release-notes/index.xml"/>
+      <outline type="rss" text="Dagster — Blog" title="Dagster — Blog" xmlUrl="https://dagster.io/blog"/>
+      <outline type="rss" text="Baseten — Blog" title="Baseten — Blog" xmlUrl="https://www.baseten.co/blog"/>
+      <outline type="rss" text="Weights &amp; Biases — Articles" title="Weights &amp; Biases — Articles" xmlUrl="https://wandb.com/articles"/>
+      <outline type="rss" text="KServe — GitHub" title="KServe — GitHub" xmlUrl="https://github.com/kserve/kserve"/>
+      <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog" xmlUrl="https://open-metadata.medium.com/"/>
+      <outline type="rss" text="DataHub — Blog" title="DataHub — Blog" xmlUrl="https://datahub.com/blog"/>
+      <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub" xmlUrl="https://hiddenlayer.com/innovation-hub/"/>
+      <outline type="rss" text="Protect AI — MLSecOps Blog" title="Protect AI — MLSecOps Blog" xmlUrl="https://www.protectai.com/blog"/>
+      <outline type="rss" text="Tecton — Blog" title="Tecton — Blog" xmlUrl="https://www.tecton.ai/blog/"/>
+      <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog" xmlUrl="https://www.hopsworks.ai/blog"/>
+      <outline type="rss" text="Flyte — Blog" title="Flyte — Blog" xmlUrl="https://flyte.org/blog"/>
+      <outline type="rss" text="Prefect — Blog" title="Prefect — Blog" xmlUrl="https://www.prefect.io/blog"/>
+      <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog" xmlUrl="https://research.ibm.com/blog/ai"/>
+      <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML" xmlUrl="https://cloud.google.com/blog/topics/ai-ml"/>
+      <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML" xmlUrl="https://azure.microsoft.com/en-us/blog/topics/ai-ml/"/>
+    </outline>
+    <outline text="monitoring" title="monitoring">
+      <outline type="rss" text="MLOps Community — Blog" title="MLOps Community — Blog" xmlUrl="https://mlops.community/blog"/>
+      <outline type="rss" text="Arize AI — Blog" title="Arize AI — Blog" xmlUrl="https://arize.com/blog"/>
+      <outline type="rss" text="Evidently AI — Blog" title="Evidently AI — Blog" xmlUrl="https://www.evidentlyai.com/blog"/>
+      <outline type="rss" text="WhyLabs — Blog" title="WhyLabs — Blog" xmlUrl="https://whylabs.ai/blog"/>
+      <outline type="rss" text="Langfuse — Blog" title="Langfuse — Blog" xmlUrl="https://blog.langfuse.com"/>
+      <outline type="rss" text="Neptune.ai — Blog (RSS)" title="Neptune.ai — Blog (RSS)" xmlUrl="https://neptune.ai/blog/feed"/>
+      <outline type="rss" text="Monte Carlo — Data Observability Blog" title="Monte Carlo — Data Observability Blog" xmlUrl="https://www.montecarlodata.com/blog/"/>
+      <outline type="rss" text="Weights &amp; Biases — Release Notes (RSS)" title="Weights &amp; Biases — Release Notes (RSS)" xmlUrl="https://docs.wandb.ai/ref/release-notes/index.xml"/>
+      <outline type="rss" text="Weights &amp; Biases — Articles" title="Weights &amp; Biases — Articles" xmlUrl="https://wandb.com/articles"/>
+      <outline type="rss" text="TruLens — Blog" title="TruLens — Blog" xmlUrl="https://www.trulens.org/blog"/>
+      <outline type="rss" text="DeepEval (Confident AI) — Blog" title="DeepEval (Confident AI) — Blog" xmlUrl="https://www.confident-ai.com/blog"/>
+      <outline type="rss" text="UpTrain — Blog" title="UpTrain — Blog" xmlUrl="https://www.uptrain.ai/blog"/>
+      <outline type="rss" text="Prefect — Blog" title="Prefect — Blog" xmlUrl="https://www.prefect.io/blog"/>
+    </outline>
+    <outline text="multimodal" title="multimodal">
+      <outline type="rss" text="NVIDIA NeMo — Releases (Atom)" title="NVIDIA NeMo — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/NeMo/releases.atom"/>
+      <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog" xmlUrl="https://kyutai.org/blog"/>
+      <outline type="rss" text="Coqui — Blog" title="Coqui — Blog" xmlUrl="https://coqui.ai/blog"/>
+      <outline type="rss" text="Stability AI — News" title="Stability AI — News" xmlUrl="https://stability.ai/news"/>
+      <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube" xmlUrl="https://www.youtube.com/@GoogleDeepMind"/>
+      <outline type="rss" text="https://www.reddit.com/r/StableDiffusion" title="https://www.reddit.com/r/StableDiffusion" xmlUrl="https://www.reddit.com/r/StableDiffusion"/>
+    </outline>
+    <outline text="newsletters" title="newsletters">
+      <outline type="rss" text="https://importai.substack.com/feed" title="https://importai.substack.com/feed" xmlUrl="https://importai.substack.com/feed"/>
+      <outline type="rss" text="The Gradient — RSS" title="The Gradient — RSS" xmlUrl="https://thegradient.pub/rss/"/>
+      <outline type="rss" text="DeepLearning.AI — The Batch" title="DeepLearning.AI — The Batch" xmlUrl="https://www.deeplearning.ai/the-batch/"/>
+      <outline type="rss" text="Agency — Substack" title="Agency — Substack" xmlUrl="https://blog.agen.cy"/>
+    </outline>
+    <outline text="nlp" title="nlp">
+      <outline type="rss" text="https://huggingface.co/blog" title="https://huggingface.co/blog" xmlUrl="https://huggingface.co/blog"/>
+      <outline type="rss" text="arXiv — cs.CL RSS" title="arXiv — cs.CL RSS" xmlUrl="http://export.arxiv.org/rss/cs.CL"/>
+      <outline type="rss" text="ACL Rolling Review — Site" title="ACL Rolling Review — Site" xmlUrl="https://aclrollingreview.org"/>
+      <outline type="rss" text="Transformers — GitHub" title="Transformers — GitHub" xmlUrl="https://github.com/huggingface/transformers"/>
+      <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog" xmlUrl="https://blog.salesforceairesearch.com/"/>
+    </outline>
+    <outline text="on-device" title="on-device">
+      <outline type="rss" text="Apple Machine Learning Research (Journal)" title="Apple Machine Learning Research (Journal)" xmlUrl="https://machinelearning.apple.com"/>
+      <outline type="rss" text="Qualcomm — AI Research/Engineering" title="Qualcomm — AI Research/Engineering" xmlUrl="https://www.qualcomm.com/research/artificial-intelligence"/>
+      <outline type="rss" text="MLC LLM — Blog" title="MLC LLM — Blog" xmlUrl="https://llm.mlc.ai/blog"/>
+      <outline type="rss" text="MLC-LLM — Releases (Atom)" title="MLC-LLM — Releases (Atom)" xmlUrl="https://github.com/mlc-ai/mlc-llm/releases.atom"/>
+      <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog" xmlUrl="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html"/>
+      <outline type="rss" text="Edge Impulse — Blog" title="Edge Impulse — Blog" xmlUrl="https://www.edgeimpulse.com/blog"/>
+      <outline type="rss" text="tinyML Foundation — Blog" title="tinyML Foundation — Blog" xmlUrl="https://www.tinyml.org/blog/"/>
+      <outline type="rss" text="MLX — Releases (Atom)" title="MLX — Releases (Atom)" xmlUrl="https://github.com/ml-explore/mlx/releases.atom"/>
+      <outline type="rss" text="Ollama — Blog" title="Ollama — Blog" xmlUrl="https://ollama.com/blog"/>
+      <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog" xmlUrl="https://lmstudio.ai/blog"/>
+      <outline type="rss" text="https://www.reddit.com/r/LocalLLaMA" title="https://www.reddit.com/r/LocalLLaMA" xmlUrl="https://www.reddit.com/r/LocalLLaMA"/>
+      <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub" xmlUrl="https://github.com/ollama/ollama"/>
+      <outline type="rss" text="whisper.cpp — GitHub" title="whisper.cpp — GitHub" xmlUrl="https://github.com/ggerganov/whisper.cpp"/>
+      <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub" xmlUrl="https://github.com/LostRuins/koboldcpp"/>
+      <outline type="rss" text="Arm — AI &amp; ML Blog" title="Arm — AI &amp; ML Blog" xmlUrl="https://community.arm.com/arm-community-blogs/b/ai-blog"/>
+    </outline>
+    <outline text="open-source" title="open-source">
+      <outline type="rss" text="https://huggingface.co/blog" title="https://huggingface.co/blog" xmlUrl="https://huggingface.co/blog"/>
+      <outline type="rss" text="https://openxla.org/blog" title="https://openxla.org/blog" xmlUrl="https://openxla.org/blog"/>
+      <outline type="rss" text="https://github.com/pytorch/pytorch" title="https://github.com/pytorch/pytorch" xmlUrl="https://github.com/pytorch/pytorch"/>
+      <outline type="rss" text="Meta AI — Blog" title="Meta AI — Blog" xmlUrl="https://ai.meta.com/blog/"/>
+      <outline type="rss" text="TensorFlow Blog — RSS" title="TensorFlow Blog — RSS" xmlUrl="https://blog.tensorflow.org/feeds/posts/default?alt=rss"/>
+      <outline type="rss" text="Replicate Blog — RSS" title="Replicate Blog — RSS" xmlUrl="https://replicate.com/blog/rss"/>
+      <outline type="rss" text="vLLM (GitHub)" title="vLLM (GitHub)" xmlUrl="https://github.com/vllm-project/vllm"/>
+      <outline type="rss" text="TensorRT-LLM (GitHub)" title="TensorRT-LLM (GitHub)" xmlUrl="https://github.com/NVIDIA/TensorRT-LLM"/>
+      <outline type="rss" text="Weaviate — Blog" title="Weaviate — Blog" xmlUrl="https://weaviate.io/blog"/>
+      <outline type="rss" text="Milvus — Blog" title="Milvus — Blog" xmlUrl="https://milvus.io/blog"/>
+      <outline type="rss" text="Qdrant — Articles" title="Qdrant — Articles" xmlUrl="https://qdrant.tech/articles/"/>
+      <outline type="rss" text="EleutherAI — Blog" title="EleutherAI — Blog" xmlUrl="https://blog.eleuther.ai/"/>
+      <outline type="rss" text="Roboflow — Blog" title="Roboflow — Blog" xmlUrl="https://blog.roboflow.com"/>
+      <outline type="rss" text="OpenCV — Blog" title="OpenCV — Blog" xmlUrl="https://opencv.org/blog"/>
+      <outline type="rss" text="ArangoDB — Blog" title="ArangoDB — Blog" xmlUrl="https://www.arangodb.com/blog/"/>
+      <outline type="rss" text="Jina AI — Blog" title="Jina AI — Blog" xmlUrl="https://jina.ai/blog/"/>
+      <outline type="rss" text="llama.cpp — Releases (Atom)" title="llama.cpp — Releases (Atom)" xmlUrl="https://github.com/ggml-org/llama.cpp/releases.atom"/>
+      <outline type="rss" text="Hugging Face TGI — Releases (Atom)" title="Hugging Face TGI — Releases (Atom)" xmlUrl="https://github.com/huggingface/text-generation-inference/releases.atom"/>
+      <outline type="rss" text="SGLang — Releases (Atom)" title="SGLang — Releases (Atom)" xmlUrl="https://github.com/sgl-project/sglang/releases.atom"/>
+      <outline type="rss" text="Triton — Releases (Atom)" title="Triton — Releases (Atom)" xmlUrl="https://github.com/triton-lang/triton/releases.atom"/>
+      <outline type="rss" text="MLC-LLM — Releases (Atom)" title="MLC-LLM — Releases (Atom)" xmlUrl="https://github.com/mlc-ai/mlc-llm/releases.atom"/>
+      <outline type="rss" text="ONNX — Blog" title="ONNX — Blog" xmlUrl="https://onnx.ai/blog"/>
+      <outline type="rss" text="PyTorch — Engineering Blog" title="PyTorch — Engineering Blog" xmlUrl="https://pytorch.org/blog"/>
+      <outline type="rss" text="LAION — Blog" title="LAION — Blog" xmlUrl="https://laion.ai/blog"/>
+      <outline type="rss" text="KServe — GitHub" title="KServe — GitHub" xmlUrl="https://github.com/kserve/kserve"/>
+      <outline type="rss" text="LangGraph — GitHub" title="LangGraph — GitHub" xmlUrl="https://github.com/langchain-ai/langgraph"/>
+      <outline type="rss" text="LangChain — GitHub" title="LangChain — GitHub" xmlUrl="https://github.com/langchain-ai/langchain"/>
+      <outline type="rss" text="JAX — GitHub" title="JAX — GitHub" xmlUrl="https://github.com/jax-ml/jax"/>
+      <outline type="rss" text="Transformers — GitHub" title="Transformers — GitHub" xmlUrl="https://github.com/huggingface/transformers"/>
+      <outline type="rss" text="FAISS — Releases (Atom)" title="FAISS — Releases (Atom)" xmlUrl="https://github.com/facebookresearch/faiss/releases.atom"/>
+      <outline type="rss" text="Microsoft AutoGen — Releases (Atom)" title="Microsoft AutoGen — Releases (Atom)" xmlUrl="https://github.com/microsoft/autogen/releases.atom"/>
+      <outline type="rss" text="OpenDevin — Releases (Atom)" title="OpenDevin — Releases (Atom)" xmlUrl="https://github.com/OpenDevin/OpenDevin/releases.atom"/>
+      <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog" xmlUrl="https://open-metadata.medium.com/"/>
+      <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog" xmlUrl="https://www.ontotext.com/blog/"/>
+      <outline type="rss" text="Chroma — Blog" title="Chroma — Blog" xmlUrl="https://trychroma.com/blog"/>
+      <outline type="rss" text="Nomic — Blog" title="Nomic — Blog" xmlUrl="https://blog.nomic.ai/"/>
+      <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog" xmlUrl="https://blog.argoproj.io/"/>
+      <outline type="rss" text="Coqui — Blog" title="Coqui — Blog" xmlUrl="https://coqui.ai/blog"/>
+      <outline type="rss" text="OpenMMLab — Blog" title="OpenMMLab — Blog" xmlUrl="https://openmmlab.com/blog/"/>
+      <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog" xmlUrl="https://ultralytics.com/blog"/>
+      <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI"/>
+      <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub" xmlUrl="https://github.com/ollama/ollama"/>
+      <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui"/>
+      <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub" xmlUrl="https://github.com/FlowiseAI/Flowise"/>
+      <outline type="rss" text="LiteLLM — GitHub" title="LiteLLM — GitHub" xmlUrl="https://github.com/BerriAI/litellm"/>
+      <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub" xmlUrl="https://github.com/unslothai/unsloth"/>
+      <outline type="rss" text="AutoAWQ — GitHub" title="AutoAWQ — GitHub" xmlUrl="https://github.com/casper-hansen/AutoAWQ"/>
+      <outline type="rss" text="ExLlamaV2 — GitHub" title="ExLlamaV2 — GitHub" xmlUrl="https://github.com/turboderp/exllamav2"/>
+      <outline type="rss" text="whisper.cpp — GitHub" title="whisper.cpp — GitHub" xmlUrl="https://github.com/ggerganov/whisper.cpp"/>
+      <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub" xmlUrl="https://github.com/LostRuins/koboldcpp"/>
+      <outline type="rss" text="Guardrails — GitHub" title="Guardrails — GitHub" xmlUrl="https://github.com/guardrails-ai/guardrails"/>
+      <outline type="rss" text="Outlines — GitHub" title="Outlines — GitHub" xmlUrl="https://github.com/outlines-dev/outlines"/>
+      <outline type="rss" text="OpenAI Whisper — GitHub" title="OpenAI Whisper — GitHub" xmlUrl="https://github.com/openai/whisper"/>
+      <outline type="rss" text="SpeechBrain — GitHub" title="SpeechBrain — GitHub" xmlUrl="https://github.com/speechbrain/speechbrain"/>
+      <outline type="rss" text="Coqui TTS — GitHub" title="Coqui TTS — GitHub" xmlUrl="https://github.com/coqui-ai/TTS"/>
+      <outline type="rss" text="sktime — GitHub" title="sktime — GitHub" xmlUrl="https://github.com/sktime/sktime"/>
+      <outline type="rss" text="Darts — GitHub" title="Darts — GitHub" xmlUrl="https://github.com/unit8co/darts"/>
+      <outline type="rss" text="OpenHands — GitHub" title="OpenHands — GitHub" xmlUrl="https://github.com/All-Hands-AI/openhands"/>
+      <outline type="rss" text="AutoGPT — GitHub" title="AutoGPT — GitHub" xmlUrl="https://github.com/Significant-Gravitas/AutoGPT"/>
+    </outline>
+    <outline text="optimization" title="optimization">
+      <outline type="rss" text="https://openxla.org/blog" title="https://openxla.org/blog" xmlUrl="https://openxla.org/blog"/>
+      <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/"/>
+      <outline type="rss" text="Apache TVM — Blog" title="Apache TVM — Blog" xmlUrl="https://tvm.apache.org/blog"/>
+      <outline type="rss" text="Modal — Blog" title="Modal — Blog" xmlUrl="https://modal.com/blog"/>
+      <outline type="rss" text="Triton — Releases (Atom)" title="Triton — Releases (Atom)" xmlUrl="https://github.com/triton-lang/triton/releases.atom"/>
+      <outline type="rss" text="ONNX — Blog" title="ONNX — Blog" xmlUrl="https://onnx.ai/blog"/>
+      <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog" xmlUrl="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html"/>
+      <outline type="rss" text="tinyML Foundation — Blog" title="tinyML Foundation — Blog" xmlUrl="https://www.tinyml.org/blog/"/>
+      <outline type="rss" text="NVIDIA Research — AI" title="NVIDIA Research — AI" xmlUrl="https://www.nvidia.com/en-us/research/ai/"/>
+      <outline type="rss" text="Hazy Research — Blog" title="Hazy Research — Blog" xmlUrl="https://hazyresearch.stanford.edu/blog"/>
+      <outline type="rss" text="DuckDB — News (RSS)" title="DuckDB — News (RSS)" xmlUrl="https://duckdb.org/feed.xml"/>
+      <outline type="rss" text="Chips and Cheese — RSS" title="Chips and Cheese — RSS" xmlUrl="https://chipsandcheese.com/feed/"/>
+      <outline type="rss" text="Lightning AI — Blog" title="Lightning AI — Blog" xmlUrl="https://lightning.ai/pages/blog"/>
+      <outline type="rss" text="Fireworks.ai — Blog" title="Fireworks.ai — Blog" xmlUrl="https://fireworks.ai/blog"/>
+      <outline type="rss" text="JAX — GitHub" title="JAX — GitHub" xmlUrl="https://github.com/jax-ml/jax"/>
+      <outline type="rss" text="SkyPilot — Blog" title="SkyPilot — Blog" xmlUrl="https://blog.skypilot.so/"/>
+      <outline type="rss" text="IREE — Blog (OpenXLA)" title="IREE — Blog (OpenXLA)" xmlUrl="https://iree.dev/blog/"/>
+      <outline type="rss" text="MLX — Releases (Atom)" title="MLX — Releases (Atom)" xmlUrl="https://github.com/ml-explore/mlx/releases.atom"/>
+      <outline type="rss" text="ONNX Runtime — Releases (Atom)" title="ONNX Runtime — Releases (Atom)" xmlUrl="https://github.com/microsoft/onnxruntime/releases.atom"/>
+      <outline type="rss" text="OpenXLA IREE — Releases (Atom)" title="OpenXLA IREE — Releases (Atom)" xmlUrl="https://github.com/openxla/iree/releases.atom"/>
+      <outline type="rss" text="NVIDIA FasterTransformer — Releases (Atom)" title="NVIDIA FasterTransformer — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/FasterTransformer/releases.atom"/>
+      <outline type="rss" text="FlashAttention — Releases (Atom)" title="FlashAttention — Releases (Atom)" xmlUrl="https://github.com/Dao-AILab/flash-attention/releases.atom"/>
+      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog"/>
+      <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog" xmlUrl="https://sakana.ai/blog/"/>
+      <outline type="rss" text="OpenMMLab — Blog" title="OpenMMLab — Blog" xmlUrl="https://openmmlab.com/blog/"/>
+      <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog" xmlUrl="https://ultralytics.com/blog"/>
+      <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog" xmlUrl="https://research.ibm.com/blog/ai"/>
+      <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub" xmlUrl="https://github.com/unslothai/unsloth"/>
+      <outline type="rss" text="AutoAWQ — GitHub" title="AutoAWQ — GitHub" xmlUrl="https://github.com/casper-hansen/AutoAWQ"/>
+      <outline type="rss" text="ExLlamaV2 — GitHub" title="ExLlamaV2 — GitHub" xmlUrl="https://github.com/turboderp/exllamav2"/>
+      <outline type="rss" text="whisper.cpp — GitHub" title="whisper.cpp — GitHub" xmlUrl="https://github.com/ggerganov/whisper.cpp"/>
+      <outline type="rss" text="Outlines — GitHub" title="Outlines — GitHub" xmlUrl="https://github.com/outlines-dev/outlines"/>
+      <outline type="rss" text="AMD ROCm — Blogs" title="AMD ROCm — Blogs" xmlUrl="https://www.amd.com/en/technologies/rocm/blogs.html"/>
+      <outline type="rss" text="Arm — AI &amp; ML Blog" title="Arm — AI &amp; ML Blog" xmlUrl="https://community.arm.com/arm-community-blogs/b/ai-blog"/>
+      <outline type="rss" text="MLIR — The LLVM Project Blog" title="MLIR — The LLVM Project Blog" xmlUrl="https://blog.llvm.org/tags/mlir/"/>
+    </outline>
+    <outline text="orchestration" title="orchestration">
+      <outline type="rss" text="Anyscale (Ray) — Blog" title="Anyscale (Ray) — Blog" xmlUrl="https://www.anyscale.com/blog"/>
+      <outline type="rss" text="CrewAI — Blog" title="CrewAI — Blog" xmlUrl="https://www.crewai.com/blog"/>
+      <outline type="rss" text="OpenLineage — Blog" title="OpenLineage — Blog" xmlUrl="https://openlineage.io/blog/"/>
+      <outline type="rss" text="Dagster — Blog" title="Dagster — Blog" xmlUrl="https://dagster.io/blog"/>
+      <outline type="rss" text="Astronomer (Airflow) — Blog" title="Astronomer (Airflow) — Blog" xmlUrl="https://www.astronomer.io/blog"/>
+      <outline type="rss" text="SkyPilot — Blog" title="SkyPilot — Blog" xmlUrl="https://blog.skypilot.so/"/>
+      <outline type="rss" text="Agency — Substack" title="Agency — Substack" xmlUrl="https://blog.agen.cy"/>
+      <outline type="rss" text="Flyte — Blog" title="Flyte — Blog" xmlUrl="https://flyte.org/blog"/>
+      <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog" xmlUrl="https://blog.argoproj.io/"/>
+      <outline type="rss" text="Prefect — Blog" title="Prefect — Blog" xmlUrl="https://www.prefect.io/blog"/>
+    </outline>
+    <outline text="papers" title="papers">
+      <outline type="rss" text="http://export.arxiv.org/rss/cs.LG" title="http://export.arxiv.org/rss/cs.LG" xmlUrl="http://export.arxiv.org/rss/cs.LG"/>
+      <outline type="rss" text="Yoshua Bengio - arXiv Papers" title="Yoshua Bengio - arXiv Papers" xmlUrl="https://arxiv.org/search/?searchtype=author&amp;query=Bengio%2C+Y"/>
+      <outline type="rss" text="Microsoft Research Blog" title="Microsoft Research Blog" xmlUrl="https://www.microsoft.com/en-us/research/feed/"/>
+      <outline type="rss" text="BAIR Blog (UC Berkeley) — RSS" title="BAIR Blog (UC Berkeley) — RSS" xmlUrl="https://bair.berkeley.edu/blog/feed.xml"/>
+      <outline type="rss" text="https://www.jmlr.org/jmlr.xml" title="https://www.jmlr.org/jmlr.xml" xmlUrl="https://www.jmlr.org/jmlr.xml"/>
+      <outline type="rss" text="Proceedings of Machine Learning Research (PMLR)" title="Proceedings of Machine Learning Research (PMLR)" xmlUrl="https://proceedings.mlr.press"/>
+      <outline type="rss" text="Transactions on Machine Learning Research (TMLR)" title="Transactions on Machine Learning Research (TMLR)" xmlUrl="https://jmlr.org/tmlr/"/>
+      <outline type="rss" text="Nature Machine Intelligence" title="Nature Machine Intelligence" xmlUrl="https://www.nature.com/natmachintell"/>
+      <outline type="rss" text="NEJM AI" title="NEJM AI" xmlUrl="https://ai.nejm.org"/>
+      <outline type="rss" text="NPJ Digital Medicine" title="NPJ Digital Medicine" xmlUrl="https://www.nature.com/npjdigitalmed/"/>
+      <outline type="rss" text="NeurIPS — Official Blog" title="NeurIPS — Official Blog" xmlUrl="https://blog.neurips.cc"/>
+      <outline type="rss" text="ICLR — Official Blog" title="ICLR — Official Blog" xmlUrl="https://blog.iclr.cc"/>
+      <outline type="rss" text="arXiv — cs.CV RSS" title="arXiv — cs.CV RSS" xmlUrl="http://export.arxiv.org/rss/cs.CV"/>
+      <outline type="rss" text="arXiv — cs.CL RSS" title="arXiv — cs.CL RSS" xmlUrl="http://export.arxiv.org/rss/cs.CL"/>
+      <outline type="rss" text="arXiv — cs.IR RSS" title="arXiv — cs.IR RSS" xmlUrl="http://export.arxiv.org/rss/cs.IR"/>
+      <outline type="rss" text="arXiv — cs.AI RSS" title="arXiv — cs.AI RSS" xmlUrl="https://rss.arxiv.org/rss/cs.AI"/>
+      <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)" xmlUrl="https://www.jair.org"/>
+    </outline>
+    <outline text="pets" title="pets">
+      <outline type="rss" text="OpenMined — Blog" title="OpenMined — Blog" xmlUrl="https://openmined.org/blog"/>
+      <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog"/>
+    </outline>
+    <outline text="podcasts" title="podcasts">
+      <outline type="rss" text="https://www.latent.space/feed" title="https://www.latent.space/feed" xmlUrl="https://www.latent.space/feed"/>
+      <outline type="rss" text="Practical AI — Podcast (RSS)" title="Practical AI — Podcast (RSS)" xmlUrl="https://changelog.com/practicalai/feed"/>
+      <outline type="rss" text="The Data Exchange — Podcast (RSS)" title="The Data Exchange — Podcast (RSS)" xmlUrl="https://feeds.buzzsprout.com/682433.rss"/>
+    </outline>
+    <outline text="privacy" title="privacy">
+      <outline type="rss" text="OpenMined — Blog" title="OpenMined — Blog" xmlUrl="https://openmined.org/blog"/>
+      <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog"/>
+      <outline type="rss" text="FTC Business Blog — RSS" title="FTC Business Blog — RSS" xmlUrl="https://www.ftc.gov/feeds/blog-business.xml"/>
+    </outline>
+    <outline text="product" title="product">
+      <outline type="rss" text="https://openai.com/blog/rss/" title="https://openai.com/blog/rss/" xmlUrl="https://openai.com/blog/rss/"/>
+      <outline type="rss" text="https://www.latent.space/feed" title="https://www.latent.space/feed" xmlUrl="https://www.latent.space/feed"/>
+      <outline type="rss" text="https://github.com/pytorch/pytorch" title="https://github.com/pytorch/pytorch" xmlUrl="https://github.com/pytorch/pytorch"/>
+      <outline type="rss" text="Cohere — txt (RSS)" title="Cohere — txt (RSS)" xmlUrl="https://txt.cohere.ai/rss/"/>
+      <outline type="rss" text="Databricks Blog — RSS" title="Databricks Blog — RSS" xmlUrl="https://www.databricks.com/feed"/>
+      <outline type="rss" text="Roboflow — Blog" title="Roboflow — Blog" xmlUrl="https://blog.roboflow.com"/>
+      <outline type="rss" text="Microsoft AI — Blog" title="Microsoft AI — Blog" xmlUrl="https://www.microsoft.com/en-us/ai/blog/"/>
+      <outline type="rss" text="Mistral AI — News" title="Mistral AI — News" xmlUrl="https://mistral.ai/news"/>
+      <outline type="rss" text="AssemblyAI — Blog (RSS)" title="AssemblyAI — Blog (RSS)" xmlUrl="https://www.assemblyai.com/blog/rss/"/>
+      <outline type="rss" text="DuckDB — News (RSS)" title="DuckDB — News (RSS)" xmlUrl="https://duckdb.org/feed.xml"/>
+      <outline type="rss" text="Groq — Blog" title="Groq — Blog" xmlUrl="https://groq.com/blog"/>
+      <outline type="rss" text="Together AI — Blog" title="Together AI — Blog" xmlUrl="https://www.together.ai/blog"/>
+      <outline type="rss" text="Fireworks.ai — Blog" title="Fireworks.ai — Blog" xmlUrl="https://fireworks.ai/blog"/>
+      <outline type="rss" text="Baseten — Blog" title="Baseten — Blog" xmlUrl="https://www.baseten.co/blog"/>
+      <outline type="rss" text="OctoAI — Blog" title="OctoAI — Blog" xmlUrl="https://octoai.cloud/blog"/>
+      <outline type="rss" text="OpenAI — News (RSS)" title="OpenAI — News (RSS)" xmlUrl="https://openai.com/news/rss.xml"/>
+      <outline type="rss" text="Scale AI — Blog" title="Scale AI — Blog" xmlUrl="https://scale.com/blog"/>
+      <outline type="rss" text="LangChain — Changelog" title="LangChain — Changelog" xmlUrl="https://changelog.langchain.com/"/>
+      <outline type="rss" text="xAI — Blog" title="xAI — Blog" xmlUrl="https://x.ai/blog"/>
+      <outline type="rss" text="Ollama — Blog" title="Ollama — Blog" xmlUrl="https://ollama.com/blog"/>
+      <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog" xmlUrl="https://lmstudio.ai/blog"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://blog.perplexity.ai/"/>
+      <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog" xmlUrl="https://blog.openrouter.ai/"/>
+      <outline type="rss" text="Chroma — Blog" title="Chroma — Blog" xmlUrl="https://trychroma.com/blog"/>
+      <outline type="rss" text="Coqui — Blog" title="Coqui — Blog" xmlUrl="https://coqui.ai/blog"/>
+      <outline type="rss" text="Stability AI — News" title="Stability AI — News" xmlUrl="https://stability.ai/news"/>
+      <outline type="rss" text="Ultralytics — Blog" title="Ultralytics — Blog" xmlUrl="https://ultralytics.com/blog"/>
+      <outline type="rss" text="Google Cloud — AI &amp; ML" title="Google Cloud — AI &amp; ML" xmlUrl="https://cloud.google.com/blog/topics/ai-ml"/>
+      <outline type="rss" text="Microsoft Azure — AI &amp; ML" title="Microsoft Azure — AI &amp; ML" xmlUrl="https://azure.microsoft.com/en-us/blog/topics/ai-ml/"/>
+      <outline type="rss" text="IBM — AI Blog" title="IBM — AI Blog" xmlUrl="https://www.ibm.com/blog/ai/"/>
+      <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI"/>
+      <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://www.perplexity.ai/hub"/>
+    </outline>
+    <outline text="rag" title="rag">
+      <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog" xmlUrl="https://www.llamaindex.ai/blog"/>
+      <outline type="rss" text="Haystack (deepset) — Blog" title="Haystack (deepset) — Blog" xmlUrl="https://haystack.deepset.ai/blog"/>
+      <outline type="rss" text="Ragas — Blog" title="Ragas — Blog" xmlUrl="https://ragas.io/blog"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://blog.perplexity.ai/"/>
+    </outline>
+    <outline text="regulation" title="regulation">
+      <outline type="rss" text="European AI Office — Policy &amp; News" title="European AI Office — Policy &amp; News" xmlUrl="https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office"/>
+      <outline type="rss" text="FTC Business Blog — RSS" title="FTC Business Blog — RSS" xmlUrl="https://www.ftc.gov/feeds/blog-business.xml"/>
+    </outline>
+    <outline text="research" title="research">
+      <outline type="rss" text="http://export.arxiv.org/rss/cs.LG" title="http://export.arxiv.org/rss/cs.LG" xmlUrl="http://export.arxiv.org/rss/cs.LG"/>
+      <outline type="rss" text="https://importai.substack.com/feed" title="https://importai.substack.com/feed" xmlUrl="https://importai.substack.com/feed"/>
+      <outline type="rss" text="https://www.reddit.com/r/MachineLearning" title="https://www.reddit.com/r/MachineLearning" xmlUrl="https://www.reddit.com/r/MachineLearning"/>
+      <outline type="rss" text="Two Minute Papers" title="Two Minute Papers" xmlUrl="https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg"/>
+      <outline type="rss" text="Andrej Karpathy" title="Andrej Karpathy" xmlUrl="https://x.com/karpathy"/>
+      <outline type="rss" text="Yoshua Bengio - arXiv Papers" title="Yoshua Bengio - arXiv Papers" xmlUrl="https://arxiv.org/search/?searchtype=author&amp;query=Bengio%2C+Y"/>
+      <outline type="rss" text="Google AI Blog" title="Google AI Blog" xmlUrl="https://ai.googleblog.com"/>
+      <outline type="rss" text="DeepMind — Discover/Blog" title="DeepMind — Discover/Blog" xmlUrl="https://deepmind.google/discover/blog"/>
+      <outline type="rss" text="Meta AI — Blog" title="Meta AI — Blog" xmlUrl="https://ai.meta.com/blog/"/>
+      <outline type="rss" text="Microsoft Research Blog" title="Microsoft Research Blog" xmlUrl="https://www.microsoft.com/en-us/research/feed/"/>
+      <outline type="rss" text="BAIR Blog (UC Berkeley) — RSS" title="BAIR Blog (UC Berkeley) — RSS" xmlUrl="https://bair.berkeley.edu/blog/feed.xml"/>
+      <outline type="rss" text="Stanford CRFM — RSS" title="Stanford CRFM — RSS" xmlUrl="https://crfm.stanford.edu/feed"/>
+      <outline type="rss" text="Stanford HAI — News" title="Stanford HAI — News" xmlUrl="https://hai.stanford.edu/news"/>
+      <outline type="rss" text="The Gradient — RSS" title="The Gradient — RSS" xmlUrl="https://thegradient.pub/rss/"/>
+      <outline type="rss" text="Apple Machine Learning Research (Journal)" title="Apple Machine Learning Research (Journal)" xmlUrl="https://machinelearning.apple.com"/>
+      <outline type="rss" text="Allen Institute for AI — Blog" title="Allen Institute for AI — Blog" xmlUrl="https://allenai.org/blog"/>
+      <outline type="rss" text="MIT CSAIL — News" title="MIT CSAIL — News" xmlUrl="https://www.csail.mit.edu/news"/>
+      <outline type="rss" text="EleutherAI — Blog" title="EleutherAI — Blog" xmlUrl="https://blog.eleuther.ai/"/>
+      <outline type="rss" text="Cohere — Research" title="Cohere — Research" xmlUrl="https://cohere.com/research"/>
+      <outline type="rss" text="AI Now Institute — News (RSS)" title="AI Now Institute — News (RSS)" xmlUrl="https://ainowinstitute.org/category/news/feed"/>
+      <outline type="rss" text="Mila — News" title="Mila — News" xmlUrl="https://mila.quebec/en/news"/>
+      <outline type="rss" text="Vector Institute — Insights" title="Vector Institute — Insights" xmlUrl="https://vectorinstitute.ai/insights/"/>
+      <outline type="rss" text="The Alan Turing Institute — Blog" title="The Alan Turing Institute — Blog" xmlUrl="https://www.turing.ac.uk/blog"/>
+      <outline type="rss" text="CMU Machine Learning Department — Blog (RSS)" title="CMU Machine Learning Department — Blog (RSS)" xmlUrl="https://blog.ml.cmu.edu/feed/"/>
+      <outline type="rss" text="MIT News — Machine Learning (RSS)" title="MIT News — Machine Learning (RSS)" xmlUrl="https://news.mit.edu/topic/mitmachine-learning-rss.xml"/>
+      <outline type="rss" text="https://www.jmlr.org/jmlr.xml" title="https://www.jmlr.org/jmlr.xml" xmlUrl="https://www.jmlr.org/jmlr.xml"/>
+      <outline type="rss" text="Proceedings of Machine Learning Research (PMLR)" title="Proceedings of Machine Learning Research (PMLR)" xmlUrl="https://proceedings.mlr.press"/>
+      <outline type="rss" text="Transactions on Machine Learning Research (TMLR)" title="Transactions on Machine Learning Research (TMLR)" xmlUrl="https://jmlr.org/tmlr/"/>
+      <outline type="rss" text="Nature Machine Intelligence" title="Nature Machine Intelligence" xmlUrl="https://www.nature.com/natmachintell"/>
+      <outline type="rss" text="NEJM AI" title="NEJM AI" xmlUrl="https://ai.nejm.org"/>
+      <outline type="rss" text="NPJ Digital Medicine" title="NPJ Digital Medicine" xmlUrl="https://www.nature.com/npjdigitalmed/"/>
+      <outline type="rss" text="NVIDIA Research — AI" title="NVIDIA Research — AI" xmlUrl="https://www.nvidia.com/en-us/research/ai/"/>
+      <outline type="rss" text="NeurIPS — Official Blog" title="NeurIPS — Official Blog" xmlUrl="https://blog.neurips.cc"/>
+      <outline type="rss" text="ICLR — Official Blog" title="ICLR — Official Blog" xmlUrl="https://blog.iclr.cc"/>
+      <outline type="rss" text="Stanford AI Lab — SAIL Blog" title="Stanford AI Lab — SAIL Blog" xmlUrl="https://ai.stanford.edu/blog"/>
+      <outline type="rss" text="Hazy Research — Blog" title="Hazy Research — Blog" xmlUrl="https://hazyresearch.stanford.edu/blog"/>
+      <outline type="rss" text="arXiv — cs.CV RSS" title="arXiv — cs.CV RSS" xmlUrl="http://export.arxiv.org/rss/cs.CV"/>
+      <outline type="rss" text="arXiv — cs.CL RSS" title="arXiv — cs.CL RSS" xmlUrl="http://export.arxiv.org/rss/cs.CL"/>
+      <outline type="rss" text="arXiv — cs.IR RSS" title="arXiv — cs.IR RSS" xmlUrl="http://export.arxiv.org/rss/cs.IR"/>
+      <outline type="rss" text="Alignment Forum — RSS" title="Alignment Forum — RSS" xmlUrl="https://alignmentforum.org/rss"/>
+      <outline type="rss" text="ACL Rolling Review — Site" title="ACL Rolling Review — Site" xmlUrl="https://aclrollingreview.org"/>
+      <outline type="rss" text="LAION — Blog" title="LAION — Blog" xmlUrl="https://laion.ai/blog"/>
+      <outline type="rss" text="Redwood Research — Blog" title="Redwood Research — Blog" xmlUrl="https://www.redwoodresearch.org/blog"/>
+      <outline type="rss" text="FAR AI — Blog" title="FAR AI — Blog" xmlUrl="https://www.far.ai/blog"/>
+      <outline type="rss" text="The Data Exchange — Podcast (RSS)" title="The Data Exchange — Podcast (RSS)" xmlUrl="https://feeds.buzzsprout.com/682433.rss"/>
+      <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability" xmlUrl="https://www.neelnanda.io/blog"/>
+      <outline type="rss" text="Microsoft Research — AI for Science (News &amp; Awards)" title="Microsoft Research — AI for Science (News &amp; Awards)" xmlUrl="https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/"/>
+      <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog"/>
+      <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News" xmlUrl="https://www.ri.cmu.edu/news/"/>
+      <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events" xmlUrl="https://ai.ethz.ch/news-and-events.html"/>
+      <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News" xmlUrl="https://is.mpg.de/news"/>
+      <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News" xmlUrl="https://www.tue.ai/news"/>
+      <outline type="rss" text="RIKEN AIP — News" title="RIKEN AIP — News" xmlUrl="https://aip.riken.jp/news-en/"/>
+      <outline type="rss" text="xAI — Blog" title="xAI — Blog" xmlUrl="https://x.ai/blog"/>
+      <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog" xmlUrl="https://sakana.ai/blog/"/>
+      <outline type="rss" text="Kyutai — Blog" title="Kyutai — Blog" xmlUrl="https://kyutai.org/blog"/>
+      <outline type="rss" text="Salesforce AI Research — Blog" title="Salesforce AI Research — Blog" xmlUrl="https://blog.salesforceairesearch.com/"/>
+      <outline type="rss" text="IBM Research — AI Blog" title="IBM Research — AI Blog" xmlUrl="https://research.ibm.com/blog/ai"/>
+      <outline type="rss" text="Yannic Kilcher — YouTube" title="Yannic Kilcher — YouTube" xmlUrl="https://www.youtube.com/@YannicKilcher"/>
+      <outline type="rss" text="Henry AI Labs — YouTube" title="Henry AI Labs — YouTube" xmlUrl="https://www.youtube.com/@HenryAILabs"/>
+      <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube" xmlUrl="https://www.youtube.com/@GoogleDeepMind"/>
+      <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI"/>
+      <outline type="rss" text="Transformer Circuits" title="Transformer Circuits" xmlUrl="https://transformer-circuits.pub/"/>
+      <outline type="rss" text="arXiv — cs.AI RSS" title="arXiv — cs.AI RSS" xmlUrl="https://rss.arxiv.org/rss/cs.AI"/>
+      <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)" xmlUrl="https://www.jair.org"/>
+    </outline>
+    <outline text="retrieval" title="retrieval">
+      <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml"/>
+      <outline type="rss" text="Weaviate — Blog" title="Weaviate — Blog" xmlUrl="https://weaviate.io/blog"/>
+      <outline type="rss" text="Milvus — Blog" title="Milvus — Blog" xmlUrl="https://milvus.io/blog"/>
+      <outline type="rss" text="Qdrant — Articles" title="Qdrant — Articles" xmlUrl="https://qdrant.tech/articles/"/>
+      <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog" xmlUrl="https://www.llamaindex.ai/blog"/>
+      <outline type="rss" text="Neo4j — Developer Blog" title="Neo4j — Developer Blog" xmlUrl="https://neo4j.com/developer-blog/"/>
+      <outline type="rss" text="ArangoDB — Blog" title="ArangoDB — Blog" xmlUrl="https://www.arangodb.com/blog/"/>
+      <outline type="rss" text="Neo4j Graph Data Science — Articles" title="Neo4j Graph Data Science — Articles" xmlUrl="https://neo4j.com/developer/graph-data-science/"/>
+      <outline type="rss" text="Vespa.ai — Blog" title="Vespa.ai — Blog" xmlUrl="https://blog.vespa.ai"/>
+      <outline type="rss" text="Jina AI — Blog" title="Jina AI — Blog" xmlUrl="https://jina.ai/blog/"/>
+      <outline type="rss" text="Haystack (deepset) — Blog" title="Haystack (deepset) — Blog" xmlUrl="https://haystack.deepset.ai/blog"/>
+      <outline type="rss" text="arXiv — cs.IR RSS" title="arXiv — cs.IR RSS" xmlUrl="http://export.arxiv.org/rss/cs.IR"/>
+      <outline type="rss" text="FAISS — Releases (Atom)" title="FAISS — Releases (Atom)" xmlUrl="https://github.com/facebookresearch/faiss/releases.atom"/>
+      <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog" xmlUrl="https://www.ontotext.com/blog/"/>
+      <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://blog.perplexity.ai/"/>
+      <outline type="rss" text="Chroma — Blog" title="Chroma — Blog" xmlUrl="https://trychroma.com/blog"/>
+      <outline type="rss" text="Nomic — Blog" title="Nomic — Blog" xmlUrl="https://blog.nomic.ai/"/>
+    </outline>
+    <outline text="rl" title="rl">
+      <outline type="rss" text="Robotics at Google — Blog" title="Robotics at Google — Blog" xmlUrl="https://robotics.googleblog.com/"/>
+      <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics" xmlUrl="https://spectrum.ieee.org/topic/robotics"/>
+      <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News" xmlUrl="https://www.ri.cmu.edu/news/"/>
+    </outline>
+    <outline text="robotics" title="robotics">
+      <outline type="rss" text="MIT CSAIL — News" title="MIT CSAIL — News" xmlUrl="https://www.csail.mit.edu/news"/>
+      <outline type="rss" text="Robotics at Google — Blog" title="Robotics at Google — Blog" xmlUrl="https://robotics.googleblog.com/"/>
+      <outline type="rss" text="Robohub — RSS" title="Robohub — RSS" xmlUrl="https://robohub.org/feed/"/>
+      <outline type="rss" text="IEEE Spectrum — Robotics" title="IEEE Spectrum — Robotics" xmlUrl="https://spectrum.ieee.org/topic/robotics"/>
+      <outline type="rss" text="CMU Robotics Institute — News" title="CMU Robotics Institute — News" xmlUrl="https://www.ri.cmu.edu/news/"/>
+      <outline type="rss" text="ETH AI Center — News &amp; Events" title="ETH AI Center — News &amp; Events" xmlUrl="https://ai.ethz.ch/news-and-events.html"/>
+      <outline type="rss" text="Max Planck Institute for Intelligent Systems — News" title="Max Planck Institute for Intelligent Systems — News" xmlUrl="https://is.mpg.de/news"/>
+      <outline type="rss" text="Tübingen AI Center — News" title="Tübingen AI Center — News" xmlUrl="https://www.tue.ai/news"/>
+    </outline>
+    <outline text="safety" title="safety">
+      <outline type="rss" text="Anthropic News" title="Anthropic News" xmlUrl="https://www.anthropic.com/news"/>
+      <outline type="rss" text="UK AI Safety Institute — News" title="UK AI Safety Institute — News" xmlUrl="https://www.aisafety.gov.uk/news"/>
+      <outline type="rss" text="AI Now Institute — News (RSS)" title="AI Now Institute — News (RSS)" xmlUrl="https://ainowinstitute.org/category/news/feed"/>
+      <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog" xmlUrl="https://partnershiponai.org/blog/"/>
+      <outline type="rss" text="AI Incident Database — Blog" title="AI Incident Database — Blog" xmlUrl="https://incidentdatabase.ai/blog/"/>
+      <outline type="rss" text="Center for AI Safety — Blog" title="Center for AI Safety — Blog" xmlUrl="https://www.safe.ai/blog"/>
+      <outline type="rss" text="Alignment Forum — RSS" title="Alignment Forum — RSS" xmlUrl="https://alignmentforum.org/rss"/>
+      <outline type="rss" text="U.S. AI Safety Institute (NIST)" title="U.S. AI Safety Institute (NIST)" xmlUrl="https://www.nist.gov/aisi"/>
+      <outline type="rss" text="Redwood Research — Blog" title="Redwood Research — Blog" xmlUrl="https://www.redwoodresearch.org/blog"/>
+      <outline type="rss" text="FAR AI — Blog" title="FAR AI — Blog" xmlUrl="https://www.far.ai/blog"/>
+      <outline type="rss" text="European AI Office — Policy &amp; News" title="European AI Office — Policy &amp; News" xmlUrl="https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office"/>
+      <outline type="rss" text="Georgetown CSET — Blog" title="Georgetown CSET — Blog" xmlUrl="https://cset.georgetown.edu/blog/"/>
+      <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability" xmlUrl="https://www.neelnanda.io/blog"/>
+      <outline type="rss" text="Jigsaw — Blog" title="Jigsaw — Blog" xmlUrl="https://blog.jigsaw.google/"/>
+      <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest" xmlUrl="https://www.aiverifyfoundation.sg/latest"/>
+      <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications" xmlUrl="https://genai.owasp.org/llm-top-10/"/>
+      <outline type="rss" text="Mozilla.ai — Blog" title="Mozilla.ai — Blog" xmlUrl="https://mozilla.ai/blog/"/>
+      <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog" xmlUrl="https://metr.org/blog"/>
+      <outline type="rss" text="Lakera — Blog" title="Lakera — Blog" xmlUrl="https://www.lakera.ai/blog"/>
+      <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub" xmlUrl="https://hiddenlayer.com/innovation-hub/"/>
+      <outline type="rss" text="RIKEN AIP — News" title="RIKEN AIP — News" xmlUrl="https://aip.riken.jp/news-en/"/>
+    </outline>
+    <outline text="security" title="security">
+      <outline type="rss" text="OpenMined — Blog" title="OpenMined — Blog" xmlUrl="https://openmined.org/blog"/>
+      <outline type="rss" text="WhyLabs — Blog" title="WhyLabs — Blog" xmlUrl="https://whylabs.ai/blog"/>
+      <outline type="rss" text="NIST — Cybersecurity Insights" title="NIST — Cybersecurity Insights" xmlUrl="https://www.nist.gov/blogs/cybersecurity-insights"/>
+      <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications" xmlUrl="https://genai.owasp.org/llm-top-10/"/>
+      <outline type="rss" text="Lakera — Blog" title="Lakera — Blog" xmlUrl="https://www.lakera.ai/blog"/>
+      <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub" xmlUrl="https://hiddenlayer.com/innovation-hub/"/>
+      <outline type="rss" text="Protect AI — MLSecOps Blog" title="Protect AI — MLSecOps Blog" xmlUrl="https://www.protectai.com/blog"/>
+    </outline>
+    <outline text="serving" title="serving">
+      <outline type="rss" text="AWS Machine Learning Blog — RSS" title="AWS Machine Learning Blog — RSS" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
+      <outline type="rss" text="vLLM (GitHub)" title="vLLM (GitHub)" xmlUrl="https://github.com/vllm-project/vllm"/>
+      <outline type="rss" text="Anyscale (Ray) — Blog" title="Anyscale (Ray) — Blog" xmlUrl="https://www.anyscale.com/blog"/>
+      <outline type="rss" text="Modal — Blog" title="Modal — Blog" xmlUrl="https://modal.com/blog"/>
+      <outline type="rss" text="Vespa.ai — Blog" title="Vespa.ai — Blog" xmlUrl="https://blog.vespa.ai"/>
+      <outline type="rss" text="Hugging Face TGI — Releases (Atom)" title="Hugging Face TGI — Releases (Atom)" xmlUrl="https://github.com/huggingface/text-generation-inference/releases.atom"/>
+      <outline type="rss" text="SGLang — Releases (Atom)" title="SGLang — Releases (Atom)" xmlUrl="https://github.com/sgl-project/sglang/releases.atom"/>
+      <outline type="rss" text="Fireworks.ai — Blog" title="Fireworks.ai — Blog" xmlUrl="https://fireworks.ai/blog"/>
+      <outline type="rss" text="Baseten — Blog" title="Baseten — Blog" xmlUrl="https://www.baseten.co/blog"/>
+      <outline type="rss" text="OctoAI — Blog" title="OctoAI — Blog" xmlUrl="https://octoai.cloud/blog"/>
+      <outline type="rss" text="KServe — GitHub" title="KServe — GitHub" xmlUrl="https://github.com/kserve/kserve"/>
+      <outline type="rss" text="vLLM — Blog" title="vLLM — Blog" xmlUrl="https://blog.vllm.ai/"/>
+      <outline type="rss" text="OpenRouter — Blog" title="OpenRouter — Blog" xmlUrl="https://blog.openrouter.ai/"/>
+      <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub" xmlUrl="https://github.com/ollama/ollama"/>
+      <outline type="rss" text="LiteLLM — GitHub" title="LiteLLM — GitHub" xmlUrl="https://github.com/BerriAI/litellm"/>
+    </outline>
+    <outline text="small-models" title="small-models">
+      <outline type="rss" text="MLC LLM — Blog" title="MLC LLM — Blog" xmlUrl="https://llm.mlc.ai/blog"/>
+      <outline type="rss" text="llama.cpp — Releases (Atom)" title="llama.cpp — Releases (Atom)" xmlUrl="https://github.com/ggml-org/llama.cpp/releases.atom"/>
+      <outline type="rss" text="MLC-LLM — Releases (Atom)" title="MLC-LLM — Releases (Atom)" xmlUrl="https://github.com/mlc-ai/mlc-llm/releases.atom"/>
+      <outline type="rss" text="Edge Impulse — Blog" title="Edge Impulse — Blog" xmlUrl="https://www.edgeimpulse.com/blog"/>
+      <outline type="rss" text="tinyML Foundation — Blog" title="tinyML Foundation — Blog" xmlUrl="https://www.tinyml.org/blog/"/>
+      <outline type="rss" text="MLX — Releases (Atom)" title="MLX — Releases (Atom)" xmlUrl="https://github.com/ml-explore/mlx/releases.atom"/>
+      <outline type="rss" text="Ollama — Blog" title="Ollama — Blog" xmlUrl="https://ollama.com/blog"/>
+      <outline type="rss" text="LM Studio — Blog" title="LM Studio — Blog" xmlUrl="https://lmstudio.ai/blog"/>
+      <outline type="rss" text="https://www.reddit.com/r/LocalLLaMA" title="https://www.reddit.com/r/LocalLLaMA" xmlUrl="https://www.reddit.com/r/LocalLLaMA"/>
+      <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub" xmlUrl="https://github.com/unslothai/unsloth"/>
+      <outline type="rss" text="AutoAWQ — GitHub" title="AutoAWQ — GitHub" xmlUrl="https://github.com/casper-hansen/AutoAWQ"/>
+      <outline type="rss" text="ExLlamaV2 — GitHub" title="ExLlamaV2 — GitHub" xmlUrl="https://github.com/turboderp/exllamav2"/>
+      <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub" xmlUrl="https://github.com/LostRuins/koboldcpp"/>
+    </outline>
+    <outline text="structured-generation" title="structured-generation">
+      <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog" xmlUrl="https://humanloop.com/blog"/>
+      <outline type="rss" text="LangChain — GitHub" title="LangChain — GitHub" xmlUrl="https://github.com/langchain-ai/langchain"/>
+      <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog" xmlUrl="https://promptfoo.dev/blog/"/>
+      <outline type="rss" text="Guardrails AI — Blog" title="Guardrails AI — Blog" xmlUrl="https://blog.guardrailsai.com/"/>
+      <outline type="rss" text="Guardrails — GitHub" title="Guardrails — GitHub" xmlUrl="https://github.com/guardrails-ai/guardrails"/>
+      <outline type="rss" text="Outlines — GitHub" title="Outlines — GitHub" xmlUrl="https://github.com/outlines-dev/outlines"/>
+      <outline type="rss" text="Stanford CodeX — Legal Informatics" title="Stanford CodeX — Legal Informatics" xmlUrl="https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/"/>
+    </outline>
+    <outline text="time-series" title="time-series">
+      <outline type="rss" text="Nixtla — Blog" title="Nixtla — Blog" xmlUrl="https://nixtla.github.io/blog"/>
+      <outline type="rss" text="sktime — GitHub" title="sktime — GitHub" xmlUrl="https://github.com/sktime/sktime"/>
+      <outline type="rss" text="Darts — GitHub" title="Darts — GitHub" xmlUrl="https://github.com/unit8co/darts"/>
+    </outline>
+    <outline text="tool-use" title="tool-use">
+      <outline type="rss" text="LangChain — Blog" title="LangChain — Blog" xmlUrl="https://blog.langchain.com/"/>
+      <outline type="rss" text="LangGraph — GitHub" title="LangGraph — GitHub" xmlUrl="https://github.com/langchain-ai/langgraph"/>
+      <outline type="rss" text="LangChain — GitHub" title="LangChain — GitHub" xmlUrl="https://github.com/langchain-ai/langchain"/>
+      <outline type="rss" text="Microsoft AutoGen — Releases (Atom)" title="Microsoft AutoGen — Releases (Atom)" xmlUrl="https://github.com/microsoft/autogen/releases.atom"/>
+      <outline type="rss" text="promptfoo — Blog" title="promptfoo — Blog" xmlUrl="https://promptfoo.dev/blog/"/>
+      <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog" xmlUrl="https://devblogs.microsoft.com/autogen/"/>
+      <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui"/>
+      <outline type="rss" text="LiteLLM — GitHub" title="LiteLLM — GitHub" xmlUrl="https://github.com/BerriAI/litellm"/>
+      <outline type="rss" text="Outlines — GitHub" title="Outlines — GitHub" xmlUrl="https://github.com/outlines-dev/outlines"/>
+    </outline>
+    <outline text="training" title="training">
+      <outline type="rss" text="TensorFlow Blog — RSS" title="TensorFlow Blog — RSS" xmlUrl="https://blog.tensorflow.org/feeds/posts/default?alt=rss"/>
+      <outline type="rss" text="Hazy Research — Blog" title="Hazy Research — Blog" xmlUrl="https://hazyresearch.stanford.edu/blog"/>
+      <outline type="rss" text="PyTorch — Engineering Blog" title="PyTorch — Engineering Blog" xmlUrl="https://pytorch.org/blog"/>
+      <outline type="rss" text="Lightning AI — Blog" title="Lightning AI — Blog" xmlUrl="https://lightning.ai/pages/blog"/>
+      <outline type="rss" text="JAX — GitHub" title="JAX — GitHub" xmlUrl="https://github.com/jax-ml/jax"/>
+      <outline type="rss" text="Transformers — GitHub" title="Transformers — GitHub" xmlUrl="https://github.com/huggingface/transformers"/>
+      <outline type="rss" text="NVIDIA NeMo — Releases (Atom)" title="NVIDIA NeMo — Releases (Atom)" xmlUrl="https://github.com/NVIDIA/NeMo/releases.atom"/>
+      <outline type="rss" text="FlashAttention — Releases (Atom)" title="FlashAttention — Releases (Atom)" xmlUrl="https://github.com/Dao-AILab/flash-attention/releases.atom"/>
+      <outline type="rss" text="Sakana AI — Blog" title="Sakana AI — Blog" xmlUrl="https://sakana.ai/blog/"/>
+      <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub" xmlUrl="https://github.com/unslothai/unsloth"/>
+    </outline>
+    <outline text="trust-audit" title="trust-audit">
+      <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog" xmlUrl="https://partnershiponai.org/blog/"/>
+      <outline type="rss" text="AI Incident Database — Blog" title="AI Incident Database — Blog" xmlUrl="https://incidentdatabase.ai/blog/"/>
+      <outline type="rss" text="NIST — Cybersecurity Insights" title="NIST — Cybersecurity Insights" xmlUrl="https://www.nist.gov/blogs/cybersecurity-insights"/>
+      <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest" xmlUrl="https://www.aiverifyfoundation.sg/latest"/>
+      <outline type="rss" text="OWASP — Top 10 for LLM Applications" title="OWASP — Top 10 for LLM Applications" xmlUrl="https://genai.owasp.org/llm-top-10/"/>
+      <outline type="rss" text="METR (ARC Evals) — Blog" title="METR (ARC Evals) — Blog" xmlUrl="https://metr.org/blog"/>
+      <outline type="rss" text="HiddenLayer — Innovation Hub" title="HiddenLayer — Innovation Hub" xmlUrl="https://hiddenlayer.com/innovation-hub/"/>
+    </outline>
+    <outline text="vector" title="vector">
+      <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml"/>
+      <outline type="rss" text="Weaviate — Blog" title="Weaviate — Blog" xmlUrl="https://weaviate.io/blog"/>
+      <outline type="rss" text="Milvus — Blog" title="Milvus — Blog" xmlUrl="https://milvus.io/blog"/>
+      <outline type="rss" text="Qdrant — Articles" title="Qdrant — Articles" xmlUrl="https://qdrant.tech/articles/"/>
+      <outline type="rss" text="Neo4j — Developer Blog" title="Neo4j — Developer Blog" xmlUrl="https://neo4j.com/developer-blog/"/>
+      <outline type="rss" text="Vespa.ai — Blog" title="Vespa.ai — Blog" xmlUrl="https://blog.vespa.ai"/>
+      <outline type="rss" text="FAISS — Releases (Atom)" title="FAISS — Releases (Atom)" xmlUrl="https://github.com/facebookresearch/faiss/releases.atom"/>
+      <outline type="rss" text="Chroma — Blog" title="Chroma — Blog" xmlUrl="https://trychroma.com/blog"/>
+    </outline>
+    <outline text="videos" title="videos">
+      <outline type="rss" text="Two Minute Papers" title="Two Minute Papers" xmlUrl="https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg"/>
+      <outline type="rss" text="Yannic Kilcher — YouTube" title="Yannic Kilcher — YouTube" xmlUrl="https://www.youtube.com/@YannicKilcher"/>
+      <outline type="rss" text="Henry AI Labs — YouTube" title="Henry AI Labs — YouTube" xmlUrl="https://www.youtube.com/@HenryAILabs"/>
+      <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube" xmlUrl="https://www.youtube.com/@GoogleDeepMind"/>
+      <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI"/>
+      <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI"/>
+    </outline>
+    <outline text="workflows" title="workflows">
+      <outline type="rss" text="LangChain — Blog" title="LangChain — Blog" xmlUrl="https://blog.langchain.com/"/>
+      <outline type="rss" text="MLOps Community — Blog" title="MLOps Community — Blog" xmlUrl="https://mlops.community/blog"/>
+      <outline type="rss" text="CrewAI — Blog" title="CrewAI — Blog" xmlUrl="https://www.crewai.com/blog"/>
+      <outline type="rss" text="OpenLineage — Blog" title="OpenLineage — Blog" xmlUrl="https://openlineage.io/blog/"/>
+      <outline type="rss" text="Dagster — Blog" title="Dagster — Blog" xmlUrl="https://dagster.io/blog"/>
+      <outline type="rss" text="Astronomer (Airflow) — Blog" title="Astronomer (Airflow) — Blog" xmlUrl="https://www.astronomer.io/blog"/>
+      <outline type="rss" text="dbt Labs — Blog" title="dbt Labs — Blog" xmlUrl="https://www.getdbt.com/blog"/>
+      <outline type="rss" text="LangGraph — GitHub" title="LangGraph — GitHub" xmlUrl="https://github.com/langchain-ai/langgraph"/>
+      <outline type="rss" text="Microsoft AutoGen — Releases (Atom)" title="Microsoft AutoGen — Releases (Atom)" xmlUrl="https://github.com/microsoft/autogen/releases.atom"/>
+      <outline type="rss" text="OpenDevin — Releases (Atom)" title="OpenDevin — Releases (Atom)" xmlUrl="https://github.com/OpenDevin/OpenDevin/releases.atom"/>
+      <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog" xmlUrl="https://open-metadata.medium.com/"/>
+      <outline type="rss" text="DataHub — Blog" title="DataHub — Blog" xmlUrl="https://datahub.com/blog"/>
+      <outline type="rss" text="Agency — Substack" title="Agency — Substack" xmlUrl="https://blog.agen.cy"/>
+      <outline type="rss" text="Tecton — Blog" title="Tecton — Blog" xmlUrl="https://www.tecton.ai/blog/"/>
+      <outline type="rss" text="Hopsworks — Blog" title="Hopsworks — Blog" xmlUrl="https://www.hopsworks.ai/blog"/>
+      <outline type="rss" text="Flyte — Blog" title="Flyte — Blog" xmlUrl="https://flyte.org/blog"/>
+      <outline type="rss" text="Argo Project — Blog" title="Argo Project — Blog" xmlUrl="https://blog.argoproj.io/"/>
+      <outline type="rss" text="Prefect — Blog" title="Prefect — Blog" xmlUrl="https://www.prefect.io/blog"/>
+      <outline type="rss" text="Microsoft AutoGen — Blog" title="Microsoft AutoGen — Blog" xmlUrl="https://devblogs.microsoft.com/autogen/"/>
+      <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub" xmlUrl="https://github.com/FlowiseAI/Flowise"/>
+      <outline type="rss" text="AutoGPT — GitHub" title="AutoGPT — GitHub" xmlUrl="https://github.com/Significant-Gravitas/AutoGPT"/>
+    </outline>
+  </body>
+</opml>

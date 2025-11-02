@@ -1,6 +1,6 @@
 /**
  * Keyboard Shortcuts Manager
- * 
+ *
  * Handles all keyboard shortcuts throughout the app.
  * Supports single keys, modifier combinations, and sequences.
  */
@@ -55,7 +55,7 @@ class KeyboardShortcutManager {
     try {
       const prefs = await preferences.get();
       this.shortcuts.clear();
-      
+
       Object.entries(prefs.keyboardShortcuts).forEach(([key, action]) => {
         this.shortcuts.set(key, action as ShortcutAction);
       });
@@ -116,23 +116,23 @@ class KeyboardShortcutManager {
     }
 
     const key = this.getKeyString(event);
-    
+
     // Check for sequence shortcuts (e.g., "g h")
     if (this.sequenceBuffer.length > 0) {
       const sequence = [...this.sequenceBuffer, key].join(' ');
-      
+
       if (this.shortcuts.has(sequence)) {
         event.preventDefault();
         this.triggerAction(this.shortcuts.get(sequence)!);
         this.clearSequence();
         return;
       }
-      
+
       // Check if sequence could continue
       const potentialSequences = Array.from(this.shortcuts.keys()).filter(
         (s) => s.startsWith(this.sequenceBuffer.join(' ') + ' ')
       );
-      
+
       if (potentialSequences.length === 0) {
         this.clearSequence();
       }
@@ -149,7 +149,7 @@ class KeyboardShortcutManager {
     const potentialSequences = Array.from(this.shortcuts.keys()).filter(
       (s) => s.startsWith(key + ' ')
     );
-    
+
     if (potentialSequences.length > 0) {
       this.sequenceBuffer.push(key);
       this.startSequenceTimeout();
@@ -182,7 +182,7 @@ class KeyboardShortcutManager {
     if (this.sequenceTimeout) {
       clearTimeout(this.sequenceTimeout);
     }
-    
+
     this.sequenceTimeout = setTimeout(() => {
       this.clearSequence();
     }, 1000); // 1 second to complete sequence
@@ -255,17 +255,17 @@ class KeyboardShortcutManager {
     // Save to preferences
     const prefs = await preferences.get();
     const newShortcuts = { ...prefs.keyboardShortcuts };
-    
+
     // Remove old key for this action
     Object.keys(newShortcuts).forEach((k) => {
       if (newShortcuts[k] === action) {
         delete newShortcuts[k];
       }
     });
-    
+
     // Add new key
     newShortcuts[key] = action;
-    
+
     await preferences.update({ keyboardShortcuts: newShortcuts });
   }
 
@@ -362,4 +362,3 @@ export function formatKey(key: string): string {
  * Export for React
  */
 import React from 'react';
-

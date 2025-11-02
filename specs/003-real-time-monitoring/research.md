@@ -1,16 +1,19 @@
 # Technology Research: Phase 3B - Real-Time Feed Monitoring & Alerts
 
-**Feature Branch**: `003-real-time-monitoring`  
-**Created**: 2025-10-22  
+**Feature Branch**: `003-real-time-monitoring`\
+**Created**: 2025-10-22\
 **Status**: Research Complete
 
----
+______________________________________________________________________
 
 ## Executive Summary
 
-This document consolidates technology research and design decisions for Phase 3B (Real-Time Feed Monitoring & Alerts). All major technology choices have been evaluated based on AIWebFeeds requirements, Phase 1/2 patterns, and MVP constraints. Decisions prioritize simplicity, reliability, and scalability path over premature optimization.
+This document consolidates technology research and design decisions for Phase 3B
+(Real-Time Feed Monitoring & Alerts). All major technology choices have been evaluated
+based on AIWebFeeds requirements, Phase 1/2 patterns, and MVP constraints. Decisions
+prioritize simplicity, reliability, and scalability path over premature optimization.
 
----
+______________________________________________________________________
 
 ## Research Findings
 
@@ -19,6 +22,7 @@ This document consolidates technology research and design decisions for Phase 3B
 **Decision**: APScheduler (MIT License)
 
 **Rationale**:
+
 - **In-process scheduler**: No external dependencies (Redis, RabbitMQ)
 - **Sufficient scale**: Handles 10,000 feed polls within 1-hour window
 - **Simple deployment**: Single Python process, no message broker required
@@ -27,66 +31,68 @@ This document consolidates technology research and design decisions for Phase 3B
 
 **Alternatives Considered**:
 
-| Technology | Pros | Cons | Rejected Because |
-|------------|------|------|------------------|
-| **Celery + Redis** | Distributed, scalable | Redis dependency, complex deployment | Redis unnecessary at target scale (10k feeds). APScheduler sufficient for single-server MVP. |
-| **Cron jobs** | Simple, OS-native | No programmatic control, poor observability | Cannot dynamically adjust intervals per feed. No real-time logging/metrics. |
-| **Custom threading** | Full control | Reinventing wheels, error-prone | APScheduler provides battle-tested scheduling, retry logic, thread pooling. |
+| Technology           | Pros                  | Cons                                        | Rejected Because                                                                             |
+| -------------------- | --------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Celery + Redis**   | Distributed, scalable | Redis dependency, complex deployment        | Redis unnecessary at target scale (10k feeds). APScheduler sufficient for single-server MVP. |
+| **Cron jobs**        | Simple, OS-native     | No programmatic control, poor observability | Cannot dynamically adjust intervals per feed. No real-time logging/metrics.                  |
+| **Custom threading** | Full control          | Reinventing wheels, error-prone             | APScheduler provides battle-tested scheduling, retry logic, thread pooling.                  |
 
 **Best Practices**:
+
 ```python
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 
 # Configure APScheduler with SQLite persistence
-jobstores = {
-    'default': SQLAlchemyJobStore(url='sqlite:///data/aiwebfeeds.db')
-}
-executors = {
-    'default': ThreadPoolExecutor(10)  # 10 parallel workers
-}
+jobstores = {"default": SQLAlchemyJobStore(url="sqlite:///data/aiwebfeeds.db")}
+executors = {"default": ThreadPoolExecutor(10)}  # 10 parallel workers
 scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors)
 ```
 
----
+______________________________________________________________________
 
 ### 2. WebSocket Communication
 
 **Decision**: Socket.IO (MIT License)
 
 **Rationale**:
+
 - **Auto-fallback**: Gracefully degrades to long polling if WebSocket blocked
 - **Room-based broadcasting**: Efficient user-specific message delivery
-- **Mature ecosystem**: Python (python-socketio) + JavaScript (socket.io-client) official libraries
+- **Mature ecosystem**: Python (python-socketio) + JavaScript (socket.io-client)
+  official libraries
 - **Built-in reconnection**: Exponential backoff, missed message recovery
 - **Production proven**: Used by Microsoft, Trello, Zendesk
 
 **Alternatives Considered**:
 
-| Technology | Pros | Cons | Rejected Because |
-|------------|------|------|------------------|
-| **Native WebSocket** | Simpler, less overhead | Manual fallback, reconnection logic | Requires SSE implementation, reconnection handling, browser compatibility checks. Socket.IO provides this out-of-box. |
-| **Server-Sent Events (SSE)** | Simple one-way | No client→server messages, no binary | One-way only (no ack/read receipts). Socket.IO supports bidirectional if needed later. |
-| **Firebase Cloud Messaging** | Managed service | External dependency, cost at scale | Vendor lock-in. Self-hosted Socket.IO maintains control and zero cost. |
+| Technology                   | Pros                   | Cons                                 | Rejected Because                                                                                                      |
+| ---------------------------- | ---------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **Native WebSocket**         | Simpler, less overhead | Manual fallback, reconnection logic  | Requires SSE implementation, reconnection handling, browser compatibility checks. Socket.IO provides this out-of-box. |
+| **Server-Sent Events (SSE)** | Simple one-way         | No client→server messages, no binary | One-way only (no ack/read receipts). Socket.IO supports bidirectional if needed later.                                |
+| **Firebase Cloud Messaging** | Managed service        | External dependency, cost at scale   | Vendor lock-in. Self-hosted Socket.IO maintains control and zero cost.                                                |
 
 **Best Practices**:
+
 ```python
 # Server (Flask + Socket.IO)
 from flask import Flask
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
-@socketio.on('connect')
+
+@socketio.on("connect")
 def handle_connect():
     user_id = get_user_id_from_session()
     join_room(f"user:{user_id}")
-    emit('connection_status', {'status': 'connected'})
+    emit("connection_status", {"status": "connected"})
+
 
 # Broadcast to specific user
-socketio.emit('notification', notification_data, room=f"user:{user_id}")
+socketio.emit("notification", notification_data, room=f"user:{user_id}")
 ```
 
 ```typescript
@@ -105,172 +111,197 @@ socket.on('notification', (data) => {
 });
 ```
 
----
+______________________________________________________________________
 
 ### 3. Email Delivery
 
 **Decision**: Self-hosted SMTP (Postfix) for production + SendGrid for dev/staging
 
 **Rationale**:
-- **Production**: Self-hosted SMTP (Postfix, Exim) avoids SendGrid free tier limit (100 emails/day)
+
+- **Production**: Self-hosted SMTP (Postfix, Exim) avoids SendGrid free tier limit (100
+  emails/day)
 - **Dev/Staging**: SendGrid simplifies local development (no SMTP server setup)
-- **Cost**: $0 for self-hosted (assuming existing server), vs $15/month SendGrid for 40k emails
-- **Reliability**: Both approaches battle-tested, fallback to self-hosted if SendGrid down
+- **Cost**: $0 for self-hosted (assuming existing server), vs $15/month SendGrid for 40k
+  emails
+- **Reliability**: Both approaches battle-tested, fallback to self-hosted if SendGrid
+  down
 - **Compliance**: Self-hosted maintains email privacy (no third-party access)
 
 **Alternatives Considered**:
 
-| Technology | Pros | Cons | Rejected Because |
-|------------|------|------|------------------|
-| **SendGrid only** | Simple API, managed infrastructure | 100 emails/day free tier, cost at scale | Insufficient for production (100+ daily digest subscribers). |
-| **AWS SES** | AWS integrated, cheap ($0.10/1k emails) | AWS account required, bounce handling complexity | Adds AWS dependency. Self-hosted SMTP simpler for single-server deployment. |
-| **Mailgun** | Developer-friendly API | Limited free tier (5k emails/month) | Similar limitations to SendGrid. Self-hosted avoids all vendor limits. |
+| Technology        | Pros                                    | Cons                                             | Rejected Because                                                            |
+| ----------------- | --------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| **SendGrid only** | Simple API, managed infrastructure      | 100 emails/day free tier, cost at scale          | Insufficient for production (100+ daily digest subscribers).                |
+| **AWS SES**       | AWS integrated, cheap ($0.10/1k emails) | AWS account required, bounce handling complexity | Adds AWS dependency. Self-hosted SMTP simpler for single-server deployment. |
+| **Mailgun**       | Developer-friendly API                  | Limited free tier (5k emails/month)              | Similar limitations to SendGrid. Self-hosted avoids all vendor limits.      |
 
 **Best Practices**:
+
 ```python
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+
 # Production: Self-hosted SMTP
 def send_email_production(to: str, subject: str, html: str):
-    msg = MIMEMultipart('alternative')
-    msg['From'] = "notifications@aiwebfeeds.com"
-    msg['To'] = to
-    msg['Subject'] = subject
-    msg.attach(MIMEText(html, 'html'))
-    
-    with smtplib.SMTP('localhost', 25) as server:
+    msg = MIMEMultipart("alternative")
+    msg["From"] = "notifications@aiwebfeeds.com"
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP("localhost", 25) as server:
         server.send_message(msg)
+
 
 # Dev: SendGrid API
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+
 def send_email_dev(to: str, subject: str, html: str):
     message = Mail(
-        from_email='dev@aiwebfeeds.com',
+        from_email="dev@aiwebfeeds.com",
         to_emails=to,
         subject=subject,
-        html_content=html
+        html_content=html,
     )
-    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     sg.send(message)
 ```
 
----
+______________________________________________________________________
 
 ### 4. Trending Detection Algorithm
 
 **Decision**: Z-score (Standard Score) with 7-day rolling baseline
 
 **Rationale**:
+
 - **Standard statistical method**: Detects deviations from mean (spike detection)
-- **Adjusts for variance**: Z-score = (current - mean) / std_dev accounts for topic volatility
+- **Adjusts for variance**: Z-score = (current - mean) / std_dev accounts for topic
+  volatility
 - **Threshold**: Z > 2 represents 95th percentile (2 standard deviations above mean)
 - **Proven approach**: Used by Twitter Trends, Google Trends, academic literature
 - **Minimal false positives**: Requires minimum 10 mentions + 3x baseline spike
 
 **Alternatives Considered**:
 
-| Algorithm | Pros | Cons | Rejected Because |
-|-----------|------|------|------------------|
-| **Fixed threshold** (e.g., 10 mentions/hour) | Simple | No normalization for topic popularity | High false positive rate. "Python" mentioned 100x/day baseline, 110x not a spike. |
-| **Exponential Moving Average (EMA)** | Smooth transitions, adaptive | Slower spike detection, lag | 7-day window too short for EMA stability. Z-score more responsive. |
-| **Machine Learning (LSTM, ARIMA)** | Predictive, handles seasonality | Complex, training data required, overkill | Over-engineering for MVP. Z-score provides 80% value with 20% complexity. |
+| Algorithm                                    | Pros                            | Cons                                      | Rejected Because                                                                  |
+| -------------------------------------------- | ------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| **Fixed threshold** (e.g., 10 mentions/hour) | Simple                          | No normalization for topic popularity     | High false positive rate. "Python" mentioned 100x/day baseline, 110x not a spike. |
+| **Exponential Moving Average (EMA)**         | Smooth transitions, adaptive    | Slower spike detection, lag               | 7-day window too short for EMA stability. Z-score more responsive.                |
+| **Machine Learning (LSTM, ARIMA)**           | Predictive, handles seasonality | Complex, training data required, overkill | Over-engineering for MVP. Z-score provides 80% value with 20% complexity.         |
 
 **Best Practices**:
+
 ```python
 import numpy as np
 from datetime import datetime, timedelta
 
+
 def detect_trending_topics(lookback_hours=1):
     """Detect topics with z-score > 2 (95th percentile spike)"""
-    
+
     # Get recent mentions (last 1 hour)
-    recent_articles = get_articles_since(datetime.now() - timedelta(hours=lookback_hours))
+    recent_articles = get_articles_since(
+        datetime.now() - timedelta(hours=lookback_hours)
+    )
     recent_counts = Counter(extract_topics(recent_articles))
-    
+
     # Get baseline (7-day average, hourly rate)
     baseline_articles = get_articles_since(datetime.now() - timedelta(days=7))
     baseline_counts = Counter(extract_topics(baseline_articles))
-    baseline_hourly = {topic: count / (7 * 24) for topic, count in baseline_counts.items()}
-    
+    baseline_hourly = {
+        topic: count / (7 * 24) for topic, count in baseline_counts.items()
+    }
+
     # Compute z-scores
     trending = []
     for topic, recent_count in recent_counts.items():
         if recent_count < 10:  # Minimum threshold
             continue
-        
+
         baseline_mean = baseline_hourly.get(topic, 1)
         baseline_std = np.std([baseline_counts.get(topic, 0)]) or 1
-        
+
         z_score = (recent_count - baseline_mean) / baseline_std
-        
+
         if z_score > 2.0:  # 2 standard deviations (95th percentile)
-            trending.append({
-                'topic': topic,
-                'z_score': z_score,
-                'recent_count': recent_count,
-                'baseline_mean': baseline_mean,
-                'spike_magnitude': recent_count / baseline_mean
-            })
-    
-    return sorted(trending, key=lambda x: x['z_score'], reverse=True)
+            trending.append(
+                {
+                    "topic": topic,
+                    "z_score": z_score,
+                    "recent_count": recent_count,
+                    "baseline_mean": baseline_mean,
+                    "spike_magnitude": recent_count / baseline_mean,
+                }
+            )
+
+    return sorted(trending, key=lambda x: x["z_score"], reverse=True)
 ```
 
----
+______________________________________________________________________
 
 ### 5. Feed Polling Strategy
 
-**Decision**: Async httpx with 10 parallel workers + conditional requests (ETags, If-Modified-Since)
+**Decision**: Async httpx with 10 parallel workers + conditional requests (ETags,
+If-Modified-Since)
 
 **Rationale**:
+
 - **Async httpx**: Non-blocking I/O, efficient for 10k HTTP requests
-- **Parallel workers**: 10 concurrent requests = 30 feeds/second capacity (10k feeds in ~5 minutes)
-- **Conditional requests**: ETag/If-Modified-Since reduce bandwidth (304 Not Modified responses)
+- **Parallel workers**: 10 concurrent requests = 30 feeds/second capacity (10k feeds in
+  ~5 minutes)
+- **Conditional requests**: ETag/If-Modified-Since reduce bandwidth (304 Not Modified
+  responses)
 - **Dynamic intervals**: Adjust poll frequency based on feed update patterns
 - **Retry logic**: Tenacity library provides exponential backoff for failed polls
 
 **Alternatives Considered**:
 
-| Approach | Pros | Cons | Rejected Because |
-|----------|------|------|------------------|
-| **requests + ThreadPoolExecutor** | Synchronous, simpler | Slower (blocking I/O), higher memory | httpx async provides 3x-5x throughput improvement. Critical for 10k feeds. |
-| **aiohttp** | Async, lightweight | Less mature than httpx, complex error handling | httpx provides better API (requests-compatible), superior timeout handling. |
-| **Scrapy** | Full-featured crawler | Heavy dependency, overkill | Feed parsing (feedparser) + httpx sufficient. Scrapy adds unnecessary complexity. |
+| Approach                          | Pros                  | Cons                                           | Rejected Because                                                                  |
+| --------------------------------- | --------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| **requests + ThreadPoolExecutor** | Synchronous, simpler  | Slower (blocking I/O), higher memory           | httpx async provides 3x-5x throughput improvement. Critical for 10k feeds.        |
+| **aiohttp**                       | Async, lightweight    | Less mature than httpx, complex error handling | httpx provides better API (requests-compatible), superior timeout handling.       |
+| **Scrapy**                        | Full-featured crawler | Heavy dependency, overkill                     | Feed parsing (feedparser) + httpx sufficient. Scrapy adds unnecessary complexity. |
 
 **Best Practices**:
+
 ```python
 import httpx
 import feedparser
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+
 async def poll_feed(feed_id: str, session: httpx.AsyncClient):
     """Poll single feed with conditional request and retry logic"""
     feed = get_feed(feed_id)
-    
+
     headers = {}
     if feed.last_etag:
-        headers['If-None-Match'] = feed.last_etag
+        headers["If-None-Match"] = feed.last_etag
     if feed.last_modified:
-        headers['If-Modified-Since'] = feed.last_modified
-    
+        headers["If-Modified-Since"] = feed.last_modified
+
     try:
         response = await session.get(feed.url, headers=headers, timeout=30)
-        
+
         if response.status_code == 304:
             return []  # Feed not modified
-        
+
         parsed = feedparser.parse(response.content)
         new_articles = detect_new_articles(feed_id, parsed.entries)
-        
-        update_feed_poll_success(feed_id, etag=response.headers.get('ETag'))
+
+        update_feed_poll_success(feed_id, etag=response.headers.get("ETag"))
         return new_articles
-    
+
     except httpx.TimeoutException:
-        log_poll_failure(feed_id, 'timeout')
+        log_poll_failure(feed_id, "timeout")
         return []
+
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=60))
 async def poll_feeds_batch(feed_ids: list[str]):
@@ -280,28 +311,34 @@ async def poll_feeds_batch(feed_ids: list[str]):
         return await asyncio.gather(*tasks, return_exceptions=True)
 ```
 
----
+______________________________________________________________________
 
 ### 6. User Identity (Anonymous Users)
 
 **Decision**: localStorage UUID with server-side storage
 
 **Rationale**:
-- **No authentication**: Phase 3A (User Accounts) deferred, but need persistent user identity
-- **localStorage UUID**: Browser-generated UUID, stored client-side for session continuity
-- **Server-side storage**: Notification preferences, followed feeds stored in SQLite (keyed by UUID)
-- **Migration path**: When Phase 3A implemented, migrate localStorage UUID → proper user accounts
+
+- **No authentication**: Phase 3A (User Accounts) deferred, but need persistent user
+  identity
+- **localStorage UUID**: Browser-generated UUID, stored client-side for session
+  continuity
+- **Server-side storage**: Notification preferences, followed feeds stored in SQLite
+  (keyed by UUID)
+- **Migration path**: When Phase 3A implemented, migrate localStorage UUID → proper user
+  accounts
 - **Privacy-friendly**: No PII collected, anonymous usage
 
 **Alternatives Considered**:
 
-| Approach | Pros | Cons | Rejected Because |
-|----------|------|------|------------------|
-| **Browser cookies** | Standard web practice | Size limits (4KB), can expire | Followed feeds list could exceed 4KB. localStorage more reliable. |
-| **Require Phase 3A first** | Proper authentication | Blocks Phase 3B implementation | Phase 3A is large effort (OAuth, sessions, user management). Prefer incremental delivery. |
-| **IP address** | No client-side storage | Not unique (NAT, proxies), privacy concerns | Multiple users behind NAT, dynamic IPs change. Unacceptable UX. |
+| Approach                   | Pros                   | Cons                                        | Rejected Because                                                                          |
+| -------------------------- | ---------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Browser cookies**        | Standard web practice  | Size limits (4KB), can expire               | Followed feeds list could exceed 4KB. localStorage more reliable.                         |
+| **Require Phase 3A first** | Proper authentication  | Blocks Phase 3B implementation              | Phase 3A is large effort (OAuth, sessions, user management). Prefer incremental delivery. |
+| **IP address**             | No client-side storage | Not unique (NAT, proxies), privacy concerns | Multiple users behind NAT, dynamic IPs change. Unacceptable UX.                           |
 
 **Best Practices**:
+
 ```typescript
 // Client: Generate and persist user ID
 function getUserId(): string {
@@ -323,13 +360,14 @@ class NotificationPreference(BaseModel):
     delivery_method: Literal['websocket', 'email', 'in_app']
 ```
 
----
+______________________________________________________________________
 
 ### 7. Email Template Approach
 
 **Decision**: Simple HTML with Jinja2 templates (no MJML for MVP)
 
 **Rationale**:
+
 - **MVP simplicity**: Plain HTML table sufficient for article lists
 - **Wide compatibility**: Works in 99% of email clients (Gmail, Outlook, Apple Mail)
 - **Fast iteration**: No build step, direct template editing
@@ -337,13 +375,14 @@ class NotificationPreference(BaseModel):
 
 **Alternatives Considered**:
 
-| Approach | Pros | Cons | Rejected Because |
-|----------|------|------|------------------|
-| **MJML** | Responsive, beautiful templates | Build step, learning curve | Over-engineering for MVP. Simple HTML meets 80% of needs. |
-| **Plain text only** | Maximum compatibility | No formatting, links | Users expect HTML emails with clickable links. Plain text insufficient for article lists. |
-| **React Email** | Component-based, modern | TypeScript build required, overkill | Adds frontend dependency to backend. Jinja2 simpler for server-side rendering. |
+| Approach            | Pros                            | Cons                                | Rejected Because                                                                          |
+| ------------------- | ------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| **MJML**            | Responsive, beautiful templates | Build step, learning curve          | Over-engineering for MVP. Simple HTML meets 80% of needs.                                 |
+| **Plain text only** | Maximum compatibility           | No formatting, links                | Users expect HTML emails with clickable links. Plain text insufficient for article lists. |
+| **React Email**     | Component-based, modern         | TypeScript build required, overkill | Adds frontend dependency to backend. Jinja2 simpler for server-side rendering.            |
 
 **Best Practices**:
+
 ```python
 from jinja2 import Template
 
@@ -378,30 +417,32 @@ DIGEST_TEMPLATE = """
 """
 
 template = Template(DIGEST_TEMPLATE)
-html = template.render(date=date.today(), article_count=len(articles), articles=articles)
+html = template.render(
+    date=date.today(), article_count=len(articles), articles=articles
+)
 ```
 
----
+______________________________________________________________________
 
 ## Technology Stack Summary
 
-| Component | Technology | License | Rationale |
-|-----------|-----------|---------|-----------|
-| **Background Jobs** | APScheduler 3.10+ | MIT | In-process scheduler, no Redis dependency |
-| **WebSocket** | Socket.IO 5.x | MIT | Auto-fallback, mature ecosystem |
-| **HTTP Client** | httpx 0.27+ | BSD | Async, requests-compatible API |
-| **Feed Parsing** | feedparser 6.0+ | BSD | De facto standard for RSS/Atom |
-| **Retry Logic** | tenacity 8.x | Apache 2.0 | Exponential backoff, configurable |
-| **Email (Dev)** | SendGrid (free tier) | Proprietary | Simple API, managed infrastructure |
-| **Email (Prod)** | Postfix / Python smtplib | Various/stdlib | Self-hosted, zero cost |
-| **Email Templates** | Jinja2 3.1+ | BSD | Simple, battle-tested templating |
-| **WebSocket Client** | socket.io-client 4.x | MIT | Official JavaScript client |
-| **Frontend Framework** | Next.js 15+, React 19+ | MIT | Existing stack from Phase 1/2 |
-| **Database** | SQLite 3.45+ | Public Domain | Existing from Phase 1/2, sufficient scale |
+| Component              | Technology               | License        | Rationale                                 |
+| ---------------------- | ------------------------ | -------------- | ----------------------------------------- |
+| **Background Jobs**    | APScheduler 3.10+        | MIT            | In-process scheduler, no Redis dependency |
+| **WebSocket**          | Socket.IO 5.x            | MIT            | Auto-fallback, mature ecosystem           |
+| **HTTP Client**        | httpx 0.27+              | BSD            | Async, requests-compatible API            |
+| **Feed Parsing**       | feedparser 6.0+          | BSD            | De facto standard for RSS/Atom            |
+| **Retry Logic**        | tenacity 8.x             | Apache 2.0     | Exponential backoff, configurable         |
+| **Email (Dev)**        | SendGrid (free tier)     | Proprietary    | Simple API, managed infrastructure        |
+| **Email (Prod)**       | Postfix / Python smtplib | Various/stdlib | Self-hosted, zero cost                    |
+| **Email Templates**    | Jinja2 3.1+              | BSD            | Simple, battle-tested templating          |
+| **WebSocket Client**   | socket.io-client 4.x     | MIT            | Official JavaScript client                |
+| **Frontend Framework** | Next.js 15+, React 19+   | MIT            | Existing stack from Phase 1/2             |
+| **Database**           | SQLite 3.45+             | Public Domain  | Existing from Phase 1/2, sufficient scale |
 
 **All dependencies are free, open-source, and actively maintained.**
 
----
+______________________________________________________________________
 
 ## Scaling Considerations
 
@@ -414,16 +455,17 @@ html = template.render(date=date.today(), article_count=len(articles), articles=
 
 ### Scale Triggers (Future Phases)
 
-| Metric | Threshold | Action Required |
-|--------|-----------|-----------------|
+| Metric                    | Threshold        | Action Required                                           |
+| ------------------------- | ---------------- | --------------------------------------------------------- |
 | **WebSocket connections** | >1000 concurrent | Add Redis pub/sub, deploy Socket.IO on multiple instances |
-| **Feed polls** | >20k feeds | Scale to Celery + Redis for distributed polling |
-| **Database size** | >10GB SQLite | Migrate to PostgreSQL for better concurrency |
-| **Email volume** | >10k emails/day | Upgrade SendGrid tier or optimize SMTP queue |
+| **Feed polls**            | >20k feeds       | Scale to Celery + Redis for distributed polling           |
+| **Database size**         | >10GB SQLite     | Migrate to PostgreSQL for better concurrency              |
+| **Email volume**          | >10k emails/day  | Upgrade SendGrid tier or optimize SMTP queue              |
 
-**Estimated scale limits**: Phase 3B architecture supports 10k feeds, 5k users, 1k concurrent connections. Sufficient for 6-12 months post-launch.
+**Estimated scale limits**: Phase 3B architecture supports 10k feeds, 5k users, 1k
+concurrent connections. Sufficient for 6-12 months post-launch.
 
----
+______________________________________________________________________
 
-**Next Steps**: Proceed to Phase 1 (Design & Contracts) to generate data models, API contracts, and quickstart guide.
-
+**Next Steps**: Proceed to Phase 1 (Design & Contracts) to generate data models, API
+contracts, and quickstart guide.

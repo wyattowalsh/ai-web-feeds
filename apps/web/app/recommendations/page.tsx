@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface Recommendation {
   feed: {
@@ -21,22 +21,32 @@ export default function RecommendationsPage() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string>("");
 
   const commonTopics = [
-    'llm', 'agents', 'training', 'inference', 'genai',
-    'ml', 'cv', 'nlp', 'rl', 'data', 'safety', 'research',
+    "llm",
+    "agents",
+    "training",
+    "inference",
+    "genai",
+    "ml",
+    "cv",
+    "nlp",
+    "rl",
+    "data",
+    "safety",
+    "research",
   ];
 
   useEffect(() => {
     // Get or create user ID from localStorage
-    let id = localStorage.getItem('recommendation_user_id');
+    let id = localStorage.getItem("recommendation_user_id");
     if (!id) {
       id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('recommendation_user_id', id);
+      localStorage.setItem("recommendation_user_id", id);
     }
     setUserId(id);
-    
+
     // Load initial recommendations
     loadRecommendations(id, []);
   }, []);
@@ -45,19 +55,19 @@ export default function RecommendationsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      params.set('user_id', user_id);
+      params.set("user_id", user_id);
       if (topics.length > 0) {
-        params.set('topics', topics.join(','));
+        params.set("topics", topics.join(","));
       }
-      params.set('limit', '20');
+      params.set("limit", "20");
 
       const response = await fetch(`/api/recommendations?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to load recommendations');
+      if (!response.ok) throw new Error("Failed to load recommendations");
 
       const data = await response.json();
       setRecommendations(data.recommendations || []);
     } catch (error) {
-      console.error('Load recommendations error:', error);
+      console.error("Load recommendations error:", error);
       setRecommendations([]);
     } finally {
       setLoading(false);
@@ -68,16 +78,16 @@ export default function RecommendationsPage() {
     const newTopics = selectedTopics.includes(topic)
       ? selectedTopics.filter((t) => t !== topic)
       : [...selectedTopics, topic];
-    
+
     setSelectedTopics(newTopics);
     loadRecommendations(userId, newTopics);
   };
 
   const handleInteraction = async (feedId: string, interactionType: string, reason: string) => {
     try {
-      await fetch('/api/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: userId,
           feed_id: feedId,
@@ -86,47 +96,52 @@ export default function RecommendationsPage() {
         }),
       });
     } catch (error) {
-      console.error('Track interaction error:', error);
+      console.error("Track interaction error:", error);
     }
   };
 
   const handleFeedClick = (rec: Recommendation) => {
-    handleInteraction(rec.feed.id, 'click', rec.reason);
-    window.open(rec.feed.url, '_blank');
+    handleInteraction(rec.feed.id, "click", rec.reason);
+    window.open(rec.feed.url, "_blank");
   };
 
   const handleSubscribe = (rec: Recommendation) => {
-    handleInteraction(rec.feed.id, 'subscribe', rec.reason);
+    handleInteraction(rec.feed.id, "subscribe", rec.reason);
     // In production, add to user's subscriptions
     alert(`Subscribed to ${rec.feed.title}!`);
   };
 
   const handleDismiss = (rec: Recommendation) => {
-    handleInteraction(rec.feed.id, 'dismiss', rec.reason);
+    handleInteraction(rec.feed.id, "dismiss", rec.reason);
     setRecommendations(recommendations.filter((r) => r.feed.id !== rec.feed.id));
   };
 
   const reasonLabels: Record<string, { label: string; color: string; emoji: string }> = {
-    similar_topics: { label: 'Similar Topics', color: 'bg-blue-100 text-blue-800', emoji: '🎯' },
-    similar_content: { label: 'Similar Content', color: 'bg-purple-100 text-purple-800', emoji: '🔗' },
-    popular: { label: 'Popular', color: 'bg-green-100 text-green-800', emoji: '🔥' },
-    discover: { label: 'Discover', color: 'bg-yellow-100 text-yellow-800', emoji: '✨' },
+    similar_topics: { label: "Similar Topics", color: "bg-blue-100 text-blue-800", emoji: "🎯" },
+    similar_content: {
+      label: "Similar Content",
+      color: "bg-purple-100 text-purple-800",
+      emoji: "🔗",
+    },
+    popular: { label: "Popular", color: "bg-green-100 text-green-800", emoji: "🔥" },
+    discover: { label: "Discover", color: "bg-yellow-100 text-yellow-800", emoji: "✨" },
   };
 
   // Calculate recommendation breakdown
-  const reasonCounts = recommendations.reduce((acc, rec) => {
-    acc[rec.reason] = (acc[rec.reason] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const reasonCounts = recommendations.reduce(
+    (acc, rec) => {
+      acc[rec.reason] = (acc[rec.reason] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            AI-Powered Recommendations
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">AI-Powered Recommendations</h1>
           <p className="text-gray-600">
             Personalized feed suggestions based on your interests and our recommendation engine
           </p>
@@ -134,9 +149,7 @@ export default function RecommendationsPage() {
 
         {/* Topic Filters */}
         <div className="bg-white rounded-lg border p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Refine by Topics
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Refine by Topics</h2>
           <div className="flex flex-wrap gap-2">
             {commonTopics.map((topic) => (
               <button
@@ -144,8 +157,8 @@ export default function RecommendationsPage() {
                 onClick={() => handleTopicToggle(topic)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedTopics.includes(topic)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {topic.toUpperCase()}
@@ -167,9 +180,7 @@ export default function RecommendationsPage() {
 
         {/* Algorithm Info */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            🤖 How Recommendations Work
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">🤖 How Recommendations Work</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <div className="font-medium text-gray-900 mb-1">70% Content</div>
@@ -189,9 +200,16 @@ export default function RecommendationsPage() {
               <div className="text-sm font-medium text-gray-700 mb-2">Current Mix:</div>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(reasonCounts).map(([reason, count]) => {
-                  const info = reasonLabels[reason] || { label: reason, color: 'bg-gray-100 text-gray-800', emoji: '📌' };
+                  const info = reasonLabels[reason] || {
+                    label: reason,
+                    color: "bg-gray-100 text-gray-800",
+                    emoji: "📌",
+                  };
                   return (
-                    <span key={reason} className={`px-3 py-1 rounded-full text-xs font-medium ${info.color}`}>
+                    <span
+                      key={reason}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${info.color}`}
+                    >
                       {info.emoji} {info.label}: {count}
                     </span>
                   );
@@ -225,8 +243,12 @@ export default function RecommendationsPage() {
         {!loading && recommendations.length > 0 && (
           <div className="space-y-4">
             {recommendations.map((rec, idx) => {
-              const reasonInfo = reasonLabels[rec.reason] || { label: rec.reason, color: 'bg-gray-100 text-gray-800', emoji: '📌' };
-              
+              const reasonInfo = reasonLabels[rec.reason] || {
+                label: rec.reason,
+                color: "bg-gray-100 text-gray-800",
+                emoji: "📌",
+              };
+
               return (
                 <div
                   key={rec.feed.id}
@@ -235,18 +257,16 @@ export default function RecommendationsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-semibold text-gray-500">
-                          #{idx + 1}
-                        </span>
-                        <h3 className="text-xl font-bold text-gray-900">
-                          {rec.feed.title}
-                        </h3>
+                        <span className="text-sm font-semibold text-gray-500">#{idx + 1}</span>
+                        <h3 className="text-xl font-bold text-gray-900">{rec.feed.title}</h3>
                         {rec.feed.verified && (
                           <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full font-medium">
                             ✓ Verified
                           </span>
                         )}
-                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${reasonInfo.color}`}>
+                        <span
+                          className={`px-2 py-0.5 text-xs rounded-full font-medium ${reasonInfo.color}`}
+                        >
                           {reasonInfo.emoji} {reasonInfo.label}
                         </span>
                       </div>
@@ -307,4 +327,3 @@ export default function RecommendationsPage() {
     </div>
   );
 }
-

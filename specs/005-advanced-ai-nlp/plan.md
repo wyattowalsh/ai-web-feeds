@@ -1,19 +1,22 @@
 # Implementation Plan: Phase 5 - Advanced AI/NLP Features
 
-**Feature Branch**: `005-advanced-ai-nlp`  
-**Created**: 2025-10-27  
-**Status**: Ready for Implementation  
+**Feature Branch**: `005-advanced-ai-nlp`\
+**Created**: 2025-10-27\
+**Status**: Ready for Implementation\
 **Estimated Effort**: 5 weeks (5 sub-phases)
 
----
+______________________________________________________________________
 
 ## Technical Context
 
 ### What We're Building
 
-**Batch NLP Pipeline**: Scheduled jobs that process articles from `feed_entries` (Phase 3B) → Extract quality scores, entities, sentiment, topics → Store results in SQLite → Expose via CLI.
+**Batch NLP Pipeline**: Scheduled jobs that process articles from `feed_entries` (Phase
+3B) → Extract quality scores, entities, sentiment, topics → Store results in SQLite →
+Expose via CLI.
 
 **Core Architecture**:
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      Phase 5: NLP Pipeline                   │
@@ -38,6 +41,7 @@
 ### Dependencies from Phase 3B
 
 ✅ **Already Available**:
+
 - `feed_entries` table (articles from feed polling)
 - `APScheduler` infrastructure (`scheduler.py`)
 - `Storage` class (`storage.py`) with SQLAlchemy models
@@ -46,30 +50,30 @@
 
 ✅ **No Changes Needed** to Phase 3B code.
 
----
+______________________________________________________________________
 
 ## Constitution Check ✅
 
 ### Alignment with Root AGENTS.md
 
-| Rule | Compliance |
-|------|------------|
+| Rule                    | Compliance                                                                        |
+| ----------------------- | --------------------------------------------------------------------------------- |
 | **Documentation-First** | ✅ All docs in `apps/web/content/docs/features/*.mdx` (no standalone `.md` files) |
-| **Type Safety** | ✅ Python type hints, Pydantic models for config |
-| **Testing** | ✅ ≥90% coverage target, unit + integration tests |
-| **Code Quality** | ✅ Ruff formatting, conventional commits |
-| **SQLite-First** | ✅ All data in SQLite (no PostgreSQL, no external services) |
+| **Type Safety**         | ✅ Python type hints, Pydantic models for config                                  |
+| **Testing**             | ✅ ≥90% coverage target, unit + integration tests                                 |
+| **Code Quality**        | ✅ Ruff formatting, conventional commits                                          |
+| **SQLite-First**        | ✅ All data in SQLite (no PostgreSQL, no external services)                       |
 
 ### Alignment with Component-Specific AGENTS.md
 
-| Component | Location | Rules |
-|-----------|----------|-------|
-| **Core Package** | `packages/ai_web_feeds/` | ✅ Modular design, absolute imports, Pydantic validation |
-| **CLI** | `apps/cli/` | ✅ Typer commands, `uv run aiwebfeeds nlp ...` |
-| **Web Docs** | `apps/web/content/docs/` | ✅ `.mdx` files with frontmatter, update `meta.json` |
-| **Tests** | `tests/` | ✅ Mirror source tree, mock external boundaries, property-based tests |
+| Component        | Location                 | Rules                                                                 |
+| ---------------- | ------------------------ | --------------------------------------------------------------------- |
+| **Core Package** | `packages/ai_web_feeds/` | ✅ Modular design, absolute imports, Pydantic validation              |
+| **CLI**          | `apps/cli/`              | ✅ Typer commands, `uv run aiwebfeeds nlp ...`                        |
+| **Web Docs**     | `apps/web/content/docs/` | ✅ `.mdx` files with frontmatter, update `meta.json`                  |
+| **Tests**        | `tests/`                 | ✅ Mirror source tree, mock external boundaries, property-based tests |
 
----
+______________________________________________________________________
 
 ## Project Structure
 
@@ -131,35 +135,35 @@ data/
 └── aiwebfeeds.db             # MIGRATE: Add 8 new tables (via Alembic or raw SQL)
 ```
 
----
+______________________________________________________________________
 
 ## Complexity Analysis
 
 ### High Complexity (Weeks 2-4)
 
-| Task | Complexity | Reason |
-|------|------------|--------|
-| **Entity Extraction** | 🔴 High | spaCy integration, entity normalization, disambiguation logic |
-| **Topic Modeling** | 🔴 High | Gensim LDA, topic evolution detection, manual curation workflow |
-| **Sentiment Aggregation** | 🟡 Medium | Time-series aggregation, moving averages, shift detection |
+| Task                      | Complexity | Reason                                                          |
+| ------------------------- | ---------- | --------------------------------------------------------------- |
+| **Entity Extraction**     | 🔴 High    | spaCy integration, entity normalization, disambiguation logic   |
+| **Topic Modeling**        | 🔴 High    | Gensim LDA, topic evolution detection, manual curation workflow |
+| **Sentiment Aggregation** | 🟡 Medium  | Time-series aggregation, moving averages, shift detection       |
 
 ### Medium Complexity (Week 1, 5)
 
-| Task | Complexity | Reason |
-|------|------------|--------|
-| **Quality Scoring** | 🟡 Medium | Heuristic-based, no ML model, but multiple factors to combine |
-| **Sentiment Analysis** | 🟡 Medium | Pre-trained model (DistilBERT), but requires PyTorch integration |
-| **Database Migration** | 🟡 Medium | 8 new tables, triggers, indexes, FTS5 virtual table |
+| Task                   | Complexity | Reason                                                           |
+| ---------------------- | ---------- | ---------------------------------------------------------------- |
+| **Quality Scoring**    | 🟡 Medium  | Heuristic-based, no ML model, but multiple factors to combine    |
+| **Sentiment Analysis** | 🟡 Medium  | Pre-trained model (DistilBERT), but requires PyTorch integration |
+| **Database Migration** | 🟡 Medium  | 8 new tables, triggers, indexes, FTS5 virtual table              |
 
 ### Low Complexity
 
-| Task | Complexity | Reason |
-|------|------------|--------|
-| **Config Extension** | 🟢 Low | Add Phase5Settings to config.py (straightforward Pydantic) |
-| **CLI Commands** | 🟢 Low | Typer command structure already established in Phase 3B |
-| **Documentation** | 🟢 Low | `.mdx` files with examples (time-consuming but straightforward) |
+| Task                 | Complexity | Reason                                                          |
+| -------------------- | ---------- | --------------------------------------------------------------- |
+| **Config Extension** | 🟢 Low     | Add Phase5Settings to config.py (straightforward Pydantic)      |
+| **CLI Commands**     | 🟢 Low     | Typer command structure already established in Phase 3B         |
+| **Documentation**    | 🟢 Low     | `.mdx` files with examples (time-consuming but straightforward) |
 
----
+______________________________________________________________________
 
 ## Implementation Phases
 
@@ -168,122 +172,132 @@ data/
 **Goal**: Implement quality scoring for articles, store in SQLite, schedule batch job.
 
 **Deliverables**:
+
 1. ✅ `quality_scorer.py` module with heuristic scoring
-2. ✅ `article_quality_scores` table in SQLite
-3. ✅ Batch job: process 100 articles every 30 minutes
-4. ✅ CLI: `aiwebfeeds nlp process quality`
-5. ✅ Unit tests (≥90% coverage)
-6. ✅ Documentation: `quality-scoring.mdx`
+1. ✅ `article_quality_scores` table in SQLite
+1. ✅ Batch job: process 100 articles every 30 minutes
+1. ✅ CLI: `aiwebfeeds nlp process quality`
+1. ✅ Unit tests (≥90% coverage)
+1. ✅ Documentation: `quality-scoring.mdx`
 
 **Acceptance Criteria**:
+
 - Process 1000 articles → All have quality scores (0-100)
 - Feed quality scores updated (weighted average of recent articles)
 - CLI shows processing stats: `aiwebfeeds nlp stats`
 
----
+______________________________________________________________________
 
 ### Phase 5B: Entity Extraction (Week 2)
 
 **Goal**: Extract entities (people, orgs, techniques) using spaCy, normalize, store.
 
 **Deliverables**:
+
 1. ✅ `entity_extractor.py` module with spaCy integration
-2. ✅ `entities` + `entity_mentions` tables in SQLite
-3. ✅ Entity normalization logic (Levenshtein distance, alias resolution)
-4. ✅ Batch job: process 50 articles every hour
-5. ✅ CLI: `aiwebfeeds nlp list-entities`, `show-entity`, `add-alias`, `merge-entities`
-6. ✅ Unit tests + integration tests
-7. ✅ Documentation: `entity-extraction.mdx`
+1. ✅ `entities` + `entity_mentions` tables in SQLite
+1. ✅ Entity normalization logic (Levenshtein distance, alias resolution)
+1. ✅ Batch job: process 50 articles every hour
+1. ✅ CLI: `aiwebfeeds nlp list-entities`, `show-entity`, `add-alias`, `merge-entities`
+1. ✅ Unit tests + integration tests
+1. ✅ Documentation: `entity-extraction.mdx`
 
 **Acceptance Criteria**:
+
 - Extract entities from 500 articles → ≥80% precision (manual spot-check)
 - Normalize aliases: "G. Hinton" → "Geoffrey Hinton"
 - FTS5 entity search: sub-second response for millions of mentions
 
----
+______________________________________________________________________
 
 ### Phase 5C: Sentiment Analysis (Week 3)
 
 **Goal**: Classify article sentiment, aggregate by topic, detect shifts.
 
 **Deliverables**:
+
 1. ✅ `sentiment_analyzer.py` module with DistilBERT
-2. ✅ `article_sentiment` + `topic_sentiment_daily` tables
-3. ✅ Batch job: process 100 articles every hour
-4. ✅ Aggregation job: compute daily topic sentiment (runs after sentiment job)
-5. ✅ Shift detection: alert when 7-day moving average changes >0.3
-6. ✅ CLI: `aiwebfeeds nlp sentiment <topic> --days 30`
-7. ✅ Unit tests + integration tests
-8. ✅ Documentation: `sentiment-analysis.mdx`
+1. ✅ `article_sentiment` + `topic_sentiment_daily` tables
+1. ✅ Batch job: process 100 articles every hour
+1. ✅ Aggregation job: compute daily topic sentiment (runs after sentiment job)
+1. ✅ Shift detection: alert when 7-day moving average changes >0.3
+1. ✅ CLI: `aiwebfeeds nlp sentiment <topic> --days 30`
+1. ✅ Unit tests + integration tests
+1. ✅ Documentation: `sentiment-analysis.mdx`
 
 **Acceptance Criteria**:
+
 - Sentiment classification accuracy ≥75% (manual spot-check of 100 articles)
 - Time-series chart: 30-day sentiment trend for "AI Safety"
 - Detect sentiment shift: when GPT-4 launches, negative sentiment spike
 
----
+______________________________________________________________________
 
 ### Phase 5D: Topic Modeling (Week 4)
 
 **Goal**: Detect subtopics using LDA, track evolution, enable manual curation.
 
 **Deliverables**:
+
 1. ✅ `topic_modeler.py` module with Gensim LDA
-2. ✅ `subtopics` + `topic_evolution_events` tables
-3. ✅ Batch job: monthly topic modeling (1st of month, 3 AM)
-4. ✅ Evolution detection: compare with previous month, detect splits/merges
-5. ✅ CLI: `aiwebfeeds nlp review-subtopics`, `approve-subtopic`, `rename-subtopic`
-6. ✅ Unit tests + integration tests
-7. ✅ Documentation: `topic-modeling.mdx`
+1. ✅ `subtopics` + `topic_evolution_events` tables
+1. ✅ Batch job: monthly topic modeling (1st of month, 3 AM)
+1. ✅ Evolution detection: compare with previous month, detect splits/merges
+1. ✅ CLI: `aiwebfeeds nlp review-subtopics`, `approve-subtopic`, `rename-subtopic`
+1. ✅ Unit tests + integration tests
+1. ✅ Documentation: `topic-modeling.mdx`
 
 **Acceptance Criteria**:
+
 - Process 10k articles → Extract 5-10 subtopics per parent topic
 - Topic coherence score ≥0.5 (statistical measure)
 - Manual curation workflow: approve/reject/rename subtopics
 
----
+______________________________________________________________________
 
 ### Phase 5E: Testing & Documentation (Week 5)
 
 **Goal**: Comprehensive testing, polish documentation, validate deployment.
 
 **Deliverables**:
+
 1. ✅ Unit tests for all 4 NLP modules (≥90% coverage)
-2. ✅ Integration tests: end-to-end batch processing (1000 articles)
-3. ✅ Performance benchmarks: 100 articles/hour minimum
-4. ✅ CLI validation: all `aiwebfeeds nlp` commands work
-5. ✅ Documentation review: all `.mdx` files complete, examples tested
-6. ✅ Update `CHANGELOG.md`, `README.md`, `RELEASE_NOTES.md`
+1. ✅ Integration tests: end-to-end batch processing (1000 articles)
+1. ✅ Performance benchmarks: 100 articles/hour minimum
+1. ✅ CLI validation: all `aiwebfeeds nlp` commands work
+1. ✅ Documentation review: all `.mdx` files complete, examples tested
+1. ✅ Update `CHANGELOG.md`, `README.md`, `RELEASE_NOTES.md`
 
 **Acceptance Criteria**:
+
 - All tests pass: `uv run pytest --cov=ai_web_feeds`
 - Coverage ≥90%: `uv run pytest --cov-report=html`
 - CLI help works: `aiwebfeeds nlp --help`
 - Documentation site builds: `cd apps/web && pnpm build`
 
----
+______________________________________________________________________
 
 ## Risk Assessment
 
 ### Technical Risks
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| **spaCy Model Download Fails** | Medium | High | Fallback to rule-based extraction, retry with exponential backoff |
-| **OOM (Out of Memory) on Large Articles** | Medium | Medium | Process in smaller batches (50 → 25 → 10), truncate articles >10k words |
-| **Topic Modeling Low Coherence** | High | Medium | Manual curation required, adjust num_topics parameter, use BERTopic fallback |
-| **Sentiment Model Disagrees with Humans** | High | Low | Collect feedback, retrain on feedback data (deferred to Phase 6) |
-| **Batch Processing Falls Behind** | Medium | Medium | Increase workers (4 → 8), prioritize high-quality feeds, process in parallel |
+| Risk                                      | Probability | Impact | Mitigation                                                                   |
+| ----------------------------------------- | ----------- | ------ | ---------------------------------------------------------------------------- |
+| **spaCy Model Download Fails**            | Medium      | High   | Fallback to rule-based extraction, retry with exponential backoff            |
+| **OOM (Out of Memory) on Large Articles** | Medium      | Medium | Process in smaller batches (50 → 25 → 10), truncate articles >10k words      |
+| **Topic Modeling Low Coherence**          | High        | Medium | Manual curation required, adjust num_topics parameter, use BERTopic fallback |
+| **Sentiment Model Disagrees with Humans** | High        | Low    | Collect feedback, retrain on feedback data (deferred to Phase 6)             |
+| **Batch Processing Falls Behind**         | Medium      | Medium | Increase workers (4 → 8), prioritize high-quality feeds, process in parallel |
 
 ### Project Risks
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| **Model Download Size Too Large** | Low | Medium | Use small models (en_core_web_sm = 13MB), document requirements |
-| **Testing Takes Longer Than Planned** | High | Medium | Start testing early (write tests alongside implementation) |
-| **Documentation Incomplete** | Medium | High | Allocate full week for docs (Phase 5E), use examples from tests |
+| Risk                                  | Probability | Impact | Mitigation                                                      |
+| ------------------------------------- | ----------- | ------ | --------------------------------------------------------------- |
+| **Model Download Size Too Large**     | Low         | Medium | Use small models (en_core_web_sm = 13MB), document requirements |
+| **Testing Takes Longer Than Planned** | High        | Medium | Start testing early (write tests alongside implementation)      |
+| **Documentation Incomplete**          | Medium      | High   | Allocate full week for docs (Phase 5E), use examples from tests |
 
----
+______________________________________________________________________
 
 ## Dependencies
 
@@ -329,7 +343,7 @@ uv run python -m spacy download en_core_web_sm
 # Cache location: ~/.cache/huggingface/hub
 ```
 
----
+______________________________________________________________________
 
 ## Database Migrations
 
@@ -546,37 +560,39 @@ from pathlib import Path
 import sqlite3
 from ai_web_feeds.config import Settings
 
+
 def run_migration_005():
     """Run Phase 5 migration: Add NLP tables"""
     settings = Settings()
     migration_sql = Path(__file__).parent / "005_add_nlp_tables.sql"
-    
+
     with sqlite3.connect(settings.database_url.replace("sqlite:///", "")) as conn:
         conn.executescript(migration_sql.read_text())
         print("✅ Migration 005 completed: NLP tables added")
+
 
 if __name__ == "__main__":
     run_migration_005()
 ```
 
 **Run Migration**:
+
 ```bash
 uv run python packages/ai_web_feeds/src/ai_web_feeds/migrations/run_migration.py
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 1. ✅ **Review this plan**: User approves phased approach
-2. ✅ **Run `/speckit.tasks`**: Generate detailed task list (89+ tasks)
-3. ✅ **Start Phase 5A**: Implement quality scoring (Week 1)
-4. ✅ **Iterate**: Phase 5B → 5C → 5D → 5E (Weeks 2-5)
-5. ✅ **Merge to main**: After Phase 5E completion, tag as `v0.4.0-beta`
+1. ✅ **Run `/speckit.tasks`**: Generate detailed task list (89+ tasks)
+1. ✅ **Start Phase 5A**: Implement quality scoring (Week 1)
+1. ✅ **Iterate**: Phase 5B → 5C → 5D → 5E (Weeks 2-5)
+1. ✅ **Merge to main**: After Phase 5E completion, tag as `v0.4.0-beta`
 
----
+______________________________________________________________________
 
-**Status**: ✅ Ready for Implementation  
-**Estimated Timeline**: 5 weeks  
+**Status**: ✅ Ready for Implementation\
+**Estimated Timeline**: 5 weeks\
 **Risk Level**: Medium (entity extraction + topic modeling complexity)
-

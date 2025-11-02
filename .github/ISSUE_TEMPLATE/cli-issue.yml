@@ -8,28 +8,28 @@ body:
     attributes:
       value: |
         ## CLI Issue Report
-        
+
         Report bugs, feature requests, or issues with the `aiwebfeeds` command-line tool.
-        
+
         ### 🔍 Before Reporting
-        
+
         1. **Update to latest version**:
            ```bash
            git pull origin main
            uv sync --reinstall
            ```
-        
+
         2. **Test with debug logging**:
            ```bash
            AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
            ```
-        
+
         3. **Check CLI help**:
            ```bash
            uv run aiwebfeeds --help
            uv run aiwebfeeds <command> --help
            ```
-        
+
         4. **Review [CLI documentation](https://aiwebfeeds.com/docs/development/cli)**
 
   - type: dropdown
@@ -73,7 +73,7 @@ body:
       label: Command Executed
       description: |
         Paste the exact command you ran.
-        
+
         **Include**:
         - Full command with all flags/options
         - Any environment variables
@@ -102,7 +102,7 @@ body:
           File "...", line 123, in validate
             ...
         Error: Validation failed
-        
+
         Exit code: 1
       render: shell
     validations:
@@ -140,7 +140,7 @@ body:
       label: Environment
       description: |
         Run these commands and paste the output:
-        
+
         ```bash
         uv --version
         python --version
@@ -162,7 +162,7 @@ body:
       label: Sample Data (if relevant)
       description: |
         If the issue involves specific data, provide a minimal example.
-        
+
         **For feed validation issues**:
         - Provide the feed URL
         - Or paste a minimal YAML snippet
@@ -197,7 +197,7 @@ body:
       description: Have you found a temporary workaround?
       placeholder: |
         Workaround: Using the Python API directly instead of CLI works:
-        
+
         ```python
         from ai_web_feeds import validate_feeds
         validate_feeds("data/feeds.yaml")
@@ -235,10 +235,10 @@ body:
         ```bash
         uv run aiwebfeeds validate --feeds <url> --output-format json
         ```
-        
+
         **Use case**: I want to validate a feed and get structured JSON output
         for integration with other tools.
-        
+
         **Example output**:
         ```json
         {
@@ -268,46 +268,46 @@ body:
     attributes:
       value: |
         ---
-        
+
         ### 🛠️ CLI Debugging Tips
-        
+
         **Enable full debug output**:
         ```bash
         export AIWEBFEEDS_LOG_LEVEL=DEBUG
         export AIWEBFEEDS_LOG_FILE=debug.log
         uv run aiwebfeeds <command> --verbose 2>&1 | tee output.log
         ```
-        
+
         **Test individual components**:
         ```bash
         # Test Python directly
         uv run python -c "from ai_web_feeds import validate_feeds; validate_feeds('data/feeds.yaml')"
-        
+
         # Test CLI entry point
         uv run python -m ai_web_feeds.cli validate --help
         ```
-        
+
         **Check installation**:
         ```bash
         uv pip list | grep ai-web-feeds
         which aiwebfeeds
         uv run which python
         ```
-        
+
         ### 📚 Resources
-        
+
         - [CLI Documentation](https://aiwebfeeds.com/docs/development/cli)
         - [CLI Workflow Integration](https://aiwebfeeds.com/docs/development/cli-workflows)
         - [Python API Docs](https://aiwebfeeds.com/docs/development/python-api)
         - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
-        
+
         ### 🤝 Want to Fix It?
-        
+
         The CLI code is in:
         - Commands: `apps/cli/ai_web_feeds/cli/commands/`
         - Main CLI: `apps/cli/ai_web_feeds/cli/__init__.py`
         - Core logic: `packages/ai_web_feeds/src/ai_web_feeds/`
-        
+
         PRs welcome! See [Contributing Guide](../../CONTRIBUTING.md).
-        
+
         Thank you for helping improve the CLI! 🚀

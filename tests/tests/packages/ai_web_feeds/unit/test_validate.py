@@ -5,15 +5,14 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
-
 from ai_web_feeds.validate import (
     ValidationError,
     ValidationResult,
     validate_feeds,
     validate_topics,
 )
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 @pytest.mark.unit
@@ -176,9 +175,7 @@ class TestValidateFeeds:
             ]
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(schema, f)
             schema_path = Path(f.name)
 
@@ -208,9 +205,7 @@ class TestValidateFeeds:
             "sources": "not-an-array"  # Invalid: should be array
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(schema, f)
             schema_path = Path(f.name)
 
@@ -342,9 +337,7 @@ class TestValidateTopics:
             ]
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(schema, f)
             schema_path = Path(f.name)
 
@@ -445,9 +438,7 @@ class TestValidationIntegration:
 
         import yaml
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(feed_data, f)
             temp_path = Path(f.name)
 

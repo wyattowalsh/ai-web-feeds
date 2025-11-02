@@ -1,23 +1,17 @@
 /**
  * PATCH /api/notifications/[id] - Mark notification as read or dismissed
- * 
+ *
  * Body:
  * - action: "mark_read" | "dismiss"
  */
 
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const notificationId = parseInt(params.id, 10);
 
   if (isNaN(notificationId)) {
-    return NextResponse.json(
-      { error: "Invalid notification ID" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid notification ID" }, { status: 400 });
   }
 
   try {
@@ -27,7 +21,7 @@ export async function PATCH(
     if (!action || !["mark_read", "dismiss"].includes(action)) {
       return NextResponse.json(
         { error: "Invalid action. Must be 'mark_read' or 'dismiss'" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,7 +32,7 @@ export async function PATCH(
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -53,12 +47,11 @@ export async function PATCH(
   } catch (error) {
     console.error("Failed to update notification:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to update notification",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

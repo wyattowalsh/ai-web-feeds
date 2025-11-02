@@ -1,8 +1,8 @@
 """Unit tests for ai_web_feeds.scheduler module"""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
+import pytest
 from ai_web_feeds.config import Settings
 from ai_web_feeds.scheduler import SchedulerManager
 from ai_web_feeds.storage import DatabaseManager
@@ -70,9 +70,11 @@ class TestSchedulerManager:
         with patch.object(scheduler.scheduler, "start"):
             with patch.object(scheduler.scheduler, "shutdown") as mock_shutdown:
                 # Mock the running property to return True
-                with patch.object(type(scheduler.scheduler), "running", new_callable=PropertyMock) as mock_running:
+                with patch.object(
+                    type(scheduler.scheduler), "running", new_callable=PropertyMock
+                ) as mock_running:
                     mock_running.return_value = True
-                    
+
                     scheduler.start()
                     scheduler.stop()
 
@@ -88,11 +90,11 @@ class TestSchedulerManager:
             jobs = scheduler.scheduler.get_jobs()
             poll_job = next((j for j in jobs if j.id == "poll_feeds"), None)
             assert poll_job is not None
-            
+
             # Add next_run_time attribute if missing
             if not hasattr(poll_job, "next_run_time"):
                 poll_job.next_run_time = None
-            
+
             status = scheduler.get_job_status("poll_feeds")
 
             assert status["exists"] is True
@@ -114,7 +116,7 @@ class TestSchedulerManager:
             # Patch all jobs to have next_run_time
             for job in scheduler.scheduler.get_jobs():
                 job.next_run_time = None
-                
+
             jobs = scheduler.list_jobs()
 
             assert len(jobs) == 4
@@ -149,9 +151,7 @@ class TestSchedulerManager:
             MagicMock(topic_id="ml", z_score=2.5),
         ]
 
-        with patch.object(
-            scheduler.trending, "detect_trending_topics", return_value=mock_topics
-        ):
+        with patch.object(scheduler.trending, "detect_trending_topics", return_value=mock_topics):
             with patch.object(scheduler.notifier, "notify_trending_topic", new_callable=AsyncMock):
                 await scheduler._detect_trending()
 
@@ -173,4 +173,3 @@ class TestSchedulerManager:
             await scheduler._cleanup_notifications()
 
             # Should complete without error
-

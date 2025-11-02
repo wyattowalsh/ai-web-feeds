@@ -20,36 +20,36 @@ jobs:
   coverage:
     name: Generate Coverage Report
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
-          
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          
+
       - name: Install dependencies
         run: uv sync --all-extras
-        
+
       - name: Run tests with coverage via CLI
         run: uv run aiwebfeeds test coverage --html
-        
+
       - name: Generate coverage summary
         id: coverage-summary
         run: |
           cd tests
           COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $4}' | sed 's/%//')
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-          
+
           # Determine badge color
           if (( $(echo "$COVERAGE >= 90" | bc -l) )); then
             COLOR="brightgreen"
@@ -60,12 +60,12 @@ jobs:
           else
             COLOR="red"
           fi
-          
+
           echo "badge_color=$COLOR" >> $GITHUB_OUTPUT
-          
+
           # Generate markdown report
           uv run coverage report --format=markdown > ../coverage-summary.md
-          
+
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +74,7 @@ jobs:
             tests/reports/coverage/
             coverage-summary.md
           retention-days: 30
-          
+
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
         uses: py-cov-action/python-coverage-comment-action@v3
@@ -82,7 +82,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           MINIMUM_GREEN: 90
           MINIMUM_ORANGE: 75
-          
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -90,7 +90,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          
+
       - name: Create coverage badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: schneegans/dynamic-badges-action@v1.7.0
@@ -101,7 +101,7 @@ jobs:
           label: coverage
           message: ${{ steps.coverage-summary.outputs.coverage }}%
           color: ${{ steps.coverage-summary.outputs.badge_color }}
-          
+
       - name: Fail if coverage below 90%
         run: |
           COVERAGE=${{ steps.coverage-summary.outputs.coverage }}

@@ -35,26 +35,31 @@ graph TB
 ### Components
 
 1. **Feed Poller** (`polling.py`):
+
    - Periodic feed fetching with retry logic
    - Article deduplication via GUID
    - Response time tracking
 
 2. **Notification Manager** (`notifications.py`):
+
    - Notification creation and bundling
    - WebSocket broadcasting
    - User preference filtering
 
 3. **Trending Detector** (`trending.py`):
+
    - Z-score statistical analysis
    - Baseline calculation (mean/std dev)
    - Representative article selection
 
 4. **Digest Manager** (`digests.py`):
+
    - HTML email generation
    - Cron-based scheduling
    - SMTP delivery
 
 5. **WebSocket Server** (`websocket_server.py`):
+
    - Socket.IO real-time server
    - User authentication and rooms
    - Event broadcasting
@@ -74,7 +79,7 @@ uv run aiwebfeeds monitor start
 # Output:
 # ✓ Background scheduler started
 # ✓ WebSocket server started on port 8000
-# 
+#
 # Scheduled Jobs:
 #   poll_feeds       | Every 15 min   | Poll all active feeds
 #   detect_trending  | Every 1 hour   | Z-score trend detection
@@ -105,12 +110,7 @@ uv run aiwebfeeds monitor unfollow <user-id> <feed-id>
 
 ```tsx
 import { useState } from "react";
-import {
-  NotificationBell,
-  NotificationCenter,
-  FollowButton,
-  TrendingTopics,
-} from "@/components/notifications";
+import { NotificationBell, NotificationCenter, FollowButton, TrendingTopics } from "@/components/notifications";
 
 export default function Page() {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -120,25 +120,20 @@ export default function Page() {
       {/* Header with notification bell */}
       <header className="flex items-center justify-between">
         <h1>AI Web Feeds</h1>
-        <NotificationBell 
-          onOpenCenter={() => setShowNotifications(true)} 
-        />
+        <NotificationBell onOpenCenter={() => setShowNotifications(true)} />
       </header>
 
       {/* Notification panel */}
-      <NotificationCenter
-        isOpen={showNotifications}
-        onClose={() => setShowNotifications(false)}
-      />
+      <NotificationCenter isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
 
       {/* Feed page */}
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">
           <h2>AI News Feed</h2>
-          
+
           {/* Follow button */}
           <FollowButton feedId="ai-news" variant="compact" />
-          
+
           {/* Articles... */}
         </div>
 
@@ -166,11 +161,11 @@ Instant WebSocket alerts for:
 **Notification Types**:
 
 ```typescript
-type NotificationType = 
-  | "new_article"      // Single new article
-  | "trending_topic"   // Hot topic alert
-  | "feed_updated"     // Multiple articles (bundled)
-  | "system_alert";    // System message
+type NotificationType =
+  | "new_article" // Single new article
+  | "trending_topic" // Hot topic alert
+  | "feed_updated" // Multiple articles (bundled)
+  | "system_alert"; // System message
 ```
 
 ### Notification Bundling
@@ -209,6 +204,7 @@ Z = \frac{X - \mu}{\sigma}
 $$
 
 Where:
+
 - $X$ = Current article count
 - $\mu$ = Baseline mean
 - $\sigma$ = Baseline standard deviation
@@ -492,13 +488,11 @@ See [Database Architecture](/docs/development/database) for full schema.
 Bell icon with unread count badge.
 
 ```tsx
-<NotificationBell 
-  onOpenCenter={() => setShowCenter(true)}
-  className="..."
-/>
+<NotificationBell onOpenCenter={() => setShowCenter(true)} className="..." />
 ```
 
 **Props**:
+
 - `onOpenCenter`: Callback when bell is clicked
 - `className`: Additional CSS classes
 
@@ -507,14 +501,11 @@ Bell icon with unread count badge.
 Slide-in notification panel.
 
 ```tsx
-<NotificationCenter
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  className="..."
-/>
+<NotificationCenter isOpen={isOpen} onClose={() => setIsOpen(false)} className="..." />
 ```
 
 **Features**:
+
 - All/Unread filter tabs
 - Mark read, dismiss, view actions
 - Time-ago relative timestamps
@@ -534,6 +525,7 @@ Toggle feed follow status.
 ```
 
 **Variants**:
+
 - `default`: Full button with icons and text
 - `compact`: Small button for inline use
 
@@ -542,10 +534,7 @@ Toggle feed follow status.
 Display top trending topics.
 
 ```tsx
-<TrendingTopics 
-  limit={5}
-  className="..."
-/>
+<TrendingTopics limit={5} className="..." />
 ```
 
 ## CLI Commands
@@ -658,16 +647,19 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 ### Optimization Tips
 
 1. **Feed Polling**:
+
    - Adjust interval based on feed update frequency
    - Use `AIWF_FEED_POLL_MAX_CONCURRENT` to limit concurrent requests
    - Monitor response times in `feed_poll_jobs` table
 
 2. **WebSocket**:
+
    - Enable connection pooling for high traffic
    - Use Redis adapter for multi-server deployments
    - Monitor active connections
 
 3. **Database**:
+
    - Enable WAL mode for SQLite (default)
    - Add indexes on frequently queried columns
    - Cleanup old notifications regularly
@@ -726,5 +718,4 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 
 ---
 
-*Implemented: October 2025 · Version: Phase 3B*
-
+_Implemented: October 2025 · Version: Phase 3B_

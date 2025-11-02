@@ -224,13 +224,13 @@ async def main():
     # 1. Load feeds
     feeds_data = load_feeds_yaml("data/feeds.yaml")
     sources = feeds_data.get("sources", [])
-    
+
     # 2. Enrich each source
     enriched_sources = []
     for source in sources:
         enriched = await enrich_feed_source(source)
         enriched_sources.append(enriched)
-    
+
     # 3. Save enriched YAML
     enriched_data = {
         "schema_version": "feeds-enriched-1.0.0",
@@ -241,15 +241,15 @@ async def main():
         "sources": enriched_sources,
     }
     save_feeds_yaml(enriched_data, "data/feeds.enriched.yaml")
-    
+
     # 4. Generate and save schema
     schema = generate_enriched_schema()
     save_json_schema(schema, "data/feeds.enriched.schema.json")
-    
+
     # 5. Save to database
     db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
     db.create_db_and_tables()
-    
+
     from ai_web_feeds.models import FeedSource
     for source_data in enriched_sources:
         feed = FeedSource(
@@ -260,18 +260,18 @@ async def main():
             # ... other fields
         )
         db.add_feed_source(feed)
-    
+
     # 6. Generate OPML files
     feeds = db.get_all_feed_sources()
-    
+
     # All feeds
     opml_all = generate_opml(feeds, "AI Web Feeds - All")
     save_opml(opml_all, "data/all.opml")
-    
+
     # Categorized
     opml_cat = generate_categorized_opml(feeds, "AI Web Feeds - Categorized")
     save_opml(opml_cat, "data/categorized.opml")
-    
+
     print("✓ Complete!")
 
 
