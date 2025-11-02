@@ -1,226 +1,200 @@
-import type { Metadata } from 'next';
+/**
+ * Reading Statistics Dashboard
+ * 
+ * Displays reading activity metrics including articles read, time spent,
+ * favorite topics, and reading streaks.
+ * 
+ * @see specs/004-client-side-features/tasks.md#t045
+ */
 
-export const metadata: Metadata = {
-  title: 'Validation Stats - AIWebFeeds',
-  description:
-    'Feed validation statistics and health metrics for the AIWebFeeds collection.',
-  openGraph: {
-    title: 'Validation Stats - AIWebFeeds',
-    description: 'Feed validation statistics and health metrics',
-  },
-};
+'use client';
 
-async function getValidationStats() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res     = await fetch(`${baseUrl}/api/stats/validation`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
+import React, { useEffect, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/indexeddb/db';
+
+export default function StatsPage(): JSX.Element {
+  const [stats, setStats] = useState({
+    totalArticles:   0,
+    articlesRead:    0,
+    articlesStarred: 0,
+    totalTime:       0,
+    currentStreak:   0,
+  });
+
+  // Load reading history
+  const readingHistory = useLiveQuery(() => db.reading_history.toArray());
+  const articles = useLiveQuery(() => db.articles.toArray());
+
+  useEffect(() => {
+    if (articles) {
+      calculateStats();
+    }
+  }, [articles, readingHistory]);
+
+  const calculateStats = async () => {
+    if (!articles) return;
+
+    const readArticles = articles.filter((a) => a.readAt);
+    const starredArticles = articles.filter((a) => a.starred);
+
+    // Calculate total reading time
+    const totalTime = readingHistory?.reduce((sum, entry) => {
+      return sum + (entry.durationSeconds || 0);
+    }, 0) || 0;
+
+    // Calculate streak
+    const streak = calculateReadingStreak(readingHistory || []);
+
+    setStats({
+      totalArticles:   articles.length,
+      articlesRead:    readArticles.length,
+      articlesStarred: starredArticles.length,
+      totalTime,
+      currentStreak:   streak,
     });
-    
-    if (!res.ok) throw new Error('Failed to fetch stats');
-    
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching validation stats:', error);
-    // Return default stats on error
-    return {
-      total_feeds: 0,
-      validated_feeds: 0,
-      success_count: 0,
-      failure_count: 0,
-      success_rate: 0,
-      avg_response_time_ms: 0,
-      healthy_feeds: 0,
-      avg_health_score: 0,
-      last_validation_run: null,
-      top_errors: [],
-    };
-  }
-}
+  };
 
-export default async function StatsPage() {
-  const stats = await getValidationStats();
+  const calculateReadingStreak = (history: any[]): number => {
+    if (history.length === 0) return 0;
+
+    // Sort by date
+    const sorted = history
+      .map((h) => new Date(h.startedAt))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    let streak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    for (const date of sorted) {
+      const readDate = new Date(date);
+      readDate.setHours(0, 0, 0, 0);
+
+      const diffDays = Math.floor(
+        (currentDate.getTime() - readDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays === streak) {
+        streak++;
+      } else if (diffDays > streak) {
+        break;
+      }
+    }
+
+    return streak;
+  };
+
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto max-w-4xl p-6">
+      <h1 className="text-3xl font-bold mb-6">Reading Statistics</h1>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {/* Total Articles */}
+        <StatCard
+          icon="📚"
+          title="Total Articles"
+          value={stats.totalArticles.toString()}
+          subtitle="Cached locally"
+        />
+
+        {/* Articles Read */}
+        <StatCard
+          icon="✓"
+          title="Articles Read"
+          value={stats.articlesRead.toString()}
+          subtitle={`${Math.round((stats.articlesRead / stats.totalArticles) * 100) || 0}% completion`}
+        />
+
+        {/* Starred */}
+        <StatCard
+          icon="⭐"
+          title="Starred"
+          value={stats.articlesStarred.toString()}
+          subtitle="Favorited articles"
+        />
+
+        {/* Reading Time */}
+        <StatCard
+          icon="⏱️"
+          title="Reading Time"
+          value={formatTime(stats.totalTime)}
+          subtitle="Total time spent"
+        />
+
+        {/* Current Streak */}
+        <StatCard
+          icon="🔥"
+          title="Reading Streak"
+          value={`${stats.currentStreak} days`}
+          subtitle="Consecutive days"
+        />
+
+        {/* Average */}
+        <StatCard
+          icon="📊"
+          title="Daily Average"
+          value={stats.currentStreak > 0 ? Math.round(stats.articlesRead / stats.currentStreak).toString() : '0'}
+          subtitle="Articles per day"
+        />
+      </div>
+
+      {/* Recent Activity */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Validation Statistics</h1>
-        <p className="text-lg text-muted-foreground">
-          Real-time validation health metrics for the AIWebFeeds collection
-        </p>
-      </div>
-
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">Total Feeds</div>
-          <div className="text-3xl font-bold">{stats.total_feeds}</div>
-          <div className="text-xs text-muted-foreground mt-2">
-            In collection
-          </div>
+        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+        <div className="space-y-2">
+          {readingHistory?.slice(0, 10).map((entry) => (
+            <div
+              key={entry.id}
+              className="flex items-center justify-between p-3 bg-white rounded border border-gray-200"
+            >
+              <div>
+                <div className="text-sm font-medium">
+                  Article Read
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(entry.startedAt).toLocaleString()}
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">
+                {formatTime(entry.durationSeconds)}
+              </div>
+            </div>
+          ))}
         </div>
-
-        <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Success Rate
-          </div>
-          <div className="text-3xl font-bold text-green-600">
-            {stats.success_rate.toFixed(1)}%
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            {stats.success_count} / {stats.validated_feeds} validated
-          </div>
-        </div>
-
-        <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Avg Response Time
-          </div>
-          <div className="text-3xl font-bold">
-            {stats.avg_response_time_ms}
-            <span className="text-lg">ms</span>
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            HTTP fetch time
-          </div>
-        </div>
-
-        <div className="border rounded-lg p-6 bg-card">
-          <div className="text-sm text-muted-foreground mb-1">
-            Health Score
-          </div>
-          <div className="text-3xl font-bold">
-            {stats.avg_health_score.toFixed(2)}
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            Average (0.0-1.0 scale)
-          </div>
-        </div>
-      </div>
-
-      {/* Success/Failure Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="border rounded-lg p-6 bg-card">
-          <h2 className="text-xl font-semibold mb-4">Validation Status</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                <span>Successful</span>
-              </div>
-              <div className="text-lg font-semibold">
-                {stats.success_count}
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-500 h-2 rounded-full"
-                style={{
-                  width: `${
-                    (stats.success_count / stats.validated_feeds) * 100
-                  }%`,
-                }}
-              ></div>
-            </div>
-
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                <span>Failed</span>
-              </div>
-              <div className="text-lg font-semibold">
-                {stats.failure_count}
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-red-500 h-2 rounded-full"
-                style={{
-                  width: `${
-                    (stats.failure_count / stats.validated_feeds) * 100
-                  }%`,
-                }}
-              ></div>
-            </div>
-
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-gray-400"></div>
-                <span>Not Validated</span>
-              </div>
-              <div className="text-lg font-semibold">
-                {stats.total_feeds - stats.validated_feeds}
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gray-400 h-2 rounded-full"
-                style={{
-                  width: `${
-                    ((stats.total_feeds - stats.validated_feeds) /
-                      stats.total_feeds) *
-                    100
-                  }%`,
-                }}
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border rounded-lg p-6 bg-card">
-          <h2 className="text-xl font-semibold mb-4">Health Distribution</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Healthy (≥0.8)</span>
-                <span className="text-sm font-semibold">
-                  {stats.healthy_feeds} feeds
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{
-                    width: `${(stats.healthy_feeds / stats.total_feeds) * 100}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                Health score is calculated based on success rate (80%) and
-                response time (20%). Feeds with scores ≥0.8 are considered
-                healthy.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Validation Command */}
-      <div className="border rounded-lg p-6 bg-card">
-        <h2 className="text-xl font-semibold mb-4">Run Validation</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          To validate all feeds and update these metrics, run:
-        </p>
-        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-          <code>uv run aiwebfeeds validate http</code>
-        </pre>
-        <p className="text-xs text-muted-foreground mt-3">
-          This will check HTTP accessibility, parse feeds, and store validation
-          results in the database.
-        </p>
-      </div>
-
-      {/* Footer Info */}
-      <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>
-          Stats refreshed every 5 minutes. Last update:{' '}
-          {stats.last_validation_run || 'Never'}
-        </p>
       </div>
     </div>
   );
 }
 
+function StatCard({
+  icon,
+  title,
+  value,
+  subtitle,
+}: {
+  icon: string;
+  title: string;
+  value: string;
+  subtitle: string;
+}): JSX.Element {
+  return (
+    <div className="p-6 bg-white rounded-lg border border-gray-200">
+      <div className="text-3xl mb-2">{icon}</div>
+      <div className="text-2xl font-bold mb-1">{value}</div>
+      <div className="text-sm text-gray-600 mb-1">{title}</div>
+      <div className="text-xs text-gray-500">{subtitle}</div>
+    </div>
+  );
+}

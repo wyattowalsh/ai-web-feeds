@@ -1,251 +1,240 @@
+/**
+ * Search Results Page
+ * 
+ * Displays search results with highlighting, filtering, and performance metrics.
+ * Integrates with search worker for sub-50ms query execution.
+ * 
+ * @see specs/004-client-side-features/tasks.md#t023
+ */
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { SearchBar } from '@/components/search/search-bar';
-import { SearchFilters } from '@/components/search/search-filters';
-import { SearchResults } from '@/components/search/search-results';
-import { SavedSearches } from '@/components/search/saved-searches';
+import React, { useState, useEffect, useCallback } from 'react';
+import { searchIndexManager, type SearchResult } from '@/lib/search/index-manager';
+import { AdvancedSearchPanel, type SearchFilters } from '@/components/search/advanced-search-panel';
 
-interface SearchResult {
-  id: string;
-  title: string;
-  description?: string;
-  url: string;
-  topics: string[];
-  source_type: string;
-  verified: boolean;
-  is_active: boolean;
-  similarity?: number;
-}
-
-export default function SearchPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  // Search state
-  const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [searchType, setSearchType] = useState<'full_text' | 'semantic'>(
-    (searchParams.get('type') as 'full_text' | 'semantic') || 'full_text'
-  );
-  const [sourceType, setSourceType] = useState<string | undefined>(
-    searchParams.get('source_type') || undefined
-  );
-  const [topics, setTopics] = useState<string[]>(
-    searchParams.get('topics')?.split(',').filter(Boolean) || []
-  );
-  const [verified, setVerified] = useState<boolean | undefined>(
-    searchParams.get('verified') === 'true' ? true : undefined
-  );
-  const [threshold, setThreshold] = useState(
-    parseFloat(searchParams.get('threshold') || '0.7')
-  );
-
-  // Results state
+export default function SearchPage(): JSX.Element {
+  const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [latency, setLatency] = useState<number>(0);
+  const [isSearching, setIsSearching] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>({
+    sortBy: 'relevance',
+  });
 
-  // User ID (localStorage for Phase 1)
-  const [userId, setUserId] = useState<string>('');
-
+  // Initialize search index
   useEffect(() => {
-    // Get or create user ID from localStorage
-    let id = localStorage.getItem('search_user_id');
-    if (!id) {
-      id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('search_user_id', id);
-    }
-    setUserId(id);
+    searchIndexManager.initialize().then(() => {
+      searchIndexManager.rebuildIfStale();
+    });
 
-    // Perform search if query is in URL
-    if (searchParams.get('q')) {
-      performSearch(searchParams.get('q')!);
-    }
+    return () => {
+      searchIndexManager.terminate();
+    };
   }, []);
 
-  const performSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+  // Execute search with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (query.trim()) {
+        performSearch();
+      } else {
+        setResults([]);
+      }
+    }, 300);
 
-    setLoading(true);
-    setHasSearched(true);
+    return () => clearTimeout(timeoutId);
+  }, [query, filters]);
 
-    // Update URL
-    const params = new URLSearchParams();
-    params.set('q', searchQuery);
-    params.set('type', searchType);
-    if (sourceType) params.set('source_type', sourceType);
-    if (topics.length > 0) params.set('topics', topics.join(','));
-    if (verified !== undefined) params.set('verified', String(verified));
-    if (searchType === 'semantic') params.set('threshold', String(threshold));
-
-    router.push(`/search?${params.toString()}`);
+  const performSearch = async () => {
+    setIsSearching(true);
 
     try {
-      const response = await fetch(`/api/search?${params.toString()}`);
-      if (!response.ok) throw new Error('Search failed');
-
-      const data = await response.json();
-      setResults(data.results || []);
-
-      // Log search
-      await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: searchQuery,
-          type: searchType,
-          filters: { source_type: sourceType, topics, verified, threshold },
-          clicked_results: [],
-          user_id: userId,
-        }),
+      const { results: searchResults, latencyMs } = await searchIndexManager.search({
+        query:   query.trim(),
+        topics:  filters.topics,
+        feedIds: filters.feedIds,
+        starred: filters.starred,
+        limit:   50,
       });
+
+      // Apply sorting
+      const sorted = sortResults(searchResults, filters.sortBy);
+
+      setResults(sorted);
+      setLatency(latencyMs);
     } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
+      console.error('Search failed:', error);
     } finally {
-      setLoading(false);
+      setIsSearching(false);
     }
   };
 
-  const handleSearch = (newQuery: string) => {
-    setQuery(newQuery);
-    performSearch(newQuery);
-  };
-
-  const handleLoadSavedSearch = (savedQuery: string, savedFilters: Record<string, any>) => {
-    setQuery(savedQuery);
-    if (savedFilters.source_type) setSourceType(savedFilters.source_type);
-    if (savedFilters.topics) setTopics(savedFilters.topics);
-    if (savedFilters.verified !== undefined) setVerified(savedFilters.verified);
-    performSearch(savedQuery);
-  };
-
-  const handleResultClick = async (feedId: string) => {
-    // Log click for analytics
-    await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query,
-        type: searchType,
-        filters: { source_type: sourceType, topics, verified, threshold },
-        clicked_results: [feedId],
-        user_id: userId,
-      }),
-    });
-  };
-
-  const handleSaveSearch = async () => {
-    const name = prompt('Enter a name for this search:');
-    if (!name) return;
-
-    try {
-      await fetch('/api/search/saved', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          search_name: name,
-          query_text: query,
-          filters: { source_type: sourceType, topics, verified, threshold },
-        }),
-      });
-      alert('Search saved successfully!');
-    } catch (error) {
-      console.error('Failed to save search:', error);
-      alert('Failed to save search. Please try again.');
+  const sortResults = (results: SearchResult[], sortBy: SearchFilters['sortBy']): SearchResult[] => {
+    switch (sortBy) {
+      case 'date':
+        // Would need article dates - for now just return as-is
+        return results;
+      case 'readTime':
+        // Would need reading time estimates - for now just return as-is
+        return results;
+      case 'relevance':
+      default:
+        return results; // Already sorted by relevance from worker
     }
+  };
+
+  const handleClearFilters = () => {
+    setFilters({ sortBy: 'relevance' });
+  };
+
+  const highlightText = (text: string, query: string): JSX.Element => {
+    if (!query.trim()) {
+      return <>{text}</>;
+    }
+
+    const terms  = query.toLowerCase().split(/\s+/);
+    const regex  = new RegExp(`(${terms.join('|')})`, 'gi');
+    const parts  = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, i) => 
+          regex.test(part) ? (
+            <mark key={i} className="bg-yellow-200" data-testid="search-highlight">
+              {part}
+            </mark>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Search & Discovery
-          </h1>
-          <p className="text-gray-600">
-            Find feeds with full-text or semantic search, powered by SQLite FTS5 and embeddings
-          </p>
-        </div>
+    <div className="container mx-auto max-w-4xl p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-4">Search</h1>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <SearchBar onSearch={handleSearch} initialQuery={query} />
-        </div>
+        {/* Search Input */}
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search articles..."
+          className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          data-testid="search-input"
+          autoFocus
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar: Filters + Saved Searches */}
-          <div className="lg:col-span-1 space-y-6">
-            <SearchFilters
-              searchType={searchType}
-              onSearchTypeChange={setSearchType}
-              sourceType={sourceType}
-              onSourceTypeChange={setSourceType}
-              topics={topics}
-              onTopicsChange={setTopics}
-              verified={verified}
-              onVerifiedChange={setVerified}
-              threshold={threshold}
-              onThresholdChange={setThreshold}
-            />
-
-            {userId && (
-              <SavedSearches userId={userId} onLoadSearch={handleLoadSavedSearch} />
+        {/* Performance Metrics */}
+        {query && (
+          <div className="mt-2 flex items-center gap-4 text-sm text-gray-600">
+            <span data-testid="result-count">
+              {results.length} result{results.length !== 1 ? 's' : ''}
+            </span>
+            {latency > 0 && (
+              <span>
+                in {latency.toFixed(2)}ms
+                {latency < 50 && <span className="ml-2 text-green-600">✓ Fast</span>}
+              </span>
             )}
           </div>
+        )}
+      </div>
 
-          {/* Main: Results */}
-          <div className="lg:col-span-3">
-            {hasSearched && query && (
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  Showing results for: <strong>{query}</strong>
-                </p>
-                {results.length > 0 && (
-                  <button
-                    onClick={handleSaveSearch}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    💾 Save Search
-                  </button>
-                )}
-              </div>
-            )}
+      {/* Advanced Filters */}
+      <AdvancedSearchPanel
+        filters={filters}
+        onChange={setFilters}
+        onClear={handleClearFilters}
+        isOpen={filtersOpen}
+        onToggle={() => setFiltersOpen(!filtersOpen)}
+      />
 
-            <SearchResults
-              results={results}
-              searchType={searchType}
-              loading={loading}
-              onResultClick={handleResultClick}
-            />
-
-            {!hasSearched && (
-              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-                <p className="text-xl font-semibold text-gray-900 mb-2">
-                  🔍 Start searching
-                </p>
-                <p className="text-gray-600 mb-6">
-                  Enter a query above to search through 1,000+ AI/ML feeds
-                </p>
-                <div className="space-y-3 text-sm text-gray-700 text-left inline-block">
-                  <p><strong>💡 Search Tips:</strong></p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>Use <strong>full-text</strong> for exact keyword matching</li>
-                    <li>Use <strong>semantic</strong> for conceptual similarity</li>
-                    <li>Filter by topics, source type, and verification status</li>
-                    <li>Save searches for one-click replay</li>
-                    <li>Try: "machine learning", "transformers", "pytorch"</li>
-                  </ul>
-                </div>
-              </div>
-            )}
+      {/* Search Results */}
+      <div data-testid="search-results">
+        {isSearching ? (
+          <div className="text-center py-12">
+            <div className="text-2xl mb-2">⏳</div>
+            <p>Searching...</p>
           </div>
-        </div>
+        ) : results.length === 0 && query ? (
+          <div className="text-center py-12" data-testid="empty-results">
+            <div className="text-6xl mb-4">🔍</div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+              No Results Found
+            </h2>
+            <p className="text-gray-500">
+              Try different keywords or adjust your filters
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {results.map((result) => (
+              <SearchResultCard
+                key={result.articleId}
+                result={result}
+                query={query}
+                highlightText={highlightText}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+/**
+ * Search Result Card Component
+ */
+interface SearchResultCardProps {
+  result:        SearchResult;
+  query:         string;
+  highlightText: (text: string, query: string) => JSX.Element;
+}
+
+function SearchResultCard({ result, query, highlightText }: SearchResultCardProps): JSX.Element {
+  return (
+    <div
+      className="rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
+      data-testid="search-result-item"
+    >
+      {/* Title with Highlighting */}
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        {highlightText(result.title, query)}
+      </h3>
+
+      {/* Snippet with Highlighting */}
+      <p className="text-sm text-gray-600 mb-3" data-testid="result-snippet">
+        {highlightText(result.snippet, query)}
+      </p>
+
+      {/* Metadata */}
+      <div className="flex items-center gap-4 text-xs text-gray-500">
+        {/* Relevance Score */}
+        <div className="flex items-center gap-1" data-testid="relevance-score">
+          <span>⭐</span>
+          <span>{(result.relevance * 100).toFixed(0)}%</span>
+        </div>
+
+        {/* Match Count */}
+        <div>
+          {result.positions.length} match{result.positions.length !== 1 ? 'es' : ''}
+        </div>
+
+        {/* View Button */}
+        <a
+          href={`/articles/${result.articleId}`}
+          className="ml-auto text-blue-600 hover:underline"
+        >
+          View Article →
+        </a>
+      </div>
+    </div>
+  );
+}
