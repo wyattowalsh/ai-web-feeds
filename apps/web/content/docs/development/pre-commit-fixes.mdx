@@ -35,12 +35,9 @@ sed -i '' 's/tags: \[embed:title,/tags: ["embed:title",/g' data/topics.yaml
 
 ### 2. Codespell False Positives
 
-**Problem**: Spell checker flagged legitimate technical terms and regex patterns:
-- `ser` from regex pattern `u(?:ser)?` in URL generation
-- `oint` from mathematical notation
-- `asent` from library names
+**Problem**: Spell checker flagged legitimate technical terms and regex patterns from code.
 
-**Solution**: Extended codespell ignore list in `.pre-commit-config.yaml`:
+**Solution**: Extended codespell ignore list in `.pre-commit-config.yaml` to include technical terms that appear in regex patterns, mathematical notation, and library names:
 
 ```yaml
 - repo: https://github.com/codespell-project/codespell
@@ -74,6 +71,7 @@ dependencies = [
 ### 4. Ruff Complexity Warnings
 
 **Problem**: 126 ruff errors related to legitimate algorithmic complexity:
+
 - `PLR0911`: Too many return statements
 - `PLR0912`: Too many branches
 - `PLR0915`: Too many statements
@@ -100,6 +98,7 @@ dependencies = [
 ```
 
 **Rationale**: These warnings represent legitimate complexity in:
+
 - RSS/RSSHub URL generation for 10+ platforms (Reddit, Twitter, Medium, etc.)
 - Machine learning model inference pipelines
 - Database query builders with multiple filter options
@@ -114,17 +113,20 @@ dependencies = [
 The project uses the following hook categories:
 
 1. **File Format Checks**:
+
    - `check-yaml`: YAML syntax validation
    - `yamllint`: YAML style enforcement
    - `check-json`: JSON syntax validation
    - `check-toml`: TOML syntax validation
 
 2. **Code Quality**:
+
    - `ruff`: Python linting and formatting
    - `mypy`: Python type checking
    - `codespell`: Spell checking
 
 3. **Security**:
+
    - `detect-secrets`: Secret detection
    - `bandit`: Security vulnerability scanning
 
@@ -152,6 +154,7 @@ git commit --no-verify
 ### When to Use `--no-verify`
 
 Only bypass pre-commit hooks when:
+
 1. Making urgent hotfixes that will be cleaned up immediately
 2. Committing work-in-progress on a feature branch for backup
 3. The hook is known to have false positives being addressed
@@ -201,6 +204,7 @@ tags: [embed:title, feat:search, content]
 ### Pending Fixes
 
 1. **Mypy Type Errors** (150 errors across 21 files):
+
    - Missing type annotations in decorators
    - Untyped `__init__` methods
    - Missing imports (uuid, timedelta)

@@ -170,8 +170,8 @@ repos:
 - repo: https://github.com/shellcheck-py/shellcheck-py
   rev: v0.9.0.6
   hooks:
-    - id: shellcheck
-      args: [--severity=warning]
+  - id: shellcheck
+    args: [--severity=warning]
 
   # ============================================================================
   # SQL formatting
@@ -179,14 +179,14 @@ repos:
 - repo: https://github.com/sqlfluff/sqlfluff
   rev: 3.2.5
   hooks:
-    - id: sqlfluff-lint
-      args: [--dialect, sqlite]
-      files: \.sql$
-      exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
-    - id: sqlfluff-fix
-      args: [--dialect, sqlite, --force]
-      files: \.sql$
-      exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+  - id: sqlfluff-lint
+    args: [--dialect, sqlite]
+    files: \.sql$
+    exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+  - id: sqlfluff-fix
+    args: [--dialect, sqlite, --force]
+    files: \.sql$
+    exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
 
   # ============================================================================
   # Secrets detection
@@ -194,9 +194,9 @@ repos:
 - repo: https://github.com/Yelp/detect-secrets
   rev: v1.5.0
   hooks:
-    - id: detect-secrets
-      args: [--baseline, .secrets.baseline]
-      exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
+  - id: detect-secrets
+    args: [--baseline, .secrets.baseline]
+    exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
 
   # ============================================================================
   # Conventional Commits
@@ -204,9 +204,9 @@ repos:
 - repo: https://github.com/compilerla/conventional-pre-commit
   rev: v3.0.0
   hooks:
-    - id: conventional-pre-commit
-      stages: [commit-msg]
-      args: []
+  - id: conventional-pre-commit
+    stages: [commit-msg]
+    args: []
 
   # ============================================================================
   # Local hooks (project-specific)
@@ -214,58 +214,58 @@ repos:
 - repo: local
   hooks:
     # Python tests
-    - id: pytest
-      name: pytest (packages)
-      entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ -v --tb=short'
-      language: system
-      pass_filenames: false
-      always_run: false
-      files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
+  - id: pytest
+    name: pytest (packages)
+    entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ -v --tb=short'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
 
     # Python coverage check
-    - id: pytest-cov
-      name: pytest coverage (≥90%)
-      entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ --cov=src --cov-report=term --cov-fail-under=90 -q'
-      language: system
-      pass_filenames: false
-      always_run: false
-      files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
-      stages: [push]
+  - id: pytest-cov
+    name: pytest coverage (≥90%)
+    entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ --cov=src --cov-report=term --cov-fail-under=90 -q'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
+    stages: [push]
 
     # TypeScript type checking
-    - id: tsc
-      name: tsc (apps/web)
-      entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
-      language: system
-      pass_filenames: false
-      always_run: false
-      files: ^apps/web/.*\.[jt]sx?$
+  - id: tsc
+    name: tsc (apps/web)
+    entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^apps/web/.*\.[jt]sx?$
 
     # Next.js build check (only on push)
-    - id: nextjs-build
-      name: next build check
-      entry: bash -c 'cd apps/web && pnpm build'
-      language: system
-      pass_filenames: false
-      always_run: false
-      files: ^apps/web/
-      stages: [push]
+  - id: nextjs-build
+    name: next build check
+    entry: bash -c 'cd apps/web && pnpm build'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^apps/web/
+    stages: [push]
 
     # JSON Schema validation
-    - id: validate-json-schemas
-      name: validate JSON schemas
-      entry: bash -c 'uv run python -c "import json; import sys; [json.load(open(f)) for f in sys.argv[1:]]"'
-      language: system
-      files: \.schema\.json$
+  - id: validate-json-schemas
+    name: validate JSON schemas
+    entry: bash -c 'uv run python -c "import json; import sys; [json.load(open(f)) for f in sys.argv[1:]]"'
+    language: system
+    files: \.schema\.json$
 
     # Data assets validation
-    - id: validate-data-assets
-      name: validate data assets
-      entry: bash -c 'cd data && uv run python validate_data_assets.py'
-      language: system
-      pass_filenames: false
-      always_run: false
-      files: ^data/(feeds|topics)\.(yaml|json|schema\.json)$
+  - id: validate-data-assets
+    name: validate data assets
+    entry: bash -c 'cd data && uv run python validate_data_assets.py'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^data/(feeds|topics)\.(yaml|json|schema\.json)$
 
 # ============================================================================
 # CI Configuration
