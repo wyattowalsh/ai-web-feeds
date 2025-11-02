@@ -9,7 +9,7 @@ class TestLogger:
 
     def test_logger_import(self):
         """Test that logger module can be imported."""
-        import ai_web_feeds.logger  # noqa: F401
+        import ai_web_feeds.logger
 
         assert True
 
