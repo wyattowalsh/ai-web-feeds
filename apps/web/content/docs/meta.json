@@ -71,14 +71,16 @@
       "testing",
       "workflows",
       "cli-workflows",
-      "pre-commit-fixes"
+      "pre-commit-fixes",
+      "contributing"
     ]
   },
-  "---Contributing": {
+  "---Visualization": {
     "type": "separator"
   },
-  "contributing": {
-    "title": "Contributing",
-    "icon": "Users"
+  "visualization": {
+    "title": "Visualization & Analytics",
+    "icon": "ChartBar",
+    "pages": ["getting-started"]
   }
 }
