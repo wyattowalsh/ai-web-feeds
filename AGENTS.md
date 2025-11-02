@@ -171,6 +171,8 @@ If you need to document anything:
 ## Active Technologies
 - Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web) (001-core-project-spec)
 - SQLite (development), PostgreSQL (production option) for validation cache, enrichment data, and feed entry metadata (001-core-project-spec)
+- TypeScript 5.9 (strict) with React 19 on Next.js 15 App Router + Next.js 15, React 19, FumaDocs UI, Chart.js, Dexie.js 4, `onnxruntime-web`, Service Worker/Web Worker APIs (004-client-side-features)
+- IndexedDB (articles, search index, annotations), Cache Storage (assets), localStorage (preferences, folders) (004-client-side-features)
 
 ## Recent Changes
 - 001-core-project-spec: Added Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web)
