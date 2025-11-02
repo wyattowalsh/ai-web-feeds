@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "pnpm build:workers && next build",
+    "build:workers": "tsx scripts/build-workers.ts",
     "dev": "next dev --turbo",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
@@ -13,7 +14,13 @@
     "generate:docs": "tsx scripts/generate-python-docs.mjs",
     "export-pdf": "tsx scripts/export-pdf.ts",
     "export-pdf:specific": "tsx scripts/export-pdf-specific.ts",
-    "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!"
+    "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
@@ -21,6 +28,8 @@
     "d3": "^7.9.0",
     "d3-force": "^3.0.0",
     "d3-zoom": "^3.0.0",
+    "dexie": "^4.0.11",
+    "dexie-react-hooks": "^2.0.1",
     "feed": "^5.1.0",
     "fumadocs-core": "15.8.5",
     "fumadocs-mdx": "12.0.3",
@@ -31,6 +40,7 @@
     "mermaid": "^11.12.0",
     "next": "15.5.5",
     "next-themes": "^0.4.6",
+    "onnxruntime-web": "^1.21.0",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.2.0",
@@ -43,7 +53,11 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.49.1",
     "@tailwindcss/postcss": "^4.1.14",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/bun": "^1.3.0",
     "@types/d3": "^7.4.3",
     "@types/mdx": "^2.0.13",
@@ -51,13 +65,18 @@
     "@types/puppeteer": "^7.0.4",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@vitest/ui": "^3.0.6",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
+    "happy-dom": "^16.3.0",
+    "jsdom": "^25.0.1",
     "next-validate-link": "^1.6.3",
     "postcss": "^8.5.6",
     "puppeteer": "^24.24.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.6"
   }
 }
