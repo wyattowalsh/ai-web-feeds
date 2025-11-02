@@ -2,7 +2,7 @@
 
 **Feature Branch**: `004-client-side-features`  
 **Created**: 2025-10-27  
-**Status**: Draft → Ideation  
+**Status**: Ideation  
 **Priority**: High  
 **Dependencies**: Phase 1-3 (Frontend baseline)
 
@@ -12,7 +12,14 @@
 
 Enhance the user experience with powerful **client-side only** features that require zero backend infrastructure. All features run entirely in the browser using modern Web APIs, providing instant functionality without server roundtrips.
 
-**Value Proposition**: Blazing-fast features, offline-first capabilities, zero server costs, complete user privacy.
+**Value Proposition**: 
+- ✅ **Zero Infrastructure Costs**: No servers, no databases, no hosting fees  
+- ✅ **Instant Performance**: No network latency, all operations local  
+- ✅ **Complete Privacy**: Data never leaves user's device  
+- ✅ **Offline-First**: Works on planes, trains, poor connections  
+- ✅ **Unlimited Scale**: Each user's browser handles their own data  
+- ✅ **No Downtime**: Can't break if servers are down (because there are none)  
+- ✅ **Developer Friendly**: Pure frontend, no backend complexity
 
 **No Backend Required**: All features use browser storage (IndexedDB, localStorage), Service Workers, and client-side processing.
 
@@ -58,7 +65,7 @@ Enhance the user experience with powerful **client-side only** features that req
 
 **Acceptance Criteria**:
 1. **Given** 1000+ articles in IndexedDB, **When** user types search query, **Then** results appear in <50ms with highlighting
-2. **Given** search query "GPT-4", **When** user applies filters (date range, topic, feed), **Then** results update instantly without page reload
+2. **Given** search query "GPT-4", **When** user applies filters (date range, topic, feed), **Then** results update in <50ms without page reload
 3. **Given** user searches frequently, **When** app starts, **Then** Web Worker pre-indexes articles in background without blocking UI
 4. **Given** search query matches 100+ articles, **When** results displayed, **Then** shows snippets with keyword context, sorted by relevance
 
@@ -108,7 +115,7 @@ Enhance the user experience with powerful **client-side only** features that req
 1. **Given** user clicks "Export Data", **When** selects format (JSON, CSV, OPML, HTML), **Then** downloads complete backup in <5 seconds
 2. **Given** exported JSON file, **When** user opens on another device, **Then** can import to restore all feeds, folders, preferences, reading history
 3. **Given** user exports as HTML, **When** file opened, **Then** sees beautiful static website with all articles, searchable, no server required
-4. **Given** user exports reading history, **When** opens CSV in Excel, **Then** sees all read articles with timestamps, tags, time-spent metrics
+4. **Given** user exports reading history, **When** opens CSV in Excel, **Then** sees all read articles with timestamps, tags, `durationSeconds` metrics
 
 **No Backend**: All export generation happens in browser using Blob API, no server-side rendering
 
@@ -129,7 +136,7 @@ Enhance the user experience with powerful **client-side only** features that req
 ### Reading Statistics 📊
 - **Implementation**: IndexedDB for tracking + Chart.js for visualization
 - **No Backend**: All analytics computed client-side
-- **Features**: Articles read per day, reading time, favorite topics, streak tracking
+- **Features**: Articles read per day, reading time, favorite topics, streak tracking (consecutive days with at least one article read)
 
 ### Article Annotations ✍️
 - **Implementation**: Web Annotations API + IndexedDB
@@ -145,11 +152,6 @@ Enhance the user experience with powerful **client-side only** features that req
 - **Implementation**: Service Worker + manifest.json
 - **No Backend**: All caching handled by Service Worker
 - **Features**: Install to home screen, offline mode, background sync, push notifications (local only)
-
-### Client-Side AI 🤖
-- **Implementation**: TensorFlow.js or ONNX Runtime
-- **No Backend**: Models downloaded once, inference in browser
-- **Features**: Article summarization, sentiment analysis, auto-categorization, duplicate detection
 
 ---
 
@@ -410,18 +412,7 @@ self.addEventListener('push', event => {
 - Local LLM inference (WebGPU)
 - Encrypted local storage
 - Cross-browser sync via QR code
-
----
-
-## Advantages of Client-Side Only
-
-✅ **Zero Infrastructure Costs**: No servers, no databases, no hosting fees  
-✅ **Instant Performance**: No network latency, all operations local  
-✅ **Complete Privacy**: Data never leaves user's device  
-✅ **Offline-First**: Works on planes, trains, poor connections  
-✅ **Unlimited Scale**: Each user's browser handles their own data  
-✅ **No Downtime**: Can't break if servers are down (because there are none)  
-✅ **Developer Friendly**: Pure frontend, no backend complexity  
+- **Client-Side AI**: TensorFlow.js or ONNX Runtime for article summarization, sentiment analysis, auto-categorization, and duplicate detection (deferred to Phase 5)
 
 ---
 
