@@ -35,5 +35,13 @@
     "title": "Development", 
     "icon": "Code", 
     "pages": ["index", "architecture", "implementation", "database", "database-architecture", "database-enhancements", "database-storage", "refactoring-summary", "final-status", "cli", "python-api", "python-autodoc", "testing", "workflows", "cli-workflows", "contributing"]
+  },
+  "---Visualization": {
+    "type": "separator"
+  },
+  "visualization": {
+    "title": "Visualization & Analytics",
+    "icon": "ChartBar",
+    "pages": ["getting-started"]
   }
 }
