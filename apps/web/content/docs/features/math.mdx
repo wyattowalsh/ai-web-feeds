@@ -1,0 +1,391 @@
+---
+title: Math Equations
+description: Render beautiful mathematical equations in your documentation using KaTeX
+icon: Calculator
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Overview
+
+KaTeX is a fast, easy-to-use JavaScript library for rendering TeX math notation on the web. This site integrates KaTeX to enable beautiful mathematical equations in documentation.
+
+## Features
+
+- **Fast rendering** - KaTeX is significantly faster than MathJax
+- **High quality** - Produces crisp output at any zoom level
+- **Self-contained** - No dependencies on external fonts or stylesheets
+- **Server-side rendering** - Works without JavaScript enabled
+- **TeX/LaTeX syntax** - Familiar notation for mathematicians
+
+## Basic Usage
+
+### Inline Math
+
+Wrap inline equations with single dollar signs `$...$`:
+
+```mdx
+The Pythagorean theorem states that $c = \pm\sqrt{a^2 + b^2}$ for a right triangle.
+```
+
+The Pythagorean theorem states that $c = \pm\sqrt{a^2 + b^2}$ for a right triangle.
+
+### Block Math
+
+Use code blocks with the `math` language identifier or wrap with double dollar signs `$$...$$`:
+
+````mdx
+```math
+c = \pm\sqrt{a^2 + b^2}
+```
+````
+
+```math
+c = \pm\sqrt{a^2 + b^2}
+```
+
+Or using double dollar signs:
+
+```mdx
+$$
+E = mc^2
+$$
+```
+
+$$
+E = mc^2
+$$
+
+## Common Examples
+
+### Algebra
+
+**Quadratic Formula:**
+
+```math
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+```
+
+**Binomial Theorem:**
+
+```math
+(x + y)^n = \sum_{k=0}^{n} \binom{n}{k} x^{n-k} y^k
+```
+
+### Calculus
+
+**Fundamental Theorem of Calculus:**
+
+```math
+\int_a^b f(x) \, dx = F(b) - F(a)
+```
+
+**Partial Derivatives:**
+
+```math
+\frac{\partial^2 f}{\partial x \partial y} = \frac{\partial^2 f}{\partial y \partial x}
+```
+
+**Limit Definition:**
+
+```math
+\lim_{x \to \infty} \left(1 + \frac{1}{x}\right)^x = e
+```
+
+### Linear Algebra
+
+**Matrix Multiplication:**
+
+```math
+\begin{bmatrix}
+a & b \\
+c & d
+\end{bmatrix}
+\begin{bmatrix}
+e & f \\
+g & h
+\end{bmatrix}
+=
+\begin{bmatrix}
+ae + bg & af + bh \\
+ce + dg & cf + dh
+\end{bmatrix}
+```
+
+**Determinant:**
+
+```math
+\det(A) = \begin{vmatrix}
+a & b \\
+c & d
+\end{vmatrix} = ad - bc
+```
+
+### Statistics & Probability
+
+**Normal Distribution:**
+
+```math
+f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}
+```
+
+**Bayes' Theorem:**
+
+```math
+P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
+```
+
+### Complex Analysis
+
+**Taylor Series Expansion:**
+
+The Taylor expansion expresses a holomorphic function $f(z)$ as a power series:
+
+```math
+\displaystyle {\begin{aligned}T_{f}(z)&=\sum _{k=0}^{\infty }{\frac {(z-c)^{k}}{2\pi i}}\int _{\gamma }{\frac {f(w)}{(w-c)^{k+1}}}\,dw\\&={\frac {1}{2\pi i}}\int _{\gamma }{\frac {f(w)}{w-c}}\sum _{k=0}^{\infty }\left({\frac {z-c}{w-c}}\right)^{k}\,dw\\&={\frac {1}{2\pi i}}\int _{\gamma }{\frac {f(w)}{w-c}}\left({\frac {1}{1-{\frac {z-c}{w-c}}}}\right)\,dw\\&={\frac {1}{2\pi i}}\int _{\gamma }{\frac {f(w)}{w-z}}\,dw=f(z),\end{aligned}}
+```
+
+**Euler's Formula:**
+
+```math
+e^{ix} = \cos(x) + i\sin(x)
+```
+
+### Physics
+
+**Schrödinger Equation:**
+
+```math
+i\hbar\frac{\partial}{\partial t}\Psi(\mathbf{r},t) = \hat{H}\Psi(\mathbf{r},t)
+```
+
+**Maxwell's Equations:**
+
+```math
+\begin{aligned}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\epsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0\mathbf{J} + \mu_0\epsilon_0\frac{\partial \mathbf{E}}{\partial t}
+\end{aligned}
+```
+
+**Lagrangian Mechanics:**
+
+The action functional $S$ is defined as:
+
+```math
+\displaystyle S[{\boldsymbol {q}}]=\int _{a}^{b}L(t,{\boldsymbol {q}}(t),{\dot {\boldsymbol {q}}}(t))\,dt.
+```
+
+## Advanced Features
+
+### Multi-line Equations
+
+Use `aligned` environment for aligned equations:
+
+```math
+\begin{aligned}
+f(x) &= (x+a)(x+b) \\
+     &= x^2 + (a+b)x + ab
+\end{aligned}
+```
+
+### Cases and Piecewise Functions
+
+```math
+f(x) = \begin{cases}
+x^2 & \text{if } x \geq 0 \\
+-x^2 & \text{if } x < 0
+\end{cases}
+```
+
+### Fractions and Continued Fractions
+
+```math
+\frac{1}{\displaystyle 1+\frac{1}{\displaystyle 2+\frac{1}{\displaystyle 3+\frac{1}{4}}}}
+```
+
+### Greek Letters and Symbols
+
+Common symbols used in mathematics:
+
+- Greek: $\alpha, \beta, \gamma, \delta, \epsilon, \theta, \lambda, \mu, \pi, \sigma, \omega$
+- Operators: $\sum, \prod, \int, \oint, \nabla, \partial$
+- Relations: $\leq, \geq, \neq, \approx, \equiv, \propto$
+- Sets: $\in, \notin, \subset, \subseteq, \cup, \cap, \emptyset$
+- Logic: $\forall, \exists, \neg, \land, \lor, \implies, \iff$
+
+### Subscripts and Superscripts
+
+```math
+x_1, x_2, \ldots, x_n \quad \text{and} \quad a^2 + b^2 = c^2
+```
+
+### Large Operators
+
+**Summation:**
+
+```math
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+```
+
+**Product:**
+
+```math
+\prod_{i=1}^{n} i = n!
+```
+
+**Integration:**
+
+```math
+\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+```
+
+## Special Formatting
+
+### Colored Equations
+
+KaTeX supports color through the `\textcolor` and `\colorbox` commands:
+
+```math
+\textcolor{red}{F = ma} \quad \text{and} \quad \colorbox{yellow}{$E = mc^2$}
+```
+
+### Sizing
+
+Control the size of your equations:
+
+```math
+\tiny{tiny} \quad \small{small} \quad \normalsize{normal} \quad \large{large} \quad \Large{Large} \quad \LARGE{LARGE} \quad \huge{huge}
+```
+
+### Spacing
+
+Fine-tune spacing in equations:
+
+```math
+a\!b \quad a\,b \quad a\:b \quad a\;b \quad a\ b \quad a\quad b \quad a\qquad b
+```
+
+## Best Practices
+
+### Keep It Readable
+
+<Tabs items={['Good ✅', 'Not Ideal ⚠️']}>
+  <Tab value="Good ✅">
+    Use clear variable names and proper spacing:
+
+    ```math
+    P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}
+    ```
+  </Tab>
+  <Tab value="Not Ideal ⚠️">
+    Cramped or unclear notation:
+
+    ```math
+    P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}
+    ```
+  </Tab>
+</Tabs>
+
+### Use Display Style for Complex Equations
+
+For complex fractions and large operators, use `\displaystyle`:
+
+```math
+\displaystyle \sum_{i=1}^{n} \frac{1}{i^2} = \frac{\pi^2}{6}
+```
+
+### Break Long Equations
+
+For very long equations, use multiple lines with `aligned`:
+
+```math
+\begin{aligned}
+(a + b)^3 &= (a + b)(a + b)^2 \\
+          &= (a + b)(a^2 + 2ab + b^2) \\
+          &= a^3 + 3a^2b + 3ab^2 + b^3
+\end{aligned}
+```
+
+### Label Important Equations
+
+Use text annotations to explain components:
+
+```math
+\underbrace{e^{i\pi}}_{\text{Euler's identity}} + 1 = 0
+```
+
+## Common Syntax Reference
+
+### Basic Operations
+
+| Syntax | Result | Description |
+|--------|--------|-------------|
+| `x + y` | $x + y$ | Addition |
+| `x - y` | $x - y$ | Subtraction |
+| `x \times y` | $x \times y$ | Multiplication |
+| `x \div y` | $x \div y$ | Division |
+| `\frac{x}{y}` | $\frac{x}{y}$ | Fraction |
+| `x^y` | $x^y$ | Superscript |
+| `x_y` | $x_y$ | Subscript |
+| `\sqrt{x}` | $\sqrt{x}$ | Square root |
+| `\sqrt[n]{x}` | $\sqrt[n]{x}$ | nth root |
+
+### Delimiters
+
+| Syntax | Result | Description |
+|--------|--------|-------------|
+| `(x)` | $(x)$ | Parentheses |
+| `[x]` | $[x]$ | Brackets |
+| `\{x\}` | $\{x\}$ | Braces |
+| `\langle x \rangle` | $\langle x \rangle$ | Angle brackets |
+| `\lvert x \rvert` | $\lvert x \rvert$ | Absolute value |
+| `\lVert x \rVert` | $\lVert x \rVert$ | Norm |
+
+## Troubleshooting
+
+### Equation Not Rendering
+
+- Check that `katex/dist/katex.css` is imported in your layout
+- Verify the TeX syntax is valid
+- Ensure `remark-math` and `rehype-katex` are configured correctly
+- Use the [KaTeX Live Demo](https://katex.org/#demo) to test syntax
+
+### Missing Symbols
+
+- Not all LaTeX commands are supported by KaTeX
+- Check the [KaTeX Support Table](https://katex.org/docs/support_table.html)
+- Consider using alternative notation
+
+### Escaping Special Characters
+
+Use backslash to escape special characters:
+
+```mdx
+Use \$ for a dollar sign, not $\$$ in math mode.
+```
+
+<Callout type="info" title="Pro Tip">
+  You can copy equations from Wikipedia - they're already in LaTeX format and work directly with KaTeX!
+
+  Try it: Visit any Wikipedia math article, right-click an equation, and select "Copy LaTeX code".
+</Callout>
+
+## Resources
+
+- [KaTeX Official Documentation](https://katex.org/)
+- [KaTeX Support Table](https://katex.org/docs/support_table.html) - Complete list of supported functions
+- [KaTeX Live Demo](https://katex.org/#demo) - Test equations in real-time
+- [LaTeX Math Symbols](https://www.latex-project.org/help/documentation/) - Comprehensive symbol reference
+- [Detexify](http://detexify.kirelabs.org/classify.html) - Draw a symbol to find its LaTeX command
+- [Fumadocs Math Guide](https://fumadocs.dev/docs/ui/markdown/math)
+
+## Next Steps
+
+- Experiment with different equation types
+- Check out the [KaTeX support table](https://katex.org/docs/support_table.html) for all available commands
+- Review our [Mermaid Diagrams](/docs/features/mermaid) feature for visual diagrams
+- Explore [Documentation Guide](/docs/guides/documentation) for general writing tips

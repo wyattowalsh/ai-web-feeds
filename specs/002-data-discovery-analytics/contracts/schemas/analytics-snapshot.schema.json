@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/analytics-snapshot.schema.json",
+  "title": "AnalyticsSnapshot",
+  "description": "Daily analytics snapshot for historical trending",
+  "type": "object",
+  "required": [
+    "snapshot_date",
+    "total_feeds",
+    "active_feeds",
+    "inactive_feeds",
+    "validation_success_rate",
+    "avg_response_time",
+    "trending_topics",
+    "health_distribution"
+  ],
+  "properties": {
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO 8601 date (YYYY-MM-DD)",
+      "examples": ["2025-10-22"]
+    },
+    "total_feeds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of feeds in catalog"
+    },
+    "active_feeds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of active feeds"
+    },
+    "inactive_feeds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of inactive feeds"
+    },
+    "validation_success_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Validation success rate (0.0 - 1.0)"
+    },
+    "avg_response_time": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Average response time in milliseconds"
+    },
+    "trending_topics": {
+      "type": "array",
+      "description": "Top trending topics by validation frequency",
+      "items": {
+        "type": "object",
+        "required": ["topic", "count"],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Topic name"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of feeds with this topic"
+          },
+          "growth": {
+            "type": "number",
+            "description": "Growth rate since last period (optional)"
+          }
+        }
+      }
+    },
+    "health_distribution": {
+      "type": "object",
+      "required": ["healthy", "moderate", "unhealthy"],
+      "description": "Distribution of feeds by health score",
+      "properties": {
+        "healthy": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Feeds with health score >= 0.8"
+        },
+        "moderate": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Feeds with health score 0.5-0.8"
+        },
+        "unhealthy": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Feeds with health score < 0.5"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when snapshot was created"
+    }
+  },
+  "examples": [
+    {
+      "snapshot_date": "2025-10-22",
+      "total_feeds": 1000,
+      "active_feeds": 950,
+      "inactive_feeds": 50,
+      "validation_success_rate": 0.92,
+      "avg_response_time": 250.5,
+      "trending_topics": [
+        {
+          "topic": "LLM",
+          "count": 45,
+          "growth": 0.15
+        },
+        {
+          "topic": "Computer Vision",
+          "count": 38,
+          "growth": 0.08
+        }
+      ],
+      "health_distribution": {
+        "healthy": 800,
+        "moderate": 150,
+        "unhealthy": 50
+      },
+      "created_at": "2025-10-22T10:00:00Z"
+    }
+  ]
+}
+

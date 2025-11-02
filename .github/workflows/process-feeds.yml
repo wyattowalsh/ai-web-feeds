@@ -1,0 +1,200 @@
+---
+name: Feed Processing Pipeline
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/feeds.yaml'
+      - 'data/topics.yaml'
+      - 'packages/ai_web_feeds/**'
+      - 'apps/cli/**'
+  pull_request:
+    paths:
+      - 'data/feeds.yaml'
+      - 'data/topics.yaml'
+  workflow_dispatch:
+    inputs:
+      skip_enrichment:
+        description: 'Skip AI enrichment step'
+        required: false
+        default: true
+        type: boolean
+      export_formats:
+        description: 'Export to JSON/OPML formats'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  process-feeds:
+    name: Process Feed Sources
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: |
+          cd packages/ai_web_feeds
+          uv sync
+          cd ../../apps/cli
+          uv sync
+
+      - name: Validate feeds.yaml
+        id: validate
+        run: |
+          cd packages/ai_web_feeds
+          uv run python -c "
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'src')
+          from ai_web_feeds import load_feeds, validate_feeds
+          
+          print('🔍 Loading feeds.yaml...')
+          feeds = load_feeds(Path('../../data/feeds.yaml'))
+          source_count = len(feeds.get('sources', []))
+          print(f'✓ Loaded {source_count} sources')
+          
+          print('\\n🔍 Validating schema...')
+          result = validate_feeds(feeds, Path('../../data/feeds.schema.json'))
+          if result.valid:
+              print('✓ Validation passed')
+          else:
+              print('✗ Validation failed:')
+              for error in result.errors[:10]:
+                  print(f'  - {error}')
+              sys.exit(1)
+          "
+
+      - name: Process feeds through pipeline
+        id: process
+        run: |
+          cd apps/cli
+          SKIP_ENRICHMENT=${{ github.event.inputs.skip_enrichment || 'true' }}
+          EXPORT_FORMATS=${{ github.event.inputs.export_formats || 'true' }}
+          
+          if [ "$SKIP_ENRICHMENT" = "true" ]; then
+            ENRICH_FLAG="--skip-enrichment"
+          else
+            ENRICH_FLAG=""
+          fi
+          
+          if [ "$EXPORT_FORMATS" = "true" ]; then
+            EXPORT_FLAG="--export"
+          else
+            EXPORT_FLAG="--no-export"
+          fi
+          
+          uv run aiwebfeeds process \
+            --input ../../data/feeds.yaml \
+            --output ../../data/feeds.enriched.yaml \
+            --database sqlite:///../../data/aiwebfeeds.db \
+            $ENRICH_FLAG \
+            $EXPORT_FLAG
+
+      - name: Verify outputs
+        run: |
+          echo "📊 Verifying generated files..."
+          ls -lh data/*.{yaml,json,opml,db} 2>/dev/null || true
+          
+          if [ -f data/feeds.json ]; then
+            SOURCES=$(jq '.sources | length' data/feeds.json)
+            echo "✓ feeds.json: $SOURCES sources"
+          fi
+          
+          if [ -f data/feeds.enriched.yaml ]; then
+            echo "✓ feeds.enriched.yaml generated"
+          fi
+          
+          if [ -f data/aiwebfeeds.db ]; then
+            SIZE=$(stat -f%z data/aiwebfeeds.db 2>/dev/null || stat -c%s data/aiwebfeeds.db)
+            echo "✓ aiwebfeeds.db: $SIZE bytes"
+          fi
+
+      - name: Check database content
+        run: |
+          echo "🔍 Checking database content..."
+          sqlite3 data/aiwebfeeds.db ".tables"
+          echo ""
+          echo "Source count:"
+          sqlite3 data/aiwebfeeds.db "SELECT COUNT(*) FROM sources;"
+          echo ""
+          echo "Sample sources:"
+          sqlite3 data/aiwebfeeds.db "SELECT id, title FROM sources LIMIT 5;"
+
+      - name: Commit processed files
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add data/feeds.enriched.yaml data/feeds.json data/*.opml data/aiwebfeeds.db || true
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update processed feed data [skip ci]"
+            git push
+          fi
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-feeds
+          path: |
+            data/feeds.enriched.yaml
+            data/feeds.json
+            data/*.opml
+            data/aiwebfeeds.db
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 📊 Feed Processing Results\n\n';
+            
+            if (fs.existsSync('data/feeds.json')) {
+              const data = JSON.parse(fs.readFileSync('data/feeds.json', 'utf8'));
+              const sourceCount = data.sources?.length || 0;
+              comment += `✅ Successfully processed **${sourceCount}** feed sources\n\n`;
+            }
+            
+            comment += '### Generated Files\n';
+            const files = ['feeds.enriched.yaml', 'feeds.json', 'feeds.opml', 'feeds.categorized.opml', 'aiwebfeeds.db'];
+            for (const file of files) {
+              const path = `data/${file}`;
+              if (fs.existsSync(path)) {
+                const stats = fs.statSync(path);
+                const size = (stats.size / 1024).toFixed(2);
+                comment += `- ✓ \`${file}\` (${size} KB)\n`;
+              }
+            }
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });

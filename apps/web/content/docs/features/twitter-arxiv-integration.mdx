@@ -1,0 +1,296 @@
+---
+title: Twitter/X and arXiv Integration
+description: Generate RSS feeds from Twitter/X and arXiv for AI research tracking
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Overview
+
+AI Web Feeds provides native integrations for Twitter/X and arXiv, enabling you to track AI researchers, discussions, and papers through RSS feeds.
+
+<Callout type="info">
+  Twitter/X integration uses **Nitter** instances (privacy-focused alternative Twitter frontend) to generate RSS feeds.
+</Callout>
+
+## Twitter/X Integration
+
+### Supported Feed Types
+
+<Tabs items={['User Timeline', 'List Feed', 'Search Query']}>
+  <Tab value="User Timeline">
+    Get tweets from a specific user.
+    
+    ```yaml
+    - id: "karpathy-twitter"
+      site: "https://twitter.com/karpathy"
+      title: "Andrej Karpathy on Twitter"
+      topics: ["ai", "ml", "research"]
+      source_type: "twitter"
+      mediums: ["text"]
+      platform_config:
+        platform: "twitter"
+        twitter:
+          username: "karpathy"
+          nitter_instance: "nitter.net"  # Optional, defaults to nitter.net
+    ```
+    
+    **Generated Feed URL**: `https://nitter.net/karpathy/rss`
+  </Tab>
+  
+  <Tab value="List Feed">
+    Get tweets from a Twitter list.
+    
+    ```yaml
+    - id: "ai-researchers-list"
+      site: "https://twitter.com/i/lists/1234567890"
+      title: "AI Researchers List"
+      topics: ["ai", "research"]
+      source_type: "twitter"
+      platform_config:
+        platform: "twitter"
+        twitter:
+          list_id: "1234567890"
+    ```
+    
+    **Generated Feed URL**: `https://nitter.net/i/lists/1234567890/rss`
+  </Tab>
+  
+  <Tab value="Search Query">
+    Get tweets matching a search query.
+    
+    ```yaml
+    - id: "twitter-llm-search"
+      site: "https://twitter.com/search"
+      title: "Twitter Search - LLM discussions"
+      topics: ["llm", "community"]
+      source_type: "twitter"
+      platform_config:
+        platform: "twitter"
+        twitter:
+          search_query: "LLM OR large language model"
+    ```
+    
+    **Generated Feed URL**: `https://nitter.net/search/rss?q=LLM+OR+large+language+model`
+  </Tab>
+</Tabs>
+
+### Configuration Schema
+
+The `platform_config.twitter` object supports:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `username` | string | Twitter username (without @) |
+| `list_id` | string | Twitter list ID |
+| `search_query` | string | Twitter search query |
+| `nitter_instance` | string | Nitter instance URL (default: `nitter.net`) |
+
+### Alternative Nitter Instances
+
+For reliability, you can use different Nitter instances:
+
+- `nitter.net` (default)
+- `nitter.privacy.com.de`
+- `nitter.1d4.us`
+- `nitter.kavin.rocks`
+
+<Callout type="warn">
+  Nitter instances may have rate limits or availability issues. Consider using multiple instances for redundancy.
+</Callout>
+
+## arXiv Integration
+
+### Supported Feed Types
+
+<Tabs items={['Category Feed', 'Author Feed', 'Search Query']}>
+  <Tab value="Category Feed">
+    RSS feeds for specific arXiv categories.
+    
+    ```yaml
+    - id: "arxiv-cs-lg"
+      site: "https://arxiv.org/list/cs.LG/recent"
+      title: "arXiv - Computer Science - Machine Learning"
+      topics: ["research", "papers", "ml"]
+      source_type: "arxiv"
+      mediums: ["text"]
+      platform_config:
+        platform: "arxiv"
+        arxiv:
+          category: "cs.LG"
+    ```
+    
+    **Generated Feed URL**: `http://export.arxiv.org/rss/cs.LG`
+  </Tab>
+  
+  <Tab value="Author Feed">
+    Papers by specific authors.
+    
+    ```yaml
+    - id: "arxiv-bengio"
+      site: "https://arxiv.org"
+      title: "arXiv - Yoshua Bengio papers"
+      topics: ["research", "papers", "ml"]
+      source_type: "arxiv"
+      platform_config:
+        platform: "arxiv"
+        arxiv:
+          author: "Yoshua Bengio"
+          max_results: 50
+    ```
+    
+    **Generated Feed URL**: `http://export.arxiv.org/api/query?search_query=au:Yoshua+Bengio&max_results=50&sortBy=submittedDate&sortOrder=descending`
+  </Tab>
+  
+  <Tab value="Search Query">
+    Advanced search capabilities.
+    
+    ```yaml
+    - id: "arxiv-transformer-search"
+      site: "https://arxiv.org"
+      title: "arXiv - Transformer papers"
+      topics: ["research", "nlp"]
+      source_type: "arxiv"
+      platform_config:
+        platform: "arxiv"
+        arxiv:
+          search_query: "all:transformer AND all:attention"
+          max_results: 100
+    ```
+    
+    **Generated Feed URL**: `http://export.arxiv.org/api/query?search_query=all:transformer+AND+all:attention&max_results=100&sortBy=submittedDate&sortOrder=descending`
+  </Tab>
+</Tabs>
+
+### Configuration Schema
+
+The `platform_config.arxiv` object supports:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `category` | string | arXiv category (e.g., `cs.LG`, `stat.ML`) |
+| `author` | string | Author name for author-specific feeds |
+| `search_query` | string | Advanced search query |
+| `max_results` | integer | Maximum number of results (default: 50) |
+
+### Popular arXiv Categories for AI/ML
+
+- **`cs.LG`** - Machine Learning
+- **`cs.AI`** - Artificial Intelligence
+- **`cs.CL`** - Computation and Language (NLP)
+- **`cs.CV`** - Computer Vision and Pattern Recognition
+- **`cs.NE`** - Neural and Evolutionary Computing
+- **`stat.ML`** - Machine Learning (Statistics)
+- **`cs.RO`** - Robotics
+- **`cs.IR`** - Information Retrieval
+
+### arXiv Search Syntax
+
+When using `search_query`, you can use arXiv's advanced search:
+
+- `au:author_name` - Author search
+- `ti:title_words` - Title search
+- `abs:abstract_words` - Abstract search
+- `all:keywords` - Search all fields
+- Use `AND`, `OR`, `ANDNOT` for boolean queries
+
+**Example**: `all:transformer AND cat:cs.LG`
+
+## Implementation Details
+
+### Platform Detection
+
+The system automatically detects Twitter/X and arXiv URLs:
+
+**Twitter/X domains:**
+- `twitter.com`, `www.twitter.com`
+- `x.com`, `www.x.com`
+
+**arXiv domains:**
+- `arxiv.org`, `www.arxiv.org`
+- `export.arxiv.org`
+
+### Feed URL Generation
+
+Platform-specific generators:
+
+1. `generate_twitter_feed_url(url, platform_config)` - Generates Nitter RSS URLs
+2. `generate_arxiv_feed_url(url, platform_config)` - Generates arXiv RSS/API URLs
+
+These are automatically called during feed discovery.
+
+## Testing
+
+Run the integration tests:
+
+```bash
+# All Twitter/arXiv tests
+aiwebfeeds test file test_utils.py -k "twitter or arxiv"
+
+# Specific test class
+aiwebfeeds test file test_utils.py -k "TestTwitterIntegration"
+aiwebfeeds test file test_utils.py -k "TestArxivIntegration"
+```
+
+## Usage Examples
+
+### Adding a Twitter Feed
+
+Add to `data/feeds.yaml`:
+
+```yaml
+- id: "your-twitter-feed"
+  site: "https://twitter.com/username"
+  title: "Feed Title"
+  topics: ["ai"]
+  source_type: "twitter"
+  platform_config:
+    platform: "twitter"
+```
+
+### Adding an arXiv Feed
+
+Add to `data/feeds.yaml`:
+
+```yaml
+- id: "your-arxiv-feed"
+  site: "https://arxiv.org/list/cs.LG/recent"
+  title: "Feed Title"
+  topics: ["research", "ml"]
+  source_type: "arxiv"
+  platform_config:
+    platform: "arxiv"
+```
+
+## Limitations
+
+### Twitter/X
+
+- Relies on Nitter instances which may have rate limits or availability issues
+- Nitter instances may be blocked or shut down
+- Consider using multiple Nitter instances for redundancy
+
+### arXiv
+
+- RSS feeds update once per day (overnight)
+- API queries limited to 100 results maximum
+- API has rate limiting (3 seconds between requests recommended)
+- Author searches may return false positives for common names
+
+## Best Practices
+
+1. **Twitter/X**: Monitor your chosen Nitter instance for availability
+2. **arXiv**: Use specific categories rather than broad searches for better signal
+3. **Both**: Set appropriate `max_results` to avoid overwhelming feeds
+4. **Both**: Use `topic_weights` to indicate relevance when a feed covers multiple topics
+
+## Future Enhancements
+
+Potential improvements:
+
+- [ ] Automatic Nitter instance failover
+- [ ] arXiv paper metadata enrichment
+- [ ] Twitter thread reconstruction
+- [ ] arXiv citation tracking
+- [ ] Integration with arXiv vanity for better author disambiguation

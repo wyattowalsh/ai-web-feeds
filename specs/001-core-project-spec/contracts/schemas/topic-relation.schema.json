@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/topic-relation.json",
+  "title": "TopicRelation",
+  "description": "Schema for topic-to-topic relationship",
+  "type": "object",
+  "required": ["source_topic_id", "target_topic_id", "relation_type"],
+  "properties": {
+    "source_topic_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Source topic identifier"
+    },
+    "target_topic_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Target topic identifier"
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "depends_on",
+        "implements",
+        "influences",
+        "related_to",
+        "contrasts_with",
+        "same_as"
+      ],
+      "description": "Type of relationship"
+    },
+    "is_directed": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether relationship is directed (false for symmetric relations)"
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1.0,
+      "description": "Relationship strength (0.0-1.0)"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Relationship notes"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when relationship was created"
+    }
+  },
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "source_topic_id": { "type": "string" },
+      "target_topic_id": { "type": "string" }
+    }
+  },
+  "then": {
+    "not": {
+      "properties": {
+        "source_topic_id": { "const": { "$data": "1/target_topic_id" } }
+      }
+    }
+  },
+  "errorMessage": {
+    "not": "Self-loops are not allowed (source_topic_id cannot equal target_topic_id)"
+  }
+}
+

@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/notification-bundle.json",
+  "title": "NotificationBundle",
+  "description": "Bundled notifications to prevent spam (>3 articles from same feed within 5 minutes)",
+  "type": "object",
+  "required": ["bundle_id", "feed_id", "feed_name", "count", "summary", "articles", "created_at"],
+  "properties": {
+    "bundle_id": {
+      "type": "string",
+      "description": "Unique bundle identifier",
+      "pattern": "^bundle_[0-9]+$",
+      "example": "bundle_12345"
+    },
+    "feed_id": {
+      "type": "string",
+      "description": "Feed ID",
+      "example": "ai-research-blog"
+    },
+    "feed_name": {
+      "type": "string",
+      "description": "Feed display name",
+      "maxLength": 255,
+      "example": "AI Research Blog"
+    },
+    "count": {
+      "type": "integer",
+      "description": "Number of articles in bundle",
+      "minimum": 2,
+      "maximum": 20,
+      "example": 5
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable bundle summary",
+      "maxLength": 500,
+      "example": "5 new articles from AI Research Blog"
+    },
+    "articles": {
+      "type": "array",
+      "description": "List of articles in bundle",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "link", "pub_date"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Article ID",
+            "minimum": 1,
+            "example": 67890
+          },
+          "title": {
+            "type": "string",
+            "description": "Article title",
+            "maxLength": 512,
+            "example": "Introducing GPT-5"
+          },
+          "link": {
+            "type": "string",
+            "description": "Article URL",
+            "format": "uri",
+            "example": "https://example.com/article/gpt-5"
+          },
+          "pub_date": {
+            "type": "string",
+            "description": "Article publication date (ISO 8601 UTC)",
+            "format": "date-time",
+            "example": "2025-10-22T14:00:00Z"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Article summary (optional)",
+            "maxLength": 200,
+            "example": "Introducing the next generation of language models..."
+          }
+        }
+      },
+      "minItems": 2,
+      "maxItems": 20
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Bundle creation timestamp (ISO 8601 UTC)",
+      "format": "date-time",
+      "example": "2025-10-22T14:30:00Z"
+    }
+  },
+  "examples": [
+    {
+      "bundle_id": "bundle_12345",
+      "feed_id": "ai-research-blog",
+      "feed_name": "AI Research Blog",
+      "count": 5,
+      "summary": "5 new articles from AI Research Blog",
+      "articles": [
+        {
+          "id": 67890,
+          "title": "Introducing GPT-5",
+          "link": "https://example.com/article/gpt-5",
+          "pub_date": "2025-10-22T14:00:00Z",
+          "summary": "The next generation of language models with 10T parameters..."
+        },
+        {
+          "id": 67891,
+          "title": "Understanding Transformers",
+          "link": "https://example.com/article/transformers",
+          "pub_date": "2025-10-22T14:15:00Z",
+          "summary": "A deep dive into the attention mechanism..."
+        },
+        {
+          "id": 67892,
+          "title": "Ethics in AI Development",
+          "link": "https://example.com/article/ethics",
+          "pub_date": "2025-10-22T14:20:00Z"
+        },
+        {
+          "id": 67893,
+          "title": "Reinforcement Learning Advances",
+          "link": "https://example.com/article/rl",
+          "pub_date": "2025-10-22T14:25:00Z"
+        },
+        {
+          "id": 67894,
+          "title": "Computer Vision Breakthroughs",
+          "link": "https://example.com/article/cv",
+          "pub_date": "2025-10-22T14:28:00Z"
+        }
+      ],
+      "created_at": "2025-10-22T14:30:00Z"
+    }
+  ]
+}
+

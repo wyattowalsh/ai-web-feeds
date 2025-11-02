@@ -1,0 +1,378 @@
+---
+title: Platform Integrations
+description: Native support for Reddit, Medium, YouTube, GitHub, and more
+---
+
+# Platform Integrations
+
+AI Web Feeds provides native support for popular content platforms, automatically converting URLs to their RSS/Atom feed equivalents.
+
+## Supported Platforms
+
+### Reddit
+
+Convert subreddit and user URLs to RSS feeds.
+
+**URL Formats:**
+- Subreddit: `https://reddit.com/r/{subreddit}`
+- User: `https://reddit.com/u/{username}`
+
+**Configuration:**
+
+```yaml
+- id: "machinelearning-subreddit"
+  site: "https://www.reddit.com/r/MachineLearning"
+  title: "r/MachineLearning"
+  source_type: "reddit"
+  topics: ["ml", "community"]
+  platform_config:
+    platform: "reddit"
+    reddit:
+      subreddit: "MachineLearning"
+      sort: "hot"              # hot, new, top, rising
+      time: "day"              # hour, day, week, month, year, all (for top)
+```
+
+**Auto-generated feed:**
+- `hot`: `https://www.reddit.com/r/MachineLearning/hot/.rss`
+- `top`: `https://www.reddit.com/r/MachineLearning/top/.rss?t=day`
+- `new`: `https://www.reddit.com/r/MachineLearning/new/.rss`
+
+### Medium
+
+Convert Medium publications and user profiles to RSS feeds.
+
+**URL Formats:**
+- Publication: `https://medium.com/{publication}`
+- User: `https://medium.com/@{username}`
+- Tag: `https://medium.com/tag/{tag}`
+
+**Configuration:**
+
+```yaml
+- id: "towards-data-science"
+  site: "https://towardsdatascience.com"
+  title: "Towards Data Science"
+  source_type: "medium"
+  topics: ["ml", "data-science"]
+  platform_config:
+    platform: "medium"
+    medium:
+      publication: "towards-data-science"
+```
+
+**Auto-generated feed:**
+- Publication: `https://medium.com/feed/towards-data-science`
+- User: `https://medium.com/feed/@username`
+- Tag: `https://medium.com/feed/tag/ai`
+
+### YouTube
+
+Convert YouTube channels and playlists to RSS feeds.
+
+**URL Formats:**
+- Channel: `https://youtube.com/channel/{channel_id}`
+- User: `https://youtube.com/@{username}`
+- Playlist: `https://youtube.com/playlist?list={playlist_id}`
+
+**Configuration:**
+
+```yaml
+- id: "two-minute-papers"
+  site: "https://www.youtube.com/@TwoMinutePapers"
+  title: "Two Minute Papers"
+  source_type: "youtube"
+  topics: ["research", "video"]
+  platform_config:
+    platform: "youtube"
+    youtube:
+      channel_id: "UCbfYPyITQ-7l4upoX8nvctg"
+```
+
+**Auto-generated feed:**
+- Channel: `https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg`
+- Playlist: `https://www.youtube.com/feeds/videos.xml?playlist_id=PLxxxxxx`
+
+### GitHub
+
+Convert GitHub repositories to Atom feeds for releases, commits, and tags.
+
+**URL Format:**
+- Repository: `https://github.com/{owner}/{repo}`
+
+**Configuration:**
+
+```yaml
+- id: "pytorch-releases"
+  site: "https://github.com/pytorch/pytorch"
+  title: "PyTorch Releases"
+  source_type: "github"
+  topics: ["frameworks", "ml"]
+  platform_config:
+    platform: "github"
+    github:
+      owner: "pytorch"
+      repo: "pytorch"
+      feed_type: "releases"    # releases, commits, tags, activity
+      branch: "main"           # optional, for commits feed
+```
+
+**Auto-generated feeds:**
+- Releases: `https://github.com/pytorch/pytorch/releases.atom`
+- Commits: `https://github.com/pytorch/pytorch/commits.atom`
+- Tags: `https://github.com/pytorch/pytorch/tags.atom`
+- Activity: `https://github.com/pytorch/pytorch/activity.atom`
+
+### Substack
+
+Convert Substack publications to RSS feeds.
+
+**URL Format:**
+- Publication: `https://{publication}.substack.com`
+
+**Configuration:**
+
+```yaml
+- id: "import-ai"
+  site: "https://importai.substack.com"
+  title: "Import AI"
+  source_type: "substack"
+  topics: ["newsletters", "industry"]
+  platform_config:
+    platform: "substack"
+    substack:
+      publication: "importai"
+```
+
+**Auto-generated feed:**
+- `https://importai.substack.com/feed`
+
+### Dev.to
+
+Convert Dev.to users, organizations, and tags to RSS feeds.
+
+**URL Formats:**
+- User: `https://dev.to/{username}`
+- Organization: `https://dev.to/{org}`
+- Tag: `https://dev.to/t/{tag}`
+
+**Configuration:**
+
+```yaml
+- id: "devto-ml-tag"
+  site: "https://dev.to/t/machinelearning"
+  title: "Dev.to - ML Tag"
+  source_type: "devto"
+  topics: ["blogs", "tutorials"]
+  platform_config:
+    platform: "devto"
+    devto:
+      tag: "machinelearning"
+```
+
+**Auto-generated feeds:**
+- User: `https://dev.to/feed/username`
+- Tag: `https://dev.to/feed/tag/machinelearning`
+
+### Hacker News
+
+Access Hacker News RSS feeds.
+
+**Configuration:**
+
+```yaml
+- id: "hackernews-frontpage"
+  site: "https://news.ycombinator.com"
+  title: "Hacker News - Front Page"
+  source_type: "hackernews"
+  topics: ["tech", "news"]
+  platform_config:
+    platform: "hackernews"
+    hackernews:
+      feed_type: "frontpage"   # frontpage, newest, best, ask, show, jobs
+```
+
+**Auto-generated feeds:**
+- Frontpage: `https://news.ycombinator.com/rss`
+- Newest: `https://news.ycombinator.com/newest.rss`
+- Best: `https://news.ycombinator.com/best.rss`
+- Ask HN: `https://news.ycombinator.com/ask.rss`
+- Show HN: `https://news.ycombinator.com/show.rss`
+
+## How It Works
+
+### Automatic Detection
+
+When you provide a `site` URL, the system:
+
+1. **Detects the platform** from the URL domain
+2. **Extracts identifiers** (subreddit, username, channel ID, etc.)
+3. **Generates the feed URL** using platform-specific patterns
+4. **Validates the feed** before saving
+
+### Manual Configuration
+
+For more control, use `platform_config`:
+
+```yaml
+- id: "custom-reddit"
+  site: "https://www.reddit.com/r/MachineLearning"
+  platform_config:
+    platform: "reddit"
+    reddit:
+      subreddit: "MachineLearning"
+      sort: "top"
+      time: "week"
+```
+
+### Enrichment Metadata
+
+Auto-generated feeds include metadata:
+
+```yaml
+meta:
+  platform: "reddit"           # Platform name
+  platform_generated: true     # Feed URL was auto-generated
+  format: "rss"                # Detected feed format
+  last_validated: "2025-10-15T12:00:00"
+```
+
+## Complete Example
+
+Here's a complete feeds.yaml with platform integrations:
+
+```yaml
+schema_version: "feeds-1.0.0"
+
+sources:
+  # Reddit subreddit
+  - id: "ml-subreddit"
+    site: "https://www.reddit.com/r/MachineLearning"
+    title: "r/MachineLearning"
+    source_type: "reddit"
+    topics: ["ml", "community"]
+    platform_config:
+      platform: "reddit"
+      reddit:
+        subreddit: "MachineLearning"
+        sort: "hot"
+
+  # Medium publication
+  - id: "tds-medium"
+    site: "https://towardsdatascience.com"
+    title: "Towards Data Science"
+    source_type: "medium"
+    topics: ["ml", "data-science"]
+    platform_config:
+      platform: "medium"
+      medium:
+        publication: "towards-data-science"
+
+  # YouTube channel
+  - id: "yt-2min-papers"
+    site: "https://www.youtube.com/@TwoMinutePapers"
+    title: "Two Minute Papers"
+    source_type: "youtube"
+    topics: ["research", "video"]
+    platform_config:
+      platform: "youtube"
+      youtube:
+        channel_id: "UCbfYPyITQ-7l4upoX8nvctg"
+
+  # GitHub releases
+  - id: "pytorch-gh"
+    site: "https://github.com/pytorch/pytorch"
+    title: "PyTorch Releases"
+    source_type: "github"
+    topics: ["frameworks", "ml"]
+    platform_config:
+      platform: "github"
+      github:
+        owner: "pytorch"
+        repo: "pytorch"
+        feed_type: "releases"
+
+  # Substack newsletter
+  - id: "importai-newsletter"
+    site: "https://importai.substack.com"
+    title: "Import AI"
+    source_type: "substack"
+    topics: ["newsletters"]
+    platform_config:
+      platform: "substack"
+      substack:
+        publication: "importai"
+```
+
+## CLI Usage
+
+Generate feeds with platform auto-detection:
+
+```bash
+# Enrich feeds (auto-generates platform feed URLs)
+uv run aiwebfeeds enrich all
+
+# View the enriched YAML with generated feed URLs
+cat data/feeds.enriched.yaml
+
+# Generate OPML with platform feeds
+uv run aiwebfeeds opml all
+```
+
+## Python API
+
+Use platform integrations programmatically:
+
+```python
+from ai_web_feeds.utils import (
+    detect_platform,
+    generate_platform_feed_url,
+    enrich_feed_source,
+)
+
+# Detect platform
+platform = detect_platform("https://www.reddit.com/r/MachineLearning")
+# Returns: "reddit"
+
+# Generate feed URL
+feed_url = generate_platform_feed_url(
+    "https://www.reddit.com/r/MachineLearning",
+    "reddit",
+    {"reddit": {"subreddit": "MachineLearning", "sort": "hot"}}
+)
+# Returns: "https://www.reddit.com/r/MachineLearning/hot/.rss"
+
+# Enrich with platform detection
+feed_data = {
+    "id": "ml-reddit",
+    "site": "https://www.reddit.com/r/MachineLearning",
+    "platform_config": {
+        "platform": "reddit",
+        "reddit": {"subreddit": "MachineLearning"}
+    }
+}
+
+enriched = await enrich_feed_source(feed_data)
+# enriched["feed"] will contain the auto-generated RSS URL
+```
+
+## Benefits
+
+- **No manual feed URL lookup** - Just provide the platform URL
+- **Consistent formatting** - All feeds follow platform standards
+- **Validation** - Auto-generated URLs are validated before saving
+- **Metadata tracking** - Know which feeds were auto-generated
+- **Easy maintenance** - Update platform configs, not URLs
+
+## Limitations
+
+- **Platform changes** - If platforms change their feed URL patterns, updates needed
+- **Rate limiting** - Some platforms may rate-limit feed access
+- **Authentication** - Private/authenticated feeds not supported
+- **Custom domains** - Some platforms use custom domains that may not auto-detect
+
+## Next Steps
+
+- [Feed Enrichment](/docs/development/cli#enrich---enrich-feed-data) - Learn about the enrichment process
+- [OPML Generation](/docs/development/cli#opml---generate-opml-files) - Generate feed reader imports
+- [Python API](/docs/development/python-api) - Programmatic platform integration

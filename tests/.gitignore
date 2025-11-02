@@ -1,0 +1,53 @@
+# Test artifacts
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+reports/coverage/
+*.cover
+
+# Pytest cache
+.pytest_cache/
+.cache/
+
+# Test reports
+reports/
+*.html
+pytest.log
+test_report.html
+
+# Hypothesis
+.hypothesis/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp_*
+tmp_*

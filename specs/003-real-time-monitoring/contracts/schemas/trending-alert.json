@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/trending-alert.json",
+  "title": "TrendingAlert",
+  "description": "Trending topic alert message schema",
+  "type": "object",
+  "required": ["id", "topic_name", "z_score", "mention_count", "spike_magnitude", "spike_detected_at"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique trending topic ID",
+      "minimum": 1,
+      "example": 789
+    },
+    "topic_name": {
+      "type": "string",
+      "description": "Topic name (keyword or phrase)",
+      "minLength": 1,
+      "maxLength": 100,
+      "example": "GPT-5"
+    },
+    "z_score": {
+      "type": "number",
+      "description": "Statistical z-score (standard deviations above baseline)",
+      "minimum": 2.0,
+      "example": 3.8
+    },
+    "mention_count": {
+      "type": "integer",
+      "description": "Number of mentions in current window (1 hour)",
+      "minimum": 10,
+      "example": 45
+    },
+    "spike_magnitude": {
+      "type": "number",
+      "description": "Spike size as multiple of baseline (mention_count / baseline_frequency)",
+      "minimum": 1.0,
+      "example": 4.5
+    },
+    "related_feeds": {
+      "type": "array",
+      "description": "List of feed IDs mentioning this topic",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "example": ["ai-research-blog", "ml-weekly", "arxiv-cs-ai"]
+    },
+    "related_articles": {
+      "type": "array",
+      "description": "List of article IDs mentioning this topic",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "example": [67890, 67891, 67892, 67893, 67894]
+    },
+    "spike_detected_at": {
+      "type": "string",
+      "description": "Timestamp when spike was detected (ISO 8601 UTC)",
+      "format": "date-time",
+      "example": "2025-10-22T14:00:00Z"
+    }
+  },
+  "examples": [
+    {
+      "id": 789,
+      "topic_name": "GPT-5",
+      "z_score": 3.8,
+      "mention_count": 45,
+      "spike_magnitude": 4.5,
+      "related_feeds": ["ai-research-blog", "ml-weekly", "arxiv-cs-ai"],
+      "related_articles": [67890, 67891, 67892, 67893, 67894],
+      "spike_detected_at": "2025-10-22T14:00:00Z"
+    },
+    {
+      "id": 790,
+      "topic_name": "Reinforcement Learning from Human Feedback",
+      "z_score": 2.5,
+      "mention_count": 28,
+      "spike_magnitude": 3.1,
+      "related_feeds": ["deepmind-blog", "openai-research"],
+      "related_articles": [67900, 67901, 67902],
+      "spike_detected_at": "2025-10-22T15:30:00Z"
+    }
+  ]
+}
+

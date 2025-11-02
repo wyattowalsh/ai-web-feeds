@@ -1,0 +1,499 @@
+openapi: 3.1.0
+info:
+  title: AI Web Feeds Client-Only API
+  version: 0.1.0
+  description: >
+    Contract describing client-executed operations handled by Service Workers,
+    Web Workers, and in-app controllers. All endpoints execute locally inside
+    the browser runtime (scheme `app://client`), never invoking a remote server.
+servers:
+  - url: app://client
+    description: Local browser runtime (Service Worker + IndexedDB)
+tags:
+  - name: Offline
+  - name: Search
+  - name: Organization
+  - name: Extension
+  - name: Export
+  - name: Diagnostics
+
+paths:
+  /offline/cache:
+    post:
+      summary: Cache feeds and articles for offline usage
+      operationId: saveOfflineFeeds
+      tags: [Offline]
+      x-client-implementation: service-worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfflineCacheRequest'
+      responses:
+        '202':
+          description: Caching started in background sync queue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineTaskStatus'
+        '409':
+          description: Storage quota exceeded; task rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaStatus'
+
+  /offline/conflicts:
+    get:
+      summary: List unresolved sync conflicts
+      operationId: listOfflineConflicts
+      tags: [Offline]
+      x-client-implementation: indexeddb
+      responses:
+        '200':
+          description: Conflicted articles with local/global state.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfflineConflict'
+
+    post:
+      summary: Resolve a sync conflict
+      operationId: resolveOfflineConflict
+      tags: [Offline]
+      x-client-implementation: indexeddb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfflineConflictResolution'
+      responses:
+        '200':
+          description: Conflict resolved and article updated.
+
+  /search/query:
+    post:
+      summary: Execute instant search against local index
+      operationId: executeSearch
+      tags: [Search]
+      x-client-implementation: web-worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
+      responses:
+        '200':
+          description: Search results with relevance scores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /search/index:
+    post:
+      summary: Trigger background indexing for new articles
+      operationId: triggerIndexBuild
+      tags: [Search]
+      x-client-implementation: web-worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                articleIds:
+                  type: array
+                  items:
+                    type: string
+              required: [articleIds]
+      responses:
+        '202':
+          description: Indexing scheduled.
+
+  /organization/folders:
+    get:
+      summary: Retrieve folders with feed membership
+      operationId: listFolders
+      tags: [Organization]
+      x-client-implementation: indexeddb
+      responses:
+        '200':
+          description: Hierarchical folders.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Folder'
+
+    post:
+      summary: Create or update folders
+      operationId: upsertFolders
+      tags: [Organization]
+      x-client-implementation: indexeddb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Folder'
+      responses:
+        '200':
+          description: Folders persisted.
+
+  /organization/views:
+    get:
+      summary: List custom views
+      operationId: listViews
+      tags: [Organization]
+      x-client-implementation: indexeddb
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomView'
+
+    post:
+      summary: Create a new custom view
+      operationId: createView
+      tags: [Organization]
+      x-client-implementation: indexeddb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomView'
+      responses:
+        '201':
+          description: View created.
+
+  /extension/queue:
+    post:
+      summary: Enqueue article from browser extension
+      operationId: enqueueExtensionArticle
+      tags: [Extension]
+      x-client-implementation: extension-messaging
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtensionItem'
+      responses:
+        '202':
+          description: Item queued for import.
+
+    get:
+      summary: Fetch pending extension items
+      operationId: listExtensionQueue
+      tags: [Extension]
+      x-client-implementation: indexeddb
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExtensionItem'
+
+  /export/run:
+    post:
+      summary: Generate data export
+      operationId: generateExport
+      tags: [Export]
+      x-client-implementation: browser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Export completed with download URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+        '425':
+          description: Background preparation pending.
+
+  /diagnostics/logs:
+    get:
+      summary: Retrieve local diagnostic log buffer
+      operationId: exportLogs
+      tags: [Diagnostics]
+      x-client-implementation: localstorage
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiagnosticLog'
+
+components:
+  schemas:
+    OfflineCacheRequest:
+      type: object
+      properties:
+        feedIds:
+          type: array
+          items:
+            type: string
+        retentionDays:
+          type: integer
+          minimum: 7
+          default: 90
+        includeAssets:
+          type: boolean
+          default: true
+        priority:
+          type: string
+          enum: [low, normal, high]
+          default: normal
+      required: [feedIds]
+
+    OfflineTaskStatus:
+      type: object
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, complete, failed]
+        queuedAt:
+          type: string
+          format: date-time
+      required: [taskId, status, queuedAt]
+
+    QuotaStatus:
+      type: object
+      properties:
+        usageBytes:
+          type: integer
+        quotaBytes:
+          type: integer
+        usageRatio:
+          type: number
+        level:
+          type: string
+          enum: [info, warning, blocked]
+        message:
+          type: string
+      required: [usageBytes, quotaBytes, usageRatio, level, message]
+
+    OfflineConflict:
+      type: object
+      properties:
+        articleId:
+          type: string
+        feedId:
+          type: string
+        title:
+          type: string
+        conflictReason:
+          type: string
+        localChange:
+          type: string
+        remoteState:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required: [articleId, conflictReason, localChange, remoteState, updatedAt]
+
+    OfflineConflictResolution:
+      type: object
+      properties:
+        articleId:
+          type: string
+        resolution:
+          type: string
+          enum: [keepLocal, acceptRemote, merge]
+        notes:
+          type: string
+      required: [articleId, resolution]
+
+    SearchQuery:
+      type: object
+      properties:
+        query:
+          type: string
+        feedIds:
+          type: array
+          items:
+            type: string
+        dateRange:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+        topics:
+          type: array
+          items:
+            type: string
+        limit:
+          type: integer
+          default: 50
+          maximum: 200
+      required: [query]
+
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        latencyMs:
+          type: number
+      required: [results, latencyMs]
+
+    SearchResult:
+      type: object
+      properties:
+        articleId:
+          type: string
+        title:
+          type: string
+        snippet:
+          type: string
+        relevance:
+          type: number
+          minimum: 0
+          maximum: 1
+        publishedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required: [articleId, title, relevance]
+
+    Folder:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        position:
+          type: integer
+        collapsed:
+          type: boolean
+      required: [id, name, position, collapsed]
+
+    CustomView:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        filters:
+          $ref: './view-filters.schema.json'
+        sort:
+          type: string
+          enum: [relevance, date, readTime]
+        pinned:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, filters, sort, pinned, createdAt]
+
+    ExtensionItem:
+      type: object
+      properties:
+        id:
+          type: string
+        source:
+          type: string
+          enum: [chrome-extension, firefox-extension]
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        capturedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [queued, imported, dismissed]
+        metadata:
+          type: object
+      required: [id, source, url, capturedAt, status]
+
+    ExportRequest:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [json, csv, opml, html]
+        include:
+          type: array
+          items:
+            type: string
+            enum: [feeds, articles, annotations, history, views]
+        anonymize:
+          type: boolean
+          default: false
+      required: [format]
+
+    ExportResponse:
+      type: object
+      properties:
+        downloadUrl:
+          type: string
+          format: uri
+        sizeBytes:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+      required: [downloadUrl, generatedAt]
+
+    DiagnosticLog:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [info, warn, error]
+        context:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+          nullable: true

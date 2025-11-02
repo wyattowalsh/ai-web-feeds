@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/topic.json",
+  "title": "Topic",
+  "description": "Schema for topic taxonomy node",
+  "type": "object",
+  "required": ["id", "label", "facet"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Unique topic identifier (lowercase, alphanumeric + hyphens)"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Human-readable topic name"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Topic description"
+    },
+    "facet": {
+      "type": "string",
+      "enum": ["domain", "task", "methodology", "tool", "governance", "operational"],
+      "description": "Topic categorization facet"
+    },
+    "facet_group": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Facet grouping (e.g., conceptual, technical)"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "uniqueItems": true,
+      "description": "Alternative names for search matching"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "uniqueItems": true,
+      "description": "Additional tags"
+    },
+    "rank_hint": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.5,
+      "description": "Search ranking hint (0.0-1.0)"
+    },
+    "mappings": {
+      "type": "object",
+      "description": "External identifier mappings",
+      "properties": {
+        "wikidata": {
+          "type": "string",
+          "pattern": "^Q[0-9]+$"
+        },
+        "arxiv": {
+          "type": "string"
+        },
+        "acm": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "i18n": {
+      "type": "object",
+      "description": "Internationalization labels",
+      "patternProperties": {
+        "^[a-z]{2}$": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Internal notes"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when topic was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when topic was last updated"
+    }
+  },
+  "additionalProperties": false
+}
+

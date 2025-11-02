@@ -1,0 +1,475 @@
+---
+title: Workflow Quick Reference
+description: Quick reference for common workflow and CLI commands
+---
+
+# Workflow Quick Reference
+
+Quick reference for common GitHub Actions workflows and CLI commands used in AIWebFeeds.
+
+## 🚀 Common Workflow Triggers
+
+### Manual Workflow Dispatch
+
+```bash
+# Trigger workflow manually via GitHub CLI
+gh workflow run validate-all-feeds.yml
+
+# With inputs
+gh workflow run validate-all-feeds.yml -f timeout=60
+
+# View workflow runs
+gh run list --workflow=validate-all-feeds.yml
+
+# Watch specific run
+gh run watch <run-id>
+```
+
+### Trigger on Push
+
+```yaml
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'data/feeds.yaml'
+      - 'packages/**/*.py'
+```
+
+### Trigger on PR
+
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'data/feeds.yaml'
+```
+
+### Scheduled Runs
+
+```yaml
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+```
+
+---
+
+## 🔧 CLI Commands in Workflows
+
+### Validation
+
+```bash
+# Validate all feeds
+uv run aiwebfeeds validate --all
+
+# Strict mode (fail on warnings)
+uv run aiwebfeeds validate --all --strict
+
+# Schema only
+uv run aiwebfeeds validate --schema
+
+# Check URLs
+uv run aiwebfeeds validate --check-urls --timeout 30
+
+# Specific feeds
+uv run aiwebfeeds validate --feeds "https://example.com/feed.xml"
+```
+
+### Testing
+
+```bash
+# Run all tests with coverage
+uv run aiwebfeeds test --coverage
+
+# Quick tests only
+uv run aiwebfeeds test --quick
+
+# Specific markers
+uv run aiwebfeeds test --marker unit
+uv run aiwebfeeds test --marker integration
+```
+
+### Analytics
+
+```bash
+# Generate analytics
+uv run aiwebfeeds analytics
+
+# Save to file
+uv run aiwebfeeds analytics --output data/analytics.json
+
+# Markdown format
+uv run aiwebfeeds analytics --format markdown
+```
+
+### Export
+
+```bash
+# Export to JSON
+uv run aiwebfeeds export --format json --output feeds.json
+
+# Export to YAML
+uv run aiwebfeeds export --format yaml --output feeds.yaml
+
+# OPML export
+uv run aiwebfeeds opml export --output feeds.opml
+uv run aiwebfeeds opml export --categorized --output categorized.opml
+```
+
+### Enrichment
+
+```bash
+# Enrich all feeds
+uv run aiwebfeeds enrich --all
+
+# Enrich specific feed
+uv run aiwebfeeds enrich --url "https://example.com/feed.xml"
+
+# Fix schema issues
+uv run aiwebfeeds enrich --fix-schema --all
+```
+
+---
+
+## 📝 Workflow YAML Snippets
+
+### Install Dependencies
+
+```yaml
+- name: Install uv
+  uses: astral-sh/setup-uv@v5
+  with:
+    version: "latest"
+
+- name: Install Python dependencies
+  run: uv sync
+
+- name: Install web dependencies
+  run: |
+    cd apps/web
+    pnpm install
+```
+
+### Setup Python
+
+```yaml
+- name: Setup Python
+  uses: actions/setup-python@v5
+  with:
+    python-version: '3.13'
+
+- name: Cache uv
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/uv
+    key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+```
+
+### Run CLI Commands
+
+```yaml
+- name: Validate feeds
+  run: uv run aiwebfeeds validate --all --strict
+
+- name: Run tests
+  run: uv run aiwebfeeds test --coverage
+
+- name: Generate analytics
+  run: uv run aiwebfeeds analytics --output analytics.json
+```
+
+### Upload Artifacts
+
+```yaml
+- name: Upload coverage report
+  uses: actions/upload-artifact@v4
+  with:
+    name: coverage-report
+    path: reports/coverage/
+    retention-days: 30
+
+- name: Upload to Codecov
+  uses: codecov/codecov-action@v4
+  with:
+    files: ./coverage.xml
+    flags: unittests
+    fail_ci_if_error: true
+```
+
+### Post PR Comments
+
+```yaml
+- name: Generate report
+  id: report
+  run: |
+    {
+      echo 'output<<EOF'
+      uv run aiwebfeeds stats --format markdown
+      echo EOF
+    } >> $GITHUB_OUTPUT
+
+- name: Comment PR
+  uses: actions/github-script@v7
+  with:
+    script: |
+      github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: ${{ steps.report.outputs.output }}
+      })
+```
+
+### Conditional Steps
+
+```yaml
+- name: Get changed files
+  id: changes
+  uses: dorny/paths-filter@v3
+  with:
+    filters: |
+      feeds:
+        - 'data/feeds.yaml'
+      python:
+        - 'packages/**/*.py'
+
+- name: Validate feeds
+  if: steps.changes.outputs.feeds == 'true'
+  run: uv run aiwebfeeds validate --all
+```
+
+---
+
+## 🔍 Debugging Commands
+
+### View Workflow Runs
+
+```bash
+# List recent runs
+gh run list
+
+# View specific run
+gh run view <run-id>
+
+# Watch run in real-time
+gh run watch <run-id>
+
+# Download logs
+gh run view <run-id> --log
+```
+
+### Run Locally with Act
+
+```bash
+# Install act
+brew install act
+
+# List workflows
+act -l
+
+# Run specific workflow
+act -W .github/workflows/validate-all-feeds.yml
+
+# Run with secrets
+act -s GITHUB_TOKEN=xxx
+
+# Dry run
+act -n
+```
+
+### Debug CLI Locally
+
+```bash
+# Enable debug logging
+AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all
+
+# Run with verbose output
+uv run aiwebfeeds validate --all --verbose
+
+# Profile performance
+time uv run aiwebfeeds validate --all
+```
+
+---
+
+## 📊 Status Checks
+
+### Required Checks
+
+These must pass before merging:
+
+- ✅ **Quality Enforcement** - Linting, formatting, type checking
+- ✅ **Coverage** - Tests with ≥90% coverage
+- ✅ **Feed Validation** - All feeds must validate
+- ✅ **Build** - Web app must build successfully
+
+### Optional Checks
+
+These provide additional information:
+
+- 📊 **Analytics** - Feed statistics
+- 🔒 **Security** - CodeQL analysis
+- 📦 **Dependencies** - Dependency review
+
+### Override Checks
+
+```bash
+# Merge with admin override (use sparingly)
+gh pr merge --admin --merge <pr-number>
+
+# Re-run failed checks
+gh run rerun <run-id>
+
+# Re-run specific job
+gh run rerun <run-id> --job <job-id>
+```
+
+---
+
+## 🎯 Common Workflow Patterns
+
+### Pattern: Validate Changed Feeds Only
+
+```yaml
+- name: Get changed feeds
+  id: changes
+  run: |
+    FEEDS=$(git diff origin/main -- data/feeds.yaml | grep -oP '^\+\s+url:\s*\K\S+')
+    echo "feeds=$FEEDS" >> $GITHUB_OUTPUT
+
+- name: Validate
+  if: steps.changes.outputs.feeds != ''
+  run: uv run aiwebfeeds validate --feeds ${{ steps.changes.outputs.feeds }}
+```
+
+### Pattern: Matrix Testing
+
+```yaml
+strategy:
+  matrix:
+    python-version: ['3.11', '3.12', '3.13']
+    os: [ubuntu-latest, macos-latest]
+steps:
+  - uses: actions/setup-python@v5
+    with:
+      python-version: ${{ matrix.python-version }}
+  - run: uv run aiwebfeeds test
+```
+
+### Pattern: Nightly Full Validation
+
+```yaml
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Full validation
+        run: |
+          uv run aiwebfeeds validate --all --strict
+          uv run aiwebfeeds validate --check-urls --timeout 60
+          uv run aiwebfeeds test --coverage
+```
+
+### Pattern: Auto-Fix and Commit
+
+```yaml
+- name: Auto-fix issues
+  run: |
+    uv run ruff check --fix .
+    uv run ruff format .
+    uv run aiwebfeeds enrich --fix-schema --all
+
+- name: Commit changes
+  run: |
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add -A
+    git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-fix issues"
+    git push
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+### Issue: Workflow Fails on CLI Command
+
+**Error**: `aiwebfeeds: command not found`
+
+**Fix**: Use `uv run` prefix:
+```yaml
+run: uv run aiwebfeeds validate --all
+```
+
+### Issue: Permission Denied
+
+**Error**: `Error: Permission to <repo> denied`
+
+**Fix**: Add permissions to workflow:
+```yaml
+permissions:
+  contents: write
+  pull-requests: write
+```
+
+### Issue: Timeout on Feed Validation
+
+**Error**: `Request timeout after 30s`
+
+**Fix**: Increase timeout:
+```yaml
+run: uv run aiwebfeeds validate --check-urls --timeout 120
+```
+
+### Issue: Coverage Below Threshold
+
+**Error**: `Coverage is below 90%`
+
+**Fix**: Add more tests or adjust threshold:
+```yaml
+run: uv run pytest --cov --cov-fail-under=85
+```
+
+### Issue: Out of Memory
+
+**Error**: `Killed (OOM)`
+
+**Fix**: Use GitHub's larger runners:
+```yaml
+runs-on: ubuntu-latest-8-cores
+```
+
+---
+
+## 📚 Workflow Files Reference
+
+| Workflow | File | Purpose | Trigger |
+|----------|------|---------|---------|
+| Quality Gate | `quality-enforcement.yml` | Comprehensive quality checks | PR to main/develop |
+| Python Quality | `python-quality.yml` | Python linting/testing | Push, PR |
+| Coverage | `coverage.yml` | Test coverage reporting | Push to main/develop, PR |
+| Feed Validation | `validate-all-feeds.yml` | Validate all feeds | Push to main, daily |
+| PR Validation | `pr-validation.yml` | PR-specific checks | PR events |
+| Auto-Fix | `auto-fix.yml` | Automated code fixes | Comment `/fix` |
+| Release | `release.yml` | Build and publish releases | Tag push |
+| Security | `codeql-analysis.yml` | Security scanning | Weekly, PR to main |
+
+---
+
+## 🔗 Quick Links
+
+- [Full Workflow Documentation](/docs/development/workflows)
+- [CLI Integration Guide](/docs/development/cli-workflows)
+- [CLI Commands Reference](/docs/development/cli)
+- [Testing Guide](/docs/development/testing)
+
+---
+
+*Last Updated: October 2025*

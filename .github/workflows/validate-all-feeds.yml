@@ -1,0 +1,259 @@
+name: Validate All Feeds
+on:
+  workflow_dispatch:
+    inputs:
+      check_accessibility:
+        description: 'Check feed URL accessibility (slower)'
+        required: false
+        type: boolean
+        default: false
+      strict_mode:
+        description: 'Use strict validation mode'
+        required: false
+        type: boolean
+        default: true
+  schedule:
+    - cron: '0 2 * * 0'  # Run weekly on Sundays at 2am UTC
+
+jobs:
+  validate-with-cli:
+    name: Validate Feeds with CLI
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+          uv pip install jsonschema pyyaml requests feedparser
+          
+      - name: Run CLI validation
+        run: |
+          if [ "${{ github.event.inputs.strict_mode }}" = "false" ]; then
+            uv run aiwebfeeds validate all --lenient
+          else
+            uv run aiwebfeeds validate all --strict
+          fi
+          
+      - name: Generate validation report
+        if: always()
+        run: |
+          uv run aiwebfeeds stats --output json > validation-stats.json
+          
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: validation-stats.json
+          retention-days: 30
+          
+      - name: Check for issues
+        id: check_feeds
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import sys
+          import json
+          from collections import Counter
+          
+          # Load data
+          with open('data/feeds.yaml', 'r') as f:
+              feeds_data = yaml.safe_load(f)
+          
+          with open('data/topics.yaml', 'r') as f:
+              topics_data = yaml.safe_load(f)
+          
+          # Get valid topics
+          valid_topics = set()
+          for category in topics_data.get('categories', []):
+              for topic in category.get('topics', []):
+                  valid_topics.add(topic['id'])
+          
+          sources = feeds_data.get('sources', [])
+          issues = []
+          warnings = []
+          
+          # Check for duplicate IDs
+          ids = [s.get('id') for s in sources if s.get('id')]
+          duplicates = [id for id, count in Counter(ids).items() if count > 1]
+          if duplicates:
+              issues.append(f"Duplicate feed IDs: {duplicates}")
+          
+          # Check each feed
+          for idx, source in enumerate(sources):
+              feed_id = source.get('id', f'source[{idx}]')
+              
+              # Check required fields
+              if not source.get('id'):
+                  issues.append(f"Feed at index {idx}: missing 'id'")
+              
+              if not source.get('title'):
+                  warnings.append(f"{feed_id}: missing 'title'")
+              
+              if not source.get('topics'):
+                  warnings.append(f"{feed_id}: missing 'topics'")
+              
+              # Check feed or site
+              if not source.get('feed') and not source.get('site'):
+                  issues.append(f"{feed_id}: must have 'feed' or 'site'")
+              
+              # Validate topics
+              for topic in source.get('topics', []):
+                  if topic not in valid_topics:
+                      issues.append(f"{feed_id}: invalid topic '{topic}'")
+              
+              # Check topic count
+              topic_count = len(source.get('topics', []))
+              if topic_count > 6:
+                  warnings.append(f"{feed_id}: has {topic_count} topics (max 6 recommended)")
+              
+              # Check tags
+              tags = source.get('tags', [])
+              if len(tags) > 12:
+                  warnings.append(f"{feed_id}: has {len(tags)} tags (max 12)")
+          
+          # Output results
+          print(f"\n{'='*60}")
+          print(f"Feed Registry Validation Report")
+          print(f"{'='*60}")
+          print(f"\nTotal feeds: {len(sources)}")
+          print(f"Issues found: {len(issues)}")
+          print(f"Warnings: {len(warnings)}")
+          
+          if issues:
+              print(f"\n❌ ISSUES:")
+              for issue in issues:
+                  print(f"  - {issue}")
+          
+          if warnings:
+              print(f"\n⚠️  WARNINGS:")
+              for warning in warnings:
+                  print(f"  - {warning}")
+          
+          if not issues and not warnings:
+              print(f"\n✅ All feeds are valid!")
+          
+          # Write summary for GitHub
+          summary = {
+              'total_feeds': len(sources),
+              'issues': len(issues),
+              'warnings': len(warnings)
+          }
+          
+          with open('validation_summary.json', 'w') as f:
+              json.dump(summary, f)
+          
+          # Exit with error if issues found
+          if issues:
+              sys.exit(1)
+          EOF
+          
+      - name: Check feed accessibility (optional)
+        if: github.event.inputs.check_accessibility == 'true'
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import requests
+          import feedparser
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          
+          def check_feed(source):
+              feed_id = source.get('id', 'unknown')
+              url = source.get('feed') or source.get('site')
+              
+              if not url:
+                  return feed_id, 'no-url', None
+              
+              try:
+                  response = requests.get(url, timeout=10, allow_redirects=True)
+                  if response.status_code == 200:
+                      # Try to parse as feed
+                      feed = feedparser.parse(url)
+                      if feed.bozo:
+                          return feed_id, 'parse-error', str(feed.bozo_exception)[:100]
+                      else:
+                          return feed_id, 'ok', len(feed.entries)
+                  else:
+                      return feed_id, 'http-error', response.status_code
+              except Exception as e:
+                  return feed_id, 'error', str(e)[:100]
+          
+          # Load feeds
+          with open('data/feeds.yaml', 'r') as f:
+              feeds_data = yaml.safe_load(f)
+          
+          sources = feeds_data.get('sources', [])
+          
+          print(f"\nChecking accessibility of {len(sources)} feeds...")
+          print("This may take several minutes...\n")
+          
+          results = {'ok': [], 'errors': []}
+          
+          # Check feeds in parallel
+          with ThreadPoolExecutor(max_workers=10) as executor:
+              futures = {executor.submit(check_feed, s): s for s in sources}
+              
+              for future in as_completed(futures):
+                  feed_id, status, detail = future.result()
+                  
+                  if status == 'ok':
+                      results['ok'].append(feed_id)
+                      print(f"✅ {feed_id}: {detail} entries")
+                  else:
+                      results['errors'].append((feed_id, status, detail))
+                      print(f"❌ {feed_id}: {status} - {detail}")
+          
+          print(f"\n{'='*60}")
+          print(f"Accessibility Check Summary")
+          print(f"{'='*60}")
+          print(f"✅ Accessible: {len(results['ok'])}")
+          print(f"❌ Errors: {len(results['errors'])}")
+          
+          if results['errors']:
+              print(f"\nFeeds with errors:")
+              for feed_id, status, detail in results['errors']:
+                  print(f"  - {feed_id}: {status}")
+          EOF
+          
+      - name: Create issue summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let summary = { total_feeds: 0, issues: 0, warnings: 0 };
+            try {
+              summary = JSON.parse(fs.readFileSync('validation_summary.json', 'utf8'));
+            } catch (e) {
+              console.log('No validation summary found');
+            }
+            
+            const message = `## 📊 Feed Registry Validation Report
+            
+            - **Total feeds**: ${summary.total_feeds}
+            - **Issues**: ${summary.issues} ${summary.issues > 0 ? '❌' : '✅'}
+            - **Warnings**: ${summary.warnings} ${summary.warnings > 0 ? '⚠️' : '✅'}
+            
+            ${summary.issues === 0 && summary.warnings === 0 ? '✅ All feeds are valid!' : ''}
+            
+            Run: ${context.runId}
+            Workflow: ${context.workflow}
+            Triggered by: ${context.eventName}
+            `;
+            
+            // Post to workflow summary
+            core.summary.addRaw(message).write();

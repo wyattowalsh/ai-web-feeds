@@ -1,0 +1,296 @@
+---
+title: Contributing
+description: How to contribute to AI Web Feeds
+---
+
+# Contributing
+
+Thank you for your interest in contributing to AI Web Feeds! This guide will help you get started.
+
+## Development Setup
+
+### Prerequisites
+
+- Python 3.13+
+- [uv](https://github.com/astral-sh/uv) - Fast Python package installer
+- Git
+
+### Clone and Install
+
+```bash
+# Clone the repository
+git clone https://github.com/wyattowalsh/ai-web-feeds.git
+cd ai-web-feeds
+
+# Install dependencies
+uv sync
+uv pip install -e apps/cli
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=ai_web_feeds
+
+# Run specific test file
+uv run pytest tests/packages/ai_web_feeds/test_models.py
+```
+
+## Project Structure
+
+```
+ai-web-feeds/
+├── packages/ai_web_feeds/     # Core library
+│   ├── src/ai_web_feeds/
+│   │   ├── models.py          # SQLModel database models
+│   │   ├── storage.py         # Database operations
+│   │   ├── utils.py           # Utilities (enrichment, OPML, schema)
+│   │   ├── config.py          # Configuration
+│   │   └── logger.py          # Logging setup
+│   └── pyproject.toml
+│
+├── apps/cli/                  # CLI application
+│   ├── ai_web_feeds/cli/
+│   │   ├── __init__.py        # Main CLI app
+│   │   └── commands/          # CLI commands
+│   │       ├── enrich.py
+│   │       ├── opml.py
+│   │       ├── stats.py
+│   │       ├── export.py
+│   │       └── validate.py
+│   └── pyproject.toml
+│
+├── apps/web/                  # Fumadocs website
+│   └── content/docs/          # Documentation
+│
+├── data/                      # Feed data
+│   ├── feeds.yaml             # Source feed definitions
+│   ├── feeds.enriched.yaml    # Enriched feeds
+│   └── *.opml                 # Generated OPML files
+│
+└── pyproject.toml            # Workspace root
+```
+
+## Key Features Implementation
+
+### ✅ Implemented
+
+- [x] SQLModel database layer with migrations
+- [x] Feed enrichment pipeline
+- [x] OPML generation (all, categorized, filtered)
+- [x] Schema generation
+- [x] CLI interface with Typer
+- [x] Statistics display
+
+### 🚧 In Progress / TODO
+
+- [ ] Feed item extraction from RSS/Atom/JSONFeed
+- [ ] Fetch logging implementation
+- [ ] Complete export commands (JSON, CSV)
+- [ ] Schema validation commands
+- [ ] Topics loading from YAML
+- [ ] Unit tests for all modules
+- [ ] Integration tests
+- [ ] CI/CD pipeline
+
+## Contributing Guidelines
+
+### Code Style
+
+We follow PEP 8 with some modifications:
+
+- Line length: 88 characters (Black default)
+- Use type hints for all functions
+- Docstrings for all public functions/classes
+- Import sorting with isort
+
+```bash
+# Format code
+uv run black packages/ai_web_feeds apps/cli
+
+# Sort imports
+uv run isort packages/ai_web_feeds apps/cli
+
+# Type checking
+uv run mypy packages/ai_web_feeds
+```
+
+### Commit Messages
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add feed item extraction
+fix: correct OPML XML escaping
+docs: update CLI usage guide
+test: add tests for storage module
+chore: update dependencies
+```
+
+### Pull Request Process
+
+1. **Fork the repository** and create a feature branch:
+   ```bash
+   git checkout -b feat/your-feature-name
+   ```
+
+2. **Make your changes** with clear, focused commits
+
+3. **Add tests** for new functionality
+
+4. **Update documentation** if needed
+
+5. **Run tests and linting**:
+   ```bash
+   uv run pytest
+   uv run black --check .
+   uv run isort --check .
+   ```
+
+6. **Submit a pull request** with:
+   - Clear description of changes
+   - Link to related issues
+   - Screenshots/examples if applicable
+
+### Adding New Features
+
+#### Adding a CLI Command
+
+1. Create command file in `apps/cli/ai_web_feeds/cli/commands/`
+2. Define Typer app and commands
+3. Import and register in `__init__.py`
+
+Example:
+```python
+# apps/cli/ai_web_feeds/cli/commands/mycommand.py
+import typer
+
+app = typer.Typer(help="My new command")
+
+@app.command()
+def run():
+    """Run my command."""
+    typer.echo("Hello from my command!")
+```
+
+```python
+# apps/cli/ai_web_feeds/cli/__init__.py
+from ai_web_feeds.cli.commands import mycommand
+
+# ...
+app.add_typer(mycommand.app, name="mycommand")
+```
+
+#### Adding Database Models
+
+1. Define SQLModel in `packages/ai_web_feeds/src/ai_web_feeds/models.py`
+2. Add relationships if needed
+3. Update `DatabaseManager` with new operations
+4. Create Alembic migration
+
+Example:
+```python
+class NewTable(SQLModel, table=True):
+    __tablename__ = "new_table"
+    
+    id: UUID = SQLField(default_factory=uuid4, primary_key=True)
+    name: str = SQLField(description="Name field")
+    # ... other fields
+```
+
+```bash
+# Create migration
+cd packages/ai_web_feeds
+alembic revision --autogenerate -m "Add new_table"
+alembic upgrade head
+```
+
+## Testing
+
+### Writing Tests
+
+Place tests in the `tests/` directory mirroring the source structure:
+
+```
+tests/
+├── packages/
+│   └── ai_web_feeds/
+│       ├── test_models.py
+│       ├── test_storage.py
+│       └── test_utils.py
+└── apps/
+    └── cli/
+        └── test_commands.py
+```
+
+Example test:
+```python
+import pytest
+from ai_web_feeds.models import FeedSource, SourceType
+
+def test_feed_source_creation():
+    feed = FeedSource(
+        id="test-feed",
+        title="Test Feed",
+        source_type=SourceType.BLOG,
+    )
+    
+    assert feed.id == "test-feed"
+    assert feed.source_type == SourceType.BLOG
+```
+
+### Test Database
+
+Use SQLite in-memory for tests:
+
+```python
+@pytest.fixture
+def test_db():
+    db = DatabaseManager("sqlite:///:memory:")
+    db.create_db_and_tables()
+    yield db
+```
+
+## Documentation
+
+Documentation is built with Fumadocs and lives in `apps/web/content/docs/`.
+
+### Adding Documentation
+
+1. Create `.mdx` file in appropriate section
+2. Update `meta.json` to include new page
+3. Use frontmatter for metadata:
+
+```mdx
+---
+title: Page Title
+description: Page description for SEO
+---
+
+# Page Title
+
+Content here...
+```
+
+### Local Development
+
+```bash
+cd apps/web
+pnpm install
+pnpm dev
+```
+
+Visit http://localhost:3000/docs
+
+## Getting Help
+
+- **Issues:** [GitHub Issues](https://github.com/wyattowalsh/ai-web-feeds/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/wyattowalsh/ai-web-feeds/discussions)
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the same license as the project.

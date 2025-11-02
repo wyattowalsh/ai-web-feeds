@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wyattowalsh/ai-web-feeds/raw/main/data/schema/feeds.schema.json",
+  "title": "AIWebFeeds — Minimal Contributor Feeds Schema",
+  "description": "Ultra-simplified schema: contributors only provide a URL and topics. Everything else (title, feed URL, metadata) is auto-enriched via platform detection, feed discovery, and RSSHub fallback.",
+  "type": "object",
+  "required": ["schema_version", "sources"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version for this file format.",
+      "pattern": "^feeds-2\\.[0-9]+\\.[0-9]+$",
+      "default": "feeds-2.1.0"
+    },
+    "document_meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "created":       { "type": "string", "format": "date" },
+        "updated":       { "type": "string", "format": "date" },
+        "generated_with":{
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tool":    { "type": "string" },
+            "version": { "type": "string" }
+          }
+        },
+        "notes":         { "type": "string", "maxLength": 500 }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "$defs": {
+    "http_uri": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Any HTTP(S) URL - can be a direct feed URL, website, or platform-specific URL (Twitter profile, YouTube channel, Reddit subreddit, etc.)"
+    },
+    "topic_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Canonical topic id from data/topics.yaml."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "topics"],
+      "properties": {
+        "url":    { 
+          "$ref": "#/$defs/http_uri",
+          "description": "Any URL: direct RSS/Atom feed, website homepage, or platform URL (x.com/username, youtube.com/channel/ID, reddit.com/r/subreddit, github.com/owner/repo, etc.). System auto-detects platform and enriches."
+        },
+        "topics": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/topic_id" },
+          "description": "1-6 topic IDs from topics.yaml that categorize this source."
+        },
+        "title":  { 
+          "type": "string", 
+          "minLength": 1, 
+          "maxLength": 160,
+          "description": "Optional custom title. If not provided, title will be auto-extracted from the feed during enrichment."
+        },
+        "notes":  { 
+          "type": "string", 
+          "maxLength": 500,
+          "description": "Optional contributor notes about this source (quality, update frequency, special considerations, etc.)"
+        }
+      },
+      "description": "Minimal source entry - only URL and topics required. Title and metadata auto-enriched, but can be overridden with custom values."
+    }
+  }
+}

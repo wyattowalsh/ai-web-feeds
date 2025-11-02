@@ -1,0 +1,351 @@
+---
+title: AI & LLM Integration
+description: Comprehensive AI and LLM integration for your Fumadocs documentation site
+icon: Bot
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Complete AI and LLM integration following the official [Fumadocs guide](https://fumadocs.dev/docs/ui/llms), making your documentation easily consumable by AI agents and large language models.
+
+## Overview
+
+This site provides multiple ways for AI agents to access documentation:
+
+<Cards>
+  <Card icon={<Search />}>
+    **Discovery**
+    `/llms.txt` endpoint lists all available docs
+  </Card>
+  <Card icon={<FileText />}>
+    **Full Docs**
+    `/llms-full.txt` provides complete documentation
+  </Card>
+  <Card icon={<Code />}>
+    **Markdown**
+    `.mdx` and `.md` extensions for any page
+  </Card>
+  <Card icon={<Sparkles />}>
+    **Smart Routing**
+    Automatic content negotiation
+  </Card>
+</Cards>
+
+## Features
+
+### LLM-Friendly Endpoints
+
+#### `/llms.txt` - Discovery File
+
+Standard discovery file for AI agents following the [llms.txt specification](https://llmstxt.org).
+
+```bash
+curl https://yourdomain.com/llms.txt
+```
+
+**Response:**
+```text
+# AI Web Feeds Documentation
+
+> A collection of curated RSS/Atom feeds optimized for AI agents
+
+## Documentation Pages
+
+- [Getting Started](https://yourdomain.com/docs.mdx): Quick start guide
+- [PDF Export](https://yourdomain.com/docs/features/pdf-export.mdx): Export docs as PDF
+...
+```
+
+#### `/llms-full.txt` - Complete Documentation
+
+All documentation in a single, structured text file optimized for RAG systems.
+
+```bash
+curl https://yourdomain.com/llms-full.txt
+```
+
+<Callout type="info">
+  The format includes metadata header, table of contents, and structured page sections. See [llms-full.txt Format](/docs/features/llms-full-format) for details.
+</Callout>
+
+**Key Features:**
+- Structured format with clear separators
+- Metadata header (date, page count, base URL)
+- Table of contents
+- Individual page sections with metadata
+- Optimized for AI parsing
+
+#### Markdown Extensions
+
+Access markdown source of any documentation page by appending `.mdx` or `.md`:
+
+<Tabs items={['.mdx Extension', '.md Extension', 'Content Negotiation']}>
+  <Tab value=".mdx Extension">
+    ```bash
+    curl https://yourdomain.com/docs/getting-started.mdx
+    ```
+    Returns the markdown source of the page.
+  </Tab>
+  <Tab value=".md Extension">
+    ```bash
+    curl https://yourdomain.com/docs/getting-started.md
+    ```
+    Alternative markdown extension (same as .mdx).
+  </Tab>
+  <Tab value="Content Negotiation">
+    ```bash
+    curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started
+    ```
+    Automatically serves markdown when AI agent requests it.
+  </Tab>
+</Tabs>
+
+### Content Negotiation
+
+Middleware automatically detects AI agents and serves markdown content:
+
+```typescript title="middleware.ts"
+import { isMarkdownPreferred } from 'fumadocs-core/negotiation';
+
+if (isMarkdownPreferred(request)) {
+  // Serve markdown version
+  return NextResponse.rewrite(new URL(`/llms.mdx${path}`, request.url));
+}
+```
+
+<Callout>
+  When an AI agent sends `Accept: text/markdown` header, it automatically receives markdown content without changing the URL.
+</Callout>
+
+### AI Page Actions
+
+Interactive UI components on every documentation page:
+
+#### Copy Markdown Button
+
+One-click copy of page markdown to clipboard:
+
+```tsx
+import { LLMCopyButton } from '@/components/page-actions';
+
+<LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+```
+
+**Features:**
+- Client-side caching for performance
+- Loading state feedback
+- Success confirmation with checkmark
+
+#### View Options Menu
+
+Dropdown menu with links to AI tools:
+
+- **Open in GitHub** - View source code
+- **Open in Scira AI** - Ask questions about the page
+- **Open in Perplexity** - Search with context
+- **Open in ChatGPT** - Analyze content
+
+```tsx
+import { ViewOptions } from '@/components/page-actions';
+
+<ViewOptions 
+  markdownUrl={`${page.url}.mdx`}
+  githubUrl="https://github.com/..." 
+/>
+```
+
+## Implementation
+
+### File Structure
+
+```
+apps/web/
+├── app/
+│   ├── llms.txt/
+│   │   └── route.ts              # Discovery endpoint
+│   ├── llms-full.txt/
+│   │   └── route.ts              # Full docs endpoint
+│   ├── llms.mdx/
+│   │   └── [[...slug]]/
+│   │       └── route.ts          # .mdx handler
+│   ├── llms.md/
+│   │   └── [[...slug]]/
+│   │       └── route.ts          # .md handler
+│   └── docs/
+│       └── [[...slug]]/
+│           └── page.tsx          # With page actions
+├── components/
+│   └── page-actions.tsx          # AI UI components
+├── middleware.ts                 # Content negotiation
+└── next.config.mjs               # URL rewrites
+```
+
+### Configuration
+
+#### Source Config
+
+Already configured in `source.config.ts`:
+
+```typescript title="source.config.ts"
+export const docs = defineDocs({
+  docs: {
+    dir: 'content/docs',
+    includeProcessedMarkdown: true, // ✅ Required for LLM support
+  },
+});
+```
+
+#### Next.js Config
+
+URL rewrites in `next.config.mjs`:
+
+```javascript title="next.config.mjs"
+async rewrites() {
+  return [
+    {
+      source: '/docs/:path*.mdx',
+      destination: '/llms.mdx/:path*',
+    },
+    {
+      source: '/docs/:path*.md',
+      destination: '/llms.md/:path*',
+    },
+  ];
+}
+```
+
+## Usage
+
+### For AI Agents
+
+<Tabs items={['Discovery', 'Full Docs', 'Specific Page', 'Negotiation']}>
+  <Tab value="Discovery">
+    ```bash
+    # Discover all documentation
+    curl https://yourdomain.com/llms.txt
+    ```
+    Returns a list of all available pages with descriptions.
+  </Tab>
+  <Tab value="Full Docs">
+    ```bash
+    # Get complete documentation
+    curl https://yourdomain.com/llms-full.txt
+    ```
+    Returns all pages in a structured format.
+  </Tab>
+  <Tab value="Specific Page">
+    ```bash
+    # Get specific page as markdown
+    curl https://yourdomain.com/docs/getting-started.mdx
+    ```
+    Returns markdown source of the page.
+  </Tab>
+  <Tab value="Negotiation">
+    ```bash
+    # Use content negotiation
+    curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started
+    ```
+    Automatically receives markdown content.
+  </Tab>
+</Tabs>
+
+### For Users
+
+#### Copy Page as Markdown
+
+1. Navigate to any documentation page
+2. Click the **Copy Markdown** button
+3. Paste into your AI tool or editor
+
+#### Open in AI Tools
+
+1. Click the **View Options** dropdown
+2. Select your preferred AI tool:
+   - **GitHub** - View source code
+   - **Scira AI** - Ask questions
+   - **Perplexity** - Search with context
+   - **ChatGPT** - Analyze content
+
+### For Developers
+
+#### Get LLM Text Programmatically
+
+```typescript
+import { getLLMText, source } from '@/lib/source';
+
+const page = source.getPage(['getting-started']);
+const markdown = await getLLMText(page);
+```
+
+#### Customize Page Actions
+
+Edit `components/page-actions.tsx` to add more AI tools:
+
+```tsx
+{
+  title: 'Open in Claude',
+  href: `https://claude.ai/new?content=${markdownUrl}`,
+  icon: <ClaudeIcon />,
+}
+```
+
+#### Update GitHub URLs
+
+Edit `app/docs/[[...slug]]/page.tsx`:
+
+```tsx
+githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/content/docs/${page.file.path}`}
+```
+
+## Performance
+
+All endpoints are optimized for performance:
+
+| Endpoint | Caching Strategy | Generation |
+|----------|-----------------|------------|
+| `/llms.txt` | `s-maxage=86400` (24h) | Dynamic |
+| `/llms-full.txt` | `revalidate=false` (permanent) | Dynamic |
+| `*.mdx` routes | `immutable` | Static |
+| Middleware | Minimal overhead | Runtime |
+| Copy button | Client-side cache | Client |
+
+<Callout type="success">
+  Static generation ensures fast response times and minimal server load.
+</Callout>
+
+## Benefits
+
+### For AI Agents
+
+- **Easy discovery** via `/llms.txt`
+- **Complete context** via `/llms-full.txt`
+- **Granular access** via `.mdx` extensions
+- **Automatic detection** via content negotiation
+- **Optimized format** for RAG systems
+
+### For Users
+
+- **Quick markdown copy** with one click
+- **Direct AI tool links** in View Options
+- **Easy sharing** with AI-friendly URLs
+- **Better collaboration** with AI assistants
+
+### For Developers
+
+- **Standards-compliant** following llms.txt spec
+- **Performance-optimized** with caching
+- **Extensible** architecture
+- **Well-documented** implementation
+
+## Related Documentation
+
+- [llms-full.txt Format](/docs/features/llms-full-format) - Detailed format specification
+- [Testing Guide](/docs/guides/testing) - Verify your integration
+- [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints
+
+## External Resources
+
+- [Fumadocs LLM Guide](https://fumadocs.dev/docs/ui/llms)
+- [llms.txt Specification](https://llmstxt.org)
+- [Content Negotiation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation)

@@ -1,0 +1,289 @@
+---
+title: Database Architecture
+description: Comprehensive database implementation using SQLModel and Alembic
+---
+
+# Database Architecture
+
+AI Web Feeds uses a robust database implementation with SQLModel (SQLAlchemy + Pydantic) and Alembic for migrations.
+
+## Architecture Overview
+
+The database implementation has been organized and enhanced with:
+
+### 1. Organized Analytics Subpackage
+
+```
+ai_web_feeds/analytics/
+├── __init__.py          # Package exports
+├── core.py              # Core analytics (FeedAnalytics)
+└── advanced.py          # ML-powered advanced analytics
+```
+
+**Core Analytics** (`analytics/core.py`):
+- Feed statistics and distributions
+- Quality metrics
+- Content analysis
+- Publishing trends
+- Health reports
+- Anomaly detection
+- Benchmarking
+
+**Advanced Analytics** (`analytics/advanced.py`):
+- Predictive feed health modeling
+- Content similarity and clustering  
+- ML-powered pattern detection
+- Topic relationship analysis
+- Recommendation engine
+
+### 2. Database Models
+
+**Core Models** (`models.py`):
+- `FeedSource` - Feed metadata and configuration
+- `FeedItem` - Individual feed entries
+- `FeedFetchLog` - Fetch attempt history
+- `Topic` - Topic taxonomy
+
+**Advanced Models** (`models_advanced.py`):
+- `FeedValidationHistory` - Validation tracking over time
+- `FeedHealthMetric` - Health scores and metrics
+- `DataQualityMetric` - Multi-dimensional quality tracking
+- `ContentEmbedding` - Semantic search embeddings
+- `TopicRelationship` - Computed topic associations
+- `UserFeedPreference` - User interactions and preferences
+- `AnalyticsCacheEntry` - Computed analytics caching
+
+### 3. Data Synchronization
+
+Robust ETL pipeline for YAML ↔ Database (`data_sync.py`):
+
+- **FeedDataLoader**: Load `feeds.yaml` → Database
+- **TopicDataLoader**: Load `topics.yaml` → Database  
+- **DataExporter**: Export Database → `feeds.enriched.yaml`
+- **DataSyncOrchestrator**: Full bidirectional sync
+
+Features:
+- Upsert operations (insert or update)
+- Batch processing
+- Progress tracking
+- Error handling with optional skip
+- Schema validation
+- Stable ID generation from URLs
+
+### 4. Database Migrations (Alembic)
+
+Location: `packages/ai_web_feeds/alembic/`
+
+Initialize Alembic:
+```bash
+cd packages/ai_web_feeds
+uv run alembic init alembic
+```
+
+Create migration:
+```bash
+uv run alembic revision --autogenerate -m "description"
+```
+
+Apply migrations:
+```bash
+uv run alembic upgrade head
+```
+
+## Database Schema
+
+### Core Tables
+
+#### `feed_sources` Table
+
+Core feed metadata and configuration:
+
+- **Core fields:** `id`, `feed`, `site`, `title`
+- **Classification:** `source_type`, `mediums`, `tags`
+- **Topics:** `topics`, `topic_weights`
+- **Metadata:** `language`, `format`, `updated`, `last_validated`, `verified`, `contributor`
+- **Curation:** `curation_status`, `curation_since`, `curation_by`, `quality_score`, `curation_notes`
+- **Provenance:** `provenance_source`, `provenance_from`, `provenance_license`
+- **Discovery:** `discover_enabled`, `discover_config`
+- **Relations:** `relations`, `mappings` (JSON fields)
+
+#### `feed_items` Table
+
+Individual feed entries:
+
+- **Identifiers:** `id` (UUID), `feed_source_id` (foreign key)
+- **Content:** `title`, `link`, `description`, `content`, `author`
+- **Timestamps:** `published`, `updated`, `created_at`, `updated_at`
+- **Metadata:** `guid`, `categories`, `tags`, `enclosures`, `extra_data`
+
+#### `feed_fetch_logs` Table
+
+Fetch attempt tracking:
+
+- **Fetch info:** `fetched_at`, `fetch_url`, `success`
+- **Response:** `status_code`, `content_type`, `content_length`, `etag`, `last_modified`
+- **Errors:** `error_message`, `error_type`
+- **Stats:** `items_found`, `items_new`, `items_updated`, `fetch_duration_ms`
+- **Data:** `response_headers`, `extra_data` (JSON fields)
+
+#### `topics` Table
+
+Topic definitions:
+
+- **Core:** `id`, `name`, `description`, `parent_id`
+- **Metadata:** `aliases`, `related_topics`
+- **Timestamps:** `created_at`, `updated_at`
+
+### Advanced Tables
+
+#### `feed_validation_history`
+
+Tracks validation attempts over time:
+- Validation timestamp and status
+- Schema version used
+- Validation errors (JSON)
+- Environment context
+
+#### `feed_health_metrics`
+
+Monitors feed health with component scores:
+- Overall health score
+- Availability score
+- Freshness score
+- Content quality score
+- Reliability score
+
+#### `data_quality_metrics`
+
+Multi-dimensional quality tracking:
+- Quality dimension (completeness, accuracy, consistency, timeliness, uniqueness, validity)
+- Quality score and threshold
+- Record counts (total vs. valid)
+- Improvement suggestions
+
+#### `content_embeddings`
+
+Store embeddings for semantic search:
+- Embedding vector (JSON array)
+- Model name and version
+- Dimension count
+- Computation metadata
+
+#### `topic_relationships`
+
+Computed topic associations:
+- Source and target topics
+- Relationship type (parent, related, similar, prerequisite, inverse)
+- Strength score (0.0-1.0)
+- Computation method
+
+#### `user_feed_preferences`
+
+User interactions and preferences:
+- User and feed identifiers
+- Preference type (subscription, bookmark, like, hide, report)
+- Preference value (JSON)
+- Creation and update timestamps
+
+#### `analytics_cache_entries`
+
+Cache expensive analytics computations:
+- Cache key and value (JSON)
+- Computation timestamp
+- TTL (seconds)
+- Hit count
+- Metadata
+
+### Indexes
+
+All tables include appropriate indexes for performance:
+
+- **Time-based queries**: `created_at`, `updated_at`, `calculated_at`
+- **Status filtering**: `validation_status`, `health_status`, `is_valid`
+- **Feed lookups**: `feed_source_id`, `feed_item_id`
+- **Relationships**: Foreign key indexes
+- **Compound indexes**: Multi-column for complex queries
+
+## Performance Considerations
+
+### SQLite Optimizations
+
+1. Batch inserts for bulk operations
+2. `render_as_batch=True` for ALTER TABLE support
+3. Connection pooling disabled (NullPool) for SQLite
+
+### Caching
+
+- `AnalyticsCacheEntry` for expensive computations
+- TTL-based expiration
+- Hit tracking for cache effectiveness
+
+### Future: Materialized Views
+
+- Topic relationship matrices
+- Feed similarity scores
+- Aggregated statistics
+
+## Data Quality
+
+The enhanced system includes comprehensive quality tracking:
+
+### Quality Dimensions
+
+1. **Completeness**: Are required fields populated?
+2. **Accuracy**: Are values correct and valid?
+3. **Consistency**: Are values consistent across records?
+4. **Timeliness**: Are records up-to-date?
+5. **Uniqueness**: Are there duplicates?
+6. **Validity**: Do values conform to schemas?
+
+### Quality Metrics
+
+```python
+from ai_web_feeds.models_advanced import DataQualityMetric, QualityDimension
+
+# Track quality metric
+metric = DataQualityMetric(
+    feed_source_id="feed_xyz",
+    dimension=QualityDimension.COMPLETENESS,
+    quality_score=0.95,
+    threshold=0.9,
+    meets_threshold=True,
+    total_records=100,
+    valid_records=95,
+)
+```
+
+## Best Practices
+
+1. **Always use context managers** for database sessions
+2. **Batch operations** for bulk inserts/updates
+3. **Validate data** before database operations
+4. **Use transactions** for multi-step operations
+5. **Index frequently queried fields**
+6. **Monitor query performance** using `echo=True` during development
+7. **Cache expensive analytics** using `AnalyticsCacheEntry`
+8. **Regular backups** of `aiwebfeeds.db`
+
+## Future Enhancements
+
+- [ ] PostgreSQL support for production deployments
+- [ ] Vector database integration (pgvector) for embeddings
+- [ ] Real-time analytics streaming
+- [ ] Distributed caching (Redis)
+- [ ] GraphQL API for database access
+- [ ] Automated data quality reporting
+- [ ] ML model versioning and tracking
+- [ ] Time-series optimizations for metrics
+
+## Related Documentation
+
+- [Database Quick Start](/docs/guides/database-quick-start) - Get started quickly
+- [Database Enhancements](/docs/development/database-enhancements) - What was added and why
+- [Python API](/docs/development/python-api) - Using the database API
+- [Testing](/docs/development/testing) - Database testing guidelines
+
+---
+
+**Version**: 0.1.0  
+**Last Updated**: October 15, 2025

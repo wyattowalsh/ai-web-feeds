@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: AIWebFeeds Export API
+  version: 1.0.0
+  description: API for exporting data in multiple formats (CSV, JSON, Parquet)
+
+servers:
+  - url: /api/v1
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /export:
+    post:
+      summary: Export data
+      description: Export visualization or dashboard data in specified format
+      operationId: exportData
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Sync export completed (small datasets)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+            text/csv:
+              schema:
+                type: string
+            application/x-parquet:
+              schema:
+                type: string
+                format: binary
+        '202':
+          description: Async export job created (large datasets)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportJob'
+
+  /export/jobs/{id}:
+    get:
+      summary: Get export job status
+      description: Check status of async export job
+      operationId: getExportJob
+      tags: [Export]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportJobStatus'
+
+  /export/jobs:
+    get:
+      summary: List export jobs
+      description: Get all export jobs for device
+      operationId: listExportJobs
+      tags: [Export]
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+      responses:
+        '200':
+          description: List of export jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportJobStatus'
+
+  /export/formats:
+    get:
+      summary: Get supported export formats
+      description: List available export formats and their capabilities
+      operationId: getExportFormats
+      tags: [Export]
+      responses:
+        '200':
+          description: Supported formats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportFormat'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    DeviceId:
+      name: device_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ExportRequest:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+          enum: [visualization, dashboard, forecast, raw_data]
+        entity_id:
+          type: integer
+          description: ID of visualization/dashboard/forecast
+        format:
+          type: string
+          enum: [csv, json, parquet]
+        options:
+          $ref: '#/components/schemas/ExportOptions'
+      required: [device_id, entity_type, format]
+
+    ExportOptions:
+      type: object
+      properties:
+        include_metadata:
+          type: boolean
+          default: false
+        date_format:
+          type: string
+          default: "ISO8601"
+        compression:
+          type: string
+          enum: [none, gzip, snappy]
+          default: none
+        precision:
+          type: integer
+          minimum: 0
+          maximum: 15
+          default: 6
+        include_confidence_intervals:
+          type: boolean
+          default: true
+          description: For forecasts only
+
+    ExportResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          description: Exported data as string (CSV/JSON) or base64 (Parquet)
+        format:
+          type: string
+        size_bytes:
+          type: integer
+        row_count:
+          type: integer
+
+    ExportJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        api_key_id:
+          type: integer
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+        format:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+
+    ExportJobStatus:
+      allOf:
+        - $ref: '#/components/schemas/ExportJob'
+        - type: object
+          properties:
+            file_url:
+              type: string
+              description: Download URL (available when status=completed)
+            expires_at:
+              type: string
+              format: date-time
+            error_message:
+              type: string
+            progress_percent:
+              type: integer
+              minimum: 0
+              maximum: 100
+
+    ExportFormat:
+      type: object
+      properties:
+        format:
+          type: string
+        mime_type:
+          type: string
+        supports_compression:
+          type: boolean
+        max_rows_sync:
+          type: integer
+          description: Max rows for synchronous export
+        typical_size_kb:
+          type: integer
+          description: Typical file size per 1000 rows

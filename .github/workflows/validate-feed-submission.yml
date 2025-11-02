@@ -1,0 +1,223 @@
+name: Validate Feed Submission
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate-feed:
+    if: contains(github.event.issue.labels.*.name, 'feed-submission')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema requests feedparser
+          
+      - name: Parse issue and validate
+        id: validate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            
+            // Parse issue body to extract feed data
+            const issueBody = context.payload.issue.body;
+            const lines = issueBody.split('\n');
+            
+            // Extract fields from issue form
+            function extractField(label) {
+              const regex = new RegExp(`### ${label}\\s*\\n\\s*(.+?)(?=\\n###|$)`, 's');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            }
+            
+            const feedData = {
+              id: extractField('Feed ID'),
+              feed: extractField('Feed URL') || undefined,
+              site: extractField('Website URL') || undefined,
+              title: extractField('Feed Title'),
+              source_type: extractField('Source Type').toLowerCase(),
+              topics: extractField('Topics')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.match(/\(([^)]+)\)/)?.[1])
+                .filter(Boolean),
+              mediums: extractField('Content Mediums')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.replace('- [x]', '').trim().toLowerCase())
+                .filter(Boolean),
+            };
+            
+            // Add optional fields
+            const language = extractField('Language');
+            if (language) {
+              feedData.meta = { language };
+            }
+            
+            const platform = extractField('Platform (if applicable)');
+            if (platform && platform !== 'None') {
+              const platformDetails = extractField('Platform Details');
+              if (platformDetails) {
+                try {
+                  feedData.platform_config = {
+                    platform: platform.toLowerCase(),
+                    [platform.toLowerCase()]: JSON.parse(platformDetails)
+                  };
+                } catch (e) {
+                  core.warning(`Failed to parse platform details: ${e.message}`);
+                }
+              }
+            }
+            
+            const tags = extractField('Tags');
+            if (tags) {
+              feedData.tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+            }
+            
+            const notes = extractField('Additional Notes');
+            if (notes) {
+              feedData.notes = notes;
+            }
+            
+            const autoDiscover = extractField('Enable Auto-Discovery?');
+            if (autoDiscover === 'Yes (recommended)') {
+              feedData.discover = true;
+            }
+            
+            // Save parsed data for next step
+            fs.writeFileSync('parsed_feed.json', JSON.stringify(feedData, null, 2));
+            
+            // Comment on issue with parsed data
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🔍 Validation Results\n\n### Parsed Feed Data:\n\`\`\`json\n${JSON.stringify(feedData, null, 2)}\n\`\`\``
+            });
+            
+      - name: Validate against schema
+        run: |
+          python3 << 'EOF'
+          import json
+          import jsonschema
+          import sys
+          
+          # Load schema
+          with open('data/feeds.schema.json', 'r') as f:
+              schema = json.load(f)
+          
+          # Load parsed feed data
+          with open('parsed_feed.json', 'r') as f:
+              feed_data = json.load(f)
+          
+          # Validate
+          try:
+              # Create a minimal valid document
+              document = {
+                  'schema_version': 'feeds-1.0.0',
+                  'sources': [feed_data]
+              }
+              
+              jsonschema.validate(instance=document, schema=schema)
+              print("✅ Validation successful!")
+              
+              # Write to output file
+              with open('validation_result.txt', 'w') as f:
+                  f.write('success')
+                  
+          except jsonschema.exceptions.ValidationError as e:
+              print(f"❌ Validation failed: {e.message}")
+              with open('validation_result.txt', 'w') as f:
+                  f.write(f'failed: {e.message}')
+              sys.exit(1)
+          EOF
+          
+      - name: Test feed accessibility
+        run: |
+          python3 << 'EOF'
+          import json
+          import requests
+          import feedparser
+          
+          with open('parsed_feed.json', 'r') as f:
+              feed_data = json.load(f)
+          
+          feed_url = feed_data.get('feed') or feed_data.get('site')
+          if not feed_url:
+              print("⚠️ No feed or site URL provided")
+              exit(0)
+          
+          try:
+              # Try to fetch the feed
+              response = requests.get(feed_url, timeout=10)
+              if response.status_code == 200:
+                  print(f"✅ Feed URL accessible (status: {response.status_code})")
+                  
+                  # Try to parse as feed
+                  feed = feedparser.parse(feed_url)
+                  if feed.bozo:
+                      print(f"⚠️ Feed parsing warning: {feed.bozo_exception}")
+                  else:
+                      print(f"✅ Feed parsed successfully ({len(feed.entries)} entries)")
+              else:
+                  print(f"⚠️ Feed URL returned status: {response.status_code}")
+          except Exception as e:
+              print(f"⚠️ Failed to access feed: {e}")
+          EOF
+          
+      - name: Post validation result
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let validationResult = 'unknown';
+            let message = '';
+            
+            try {
+              const result = fs.readFileSync('validation_result.txt', 'utf8');
+              if (result.startsWith('success')) {
+                validationResult = 'success';
+                message = '✅ **Validation Passed**\n\nYour feed submission is valid and ready for review!';
+                
+                // Add label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: ['validated']
+                });
+              } else {
+                validationResult = 'failed';
+                message = `❌ **Validation Failed**\n\n${result.replace('failed: ', '')}`;
+                
+                // Add label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: ['validation-failed']
+                });
+              }
+            } catch (e) {
+              message = `⚠️ **Validation Error**\n\nAn error occurred during validation: ${e.message}`;
+            }
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: message + '\n\n---\n\nA maintainer will review this submission soon.'
+            });

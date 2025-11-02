@@ -1,0 +1,318 @@
+---
+title: Python API Documentation
+description: Automated API documentation generation from Python docstrings
+---
+
+# Python API Documentation
+
+AIWebFeeds uses [fumadocs-python](https://fumadocs.dev/docs/ui/python) to automatically generate API documentation from Python docstrings.
+
+<Callout type="info">
+  This integration extracts docstrings from the `ai_web_feeds` Python package and generates interactive MDX documentation pages.
+</Callout>
+
+## Overview
+
+The documentation workflow:
+
+1. **Python docstrings** → Written in code with proper type hints
+2. **JSON generation** → `fumapy-generate` extracts documentation
+3. **MDX conversion** → Script converts JSON to MDX files
+4. **Web display** → FumaDocs renders interactive API docs
+
+## Prerequisites
+
+### 1. Install Dependencies
+
+```bash
+# Install Node.js dependencies
+cd apps/web
+pnpm install
+
+# Install Python dependencies (from workspace root)
+cd ../..
+uv sync --dev
+```
+
+### 2. Install fumadocs-python CLI
+
+```bash
+pip install fumadocs-python
+```
+
+Or using uv:
+
+```bash
+uv pip install fumadocs-python
+```
+
+## Generating Documentation
+
+### Step 1: Generate JSON
+
+From the workspace root:
+
+```bash
+# Generate documentation JSON for ai_web_feeds package
+fumapy-generate ai_web_feeds
+
+# This creates ai_web_feeds.json in the current directory
+```
+
+Move the generated JSON to the web app:
+
+```bash
+mv ai_web_feeds.json apps/web/
+```
+
+### Step 2: Convert to MDX
+
+From `apps/web`:
+
+```bash
+pnpm generate:docs
+```
+
+This script:
+- Reads `ai_web_feeds.json`
+- Cleans previous output in `content/docs/api/`
+- Converts JSON to MDX format
+- Writes MDX files with proper frontmatter
+
+### Step 3: View Documentation
+
+Start the dev server:
+
+```bash
+pnpm dev
+```
+
+Visit: [http://localhost:3000/docs/api](http://localhost:3000/docs/api)
+
+## Writing Good Docstrings
+
+fumadocs-python supports standard Python docstring formats. Use type hints and detailed descriptions:
+
+```python
+from typing import List, Optional
+from pydantic import BaseModel
+
+class Feed(BaseModel):
+    """
+    Represents an RSS/Atom feed.
+    
+    Attributes:
+        url: The feed URL
+        title: Feed title
+        category: Optional category classification
+    """
+    url: str
+    title: str
+    category: Optional[str] = None
+
+def fetch_feed(url: str, timeout: int = 30) -> Feed:
+    """
+    Fetch and parse an RSS/Atom feed.
+    
+    Args:
+        url: The feed URL to fetch
+        timeout: Request timeout in seconds (default: 30)
+    
+    Returns:
+        Parsed Feed object
+    
+    Raises:
+        HTTPError: If the request fails
+        ParseError: If the feed cannot be parsed
+    
+    Examples:
+        ```python
+        feed = fetch_feed("https://example.com/feed.xml")
+        print(feed.title)
+        ```
+    """
+    # Implementation here
+    pass
+```
+
+## MDX Syntax Compatibility
+
+<Callout type="warn">
+  Docstrings are converted to **MDX**, not Markdown. Ensure syntax compatibility:
+</Callout>
+
+### ✅ Valid MDX
+```python
+"""
+This is a **bold** statement.
+
+- List item 1
+- List item 2
+
+Code example:
+\`\`\`python
+x = 1
+\`\`\`
+"""
+```
+
+### ❌ Invalid MDX
+```python
+"""
+Don't use <angle brackets> directly
+Use HTML entities: &lt;angle brackets&gt;
+"""
+```
+
+## Project Structure
+
+```
+apps/web/
+├── scripts/
+│   └── generate-python-docs.mjs   # Conversion script
+├── content/docs/api/               # Generated API docs (auto)
+│   ├── index.mdx
+│   └── [module]/
+│       └── [class].mdx
+├── ai_web_feeds.json               # Generated JSON (temp)
+└── package.json                    # Contains generate:docs script
+```
+
+## Configuration
+
+### Custom Output Directory
+
+Edit `scripts/generate-python-docs.mjs`:
+
+```js
+const OUTPUT_DIR = path.join(process.cwd(), 'content/docs/your-path');
+const BASE_URL = '/docs/your-path';
+```
+
+### Custom Package Name
+
+```js
+const PACKAGE_NAME = 'your_package_name';
+```
+
+## Automation
+
+### Makefile Target
+
+Add to workspace `Makefile`:
+
+```makefile
+.PHONY: docs-api
+docs-api:
+	@echo "Generating Python API docs..."
+	fumapy-generate ai_web_feeds
+	mv ai_web_feeds.json apps/web/
+	cd apps/web && pnpm generate:docs
+	@echo "✅ API docs generated!"
+```
+
+Usage:
+```bash
+make docs-api
+```
+
+### Pre-build Hook
+
+Add to `apps/web/package.json`:
+
+```json
+{
+  "scripts": {
+    "prebuild": "pnpm generate:docs || true"
+  }
+}
+```
+
+## Components
+
+The integration adds these MDX components:
+
+- **Class documentation**: Renders class signatures and methods
+- **Function documentation**: Shows parameters, return types, examples
+- **Type annotations**: Interactive type information
+- **Code examples**: Syntax-highlighted examples from docstrings
+
+Import in MDX:
+
+```mdx
+import { PythonClass, PythonFunction } from 'fumadocs-python/components';
+```
+
+## Styling
+
+Styles are imported in `app/global.css`:
+
+```css
+@import 'fumadocs-python/preset.css';
+```
+
+Customize styles in your Tailwind config or override CSS variables.
+
+## Troubleshooting
+
+### JSON file not found
+
+**Error**: `❌ JSON file not found: ai_web_feeds.json`
+
+**Solution**:
+```bash
+fumapy-generate ai_web_feeds
+mv ai_web_feeds.json apps/web/
+```
+
+### Module not found
+
+**Error**: `Cannot find module 'fumadocs-python'`
+
+**Solution**:
+```bash
+cd apps/web
+pnpm install
+```
+
+### MDX syntax errors
+
+**Error**: Build fails with MDX parsing errors
+
+**Solution**:
+- Escape special characters in docstrings
+- Use HTML entities for `<>` brackets
+- Validate MDX syntax before generation
+
+### Empty API docs
+
+**Issue**: No content in generated docs
+
+**Check**:
+1. Are your Python files properly documented?
+2. Is the package installed? (`pip install -e packages/ai_web_feeds`)
+3. Are docstrings using standard format?
+
+## Best Practices
+
+1. **Type hints**: Always use type annotations
+2. **Examples**: Include usage examples in docstrings
+3. **Completeness**: Document all public APIs
+4. **Consistency**: Use consistent docstring format
+5. **Regenerate**: Run `pnpm generate:docs` after docstring changes
+6. **Version control**: Don't commit `ai_web_feeds.json` or `content/docs/api/` (add to `.gitignore`)
+
+## Related
+
+- [FumaDocs Python Integration](https://fumadocs.dev/docs/ui/python)
+- [Python Docstring Conventions (PEP 257)](https://peps.python.org/pep-0257/)
+- [Type Hints (PEP 484)](https://peps.python.org/pep-0484/)
+- [Contributing Guide](/docs/contributing)
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/api" title="View API Reference" description="Browse the generated API documentation" />
+  <Card href="/docs/development/testing" title="Testing" description="Learn about our testing practices" />
+  <Card href="/docs/contributing" title="Contributing" description="Contribute to AIWebFeeds" />
+</Cards>

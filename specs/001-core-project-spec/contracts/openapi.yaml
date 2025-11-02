@@ -1,0 +1,848 @@
+openapi: 3.1.0
+info:
+  title: AIWebFeeds API
+  description: |
+    REST API for AIWebFeeds - AI/ML Feed Aggregator Platform
+    
+    Provides programmatic access to curated feed collection, topic taxonomy, 
+    validation results, and search capabilities.
+  version: 1.0.0
+  contact:
+    name: AIWebFeeds
+    url: https://aiwebfeeds.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://aiwebfeeds.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+  - name: feeds
+    description: Feed collection operations
+  - name: topics
+    description: Topic taxonomy operations
+  - name: search
+    description: Search and discovery
+  - name: validation
+    description: Validation results and health
+  - name: exports
+    description: OPML and JSON exports
+
+paths:
+  /feeds:
+    get:
+      summary: List all feeds
+      description: Retrieve paginated list of feed sources with optional filtering
+      operationId: listFeeds
+      tags:
+        - feeds
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: topic
+          in: query
+          description: Filter by topic ID
+          schema:
+            type: string
+            example: llm
+        - name: sourceType
+          in: query
+          description: Filter by source type
+          schema:
+            type: string
+            enum: [blog, podcast, newsletter, preprint, repository, organization, course, conference]
+        - name: verified
+          in: query
+          description: Filter by verification status
+          schema:
+            type: boolean
+        - name: active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+            default: true
+        - name: sort
+          in: query
+          description: Sort field and direction
+          schema:
+            type: string
+            enum: [title, lastValidated, createdAt, -title, -lastValidated, -createdAt]
+            default: title
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedListResponse'
+          headers:
+            X-Total-Count:
+              description: Total number of feeds matching filters
+              schema:
+                type: integer
+            X-Page:
+              description: Current page number
+              schema:
+                type: integer
+            X-Page-Size:
+              description: Items per page
+              schema:
+                type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /feeds/{feedId}:
+    get:
+      summary: Get feed by ID
+      description: Retrieve detailed information about a specific feed
+      operationId: getFeed
+      tags:
+        - feeds
+      parameters:
+        - name: feedId
+          in: path
+          required: true
+          description: Feed identifier
+          schema:
+            type: string
+            example: openai-blog
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /topics:
+    get:
+      summary: List all topics
+      description: Retrieve complete topic taxonomy with relationships
+      operationId: listTopics
+      tags:
+        - topics
+      parameters:
+        - name: facet
+          in: query
+          description: Filter by topic facet
+          schema:
+            type: string
+            enum: [domain, task, methodology, tool, governance, operational]
+        - name: includeRelations
+          in: query
+          description: Include topic relationships in response
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicListResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /topics/{topicId}:
+    get:
+      summary: Get topic by ID
+      description: Retrieve topic details with related topics and feeds
+      operationId: getTopic
+      tags:
+        - topics
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          description: Topic identifier
+          schema:
+            type: string
+            example: llm
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /topics/{topicId}/feeds:
+    get:
+      summary: Get feeds for topic
+      description: Retrieve all feeds tagged with specified topic
+      operationId: getTopicFeeds
+      tags:
+        - topics
+        - feeds
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          description: Topic identifier
+          schema:
+            type: string
+            example: llm
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /search:
+    get:
+      summary: Search feeds and topics
+      description: Full-text search across feed titles, descriptions, and topic labels
+      operationId: search
+      tags:
+        - search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 2
+            example: machine learning
+        - name: type
+          in: query
+          description: Limit search to specific entity type
+          schema:
+            type: string
+            enum: [feeds, topics, all]
+            default: all
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /validation/summary:
+    get:
+      summary: Get validation summary
+      description: Retrieve aggregate validation statistics
+      operationId: getValidationSummary
+      tags:
+        - validation
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationSummary'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /validation/{feedId}/history:
+    get:
+      summary: Get validation history
+      description: Retrieve validation history for specific feed
+      operationId: getValidationHistory
+      tags:
+        - validation
+      parameters:
+        - name: feedId
+          in: path
+          required: true
+          description: Feed identifier
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of recent validations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedId:
+                    type: string
+                  validations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidationResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /exports/opml:
+    get:
+      summary: Generate OPML export
+      description: Generate OPML 2.0 file with optional filtering
+      operationId: generateOPML
+      tags:
+        - exports
+      parameters:
+        - name: topic
+          in: query
+          description: Filter by topic ID
+          schema:
+            type: string
+        - name: sourceType
+          in: query
+          description: Filter by source type
+          schema:
+            type: string
+        - name: verified
+          in: query
+          description: Only include verified feeds
+          schema:
+            type: boolean
+            default: true
+        - name: organized
+          in: query
+          description: Organize into folders by source type
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OPML file generated successfully
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Filename for download
+              schema:
+                type: string
+                example: attachment; filename="aiwebfeeds.opml"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /stats:
+    get:
+      summary: Get collection statistics
+      description: Retrieve aggregate statistics about feed collection
+      operationId: getStats
+      tags:
+        - feeds
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionStats'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+components:
+  schemas:
+    FeedSource:
+      type: object
+      required:
+        - id
+        - url
+        - title
+        - sourceType
+      properties:
+        id:
+          type: string
+          description: Unique feed identifier
+          example: openai-blog
+        url:
+          type: string
+          format: uri
+          description: Feed URL (RSS/Atom/JSON Feed)
+          example: https://openai.com/blog/rss/
+        site:
+          type: string
+          format: uri
+          description: Website URL
+          example: https://openai.com/blog/
+        title:
+          type: string
+          description: Feed title
+          example: OpenAI Blog
+        description:
+          type: string
+          description: Feed description
+        sourceType:
+          type: string
+          enum: [blog, podcast, newsletter, preprint, repository, organization, course, conference]
+          description: Type of content source
+        topics:
+          type: array
+          items:
+            type: string
+          description: Array of topic IDs
+          example: [llm, research, industry]
+        verified:
+          type: boolean
+          description: Verification status
+          default: false
+        lastValidated:
+          type: string
+          format: date-time
+          description: Last validation timestamp
+        isActive:
+          type: boolean
+          description: Active status
+          default: true
+        language:
+          type: string
+          description: ISO 639-1 language code
+          example: en
+        feedFormat:
+          type: string
+          description: Detected feed format
+          example: rss2.0
+        updateFrequency:
+          type: string
+          description: Approximate update frequency
+          example: daily
+
+    FeedDetail:
+      allOf:
+        - $ref: '#/components/schemas/FeedSource'
+        - type: object
+          properties:
+            enrichment:
+              $ref: '#/components/schemas/EnrichmentMetadata'
+            validationSummary:
+              type: object
+              properties:
+                healthScore:
+                  type: number
+                  format: float
+                  minimum: 0
+                  maximum: 1
+                successRate:
+                  type: number
+                  format: float
+                  minimum: 0
+                  maximum: 1
+                lastSuccess:
+                  type: string
+                  format: date-time
+                lastFailure:
+                  type: string
+                  format: date-time
+            recentEntries:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeedEntry'
+              maxItems: 10
+
+    FeedEntry:
+      type: object
+      required:
+        - id
+        - title
+        - link
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        link:
+          type: string
+          format: uri
+        summary:
+          type: string
+        published:
+          type: string
+          format: date-time
+        author:
+          type: string
+
+    Topic:
+      type: object
+      required:
+        - id
+        - label
+        - facet
+      properties:
+        id:
+          type: string
+          description: Unique topic identifier
+          example: llm
+        label:
+          type: string
+          description: Human-readable label
+          example: Large Language Models
+        description:
+          type: string
+          description: Topic description
+        facet:
+          type: string
+          enum: [domain, task, methodology, tool, governance, operational]
+          description: Topic categorization facet
+        aliases:
+          type: array
+          items:
+            type: string
+          description: Alternative names for search
+        mappings:
+          type: object
+          description: External identifier mappings
+          additionalProperties:
+            type: string
+          example:
+            wikidata: Q124351267
+            arxiv: cs.AI
+
+    TopicDetail:
+      allOf:
+        - $ref: '#/components/schemas/Topic'
+        - type: object
+          properties:
+            relations:
+              type: object
+              properties:
+                parents:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TopicRelation'
+                children:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TopicRelation'
+                related:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TopicRelation'
+            feedCount:
+              type: integer
+              description: Number of feeds tagged with this topic
+
+    TopicRelation:
+      type: object
+      required:
+        - sourceTopicId
+        - targetTopicId
+        - relationType
+      properties:
+        sourceTopicId:
+          type: string
+        targetTopicId:
+          type: string
+        relationType:
+          type: string
+          enum: [depends_on, implements, influences, related_to, contrasts_with, same_as]
+        isDirected:
+          type: boolean
+        weight:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    ValidationResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        feedSourceId:
+          type: string
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        errorMessage:
+          type: string
+        responseTime:
+          type: number
+          format: float
+        timestamp:
+          type: string
+          format: date-time
+
+    EnrichmentMetadata:
+      type: object
+      properties:
+        inferredTopics:
+          type: array
+          items:
+            type: string
+        qualityScore:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        healthScore:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        enrichedAt:
+          type: string
+          format: date-time
+        enrichmentMethod:
+          type: string
+
+    FeedListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedSource'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    TopicListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        meta:
+          type: object
+          properties:
+            totalCount:
+              type: integer
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/TopicRelation'
+
+    SearchResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            feeds:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeedSource'
+            topics:
+              type: array
+              items:
+                $ref: '#/components/schemas/Topic'
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/PaginationMeta'
+            - type: object
+              properties:
+                query:
+                  type: string
+
+    ValidationSummary:
+      type: object
+      properties:
+        totalFeeds:
+          type: integer
+        verifiedFeeds:
+          type: integer
+        activeFeeds:
+          type: integer
+        overallHealthScore:
+          type: number
+          format: float
+        validationRuns:
+          type: object
+          properties:
+            last24Hours:
+              type: integer
+            last7Days:
+              type: integer
+        successRate:
+          type: number
+          format: float
+        avgResponseTime:
+          type: number
+          format: float
+
+    CollectionStats:
+      type: object
+      properties:
+        totalFeeds:
+          type: integer
+        feedsBySourceType:
+          type: object
+          additionalProperties:
+            type: integer
+        feedsByTopic:
+          type: object
+          additionalProperties:
+            type: integer
+        totalTopics:
+          type: integer
+        verifiedFeeds:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+
+    PaginationMeta:
+      type: object
+      required:
+        - totalCount
+        - page
+        - pageSize
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number (1-indexed)
+        pageSize:
+          type: integer
+          description: Items per page
+        totalPages:
+          type: integer
+          description: Total number of pages
+        hasNext:
+          type: boolean
+          description: Whether next page exists
+        hasPrevious:
+          type: boolean
+          description: Whether previous page exists
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: BAD_REQUEST
+            message: Invalid query parameters
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: NOT_FOUND
+            message: Feed not found
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: RATE_LIMIT_EXCEEDED
+            message: Too many requests. Please try again later.
+      headers:
+        X-RateLimit-Limit:
+          description: Request limit per hour
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in current window
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when limit resets
+          schema:
+            type: integer
+        Retry-After:
+          description: Seconds until limit resets
+          schema:
+            type: integer
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional API key for higher rate limits (future implementation)
+
+security: []  # No authentication required initially
+
+x-rate-limits:
+  anonymous: 1000 requests per hour
+  authenticated: 10000 requests per hour (future)
+

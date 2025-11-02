@@ -1,0 +1,554 @@
+---
+title: GitHub Actions Workflows
+description: Comprehensive guide to CI/CD workflows with CLI integration
+---
+
+# GitHub Actions Workflows
+
+AIWebFeeds uses an extensive suite of GitHub Actions workflows to ensure code quality, automate testing, and streamline development. All workflows leverage the **aiwebfeeds CLI** for consistent execution across environments.
+
+## 🎯 Overview
+
+Our CI/CD pipeline enforces:
+
+- ✅ **Code Quality**: Linting, formatting, and type checking
+- 🧪 **Testing**: Unit, integration, and E2E tests with coverage
+- 🔒 **Security**: CodeQL analysis and dependency scanning
+- 📊 **Feed Validation**: RSS/Atom feed schema compliance
+- 🤖 **Automation**: Auto-fixing, labeling, and release management
+
+---
+
+## 📋 Workflow Categories
+
+### Quality Enforcement
+
+#### `quality-enforcement.yml` - **Comprehensive Quality Gate**
+
+**Triggers**: Pull requests to `main` or `develop`
+
+**What it does**:
+1. **Python Quality Checks**
+   - Ruff linting (`uv run ruff check`)
+   - Ruff formatting (`uv run ruff format --check`)
+   - MyPy type checking (`uv run mypy`)
+   - Import sorting validation
+
+2. **Web Quality Checks**
+   - ESLint (`pnpm lint`)
+   - TypeScript type checking (`pnpm tsc --noEmit`)
+   - Link validation (`pnpm lint:links`)
+   - Build verification (`pnpm build`)
+
+3. **CLI Integration**
+   - Feed validation (`uv run aiwebfeeds validate --all`)
+   - Analytics generation (`uv run aiwebfeeds analytics`)
+   - Export verification (`uv run aiwebfeeds export`)
+
+4. **Test Suite**
+   - Unit tests (≥90% coverage required)
+   - Integration tests
+   - E2E tests
+   - Coverage reporting to Codecov
+
+**Required Status**: ✅ Must pass for merge
+
+```yaml
+# Example: Running quality checks locally
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy .
+cd apps/web && pnpm lint
+```
+
+---
+
+#### `python-quality.yml` - **Python-Specific Quality**
+
+**Triggers**: Push to any branch, PRs
+
+**What it does**:
+- Matrix testing across Python 3.11, 3.12, 3.13
+- Parallel linting, formatting, type checking
+- CLI command validation
+- Package build verification
+
+**Strategy**: Fast feedback on Python changes
+
+---
+
+### Testing & Coverage
+
+#### `coverage.yml` - **Comprehensive Test Coverage**
+
+**Triggers**: Push to `main`/`develop`, PRs
+
+**What it does**:
+1. Runs full test suite with `pytest-cov`
+2. Generates HTML and XML coverage reports
+3. Uploads to Codecov with threshold enforcement
+4. Validates ≥90% coverage requirement
+5. Posts coverage report as PR comment
+
+**CLI Integration**:
+```bash
+# Run tests with CLI validation
+uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=xml
+
+# Validate feeds after tests
+uv run aiwebfeeds validate --all --strict
+```
+
+**Artifacts**:
+- `coverage-report` - HTML coverage report
+- `coverage-xml` - XML for Codecov
+
+---
+
+### Feed Validation
+
+#### `validate-all-feeds.yml` - **Complete Feed Validation**
+
+**Triggers**: 
+- Push to `main`
+- Daily schedule (6 AM UTC)
+- Manual dispatch
+
+**What it does**:
+```bash
+# 1. Schema validation
+uv run aiwebfeeds validate --schema --strict
+
+# 2. URL reachability checks
+uv run aiwebfeeds validate --check-urls --timeout 30
+
+# 3. Feed parsing validation
+uv run aiwebfeeds validate --parse-feeds
+
+# 4. OPML export verification
+uv run aiwebfeeds opml export --validate
+
+# 5. Analytics generation
+uv run aiwebfeeds analytics --output data/analytics.json
+```
+
+**Notifications**: Posts summary to Slack/Discord on failures
+
+---
+
+#### `validate-feed-submission.yml` - **PR Feed Validation**
+
+**Triggers**: Pull requests modifying `data/feeds.yaml`
+
+**What it does**:
+1. Validates only changed feeds (incremental validation)
+2. Checks schema compliance
+3. Tests URL accessibility
+4. Verifies feed parsing
+5. Ensures no duplicates
+6. Validates topic assignments
+
+**CLI Usage**:
+```bash
+# Validate specific feeds
+uv run aiwebfeeds validate --feeds "https://example.com/feed.xml"
+
+# Validate with strict schema
+uv run aiwebfeeds validate --schema --strict --feeds-file data/feeds.yaml
+```
+
+**Auto-labels**: Adds `feeds:valid` or `feeds:invalid` label
+
+---
+
+#### `add-approved-feed.yml` - **Automated Feed Addition**
+
+**Triggers**: Issue labeled `feed:approved`
+
+**What it does**:
+1. Parses feed URL from issue body
+2. Validates feed structure
+3. Enriches metadata with `aiwebfeeds enrich`
+4. Creates PR with new feed
+5. Auto-assigns reviewers
+
+**CLI Integration**:
+```bash
+# Extract feed from issue
+FEED_URL=$(gh issue view $ISSUE_NUMBER --json body -q .body | grep -oP 'https?://\S+')
+
+# Validate and enrich
+uv run aiwebfeeds validate --feeds "$FEED_URL"
+uv run aiwebfeeds enrich --url "$FEED_URL" --output data/feeds.yaml
+```
+
+---
+
+### Auto-Fixing
+
+#### `auto-fix.yml` - **Automated Code Fixes**
+
+**Triggers**: 
+- Comment `/fix` on PR
+- Push to branches with `autofix/**` prefix
+
+**What it does**:
+1. **Python Fixes**:
+   ```bash
+   uv run ruff check --fix .
+   uv run ruff format .
+   ```
+
+2. **Web Fixes**:
+   ```bash
+   cd apps/web
+   pnpm lint --fix
+   ```
+
+3. **Feed Fixes**:
+   ```bash
+   # Re-enrich feeds to fix metadata
+   uv run aiwebfeeds enrich --all --fix-schema
+   
+   # Regenerate OPML with correct structure
+   uv run aiwebfeeds opml export --fix-structure
+   ```
+
+4. **Auto-commit**: Pushes fixes back to PR branch
+
+**Safety**: Only runs on PRs, never on `main`
+
+---
+
+### PR Validation
+
+#### `pr-validation.yml` - **Pull Request Quality Gate**
+
+**Triggers**: Pull request events (opened, synchronized, reopened)
+
+**What it does**:
+1. **Title Validation**: Enforces conventional commits
+2. **Label Validation**: Requires type labels
+3. **Size Check**: Warns on large PRs (>500 lines)
+4. **Linked Issues**: Verifies issue references
+5. **CLI Validation**: Runs relevant CLI commands based on changes
+
+**Change Detection**:
+```yaml
+# Runs different CLI commands based on changes
+if: contains(steps.changes.outputs.files, 'data/feeds.yaml')
+run: uv run aiwebfeeds validate --incremental
+
+if: contains(steps.changes.outputs.files, 'packages/ai_web_feeds/')
+run: uv run aiwebfeeds test --coverage
+
+if: contains(steps.changes.outputs.files, 'apps/web/')
+run: cd apps/web && pnpm lint && pnpm build
+```
+
+---
+
+### Security
+
+#### `codeql-analysis.yml` - **Security Scanning**
+
+**Triggers**: 
+- Push to `main`/`develop`
+- Weekly schedule
+- PRs to `main`
+
+**What it does**:
+- CodeQL scanning for Python and TypeScript
+- Dependency vulnerability scanning
+- Secret scanning
+- SAST analysis
+
+**Languages**: Python, JavaScript, TypeScript
+
+---
+
+#### `dependency-review.yml` - **Dependency Security**
+
+**Triggers**: Pull requests
+
+**What it does**:
+- Reviews new dependencies for vulnerabilities
+- Checks license compatibility
+- Validates dependency updates
+- Blocks PRs with high/critical vulnerabilities
+
+---
+
+### Automation
+
+#### `label-manager.yml` - **Automatic Labeling**
+
+**Triggers**: Pull requests, issues
+
+**What it does**:
+- Auto-labels based on file paths
+  - `python` - Changes to `.py` files
+  - `web` - Changes to `apps/web/`
+  - `cli` - Changes to `apps/cli/`
+  - `feeds` - Changes to `data/feeds.yaml`
+  - `docs` - Changes to `.mdx` files
+- Adds size labels (`size/S`, `size/M`, `size/L`, `size/XL`)
+- Detects breaking changes from commit messages
+
+**CLI Integration**:
+```bash
+# Generate labels from feed changes
+uv run aiwebfeeds analytics --changed-feeds --output labels.json
+```
+
+---
+
+#### `release-drafter.yml` - **Automated Release Notes**
+
+**Triggers**: Push to `main`, merged PRs
+
+**What it does**:
+1. Groups changes by type (features, fixes, docs, etc.)
+2. Generates changelog from PR titles
+3. Creates draft release
+4. Suggests version bump (semver)
+
+**Template**: Uses `.github/release-drafter.yml` template
+
+---
+
+#### `release.yml` - **Automated Releases**
+
+**Triggers**: 
+- Tag push (`v*`)
+- Manual dispatch
+
+**What it does**:
+1. **Build Artifacts**:
+   ```bash
+   # Python package
+   uv build
+   
+   # CLI binary
+   uv run pyinstaller apps/cli/ai_web_feeds/cli/__init__.py
+   
+   # Web static export
+   cd apps/web && pnpm build && pnpm export
+   ```
+
+2. **Publish**:
+   - PyPI: `uv publish`
+   - GitHub Release: Attach binaries
+   - Docker: Build and push container
+
+3. **Notifications**: Slack/Discord release announcement
+
+**CLI Validation**:
+```bash
+# Verify CLI works before release
+uv run aiwebfeeds --version
+uv run aiwebfeeds validate --all
+uv run aiwebfeeds test --quick
+```
+
+---
+
+### Maintenance
+
+#### `dependency-updates.yml` - **Automated Dependency Updates**
+
+**Triggers**: Weekly schedule (Monday 9 AM UTC)
+
+**What it does**:
+1. **Python**: `uv lock --upgrade`
+2. **Web**: `pnpm update --interactive`
+3. Creates PR with updates
+4. Runs full test suite
+5. Auto-merges if tests pass (patch versions only)
+
+---
+
+#### `stale.yml` - **Stale Issue Management**
+
+**Triggers**: Daily schedule
+
+**What it does**:
+- Marks issues stale after 60 days
+- Closes after 14 more days
+- Exempts `pinned`, `security`, `bug` labels
+- Posts friendly reminder comments
+
+---
+
+## 🔧 CLI Command Reference
+
+All workflows use these CLI commands:
+
+### Validation
+```bash
+# Validate all feeds
+uv run aiwebfeeds validate --all
+
+# Validate specific feeds
+uv run aiwebfeeds validate --feeds "url1" "url2"
+
+# Schema validation only
+uv run aiwebfeeds validate --schema
+
+# Check URL accessibility
+uv run aiwebfeeds validate --check-urls
+
+# Strict mode (fail on warnings)
+uv run aiwebfeeds validate --strict
+```
+
+### Analytics
+```bash
+# Generate analytics
+uv run aiwebfeeds analytics
+
+# Output to file
+uv run aiwebfeeds analytics --output data/analytics.json
+
+# Specific metrics
+uv run aiwebfeeds analytics --metrics "count,categories,languages"
+```
+
+### Export
+```bash
+# Export to OPML
+uv run aiwebfeeds opml export --output feeds.opml
+
+# Export to JSON
+uv run aiwebfeeds export --format json --output feeds.json
+
+# Export with validation
+uv run aiwebfeeds export --validate
+```
+
+### Enrichment
+```bash
+# Enrich all feeds
+uv run aiwebfeeds enrich --all
+
+# Enrich specific feed
+uv run aiwebfeeds enrich --url "https://example.com/feed.xml"
+
+# Fix schema issues
+uv run aiwebfeeds enrich --fix-schema
+```
+
+### Testing
+```bash
+# Run test suite via CLI
+uv run aiwebfeeds test
+
+# Quick tests only
+uv run aiwebfeeds test --quick
+
+# With coverage
+uv run aiwebfeeds test --coverage
+```
+
+---
+
+## 🚀 Running Workflows Locally
+
+### Install Act (GitHub Actions locally)
+```bash
+brew install act
+```
+
+### Run Specific Workflow
+```bash
+# Quality enforcement
+act pull_request -W .github/workflows/quality-enforcement.yml
+
+# Coverage tests
+act push -W .github/workflows/coverage.yml
+
+# Feed validation
+act workflow_dispatch -W .github/workflows/validate-all-feeds.yml
+```
+
+### Run with Secrets
+```bash
+# Create .secrets file
+echo "CODECOV_TOKEN=your_token" > .secrets
+
+# Run with secrets
+act -s .secrets
+```
+
+---
+
+## 📊 Workflow Status Badges
+
+Add to README:
+
+```markdown
+![Quality](https://github.com/wyattowalsh/ai-web-feeds/workflows/quality-enforcement/badge.svg)
+![Coverage](https://github.com/wyattowalsh/ai-web-feeds/workflows/coverage/badge.svg)
+![Feeds](https://github.com/wyattowalsh/ai-web-feeds/workflows/validate-all-feeds/badge.svg)
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Workflow Fails on CLI Command
+
+**Problem**: `aiwebfeeds: command not found`
+
+**Solution**: Ensure workflow uses `uv run`:
+```yaml
+- name: Validate feeds
+  run: uv run aiwebfeeds validate --all
+```
+
+### Coverage Below Threshold
+
+**Problem**: Coverage report shows less than 90%
+
+**Solution**: 
+1. Check coverage report: `open reports/coverage/index.html`
+2. Add missing tests
+3. Run locally: `uv run pytest --cov --cov-report=html`
+
+### Feed Validation Timeout
+
+**Problem**: Feed URL checks timeout
+
+**Solution**: Increase timeout in workflow:
+```yaml
+- name: Validate with longer timeout
+  run: uv run aiwebfeeds validate --check-urls --timeout 60
+```
+
+---
+
+## 📚 Related Documentation
+
+- [CLI Commands](/docs/development/cli) - Complete CLI reference
+- [Testing Guide](/docs/development/testing) - Testing best practices
+- [Contributing](/docs/development/contributing) - Contribution workflow
+- [Feed Schema](/docs/guides/feed-schema) - Feed data structure
+
+---
+
+## 🤖 Best Practices
+
+1. **Always use `uv run`** for CLI commands in workflows
+2. **Cache dependencies** to speed up builds
+3. **Run workflows locally** with `act` before pushing
+4. **Keep workflows focused** - one responsibility per workflow
+5. **Use CLI for consistency** - avoid duplicating logic in YAML
+6. **Fail fast** - validate critical things first
+7. **Provide clear error messages** in CLI output
+8. **Matrix test** across Python versions
+9. **Auto-fix when possible** - reduce manual work
+10. **Monitor workflow usage** - optimize slow jobs
+
+---
+
+*Last Updated: October 2025*

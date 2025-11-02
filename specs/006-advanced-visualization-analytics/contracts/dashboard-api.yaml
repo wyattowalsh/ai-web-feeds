@@ -1,0 +1,319 @@
+openapi: 3.1.0
+info:
+  title: AIWebFeeds Dashboard API
+  version: 1.0.0
+  description: API for creating and managing custom dashboards with widgets
+
+servers:
+  - url: /api/v1
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /dashboards:
+    get:
+      summary: List dashboards for device
+      description: Retrieve all dashboards created by this device
+      operationId: listDashboards
+      tags: [Dashboards]
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: List of dashboards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+
+    post:
+      summary: Create dashboard
+      description: Create a new dashboard with optional widgets
+      operationId: createDashboard
+      tags: [Dashboards]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardCreate'
+      responses:
+        '201':
+          description: Dashboard created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+
+  /dashboards/{id}:
+    get:
+      summary: Get dashboard
+      description: Retrieve dashboard with all widgets
+      operationId: getDashboard
+      tags: [Dashboards]
+      parameters:
+        - $ref: '#/components/parameters/DashboardId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Dashboard with widgets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardWithWidgets'
+
+    put:
+      summary: Update dashboard
+      description: Update dashboard metadata or layout
+      operationId: updateDashboard
+      tags: [Dashboards]
+      parameters:
+        - $ref: '#/components/parameters/DashboardId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardUpdate'
+      responses:
+        '200':
+          description: Dashboard updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+
+    delete:
+      summary: Delete dashboard
+      description: Delete dashboard and all its widgets
+      operationId: deleteDashboard
+      tags: [Dashboards]
+      parameters:
+        - $ref: '#/components/parameters/DashboardId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '204':
+          description: Dashboard deleted
+
+  /dashboards/{id}/widgets:
+    post:
+      summary: Add widget to dashboard
+      description: Add a new widget to the dashboard
+      operationId: addWidget
+      tags: [Widgets]
+      parameters:
+        - $ref: '#/components/parameters/DashboardId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WidgetCreate'
+      responses:
+        '201':
+          description: Widget added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Widget'
+
+  /widgets/{id}:
+    put:
+      summary: Update widget
+      description: Update widget configuration or position
+      operationId: updateWidget
+      tags: [Widgets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WidgetUpdate'
+      responses:
+        '200':
+          description: Widget updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Widget'
+
+    delete:
+      summary: Delete widget
+      description: Remove widget from dashboard
+      operationId: deleteWidget
+      tags: [Widgets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Widget deleted
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    DeviceId:
+      name: device_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    DashboardId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    Dashboard:
+      type: object
+      properties:
+        id:
+          type: integer
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        template_id:
+          type: string
+          nullable: true
+        layout:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DashboardWithWidgets:
+      allOf:
+        - $ref: '#/components/schemas/Dashboard'
+        - type: object
+          properties:
+            widgets:
+              type: array
+              items:
+                $ref: '#/components/schemas/Widget'
+
+    DashboardCreate:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        template_id:
+          type: string
+          enum: [curator_dashboard, research_overview, topic_monitor]
+        layout:
+          type: object
+      required: [device_id, name, layout]
+
+    DashboardUpdate:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        layout:
+          type: object
+      required: [device_id]
+
+    Widget:
+      type: object
+      properties:
+        id:
+          type: integer
+        dashboard_id:
+          type: integer
+        visualization_id:
+          type: integer
+          nullable: true
+        widget_type:
+          type: string
+          enum: [chart, metric_card, feed_list, topic_cloud]
+        data_source:
+          type: string
+        filters:
+          type: object
+        refresh_interval_seconds:
+          type: integer
+          minimum: 60
+          maximum: 3600
+        position:
+          type: object
+          properties:
+            x:
+              type: integer
+            y:
+              type: integer
+            w:
+              type: integer
+              minimum: 2
+            h:
+              type: integer
+              minimum: 2
+        config:
+          type: object
+
+    WidgetCreate:
+      type: object
+      properties:
+        widget_type:
+          type: string
+        data_source:
+          type: string
+        filters:
+          type: object
+        refresh_interval_seconds:
+          type: integer
+          default: 300
+        position:
+          type: object
+        config:
+          type: object
+      required: [widget_type, data_source, position]
+
+    WidgetUpdate:
+      type: object
+      properties:
+        filters:
+          type: object
+        refresh_interval_seconds:
+          type: integer
+        position:
+          type: object
+        config:
+          type: object

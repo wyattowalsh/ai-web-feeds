@@ -1,0 +1,351 @@
+---
+title: Features Overview
+description: Complete overview of AI Web Feeds capabilities - feed management, fetching, analytics, and integrations
+icon: Sparkles
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+AI Web Feeds is a comprehensive system for managing, fetching, and analyzing AI/ML content feeds.
+
+## Core Capabilities
+
+<Cards>
+  <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
+  <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
+  <Card title="Analytics" description="8 analytics views with health monitoring" href="#analytics" />
+  <Card title="Platform Integration" description="Support for Reddit, GitHub, YouTube, and more" href="/docs/features/platform-integrations" />
+  <Card title="CLI Tools" description="Beautiful command-line interface with Rich output" href="/docs/development/cli" />
+  <Card title="Python API" description="Clean programmatic API for integration" href="/docs/development/python-api" />
+</Cards>
+
+## Feed Management
+
+### Centralized Feed Registry
+
+- **YAML-based configuration** (`data/feeds.yaml`)
+- **JSON schema validation** for correctness
+- **Multiple feed formats** (RSS, Atom, JSON Feed)
+- **Platform-specific discovery** (auto-detect and generate feed URLs)
+
+### Feed Metadata
+
+- **Source types**: blog, newsletter, podcast, journal, preprint, organization, aggregator, video, docs, forum, dataset, code-repo
+- **Content mediums**: text, audio, video, code, data
+- **Topic classification** with relevance weights
+- **Language and localization** support
+- **Quality scoring** and curation status
+- **Contributor attribution**
+
+## Advanced Fetching
+
+### Comprehensive Metadata Extraction
+
+Extracts **100+ fields** from feeds:
+
+- **Basic info**: title, subtitle, description, link, language, copyright, generator
+- **Author/publisher**: name, email, managing editor, webmaster
+- **Visual assets**: images, logos, icons
+- **Technical**: TTL, skip hours/days, cloud config, PubSubHubbub
+- **Extensions**: iTunes podcast metadata, Dublin Core, Media RSS, GeoRSS
+
+### Quality Assessment
+
+Three-dimensional scoring system (0-1):
+
+- **Completeness Score**: Measures metadata completeness
+- **Richness Score**: Evaluates content depth and quality  
+- **Structure Score**: Assesses feed validity and structure
+
+### Content Analysis
+
+- Item statistics (total, with content, with authors, with media)
+- Average content lengths
+- Publishing frequency detection
+- Update pattern analysis
+
+### Reliability Features
+
+- **Conditional requests** using ETag and Last-Modified headers
+- **Automatic retry** with exponential backoff
+- **Configurable timeouts**
+- **Comprehensive error logging**
+- **Success rate tracking**
+
+## Analytics & Reporting
+
+### Overview Statistics
+
+- Total feeds, items, and topics
+- Feed status distribution (verified, active, inactive, archived)
+- Recent activity tracking (24h, 7d, 30d)
+
+### Distribution Analysis
+
+- Source type distribution
+- Content medium distribution
+- Topic distribution across feeds
+- Language distribution
+- Geographic distribution (via GeoRSS)
+
+### Performance Metrics
+
+- Fetch success/failure rates
+- Average fetch duration
+- Error type distribution
+- HTTP status code analysis
+- Bandwidth usage
+
+### Content Intelligence
+
+- Content coverage analysis
+- Author attribution tracking
+- Category and tag analysis
+- Publishing trends by time/day
+- Content freshness metrics
+
+### Feed Health Monitoring
+
+- Per-feed health scores (0-1)
+- Health status (Excellent, Good, Fair, Poor, Critical)
+- Success rate tracking
+- Content quality metrics
+- Publishing frequency analysis
+- Historical trend analysis
+
+### Contributor Analytics
+
+- Top contributors by feed count
+- Verification rates
+- Quality benchmarking
+- Contribution timeline
+
+### Reporting
+
+- **JSON reports**: Full analytics export
+- **OPML export**: For feed readers
+- **CSV export**: Via Python API
+- **Custom queries**: Database access
+
+## Platform-Specific Integration
+
+### Supported Platforms
+
+**Social/Community:**
+- **Reddit**: Subreddits and user feeds with sorting (hot, top, new)
+- **Hacker News**: Multiple feed types (frontpage, newest, best, ask, show, jobs)
+- **Dev.to**: User and organization feeds
+
+**Publishing:**
+- **Medium**: Publications, users, and tags
+- **Substack**: Newsletter feeds
+- **GitHub**: Releases, commits, tags, activity
+
+**Media:**
+- **YouTube**: Channels and playlists
+- **Podcasts**: iTunes podcast metadata support
+
+### Auto-Discovery
+
+- Automatic feed URL generation for known platforms
+- HTML-based feed discovery for generic sites
+- Common feed URL pattern detection
+- Platform-specific configuration support
+
+## Data Storage
+
+### Database Schema
+
+- **SQLModel-based ORM** for type safety
+- Support for **SQLite and PostgreSQL**
+- Efficient relationship management
+- **JSON columns** for flexible metadata storage
+
+### Models
+
+- `FeedSource`: Main feed registry with metadata
+- `FeedItem`: Individual feed entries
+- `FeedFetchLog`: Detailed fetch history and metrics
+- `Topic`: Topic taxonomy and relationships
+
+## Export & Interoperability
+
+### OPML Export
+
+- Standard OPML format
+- Categorized OPML by source type
+- Filtered OPML generation
+- Compatible with all major feed readers
+
+### Data Formats
+
+- **YAML**: Human-editable feed configuration
+- **JSON**: API consumption and export
+- **JSON Schema**: Validation and documentation
+- **SQL**: Direct database queries
+
+## CLI Tools
+
+### Feed Management
+
+```bash
+ai-web-feeds enrich all        # Enrich feeds with metadata
+ai-web-feeds validate          # Validate feed configuration
+ai-web-feeds export            # Export to various formats
+```
+
+### Data Fetching
+
+```bash
+ai-web-feeds fetch one <id>    # Fetch single feed
+ai-web-feeds fetch all         # Fetch all feeds
+```
+
+### Analytics
+
+```bash
+ai-web-feeds analytics overview        # Dashboard view
+ai-web-feeds analytics distributions   # Distribution analysis
+ai-web-feeds analytics quality         # Quality metrics
+ai-web-feeds analytics performance     # Fetch performance
+ai-web-feeds analytics content         # Content statistics
+ai-web-feeds analytics trends          # Publishing trends
+ai-web-feeds analytics health <id>     # Feed health report
+ai-web-feeds analytics report          # Full JSON report
+```
+
+### OPML Management
+
+```bash
+ai-web-feeds opml generate     # Generate OPML files
+ai-web-feeds opml categorize   # Generate categorized OPML
+```
+
+## Quality & Curation
+
+### Curation Workflow
+
+- Verification status tracking
+- Quality score calculation (automated)
+- Curation notes and metadata
+- Contributor attribution
+- Curation history
+
+### Quality Dimensions
+
+1. **Completeness** (0-1): Metadata completeness
+2. **Richness** (0-1): Content depth and quality
+3. **Structure** (0-1): Feed validity and structure
+
+### Health Status
+
+- **Excellent** (0.8-1.0): Optimal performance
+- **Good** (0.6-0.8): Healthy with minor issues
+- **Fair** (0.4-0.6): Some problems present
+- **Poor** (0.2-0.4): Needs attention
+- **Critical** (0.0-0.2): Failing/broken
+
+## Extensibility
+
+### Plugin Architecture
+
+- Custom platform generators
+- Configurable discovery rules
+- Extension metadata support
+- Flexible JSON storage for unknown fields
+
+### API Design
+
+- Clean Python API for programmatic use
+- Rich CLI for interactive use
+- Database session management
+- Async/await support for concurrent operations
+
+## Use Cases
+
+1. **Content Aggregation**: Build comprehensive AI/ML content aggregators
+2. **Research**: Track and analyze AI/ML publication patterns
+3. **Monitoring**: Monitor feed health and reliability
+4. **Discovery**: Find new AI/ML content sources
+5. **Analysis**: Analyze publishing trends and patterns
+6. **Curation**: Build high-quality curated feed lists
+7. **Integration**: Feed data into other systems via exports
+8. **Alerting**: Get notified when feeds break or content is published
+
+## Architecture
+
+```
+ai-web-feeds/
+├── packages/ai_web_feeds/     # Core library
+│   ├── models.py              # Data models
+│   ├── storage.py             # Database management
+│   ├── utils.py               # Feed discovery & enrichment
+│   ├── fetcher.py             # Advanced feed fetching
+│   └── analytics.py           # Analytics engine
+├── apps/cli/                  # CLI application
+│   └── commands/              # CLI commands
+│       ├── fetch.py           # Fetch commands
+│       ├── analytics.py       # Analytics commands
+│       ├── enrich.py          # Enrichment commands
+│       ├── export.py          # Export commands
+│       ├── opml.py            # OPML commands
+│       └── validate.py        # Validation commands
+└── data/                      # Data files
+    ├── feeds.yaml             # Feed registry
+    ├── topics.yaml            # Topic taxonomy
+    └── aiwebfeeds.db          # SQLite database
+```
+
+## Technology Stack
+
+- **Python 3.13+**: Modern Python with latest features
+- **SQLModel**: SQL database ORM with Pydantic integration
+- **feedparser**: Robust feed parsing
+- **httpx**: Modern async HTTP client
+- **BeautifulSoup**: HTML parsing for discovery
+- **Typer**: CLI framework
+- **Rich**: Beautiful terminal output
+- **Pydantic**: Data validation
+- **YAML/JSON**: Configuration and export formats
+
+## Performance
+
+- **Conditional requests**: Reduce bandwidth with ETag/Last-Modified
+- **Async operations**: Concurrent feed fetching
+- **Retry logic**: Exponential backoff for transient failures
+- **Connection pooling**: Efficient HTTP connections
+- **Database indexing**: Fast queries
+- **Caching**: Feed metadata caching
+
+## Security
+
+See the [Security Guide](/docs/security) for:
+- Input validation
+- Rate limiting
+- Error handling
+- Secure defaults
+- Vulnerability reporting
+
+## Getting Started
+
+Ready to dive in? Check out our guides:
+
+- [Getting Started](/docs/guides/getting-started) - Installation and setup
+- [Analytics Guide](/docs/guides/analytics) - Advanced analytics
+- [CLI Reference](/docs/development/cli) - Command-line interface
+- [Python API](/docs/development/python-api) - Programmatic usage
+
+## Future Roadmap
+
+Planned enhancements:
+
+- [ ] Real-time analytics dashboard (web UI)
+- [ ] Machine learning for content classification
+- [ ] Anomaly detection in publishing patterns
+- [ ] Advanced deduplication algorithms
+- [ ] Content similarity analysis
+- [ ] Multi-language NLP support
+- [ ] GraphQL API
+- [ ] Webhook notifications
+- [ ] Feed reader web interface
+- [ ] Export to more formats (Parquet, Arrow)

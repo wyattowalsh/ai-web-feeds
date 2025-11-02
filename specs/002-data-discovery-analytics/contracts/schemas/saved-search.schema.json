@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/saved-search.schema.json",
+  "title": "SavedSearch",
+  "description": "User-saved search query for one-click replay",
+  "type": "object",
+  "required": [
+    "id",
+    "user_id",
+    "search_name",
+    "query_text",
+    "created_at",
+    "last_used_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique saved search identifier"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User identifier (anonymous or authenticated)"
+    },
+    "search_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "User-defined name for the search"
+    },
+    "query_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "description": "Search query text"
+    },
+    "filters": {
+      "type": ["object", "null"],
+      "description": "Search filters (JSON object)",
+      "properties": {
+        "source_type": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["blog", "podcast", "newsletter", "video", "social", "other"]
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when search was saved"
+    },
+    "last_used_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last use"
+    }
+  },
+  "examples": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "user_id": "anonymous-abc123",
+      "search_name": "AI Research Blogs",
+      "query_text": "machine learning research",
+      "filters": {
+        "source_type": ["blog"],
+        "topics": ["AI", "Research"],
+        "verified": true
+      },
+      "created_at": "2025-10-15T14:20:00Z",
+      "last_used_at": "2025-10-22T10:45:00Z"
+    }
+  ]
+}
+

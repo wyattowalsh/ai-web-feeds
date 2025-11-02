@@ -1,0 +1,59 @@
+name: Greet New Contributors
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Greet first-time contributors
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const creator = context.payload.sender.login;
+            const isIssue = !!context.payload.issue;
+            const number = isIssue ? context.issue.number : context.payload.pull_request.number;
+            
+            // Get all issues/PRs by this user
+            const { data: userActivity } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} author:${creator}`
+            });
+            
+            // Check if this is their first contribution
+            if (userActivity.total_count === 1) {
+              const message = isIssue
+                ? `👋 Welcome @${creator}!\n\nThank you for opening your first issue in the AI Web Feeds project! 🎉\n\nA maintainer will review your submission soon. In the meantime, please make sure you've:\n- ✅ Provided all requested information\n- ✅ Checked that your issue hasn't been reported before\n- ✅ Read our [Contributing Guidelines](../CONTRIBUTING.md)\n\nWe appreciate your contribution to the AI/ML feed ecosystem!`
+                : `👋 Welcome @${creator}!\n\nThank you for opening your first pull request in the AI Web Feeds project! 🎉\n\nA maintainer will review your changes soon. Please make sure:\n- ✅ Your PR description is complete\n- ✅ All tests pass\n- ✅ You've followed our coding guidelines\n- ✅ Your commits are signed (if required)\n\nWe're excited to have you as a contributor!`;
+              
+              if (isIssue) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: number,
+                  body: message
+                });
+                
+                // Add first-time contributor label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: number,
+                  labels: ['first-time-contributor']
+                });
+              } else {
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: number,
+                  event: 'COMMENT',
+                  body: message
+                });
+              }
+            }

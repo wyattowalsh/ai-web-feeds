@@ -1,0 +1,320 @@
+name: Quality Enforcement
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 🐍 Python Quality Checks
+  python-formatting:
+    name: Python - Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          
+      - name: Install dependencies
+        run: uv sync --all-extras
+        
+      - name: Check Ruff formatting
+        run: uv run ruff format --check .
+        
+      - name: Add PR comment if formatting fails
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Python Formatting Check Failed**\n\n' +
+                    'Run locally:\n```bash\nuv run ruff format .\n```\n\n' +
+                    'Or comment `/fix` to auto-fix.'
+            });
+
+  python-linting:
+    name: Python - Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          
+      - name: Install dependencies
+        run: uv sync --all-extras
+        
+      - name: Run Ruff linting
+        run: uv run ruff check .
+        
+      - name: Add PR comment if linting fails
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Python Linting Check Failed**\n\n' +
+                    'Run locally:\n```bash\nuv run ruff check --fix .\n```\n\n' +
+                    'Or comment `/fix` to auto-fix.'
+            });
+
+  python-type-checking:
+    name: Python - Type Checking
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: uv sync --all-extras
+        
+      - name: Run type checking (via uv scripts)
+        run: uv run typecheck
+        
+      - name: Add PR comment if type checking fails
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Type Checking Failed**\n\nPlease fix type errors reported by mypy.\n\nRun `uv run typecheck` locally to see all errors.'
+            });
+
+  enforce-testing:
+    name: Enforce Test Coverage (≥90%)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: uv sync --all-extras
+        
+      - name: Run tests with coverage (via CLI)
+        run: uv run aiwebfeeds test coverage --html
+        
+      - name: Check coverage threshold
+        id: coverage-check
+        run: |
+          cd tests
+          COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $4}' | sed 's/%//')
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "::error::Coverage is $COVERAGE% (required: ≥90%)"
+            exit 1
+          else
+            echo "::notice::Coverage is $COVERAGE% (required: ≥90%)"
+          fi
+          
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/reports/coverage/
+          retention-days: 7
+          
+      - name: Add PR comment with coverage
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const coverage = '${{ steps.coverage-check.outputs.coverage }}';
+            const passed = parseFloat(coverage) >= 90;
+            const emoji = passed ? '✅' : '❌';
+            const status = passed ? 'PASSED' : 'FAILED';
+            
+            const message = `${emoji} **Coverage Check ${status}**
+
+            Current coverage: **${coverage}%**
+            Required: **≥90%**
+
+            ${passed ? 'Great job maintaining high test coverage! 🎉' : 'Please add tests to meet the 90% coverage threshold.'}
+
+            Run \`uv run aiwebfeeds test coverage --open\` to see detailed coverage report.`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+  enforce-data-validation:
+    name: Enforce Data Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+          uv pip install jsonschema pyyaml
+          
+      - name: Validate data with CLI
+        run: uv run aiwebfeeds validate all --strict
+        
+      - name: Add PR comment if validation fails
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Data Validation Failed**\n\nPlease fix the data validation errors.\n\nRun `uv run aiwebfeeds validate all` locally to see all errors.'
+            });
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: 
+      - python-formatting
+      - python-linting
+      - python-type-checking
+      - enforce-testing
+      - enforce-data-validation
+    if: always()
+    
+    steps:
+      - name: Check all jobs
+        run: |
+          if [ "${{ needs.python-formatting.result }}" != "success" ] || \
+             [ "${{ needs.python-linting.result }}" != "success" ] || \
+             [ "${{ needs.python-type-checking.result }}" != "success" ] || \
+             [ "${{ needs.enforce-testing.result }}" != "success" ] || \
+             [ "${{ needs.enforce-data-validation.result }}" != "success" ]; then
+            echo "::error::Quality gate failed - one or more checks did not pass"
+            exit 1
+          else
+            echo "::notice::Quality gate passed - all checks successful!"
+          fi
+          
+      - name: Add PR comment on quality gate status
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const formatting = '${{ needs.python-formatting.result }}';
+            const linting = '${{ needs.python-linting.result }}';
+            const typeCheck = '${{ needs.python-type-checking.result }}';
+            const testing = '${{ needs.enforce-testing.result }}';
+            const validation = '${{ needs.enforce-data-validation.result }}';
+            
+            const statusEmoji = (status) => status === 'success' ? '✅' : '❌';
+            
+            const allPassed = formatting === 'success' && 
+                             linting === 'success' && 
+                             typeCheck === 'success' && 
+                             testing === 'success' && 
+                             validation === 'success';
+            
+            const message = `## ${allPassed ? '✅' : '❌'} Quality Gate ${allPassed ? 'PASSED' : 'FAILED'}
+
+            | Check | Status |
+            |-------|--------|
+            | Code Formatting | ${statusEmoji(formatting)} ${formatting} |
+            | Linting | ${statusEmoji(linting)} ${linting} |
+            | Type Checking | ${statusEmoji(typeCheck)} ${typeCheck} |
+            | Testing (≥90%) | ${statusEmoji(testing)} ${testing} |
+            | Data Validation | ${statusEmoji(validation)} ${validation} |
+
+            ${allPassed 
+              ? '🎉 All quality checks passed! This PR is ready for review.' 
+              : '⚠️ Some quality checks failed. Please fix the issues above before merging.'}
+
+            ---
+            *Run \`uv run check\` locally to verify all checks before pushing.*`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });

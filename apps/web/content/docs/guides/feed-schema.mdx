@@ -1,0 +1,689 @@
+---
+title: Feed Schema Reference
+description: Complete reference for the feeds.yaml schema
+---
+
+# Feed Schema Reference
+
+Complete reference documentation for the `feeds.yaml` schema (`feeds-1.0.0`).
+
+## Overview
+
+The feed schema balances contributor ergonomics with strict machine validation. It supports:
+
+- Direct feed URLs or site-based discovery
+- Canonical topic classification
+- Platform-specific configurations (Reddit, Medium, YouTube, etc.)
+- Rich metadata and curation tracking
+- Cross-feed relationships and deduplication
+
+**Schema Location:** `data/feeds.schema.json`
+
+## Top-Level Structure
+
+```yaml
+schema_version: "feeds-1.0.0"
+
+document_meta:
+  created: "2025-10-15"
+  updated: "2025-10-15"
+  generated_with:
+    tool: "aiwebfeeds-cli"
+    version: "0.1.0"
+  notes: "Optional description"
+
+sources:
+  - id: "feed-1"
+    feed: "https://example.com/feed.xml"
+    # ... feed properties
+  
+  - id: "feed-2"
+    site: "https://example.org"
+    discover: true
+    # ... feed properties
+```
+
+### Alternative: Grouped Structure
+
+```yaml
+schema_version: "feeds-1.0.0"
+
+groups:
+  OpenAI:
+    - id: "openai-blog"
+      feed: "https://openai.com/blog/rss/"
+      # ...
+  
+  HuggingFace:
+    - id: "hf-blog"
+      feed: "huggingface/blog"
+      # ...
+```
+
+## Required Properties
+
+Every feed entry **must** include one of:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `feed` | String | Direct feed URL, alias, or CURIE |
+| `site` | String | Homepage URL (triggers discovery) |
+| `discover` | Boolean/Object | Discovery configuration |
+
+### Additional Requirements
+
+- `id` - Recommended for stable references
+- At least one `topic` from the canonical list
+
+## Feed Source Properties
+
+### Core Identification
+
+#### `id`
+
+Stable unique identifier (slug format).
+
+```yaml
+id: "example-blog"
+```
+
+**Rules:**
+- Pattern: `^[a-z0-9._-]+$`
+- Lowercase alphanumeric, dots, underscores, hyphens
+- Should be stable (don't change once published)
+
+#### `feed`
+
+Direct feed URL, short alias, or CURIE reference.
+
+**Examples:**
+
+```yaml
+# Direct URL
+feed: "https://openai.com/blog/rss/"
+
+# Short alias (resolved via data/feed_aliases.yaml)
+feed: "huggingface/blog"
+
+# CURIE reference
+feed: "wikidata:Q2539"
+```
+
+**Formats:**
+- HTTP(S) URLs: `^https?://`
+- Aliases: `^[a-z0-9._-]+/[a-z0-9._-]+$`
+- CURIEs: `^[a-z][a-z0-9._-]*:[^\s]+$`
+
+#### `site`
+
+Homepage or section URL. When provided without `feed`, triggers discovery.
+
+```yaml
+site: "https://example.com/blog"
+discover: true
+```
+
+**Rules:**
+- Must be valid HTTP(S) URL
+- Used for discovery if `feed` is not provided
+- Can coexist with `feed` for cross-reference
+
+#### `title`
+
+Descriptive title for the feed.
+
+```yaml
+title: "OpenAI Blog - Latest Research"
+```
+
+**Rules:**
+- Min length: 1
+- Max length: 160 characters
+- Should be clear and descriptive
+
+### Discovery Configuration
+
+#### `discover`
+
+Controls automatic feed discovery.
+
+**Simple Boolean:**
+
+```yaml
+discover: true   # Enable default discovery
+discover: false  # Disable discovery
+```
+
+**Advanced Object:**
+
+```yaml
+discover:
+  backend: "default"           # default | feedparser | rsshub | browserless
+  strategy: "html-link"        # auto | html-link | rsshub | well-known
+  strategy_detail: "Optional hint for tuning"
+  hints: ["rss", "atom", "blog"]
+  limit: 3
+  fallbacks:
+    - "https://example.com/backup-feed.xml"
+    - "example/alias"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `backend` | String | Discovery backend engine |
+| `strategy` | String | Discovery method |
+| `strategy_detail` | String | Freeform hint (max 160 chars) |
+| `hints` | Array | Search keywords (max 8) |
+| `limit` | Integer | Max feeds to find (1-10) |
+| `fallbacks` | Array | Backup feed URLs (max 5) |
+
+### Topics and Classification
+
+#### `topics`
+
+Array of 1-6 canonical topic IDs from `data/topics.yaml`.
+
+```yaml
+topics: ["ml", "nlp", "open-source"]
+```
+
+**Rules:**
+- Min items: 1
+- Max items: 6
+- Each ID must match: `^[a-z0-9]+(?:-[a-z0-9]+)*$`
+- Must exist in canonical topics list
+
+**Common Topics:**
+
+| ID | Description |
+|----|-------------|
+| `ml` | Machine Learning |
+| `nlp` | Natural Language Processing |
+| `cv` | Computer Vision |
+| `rl` | Reinforcement Learning |
+| `llm` | Large Language Models |
+| `research` | Academic Research |
+| `industry` | Industry News |
+| `open-source` | Open Source Projects |
+
+#### `topic_weights`
+
+Optional relevance weights per topic (0-1 scale).
+
+```yaml
+topic_weights:
+  ml: 0.95
+  nlp: 0.80
+  open-source: 0.60
+```
+
+**Rules:**
+- Keys must be valid topic IDs
+- Values: 0.0 to 1.0
+- Higher = more relevant
+
+### Content Classification
+
+#### `source_type`
+
+Primary source category.
+
+```yaml
+source_type: "blog"
+```
+
+**Valid Types:**
+
+| Type | Description |
+|------|-------------|
+| `blog` | Blog or article site |
+| `newsletter` | Email newsletter |
+| `podcast` | Audio podcast |
+| `journal` | Academic journal |
+| `preprint` | Preprint server (arXiv, etc.) |
+| `organization` | Company/org announcements |
+| `aggregator` | News aggregator |
+| `video` | Video platform |
+| `docs` | Documentation site |
+| `forum` | Discussion forum |
+| `dataset` | Dataset repository |
+| `code-repo` | Code repository |
+| `newsroom` | News organization |
+| `education` | Educational content |
+| `reddit` | Reddit community |
+| `medium` | Medium publication |
+| `youtube` | YouTube channel |
+| `github` | GitHub repository |
+| `substack` | Substack newsletter |
+| `devto` | Dev.to publication |
+| `hackernews` | Hacker News |
+
+#### `mediums`
+
+Content modalities (max 5).
+
+```yaml
+mediums: ["text", "code", "video"]
+```
+
+**Valid Values:**
+- `text` - Written content
+- `audio` - Podcasts, audio recordings
+- `video` - Video content
+- `code` - Source code, notebooks
+- `data` - Datasets, data files
+
+#### `tags`
+
+Freeform tags for filtering (max 12).
+
+```yaml
+tags: ["official", "community", "tutorials"]
+```
+
+**Rules:**
+- Pattern: `^[a-z0-9-]{1,32}$`
+- Lowercase, alphanumeric, hyphens
+- Max 12 tags
+- Unique values
+
+### Platform-Specific Configuration
+
+#### `platform_config`
+
+Platform-specific settings for Reddit, Medium, YouTube, GitHub, etc.
+
+**Reddit Example:**
+
+```yaml
+platform_config:
+  platform: "reddit"
+  reddit:
+    subreddit: "MachineLearning"
+    sort: "hot"              # hot | new | top | rising
+    time: "day"              # hour | day | week | month | year | all
+```
+
+**Medium Example:**
+
+```yaml
+platform_config:
+  platform: "medium"
+  medium:
+    publication: "towards-data-science"
+    # OR
+    username: "@username"
+    # OR
+    tag: "machine-learning"
+```
+
+**YouTube Example:**
+
+```yaml
+platform_config:
+  platform: "youtube"
+  youtube:
+    channel_id: "UCbfYPyITQ-7l4upoX8nvctg"
+    # OR
+    playlist_id: "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf"
+    # OR
+    username: "TwoMinutePapers"
+```
+
+**GitHub Example:**
+
+```yaml
+platform_config:
+  platform: "github"
+  github:
+    owner: "pytorch"
+    repo: "pytorch"
+    feed_type: "releases"   # releases | commits | tags | activity
+    branch: "main"          # optional, for commits
+```
+
+**Substack Example:**
+
+```yaml
+platform_config:
+  platform: "substack"
+  substack:
+    publication: "importai"
+```
+
+**Dev.to Example:**
+
+```yaml
+platform_config:
+  platform: "devto"
+  devto:
+    username: "username"
+    # OR
+    organization: "org-name"
+    # OR
+    tag: "machinelearning"
+```
+
+**Hacker News Example:**
+
+```yaml
+platform_config:
+  platform: "hackernews"
+  hackernews:
+    username: "pg"
+    # OR
+    feed_type: "frontpage"  # frontpage | newest | best | ask | show | jobs
+```
+
+### Metadata
+
+#### `meta`
+
+Feed-level metadata.
+
+```yaml
+meta:
+  language: "en"
+  format: "rss"
+  updated: "2025-10-15"
+  last_validated: "2025-10-15"
+  verified: true
+  contributor: "wyattowalsh"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `language` | String | IETF BCP-47 code (e.g., 'en', 'en-US') |
+| `format` | String | rss \| atom \| jsonfeed \| unknown |
+| `updated` | String | Last human review date (YYYY-MM-DD) |
+| `last_validated` | String | Last automated validation (YYYY-MM-DD) |
+| `verified` | Boolean | Trust/accuracy flag |
+| `contributor` | String | GitHub username (1-80 chars) |
+
+### Curation
+
+#### `curation`
+
+Curation status and quality metrics.
+
+```yaml
+curation:
+  status: "verified"
+  since: "2025-10-15"
+  by: "wyattowalsh"
+  quality_score: 0.95
+  notes: "High-quality official blog"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `status` | String | verified \| unverified \| archived \| experimental \| inactive |
+| `since` | String | Status assignment date (YYYY-MM-DD) |
+| `by` | String | Curator GitHub username |
+| `quality_score` | Number | 0.0 to 1.0 quality rating |
+| `notes` | String | Curation notes (max 500 chars) |
+
+### Relationships
+
+#### `relations`
+
+Typed relationships between feeds.
+
+```yaml
+relations:
+  mirror_of: "https://example.com/feed.json"
+  derived_from: "example/parent"
+  syndicates:
+    - "https://feedburner.com/example"
+    - "https://medium.com/feed/example"
+  related_feeds:
+    - "https://example.org/related.xml"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `mirror_of` | String | Feed is a mirror/copy of another |
+| `derived_from` | String | Feed is derived from another source |
+| `syndicates` | Array | Syndicated to these feeds (max 8) |
+| `related_feeds` | Array | Related feeds (max 8, legacy) |
+
+### Provenance
+
+#### `provenance`
+
+Origin and licensing information.
+
+```yaml
+provenance:
+  source: "manual"           # manual | automation | import
+  from: "https://example.com"
+  license: "CC-BY-4.0"
+```
+
+### External Mappings
+
+#### `mappings`
+
+Links to external identifiers.
+
+```yaml
+mappings:
+  schema_org: "https://schema.org/Blog"
+  wikidata: "Q123456"
+  huggingface: "datasets/example"
+  crossref: "10.1234/example"
+```
+
+### Extensions
+
+#### `extensions`
+
+Forward-compatible custom fields.
+
+```yaml
+extensions:
+  custom_field: "value"
+  analytics:
+    subscribers: 10000
+    avg_posts_per_week: 3
+```
+
+**Rules:**
+- Any structure allowed
+- Reserved for future features
+- Won't cause validation errors
+
+### Notes
+
+#### `notes`
+
+Freeform notes about the feed.
+
+```yaml
+notes: "Official blog with weekly ML research summaries"
+```
+
+**Rules:**
+- Max 500 characters
+- Markdown not supported
+
+## Complete Examples
+
+### Minimal Feed Entry
+
+```yaml
+- id: "example-minimal"
+  feed: "https://example.com/feed.xml"
+  topics: ["ml"]
+```
+
+### Comprehensive Feed Entry
+
+```yaml
+- id: "huggingface-blog"
+  feed: "huggingface/blog"
+  site: "https://huggingface.co/blog"
+  title: "Hugging Face Blog"
+  
+  topics: ["open-source", "nlp", "ml"]
+  topic_weights:
+    open-source: 0.95
+    nlp: 0.90
+    ml: 0.80
+  
+  source_type: "blog"
+  mediums: ["text", "code"]
+  tags: ["official", "community", "tutorials"]
+  
+  meta:
+    language: "en"
+    format: "rss"
+    updated: "2025-10-15"
+    verified: true
+    contributor: "wyattowalsh"
+  
+  curation:
+    status: "verified"
+    since: "2025-10-15"
+    by: "wyattowalsh"
+    quality_score: 0.98
+    notes: "High-quality official blog"
+  
+  provenance:
+    source: "manual"
+    from: "https://huggingface.co"
+    license: "CC-BY-4.0"
+  
+  mappings:
+    wikidata: "Q107561822"
+  
+  notes: "Official Hugging Face blog with ML tutorials and research"
+```
+
+### Discovery-Based Entry
+
+```yaml
+- id: "arxiv-cs-ai"
+  site: "https://arxiv.org/list/cs.AI/recent"
+  discover:
+    backend: "default"
+    strategy: "html-link"
+    hints: ["rss", "atom"]
+    limit: 3
+  title: "arXiv: Artificial Intelligence"
+  topics: ["research", "papers", "ml"]
+  source_type: "preprint"
+  mediums: ["text", "data"]
+```
+
+### Platform-Specific Entry (Reddit)
+
+```yaml
+- id: "machinelearning-subreddit"
+  site: "https://www.reddit.com/r/MachineLearning"
+  title: "r/MachineLearning"
+  topics: ["ml", "community"]
+  source_type: "reddit"
+  
+  platform_config:
+    platform: "reddit"
+    reddit:
+      subreddit: "MachineLearning"
+      sort: "hot"
+  
+  meta:
+    language: "en"
+    updated: "2025-10-15"
+  
+  notes: "Active ML community discussions"
+```
+
+## Validation
+
+### Schema Validation
+
+```bash
+# Validate with Python
+python -c "
+import json, yaml
+from jsonschema import validate
+
+with open('data/feeds.yaml') as f:
+    feeds = yaml.safe_load(f)
+with open('data/feeds.schema.json') as f:
+    schema = json.load(f)
+
+validate(instance=feeds, schema=schema)
+print('✅ Valid')
+"
+```
+
+### Common Validation Errors
+
+**Error: "Additional properties are not allowed"**
+
+You've included a field not in the schema. Check spelling and nesting.
+
+**Error: "'topics' is a required property"**
+
+Every feed must have at least one topic.
+
+**Error: "Pattern mismatch for 'id'"**
+
+Feed IDs must be lowercase alphanumeric with hyphens/underscores/dots only.
+
+**Error: "Maximum items exceeded for 'topics'"**
+
+Limit to 6 topics maximum.
+
+## Best Practices
+
+### Choosing Feed vs Site
+
+**Use `feed` when:**
+- You know the exact feed URL
+- The feed is stable and unlikely to change
+- You want maximum reliability
+
+**Use `site` + `discover` when:**
+- Feed URL is unknown
+- Site may have multiple feeds
+- You want automatic feed updates
+
+### Topic Selection
+
+1. **Be Specific** - Choose the most relevant topics
+2. **Limit Count** - 1-3 topics is usually sufficient
+3. **Use Weights** - Add `topic_weights` for fine-tuning
+4. **Check Canonical List** - Ensure topics exist in `data/topics.yaml`
+
+### Quality Guidelines
+
+**High-Quality Entries:**
+- ✅ Accurate, verified feed URLs
+- ✅ Descriptive titles
+- ✅ Relevant topics with weights
+- ✅ Complete metadata
+- ✅ Curation status set
+- ✅ Notes explaining value
+
+**Avoid:**
+- ❌ Generic titles
+- ❌ Too many topics
+- ❌ Unverified feeds
+- ❌ Missing contributor info
+
+## Related Documentation
+
+- [GitHub Infrastructure](/docs/guides/github-infrastructure)
+- [Contributing Guide](/docs/development/contributing)
+- [CLI Documentation](/docs/development/cli)
+- [Testing Guide](/docs/guides/testing)

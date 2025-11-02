@@ -1,0 +1,222 @@
+---
+title: Visualization & Analytics
+description: Interactive data visualization, 3D topic clustering, custom dashboards, and predictive analytics
+---
+
+# Advanced Visualization & Analytics
+
+AIWebFeeds Phase 006 adds powerful visualization and analytics capabilities for exploring feed data interactively.
+
+## Features
+
+### Interactive Data Visualization
+- **6 Chart Types**: Line, bar, scatter, pie, area, heatmap
+- **Real-time Customization**: Colors, labels, axes, legends
+- **Publication-Quality Export**: PNG (300 DPI), SVG, interactive HTML
+- **Device-Based Persistence**: Save visualizations across sessions
+
+### 3D Topic Clustering
+- **WebGL Rendering**: Smooth 60fps 3D topic graphs using Three.js
+- **Force-Directed Layout**: Topics spatially clustered by relationships
+- **Interactive Navigation**: Orbit, pan, zoom with mouse/keyboard
+- **Automatic Fallback**: 2D network view on performance degradation
+
+### Custom Dashboards
+- **Drag-and-Drop Builder**: Create personalized dashboard layouts
+- **Multiple Widget Types**: Charts, metrics cards, feed lists, topic clouds
+- **Grid-Based Layout**: Responsive 12-column grid system
+- **Auto-Refresh**: Configurable widget refresh intervals (1min-1hour)
+
+### Time-Series Forecasting
+- **Prophet Model**: Automatic seasonality detection
+- **Multiple Horizons**: 30/60/90-day predictions
+- **Confidence Intervals**: 80% and 95% bands
+- **Accuracy Tracking**: MAPE, MAE metrics with auto-retrain triggers
+
+### Comparative Analytics
+- **Side-by-Side Comparison**: Compare up to 10 feeds, topics, or authors
+- **Synchronized Views**: Linked date ranges across charts
+- **Statistical Analysis**: Correlation, trends, significance tests
+- **Export Reports**: CSV tables and PNG charts
+
+### Data Export API
+- **Multiple Formats**: CSV, JSON, Parquet
+- **Async Job Queue**: Handle large exports (>10k records)
+- **API Key Authentication**: Secure programmatic access
+- **Rate Limiting**: 100 requests/hour with burst support
+
+## Architecture
+
+### Backend (Python)
+- **FastAPI**: REST API with async support
+- **SQLAlchemy**: Database ORM with 7 new tables
+- **Prophet**: Time-series forecasting
+- **Redis**: 5-minute cache layer with LRU fallback
+
+### Frontend (TypeScript/React)
+- **Next.js 15**: Server components and App Router
+- **Three.js**: 3D WebGL visualization
+- **Chart.js**: 2D charts with publication quality
+- **React Grid Layout**: Drag-drop dashboard builder
+
+### Data Flow
+```
+User Request
+    ↓
+Device ID (localStorage)
+    ↓
+FastAPI Router (auth)
+    ↓
+Cache Layer (Redis/LRU) ← 5min TTL
+    ↓
+Data Service (validation)
+    ↓
+SQLAlchemy (Phase 002 tables)
+    ↓
+PostgreSQL/SQLite
+```
+
+## Getting Started
+
+### Prerequisites
+- Python 3.13+ with uv package manager
+- Node.js 20+ with pnpm
+- Redis (optional, uses LRU fallback)
+- Phase 002 analytics data
+
+### Installation
+
+**Backend Dependencies:**
+```bash
+cd packages/ai_web_feeds
+python -m pip install fastapi sqlalchemy pandas prophet redis-py bcrypt pyjwt
+```
+
+**Frontend Dependencies:**
+```bash
+cd apps/web
+pnpm add three @react-three/fiber @react-three/drei react-grid-layout chart.js react-chartjs-2
+```
+
+### Database Migration
+
+```bash
+cd packages
+alembic upgrade head
+```
+
+This creates 7 new tables:
+- `visualizations` - Saved chart configurations
+- `dashboards` - Dashboard layouts
+- `dashboard_widgets` - Widget configurations
+- `forecasts` - Time-series predictions
+- `api_keys` - API authentication
+- `export_jobs` - Async export queue
+- `api_usage` - API usage tracking
+
+### Configuration
+
+**Environment Variables:**
+```bash
+# Redis cache (optional)
+REDIS_URL=redis://localhost:6379/0
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost/aiwebfeeds
+
+# API settings
+MAX_CONCURRENT_EXPORTS=10
+FORECAST_TIMEOUT=30
+```
+
+## Device-Based Persistence
+
+Visualizations use **browser-based device identification** instead of user accounts:
+
+- **Device ID**: UUID v4 generated on first visit
+- **Storage**: localStorage with versioning (`v1:uuid:timestamp`)
+- **Scope**: Device-specific (no cross-device sync)
+- **Export/Import**: Manual transfer via JSON export
+
+### Device ID Management
+
+```typescript
+import { getDeviceId, exportDeviceData, importDeviceData } from '@/lib/visualization/device-id';
+
+// Get current device ID
+const deviceId = getDeviceId();
+
+// Export data for transfer
+const exportedData = exportDeviceData();
+
+// Import on new device
+importDeviceData(exportedData);
+```
+
+## Cache Layer
+
+5-minute cache with Redis primary and LRU fallback:
+
+- **Cache Key**: SHA-256 hash of (query_type + filters + date_range + device_id)
+- **TTL**: 300 seconds (5 minutes) for queries, 3600 seconds (1 hour) for topic graph
+- **Invalidation**: Automatic on TTL expiry, manual on data writes
+- **Fallback**: In-memory LRU cache (100 entries) when Redis unavailable
+
+**Cache Statistics:**
+```python
+from ai_web_feeds.visualization.cache import get_cache
+
+cache = get_cache()
+stats = cache.get_stats()
+# Returns: {cache_type, hits, misses, hit_rate, total_requests}
+```
+
+## API Authentication
+
+Dual authentication system:
+
+### JWT Tokens (Web App)
+- Generated on first visit
+- Stored in httpOnly cookie
+- 30-day expiration
+- Automatic renewal
+
+### API Keys (Programmatic)
+- User-generated in web UI
+- bcrypt hashed storage
+- Format: `awf_` + 32 random chars
+- Revokable via UI
+
+**API Request:**
+```bash
+curl -H "X-API-Key: awf_abc123..." \
+  https://api.aiwebfeeds.com/v1/export?format=csv
+```
+
+## Validation & Security
+
+### Input Validation
+- **Table Whitelist**: Only `topic_metrics`, `feed_health`, `validation_logs`, `article_metadata`
+- **Date Ranges**: No future dates, max 365-day range
+- **Query Limits**: Max 100k rows per query
+- **SQL Injection Prevention**: Parameterized queries, escaped LIKE clauses
+
+### Dashboard Constraints
+- **Widget Limit**: Max 20 widgets per dashboard
+- **Grid Dimensions**: 12 columns, minimum 2x2 widget size
+- **Collision Detection**: Reject overlapping widgets
+- **Version Locking**: Optimistic locking with version field
+
+### Customization Limits
+- **Title Length**: Max 200 characters (auto-truncated)
+- **Color Palette**: Max 50 colors
+- **Font Size**: 8-72px range
+- **Opacity**: 0-100% range
+
+## Next Steps
+
+- [Chart Types](/docs/visualization/chart-types) - Detailed chart documentation
+- [3D Graph Guide](/docs/visualization/3d-graph) - Topic clustering tutorial
+- [Dashboard Builder](/docs/visualization/dashboards) - Custom dashboard creation
+- [Forecasting Guide](/docs/visualization/forecasting) - Time-series predictions
+- [API Reference](/docs/visualization/api) - Export API documentation

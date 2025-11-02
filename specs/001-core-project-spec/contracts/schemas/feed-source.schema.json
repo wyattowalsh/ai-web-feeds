@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aiwebfeeds.com/schemas/feed-source.json",
+  "title": "FeedSource",
+  "description": "Schema for a single feed source entry",
+  "type": "object",
+  "required": ["id", "url", "title", "source_type"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Unique identifier (lowercase, alphanumeric + hyphens)"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "maxLength": 500,
+      "description": "Feed URL (RSS/Atom/JSON Feed)"
+    },
+    "site": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 500,
+      "description": "Website URL"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Feed title"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Feed description"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "blog",
+        "podcast",
+        "newsletter",
+        "preprint",
+        "repository",
+        "organization",
+        "course",
+        "conference"
+      ],
+      "description": "Type of content source"
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true,
+      "description": "Array of topic IDs"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Additional tags for categorization"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Verification status"
+    },
+    "last_validated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime of last validation"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Active status"
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$",
+      "description": "ISO 639-1 language code"
+    },
+    "feed_format": {
+      "type": "string",
+      "enum": ["rss0.90", "rss0.91", "rss1.0", "rss2.0", "atom1.0", "json1.0", "json1.1"],
+      "description": "Detected feed format"
+    },
+    "update_frequency": {
+      "type": "string",
+      "enum": ["hourly", "daily", "weekly", "monthly", "irregular"],
+      "description": "Approximate update frequency"
+    },
+    "source": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Where feed was discovered"
+    },
+    "license": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Content license (if specified)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when feed was added"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when feed was last updated"
+    }
+  },
+  "additionalProperties": false
+}
+
