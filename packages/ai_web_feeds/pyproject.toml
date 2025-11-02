@@ -40,11 +40,21 @@ select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20
 ignore = ["ANN101", "ANN102", "ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-# Utils: OPML generation uses datetime.utcnow() for RFC compliance
-"src/ai_web_feeds/utils.py" = ["DTZ003", "S318", "E501", "RET504"]
+# Utils: OPML generation uses datetime.utcnow() for RFC compliance + complex URL generation logic
+"src/ai_web_feeds/utils.py" = ["DTZ003", "S318", "E501", "RET504", "PLR0911", "PLR0912", "PLR0915", "PLR2004", "C901"]
 # Validate: Legitimate patterns for validation module
 "src/ai_web_feeds/validate.py" = ["ANN204", "FBT001", "FBT002", "A001", "ASYNC109", "DTZ005", "PLR2004", "BLE001"]
 # WebSocket: Server patterns need specific exceptions
 "src/ai_web_feeds/websocket_server.py" = ["ANN204", "S104", "ARG002", "SLF001"]
+# Storage: Database query functions have complex logic
+"src/ai_web_feeds/storage.py" = ["PLR0913", "PLR0915"]
+# Models: Pydantic models have many fields
+"src/ai_web_feeds/models.py" = ["PLR0913"]
+# Search, recommendations, NLP: Complex algorithms need many branches/returns
+"src/ai_web_feeds/search.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/recommendations.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/nlp.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/embeddings.py" = ["PLR0913"]
+"src/ai_web_feeds/jobs/*.py" = ["PLR0913"]
 # Alembic: Generated migration files
 "**/alembic/**" = ["INP001", "ERA001", "PLR0915"]
