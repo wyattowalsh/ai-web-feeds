@@ -1,0 +1,280 @@
+openapi: 3.1.0
+info:
+  title: AIWebFeeds Forecasting API
+  version: 1.0.0
+  description: API for generating time-series forecasts and tracking accuracy
+
+servers:
+  - url: /api/v1
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /forecasts:
+    get:
+      summary: List forecasts
+      description: Retrieve all forecasts for a device, optionally filtered by topic
+      operationId: listForecasts
+      tags: [Forecasts]
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: topic_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed, failed]
+      responses:
+        '200':
+          description: List of forecasts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Forecast'
+
+    post:
+      summary: Generate forecast
+      description: Create a new time-series forecast for specified topic
+      operationId: generateForecast
+      tags: [Forecasts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastCreate'
+      responses:
+        '201':
+          description: Forecast generation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forecast'
+        '202':
+          description: Forecast queued for async processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastJob'
+
+  /forecasts/{id}:
+    get:
+      summary: Get forecast
+      description: Retrieve forecast with predictions and accuracy metrics
+      operationId: getForecast
+      tags: [Forecasts]
+      parameters:
+        - $ref: '#/components/parameters/ForecastId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Forecast with predictions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastDetails'
+
+    delete:
+      summary: Delete forecast
+      description: Remove forecast from storage
+      operationId: deleteForecast
+      tags: [Forecasts]
+      parameters:
+        - $ref: '#/components/parameters/ForecastId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '204':
+          description: Forecast deleted
+
+  /forecasts/{id}/retrain:
+    post:
+      summary: Retrain forecast model
+      description: Trigger model retraining with latest data
+      operationId: retrainForecast
+      tags: [Forecasts]
+      parameters:
+        - $ref: '#/components/parameters/ForecastId'
+      responses:
+        '202':
+          description: Retraining started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrainingJob'
+
+  /forecasts/{id}/accuracy:
+    get:
+      summary: Get forecast accuracy
+      description: Retrieve accuracy metrics and comparison with actuals
+      operationId: getForecastAccuracy
+      tags: [Accuracy]
+      parameters:
+        - $ref: '#/components/parameters/ForecastId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Accuracy metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccuracyMetrics'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    DeviceId:
+      name: device_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ForecastId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    Forecast:
+      type: object
+      properties:
+        id:
+          type: integer
+        topic_id:
+          type: integer
+        model_type:
+          type: string
+          enum: [prophet, arima, linear]
+          default: prophet
+        horizon_days:
+          type: integer
+          minimum: 1
+          maximum: 365
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    ForecastDetails:
+      allOf:
+        - $ref: '#/components/schemas/Forecast'
+        - type: object
+          properties:
+            predictions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Prediction'
+            accuracy_metrics:
+              $ref: '#/components/schemas/AccuracyMetrics'
+            model_params:
+              type: object
+
+    ForecastCreate:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        topic_id:
+          type: integer
+        model_type:
+          type: string
+          enum: [prophet, arima, linear]
+          default: prophet
+        horizon_days:
+          type: integer
+          default: 30
+        include_confidence_intervals:
+          type: boolean
+          default: true
+        seasonality_mode:
+          type: string
+          enum: [additive, multiplicative]
+          default: additive
+      required: [device_id, topic_id]
+
+    Prediction:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        yhat:
+          type: number
+          description: Predicted value
+        yhat_lower:
+          type: number
+          description: Lower confidence interval
+        yhat_upper:
+          type: number
+          description: Upper confidence interval
+
+    AccuracyMetrics:
+      type: object
+      properties:
+        mape:
+          type: number
+          description: Mean Absolute Percentage Error
+        rmse:
+          type: number
+          description: Root Mean Squared Error
+        mae:
+          type: number
+          description: Mean Absolute Error
+        evaluation_period_days:
+          type: integer
+        last_evaluated_at:
+          type: string
+          format: date-time
+        requires_retraining:
+          type: boolean
+          description: True if MAPE > 30%
+
+    ForecastJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        forecast_id:
+          type: integer
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        estimated_completion_seconds:
+          type: integer
+
+    RetrainingJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        forecast_id:
+          type: integer
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]

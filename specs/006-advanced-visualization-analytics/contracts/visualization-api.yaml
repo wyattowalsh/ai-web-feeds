@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: AIWebFeeds Visualization API
+  version: 1.0.0
+  description: API for creating, managing, and retrieving chart visualizations
+  contact:
+    name: AIWebFeeds Team
+    url: https://github.com/wyattowalsh/ai-web-feeds
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://api.aiwebfeeds.com/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /visualizations:
+    get:
+      summary: List all visualizations for device
+      operationId: listVisualizations
+      tags: [Visualizations]
+      parameters:
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of visualizations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visualizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Visualization'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create new visualization
+      operationId: createVisualization
+      tags: [Visualizations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisualizationCreate'
+      responses:
+        '201':
+          description: Visualization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visualization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /visualizations/{id}:
+    get:
+      summary: Get visualization by ID
+      operationId: getVisualization
+      tags: [Visualizations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Visualization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visualization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update visualization
+      operationId: updateVisualization
+      tags: [Visualizations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisualizationUpdate'
+      responses:
+        '200':
+          description: Visualization updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visualization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Delete visualization
+      operationId: deleteVisualization
+      tags: [Visualizations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Visualization deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /visualizations/{id}/data:
+    get:
+      summary: Get visualization data
+      operationId: getVisualizationData
+      tags: [Visualizations]
+      description: Fetch actual data for rendering the visualization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Visualization data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  metadata:
+                    type: object
+                    properties:
+                      record_count:
+                        type: integer
+                      query_time_ms:
+                        type: integer
+                      cached:
+                        type: boolean
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Visualization:
+      type: object
+      properties:
+        id:
+          type: integer
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        chart_type:
+          type: string
+          enum: [line, bar, scatter, pie, area, heatmap]
+        data_source:
+          type: string
+          enum: [feeds, topics, articles, entities, sentiment, quality]
+        filters:
+          type: object
+          additionalProperties: true
+        customization:
+          type: object
+          properties:
+            title:
+              type: string
+            colors:
+              type: array
+              items:
+                type: string
+            labels:
+              type: object
+            axes:
+              type: object
+            legend:
+              type: object
+        created_at:
+          type: string
+          format: date-time
+        last_viewed:
+          type: string
+          format: date-time
+      required: [id, device_id, name, chart_type, data_source]
+
+    VisualizationCreate:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        chart_type:
+          type: string
+          enum: [line, bar, scatter, pie, area, heatmap]
+        data_source:
+          type: string
+          enum: [feeds, topics, articles, entities, sentiment, quality]
+        filters:
+          type: object
+          additionalProperties: true
+        customization:
+          type: object
+          default: {}
+      required: [device_id, name, chart_type, data_source, filters]
+
+    VisualizationUpdate:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        filters:
+          type: object
+        customization:
+          type: object
+      required: [device_id]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+      required: [error, message]
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

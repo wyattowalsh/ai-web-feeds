@@ -1,42 +1,50 @@
-# AI Web Feeds Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Documentation-First Delivery (MUST)
-- All feature documentation MUST live in `apps/web/content/docs/*.mdx` with valid frontmatter.
-- `meta.json` MUST be updated whenever new docs are added.
-- Standalone `.md` documentation outside the allowed root files is PROHIBITED.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Client-Side Integrity (MUST)
-- Specifications that declare “client-side only” MUST NOT introduce new backend services or API contracts without an approved spec amendment.
-- Browser storage (IndexedDB/localStorage/Cache Storage) MUST be the system of record for client-only phases.
-- Service Worker and Web Worker usage MUST degrade gracefully when unsupported.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Test-First Quality Gates (MUST)
-- Every change MUST be accompanied by failing tests first, followed by implementation and refactor (Red-Green-Refactor).
-- Automated test coverage MUST stay ≥90% overall; new modules require matching coverage.
-- Type checking (mypy/TypeScript strict) and linting (Ruff/ESLint) MUST pass before delivery.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Performance & Reliability Contracts (SHOULD)
-- Critical interactions SHOULD respond within 16 ms; search operations SHOULD remain <50 ms for 10k items.
-- Offline capabilities SHOULD function for 100% of cached content; failures MUST present user-facing fallbacks.
-- Data export/import SHOULD complete within 5 s for 50 MB datasets.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Privacy & Data Ownership (MUST)
-- User data MUST remain local unless an explicit opt-in export occurs.
-- Debug telemetry MUST require explicit user action to share; silent uploads are forbidden.
-- Data exports MUST support JSON, CSV, OPML, and HTML formats for portability.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-## Delivery Workflow
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-- `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.analyze` MUST run sequentially; later stages rely on complete artifacts from previous stages.
-- Research clarifications MUST be captured in `research.md` before design work begins.
-- Task lists MUST map each functional/non-functional requirement to at least one actionable item, including fallbacks, recovery flows, and measurement tasks.
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-- This constitution supersedes conflicting specs, plans, and tasks; conflicts MUST be resolved by updating those artifacts, not by ignoring principles.
-- Amendments require consensus from the feature owner and project maintainer, accompanied by version bump and changelog entry.
-- Compliance checks MUST be documented during `/speckit.plan` and re-validated before `/speckit.implement`.
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-27 | **Last Amended**: 2025-11-05
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
