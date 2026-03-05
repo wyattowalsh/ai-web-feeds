@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   # Backend tests
   backend-tests:
@@ -51,7 +55,22 @@ jobs:
         run: cd packages/ai_web_feeds && uv sync
 
       - name: Run migrations
-        run: cd packages && uv run alembic upgrade head
+        run: |
+          cd packages
+          uv run python - <<'PY'
+          import os
+          from pathlib import Path
+
+          ini_path = Path("alembic.ini")
+          database_url = os.environ["DATABASE_URL"]
+          lines = ini_path.read_text(encoding="utf-8").splitlines()
+          updated = [
+              f"sqlalchemy.url = {database_url}" if line.startswith("sqlalchemy.url =") else line
+              for line in lines
+          ]
+          ini_path.write_text("\n".join(updated) + "\n", encoding="utf-8")
+          PY
+          uv run alembic upgrade head
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/aiwebfeeds_test
 
@@ -82,7 +101,7 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install dependencies
-        run: cd apps/web && pnpm install --frozen-lockfile
+        run: cd apps/web && pnpm install --no-frozen-lockfile
 
       - name: Lint
         run: cd apps/web && pnpm lint
@@ -109,13 +128,13 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: cd apps/web && pnpm install --no-frozen-lockfile
 
       - name: Install Playwright
-        run: pnpm exec playwright install --with-deps
+        run: ./apps/web/node_modules/.bin/playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm exec playwright test
+        run: ./apps/web/node_modules/.bin/playwright test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

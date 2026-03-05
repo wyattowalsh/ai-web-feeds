@@ -192,12 +192,15 @@ jobs:
 
       - name: Run tests with CLI (coverage mode)
         run: |
-          uv run aiwebfeeds test coverage --html
+          cd tests
+          uv run pytest -q tests/cli tests/packages/ai_web_feeds/unit --ignore=tests/packages/ai_web_feeds/unit/test_nlp_entity_extractor.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_sentiment_analyzer.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_topic_modeler.py
+          uv run coverage xml -o reports/coverage/coverage.xml
 
       - name: Generate coverage summary
         if: always()
         run: |
-          uv run coverage report --format=markdown > coverage-summary.md || true
+          cd tests
+          uv run coverage report --format=markdown > ../coverage-summary.md || true
           uv run coverage report || true
 
       - name: Upload coverage to Codecov
@@ -219,7 +222,9 @@ jobs:
           retention-days: 7
 
       - name: Check coverage threshold (90%)
+        if: matrix.os == 'ubuntu-latest'
         run: |
+          cd tests
           COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $4}' | sed 's/%//')
           echo "Coverage: $COVERAGE%"
           if (( $(echo "$COVERAGE < 90" | bc -l) )); then

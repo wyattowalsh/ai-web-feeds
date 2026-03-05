@@ -61,28 +61,63 @@ jobs:
       - name: Validate feeds.yaml
         id: validate
         run: |
-          cd packages/ai_web_feeds
-          uv run python -c "
+          uv run python - <<'PY'
           from pathlib import Path
+          import re
           import sys
-          sys.path.insert(0, 'src')
-          from ai_web_feeds import load_feeds, validate_feeds
+          import yaml
 
-          print('🔍 Loading feeds.yaml...')
-          feeds = load_feeds(Path('../../data/feeds.yaml'))
-          source_count = len(feeds.get('sources', []))
-          print(f'✓ Loaded {source_count} sources')
+          feeds = yaml.safe_load(Path('data/feeds.yaml').read_text(encoding='utf-8'))
+          errors: list[str] = []
 
-          print('\\n🔍 Validating schema...')
-          result = validate_feeds(feeds, Path('../../data/feeds.schema.json'))
-          if result.valid:
-              print('✓ Validation passed')
-          else:
-              print('✗ Validation failed:')
-              for error in result.errors[:10]:
-                  print(f'  - {error}')
+          if not isinstance(feeds, dict):
+              errors.append("feeds.yaml must be a YAML mapping")
+              feeds = {}
+
+          schema_version = feeds.get('schema_version')
+          if not isinstance(schema_version, str) or not re.match(r'^feeds-2\.[0-9]+\.[0-9]+$', schema_version):
+              errors.append("schema_version must match feeds-2.x.y")
+
+          sources = feeds.get('sources')
+          if not isinstance(sources, list) or not sources:
+              errors.append("sources must be a non-empty list")
+              sources = []
+
+          for idx, source in enumerate(sources):
+              if not isinstance(source, dict):
+                  errors.append(f"source[{idx}] must be an object")
+                  continue
+
+              url = source.get('url')
+              if not isinstance(url, str) or not url.startswith(('http://', 'https://')):
+                  errors.append(f"source[{idx}] has an invalid url")
+
+              topics = source.get('topics')
+              if not isinstance(topics, list) or not (1 <= len(topics) <= 6):
+                  errors.append(f"source[{idx}] must have 1-6 topics")
+              else:
+                  if len(set(topics)) != len(topics):
+                      errors.append(f"source[{idx}] topics must be unique")
+                  if not all(isinstance(topic, str) and topic.strip() for topic in topics):
+                      errors.append(f"source[{idx}] topics must be non-empty strings")
+
+              title = source.get('title')
+              if title is not None and (not isinstance(title, str) or not (1 <= len(title) <= 160)):
+                  errors.append(f"source[{idx}] title must be 1-160 chars when provided")
+
+              notes = source.get('notes')
+              if notes is not None and (not isinstance(notes, str) or len(notes) > 500):
+                  errors.append(f"source[{idx}] notes must be <=500 chars when provided")
+
+          if errors:
+              for error in errors[:20]:
+                  print(f"✗ {error}")
+              if len(errors) > 20:
+                  print(f"... and {len(errors) - 20} more validation errors")
               sys.exit(1)
-          "
+
+          print(f"✓ Validation passed for {len(sources)} sources")
+          PY
 
       - name: Process feeds through pipeline
         id: process
