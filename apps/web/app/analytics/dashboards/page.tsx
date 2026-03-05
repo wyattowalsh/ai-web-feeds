@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getDeviceId } from "@/lib/visualization/device-id";
 
 interface Dashboard {
@@ -104,9 +105,9 @@ export default function DashboardsPage() {
           <span className="font-semibold">Advanced / Custom:</span> Dashboards are an
           experimental builder for custom layouts. Prefer the standard analytics
           dashboard?{" "}
-          <a href="/analytics" className="font-medium underline hover:no-underline">
+          <Link href="/analytics" className="font-medium underline hover:no-underline">
             Go to Analytics Overview
-          </a>
+          </Link>
           .
         </div>
 

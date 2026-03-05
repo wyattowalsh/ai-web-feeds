@@ -7,6 +7,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { ChartContainer } from "@/components/visualizations/ChartContainer";
 import { visualizationApi, type Visualization } from "@/lib/visualization/api-client";
 import { getDeviceId } from "@/lib/visualization/device-id";
@@ -61,9 +62,9 @@ export default function VisualizationsPage() {
       <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
         <span className="font-semibold">Advanced / Custom:</span> This builder is for
         experimental analytics workflows. Prefer the standard view?{" "}
-        <a href="/analytics" className="font-medium underline hover:no-underline">
+        <Link href="/analytics" className="font-medium underline hover:no-underline">
           Go to Analytics Overview
-        </a>
+        </Link>
         .
       </div>
 
