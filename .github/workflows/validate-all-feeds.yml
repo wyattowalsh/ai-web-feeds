@@ -37,28 +37,15 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras
-          uv pip install jsonschema pyyaml requests feedparser
 
       - name: Run CLI validation
         run: |
           if [ "${{ github.event.inputs.strict_mode }}" = "false" ]; then
-            uv run aiwebfeeds validate all --lenient
+            uv run python data/validate_data_assets.py
           else
-            uv run aiwebfeeds validate all --strict
+            uv run python data/validate_data_assets.py
+            uv run aiwebfeeds validate data/feeds.enriched.example.yaml --schema data/feeds.enriched.schema.json
           fi
-
-      - name: Generate validation report
-        if: always()
-        run: |
-          uv run aiwebfeeds stats --output json > validation-stats.json
-
-      - name: Upload validation report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: validation-report
-          path: validation-stats.json
-          retention-days: 30
 
       - name: Check for issues
         id: check_feeds
@@ -160,6 +147,15 @@ jobs:
           if issues:
               sys.exit(1)
           EOF
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: validation_summary.json
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: Check feed accessibility (optional)
         if: github.event.inputs.check_accessibility == 'true'
