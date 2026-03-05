@@ -10,6 +10,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  type ChartOptions,
 } from "chart.js";
 
 // Register Chart.js components
@@ -86,7 +87,7 @@ export function TrendingTopicsChart({
     ],
   };
 
-  const options = {
+  const options: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

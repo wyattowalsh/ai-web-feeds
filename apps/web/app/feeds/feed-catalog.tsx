@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import type { FeedSource } from "@/lib/feeds";
-import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds";
+import type { FeedSource } from "@/lib/feeds-filters";
+import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds-filters";
 
 interface FeedCatalogProps {
   feeds: FeedSource[];

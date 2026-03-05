@@ -1,6 +1,9 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import type { ButtonHTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
 
 const variants = {
+  default: "bg-fd-primary text-fd-primary-foreground hover:bg-fd-primary/80",
   primary: "bg-fd-primary text-fd-primary-foreground hover:bg-fd-primary/80",
   outline: "border hover:bg-fd-accent hover:text-fd-accent-foreground",
   ghost: "hover:bg-fd-accent hover:text-fd-accent-foreground",
@@ -25,4 +28,23 @@ export const buttonVariants = cva(
   },
 );
 
-export type ButtonProps = VariantProps<typeof buttonVariants>;
+export interface ButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
+    VariantProps<typeof buttonVariants> {}
+
+export function Button({
+  className,
+  variant,
+  color,
+  size,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cn(buttonVariants({ variant, color, size }), className)}
+      {...props}
+    />
+  );
+}

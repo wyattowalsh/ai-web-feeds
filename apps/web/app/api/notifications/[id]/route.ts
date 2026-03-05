@@ -7,8 +7,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const notificationId = parseInt(params.id, 10);
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const notificationId = parseInt(id, 10);
 
   if (isNaN(notificationId)) {
     return NextResponse.json({ error: "Invalid notification ID" }, { status: 400 });

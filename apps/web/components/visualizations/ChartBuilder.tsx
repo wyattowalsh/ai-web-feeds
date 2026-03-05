@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactElement } from "react";
 import { DataSourceSelector, type DataSource } from "./DataSourceSelector";
 import { ChartTypeSelector, type ChartType } from "./ChartTypeSelector";
 import { DateRangeFilter, type DateRange, type DateRangePreset } from "./DateRangeFilter";
@@ -276,7 +276,7 @@ function renderChart(
   type: ChartType,
   data: any,
   customization: ChartCustomization
-): JSX.Element | null {
+): ReactElement | null {
   if (!data) return null;
 
   const commonOptions = {

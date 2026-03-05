@@ -17,7 +17,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text, Html } from "@react-three/drei";
 import * as THREE from "three";
 
-interface TopicNode {
+export interface TopicNode {
   id: string;
   label: string;
   size: number; // Article count or relevance score

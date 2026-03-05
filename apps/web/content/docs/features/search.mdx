@@ -15,7 +15,7 @@ The Search & Discovery feature enables users to find feeds through full-text sea
 
 ### Unified Search Interface
 
-Single search bar at `/search` with real-time autocomplete (<200ms response time).
+Single search bar at `/search` with real-time autocomplete (&lt;200ms response time).
 
 ### Full-Text Search
 
@@ -36,7 +36,7 @@ Within 200ms, get:
 - **Top 3 matching topics**
 - **Top 3 recent searches** (user-specific, localStorage)
 
-Powered by pre-built Trie index (in-memory, <10ms response).
+Powered by pre-built Trie index (in-memory, &lt;10ms response).
 
 ### Faceted Filtering
 
@@ -158,9 +158,9 @@ await fetch("/api/search/saved", {
 
 ## Performance
 
-- **Autocomplete**: <200ms response time (95th percentile, NFR-002)
-- **Full-Text Search**: <500ms for 10,000+ feeds (NFR-003)
-- **Semantic Search**: <3s total latency (2s vector search + 1s rendering, NFR-004)
+- **Autocomplete**: &lt;200ms response time (95th percentile, NFR-002)
+- **Full-Text Search**: &lt;500ms for 10,000+ feeds (NFR-003)
+- **Semantic Search**: &lt;3s total latency (2s vector search + 1s rendering, NFR-004)
 - **FTS5 Scalability**: Supports 50,000+ feeds with sub-second queries
 
 ## Zero Results Handling
@@ -174,7 +174,7 @@ When no results found, display:
 ## Success Criteria
 
 - ✅ Search results appear within 500ms for 95% of queries
-- ✅ 70% of searches yield >0 results (zero-result rate <30%)
+- ✅ 70% of searches yield >0 results (zero-result rate &lt;30%)
 - ✅ Average click-through rate on search results ≥40%
 - ✅ 50% of users who search use faceted filters
 - ✅ Saved searches used by 20% of active users within first month

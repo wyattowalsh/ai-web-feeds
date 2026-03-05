@@ -462,3 +462,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/git,jupyternotebooks,linux,macos,nextjs,node,python,visualstudiocode,windows
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
+!apps/web/lib/
+!apps/web/lib/**

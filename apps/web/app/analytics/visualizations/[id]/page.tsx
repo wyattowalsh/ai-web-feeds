@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ChartContainer } from "@/components/visualizations/ChartContainer";
 import { LineChart } from "@/components/visualizations/charts/LineChart";
 import { BarChart } from "@/components/visualizations/charts/BarChart";
@@ -24,16 +24,10 @@ import {
   getVisualizationData,
 } from "@/lib/visualization/api-client";
 
-interface VisualizationDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function VisualizationDetailPage({
-  params,
-}: VisualizationDetailPageProps) {
+export default function VisualizationDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const visualizationId = params.id;
   const chartRef = useRef<HTMLDivElement>(null);
 
   const [visualization, setVisualization] = useState<any>(null);
@@ -45,8 +39,9 @@ export default function VisualizationDetailPage({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
+    if (!visualizationId) return;
     loadVisualization();
-  }, [params.id]);
+  }, [visualizationId]);
 
   const loadVisualization = async () => {
     setIsLoading(true);
@@ -56,11 +51,11 @@ export default function VisualizationDetailPage({
       const deviceId = getDeviceId();
 
       // Fetch visualization config
-      const viz = await getVisualization(params.id, deviceId);
+      const viz = await getVisualization(visualizationId, deviceId);
       setVisualization(viz);
 
       // Fetch visualization data
-      const data = await getVisualizationData(params.id, deviceId);
+      const data = await getVisualizationData(visualizationId, deviceId);
       setChartData(data);
     } catch (err) {
       console.error("Failed to load visualization:", err);
@@ -113,7 +108,7 @@ export default function VisualizationDetailPage({
 
     try {
       const deviceId = getDeviceId();
-      await deleteVisualization(params.id, deviceId);
+      await deleteVisualization(visualizationId, deviceId);
       router.push("/analytics/visualizations");
     } catch (err) {
       console.error("Delete failed:", err);
@@ -124,7 +119,7 @@ export default function VisualizationDetailPage({
 
   const handleEdit = () => {
     // Navigate to edit page (to be implemented)
-    router.push(`/analytics/visualizations/${params.id}/edit`);
+    router.push(`/analytics/visualizations/${visualizationId}/edit`);
   };
 
   if (isLoading) {
@@ -199,7 +194,7 @@ export default function VisualizationDetailPage({
         {/* Chart display */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
           <div ref={chartRef}>
-            <ChartContainer isLoading={false} error={null} isEmpty={!chartData}>
+            <ChartContainer isLoading={false} error={null}>
               {renderChart(
                 visualization.chart_type,
                 chartData,
@@ -390,7 +385,7 @@ export default function VisualizationDetailPage({
 /**
  * Render chart based on type.
  */
-function renderChart(type: string, data: any, customization: any): JSX.Element | null {
+function renderChart(type: string, data: any, customization: any) {
   if (!data) return null;
 
   const commonOptions = {

@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  type ChartOptions,
 } from "chart.js";
 
 ChartJS.register(
@@ -88,7 +89,7 @@ export function VelocityChart({
     ],
   };
 
-  const options = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

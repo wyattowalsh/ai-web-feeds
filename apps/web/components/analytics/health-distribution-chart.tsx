@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title, type ChartOptions } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -72,7 +72,7 @@ export function HealthDistributionChart({
     ],
   };
 
-  const options = {
+  const options: ChartOptions<"pie"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

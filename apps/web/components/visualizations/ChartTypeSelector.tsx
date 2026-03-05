@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 
 export type ChartType = "line" | "bar" | "scatter" | "pie" | "area" | "heatmap";
 
@@ -14,7 +14,7 @@ interface ChartTypeOption {
   id: ChartType;
   label: string;
   description: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   bestFor: string[];
   dataRequirements: string;
 }

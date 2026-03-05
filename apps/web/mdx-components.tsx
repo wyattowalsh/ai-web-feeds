@@ -4,6 +4,7 @@ import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { Mermaid } from "@/components/mdx/mermaid";
 import * as Python from "fumadocs-python/components";
+import * as LucideIcons from "lucide-react";
 import type { ComponentProps } from "react";
 
 // Enable printing mode via environment variable
@@ -38,6 +39,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
     ...Python,
+    ...LucideIcons,
     Mermaid,
     // Override components when in printing mode to show all content
     ...(isPrinting && {

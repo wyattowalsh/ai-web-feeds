@@ -35,7 +35,7 @@ export function PieChart({
   className = "",
 }: PieChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<ChartJS<"pie" | "doughnut"> | null>(null);
+  const chartRef = useRef<ChartJS | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;

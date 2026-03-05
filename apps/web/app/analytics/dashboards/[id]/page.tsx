@@ -5,18 +5,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { DashboardBuilder, type DashboardWidget } from "@/components/visualizations/dashboards/DashboardBuilder";
 import { getDeviceId } from "@/lib/visualization/device-id";
 
-interface DashboardDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function DashboardDetailPage({ params }: DashboardDetailPageProps) {
+export default function DashboardDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const dashboardId = params.id;
   const [dashboard, setDashboard] = useState<any>(null);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,8 +20,9 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
+    if (!dashboardId) return;
     loadDashboard();
-  }, [params.id]);
+  }, [dashboardId]);
 
   const loadDashboard = async () => {
     setIsLoading(true);
@@ -37,7 +34,7 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const sampleDashboard = {
-        id: parseInt(params.id),
+        id: parseInt(dashboardId, 10),
         name: "Sample Dashboard",
         layout_config: {},
         created_at: new Date().toISOString(),
@@ -112,7 +109,7 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("Deleting dashboard:", params.id);
+      console.log("Deleting dashboard:", dashboardId);
 
       router.push("/analytics/dashboards");
     } catch (error) {

@@ -173,35 +173,21 @@ export function AnimatedLink({
   color?: string;
   animationProgress?: number;
 }) {
-  const lineRef = useRef<THREE.Line>(null);
-
-  useEffect(() => {
-    if (lineRef.current) {
-      const geometry = lineRef.current.geometry as THREE.BufferGeometry;
-      const positions = geometry.attributes.position.array as Float32Array;
-
-      // Interpolate line based on animation progress
-      const x = start[0] + (end[0] - start[0]) * animationProgress;
-      const y = start[1] + (end[1] - start[1]) * animationProgress;
-      const z = start[2] + (end[2] - start[2]) * animationProgress;
-
-      positions[3] = x;
-      positions[4] = y;
-      positions[5] = z;
-
-      geometry.attributes.position.needsUpdate = true;
-    }
-  }, [start, end, animationProgress]);
+  const animatedEnd: [number, number, number] = [
+    start[0] + (end[0] - start[0]) * animationProgress,
+    start[1] + (end[1] - start[1]) * animationProgress,
+    start[2] + (end[2] - start[2]) * animationProgress,
+  ];
 
   const points = [
     new THREE.Vector3(...start),
-    new THREE.Vector3(...end),
+    new THREE.Vector3(...animatedEnd),
   ];
 
   const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 
   return (
-    <line ref={lineRef}>
+    <line>
       <bufferGeometry attach="geometry" {...lineGeometry} />
       <lineBasicMaterial attach="material" color={color} linewidth={2} />
     </line>
@@ -289,9 +275,7 @@ export function ParticleEffect({
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={count}
-          array={particlePositions}
-          itemSize={3}
+          args={[particlePositions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial size={0.1} color={color} transparent opacity={0.6} />

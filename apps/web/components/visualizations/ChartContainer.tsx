@@ -9,7 +9,7 @@
 
 "use client";
 
-import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import React, { Component, type ErrorInfo, type ReactElement, type ReactNode } from "react";
 
 interface ChartContainerProps {
   title?: string;
@@ -17,6 +17,7 @@ interface ChartContainerProps {
   children: ReactNode;
   isLoading?: boolean;
   error?: Error | null;
+  isEmpty?: boolean;
   minHeight?: string;
   onRetry?: () => void;
 }
@@ -145,15 +146,20 @@ export function ChartContainer({
   children,
   isLoading = false,
   error = null,
+  isEmpty = false,
   minHeight = "300px",
   onRetry,
-}: ChartContainerProps): JSX.Element {
+}: ChartContainerProps): ReactElement {
   if (error) {
     return <ChartError error={error} onRetry={onRetry} />;
   }
 
   if (isLoading) {
     return <ChartLoadingSkeleton minHeight={minHeight} />;
+  }
+
+  if (isEmpty) {
+    return <ChartEmptyState />;
   }
 
   return (
@@ -187,7 +193,7 @@ export function ChartEmptyState({
 }: {
   message?: string;
   suggestion?: string;
-}): JSX.Element {
+}): ReactElement {
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center">
       <div className="text-gray-600 font-medium mb-2">{message}</div>
