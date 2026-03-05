@@ -140,6 +140,7 @@ jobs:
   # E2E tests
   e2e-tests:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v4
