@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { getValidationStats } from "@/lib/validation-stats";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Validation Stats - AIWebFeeds",
@@ -9,36 +12,9 @@ export const metadata: Metadata = {
   },
 };
 
-async function getValidationStats() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/stats/validation`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch stats");
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching validation stats:", error);
-    // Return default stats on error
-    return {
-      total_feeds: 0,
-      validated_feeds: 0,
-      success_count: 0,
-      failure_count: 0,
-      success_rate: 0,
-      avg_response_time_ms: 0,
-      healthy_feeds: 0,
-      avg_health_score: 0,
-      last_validation_run: null,
-      top_errors: [],
-    };
-  }
-}
-
 export default async function StatsPage() {
   const stats = await getValidationStats();
+  const toPercent = (value: number, total: number) => (total > 0 ? (value / total) * 100 : 0);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -97,7 +73,7 @@ export default async function StatsPage() {
               <div
                 className="bg-green-500 h-2 rounded-full"
                 style={{
-                  width: `${(stats.success_count / stats.validated_feeds) * 100}%`,
+                  width: `${toPercent(stats.success_count, stats.validated_feeds)}%`,
                 }}
               ></div>
             </div>
@@ -113,7 +89,7 @@ export default async function StatsPage() {
               <div
                 className="bg-red-500 h-2 rounded-full"
                 style={{
-                  width: `${(stats.failure_count / stats.validated_feeds) * 100}%`,
+                  width: `${toPercent(stats.failure_count, stats.validated_feeds)}%`,
                 }}
               ></div>
             </div>
@@ -131,9 +107,7 @@ export default async function StatsPage() {
               <div
                 className="bg-gray-400 h-2 rounded-full"
                 style={{
-                  width: `${
-                    ((stats.total_feeds - stats.validated_feeds) / stats.total_feeds) * 100
-                  }%`,
+                  width: `${toPercent(stats.total_feeds - stats.validated_feeds, stats.total_feeds)}%`,
                 }}
               ></div>
             </div>
@@ -152,7 +126,7 @@ export default async function StatsPage() {
                 <div
                   className="bg-green-500 h-2 rounded-full"
                   style={{
-                    width: `${(stats.healthy_feeds / stats.total_feeds) * 100}%`,
+                    width: `${toPercent(stats.healthy_feeds, stats.total_feeds)}%`,
                   }}
                 ></div>
               </div>
