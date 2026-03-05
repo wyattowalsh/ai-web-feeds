@@ -42,10 +42,10 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Overview</h1>
             <p className="mt-2 text-gray-600">
-              Real-time feed analytics with interactive visualizations, trending topics, and health
-              insights
+              This is the default, simplified analytics view for feed trends and health insights.
+              Advanced and custom tools are available separately in the navigation.
             </p>
           </div>
 

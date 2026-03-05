@@ -100,6 +100,16 @@ export default function DashboardsPage() {
           </button>
         </div>
 
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
+          <span className="font-semibold">Advanced / Custom:</span> Dashboards are an
+          experimental builder for custom layouts. Prefer the standard analytics
+          dashboard?{" "}
+          <a href="/analytics" className="font-medium underline hover:no-underline">
+            Go to Analytics Overview
+          </a>
+          .
+        </div>
+
         {/* Error */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

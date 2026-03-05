@@ -58,6 +58,15 @@ export default function VisualizationsPage() {
         </p>
       </div>
 
+      <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
+        <span className="font-semibold">Advanced / Custom:</span> This builder is for
+        experimental analytics workflows. Prefer the standard view?{" "}
+        <a href="/analytics" className="font-medium underline hover:no-underline">
+          Go to Analytics Overview
+        </a>
+        .
+      </div>
+
       {/* Device ID Display */}
       {deviceId && (
         <div className="mb-6 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">

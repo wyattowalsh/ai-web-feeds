@@ -8,12 +8,13 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { href: "/analytics/visualizations", label: "Visualizations", icon: "📊" },
-  { href: "/analytics/3d-topics", label: "3D Topics", icon: "🌐" },
-  { href: "/analytics/dashboards", label: "Dashboards", icon: "📋" },
-  { href: "/analytics/forecasts", label: "Forecasts", icon: "📈" },
-  { href: "/analytics/comparison", label: "Comparison", icon: "⚖️" },
-  { href: "/analytics/export", label: "Export", icon: "💾" },
+  { href: "/analytics", label: "Overview", icon: "🏠" },
+  { href: "/analytics/visualizations", label: "Visualizations (Advanced)", icon: "📊" },
+  { href: "/analytics/3d-topics", label: "3D Topics (Advanced)", icon: "🌐" },
+  { href: "/analytics/dashboards", label: "Dashboards (Advanced)", icon: "📋" },
+  { href: "/analytics/forecasts", label: "Forecasts (Advanced)", icon: "📈" },
+  { href: "/analytics/comparison", label: "Comparison (Advanced)", icon: "⚖️" },
+  { href: "/analytics/export", label: "Export (Advanced)", icon: "💾" },
 ];
 
 export default function AnalyticsLayout({
@@ -38,7 +39,10 @@ export default function AnalyticsLayout({
 
             <div className="flex gap-1">
               {NAV_ITEMS.map((item) => {
-                const isActive = pathname?.startsWith(item.href);
+                const isActive =
+                  item.href === "/analytics"
+                    ? pathname === "/analytics" || pathname === "/analytics/"
+                    : pathname?.startsWith(item.href);
 
                 return (
                   <Link
