@@ -13,7 +13,10 @@
     "generate:docs": "tsx scripts/generate-python-docs.mjs",
     "export-pdf": "tsx scripts/export-pdf.ts",
     "export-pdf:specific": "tsx scripts/export-pdf-specific.ts",
-    "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!"
+    "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.6",
@@ -68,10 +71,5 @@
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
-  },
-  "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed"
   }
 }

@@ -72,12 +72,12 @@ jobs:
           PY
           uv run alembic upgrade head
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/aiwebfeeds_test
+          DATABASE_URL: sqlite:///${{ github.workspace }}/data/aiwebfeeds.db
 
       - name: Run tests
         run: cd tests && uv run pytest --cov --cov-report=xml
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/aiwebfeeds_test
+          DATABASE_URL: sqlite:///${{ github.workspace }}/data/aiwebfeeds.db
           REDIS_URL: redis://localhost:6379/0
 
       - name: Upload coverage

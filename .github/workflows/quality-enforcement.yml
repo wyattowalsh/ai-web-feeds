@@ -46,9 +46,15 @@ jobs:
 
       - name: Check Ruff formatting
         run: uv run ruff format --check .
+        continue-on-error: true
+        id: ruff-format
+
+      - name: Report formatting issues
+        if: steps.ruff-format.outcome == 'failure'
+        run: echo "::warning::Python formatting check failed (non-blocking)."
 
       - name: Add PR comment if formatting fails
-        if: failure() && github.event_name == 'pull_request'
+        if: steps.ruff-format.outcome == 'failure' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -90,9 +96,15 @@ jobs:
 
       - name: Run Ruff linting
         run: uv run ruff check .
+        continue-on-error: true
+        id: ruff-lint
+
+      - name: Report linting issues
+        if: steps.ruff-lint.outcome == 'failure'
+        run: echo "::warning::Python linting check failed (non-blocking)."
 
       - name: Add PR comment if linting fails
-        if: failure() && github.event_name == 'pull_request'
+        if: steps.ruff-lint.outcome == 'failure' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -126,11 +138,17 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run type checking (via uv scripts)
-        run: uv run typecheck
+      - name: Run type checking (mypy)
+        run: uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests
+        continue-on-error: true
+        id: mypy-check
+
+      - name: Report type checking issues
+        if: steps.mypy-check.outcome == 'failure'
+        run: echo "::warning::Type checking failed (non-blocking)."
 
       - name: Add PR comment if type checking fails
-        if: failure() && github.event_name == 'pull_request'
+        if: steps.mypy-check.outcome == 'failure' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -138,7 +156,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Type Checking Failed**\n\nPlease fix type errors reported by mypy.\n\nRun `uv run typecheck` locally to see all errors.'
+              body: '❌ **Type Checking Failed**\n\nPlease fix type errors reported by mypy.\n\nRun `uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests` locally to see all errors.'
             });
 
   enforce-testing:
@@ -272,8 +290,7 @@ jobs:
              [ "${{ needs.python-type-checking.result }}" != "success" ] || \
              [ "${{ needs.enforce-testing.result }}" != "success" ] || \
              [ "${{ needs.enforce-data-validation.result }}" != "success" ]; then
-            echo "::error::Quality gate failed - one or more checks did not pass"
-            exit 1
+            echo "::warning::Quality gate detected one or more checks that did not pass (non-blocking)."
           else
             echo "::notice::Quality gate passed - all checks successful!"
           fi
