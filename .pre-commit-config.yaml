@@ -12,7 +12,7 @@ repos:
   # Python - Ruff (linting and formatting)
   # ============================================================================
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.8.4
+  rev: v0.15.5
   hooks:
       # Run the linter
   - id: ruff
@@ -26,7 +26,7 @@ repos:
   # Python - MyPy (static type checking)
   # ============================================================================
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.13.0
+  rev: v1.19.1
   hooks:
   - id: mypy
     name: mypy (packages)
@@ -53,7 +53,7 @@ repos:
   # Python - Security checks
   # ============================================================================
 - repo: https://github.com/PyCQA/bandit
-  rev: 1.7.10
+  rev: 1.9.4
   hooks:
   - id: bandit
     args: [-c, pyproject.toml]
@@ -64,7 +64,7 @@ repos:
   # General file checks
   # ============================================================================
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: trailing-whitespace
     exclude: ^.*\.(md|rst)$
@@ -95,7 +95,7 @@ repos:
   # TypeScript/JavaScript - ESLint
   # ============================================================================
 - repo: https://github.com/pre-commit/mirrors-eslint
-  rev: v9.0.0-beta.0
+  rev: v10.0.3
   hooks:
   - id: eslint
     name: eslint (apps/web)
@@ -113,7 +113,7 @@ repos:
   # TypeScript/JavaScript - Prettier
   # ============================================================================
 - repo: https://github.com/pre-commit/mirrors-prettier
-  rev: v3.1.0
+  rev: v4.0.0-alpha.8
   hooks:
   - id: prettier
     name: prettier (apps/web)
@@ -126,7 +126,7 @@ repos:
   # YAML formatting
   # ============================================================================
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.14.0
+  rev: v2.16.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
@@ -136,7 +136,7 @@ repos:
   # Markdown formatting
   # ============================================================================
 - repo: https://github.com/executablebooks/mdformat
-  rev: 0.7.21
+  rev: 1.0.0
   hooks:
   - id: mdformat
     additional_dependencies:
@@ -149,7 +149,7 @@ repos:
   # Spell checking
   # ============================================================================
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.3.0
+  rev: v2.4.2
   hooks:
   - id: codespell
     args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent]
@@ -159,7 +159,7 @@ repos:
   # Validate pyproject.toml
   # ============================================================================
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.22
+  rev: v0.25
   hooks:
   - id: validate-pyproject
     files: ^(packages/|apps/cli/|tests/).*pyproject\.toml$
@@ -168,7 +168,7 @@ repos:
   # Shell scripts
   # ============================================================================
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.9.0.6
+  rev: v0.11.0.1
   hooks:
   - id: shellcheck
     args: [--severity=warning]
@@ -177,7 +177,7 @@ repos:
   # SQL formatting
   # ============================================================================
 - repo: https://github.com/sqlfluff/sqlfluff
-  rev: 3.2.5
+  rev: 4.0.4
   hooks:
   - id: sqlfluff-lint
     args: [--dialect, sqlite]
@@ -202,7 +202,7 @@ repos:
   # Conventional Commits
   # ============================================================================
 - repo: https://github.com/compilerla/conventional-pre-commit
-  rev: v3.0.0
+  rev: v4.4.0
   hooks:
   - id: conventional-pre-commit
     stages: [commit-msg]
@@ -230,7 +230,7 @@ repos:
     pass_filenames: false
     always_run: false
     files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
-    stages: [push]
+    stages: [pre-push]
 
     # TypeScript type checking
   - id: tsc
@@ -249,7 +249,7 @@ repos:
     pass_filenames: false
     always_run: false
     files: ^apps/web/
-    stages: [push]
+    stages: [pre-push]
 
     # JSON Schema validation
   - id: validate-json-schemas
