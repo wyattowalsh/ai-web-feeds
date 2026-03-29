@@ -14,7 +14,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  ScriptableContext,
   ChartOptions,
+  TooltipItem,
 } from "chart.js";
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
 
@@ -47,6 +49,55 @@ interface HeatmapChartProps {
   className?: string;
 }
 
+type RenderedHeatmapPoint = {
+  x: number;
+  y: number;
+  v: number;
+  labelX: string | number;
+  labelY: string | number;
+};
+
+function resolveAxisValue(value: string | number, labels: string[]): number {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  const index = labels.indexOf(value);
+  return index >= 0 ? index : 0;
+}
+
+function toRenderedHeatmapPoint(
+  point: HeatmapDataPoint,
+  xLabels: string[],
+  yLabels: string[],
+): RenderedHeatmapPoint {
+  return {
+    x: resolveAxisValue(point.x, xLabels),
+    y: resolveAxisValue(point.y, yLabels),
+    v: point.v,
+    labelX: point.x,
+    labelY: point.y,
+  };
+}
+
+function isRenderedHeatmapPoint(value: unknown): value is RenderedHeatmapPoint {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const point = value as Partial<RenderedHeatmapPoint>;
+  const validAxisValue = typeof point.x === "number";
+  const validRowValue = typeof point.y === "number";
+
+  return (
+    validAxisValue &&
+    validRowValue &&
+    typeof point.v === "number" &&
+    (typeof point.labelX === "string" || typeof point.labelX === "number") &&
+    (typeof point.labelY === "string" || typeof point.labelY === "number")
+  );
+}
+
 export function HeatmapChart({
   data,
   xLabels,
@@ -57,7 +108,7 @@ export function HeatmapChart({
   className = "",
 }: HeatmapChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<ChartJS | null>(null);
+  const chartRef = useRef<ChartJS<"matrix"> | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -71,8 +122,11 @@ export function HeatmapChart({
 
     // Find min/max values for color scaling
     const values = data.map((d) => d.v);
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
+    const hasValues = values.length > 0;
+    const minValue = hasValues ? Math.min(...values) : 0;
+    const maxValue = hasValues ? Math.max(...values) : 0;
+    const valueRange = maxValue - minValue;
+    const matrixData = data.map((point) => toRenderedHeatmapPoint(point, xLabels, yLabels));
 
     const defaultOptions: ChartOptions<"matrix"> = {
       responsive: true,
@@ -87,9 +141,11 @@ export function HeatmapChart({
           cornerRadius: 8,
           callbacks: {
             title: () => "",
-            label: (context) => {
-              const data = context.raw as any;
-              return `${data.x} × ${data.y}: ${data.v.toFixed(2)}`;
+            label: (context: TooltipItem<"matrix">) => {
+              const point = isRenderedHeatmapPoint(context.raw)
+                ? context.raw
+                : { x: 0, y: 0, v: 0, labelX: "?", labelY: "?" };
+              return `${point.labelX} × ${point.labelY}: ${point.v.toFixed(2)}`;
             },
           },
         },
@@ -119,7 +175,7 @@ export function HeatmapChart({
       },
     };
 
-    const mergedOptions = {
+    const mergedOptions: ChartOptions<"matrix"> = {
       ...defaultOptions,
       ...options,
     };
@@ -130,20 +186,23 @@ export function HeatmapChart({
         datasets: [
           {
             label: "Heatmap",
-            data: data as any,
-            backgroundColor: (context: any) => {
-              const value = context.raw?.v ?? 0;
-              const normalized = (value - minValue) / (maxValue - minValue);
+            data: matrixData,
+            backgroundColor: (context: ScriptableContext<"matrix">) => {
+              const point = isRenderedHeatmapPoint(context.raw) ? context.raw : null;
+              const value = point?.v ?? 0;
+              const normalized = valueRange > 0 ? (value - minValue) / valueRange : 0;
               return interpolateColor(colorScale.min, colorScale.max, normalized);
             },
             borderWidth: 1,
             borderColor: "rgba(255, 255, 255, 0.5)",
-            width: ({ chart }: any) => (chart.chartArea?.width || 0) / xLabels.length - 1,
-            height: ({ chart }: any) => (chart.chartArea?.height || 0) / yLabels.length - 1,
+            width: ({ chart }: ScriptableContext<"matrix">) =>
+              xLabels.length > 0 ? (chart.chartArea?.width || 0) / xLabels.length - 1 : 0,
+            height: ({ chart }: ScriptableContext<"matrix">) =>
+              yLabels.length > 0 ? (chart.chartArea?.height || 0) / yLabels.length - 1 : 0,
           },
         ],
       },
-      options: mergedOptions as any,
+      options: mergedOptions,
     });
 
     return () => {

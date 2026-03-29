@@ -25,7 +25,16 @@ from ai_web_feeds.models import (
     SearchQuery,
 )
 
-settings = Settings()
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 # ============================================================================
@@ -224,20 +233,29 @@ def full_text_search(
     Returns:
         List of matching FeedSource objects
     """
+    from sqlalchemy import text
+
+    settings = get_settings()
     logger.info(f"Full-text search: query='{query}', limit={limit}")
 
-    # Build FTS5 query
-    fts_query = query.replace("'", "''")  # Escape quotes
+    # Validate and clamp limit
+    limit = max(1, min(limit, settings.search.full_text_limit))
 
-    # Search FTS5 table
+    # Use LIMIT with buffer for filtering
+    fts_limit = limit * 2
+
+    # Search FTS5 table using parameterized query with text()
     fts_results = session.exec(
-        f"""
+        text(
+            """
         SELECT feed_id, rank
         FROM feeds_fts
-        WHERE feeds_fts MATCH '{fts_query}'
+        WHERE feeds_fts MATCH :query
         ORDER BY rank
-        LIMIT {limit * 2}
+        LIMIT :limit
         """
+        ),
+        {"query": query, "limit": fts_limit},
     ).all()
 
     if not fts_results:
@@ -289,7 +307,9 @@ def full_text_search(
 
 
 def generate_query_embedding(query_text: str) -> np.ndarray:
-    """Generate embedding for search query.
+    """Generate embedding for search query using cached model.
+
+    Uses the shared cached Sentence-Transformers model from embeddings module.
 
     Args:
         query_text: Search query
@@ -299,9 +319,9 @@ def generate_query_embedding(query_text: str) -> np.ndarray:
     """
     # Import here to avoid circular dependency
     try:
-        from sentence_transformers import SentenceTransformer
+        from ai_web_feeds.embeddings import get_local_model
 
-        model = SentenceTransformer(settings.embedding.local_model)
+        model = get_local_model()
         embedding = model.encode([query_text])[0]
         return embedding.astype(np.float32)
     except ImportError:
@@ -328,10 +348,21 @@ def semantic_search(
     Returns:
         List of (FeedSource, similarity_score) tuples
     """
+    settings = get_settings()
     logger.info(f"Semantic search: query='{query}', threshold={threshold}")
+
+    # Validate and clamp limit
+    limit = max(1, min(limit, settings.search.full_text_limit))
+    threshold = max(0.0, min(threshold, 1.0))
 
     # Generate query embedding
     query_embedding = generate_query_embedding(query)
+
+    # Guard against zero-norm query embedding
+    query_norm = np.linalg.norm(query_embedding)
+    if query_norm < 1e-8:
+        logger.warning("Query embedding has zero norm, returning no results")
+        return []
 
     # Get all feed embeddings
     embeddings = session.exec(select(FeedEmbedding)).all()
@@ -340,13 +371,19 @@ def semantic_search(
         logger.warning("No feed embeddings found")
         return []
 
-    # Calculate cosine similarities
+    # Calculate cosine similarities with zero-norm guards
     similarities = []
     for emb in embeddings:
         feed_vector = np.frombuffer(emb.embedding, dtype=np.float32)
-        similarity = np.dot(query_embedding, feed_vector) / (
-            np.linalg.norm(query_embedding) * np.linalg.norm(feed_vector)
-        )
+
+        # Guard against zero-norm feed embedding
+        feed_norm = np.linalg.norm(feed_vector)
+        if feed_norm < 1e-8:
+            logger.debug(f"Feed {emb.feed_id} has zero-norm embedding, skipping")
+            continue
+
+        # Compute cosine similarity safely
+        similarity = np.dot(query_embedding, feed_vector) / (query_norm * feed_norm)
 
         if similarity >= threshold:
             similarities.append((emb.feed_id, float(similarity)))
@@ -390,19 +427,23 @@ def semantic_search(
 def autocomplete(
     session: Session,
     prefix: str,
-    limit: int = 8,
+    limit: int | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """Get autocomplete suggestions.
 
     Args:
         session: Database session
         prefix: Search prefix
-        limit: Maximum suggestions (default 8: 5 feeds + 3 topics)
+        limit: Maximum suggestions (default from settings: 8: 5 feeds + 3 topics)
 
     Returns:
         Dictionary with 'feeds' and 'topics' lists
     """
-    logger.info(f"Autocomplete: prefix='{prefix}'")
+    settings = get_settings()
+    if limit is None:
+        limit = settings.search.autocomplete_limit
+
+    logger.info(f"Autocomplete: prefix='{prefix}', limit={limit}")
 
     if len(prefix) < 2:
         return {"feeds": [], "topics": []}

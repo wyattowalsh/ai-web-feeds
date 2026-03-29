@@ -308,7 +308,8 @@ Mark notification as read or dismissed.
 ```typescript
 // Body
 {
-  "action": "mark_read" | "dismiss"
+  "action": "mark_read" | "dismiss",
+  "user_id": "<uuid>" // or pass user_id in the query string
 }
 ```
 
@@ -405,7 +406,9 @@ Unsubscribe from digests.
 ```typescript
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:8000");
+// In production, prefer an explicit runtime URL:
+// NEXT_PUBLIC_WEBSOCKET_URL=https://monitor.example.com
+const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL ?? window.location.origin);
 
 // Authenticate
 socket.emit("authenticate", { user_id: "user-uuid" });
@@ -440,7 +443,10 @@ socket.emit("dismiss", { notification_id: 123 });
 # WebSocket Server
 AIWF_WEBSOCKET_PORT=8000
 AIWF_WEBSOCKET_CORS_ORIGINS=http://localhost:3000,https://aiwebfeeds.com
-NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:8000
+# Optional:
+# - Local dev defaults to http://localhost:8000
+# - Non-local deployments default to same-origin unless overridden
+# NEXT_PUBLIC_WEBSOCKET_URL=https://monitor.example.com
 
 # Feed Polling
 AIWF_FEED_POLL_INTERVAL_MIN=15
@@ -607,7 +613,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 1. Check server is running: `uv run aiwebfeeds monitor status`
 2. Verify CORS origins in `.env`: `AIWF_WEBSOCKET_CORS_ORIGINS`
 3. Check browser console for connection errors
-4. Ensure `NEXT_PUBLIC_WEBSOCKET_URL` matches server URL
+4. Set `NEXT_PUBLIC_WEBSOCKET_URL` when the monitor/WebSocket server is on a different origin than the web app
 
 ### No Notifications Received
 

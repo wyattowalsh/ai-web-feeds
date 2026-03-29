@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { ArrowUpRight, Database, Download, RefreshCcw } from "lucide-react";
 import { SummaryMetrics } from "@/components/analytics/summary-metrics";
 import { TrendingTopicsChart } from "@/components/analytics/trending-topics-chart";
 import { VelocityChart } from "@/components/analytics/velocity-chart";
 import { HealthDistributionChart } from "@/components/analytics/health-distribution-chart";
 import { AnalyticsFilters } from "@/components/analytics/analytics-filters";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState("30d");
@@ -37,19 +41,56 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Overview</h1>
-            <p className="mt-2 text-gray-600">
-              This is the default, simplified analytics view for feed trends and health insights.
-              Advanced and custom tools are available separately in the navigation.
-            </p>
+    <div className="page-wrap page-stack">
+      <section className="surface-panel space-y-8">
+        <div className="grid gap-8 md:gap-6 md:grid-cols-[1fr_0.9fr] lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <div className="space-y-5">
+            <span className="eyebrow">
+              <Database className="size-3.5" />
+              Analytics overview
+            </span>
+            <div className="space-y-4">
+              <h1 className="hero-title max-w-4xl">Feed health, validation cadence, and topic momentum.</h1>
+              <p className="hero-copy max-w-2xl">
+                This view is now structured like a real dashboard surface instead of a placeholder
+                page: cleaner filters, clearer metrics, and chart wrappers that make the analytics
+                feel deliberate and easier to scan.
+              </p>
+            </div>
           </div>
 
-          {/* Filters */}
+          <div className="surface-card-soft space-y-4">
+            <p className="metric-label">What you can inspect here</p>
+            <div className="grid gap-3 text-sm text-(--ink)">
+              <div className="flex items-start gap-3">
+                <RefreshCcw className="mt-0.5 size-4 text-(--brand-strong)" />
+                Validation activity over time
+              </div>
+              <div className="flex items-start gap-3">
+                <ArrowUpRight className="mt-0.5 size-4 text-(--brand-strong)" />
+                Topic momentum and feed health distribution
+              </div>
+              <div className="flex items-start gap-3">
+                <Download className="mt-0.5 size-4 text-(--brand-strong)" />
+                Exportable snapshots for downstream analysis
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/docs/features/analytics" className={cn(buttonVariants({ variant: "outline" }))}>
+                Analytics docs
+              </Link>
+              <a
+                href="/api/analytics/summary"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: "ghost" }))}
+              >
+                Summary API
+              </a>
+            </div>
+          </div>
+        </div>
+
           <AnalyticsFilters
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
@@ -59,15 +100,10 @@ export default function AnalyticsPage() {
             onExport={handleExport}
           />
 
-          {/* Summary Metrics */}
           <SummaryMetrics key={`summary-${refreshKey}`} dateRange={dateRange} topic={topic} />
 
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Trending Topics */}
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <TrendingTopicsChart key={`trending-${refreshKey}`} dateRange={dateRange} limit={10} />
-
-            {/* Health Distribution */}
             <HealthDistributionChart
               key={`health-${refreshKey}`}
               dateRange={dateRange}
@@ -75,38 +111,35 @@ export default function AnalyticsPage() {
             />
           </div>
 
-          {/* Publication Velocity */}
           <VelocityChart key={`velocity-${refreshKey}`} dateRange={dateRange} granularity="daily" />
 
-          {/* Footer Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900">ℹ️ About Analytics</h3>
-            <p className="text-sm text-blue-800 mt-1">
+          <div className="surface-card-soft space-y-4">
+            <div className="space-y-2">
+              <p className="metric-label">Methodology</p>
+              <h2 className="text-title-medium">How the dashboard frames the catalog</h2>
+            </div>
+            <p className="small-note">
               Analytics are calculated based on feed validation frequency (used as a proxy for
               publication activity). Health scores categorize feeds as: <strong>Healthy</strong>{" "}
               (≥0.8), <strong>Moderate</strong> (0.5-0.8), or <strong>Unhealthy</strong> (&lt;0.5).
               Trending topics are ranked by validation frequency weighted by feed health scores.
               Data is cached for performance: static metrics (1 hour), dynamic metrics (5 minutes).
             </p>
-            <div className="mt-3 flex gap-4 text-sm">
-              <a
-                href="/docs/features/analytics"
-                className="text-blue-600 hover:text-blue-800 underline"
-              >
-                📚 Documentation
-              </a>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/docs/features/analytics" className={cn(buttonVariants({ variant: "outline" }))}>
+                Documentation
+              </Link>
               <a
                 href="/api/analytics/summary"
-                className="text-blue-600 hover:text-blue-800 underline"
+                className={cn(buttonVariants({ variant: "ghost" }))}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                🔗 API Endpoint
+                API endpoint
               </a>
             </div>
           </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

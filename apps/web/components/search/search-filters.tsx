@@ -1,5 +1,10 @@
 "use client";
 
+import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
+
 interface SearchFiltersProps {
   searchType: "full_text" | "semantic";
   onSearchTypeChange: (type: "full_text" | "semantic") => void;
@@ -58,34 +63,36 @@ export function SearchFilters({
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6 space-y-6">
+    <div className="surface-card space-y-6">
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Search Type</h3>
+        <div className="mb-4 flex items-center gap-3">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+            <SlidersHorizontal className="size-4" />
+          </span>
+          <div>
+            <p className="metric-label">Filters</p>
+            <h3 className="text-lg font-semibold text-(--ink)">Tune the search strategy</h3>
+          </div>
+        </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            type="button"
             onClick={() => onSearchTypeChange("full_text")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              searchType === "full_text"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+            variant={searchType === "full_text" ? "default" : "secondary"}
           >
             Full-Text
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={() => onSearchTypeChange("semantic")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              searchType === "semantic"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+            variant={searchType === "semantic" ? "default" : "secondary"}
           >
             Semantic
-          </button>
+          </Button>
         </div>
         {searchType === "semantic" && (
-          <div className="mt-3">
-            <label className="block text-xs text-gray-600 mb-1">
+          <div className="mt-4 rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
               Similarity Threshold: {threshold.toFixed(2)}
             </label>
             <input
@@ -97,7 +104,7 @@ export function SearchFilters({
               onChange={(e) => onThresholdChange(parseFloat(e.target.value))}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <div className="mt-2 flex justify-between text-xs text-(--ink-muted)">
               <span>Less strict</span>
               <span>More strict</span>
             </div>
@@ -106,32 +113,33 @@ export function SearchFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Source Type</label>
-        <select
+        <label className="field-label">Source Type</label>
+        <Select
           value={sourceType || ""}
           onChange={(e) => onSourceTypeChange(e.target.value || undefined)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {sourceTypes.map((type) => (
             <option key={type.value} value={type.value}>
               {type.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Topics</label>
+        <label className="field-label">Topics</label>
         <div className="flex flex-wrap gap-2">
           {commonTopics.map((topic) => (
             <button
               key={topic}
+              type="button"
               onClick={() => handleTopicToggle(topic)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
                 topics.includes(topic)
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                  ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
             >
               {topic.toUpperCase()}
             </button>
@@ -139,8 +147,9 @@ export function SearchFilters({
         </div>
         {topics.length > 0 && (
           <button
+            type="button"
             onClick={() => onTopicsChange([])}
-            className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+            className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-(--brand-strong)"
           >
             Clear all topics
           </button>
@@ -148,40 +157,29 @@ export function SearchFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
-          Verification Status
-        </label>
+        <label className="field-label">Verification Status</label>
         <div className="flex gap-2">
-          <button
+          <Button
+            type="button"
             onClick={() => onVerifiedChange(undefined)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              verified === undefined
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+            variant={verified === undefined ? "default" : "secondary"}
           >
             All
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={() => onVerifiedChange(true)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              verified === true
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+            variant={verified === true ? "default" : "secondary"}
           >
             ✓ Verified
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={() => onVerifiedChange(false)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              verified === false
-                ? "bg-gray-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+            variant={verified === false ? "default" : "secondary"}
           >
             Unverified
-          </button>
+          </Button>
         </div>
       </div>
     </div>

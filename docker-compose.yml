@@ -1,91 +1,39 @@
-version: "3.9"
-
 services:
-  # PostgreSQL database
-  postgres:
-    image: postgres:16-alpine
-    container_name: aiwebfeeds_postgres
-    environment:
-      POSTGRES_DB: aiwebfeeds
-      POSTGRES_USER: aiwebfeeds
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aiwebfeeds"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis cache
-  redis:
-    image: redis:7-alpine
-    container_name: aiwebfeeds_redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend API
-  backend:
+  web:
     build:
       context: .
-      target: backend
-    container_name: aiwebfeeds_backend
+      dockerfile: Dockerfile
+      target: web
+    container_name: aiwebfeeds_web
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://aiwebfeeds:${POSTGRES_PASSWORD:-changeme}@postgres:5432/aiwebfeeds
-      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
+      AIWF_ADMIN_PASSWORD: ${AIWF_ADMIN_PASSWORD:?set AIWF_ADMIN_PASSWORD in .env}
+      AIWF_ADMIN_SESSION_SECRET: ${AIWF_ADMIN_SESSION_SECRET:?set AIWF_ADMIN_SESSION_SECRET in .env}
+      AIWF_TELEMETRY_DIR: ${AIWF_TELEMETRY_DIR:-/app/data/telemetry}
+      BACKEND_URL: ${BACKEND_URL:-}
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
     ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - "3000:3000"
     volumes:
       - ./data:/app/data
     restart: unless-stopped
 
-  # Frontend (Next.js)
-  frontend:
+  monitor:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: aiwebfeeds_frontend
+      target: monitor
+    container_name: aiwebfeeds_monitor
+    env_file:
+      - .env
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8000
-      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///data/ai-web-feeds.db}
+      AIWF_JWT_SECRET_KEY: ${AIWF_JWT_SECRET_KEY:-}
+      AIWF_TELEMETRY_DIR: ${AIWF_TELEMETRY_DIR:-/app/data/telemetry}
     ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    restart: unless-stopped
-
-  # Nginx reverse proxy
-  nginx:
-    image: nginx:alpine
-    container_name: aiwebfeeds_nginx
-    ports:
-      - "80:80"
-      - "443:443"
+      - "8000:8000"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - frontend
-      - backend
+      - ./data:/app/data
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  redis_data:

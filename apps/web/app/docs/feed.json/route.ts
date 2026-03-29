@@ -7,7 +7,7 @@ export function GET() {
 
   return new Response(feed.json1(), {
     headers: {
-      "Content-Type": "application/json; charset=utf-8",
+      "Content-Type": "application/feed+json; charset=utf-8",
       "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },
   });

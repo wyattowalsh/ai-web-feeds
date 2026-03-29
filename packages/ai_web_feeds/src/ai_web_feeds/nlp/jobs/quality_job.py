@@ -1,14 +1,19 @@
 """Batch job for quality scoring articles (Phase 5A)."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from loguru import logger
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import ArticleQualityScore, FeedEntry
 from ai_web_feeds.nlp.quality_scorer import QualityScorer
 from ai_web_feeds.storage import DatabaseManager
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class QualityBatchJob:
@@ -18,13 +23,16 @@ class QualityBatchJob:
     computing quality metrics and storing results in SQLite.
     """
 
-    def __init__(self, settings: Settings | None = None):
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        db_manager: DatabaseManager | None = None,
+    ):
         """Initialize quality batch job."""
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.scorer = QualityScorer(settings)
-        self.db_manager = DatabaseManager(self.settings.database_url)
-        self.engine = self.db_manager.engine
+        self.scorer = QualityScorer(self.settings)
+        self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:
         """Run quality scoring batch job.
@@ -42,7 +50,7 @@ class QualityBatchJob:
                 "duration_seconds": 12.5
             }
         """
-        start_time = datetime.utcnow()
+        start_time = _utc_now()
         batch_size = batch_size or self.config.quality_batch_size
 
         stats = {
@@ -55,7 +63,7 @@ class QualityBatchJob:
 
         logger.info(f"Starting quality scoring batch job (batch_size={batch_size}, force={force})")
 
-        with Session(self.engine) as session:
+        with self.db_manager.get_session() as session:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
@@ -97,7 +105,7 @@ class QualityBatchJob:
 
                         # Mark as processed to avoid reprocessing
                         article.quality_processed = True
-                        article.quality_processed_at = datetime.utcnow()
+                        article.quality_processed_at = _utc_now()
                         session.add(article)
                         continue
 
@@ -110,7 +118,7 @@ class QualityBatchJob:
                         author_score=score_result.author_score,
                         domain_score=score_result.domain_score,
                         engagement_score=score_result.engagement_score,
-                        computed_at=datetime.utcnow(),
+                        computed_at=_utc_now(),
                     )
 
                     # Upsert: delete existing score if reprocessing
@@ -123,7 +131,7 @@ class QualityBatchJob:
 
                     # Mark article as processed
                     article.quality_processed = True
-                    article.quality_processed_at = datetime.utcnow()
+                    article.quality_processed_at = _utc_now()
                     session.add(article)
 
                     stats["scored"] += 1
@@ -144,7 +152,7 @@ class QualityBatchJob:
             # Commit all changes
             session.commit()
 
-        end_time = datetime.utcnow()
+        end_time = _utc_now()
         stats["duration_seconds"] = (end_time - start_time).total_seconds()
 
         logger.info(

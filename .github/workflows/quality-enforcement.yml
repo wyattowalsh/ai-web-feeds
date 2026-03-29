@@ -46,15 +46,14 @@ jobs:
 
       - name: Check Ruff formatting
         run: uv run ruff format --check .
-        continue-on-error: true
         id: ruff-format
 
       - name: Report formatting issues
-        if: steps.ruff-format.outcome == 'failure'
-        run: echo "::warning::Python formatting check failed (non-blocking)."
+        if: ${{ failure() && steps.ruff-format.outcome == 'failure' }}
+        run: echo "::error::Python formatting check failed."
 
       - name: Add PR comment if formatting fails
-        if: steps.ruff-format.outcome == 'failure' && github.event_name == 'pull_request'
+        if: ${{ failure() && steps.ruff-format.outcome == 'failure' && github.event_name == 'pull_request' }}
         uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
         with:
           script: |
@@ -91,6 +90,12 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
 
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run Ruff linting
+        run: uv run ruff check . --output-format=github
+
   python-type-checking:
     name: Python - Type Checking
     runs-on: ubuntu-latest
@@ -114,15 +119,14 @@ jobs:
 
       - name: Run type checking (mypy)
         run: uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests
-        continue-on-error: true
         id: mypy-check
 
       - name: Report type checking issues
-        if: steps.mypy-check.outcome == 'failure'
-        run: echo "::warning::Type checking failed (non-blocking)."
+        if: ${{ failure() && steps.mypy-check.outcome == 'failure' }}
+        run: echo "::error::Type checking failed."
 
       - name: Add PR comment if type checking fails
-        if: steps.mypy-check.outcome == 'failure' && github.event_name == 'pull_request'
+        if: ${{ failure() && steps.mypy-check.outcome == 'failure' && github.event_name == 'pull_request' }}
         uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
         with:
           script: |
@@ -168,7 +172,8 @@ jobs:
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
 
           if (( $(echo "$COVERAGE < 90" | bc -l) )); then
-            echo "::warning::Coverage is $COVERAGE% (required: ≥90%)"
+            echo "::error::Coverage is $COVERAGE% (required: ≥90%)"
+            exit 1
           else
             echo "::notice::Coverage is $COVERAGE% (required: ≥90%)"
           fi
@@ -264,7 +269,8 @@ jobs:
              [ "${{ needs.python-type-checking.result }}" != "success" ] || \
              [ "${{ needs.enforce-testing.result }}" != "success" ] || \
              [ "${{ needs.enforce-data-validation.result }}" != "success" ]; then
-            echo "::warning::Quality gate detected one or more checks that did not pass (non-blocking)."
+            echo "::error::Quality gate detected one or more checks that did not pass."
+            exit 1
           else
             echo "::notice::Quality gate passed - all checks successful!"
           fi

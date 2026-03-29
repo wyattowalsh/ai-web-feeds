@@ -14,6 +14,10 @@ import {
   Filler,
   type ChartOptions,
 } from "chart.js";
+import { ChartShell } from "@/components/analytics/chart-shell";
+import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
+import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
+import { useTheme } from "@/lib/theme-manager";
 
 ChartJS.register(
   CategoryScale,
@@ -43,6 +47,8 @@ export function VelocityChart({
 }) {
   const [velocity, setVelocity] = useState<VelocityData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useTheme();
+  const chartTheme = getAnalyticsChartTheme(isDark);
 
   useEffect(() => {
     const fetchVelocity = async () => {
@@ -67,11 +73,7 @@ export function VelocityChart({
   }, [dateRange, granularity]);
 
   if (loading || !velocity) {
-    return (
-      <div className="bg-gray-200 rounded-lg h-96 animate-pulse flex items-center justify-center">
-        <p className="text-gray-600">Loading publication velocity...</p>
-      </div>
-    );
+    return <ChartSkeleton className="h-[34rem]" />;
   }
 
   const chartData = {
@@ -81,10 +83,12 @@ export function VelocityChart({
         label: "Validation Count",
         data: velocity.data_points.map((dp) => dp.count),
         fill: true,
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
-        borderColor: "rgb(16, 185, 129)",
+        backgroundColor: chartTheme.successSoft,
+        borderColor: chartTheme.success,
         borderWidth: 2,
         tension: 0.4,
+        pointBackgroundColor: chartTheme.success,
+        pointBorderColor: chartTheme.success,
       },
     ],
   };
@@ -95,13 +99,8 @@ export function VelocityChart({
     plugins: {
       legend: {
         position: "top" as const,
-      },
-      title: {
-        display: true,
-        text: `Publication Velocity (${granularity}, ${dateRange})`,
-        font: {
-          size: 16,
-          weight: "bold",
+        labels: {
+          color: chartTheme.textMuted,
         },
       },
       tooltip: {
@@ -112,55 +111,80 @@ export function VelocityChart({
     scales: {
       y: {
         beginAtZero: true,
+        ticks: {
+          color: chartTheme.textMuted,
+        },
+        grid: {
+          color: chartTheme.grid,
+        },
         title: {
           display: true,
           text: "Validation Count",
+          color: chartTheme.textMuted,
         },
       },
       x: {
+        ticks: {
+          color: chartTheme.textMuted,
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: {
+          display: false,
+        },
         title: {
           display: true,
           text: "Date",
-        },
-        ticks: {
-          maxRotation: 45,
-          minRotation: 45,
+          color: chartTheme.textMuted,
         },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <ChartShell
+      eyebrow="Velocity"
+      title="Publication velocity"
+      description="Validation counts are used as a practical proxy for ongoing publication activity across the catalog."
+      footer={
+        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-4">
+            <p className="metric-label">Average per feed</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--brand-strong)]">
+              {velocity.avg_per_feed.toFixed(1)}
+            </p>
+          </div>
+
+          {velocity.most_active_feed ? (
+            <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
+              <p className="metric-label">Most active</p>
+              <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
+                {velocity.most_active_feed.title}
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+                {velocity.most_active_feed.count} validations
+              </p>
+            </div>
+          ) : null}
+
+          {velocity.least_active_feed ? (
+            <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
+              <p className="metric-label">Least active</p>
+              <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
+                {velocity.least_active_feed.title}
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+                {velocity.least_active_feed.count} validation
+                {velocity.least_active_feed.count !== 1 ? "s" : ""}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      }
+    >
       <div className="h-96">
         <Line data={chartData} options={options} />
       </div>
-
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div className="bg-gray-50 rounded p-3">
-          <p className="font-semibold text-gray-600">Average per Feed</p>
-          <p className="text-2xl font-bold text-blue-600">{velocity.avg_per_feed.toFixed(1)}</p>
-        </div>
-
-        {velocity.most_active_feed && (
-          <div className="bg-green-50 rounded p-3">
-            <p className="font-semibold text-gray-600">Most Active</p>
-            <p className="text-sm font-medium">{velocity.most_active_feed.title}</p>
-            <p className="text-xs text-gray-500">{velocity.most_active_feed.count} validations</p>
-          </div>
-        )}
-
-        {velocity.least_active_feed && (
-          <div className="bg-yellow-50 rounded p-3">
-            <p className="font-semibold text-gray-600">Least Active</p>
-            <p className="text-sm font-medium">{velocity.least_active_feed.title}</p>
-            <p className="text-xs text-gray-500">
-              {velocity.least_active_feed.count} validation
-              {velocity.least_active_feed.count !== 1 ? "s" : ""}
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
+    </ChartShell>
   );
 }

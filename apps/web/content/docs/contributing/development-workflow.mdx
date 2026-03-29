@@ -1,11 +1,11 @@
 ---
 title: Development Workflow
-description: Complete guide to the development workflow and tooling in AI Web Feeds
+description: Complete guide to the development workflow and tooling in ai-web-feeds
 ---
 
 ## Overview
 
-AI Web Feeds uses a modern, automated development workflow that ensures code quality, consistency, and maintainability. This guide covers the complete development process from setup to deployment.
+ai-web-feeds uses a modern, automated development workflow that ensures code quality, consistency, and maintainability. This guide covers the complete development process from setup to deployment.
 
 ## Quick Start
 
@@ -80,7 +80,7 @@ python -m pip install     # NEVER
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install pnpm (if not already installed)
-npm install -g pnpm
+corepack enable pnpm
 
 # Clone repository
 git clone https://github.com/wyattowalsh/ai-web-feeds.git
@@ -97,8 +97,7 @@ uv run pre-commit install
 uv run pre-commit install --hook-type commit-msg
 
 # Install commitlint (optional, for interactive commits)
-npm install -g @commitlint/cli @commitlint/config-conventional
-npm install -g commitizen cz-conventional-changelog
+pnpm add -D @commitlint/cli @commitlint/config-conventional commitizen cz-conventional-changelog
 ```
 
 ## Project Structure
@@ -125,7 +124,7 @@ ai-web-feeds/
 │   ├── feeds.yaml            # Feed definitions
 │   ├── topics.yaml           # Topic taxonomy
 │   ├── *.schema.json         # JSON schemas
-│   └── aiwebfeeds.db         # SQLite database
+│   └── ai-web-feeds.db       # SQLite database (legacy aiwebfeeds.db still supported)
 ├── tests/                     # Integration tests
 └── .github/                   # GitHub workflows
 ```
@@ -208,12 +207,12 @@ pnpm build
 cd apps/cli
 
 # Run CLI
-uv run aiwebfeeds --help
+uv run ai-web-feeds --help
 
 # Test commands
-uv run aiwebfeeds fetch --url https://example.com/feed
-uv run aiwebfeeds validate --all
-uv run aiwebfeeds export --format json
+uv run ai-web-feeds fetch --url https://example.com/feed
+uv run ai-web-feeds validate --all
+uv run ai-web-feeds export --format json
 ```
 
 ### 3. Testing

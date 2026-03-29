@@ -1,7 +1,7 @@
 [project]
-name = "ai_web_feeds_cli"
+name = "ai-web-feeds-cli"
 version = "0.1.0"
-description = "CLI for AI Web Feeds"
+description = "CLI for ai-web-feeds"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -11,10 +11,11 @@ dependencies = [
 ]
 
 [project.scripts]
+ai-web-feeds = "ai_web_feeds.cli:main"
 aiwebfeeds = "ai_web_feeds.cli:main"
 
 [tool.uv.sources]
-ai_web_feeds = { workspace = true }
+"ai-web-feeds" = { workspace = true }
 
 [tool.ruff]
 line-length = 100

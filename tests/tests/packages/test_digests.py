@@ -1,6 +1,6 @@
 """Unit tests for ai_web_feeds.digests module"""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -43,6 +43,7 @@ def digest_manager(mock_db, mock_settings):
 @pytest.fixture
 def sample_digest():
     """Sample email digest"""
+    now = datetime.now(UTC)
     return EmailDigest(
         id=1,
         user_id="user-123",
@@ -50,18 +51,18 @@ def sample_digest():
         schedule_type="daily",
         schedule_cron="0 9 * * *",
         timezone="UTC",
-        last_sent_at=datetime.utcnow() - timedelta(days=1),
-        next_send_at=datetime.utcnow() - timedelta(minutes=5),  # Due now
+        last_sent_at=now - timedelta(days=1),
+        next_send_at=now - timedelta(minutes=5),  # Due now
         article_count=0,
         is_active=True,
-        created_at=datetime.utcnow(),
+        created_at=now,
     )
 
 
 @pytest.fixture
 def sample_articles():
     """Sample feed entries"""
-    base_time = datetime.utcnow()
+    base_time = datetime.now(UTC)
     articles = []
 
     for i in range(5):
@@ -277,8 +278,8 @@ class TestDigestManager:
             link="http://example.com/article-1",
             title="Article Without Summary",
             summary=None,  # No summary
-            pub_date=datetime.utcnow(),
-            discovered_at=datetime.utcnow(),
+            pub_date=datetime.now(UTC),
+            discovered_at=datetime.now(UTC),
         )
 
         html = digest_manager._generate_html(sample_digest, [article])
@@ -296,15 +297,33 @@ class TestDigestManager:
             link="http://example.com/article?id=1&ref=2",
             title='Article with <special> & "characters"',
             summary="Summary with 'quotes' and & symbols",
-            pub_date=datetime.utcnow(),
-            discovered_at=datetime.utcnow(),
+            pub_date=datetime.now(UTC),
+            discovered_at=datetime.now(UTC),
         )
 
         html = digest_manager._generate_html(sample_digest, [article])
 
-        # Should include the content (HTML escaping is browser's job)
-        assert "Article with <special>" in html
-        assert "&" in html
+        assert "Article with &lt;special&gt; &amp; &quot;characters&quot;" in html
+        assert "Summary with &#x27;quotes&#x27; and &amp; symbols" in html
+        assert 'href="http://example.com/article?id=1&amp;ref=2"' in html
+
+    def test_generate_html_rejects_unsafe_links(self, digest_manager, sample_digest):
+        """Test unsafe article links are not rendered into the email."""
+        article = FeedEntry(
+            id=1,
+            feed_id="test-feed",
+            guid="article-unsafe",
+            link="javascript:alert(1)",
+            title="Unsafe Link",
+            summary="Summary",
+            pub_date=datetime.now(UTC),
+            discovered_at=datetime.now(UTC),
+        )
+
+        html = digest_manager._generate_html(sample_digest, [article])
+
+        assert "javascript:alert(1)" not in html
+        assert "Unsafe Link" in html
 
     def test_calculate_next_send_daily(self, digest_manager):
         """Test next send calculation for daily digest"""

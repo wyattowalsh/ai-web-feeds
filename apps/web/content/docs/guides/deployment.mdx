@@ -28,7 +28,7 @@ description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install pnpm (Node.js package manager)
-npm install -g pnpm
+corepack enable
 
 # Verify installations
 uv --version
@@ -42,38 +42,55 @@ pnpm --version
 ### 1. Create Environment File
 
 ```bash
-cp env.example .env
+cp .env.example .env
 ```
 
 ### 2. Configure Environment Variables
 
+For the password-protected admin observability flow, this is the minimum local setup:
+
 ```bash
-# Database
-AIWF_DATABASE_URL="sqlite:///data/aiwebfeeds.db"
-
-# Logging
-AIWF_LOGGING__LEVEL="INFO"
-AIWF_LOGGING__CONSOLE=true
-AIWF_LOGGING__FILE=true
-AIWF_LOGGING__FILE_PATH="logs/aiwebfeeds.log"
-
-# Search & Embeddings
-AIWF_EMBEDDING__PROVIDER="local"  # or "huggingface"
-AIWF_EMBEDDING__HF_API_TOKEN=""   # optional, for HF API
-AIWF_EMBEDDING__LOCAL_MODEL="sentence-transformers/all-MiniLM-L6-v2"
-
-# Analytics
-AIWF_ANALYTICS__STATIC_CACHE_TTL=3600
-AIWF_ANALYTICS__DYNAMIC_CACHE_TTL=300
-
-# Recommendations
-AIWF_RECOMMENDATION__CONTENT_WEIGHT=0.7
-AIWF_RECOMMENDATION__POPULARITY_WEIGHT=0.2
-AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT=0.1
-
-# Web (Next.js)
-NEXT_PUBLIC_BASE_URL="https://your-domain.com"
+AIWF_ADMIN_PASSWORD=change-me
+AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
 ```
+
+Optional local overrides:
+
+```bash
+AIWF_TELEMETRY_DIR=../../data/telemetry
+# AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
+# BACKEND_URL=http://localhost:8001
+```
+
+You do not need email or SMTP variables for the simple admin telemetry setup.
+
+---
+
+## Docker Compose
+
+The repository ships a two-service compose setup that matches the codebase as it
+exists today:
+
+- `web`: the standalone Next.js application on port `3000`
+- `monitor`: the Python monitoring/WebSocket service on port `8000`
+
+Start both services with:
+
+```bash
+docker compose up --build
+```
+
+Notes:
+
+- The compose stack no longer assumes a separate nginx container or a generic
+  Python HTTP backend that the repository does not currently assemble.
+- `BACKEND_URL` remains optional. Set it only if you are running an external
+  Python HTTP backend for the proxied storage/search routes.
+- `NEXT_PUBLIC_WEBSOCKET_URL` is optional. Local development defaults to
+  `http://localhost:8000`; deployed environments default to same-origin WebSocket
+  connections unless you set this variable to an explicit monitor/WebSocket URL.
+- The monitor service uses the default SQLite database at
+  `sqlite:///data/ai-web-feeds.db` unless you override `DATABASE_URL`.
 
 ---
 

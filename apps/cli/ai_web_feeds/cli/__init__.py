@@ -18,13 +18,14 @@ from ai_web_feeds import (
     save_feeds,
     validate_feeds,
 )
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 
 # Import command modules
 from ai_web_feeds.cli.commands import analytics, monitor, recommend, search
 
 app = typer.Typer(
     name="ai-web-feeds",
-    help="AI Web Feeds - Process feed sources through: load → validate → enrich → export",
+    help="ai-web-feeds - Process feed sources through: load → validate → enrich → export",
     add_completion=False,
 )
 
@@ -67,7 +68,7 @@ def process(
         help="JSON schema file for validation",
     ),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL for storage",
@@ -89,7 +90,7 @@ def process(
     ),
 ) -> None:
     """Process feeds through the complete pipeline: load → validate → enrich → export + store."""
-    console.print("\n[bold blue]AI Web Feeds Processing Pipeline[/bold blue]\n")
+    console.print("\n[bold blue]ai-web-feeds Processing Pipeline[/bold blue]\n")
 
     # Step 1: Load
     console.print("[bold]Step 1:[/bold] Loading feeds...")

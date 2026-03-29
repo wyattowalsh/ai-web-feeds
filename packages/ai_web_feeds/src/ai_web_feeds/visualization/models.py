@@ -10,7 +10,7 @@ SQLAlchemy models for:
 - APIUsage: API usage tracking
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Optional
 
@@ -23,6 +23,11 @@ from sqlmodel import Relationship, SQLModel
 # ============================================================================
 # Enums
 # ============================================================================
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class ChartType(str, Enum):
@@ -125,11 +130,11 @@ class Visualization(SQLModel, table=True):
 
     # Timestamps
     created_at: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
     )
     last_viewed: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
     )
 
@@ -185,8 +190,8 @@ class Dashboard(SQLModel, table=True):
     version: int = SQLField(default=1, nullable=False)
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow, nullable=False)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = SQLField(default_factory=_utc_now, nullable=False)
+    updated_at: datetime = SQLField(default_factory=_utc_now, nullable=False)
 
     # Relationship to widgets
     widgets: list["DashboardWidget"] = Relationship(
@@ -327,7 +332,7 @@ class Forecast(SQLModel, table=True):
 
     # Timestamps
     generated_at: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
     )
 
@@ -374,7 +379,7 @@ class APIKey(SQLModel, table=True):
         description="User-defined key name",
     )
     created_at: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
     )
     last_used_at: datetime | None = SQLField(default=None)
@@ -446,7 +451,7 @@ class ExportJob(SQLModel, table=True):
 
     # Timestamps
     created_at: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
     )
     completed_at: datetime | None = SQLField(default=None)
@@ -505,7 +510,7 @@ class APIUsage(SQLModel, table=True):
 
     # Timestamp
     timestamp: datetime = SQLField(
-        default_factory=datetime.utcnow,
+        default_factory=_utc_now,
         nullable=False,
         index=True,
     )

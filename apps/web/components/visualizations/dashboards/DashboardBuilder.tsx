@@ -23,7 +23,7 @@ export interface DashboardWidget {
   type: "chart" | "metric" | "table" | "text";
   title: string;
   layout: Layout;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 interface DashboardBuilderProps {
@@ -34,7 +34,6 @@ interface DashboardBuilderProps {
 }
 
 export function DashboardBuilder({
-  dashboardId,
   initialWidgets = [],
   onSave,
   editable = true,
@@ -66,13 +65,14 @@ export function DashboardBuilder({
   }, []);
 
   const addWidget = (type: DashboardWidget["type"], visualizationId?: number) => {
+    const widgetId = `widget-${Date.now()}`;
     const newWidget: DashboardWidget = {
-      id: `widget-${Date.now()}`,
+      id: widgetId,
       visualization_id: visualizationId ?? 0,
       type,
       title: `New ${type}`,
       layout: {
-        i: `widget-${Date.now()}`,
+        i: widgetId,
         x: 0,
         y: Infinity, // Put at bottom
         w: type === "metric" ? 3 : 6,
@@ -182,7 +182,6 @@ export function DashboardBuilder({
                 <WidgetCard
                   widget={widget}
                   onRemove={editable ? () => removeWidget(widget.id) : undefined}
-                  onUpdate={editable ? (updates) => updateWidget(widget.id, updates) : undefined}
                 />
               </div>
             ))}
@@ -218,11 +217,9 @@ export function DashboardBuilder({
 function WidgetCard({
   widget,
   onRemove,
-  onUpdate,
 }: {
   widget: DashboardWidget;
   onRemove?: () => void;
-  onUpdate?: (updates: Partial<DashboardWidget>) => void;
 }) {
   return (
     <div className="h-full flex flex-col">

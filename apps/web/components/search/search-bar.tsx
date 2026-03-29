@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Search, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 interface AutocompleteSuggestion {
   feeds: Array<{ id: string; title: string; type: string; url: string }>;
@@ -20,6 +24,10 @@ export function SearchBar({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   // Fetch autocomplete suggestions
   useEffect(() => {
@@ -107,10 +115,14 @@ export function SearchBar({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="surface-card relative w-full overflow-visible">
       <form onSubmit={handleSubmit}>
-        <div className="relative">
-          <input
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--ink-muted)">
+              <Search className="size-4" />
+            </span>
+            <Input
             ref={inputRef}
             type="text"
             value={query}
@@ -118,15 +130,16 @@ export function SearchBar({
             onKeyDown={handleKeyDown}
             onFocus={() => query.length >= 2 && setShowSuggestions(true)}
             placeholder="Search feeds by title, topic, or keyword..."
-            className="w-full px-4 py-3 pl-12 pr-24 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="h-14 rounded-2xl pl-11 pr-4 text-base"
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
-          <button
+          </div>
+          <Button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="h-14 rounded-2xl px-6"
           >
+            <Sparkles className="size-4" />
             Search
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -134,52 +147,56 @@ export function SearchBar({
       {showSuggestions && (suggestions.feeds.length > 0 || suggestions.topics.length > 0) && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"
+          className="absolute inset-x-0 top-full z-50 mt-3 max-h-96 overflow-y-auto rounded-5xl border border-(--line) bg-(--surface) p-2 shadow-[0_28px_80px_rgba(15,23,42,0.18)]"
         >
           {suggestions.feeds.length > 0 && (
-            <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+            <div className="overflow-hidden rounded-3xl border border-(--line)">
+              <div className="bg-(--surface-muted) px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
                 Feeds
               </div>
               {suggestions.feeds.map((feed, idx) => (
                 <button
                   key={feed.id}
+                  type="button"
                   onClick={() => {
                     setQuery(feed.title);
                     onSearch(feed.title);
                     setShowSuggestions(false);
                   }}
-                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 ${
-                    selectedIndex === idx ? "bg-blue-50" : ""
-                  }`}
+                  className={cn(
+                    "w-full border-t border-(--line) px-4 py-3 text-left transition duration-150 first:border-t-0 hover:bg-(--surface-muted) focus:bg-(--surface-muted) focus:outline-none",
+                    selectedIndex === idx && "bg-(--surface-muted)"
+                  )}
                 >
-                  <div className="font-medium text-gray-900">{feed.title}</div>
-                  <div className="text-xs text-gray-500 truncate">{feed.url}</div>
+                  <div className="font-medium text-(--ink)">{feed.title}</div>
+                  <div className="mt-1 truncate text-xs text-(--ink-muted)">{feed.url}</div>
                 </button>
               ))}
             </div>
           )}
 
           {suggestions.topics.length > 0 && (
-            <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50 border-t">
+            <div className="mt-2 overflow-hidden rounded-3xl border border-(--line)">
+              <div className="bg-(--surface-muted) px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
                 Topics
               </div>
               {suggestions.topics.map((topic, idx) => (
                 <button
                   key={topic.label}
+                  type="button"
                   onClick={() => {
                     setQuery(topic.label.toLowerCase());
                     onSearch(topic.label.toLowerCase());
                     setShowSuggestions(false);
                   }}
-                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 ${
-                    selectedIndex === suggestions.feeds.length + idx ? "bg-blue-50" : ""
-                  }`}
+                  className={cn(
+                    "w-full border-t border-(--line) px-4 py-3 text-left transition duration-150 first:border-t-0 hover:bg-(--surface-muted) focus:bg-(--surface-muted) focus:outline-none",
+                    selectedIndex === suggestions.feeds.length + idx && "bg-(--surface-muted)"
+                  )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900">{topic.label}</span>
-                    <span className="text-xs text-gray-500">{topic.feed_count} feeds</span>
+                    <span className="font-medium text-(--ink)">{topic.label}</span>
+                    <span className="text-xs text-(--ink-muted)">{topic.feed_count} feeds</span>
                   </div>
                 </button>
               ))}

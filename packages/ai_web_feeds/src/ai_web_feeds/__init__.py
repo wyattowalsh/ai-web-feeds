@@ -1,4 +1,4 @@
-"""ai_web_feeds.__init__ -- AIWebFeeds package initialization."""
+"""ai_web_feeds.__init__ -- ai-web-feeds package initialization."""
 
 import ai_web_feeds.logger  # Ensure logger is configured on import
 from ai_web_feeds.config import Settings

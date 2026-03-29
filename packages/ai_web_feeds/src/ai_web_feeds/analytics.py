@@ -8,12 +8,11 @@ This module provides analytics functions for the dashboard, including:
 - Analytics snapshot generation
 - CSV export
 
-Uses caching (functools.lru_cache) for performance per config settings.
+Uses caching with TTL for performance per config settings.
 """
 
 import csv
-from datetime import datetime, timedelta
-from functools import lru_cache
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 from typing import Any
 
@@ -28,7 +27,16 @@ from ai_web_feeds.models import (
     TopicStats,
 )
 
-settings = Settings()
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 def calculate_summary_metrics(
@@ -51,12 +59,13 @@ def calculate_summary_metrics(
         - avg_response_time: float
         - health_score_distribution: dict
     """
+    settings = get_settings()
     logger.info(f"Calculating summary metrics for date_range={date_range}, topic={topic}")
 
     # Parse date range
     days_map = {"7d": 7, "30d": 30, "90d": 90}
     days = days_map.get(date_range, 30)
-    cutoff_date = datetime.utcnow() - timedelta(days=days)
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Base query for feeds
     feed_query = select(FeedSource)
@@ -189,12 +198,13 @@ def get_publication_velocity(
         - most_active_feed: dict
         - least_active_feed: dict
     """
+    settings = get_settings()
     logger.info(f"Getting publication velocity: granularity={granularity}, date_range={date_range}")
 
     # Parse date range
     days_map = {"7d": 7, "30d": 30, "90d": 90}
     days = days_map.get(date_range, 30)
-    cutoff_date = datetime.utcnow() - timedelta(days=days)
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Get validations in date range
     validations = session.exec(
@@ -294,13 +304,32 @@ def get_health_distribution(session: Session) -> dict[str, int]:
     return health_distribution
 
 
-@lru_cache(maxsize=100)
-def _cached_analytics(cache_key: str, ttl_seconds: int) -> tuple[str, int]:
-    """Internal cache helper with TTL tracking.
+class _ResultCache:
+    """Simple result cache with TTL support."""
 
-    Returns cache key and timestamp for expiry checking.
-    """
-    return cache_key, int(datetime.utcnow().timestamp())
+    def __init__(self):
+        self._cache: dict[str, tuple[Any, float]] = {}
+
+    def get(self, key: str, ttl_seconds: int) -> Any | None:
+        """Get cached value if not expired."""
+        if key not in self._cache:
+            return None
+
+        result, timestamp = self._cache[key]
+        current_time = datetime.now(timezone.utc).timestamp()
+        if current_time - timestamp > ttl_seconds:
+            del self._cache[key]
+            return None
+
+        return result
+
+    def set(self, key: str, value: Any):
+        """Set cached value with current timestamp."""
+        current_time = datetime.now(timezone.utc).timestamp()
+        self._cache[key] = (value, current_time)
+
+
+_result_cache = _ResultCache()
 
 
 def cache_analytics(func):
@@ -312,6 +341,8 @@ def cache_analytics(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        settings = get_settings()
+
         # Determine TTL based on function name
         func_name = func.__name__
         if func_name in ["get_health_distribution", "calculate_summary_metrics"]:
@@ -319,22 +350,20 @@ def cache_analytics(func):
         else:
             ttl = settings.analytics.dynamic_cache_ttl  # 5 minutes
 
-        # Create cache key
+        # Create cache key from function name and arguments
         cache_key = f"{func_name}:{args}:{sorted(kwargs.items())}"
 
         # Check cache
-        try:
-            cached_key, cached_timestamp = _cached_analytics(cache_key, ttl)
-            current_timestamp = int(datetime.utcnow().timestamp())
-            if current_timestamp - cached_timestamp < ttl:
-                logger.debug(f"Cache hit for {func_name}")
-                return func(*args, **kwargs)
-        except (TypeError, KeyError):
-            pass
+        cached_result = _result_cache.get(cache_key, ttl)
+        if cached_result is not None:
+            logger.debug(f"Cache hit for {func_name}")
+            return cached_result
 
         # Cache miss - call function
         logger.debug(f"Cache miss for {func_name}")
-        return func(*args, **kwargs)
+        result = func(*args, **kwargs)
+        _result_cache.set(cache_key, result)
+        return result
 
     return wrapper
 
@@ -353,7 +382,7 @@ def generate_analytics_snapshot(session: Session) -> AnalyticsSnapshot:
     """
     logger.info("Generating analytics snapshot")
 
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     # Calculate metrics
     summary = calculate_summary_metrics(session, date_range="30d")

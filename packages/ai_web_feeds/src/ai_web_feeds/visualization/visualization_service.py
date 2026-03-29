@@ -3,7 +3,7 @@
 Implements T021: Chart generation, caching, validation
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 
 from loguru import logger
@@ -158,7 +158,7 @@ class VisualizationService:
                     return None
 
                 # Update last_viewed timestamp
-                visualization.last_viewed = datetime.utcnow()
+                visualization.last_viewed = datetime.now(UTC)
                 session.commit()
 
                 return visualization.to_dict()
@@ -220,7 +220,7 @@ class VisualizationService:
 
                     visualization.customization = customization
 
-                visualization.last_viewed = datetime.utcnow()
+                visualization.last_viewed = datetime.now(UTC)
 
                 session.commit()
                 session.refresh(visualization)

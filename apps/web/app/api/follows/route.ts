@@ -1,144 +1,152 @@
 /**
  * Feed follows API
  *
- * GET /api/follows?user_id=<uuid> - Get feeds followed by user
+ * GET /api/follows - Get feeds followed by user
  * POST /api/follows - Follow a feed
- * DELETE /api/follows?user_id=<uuid>&feed_id=<id> - Unfollow a feed
+ * DELETE /api/follows - Unfollow a feed
+ *
+ * Anonymous browser features use a stable client-generated UUID as user_id.
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const userId = searchParams.get("user_id");
+export const dynamic = "force-dynamic";
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
+const GETHandler = async (request: NextRequest) => {
+  const requestedUserId = request.nextUrl.searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/follows?user_id=${userId}`, {
+    const data = await fetchBackend("/storage/follows", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      params: {
+        user_id: identity.user_id,
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
-
-    const follows = await response.json();
 
     return NextResponse.json({
-      user_id: userId,
-      follows,
-      count: follows.length,
+      user_id: identity.user_id,
+      follows: data,
+      count: Array.isArray(data) ? data.length : 0,
     });
   } catch (error) {
-    console.error("Failed to fetch follows:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to fetch follows",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function POST(request: NextRequest) {
+const POSTHandler = async (request: NextRequest) => {
+  let body: { user_id?: string; feed_id?: string } | undefined;
+  let identity = getUserIdentity(request);
+
   try {
-    const body = await request.json();
-    const { user_id, feed_id } = body;
+    body = (await request.json()) as { user_id?: string; feed_id?: string };
+    identity = getUserIdentity(request, body.user_id ?? null);
+    const { feed_id } = body;
 
-    if (!user_id || !feed_id) {
-      return NextResponse.json(
-        { error: "Missing required fields: user_id, feed_id" },
-        { status: 400 },
-      );
+    if (body.user_id && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
     }
 
-    // Call Python backend
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/follows`, {
+    if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (!feed_id) {
+      return NextResponse.json({ error: "Missing required field: feed_id" }, { status: 400 });
+    }
+
+    const data = await fetchBackend("/storage/follows", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id, feed_id }),
+      body: {
+        user_id: identity.user_id,
+        feed_id,
+      },
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-
-      // Handle duplicate follow (already following)
-      if (response.status === 409) {
-        return NextResponse.json({
-          success: true,
-          already_following: true,
-          user_id,
-          feed_id,
-        });
-      }
-
-      throw new Error(errorData.error || `Backend responded with ${response.status}`);
-    }
-
-    const follow = await response.json();
 
     return NextResponse.json({
       success: true,
-      follow,
+      follow: data,
     });
   } catch (error) {
-    console.error("Failed to follow feed:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to follow feed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    if (typeof error === "object" && error !== null && "status" in error && error.status === 409) {
+      return NextResponse.json({
+        success: true,
+        already_following: true,
+        user_id: identity.user_id,
+        feed_id: body?.feed_id,
+      });
+    }
+
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function DELETE(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const userId = searchParams.get("user_id");
+const DELETEHandler = async (request: NextRequest) => {
+  const { searchParams } = request.nextUrl;
   const feedId = searchParams.get("feed_id");
+  const requestedUserId = searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
 
-  if (!userId || !feedId) {
-    return NextResponse.json(
-      { error: "Missing required parameters: user_id, feed_id" },
-      { status: 400 },
-    );
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (!feedId) {
+    return NextResponse.json({ error: "Missing required parameter: feed_id" }, { status: 400 });
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/follows?user_id=${userId}&feed_id=${feedId}`,
-      {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+    await fetchBackend("/storage/follows", {
+      method: "DELETE",
+      params: {
+        user_id: identity.user_id,
+        feed_id: feedId,
       },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
+    });
 
     return NextResponse.json({
       success: true,
-      user_id: userId,
+      user_id: identity.user_id,
       feed_id: feedId,
     });
   } catch (error) {
-    console.error("Failed to unfollow feed:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to unfollow feed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("follows.list", GETHandler, {
+  backendTarget: "python-backend",
+});
+export const POST = withRouteTelemetry("follows.create", POSTHandler, {
+  backendTarget: "python-backend",
+});
+export const DELETE = withRouteTelemetry("follows.delete", DELETEHandler, {
+  backendTarget: "python-backend",
+});

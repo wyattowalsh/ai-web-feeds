@@ -1,0 +1,63 @@
+---
+title: Admin Observability
+description: Password-protected admin telemetry for App Router APIs, including route latency, failure tracking, and audit visibility.
+---
+
+# Admin Observability
+
+The web application now includes a protected admin panel at `/admin` for reviewing API telemetry without exposing observability data publicly.
+
+## What It Captures
+
+- Route key, pathname, method, and status code
+- End-to-end handler latency
+- Cache-control hints
+- Request identifiers for incident correlation
+- Redacted failure context for server-side exceptions
+- Hashed client IPs instead of raw addresses
+- Admin audit events for login, logout, and observability reads
+
+## Security Model
+
+- Admin access uses a shared password stored only in server-side environment configuration
+- Successful login issues a signed HttpOnly cookie
+- The cookie is checked before rendering `/admin`
+- Admin telemetry APIs reject unauthenticated access
+- Password values are never persisted into telemetry records
+
+## Minimal Environment Variables
+
+```bash
+AIWF_ADMIN_PASSWORD=change-me
+AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+```
+
+## Optional Environment Variables
+
+```bash
+AIWF_TELEMETRY_DIR=../../data/telemetry
+# AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
+```
+
+You do not need SMTP, email digest, or notification configuration to use the admin panel. For the simple observability setup, the shared password and session secret are enough.
+
+Generate a session secret locally with either command:
+
+```bash
+openssl rand -base64 32
+```
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
+```
+
+## Current Scope
+
+This first implementation focuses on the Next.js API surface.
+
+- Route-level API observability for App Router handlers
+- Protected admin overview for throughput, error rate, and latency trends
+- Recent 5xx failures and request activity stream
+- Admin audit trail for privileged access
+
+Future backend integration can replace the local telemetry sink with a shared service-backed store without changing the admin surface.

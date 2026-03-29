@@ -3,7 +3,7 @@
 Implements T051: Dashboard layout management, widget data fetching
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 
 from loguru import logger
@@ -200,7 +200,7 @@ class DashboardService:
 
                 # Increment version
                 dashboard.version += 1
-                dashboard.updated_at = datetime.utcnow()
+                dashboard.updated_at = datetime.now(UTC)
 
                 session.commit()
                 session.refresh(dashboard)
@@ -315,7 +315,7 @@ class DashboardService:
 
                 # Update dashboard version and timestamp
                 dashboard.version += 1
-                dashboard.updated_at = datetime.utcnow()
+                dashboard.updated_at = datetime.now(UTC)
 
                 session.commit()
                 session.refresh(widget)

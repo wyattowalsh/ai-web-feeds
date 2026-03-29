@@ -58,6 +58,24 @@ test.describe("Visualization Dashboard", () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.png$/);
   });
+
+  test("should render a heatmap preview after configuring the builder", async ({ page }) => {
+    await page.goto("/analytics/visualizations/new");
+
+    await expect(page.locator("h1")).toContainText("Create New Visualization");
+
+    // Configure a heatmap preview using supported options
+    await page.locator('button:has-text("Feeds")').first().click();
+    await expect(page.locator('text="Selected: Feeds"')).toBeVisible();
+
+    await page.locator('button:has-text("Heatmap")').first().click();
+    await page.click('text="Last 30 Days"');
+
+    // Preview should render the matrix chart and legend once data loads
+    await expect(page.locator("canvas")).toBeVisible();
+    await expect(page.locator('text="Low"')).toBeVisible();
+    await expect(page.locator('text="High"')).toBeVisible();
+  });
 });
 
 test.describe("3D Topic Clustering", () => {
@@ -91,6 +109,31 @@ test.describe("3D Topic Clustering", () => {
 
     // Should update visualization
     await page.waitForTimeout(500);
+  });
+
+  test("should fall back to 2D mode when WebGL is unavailable", async ({ page }) => {
+    await page.addInitScript(`
+      (() => {
+        const originalGetContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function(contextId, ...args) {
+          if (
+            contextId === "webgl" ||
+            contextId === "webgl2" ||
+            contextId === "experimental-webgl"
+          ) {
+            return null;
+          }
+          return originalGetContext.call(this, contextId, ...args);
+        };
+      })();
+    `);
+
+    await page.goto("/analytics/3d-topics");
+
+    await expect(page.locator("h1")).toContainText("3D Topic Clustering");
+    await expect(page.locator('text="2D Fallback Mode"')).toBeVisible();
+    await expect(page.locator("text=WebGL is not available in this browser")).toBeVisible();
+    await expect(page.locator("canvas")).toHaveCount(0);
   });
 });
 

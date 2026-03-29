@@ -1,69 +1,87 @@
 # `.github` Directory - Agent Instructions
 
-> **Component**: GitHub Configuration & Workflows\
-> **Location**: `.github/`\
+> **Component**: GitHub Configuration, Workflows, Prompts, and Agents
+> **Location**: `.github/`
 > **Parent**: [Root AGENTS.md](../AGENTS.md)
 
-## 📍 Essential Links
+## Essential Links
 
-- **Root Instructions**: [../AGENTS.md](../AGENTS.md)
-- **Contributing Guide**: [../CONTRIBUTING.md](../CONTRIBUTING.md)
-- **Full Documentation**: [llms-full.txt](https://aiwebfeeds.com/llms-full.txt)
+- [Root AGENTS.md](../AGENTS.md)
+- [Contributing Guide](../CONTRIBUTING.md)
+- [Workflow README](workflows/README.md)
+- [Full Docs](https://aiwebfeeds.com/llms-full.txt)
 
-______________________________________________________________________
+## Purpose
 
-## 🎯 Purpose
+This directory contains repository-shared GitHub automation assets:
 
-GitHub-specific configuration:
+- issue and pull-request templates
+- active GitHub Actions workflows in `.github/workflows/*.yml`
+- repository-owned prompt assets in `.github/prompts/`
+- reusable custom agents in `.github/agents/`
+- Copilot and GitHub-specific instruction files
 
-- **Issue Templates**: Bug reports, feature requests
-- **PR Templates**: Pull request structure
-- **Workflows**: CI/CD automation (future)
-- **Community Files**: Code of conduct, security policy
+## Canonical Source Rules
 
-______________________________________________________________________
+### Prompts
 
-## 📐 Development Rules
+`.github/prompts/` is the canonical repository-owned prompt library. If another
+tool needs a copy or wrapper, derive it from these prompt files rather than
+editing multiple prompt variants independently.
 
-### DO
+### Workflow Types
 
-✅ Follow existing template formats\
-✅ Link to relevant documentation\
-✅ Keep templates concise and clear\
-✅ Test workflow changes in forks first
+- `.github/workflows/*.yml` are the currently active GitHub Actions workflows.
+- `.github/workflows/*.md` are reserved for GitHub Agentic Workflows sources.
+- A workflow source `.md` file is not active until it is compiled into a lock
+  workflow and reviewed.
+- Existing deterministic YAML workflows remain canonical until an agentic
+  replacement is explicitly adopted.
 
-### DON'T
+### Agents
 
-❌ Add workflows without testing\
-❌ Modify templates without discussion\
-❌ Remove required fields from templates\
-❌ Commit secrets or tokens
+Reusable repository agents belong in `.github/agents/`. Keep them narrowly scoped,
+frontmatter-valid, and documented in `.github/agents/README.md`.
 
-______________________________________________________________________
+## Development Rules
 
-## 📚 Reference
+### Do
 
-**GitHub docs**: [docs.github.com](https://docs.github.com)\
-**Root workflow**: [../AGENTS.md](../AGENTS.md#standard-workflow)
+- Reuse repository policies from [../AGENTS.md](../AGENTS.md) instead of copying
+  them into many files.
+- Keep automation additive and reviewable, especially when introducing agentic
+  workflows.
+- Prefer read-only analysis in agent jobs and narrow write surfaces through safe
+  outputs or explicit review steps.
+- Keep label names aligned with `.github/labels.yml`.
+- Add manual or otherwise controlled triggers for new workflow pilots.
 
-______________________________________________________________________
+### Don’t
 
-## 🆕 Planned Workflows (Coming Soon)
+- Don’t introduce direct mutation from untrusted issue or PR text if a safer staged
+  alternative exists.
+- Don’t duplicate parsing or validation logic across multiple workflows without a
+  good reason.
+- Don’t commit secrets, tokens, or environment-specific values.
+- Don’t replace deterministic CI checks with agent reasoning when the scripted
+  check is already authoritative.
 
-### CI/CD Pipeline
+## gh-aw Conventions
 
-- **Lint & Test**: Run on all PRs
-- **Data Validation**: Check YAML/JSON schemas
-- **Topic Graph Validation**: Ensure no cycles, valid relations
-- **Coverage Check**: Enforce ≥90% threshold
-- **Deploy Docs**: Auto-deploy web on main branch updates
+When adding GitHub Agentic Workflows assets here:
 
-### Scheduled Jobs
+- Use repository prompts and agents as shared building blocks.
+- Prefer experimental, low-risk pilots before replacing live automation.
+- Use sanitized issue or PR context rather than raw event bodies in prompts.
+- Keep agentic workflows read-only unless the mutation path is intentionally
+  configured through safe outputs.
+- Document the relationship between a `.md` workflow source and any legacy `.yml`
+  workflow it may eventually replace.
 
-- **Feed Health Check**: Daily validation of all feeds
-- **OPML Regeneration**: Weekly rebuild of OPML files
-- **Topic Taxonomy Audit**: Monthly schema compliance check
+## Current Direction
 
-______________________________________________________________________
+The repository currently relies on conventional GitHub Actions. Agentic workflow
+adoption is starting incrementally with additive pilots in `.github/workflows/*.md`
+and reusable agents in `.github/agents/`.
 
-*Updated: October 15, 2025 · Version: 0.1.0*
+Updated: 2026-03-23 · Version: 0.2.0

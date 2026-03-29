@@ -1,11 +1,19 @@
 import "@/app/global.css";
 import "katex/dist/katex.css";
 import { RootProvider } from "fumadocs-ui/provider/next";
-import { Inter } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import type { Metadata } from "next";
 
-const inter = Inter({
+const bodyFont = Manrope({
   subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const displayFont = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
@@ -131,8 +139,12 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen">
+    <html
+      lang="en"
+      className={`${bodyFont.variable} ${displayFont.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="flex min-h-screen flex-col font-sans antialiased">
         <RootProvider>{children}</RootProvider>
       </body>
     </html>

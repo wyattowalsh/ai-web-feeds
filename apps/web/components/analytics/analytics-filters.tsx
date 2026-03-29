@@ -1,5 +1,10 @@
 "use client";
 
+import { Download, RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+
 interface AnalyticsFiltersProps {
   dateRange: string;
   onDateRangeChange: (range: string) => void;
@@ -24,46 +29,52 @@ export function AnalyticsFilters({
   ];
 
   return (
-    <div className="bg-white rounded-lg border p-4 flex flex-wrap items-center gap-4">
-      <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Time Range</label>
-        <select
+    <div className="surface-card grid gap-4 md:grid-cols-[1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_auto] md:items-end lg:items-end">
+      <div>
+        <label htmlFor="analytics-range" className="field-label">
+          Time range
+        </label>
+        <Select
+          id="analytics-range"
           value={dateRange}
           onChange={(e) => onDateRangeChange(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {dateRanges.map((range) => (
             <option key={range.value} value={range.value}>
               {range.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
-      <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Topic Filter</label>
-        <input
+      <div>
+        <label htmlFor="analytics-topic" className="field-label">
+          Topic focus
+        </label>
+        <Input
+          id="analytics-topic"
           type="text"
           value={topic || ""}
           onChange={(e) => onTopicChange(e.target.value || undefined)}
           placeholder="e.g., llm, agents, training"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <div className="flex gap-2 items-end">
-        <button
+      <div className="flex flex-wrap gap-2 md:justify-end">
+        <Button
           onClick={onRefresh}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          variant="outline"
         >
-          🔄 Refresh
-        </button>
-        <button
+          <RefreshCcw className="size-4" />
+          Refresh
+        </Button>
+        <Button
           onClick={onExport}
-          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          variant="default"
         >
-          📥 Export CSV
-        </button>
+          <Download className="size-4" />
+          Export CSV
+        </Button>
       </div>
     </div>
   );

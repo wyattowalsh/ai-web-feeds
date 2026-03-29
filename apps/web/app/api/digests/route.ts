@@ -1,65 +1,83 @@
 /**
  * Email digests API
  *
- * GET /api/digests?user_id=<uuid> - Get user's digest subscription
+ * GET /api/digests - Get user's digest subscription
  * POST /api/digests - Create/update digest subscription
- * DELETE /api/digests?user_id=<uuid> - Unsubscribe from digests
+ * DELETE /api/digests - Unsubscribe from digests
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const userId = searchParams.get("user_id");
+export const dynamic = "force-dynamic";
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
+const GETHandler = async (request: NextRequest) => {
+  const requestedUserId = request.nextUrl.searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/digests?user_id=${userId}`, {
+    const data = await fetchBackend("/storage/digests", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      params: {
+        user_id: identity.user_id,
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
-
-    const digests = await response.json();
 
     return NextResponse.json({
-      user_id: userId,
-      digests,
+      user_id: identity.user_id,
+      digests: data,
     });
   } catch (error) {
-    console.error("Failed to fetch digests:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to fetch digests",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function POST(request: NextRequest) {
+const POSTHandler = async (request: NextRequest) => {
   try {
-    const body = await request.json();
-    const { user_id, email, schedule_type, schedule_cron, timezone } = body;
+    const body = (await request.json()) as {
+      user_id?: string;
+      email?: string;
+      schedule_type?: string;
+      schedule_cron?: string;
+      timezone?: string;
+    };
+    const identity = getUserIdentity(request, body.user_id ?? null);
+    const { email, schedule_type, schedule_cron, timezone } = body;
 
-    // Validate required fields
-    if (!user_id || !email || !schedule_type || !schedule_cron) {
+    if (body.user_id && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    const validScheduleTypes = ["daily", "weekly", "custom"];
+
+    if (!email || !schedule_type || !schedule_cron) {
       return NextResponse.json(
-        { error: "Missing required fields: user_id, email, schedule_type, schedule_cron" },
+        { error: "Missing required fields: email, schedule_type, schedule_cron" },
         { status: 400 },
       );
     }
-
-    // Validate enum values
-    const validScheduleTypes = ["daily", "weekly", "custom"];
 
     if (!validScheduleTypes.includes(schedule_type)) {
       return NextResponse.json(
@@ -68,79 +86,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format (basic check)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    // Call Python backend
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/digests`, {
+    const data = await fetchBackend("/storage/digests", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id,
+      body: {
+        user_id: identity.user_id,
         email,
         schedule_type,
         schedule_cron,
         timezone: timezone || "UTC",
-      }),
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
-
-    const digest = await response.json();
 
     return NextResponse.json({
       success: true,
-      digest,
+      digest: data,
     });
   } catch (error) {
-    console.error("Failed to create digest subscription:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to create digest subscription",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function DELETE(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const userId = searchParams.get("user_id");
+const DELETEHandler = async (request: NextRequest) => {
+  const requestedUserId = request.nextUrl.searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/digests?user_id=${userId}`, {
+    await fetchBackend("/storage/digests", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      params: {
+        user_id: identity.user_id,
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
 
     return NextResponse.json({
       success: true,
-      user_id: userId,
+      user_id: identity.user_id,
     });
   } catch (error) {
-    console.error("Failed to unsubscribe from digests:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to unsubscribe from digests",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("digests.list", GETHandler, {
+  backendTarget: "python-backend",
+});
+export const POST = withRouteTelemetry("digests.create", POSTHandler, {
+  backendTarget: "python-backend",
+});
+export const DELETE = withRouteTelemetry("digests.delete", DELETEHandler, {
+  backendTarget: "python-backend",
+});

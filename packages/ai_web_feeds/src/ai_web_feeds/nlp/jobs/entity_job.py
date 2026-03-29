@@ -1,16 +1,21 @@
 """Batch job for entity extraction (Phase 5B)."""
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from loguru import logger
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import Entity, EntityMention, FeedEntry
 from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 from ai_web_feeds.storage import DatabaseManager
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class EntityBatchJob:
@@ -20,13 +25,16 @@ class EntityBatchJob:
     normalizes entity names, and stores mentions in SQLite.
     """
 
-    def __init__(self, settings: Settings | None = None):
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        db_manager: DatabaseManager | None = None,
+    ):
         """Initialize entity batch job."""
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.extractor = EntityExtractor(settings)
-        self.db_manager = DatabaseManager(self.settings.database_url)
-        self.engine = self.db_manager.engine
+        self.extractor = EntityExtractor(self.settings)
+        self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:
         """Run entity extraction batch job.
@@ -44,7 +52,7 @@ class EntityBatchJob:
                 "duration_seconds": 25.3
             }
         """
-        start_time = datetime.utcnow()
+        start_time = _utc_now()
         batch_size = batch_size or self.config.entity_batch_size
 
         stats = {
@@ -59,7 +67,7 @@ class EntityBatchJob:
             f"Starting entity extraction batch job (batch_size={batch_size}, force={force})"
         )
 
-        with Session(self.engine) as session:
+        with self.db_manager.get_session() as session:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
@@ -96,7 +104,7 @@ class EntityBatchJob:
                         logger.debug(f"No entities found in article {article.id}")
                         # Mark as processed even if no entities found
                         article.entities_processed = True
-                        article.entities_processed_at = datetime.utcnow()
+                        article.entities_processed_at = _utc_now()
                         session.add(article)
                         continue
 
@@ -120,8 +128,8 @@ class EntityBatchJob:
                                 entity_type=normalized["entity_type"],
                                 aliases=json.dumps([normalized["canonical_name"]]),
                                 frequency_count=1,
-                                first_seen=datetime.utcnow(),
-                                last_seen=datetime.utcnow(),
+                                first_seen=_utc_now(),
+                                last_seen=_utc_now(),
                             )
                             session.add(entity)
                             existing_entities[entity_id] = {
@@ -135,7 +143,7 @@ class EntityBatchJob:
                             entity = session.get(Entity, entity_id)
                             if entity:
                                 entity.frequency_count += 1
-                                entity.last_seen = datetime.utcnow()
+                                entity.last_seen = _utc_now()
                                 session.add(entity)
 
                         # Create entity mention
@@ -149,13 +157,13 @@ class EntityBatchJob:
                                 extracted_entity.start,
                                 extracted_entity.end,
                             ),
-                            mentioned_at=datetime.utcnow(),
+                            mentioned_at=_utc_now(),
                         )
                         session.add(mention)
 
                     # Mark article as processed
                     article.entities_processed = True
-                    article.entities_processed_at = datetime.utcnow()
+                    article.entities_processed_at = _utc_now()
                     session.add(article)
 
                     logger.debug(f"Extracted {len(entities)} entities from article {article.id}")
@@ -171,7 +179,7 @@ class EntityBatchJob:
             # Commit all changes
             session.commit()
 
-        end_time = datetime.utcnow()
+        end_time = _utc_now()
         stats["duration_seconds"] = (end_time - start_time).total_seconds()
 
         logger.info(

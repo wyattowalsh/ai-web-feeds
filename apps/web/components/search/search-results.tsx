@@ -1,5 +1,9 @@
 "use client";
 
+import { ExternalLink, Search as SearchIcon, Sparkles } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
+
 interface SearchResult {
   id: string;
   title: string;
@@ -24,101 +28,94 @@ export function SearchResults({
   onResultClick?: (feedId: string) => void;
 }) {
   if (loading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="bg-gray-200 rounded-lg h-32 animate-pulse" />
-        ))}
-      </div>
-    );
+    return <ContentCardSkeleton count={5} />;
   }
 
   if (results.length === 0) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-        <p className="text-lg font-semibold text-yellow-900 mb-2">No results found</p>
-        <p className="text-sm text-yellow-800">Try adjusting your search query or filters</p>
-        <div className="mt-4 space-y-2 text-sm text-yellow-700">
-          <p>
-            💡 <strong>Tips:</strong>
-          </p>
-          <ul className="text-left inline-block">
-            <li>• Use fewer filters</li>
-            <li>• Try different keywords</li>
-            <li>• Switch between full-text and semantic search</li>
-            <li>• Lower the similarity threshold for semantic search</li>
-          </ul>
-        </div>
-      </div>
+      <EmptyState
+        icon={SearchIcon}
+        title="No results found"
+        description="Try adjusting your search query or loosening the current filters."
+        tips={[
+          "Use fewer filters or switch between full-text and semantic modes.",
+          "Lower the semantic threshold if similarity matching is too narrow.",
+        ]}
+      />
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-600">
+      <div className="surface-card flex items-center justify-between">
+        <p className="text-sm text-(--ink-muted)">
           Found <strong>{results.length}</strong> result{results.length !== 1 ? "s" : ""}
           {searchType === "semantic" && " (sorted by similarity)"}
         </p>
+        <div className="flex items-center gap-2 rounded-full bg-(--brand-soft) px-3 py-2 text-xs font-semibold text-(--brand-strong)">
+          <Sparkles className="size-3.5" />
+          {searchType === "semantic" ? "Semantic" : "Full-text"}
+        </div>
       </div>
 
       {results.map((result, idx) => (
         <div
           key={result.id}
-          className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+          className="surface-card transition duration-150 hover:-translate-y-0.5"
         >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-semibold text-gray-500">#{idx + 1}</span>
-                <h3 className="text-xl font-bold text-gray-900">{result.title}</h3>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-(--ink-muted)">#{idx + 1}</span>
+                <h3 className="text-xl font-bold text-(--ink)">{result.title}</h3>
                 {result.verified && (
-                  <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full font-medium">
+                  <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
                     ✓ Verified
                   </span>
                 )}
                 {!result.is_active && (
-                  <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">
+                  <span className="rounded-full bg-(--surface-muted) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)">
                     Inactive
                   </span>
                 )}
                 {searchType === "semantic" && result.similarity !== undefined && (
-                  <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-mono">
+                  <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-mono text-(--ink)">
                     {(result.similarity * 100).toFixed(1)}%
                   </span>
                 )}
               </div>
 
-              {result.description && (
-                <p className="text-gray-600 text-sm mb-3">{result.description}</p>
-              )}
-
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                  {result.source_type}
-                </span>
-                {result.topics.map((topic) => (
-                  <span
-                    key={topic}
-                    className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded font-medium"
-                  >
-                    {topic.toUpperCase()}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-4 text-sm">
-                <a
-                  href={result.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => onResultClick?.(result.id)}
-                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
-                >
-                  🔗 {result.url}
-                </a>
-              </div>
+              <a
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onResultClick?.(result.id)}
+                className="inline-flex items-center gap-2 text-sm font-medium text-(--brand-strong) hover:underline"
+              >
+                <ExternalLink className="size-4" />
+                Open source
+              </a>
             </div>
+
+            {result.description && (
+              <p className="text-sm text-(--ink-muted)">{result.description}</p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)">
+                {result.source_type}
+              </span>
+              {result.topics.map((topic) => (
+                <span
+                  key={topic}
+                  className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
+                >
+                  {topic.toUpperCase()}
+                </span>
+              ))}
+            </div>
+
+            <div className="small-note break-all">{result.url}</div>
           </div>
         </div>
       ))}

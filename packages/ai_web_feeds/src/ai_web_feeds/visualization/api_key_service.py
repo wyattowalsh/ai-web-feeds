@@ -3,8 +3,8 @@
 Implements FR-065: API key generation, verification, and management
 """
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
+from typing import Any, Optional
 
 from loguru import logger
 from sqlalchemy import select, update
@@ -24,7 +24,7 @@ class APIKeyService:
         self,
         device_id: str,
         name: str,
-    ) -> tuple[str, dict[str, any]]:
+    ) -> tuple[str, dict[str, Any]]:
         """Create a new API key.
 
         Args:
@@ -61,7 +61,7 @@ class APIKeyService:
     async def list_api_keys(
         self,
         device_id: str,
-    ) -> list[dict[str, any]]:
+    ) -> list[dict[str, Any]]:
         """List all API keys for a device.
 
         Args:
@@ -133,7 +133,7 @@ class APIKeyService:
         self,
         api_key_id: int,
         endpoint: str,
-        request_params: dict[str, any],
+        request_params: dict[str, Any],
         response_status: int,
         records_exported: Optional[int],
         response_time_ms: int,
@@ -167,7 +167,7 @@ class APIKeyService:
                     .where(APIKey.id == api_key_id)
                     .values(
                         request_count=APIKey.request_count + 1,
-                        last_used_at=datetime.utcnow(),
+                        last_used_at=datetime.now(UTC),
                     )
                 )
                 session.execute(statement)

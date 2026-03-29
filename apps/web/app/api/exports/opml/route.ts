@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-static";
 
@@ -8,7 +9,7 @@ export const dynamic = "force-static";
  * OPML export API endpoint
  * Returns OPML files for feed reader import
  */
-export async function GET(request: Request) {
+const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") || "all"; // all, categorized, filtered
   const sourceType = searchParams.get("type");
@@ -48,4 +49,6 @@ export async function GET(request: Request) {
     console.error("Error serving OPML:", error);
     return NextResponse.json({ error: "Failed to generate OPML file" }, { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("exports.opml", GETHandler);

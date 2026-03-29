@@ -7,11 +7,13 @@ export type ValidationStats = {
   validated_feeds: number;
   success_count: number;
   failure_count: number;
-  success_rate: number;
-  avg_response_time_ms: number;
+  success_rate: number | null;
+  avg_response_time_ms: number | null;
   healthy_feeds: number;
-  avg_health_score: number;
+  avg_health_score: number | null;
   last_validation_run: string | null;
+  validation_data_available: boolean;
+  data_source: "filesystem";
   top_errors: Array<{ error: string; count: number }>;
 };
 
@@ -21,11 +23,13 @@ export function getDefaultValidationStats(): ValidationStats {
     validated_feeds: 0,
     success_count: 0,
     failure_count: 0,
-    success_rate: 0,
-    avg_response_time_ms: 0,
+    success_rate: null,
+    avg_response_time_ms: null,
     healthy_feeds: 0,
-    avg_health_score: 0,
+    avg_health_score: null,
     last_validation_run: null,
+    validation_data_available: false,
+    data_source: "filesystem",
     top_errors: [],
   };
 }
@@ -58,16 +62,6 @@ export async function getValidationStats(): Promise<ValidationStats> {
 
   try {
     stats.total_feeds = await getTotalFeeds();
-
-    // TODO: Add actual validation metrics from database
-    // For now, use estimates
-    stats.validated_feeds = Math.floor(stats.total_feeds * 0.8);
-    stats.success_count = Math.floor(stats.total_feeds * 0.7);
-    stats.failure_count = Math.floor(stats.total_feeds * 0.1);
-    stats.success_rate = 87.5;
-    stats.avg_response_time_ms = 450;
-    stats.healthy_feeds = Math.floor(stats.total_feeds * 0.75);
-    stats.avg_health_score = 0.82;
   } catch (error) {
     console.warn("Failed to load validation stats, using defaults", error);
   }

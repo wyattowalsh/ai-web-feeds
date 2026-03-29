@@ -1,6 +1,6 @@
 """ai_web_feeds.models -- AIWebFeeds data models with SQLModel support"""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
@@ -9,6 +9,11 @@ from pydantic import Field
 from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
+
+# Helper function for UTC-aware datetime defaults
+def _utc_now() -> datetime:
+    """Return current UTC time with timezone awareness."""
+    return datetime.now(UTC)
 
 # ============================================================================
 # Enums
@@ -197,8 +202,8 @@ class FeedItem(SQLModel, table=True):
     extra_data: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
     # Relationships
     feed_source: FeedSource = Relationship(back_populates="items")
@@ -220,7 +225,7 @@ class FeedFetchLog(SQLModel, table=True):
     feed_source_id: str = SQLField(foreign_key="sources.id", index=True)
 
     # Fetch info
-    fetched_at: datetime = SQLField(default_factory=datetime.utcnow)
+    fetched_at: datetime = SQLField(default_factory=_utc_now)
     fetch_url: str = SQLField(description="Actual URL fetched")
     success: bool = SQLField(default=False)
 
@@ -267,8 +272,8 @@ class Topic(SQLModel, table=True):
     related_topics: list[str] = SQLField(default_factory=list, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class FeedEnrichmentData(SQLModel, table=True):
@@ -287,7 +292,7 @@ class FeedEnrichmentData(SQLModel, table=True):
     feed_source_id: str = SQLField(foreign_key="sources.id", index=True, unique=True)
 
     # Enrichment metadata
-    enriched_at: datetime = SQLField(default_factory=datetime.utcnow)
+    enriched_at: datetime = SQLField(default_factory=_utc_now)
     enrichment_version: str = SQLField(default="1.0.0")
     enricher: str | None = SQLField(default=None, description="Enrichment method/service")
 
@@ -376,8 +381,8 @@ class FeedEnrichmentData(SQLModel, table=True):
     extra_data: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class FeedValidationResult(SQLModel, table=True):
@@ -396,7 +401,7 @@ class FeedValidationResult(SQLModel, table=True):
     feed_source_id: str = SQLField(foreign_key="sources.id", index=True)
 
     # Validation metadata
-    validated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    validated_at: datetime = SQLField(default_factory=_utc_now)
     validator_version: str = SQLField(default="1.0.0")
 
     # Overall status
@@ -454,7 +459,7 @@ class FeedValidationResult(SQLModel, table=True):
     validation_report: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class FeedAnalytics(SQLModel, table=True):
@@ -525,8 +530,8 @@ class FeedAnalytics(SQLModel, table=True):
     extra_metrics: dict[str, Any] = SQLField(default_factory=dict, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 # ============================================================================
@@ -595,8 +600,8 @@ class OPMLDocument(SQLModel):
     """OPML document structure."""
 
     title: str
-    date_created: datetime = Field(default_factory=datetime.utcnow)
-    date_modified: datetime = Field(default_factory=datetime.utcnow)
+    date_created: datetime = Field(default_factory=_utc_now)
+    date_modified: datetime = Field(default_factory=_utc_now)
     owner_name: str = "AI Web Feeds"
     owner_email: str | None = None
     outlines: list[OPMLOutline] = []
@@ -628,8 +633,8 @@ class FeedEmbedding(SQLModel, table=True):
     embedding_provider: str = SQLField(
         default="local", description="Embedding provider: 'local' or 'huggingface'"
     )
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class AnalyticsSnapshot(SQLModel, table=True):
@@ -652,7 +657,7 @@ class AnalyticsSnapshot(SQLModel, table=True):
     health_distribution: dict[str, int] = SQLField(
         sa_column=Column(JSON), description="Feed counts by health category"
     )
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class TopicStats(SQLModel, table=True):
@@ -671,7 +676,7 @@ class TopicStats(SQLModel, table=True):
     )
     avg_health_score: float = SQLField(ge=0.0, le=1.0, description="Average health score")
     snapshot_date: str = SQLField(index=True, description="ISO date YYYY-MM-DD")
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class SearchQuery(SQLModel, table=True):
@@ -698,7 +703,7 @@ class SearchQuery(SQLModel, table=True):
     clicked_results: list[str] = SQLField(
         default_factory=list, sa_column=Column(JSON), description="Feed IDs clicked by user"
     )
-    timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    timestamp: datetime = SQLField(default_factory=_utc_now, index=True)
 
 
 class SavedSearch(SQLModel, table=True):
@@ -716,8 +721,8 @@ class SavedSearch(SQLModel, table=True):
     filters: dict[str, Any] = SQLField(
         default_factory=dict, sa_column=Column(JSON), description="Saved filters"
     )
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    last_used_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    last_used_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class RecommendationInteraction(SQLModel, table=True):
@@ -740,7 +745,7 @@ class RecommendationInteraction(SQLModel, table=True):
         sa_column=Column(JSON),
         description="Additional context (explanation, position, etc.)",
     )
-    timestamp: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    timestamp: datetime = SQLField(default_factory=_utc_now, index=True)
 
 
 class UserProfile(SQLModel, table=True):
@@ -766,8 +771,8 @@ class UserProfile(SQLModel, table=True):
         sa_column=Column(JSON),
         description="Interaction history for recommendations",
     )
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class CollaborativeMatrix(SQLModel, table=True):
@@ -785,7 +790,7 @@ class CollaborativeMatrix(SQLModel, table=True):
         ge=0.0, le=1.0, description="Co-occurrence score based on user interactions"
     )
     support: int = SQLField(description="Number of users who interacted with both feeds")
-    last_updated: datetime = SQLField(default_factory=datetime.utcnow)
+    last_updated: datetime = SQLField(default_factory=_utc_now)
 
 
 # ============================================================================
@@ -858,8 +863,8 @@ class FeedEntry(SQLModel, table=True):
     categories: list[str] = SQLField(
         default_factory=list, sa_column=Column(JSON), description="Article categories/tags"
     )
-    discovered_at: datetime = SQLField(default_factory=datetime.utcnow)
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    discovered_at: datetime = SQLField(default_factory=_utc_now)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
     # Phase 5: NLP processing flags
     quality_processed: bool = SQLField(default=False, description="Quality scoring completed")
@@ -891,7 +896,7 @@ class FeedPollJob(SQLModel, table=True):
     error_message: str | None = SQLField(default=None, sa_column=Column(JSON))
     articles_discovered: int = SQLField(default=0, ge=0)
     response_time_ms: int | None = SQLField(default=None, ge=0)
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class Notification(SQLModel, table=True):
@@ -916,7 +921,7 @@ class Notification(SQLModel, table=True):
     )
     read_at: datetime | None = None
     dismissed_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    created_at: datetime = SQLField(default_factory=_utc_now, index=True)
 
 
 class UserFeedFollow(SQLModel, table=True):
@@ -931,7 +936,7 @@ class UserFeedFollow(SQLModel, table=True):
     id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
     feed_id: str = SQLField(foreign_key="sources.id", index=True)
-    followed_at: datetime = SQLField(default_factory=datetime.utcnow)
+    followed_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class TrendingTopic(SQLModel, table=True):
@@ -955,7 +960,7 @@ class TrendingTopic(SQLModel, table=True):
     representative_articles: list[int] = SQLField(
         default_factory=list, sa_column=Column(JSON), description="Top 3 article IDs"
     )
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class NotificationPreference(SQLModel, table=True):
@@ -976,8 +981,8 @@ class NotificationPreference(SQLModel, table=True):
     frequency: NotificationFrequency
     quiet_hours_start: str | None = SQLField(default=None, description="HH:MM format")
     quiet_hours_end: str | None = SQLField(default=None, description="HH:MM format")
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
-    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
+    updated_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class EmailDigest(SQLModel, table=True):
@@ -1001,7 +1006,7 @@ class EmailDigest(SQLModel, table=True):
     open_count: int = SQLField(default=0, ge=0, description="Digest opens")
     click_count: int = SQLField(default=0, ge=0, description="Article clicks")
     unsubscribed_at: datetime | None = None
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 # =============================================================================
@@ -1035,7 +1040,7 @@ class ArticleQualityScore(SQLModel, table=True):
     engagement_score: int | None = SQLField(
         default=None, ge=0, le=100, description="Read time and shares"
     )
-    computed_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    computed_at: datetime = SQLField(default_factory=_utc_now, index=True)
 
 
 class Entity(SQLModel, table=True):
@@ -1058,9 +1063,9 @@ class Entity(SQLModel, table=True):
         default=None, description="JSON: {bio, affiliation, h_index, wikipedia_url}"
     )
     frequency_count: int = SQLField(default=0, index=True, ge=0)
-    first_seen: datetime = SQLField(default_factory=datetime.utcnow)
+    first_seen: datetime = SQLField(default_factory=_utc_now)
     last_seen: datetime | None = None
-    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    created_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class EntityMention(SQLModel, table=True):
@@ -1080,7 +1085,7 @@ class EntityMention(SQLModel, table=True):
         max_length=50, description="Method used: ner_model, rule_based, manual"
     )
     context: str | None = SQLField(default=None, description="Surrounding text snippet")
-    mentioned_at: datetime = SQLField(default_factory=datetime.utcnow)
+    mentioned_at: datetime = SQLField(default_factory=_utc_now)
 
 
 class ArticleSentiment(SQLModel, table=True):
@@ -1101,7 +1106,7 @@ class ArticleSentiment(SQLModel, table=True):
     )
     model_name: str = SQLField(max_length=255, description="Hugging Face model identifier")
     confidence: float = SQLField(ge=0.0, le=1.0, description="Model confidence score")
-    computed_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    computed_at: datetime = SQLField(default_factory=_utc_now, index=True)
 
 
 class TopicSentimentDaily(SQLModel, table=True):
@@ -1138,7 +1143,7 @@ class Subtopic(SQLModel, table=True):
     keywords: str = SQLField(description="JSON array of representative keywords")
     description: str | None = None
     article_count: int = SQLField(default=0, ge=0, index=True)
-    detected_at: datetime = SQLField(default_factory=datetime.utcnow)
+    detected_at: datetime = SQLField(default_factory=_utc_now)
     approved: bool = SQLField(default=False, index=True, description="Manual curation flag")
     created_by: str = SQLField(default="system", max_length=50)
 
@@ -1162,4 +1167,4 @@ class TopicEvolutionEvent(SQLModel, table=True):
     growth_rate: float | None = SQLField(
         default=None, description="Month-over-month growth percentage"
     )
-    detected_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+    detected_at: datetime = SQLField(default_factory=_utc_now, index=True)

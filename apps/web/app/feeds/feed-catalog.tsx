@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ExternalLink, Search as SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds-filters";
 
@@ -47,29 +50,34 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
   }, [feeds, selectedType, selectedTopic, verifiedOnly, searchQuery]);
 
   return (
-    <div>
-      {/* Filters */}
-      <div className="bg-card border rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Filters</h2>
+    <div className="space-y-6">
+      <div className="surface-card space-y-6 xl:sticky xl:top-24 xl:z-10">
+        <div>
+          <p className="metric-label">Filters</p>
+          <h2 className="mt-2 text-title-medium font-semibold text-(--ink)">Narrow the catalog</h2>
+        </div>
 
-        {/* Search */}
-        <div className="mb-4">
-          <label htmlFor="search" className="block text-sm font-medium mb-2">
+        <div>
+          <label htmlFor="search" className="field-label">
             Search
           </label>
-          <input
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--ink-muted)">
+              <SearchIcon className="size-4" />
+            </span>
+            <Input
             id="search"
             type="text"
             placeholder="Search feeds by title, description, or URL..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="pl-11"
           />
+          </div>
         </div>
 
-        {/* Source Type Filter */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Source Type</label>
+        <div>
+          <label className="field-label">Source Type</label>
           <div className="flex flex-wrap gap-2">
             <Button
               variant={selectedType === null ? "default" : "outline"}
@@ -94,10 +102,9 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
           </div>
         </div>
 
-        {/* Topic Filter */}
         {allTopics.length > 0 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Topic</label>
+          <div>
+            <label className="field-label">Topic</label>
             <div className="flex flex-wrap gap-2">
               <Button
                 variant={selectedTopic === null ? "default" : "outline"}
@@ -120,98 +127,97 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
           </div>
         )}
 
-        {/* Verified Filter */}
         <div className="flex items-center gap-2">
           <input
             id="verified"
             type="checkbox"
             checked={verifiedOnly}
             onChange={(e) => setVerifiedOnly(e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="h-4 w-4 rounded border-(--line) text-(--brand)"
           />
-          <label htmlFor="verified" className="text-sm font-medium">
+          <label htmlFor="verified" className="text-sm font-medium text-(--ink)">
             Show only verified feeds
           </label>
         </div>
       </div>
 
-      {/* Results */}
-      <div className="mb-4 text-sm text-muted-foreground">
+      <div className="surface-card flex items-center justify-between text-sm text-(--ink-muted)">
         Showing {filteredFeeds.length} of {feeds.length} feeds
       </div>
 
-      {/* Feed Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredFeeds.map((feed, idx) => (
           <div
             key={feed.url + idx}
-            className="border rounded-lg p-4 hover:shadow-lg transition-shadow"
+            className="surface-card transition duration-150 hover:-translate-y-0.5"
           >
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-semibold text-lg">{feed.title}</h3>
-              <div className="flex gap-2 flex-shrink-0">
-                {feed.verified && (
-                  <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full font-medium">
-                    ✓ Verified
-                  </span>
-                )}
-                {!feed.is_active && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                    Inactive
-                  </span>
-                )}
+            <div className="space-y-4 text-sm">
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-lg font-semibold text-(--ink)">{feed.title}</h3>
+                <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                  {feed.verified && (
+                    <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
+                      ✓ Verified
+                    </span>
+                  )}
+                  {!feed.is_active && (
+                    <span className="rounded-full bg-(--surface-muted) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)">
+                      Inactive
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {feed.description && (
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{feed.description}</p>
-            )}
+              {feed.description && (
+                <p className="line-clamp-2 text-sm text-(--ink-muted)">{feed.description}</p>
+              )}
 
-            <div className="space-y-2 text-sm">
               {feed.source_type && (
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Type:</span>
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                  <span className="text-(--ink-muted)">Type:</span>
+                  <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)">
                     {feed.source_type}
                   </span>
                 </div>
               )}
 
               {feed.topics && feed.topics.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {feed.topics.slice(0, 3).map((topic) => (
                     <span
                       key={topic}
-                      className="px-2 py-0.5 bg-gray-100 text-gray-800 rounded text-xs"
+                      className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
                     >
                       {topic}
                     </span>
                   ))}
                   {feed.topics.length > 3 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-(--ink-muted)">
                       +{feed.topics.length - 3} more
                     </span>
                   )}
                 </div>
               )}
 
-              <div className="pt-2 flex gap-2">
+              <div className="flex flex-wrap gap-3 pt-1">
                 <a
                   href={feed.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
                 >
-                  Feed URL →
+                  <ExternalLink className="size-3.5" />
+                  Feed URL
                 </a>
                 {feed.website_url && (
                   <a
                     href={feed.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
                   >
-                    Website →
+                    <ExternalLink className="size-3.5" />
+                    Website
                   </a>
                 )}
               </div>
@@ -221,9 +227,15 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
       </div>
 
       {filteredFeeds.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          No feeds found matching your filters. Try adjusting your search criteria.
-        </div>
+        <EmptyState
+          icon={SearchIcon}
+          title="No feeds match this filter set"
+          description="Try widening the source types, removing topic constraints, or turning off verified-only mode."
+          tips={[
+            "Use a broader search phrase or clear the topic filter.",
+            "Verified-only mode can hide newer additions that have not been reviewed yet.",
+          ]}
+        />
       )}
     </div>
   );

@@ -1,13 +1,14 @@
 """ai_web_feeds.storage -- Database and storage management"""
 
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from loguru import logger
-from sqlalchemy import create_engine, desc
+from sqlalchemy import and_, create_engine, desc
 from sqlmodel import Session, SQLModel, select
 
+from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
     EmailDigest,
@@ -32,19 +33,21 @@ from ai_web_feeds.models import (
 class DatabaseManager:
     """Manage SQLModel database connections and operations."""
 
-    def __init__(self, database_url: str = "sqlite:///data/aiwebfeeds.db"):
+    def __init__(self, database_url: str = DEFAULT_DATABASE_URL):
         """Initialize database manager.
 
         Args:
             database_url: SQLAlchemy database URL
         """
-        self.database_url = database_url
+        self.database_url = resolve_database_url(database_url)
         self.engine = create_engine(
-            database_url,
+            self.database_url,
             echo=False,  # Set to True for SQL debugging
-            connect_args={"check_same_thread": False} if database_url.startswith("sqlite") else {},
+            connect_args={"check_same_thread": False}
+            if self.database_url.startswith("sqlite")
+            else {},
         )
-        logger.info(f"Database initialized: {database_url}")
+        logger.info(f"Database initialized: {self.database_url}")
 
     def create_db_and_tables(self) -> None:
         """Create all tables in the database."""
@@ -538,15 +541,14 @@ class DatabaseManager:
             Dictionary with health metrics
         """
         with self.get_session() as session:
-            # Get all latest enrichments
-            feed_ids = session.exec(select(FeedSource.id)).all()
-
-            total_feeds = len(feed_ids)
+            # Get all enrichments in a single query to avoid N+1 problem
+            enrichments = session.exec(select(FeedEnrichmentData)).all()
+            
+            total_feeds = len(enrichments)
             health_scores = []
             quality_scores = []
 
-            for feed_id in feed_ids:
-                enrichment = self.get_enrichment_data(feed_id)
+            for enrichment in enrichments:
                 if enrichment:
                     if enrichment.health_score is not None:
                         health_scores.append(enrichment.health_score)
@@ -613,7 +615,7 @@ class DatabaseManager:
                     .order_by(TopicStats.snapshot_date.desc())
                     .limit(1)
                 ).first()
-                snapshot_date = latest if latest else datetime.utcnow().strftime("%Y-%m-%d")
+                snapshot_date = latest if latest else datetime.now(UTC).strftime("%Y-%m-%d")
 
             # Query topic stats
             statement = (
@@ -641,7 +643,7 @@ class DatabaseManager:
             List of FeedValidationResult ordered by timestamp desc
         """
         with self.get_session() as session:
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
             statement = (
                 select(FeedValidationResult)
@@ -1057,7 +1059,7 @@ class DatabaseManager:
         with self.get_session() as session:
             notification = session.get(Notification, notification_id)
             if notification:
-                notification.read_at = datetime.utcnow()
+                notification.read_at = datetime.now(UTC)
                 session.add(notification)
                 session.commit()
 
@@ -1070,7 +1072,7 @@ class DatabaseManager:
         with self.get_session() as session:
             notification = session.get(Notification, notification_id)
             if notification:
-                notification.dismissed_at = datetime.utcnow()
+                notification.dismissed_at = datetime.now(UTC)
                 session.add(notification)
                 session.commit()
 
@@ -1110,7 +1112,7 @@ class DatabaseManager:
             Saved NotificationPreference with ID
         """
         with self.get_session() as session:
-            pref.updated_at = datetime.utcnow()
+            pref.updated_at = datetime.now(UTC)
             session.add(pref)
             session.commit()
             session.refresh(pref)
@@ -1265,3 +1267,19 @@ class DatabaseManager:
         with self.get_session() as session:
             statement = select(UserFeedFollow.feed_id).where(UserFeedFollow.user_id == user_id)
             return list(session.exec(statement).all())
+
+
+_db_manager: DatabaseManager | None = None
+
+
+def get_database_manager() -> DatabaseManager:
+    """Return a process-wide database manager singleton."""
+    global _db_manager
+    if _db_manager is None:
+        _db_manager = DatabaseManager()
+    return _db_manager
+
+
+def get_session() -> Session:
+    """Return a database session from the shared manager."""
+    return get_database_manager().get_session()

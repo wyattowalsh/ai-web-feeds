@@ -12,9 +12,9 @@
 
 "use client";
 
-import { Suspense, useState, useRef, useEffect } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Text, Html } from "@react-three/drei";
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 export interface TopicNode {
@@ -26,7 +26,7 @@ export interface TopicNode {
   category?: string;
 }
 
-interface TopicLink {
+export interface TopicLink {
   source: string;
   target: string;
   strength: number; // Similarity or connection strength
@@ -39,6 +39,52 @@ interface TopicCluster3DProps {
   onNodeHover?: (node: TopicNode | null) => void;
   enablePhysics?: boolean;
   colorScheme?: "category" | "size" | "custom";
+}
+
+interface TopicClusterErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class TopicClusterErrorBoundary extends Component<{ children: ReactNode }, TopicClusterErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
+  }
+
+  static getDerivedStateFromError(error: Error): TopicClusterErrorBoundaryState {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+
+  componentDidCatch(error: Error): void {
+    this.setState({
+      hasError: true,
+      error,
+    });
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-full items-center justify-center rounded-lg bg-gray-100 p-8 text-center dark:bg-gray-800">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">3D visualization unavailable</h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              {this.state.error?.message || "An unexpected rendering error occurred."}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 /**
@@ -60,7 +106,6 @@ function TopicNodeSphere({
   onPointerLeave: () => void;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
 
   // Scale based on size
   const scale = Math.max(0.5, Math.min(2, node.size / 10));
@@ -89,11 +134,9 @@ function TopicNodeSphere({
         ref={meshRef}
         onClick={onClick}
         onPointerEnter={() => {
-          setHovered(true);
           onPointerEnter();
         }}
         onPointerLeave={() => {
-          setHovered(false);
           onPointerLeave();
         }}
       >
@@ -123,7 +166,7 @@ function TopicNodeSphere({
 /**
  * Connection line between topics.
  */
-function TopicLink({
+function TopicLinkLine({
   link,
   nodes,
 }: {
@@ -132,30 +175,45 @@ function TopicLink({
 }) {
   const sourceNode = nodes.find((n) => n.id === link.source);
   const targetNode = nodes.find((n) => n.id === link.target);
+  const lineGeometry = useMemo(() => {
+    if (!sourceNode || !targetNode) {
+      return null;
+    }
 
-  if (!sourceNode || !targetNode) return null;
+    return new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(...sourceNode.position),
+      new THREE.Vector3(...targetNode.position),
+    ]);
+  }, [sourceNode, targetNode]);
+  const lineMaterial = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        color: "#94a3b8",
+        transparent: true,
+        opacity: Math.max(0.1, Math.min(0.6, link.strength)),
+      }),
+    [link.strength]
+  );
+  const lineObject = useMemo(() => {
+    if (!lineGeometry) {
+      return null;
+    }
 
-  const points = [
-    new THREE.Vector3(...sourceNode.position),
-    new THREE.Vector3(...targetNode.position),
-  ];
+    return new THREE.Line(lineGeometry, lineMaterial);
+  }, [lineGeometry, lineMaterial]);
 
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  useEffect(() => {
+    return () => {
+      lineObject?.removeFromParent();
+      lineGeometry?.dispose();
+      lineMaterial.dispose();
+    };
+  }, [lineGeometry, lineMaterial, lineObject]);
 
-  // Opacity based on connection strength
-  const opacity = Math.max(0.1, Math.min(0.6, link.strength));
+  if (!sourceNode || !targetNode || !lineGeometry || !lineObject) return null;
 
   return (
-    <line>
-      <bufferGeometry attach="geometry" {...lineGeometry} />
-      <lineBasicMaterial
-        attach="material"
-        color="#94a3b8"
-        transparent
-        opacity={opacity}
-        linewidth={1}
-      />
-    </line>
+    <primitive object={lineObject} />
   );
 }
 
@@ -195,7 +253,7 @@ function TopicClusterScene({
       {/* Render links first (behind nodes) */}
       <group>
         {links.map((link, index) => (
-          <TopicLink key={`link-${index}`} link={link} nodes={nodes} />
+          <TopicLinkLine key={`link-${index}`} link={link} nodes={nodes} />
         ))}
       </group>
 
@@ -235,7 +293,6 @@ function PerformanceMonitor({
 }: {
   onPerformanceChange: (fps: number) => void;
 }) {
-  const { gl, scene, camera } = useThree();
   const framesRef = useRef<number[]>([]);
   const lastTimeRef = useRef(performance.now());
 
@@ -267,17 +324,16 @@ export function TopicCluster3D({
   links,
   onNodeClick,
   onNodeHover,
-  enablePhysics = false,
-  colorScheme = "category",
 }: TopicCluster3DProps) {
   const [use2DFallback, setUse2DFallback] = useState(false);
   const [fps, setFps] = useState(60);
   const [showStats, setShowStats] = useState(false);
+  const [fallbackReason, setFallbackReason] = useState<"performance" | "webgl">("webgl");
 
   // Monitor performance and fall back to 2D if FPS is too low
   useEffect(() => {
     if (fps < 20 && !use2DFallback) {
-      console.warn("Low FPS detected, switching to 2D fallback");
+      setFallbackReason("performance");
       setUse2DFallback(true);
     }
   }, [fps, use2DFallback]);
@@ -288,7 +344,7 @@ export function TopicCluster3D({
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
     if (!gl) {
-      console.warn("WebGL not supported, using 2D fallback");
+      setFallbackReason("webgl");
       setUse2DFallback(true);
     }
   }, []);
@@ -302,7 +358,9 @@ export function TopicCluster3D({
             2D Fallback Mode
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            WebGL is not available or performance is low. Showing 2D topic graph instead.
+            {fallbackReason === "performance"
+              ? "Rendering performance is too low for the 3D graph, so a fallback view is being used."
+              : "WebGL is not available in this browser, so a fallback view is being used."}
           </p>
           {/* TODO: Render 2D graph using D3.js or Canvas */}
         </div>
@@ -330,27 +388,29 @@ export function TopicCluster3D({
       </div>
 
       {/* 3D Canvas */}
-      <Canvas
-        camera={{ position: [0, 0, 50], fov: 60 }}
-        gl={{ antialias: true, alpha: true }}
-        dpr={[1, 2]} // Pixel ratio for retina displays
-      >
-        <Suspense
-          fallback={
-            <Html center>
-              <div className="text-white text-sm">Loading 3D scene...</div>
-            </Html>
-          }
+      <TopicClusterErrorBoundary>
+        <Canvas
+          camera={{ position: [0, 0, 50], fov: 60 }}
+          gl={{ antialias: true, alpha: true }}
+          dpr={[1, 2]}
         >
-          <TopicClusterScene
-            nodes={nodes}
-            links={links}
-            onNodeClick={onNodeClick}
-            onNodeHover={onNodeHover}
-          />
-          <PerformanceMonitor onPerformanceChange={setFps} />
-        </Suspense>
-      </Canvas>
+          <Suspense
+            fallback={
+              <Html center>
+                <div className="text-white text-sm">Loading 3D scene...</div>
+              </Html>
+            }
+          >
+            <TopicClusterScene
+              nodes={nodes}
+              links={links}
+              onNodeClick={onNodeClick}
+              onNodeHover={onNodeHover}
+            />
+            <PerformanceMonitor onPerformanceChange={setFps} />
+          </Suspense>
+        </Canvas>
+      </TopicClusterErrorBoundary>
 
       {/* Instructions */}
       <div className="absolute bottom-4 left-4 bg-black/60 text-white text-xs rounded-lg p-3 backdrop-blur-sm">

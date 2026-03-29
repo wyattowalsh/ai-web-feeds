@@ -13,7 +13,7 @@ Implements Phase 1 recommendation strategy:
 """
 
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 import numpy as np
 from loguru import logger
@@ -27,7 +27,16 @@ from ai_web_feeds.models import (
     UserProfile,
 )
 
-settings = Settings()
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 # ============================================================================
@@ -63,13 +72,25 @@ def calculate_content_similarity(
         logger.warning("No embeddings found for content similarity")
         return []
 
-    # Calculate cosine similarities
+    # Guard against zero-norm target embedding
+    target_norm = np.linalg.norm(target_embedding)
+    if target_norm < 1e-8:
+        logger.warning("Target embedding has zero norm, returning no results")
+        return []
+
+    # Calculate cosine similarities with zero-norm guards
     similarities = []
     for emb in embeddings:
         feed_vector = np.frombuffer(emb.embedding, dtype=np.float32)
-        similarity = np.dot(target_embedding, feed_vector) / (
-            np.linalg.norm(target_embedding) * np.linalg.norm(feed_vector)
-        )
+
+        # Guard against zero-norm feed embedding
+        feed_norm = np.linalg.norm(feed_vector)
+        if feed_norm < 1e-8:
+            logger.debug(f"Feed {emb.feed_id} has zero-norm embedding, skipping")
+            continue
+
+        # Compute cosine similarity safely
+        similarity = np.dot(target_embedding, feed_vector) / (target_norm * feed_norm)
         similarities.append((emb.feed_id, float(similarity)))
 
     # Sort by similarity
@@ -288,6 +309,7 @@ def generate_recommendations(
     Returns:
         List of (FeedSource, score, reason) tuples
     """
+    settings = get_settings()
     logger.info(f"Generating {limit} recommendations for user {user_id}")
 
     # Use config weights if not provided
@@ -403,7 +425,7 @@ def track_recommendation_interaction(
     elif interaction_type == "subscribe" and feed_id not in user_profile.subscribed_feeds:
         user_profile.subscribed_feeds.append(feed_id)
 
-    user_profile.last_active_at = datetime.utcnow()
+    user_profile.last_active_at = datetime.now(timezone.utc)
     session.commit()
 
 

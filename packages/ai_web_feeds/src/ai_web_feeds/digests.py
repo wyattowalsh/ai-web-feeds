@@ -4,9 +4,11 @@ This module handles email digest subscriptions, content generation, and SMTP del
 """
 
 import smtplib
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from html import escape
+from urllib.parse import urlparse
 
 from croniter import croniter
 from loguru import logger
@@ -39,13 +41,31 @@ class DigestManager:
         self.smtp_from = settings.phase3b.smtp_from
         self.max_articles = settings.phase3b.digest_max_articles
 
+    @staticmethod
+    def _ensure_utc(value: datetime) -> datetime:
+        """Normalize datetime values to UTC while tolerating legacy naive rows."""
+        if value.tzinfo is None:
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
+
+    @staticmethod
+    def _sanitize_link(link: str | None) -> str | None:
+        """Return a safe http(s) link or None when the URL is not safe to render."""
+        if not link:
+            return None
+
+        parsed = urlparse(link)
+        if parsed.scheme in {"http", "https"} and parsed.netloc:
+            return link
+        return None
+
     async def send_due_digests(self) -> int:
         """Send all digests due for delivery.
 
         Returns:
             Number of digests sent
         """
-        now = datetime.utcnow()
+        now = self._ensure_utc(datetime.now(UTC))
         due_digests = self.db.get_due_digests(now)
 
         sent_count = 0
@@ -75,11 +95,17 @@ class DigestManager:
         user_feeds = self.db.get_user_follows(digest.user_id)
 
         # Get recent articles from followed feeds
-        since = digest.last_sent_at or (datetime.utcnow() - timedelta(days=1))
+        since = (
+            self._ensure_utc(digest.last_sent_at)
+            if digest.last_sent_at
+            else self._ensure_utc(datetime.now(UTC) - timedelta(days=1))
+        )
         articles = []
         for feed_id in user_feeds:
             feed_articles = self.db.get_feed_entries(feed_id, limit=self.max_articles)
-            articles.extend([a for a in feed_articles if a.pub_date >= since])
+            articles.extend(
+                [a for a in feed_articles if self._ensure_utc(a.pub_date) >= since]
+            )
 
         # Sort by pub_date (most recent first)
         articles.sort(key=lambda a: a.pub_date, reverse=True)
@@ -94,7 +120,9 @@ class DigestManager:
 
         # Send email
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"AI Web Feeds Digest - {datetime.now().strftime('%Y-%m-%d')}"
+        msg["Subject"] = (
+            f"AI Web Feeds Digest - {self._ensure_utc(datetime.now(UTC)).strftime('%Y-%m-%d')}"
+        )
         msg["From"] = self.smtp_from
         msg["To"] = digest.email
         msg.attach(MIMEText(html_content, "html"))
@@ -141,16 +169,26 @@ class DigestManager:
         """
 
         for article in articles:
+            safe_title = escape(article.title)
+            safe_summary = escape(article.summary or "")
+            safe_author = escape(article.author or "Unknown")
+            safe_pub_date = self._ensure_utc(article.pub_date).strftime("%Y-%m-%d %H:%M")
+            safe_link = self._sanitize_link(article.link)
+            title_html = (
+                f'<a href="{escape(safe_link, quote=True)}">{safe_title}</a>'
+                if safe_link
+                else safe_title
+            )
             html += f"""
             <div class="article">
                 <div class="article-title">
-                    <a href="{article.link}">{article.title}</a>
+                    {title_html}
                 </div>
                 <div class="article-meta">
-                    {article.pub_date.strftime('%Y-%m-%d %H:%M')} | {article.author or 'Unknown'}
+                    {safe_pub_date} | {safe_author}
                 </div>
                 <div class="article-summary">
-                    {article.summary or ''}
+                    {safe_summary}
                 </div>
             </div>
             """
@@ -177,4 +215,4 @@ class DigestManager:
         """
         cron = croniter(cron_expr, from_time)
         next_dt = cron.get_next(datetime)
-        return next_dt
+        return self._ensure_utc(next_dt)

@@ -1,22 +1,23 @@
 ---
 title: Getting Started
-description: Complete guide to installing and using AI Web Feeds - from setup to your first analytics report
+description: Install ai-web-feeds, initialize the local data workflow, and launch the docs app with the repository-approved toolchain.
 icon: Rocket
 ---
 
 import { Steps, Step } from "fumadocs-ui/components/steps";
 import { Tabs, Tab } from "fumadocs-ui/components/tabs";
-import { Callout } from "fumadocs-ui/components/callout";
 
-This guide will help you get started with AI Web Feeds, from installation to your first analytics report.
+This guide gets you from a fresh clone to a working ai-web-feeds environment using the repository-required tooling: `uv` for Python and `pnpm` for the web app.
 
 ## Prerequisites
 
 Before you begin, ensure you have:
 
 - Python 3.13 or higher
-- pip (Python package manager)
-- Git (for cloning the repository)
+- Node.js 20+
+- [uv](https://github.com/astral-sh/uv)
+- [pnpm](https://pnpm.io/)
+- Git
 
 ## Installation
 
@@ -37,47 +38,53 @@ cd ai-web-feeds
 
 ### Choose Setup Method
 
-<Tabs items={['Quick Setup (Recommended)', 'Manual Setup']}>
+<Tabs items={["Quick Setup (Recommended)", "Manual Setup"]}>
 
 <Tab value="Quick Setup (Recommended)">
 
-Use the automated setup script:
+Use the repository setup script for the feed workflow, then install the docs app dependencies separately:
 
 ```bash
-chmod +x setup-enhanced-features.sh
-./setup-enhanced-features.sh
+uv sync
+bash scripts/setup.sh
+
+cd apps/web
+pnpm install
+pnpm dev
 ```
 
 This will:
 
-- Install the core library
-- Install the CLI
-- Create the data directory
-- Initialize the database
+- Sync the Python workspace with `uv`
+- Generate the local SQLite cache and OPML outputs
+- Install the Next.js docs dependencies
+- Start the docs app at `http://localhost:3000`
 
 </Tab>
 
 <Tab value="Manual Setup">
 
-If you prefer manual installation:
+If you want to initialize the project step by step:
 
 ```bash
-# Install core library
-cd packages/ai_web_feeds
-pip install -e .
+uv sync
 
-# Install CLI
-cd ../../apps/cli
-pip install -e .
-
-# Create data directory and initialize database
+cd apps/web
+pnpm install
 cd ../..
+
 mkdir -p data
-python3 -c "
+uv run python - <<'PY'
 from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
+db = DatabaseManager('sqlite:///data/ai-web-feeds.db')
 db.create_db_and_tables()
-"
+PY
+
+uv run ai-web-feeds enrich all \
+  --input data/feeds.yaml \
+  --output data/feeds.enriched.yaml \
+  --schema data/feeds.enriched.schema.json \
+  --database sqlite:///data/ai-web-feeds.db
 ```
 
 </Tab>
@@ -90,143 +97,76 @@ db.create_db_and_tables()
 
 ## Quick Start
 
-### 1. Add Your First Feeds
+### 1. Validate the Catalog
 
-The project comes with sample feeds in `data/feeds.yaml`. You can:
-
-<Tabs items={['Use Existing Feeds', 'Add Custom Feeds']}>
-
-<Tab value="Use Existing Feeds">
+Run the built-in HTTP validation pass against the canonical feed list:
 
 ```bash
-# The repository includes curated AI/ML feeds
-cat data/feeds.yaml
+uv run ai-web-feeds validate http
 ```
 
-</Tab>
+### 2. Regenerate Enriched Metadata
 
-<Tab value="Add Custom Feeds">
+```bash
+uv run ai-web-feeds enrich all \
+  --input data/feeds.yaml \
+  --output data/feeds.enriched.yaml \
+  --schema data/feeds.enriched.schema.json \
+  --database sqlite:///data/ai-web-feeds.db
+```
 
-Edit `data/feeds.yaml`:
+### 3. Generate Reader Exports
+
+```bash
+uv run ai-web-feeds opml all --output data/all.opml
+uv run ai-web-feeds opml categorized --output data/categorized.opml
+```
+
+### 4. Launch the Docs App
+
+```bash
+cd apps/web
+pnpm dev
+```
+
+### 5. Explore the Main Surfaces
+
+Once the project is running, these docs pages are the best next stops:
+
+- [Deployment](/docs/guides/deployment)
+- [OPML Viewer](/docs/guides/opml-viewer)
+- [Data Explorer](/docs/guides/data-explorer)
+- [Contributing](/docs/development/contributing)
+
+## Working With `data/feeds.yaml`
+
+The repository already includes a curated catalog in `data/feeds.yaml`. When you want to add or edit sources, update that file first and then rerun the enrichment and validation commands above.
+
+Example entry:
 
 ```yaml
 sources:
-  - id: "my-custom-feed"
-    feed: "https://example.com/feed.xml"
-    title: "My Custom Feed"
-    source_type: "blog"
-    topics: ["machine-learning"]
-    tags: ["custom"]
+  - id: my-custom-feed
+    feed: https://example.com/feed.xml
+    title: My Custom Feed
+    source_type: blog
+    topics: [llm]
+    tags: [custom]
 ```
 
-</Tab>
+## Troubleshooting
 
-</Tabs>
+### Missing Tooling
 
-### 2. Enrich Feed Metadata
+If `uv` or `pnpm` is missing, install them before continuing. The repository policy explicitly avoids bare `python`, `pip`, `npm`, and `yarn` workflows.
 
-Process feeds and extract metadata:
+### Reset the Local SQLite Cache
 
 ```bash
-ai-web-feeds enrich all
+bash scripts/setup.sh
 ```
 
-This will:
-
-- Validate feed URLs
-- Discover feeds for sites without direct feed URLs
-- Detect feed formats
-- Generate quality scores
-
-### 3. Fetch Feed Content
-
-Download and analyze feed content:
-
-```bash
-# Fetch all feeds
-ai-web-feeds fetch all
-
-# Or fetch a specific feed
-ai-web-feeds fetch one huggingface-blog --metadata
-```
-
-### 4. View Analytics
-
-Explore your feed data:
-
-```bash
-# Overview dashboard
-ai-web-feeds analytics overview
-
-# View distributions
-ai-web-feeds analytics distributions
-
-# Check quality metrics
-ai-web-feeds analytics quality
-
-# See publishing trends
-ai-web-feeds analytics trends --days 30
-```
-
-### 5. Check Feed Health
-
-Monitor individual feed performance:
-
-```bash
-ai-web-feeds analytics health huggingface-blog
-```
-
-### 6. Generate Reports
-
-Export comprehensive analytics:
-
-```bash
-# Generate JSON report
-ai-web-feeds analytics report --output data/analytics-report.json
-
-# Generate OPML for feed readers
-ai-web-feeds opml generate --output data/feeds.opml
-```
-
-## Common Workflows
-
-### Adding New Feeds
-
-1. **Find a feed URL** - Most blogs have RSS/Atom feeds
-2. **Add to feeds.yaml**:
-
-```yaml
-- id: "new-feed-id"
-  feed: "https://example.com/feed.xml"
-  title: "Feed Title"
-  source_type: "blog"
-  topics: ["nlp", "computer-vision"]
-```
-
-3. **Enrich and validate**:
-
-```bash
-ai-web-feeds enrich one new-feed-id
-```
-
-4. **Fetch content**:
-
-```bash
-ai-web-feeds fetch one new-feed-id
-```
-
-### Platform-Specific Feeds
-
-For known platforms, you can use just the site URL:
-
-```yaml
-# Reddit subreddit
-- id: "reddit-machinelearning"
-  site: "https://reddit.com/r/MachineLearning"
-  discover: true
-  platform_config:
-    reddit:
-      sort: "hot" # or "top", "new"
+If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
 
 # YouTube channel
 - id: "youtube-channel"

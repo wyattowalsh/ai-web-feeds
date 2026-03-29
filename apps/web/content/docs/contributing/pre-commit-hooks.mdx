@@ -1,11 +1,11 @@
 ---
 title: Pre-commit Hooks
-description: Guide to pre-commit hooks and code quality automation in AI Web Feeds
+description: Guide to pre-commit hooks and code quality automation in ai-web-feeds
 ---
 
 ## Overview
 
-AI Web Feeds uses [pre-commit](https://pre-commit.com/) to automatically run code quality checks before each commit. This ensures consistent code style, catches common errors, and maintains high code quality across the project.
+ai-web-feeds uses [pre-commit](https://pre-commit.com/) to automatically run code quality checks before each commit. This ensures consistent code style, catches common errors, and maintains high code quality across the project.
 
 ## Installation
 
@@ -529,8 +529,8 @@ Pre-commit hooks also run in CI (`.github/workflows/ci.yml`):
 ```yaml
 - name: Run pre-commit
   run: |
-    pip install pre-commit
-    pre-commit run --all-files
+    uv sync
+    uv run pre-commit run --all-files
 ```
 
 CI runs are more comprehensive and cannot be skipped.

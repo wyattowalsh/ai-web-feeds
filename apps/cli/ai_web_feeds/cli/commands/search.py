@@ -6,6 +6,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.storage import DatabaseManager
 
 app = typer.Typer(help="Search and discovery commands")
@@ -16,7 +17,7 @@ console = Console()
 def search_query(
     query: str = typer.Argument(..., help="Search query"),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",

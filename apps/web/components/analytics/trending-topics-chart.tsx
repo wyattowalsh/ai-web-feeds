@@ -12,6 +12,10 @@ import {
   Legend,
   type ChartOptions,
 } from "chart.js";
+import { ChartShell } from "@/components/analytics/chart-shell";
+import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
+import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
+import { useTheme } from "@/lib/theme-manager";
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -33,6 +37,8 @@ export function TrendingTopicsChart({
   const [topics, setTopics] = useState<TrendingTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isDark } = useTheme();
+  const chartTheme = getAnalyticsChartTheme(isDark);
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -58,19 +64,21 @@ export function TrendingTopicsChart({
   }, [dateRange, limit]);
 
   if (loading) {
-    return (
-      <div className="bg-gray-200 rounded-lg h-96 animate-pulse flex items-center justify-center">
-        <p className="text-gray-600">Loading trending topics...</p>
-      </div>
-    );
+    return <ChartSkeleton className="h-[32rem]" />;
   }
 
   if (error || topics.length === 0) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
-        <p className="font-semibold">No trending topics available</p>
-        <p className="text-sm">{error || "Run analytics snapshot first"}</p>
-      </div>
+      <ChartShell
+        eyebrow="Topic momentum"
+        title="Trending topics"
+        description="Weighted validation activity is used here as a proxy for current attention and movement inside the catalog."
+      >
+        <div className="rounded-2xl border border-[color:var(--warning-tone)]/40 bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-5 text-[color:var(--ink)]">
+          <p className="text-lg font-semibold">No trending topics available</p>
+          <p className="small-note mt-2">{error || "Run analytics snapshot first"}</p>
+        </div>
+      </ChartShell>
     );
   }
 
@@ -80,9 +88,10 @@ export function TrendingTopicsChart({
       {
         label: "Validation Frequency",
         data: topics.map((t) => t.validation_frequency),
-        backgroundColor: "rgba(59, 130, 246, 0.8)",
-        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: chartTheme.accentSoft,
+        borderColor: chartTheme.accent,
         borderWidth: 1,
+        borderRadius: 10,
       },
     ],
   };
@@ -93,13 +102,8 @@ export function TrendingTopicsChart({
     plugins: {
       legend: {
         position: "top" as const,
-      },
-      title: {
-        display: true,
-        text: `Most Active Topics (${dateRange})`,
-        font: {
-          size: 16,
-          weight: "bold",
+        labels: {
+          color: chartTheme.textMuted,
         },
       },
       tooltip: {
@@ -117,37 +121,58 @@ export function TrendingTopicsChart({
     scales: {
       y: {
         beginAtZero: true,
+        ticks: {
+          color: chartTheme.textMuted,
+        },
+        grid: {
+          color: chartTheme.grid,
+        },
         title: {
           display: true,
           text: "Validation Frequency",
+          color: chartTheme.textMuted,
         },
       },
       x: {
+        ticks: {
+          color: chartTheme.textMuted,
+        },
+        grid: {
+          display: false,
+        },
         title: {
           display: true,
           text: "Topic",
+          color: chartTheme.textMuted,
         },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <ChartShell
+      eyebrow="Topic momentum"
+      title="Trending topics"
+      description="Weighted validation frequency helps surface the parts of the catalog drawing the most recent operational attention."
+      footer={
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+          {topics.map((topic) => (
+            <div key={topic.topic} className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-3 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-muted)]">
+                {topic.topic}
+              </p>
+              <p className="mt-2 text-base font-semibold text-[color:var(--ink)]">{topic.feed_count} feeds</p>
+              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+                {(topic.avg_health_score * 100).toFixed(0)}% health
+              </p>
+            </div>
+          ))}
+        </div>
+      }
+    >
       <div className="h-96">
         <Bar data={chartData} options={options} />
       </div>
-
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4">
-        {topics.map((topic) => (
-          <div key={topic.topic} className="text-center">
-            <p className="text-xs font-semibold text-gray-600 uppercase">{topic.topic}</p>
-            <p className="text-sm text-gray-500">{topic.feed_count} feeds</p>
-            <p className="text-xs text-gray-400">
-              {(topic.avg_health_score * 100).toFixed(0)}% health
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
+    </ChartShell>
   );
 }

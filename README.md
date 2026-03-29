@@ -1,9 +1,9 @@
-# AIWebFeeds
+# ai-web-feeds
 
-***`AIWebFeeds`***
+***`ai-web-feeds`***
 ([wyattowalsh/ai-web-feeds](https://github.com/wyattowalsh/ai-web-feeds)) is the
 ultimate collection of AI/ML-related feeds from around the web. GitHub Repo, OPML files,
-Python CLI, FumaDocs nextjs site w/ docs, blog, and more.
+Python CLI, and a Fumadocs-powered documentation site.
 
 ## Features
 
@@ -51,7 +51,7 @@ Python CLI, FumaDocs nextjs site w/ docs, blog, and more.
 
 - Website and docs (Fumadocs + Next.js)
 
-  - Documentation, blog, and category landing pages
+  - Documentation, explorer, downloads, and analytics surfaces
   - Search-friendly structure and easy navigation
   - Ready for hosting on static providers
 
@@ -88,7 +88,7 @@ Python CLI, FumaDocs nextjs site w/ docs, blog, and more.
 
 - Web and docs
 
-  - Fumadocs with Next.js for the documentation site, blog, and pages
+  - Fumadocs with Next.js for the documentation and web surfaces
 
 - CI/CD and automation
 

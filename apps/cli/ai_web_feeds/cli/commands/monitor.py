@@ -6,7 +6,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import DEFAULT_DATABASE_URL, Settings
 from ai_web_feeds.scheduler import SchedulerManager
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.websocket_server import WebSocketServer
@@ -38,14 +38,14 @@ def start_monitoring(
     3. Email digest scheduler (daily/weekly digests)
     4. WebSocket server (real-time notifications)
     """
-    console.print("[bold blue]Starting AI Web Feeds Monitoring Server...[/]")
+    console.print("[bold blue]Starting ai-web-feeds Monitoring Server...[/]")
 
     # Initialize components
     settings = Settings()
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
     db.create_db_and_tables()
 
@@ -109,7 +109,7 @@ def monitoring_status():
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
     scheduler = SchedulerManager(db, settings)
 

@@ -85,8 +85,6 @@ class ForecastService:
 
         if include_holidays:
             # Add US holidays
-            from prophet.utilities import regressor_coefficients
-
             model.add_country_holidays(country_name="US")
 
         # Fit model
@@ -153,6 +151,13 @@ class ForecastService:
         """
         # Merge actual and predicted
         merged = actual.merge(predicted[["ds", "yhat"]], on="ds", how="inner")
+        if merged.empty:
+            return {
+                "mae": 0.0,
+                "rmse": 0.0,
+                "mape": 0.0,
+                "r2": 0.0,
+            }
 
         y_true = merged["y"].values
         y_pred = merged["yhat"].values
@@ -160,12 +165,26 @@ class ForecastService:
         # Calculate metrics
         mae = float(np.mean(np.abs(y_true - y_pred)))
         rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
-        mape = float(np.mean(np.abs((y_true - y_pred) / y_true)) * 100)
+        non_zero_mask = y_true != 0
+        if np.any(non_zero_mask):
+            mape = float(
+                np.mean(
+                    np.abs(
+                        (y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask]
+                    )
+                )
+                * 100
+            )
+        else:
+            mape = 0.0
 
         # R-squared
         ss_res = np.sum((y_true - y_pred) ** 2)
         ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
-        r2 = float(1 - (ss_res / ss_tot))
+        if np.isclose(ss_tot, 0.0):
+            r2 = 1.0 if np.isclose(ss_res, 0.0) else 0.0
+        else:
+            r2 = float(1 - (ss_res / ss_tot))
 
         return {
             "mae": mae,

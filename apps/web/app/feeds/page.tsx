@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { RadioTower, ShieldCheck, Sparkles, Tags } from "lucide-react";
+import { MetricCard } from "@/components/ui/metric-card";
 import { loadFeeds, getSourceTypes, getFeedStats } from "@/lib/feeds";
 import { FeedCatalog } from "./feed-catalog";
 
@@ -19,47 +21,61 @@ export default async function FeedsPage() {
   const stats = getFeedStats(feeds);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Feed Catalog</h1>
-        <p className="text-lg text-muted-foreground">
-          Browse {stats.total} curated AI/ML feeds. Filter by source type, topic, or verification
-          status.
-        </p>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="border rounded-lg p-4">
-          <div className="text-sm text-muted-foreground">Total Feeds</div>
-          <div className="text-2xl font-bold">{stats.total}</div>
-        </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-sm text-muted-foreground">Verified</div>
-          <div className="text-2xl font-bold">
-            {stats.verified}{" "}
-            <span className="text-sm text-muted-foreground">
-              ({Math.round((stats.verified / stats.total) * 100)}%)
+    <div className="page-wrap page-stack">
+      <section className="surface-panel space-y-8">
+        <div className="grid gap-8 md:gap-6 md:grid-cols-[1fr_0.9fr] lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <div className="space-y-5">
+            <span className="eyebrow">
+              <RadioTower className="size-3.5" />
+              Feed catalog
             </span>
+            <div className="space-y-4">
+              <h1 className="hero-title max-w-4xl">Browse the collection as a working source library.</h1>
+              <p className="hero-copy max-w-2xl">
+                Filter by source type, topic, and verification state to move from a broad catalog
+                to a shortlist you can actually use or export into your reader.
+              </p>
+            </div>
+          </div>
+
+          <div className="surface-card-soft space-y-4">
+            <p className="metric-label">Catalog summary</p>
+            <p className="small-note">
+              The feed catalog combines curated metadata, verification state, and topical
+              classification so you can browse strategically instead of scrolling raw YAML.
+            </p>
           </div>
         </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-sm text-muted-foreground">Active</div>
-          <div className="text-2xl font-bold">
-            {stats.active}{" "}
-            <span className="text-sm text-muted-foreground">
-              ({Math.round((stats.active / stats.total) * 100)}%)
-            </span>
-          </div>
-        </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-sm text-muted-foreground">Topics</div>
-          <div className="text-2xl font-bold">{stats.topicCount}</div>
-        </div>
-      </div>
 
-      {/* Feed Catalog Component */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total feeds"
+            value={stats.total}
+            detail="Curated sources in the catalog"
+            icon={<RadioTower className="size-5" />}
+          />
+          <MetricCard
+            label="Verified"
+            value={stats.verified}
+            detail={`${Math.round((stats.verified / stats.total) * 100)}% of the catalog`}
+            icon={<ShieldCheck className="size-5" />}
+          />
+          <MetricCard
+            label="Active"
+            value={stats.active}
+            detail={`${Math.round((stats.active / stats.total) * 100)}% currently active`}
+            icon={<Sparkles className="size-5" />}
+          />
+          <MetricCard
+            label="Topics"
+            value={stats.topicCount}
+            detail="Distinct topic labels represented"
+            icon={<Tags className="size-5" />}
+          />
+        </div>
+
       <FeedCatalog feeds={feeds} sourceTypes={types} />
+      </section>
     </div>
   );
 }

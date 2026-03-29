@@ -7,7 +7,7 @@ Implements FR-011 through FR-011g:
 - Error recovery with exponential backoff
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 
 from loguru import logger
@@ -84,7 +84,7 @@ class DataService:
             end_date = date_validator.end
         else:
             # Default to last 30 days
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=30)
             date_range = {
                 "start": start_date.isoformat(),
@@ -197,7 +197,7 @@ class DataService:
             start_date = date_validator.start
             end_date = date_validator.end
         else:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=30)
             date_range = {
                 "start": start_date.isoformat(),

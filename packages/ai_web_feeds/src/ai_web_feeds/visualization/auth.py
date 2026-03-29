@@ -8,7 +8,7 @@ Implements FR-055 through FR-065:
 """
 
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
@@ -19,13 +19,25 @@ from loguru import logger
 from ai_web_feeds.config import settings
 
 
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
+
+
+def _get_jwt_secret_key() -> str:
+    """Return the configured JWT secret key or fail fast when unset."""
+    if not settings.jwt_secret_key:
+        msg = "settings.jwt_secret_key must be configured for visualization JWT support"
+        raise RuntimeError(msg)
+    return settings.jwt_secret_key
+
+
 # JWT configuration
-JWT_SECRET_KEY = getattr(settings, "jwt_secret_key", secrets.token_urlsafe(32))
-JWT_ALGORITHM = "HS256"
+JWT_ALGORITHM = settings.jwt_algorithm
 JWT_EXPIRATION_DAYS = 30
 
 # API key configuration
-API_KEY_PREFIX = "awf_"
+API_KEY_PREFIX = "awf_"  # pragma: allowlist secret
 API_KEY_LENGTH = 32
 
 
@@ -40,11 +52,11 @@ def create_jwt_token(device_id: str) -> str:
     """
     payload = {
         "device_id": device_id,
-        "exp": datetime.utcnow() + timedelta(days=JWT_EXPIRATION_DAYS),
-        "iat": datetime.utcnow(),
+        "exp": _utc_now() + timedelta(days=JWT_EXPIRATION_DAYS),
+        "iat": _utc_now(),
     }
 
-    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(payload, _get_jwt_secret_key(), algorithm=JWT_ALGORITHM)
     return token
 
 
@@ -58,7 +70,7 @@ def verify_jwt_token(token: str) -> Optional[str]:
         Device ID if valid, None otherwise
     """
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, _get_jwt_secret_key(), algorithms=[JWT_ALGORITHM])
         device_id = payload.get("device_id")
 
         if not device_id:

@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title, type ChartOptions } from "chart.js";
+import { ChartShell } from "@/components/analytics/chart-shell";
+import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
+import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
+import { useTheme } from "@/lib/theme-manager";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -21,6 +25,8 @@ export function HealthDistributionChart({
 }) {
   const [distribution, setDistribution] = useState<HealthDistribution | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useTheme();
+  const chartTheme = getAnalyticsChartTheme(isDark);
 
   useEffect(() => {
     const fetchDistribution = async () => {
@@ -46,11 +52,7 @@ export function HealthDistributionChart({
   }, [dateRange, topic]);
 
   if (loading || !distribution) {
-    return (
-      <div className="bg-gray-200 rounded-lg h-96 animate-pulse flex items-center justify-center">
-        <p className="text-gray-600">Loading health distribution...</p>
-      </div>
-    );
+    return <ChartSkeleton className="h-[32rem]" />;
   }
 
   const total = distribution.healthy + distribution.moderate + distribution.unhealthy;
@@ -61,12 +63,8 @@ export function HealthDistributionChart({
       {
         label: "Feed Count",
         data: [distribution.healthy, distribution.moderate, distribution.unhealthy],
-        backgroundColor: [
-          "rgba(16, 185, 129, 0.8)",
-          "rgba(251, 191, 36, 0.8)",
-          "rgba(239, 68, 68, 0.8)",
-        ],
-        borderColor: ["rgb(16, 185, 129)", "rgb(251, 191, 36)", "rgb(239, 68, 68)"],
+        backgroundColor: [chartTheme.successSoft, chartTheme.warningSoft, chartTheme.dangerSoft],
+        borderColor: [chartTheme.success, chartTheme.warning, chartTheme.danger],
         borderWidth: 2,
       },
     ],
@@ -78,13 +76,8 @@ export function HealthDistributionChart({
     plugins: {
       legend: {
         position: "bottom" as const,
-      },
-      title: {
-        display: true,
-        text: "Feed Health Distribution",
-        font: {
-          size: 16,
-          weight: "bold",
+        labels: {
+          color: chartTheme.textMuted,
         },
       },
       tooltip: {
@@ -100,36 +93,47 @@ export function HealthDistributionChart({
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <ChartShell
+      eyebrow="Reliability"
+      title="Health distribution"
+      description="Healthy, moderate, and unhealthy bands make it easier to reason about quality and maintenance posture across the catalog."
+      footer={
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
+            <p className="metric-label">Healthy</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--success-tone)]">
+              {distribution.healthy}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+              {((distribution.healthy / total) * 100).toFixed(1)}%
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
+            <p className="metric-label">Moderate</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--warning-tone)]">
+              {distribution.moderate}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+              {((distribution.moderate / total) * 100).toFixed(1)}%
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--danger-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--danger-tone)_12%,var(--surface))] p-4">
+            <p className="metric-label">Unhealthy</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--danger-tone)]">
+              {distribution.unhealthy}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+              {((distribution.unhealthy / total) * 100).toFixed(1)}%
+            </p>
+          </div>
+        </div>
+      }
+    >
       <div className="h-96">
         <Pie data={chartData} options={options} />
       </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-        <div className="bg-green-50 rounded p-3">
-          <p className="text-sm font-semibold text-gray-600">Healthy</p>
-          <p className="text-2xl font-bold text-green-600">{distribution.healthy}</p>
-          <p className="text-xs text-gray-500">
-            {((distribution.healthy / total) * 100).toFixed(1)}%
-          </p>
-        </div>
-
-        <div className="bg-yellow-50 rounded p-3">
-          <p className="text-sm font-semibold text-gray-600">Moderate</p>
-          <p className="text-2xl font-bold text-yellow-600">{distribution.moderate}</p>
-          <p className="text-xs text-gray-500">
-            {((distribution.moderate / total) * 100).toFixed(1)}%
-          </p>
-        </div>
-
-        <div className="bg-red-50 rounded p-3">
-          <p className="text-sm font-semibold text-gray-600">Unhealthy</p>
-          <p className="text-2xl font-bold text-red-600">{distribution.unhealthy}</p>
-          <p className="text-xs text-gray-500">
-            {((distribution.unhealthy / total) * 100).toFixed(1)}%
-          </p>
-        </div>
-      </div>
-    </div>
+    </ChartShell>
   );
 }

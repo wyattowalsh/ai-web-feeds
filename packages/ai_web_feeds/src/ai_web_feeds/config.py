@@ -1,7 +1,43 @@
-"""ai_web_feeds.config -- AIWebFeeds configs"""
+"""ai_web_feeds.config -- ai-web-feeds configs"""
+
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+DEFAULT_DATABASE_FILENAME = "ai-web-feeds.db"
+LEGACY_DATABASE_FILENAME = "aiwebfeeds.db"
+DEFAULT_DATABASE_URL = f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
+LEGACY_DATABASE_URL = f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
+
+
+def _sqlite_path_from_url(database_url: str) -> Path | None:
+    """Return a local filesystem path for SQLite URLs."""
+    prefix = "sqlite:///"
+    if not database_url.startswith(prefix):
+        return None
+    return Path(database_url.removeprefix(prefix))
+
+
+def resolve_database_url(database_url: str) -> str:
+    """Prefer the canonical SQLite filename while preserving legacy installs."""
+    if database_url != DEFAULT_DATABASE_URL:
+        return database_url
+
+    default_db_path = _sqlite_path_from_url(DEFAULT_DATABASE_URL)
+    legacy_db_path = _sqlite_path_from_url(LEGACY_DATABASE_URL)
+    if default_db_path is None or legacy_db_path is None:
+        return database_url
+
+    if not default_db_path.exists() and legacy_db_path.exists():
+        return LEGACY_DATABASE_URL
+    return DEFAULT_DATABASE_URL
+
+
+def default_database_url() -> str:
+    """Return the canonical default database URL with legacy fallback."""
+    return resolve_database_url(DEFAULT_DATABASE_URL)
 
 
 class LoggingConfig(BaseSettings):
@@ -180,11 +216,13 @@ class Phase5Settings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    """Settings configs for AIWebFeeds."""
+    """Settings configs for ai-web-feeds."""
 
     # Core settings
-    database_url: str = Field("sqlite:///data/aiwebfeeds.db", description="Database URL")
+    database_url: str = Field(default_factory=default_database_url, description="Database URL")
     backend_url: str = Field("http://localhost:8000", description="Backend API URL")
+    jwt_secret_key: str = Field("", description="JWT secret key for authentication (AIWF_JWT_SECRET_KEY)")
+    jwt_algorithm: str = Field("HS256", description="JWT signing algorithm")
 
     # Feature-specific settings
     logging: LoggingConfig = Field(

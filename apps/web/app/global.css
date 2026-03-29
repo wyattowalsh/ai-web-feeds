@@ -3,6 +3,324 @@
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-python/preset.css";
 
+@theme {
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-highlight: var(--highlight);
+  --color-success-tone: var(--success-tone);
+  --color-warning-tone: var(--warning-tone);
+  --color-danger-tone: var(--danger-tone);
+  --radius-5xl: 2rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --paper: var(--color-background, oklch(0.985 0.006 84));
+    --surface: var(--color-background-secondary, oklch(0.997 0.004 84));
+    --surface-muted: var(--color-background-tertiary, oklch(0.953 0.009 84));
+    --ink: var(--color-text, oklch(0.254 0.03 255));
+    --ink-muted: var(--color-text-secondary, oklch(0.52 0.026 255));
+    --line: var(--color-border, oklch(0.884 0.012 84));
+    --brand: var(--color-primary, oklch(0.56 0.17 258));
+    --brand-strong: var(--color-primary-hover, oklch(0.47 0.13 258));
+    --brand-soft: color-mix(in oklab, var(--brand) 10%, var(--surface));
+    --highlight: var(--color-warning, oklch(0.79 0.12 79));
+    --success-tone: var(--color-success, oklch(0.7 0.14 153));
+    --warning-tone: var(--color-warning, oklch(0.79 0.12 79));
+    --danger-tone: var(--color-error, oklch(0.64 0.19 27));
+    --page-background:
+      radial-gradient(circle at top left, color-mix(in oklab, var(--brand) 7%, transparent), transparent 28%),
+      radial-gradient(circle at 85% 12%, color-mix(in oklab, var(--highlight) 10%, transparent), transparent 24%),
+      var(--paper);
+    --surface-shadow: 0 24px 80px -40px color-mix(in srgb, var(--ink) 22%, transparent);
+    --surface-shadow-soft: 0 18px 50px -34px color-mix(in srgb, var(--ink) 18%, transparent);
+    --focus-ring: color-mix(in oklab, var(--brand) 28%, white);
+    --fd-primary: var(--brand);
+    --fd-primary-foreground: oklch(0.98 0.004 84);
+    --fd-accent: var(--brand-soft);
+    --fd-accent-foreground: var(--brand-strong);
+    --fd-secondary: var(--surface-muted);
+    --fd-secondary-foreground: var(--ink);
+    --fd-muted-foreground: var(--ink-muted);
+    --fd-background: var(--paper);
+    --fd-popover-foreground: var(--ink);
+    --fd-ring: var(--brand);
+  }
+
+  .dark {
+    color-scheme: dark;
+    --color-background: oklch(0.19 0.018 255);
+    --color-background-secondary: oklch(0.235 0.019 255);
+    --color-background-tertiary: oklch(0.29 0.021 255);
+    --color-text: oklch(0.94 0.012 84);
+    --color-text-secondary: oklch(0.77 0.016 84);
+    --color-border: oklch(0.34 0.018 255);
+    --color-primary: oklch(0.69 0.14 255);
+    --color-primary-hover: oklch(0.75 0.12 255);
+    --color-success: oklch(0.77 0.14 153);
+    --color-warning: oklch(0.83 0.13 79);
+    --color-error: oklch(0.72 0.16 28);
+    --paper: var(--color-background);
+    --surface: var(--color-background-secondary);
+    --surface-muted: var(--color-background-tertiary);
+    --ink: var(--color-text);
+    --ink-muted: var(--color-text-secondary);
+    --line: var(--color-border);
+    --brand: var(--color-primary);
+    --brand-strong: var(--color-primary-hover);
+    --brand-soft: color-mix(in oklab, var(--brand) 14%, var(--surface));
+    --highlight: var(--color-warning);
+    --success-tone: var(--color-success);
+    --warning-tone: var(--color-warning);
+    --danger-tone: var(--color-error);
+    --page-background:
+      radial-gradient(circle at top left, color-mix(in oklab, var(--brand) 10%, transparent), transparent 30%),
+      radial-gradient(circle at 82% 14%, color-mix(in oklab, var(--highlight) 8%, transparent), transparent 28%),
+      var(--paper);
+    --surface-shadow: 0 28px 90px -46px rgba(0, 0, 0, 0.62);
+    --surface-shadow-soft: 0 22px 60px -40px rgba(0, 0, 0, 0.54);
+    --focus-ring: color-mix(in oklab, var(--brand) 34%, white);
+    --fd-primary-foreground: oklch(0.16 0.018 255);
+  }
+
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    background: var(--page-background);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--page-background);
+    color: var(--ink);
+    font-family: var(--font-family, var(--font-body), sans-serif);
+  }
+
+  :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--ink);
+    font-family: var(--font-display), serif;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  :where(p, li, dd, dt) {
+    text-wrap: pretty;
+  }
+
+  a {
+    transition: color 150ms ease, opacity 150ms ease;
+  }
+
+  a:hover {
+    color: var(--brand-strong);
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--brand) 22%, transparent);
+  }
+
+  :where(button, a, input, select, textarea):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring);
+  }
+
+  #nd-sidebar,
+  #nd-tocnav {
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+    border-color: color-mix(in oklab, var(--line) 88%, transparent);
+    box-shadow: var(--surface-shadow-soft);
+  }
+
+  #nd-docs-layout article {
+    max-width: min(100%, var(--reading-width, 800px));
+  }
+
+  #nd-docs-layout article > * + * {
+    margin-top: 1.6rem;
+  }
+
+  #nd-docs-layout article :where(blockquote, table) {
+    border: 1px solid color-mix(in oklab, var(--line) 90%, transparent);
+    border-radius: 1.5rem;
+    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    box-shadow: var(--surface-shadow-soft);
+  }
+
+  #nd-docs-layout article blockquote {
+    padding: 1.25rem 1.35rem;
+  }
+
+  #nd-docs-layout article table {
+    overflow: hidden;
+  }
+
+  #nd-docs-layout article hr {
+    border-color: color-mix(in oklab, var(--line) 82%, transparent);
+    margin-block: 2.5rem;
+  }
+
+  #nd-docs-layout article :where(h2, h3, h4) {
+    scroll-margin-top: 7rem;
+  }
+
+  #nd-docs-layout .docs-page-header {
+    margin-bottom: 2rem;
+    border: 1px solid color-mix(in oklab, var(--line) 90%, transparent);
+    border-radius: 2rem;
+    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    box-shadow: var(--surface-shadow);
+    padding: 1.5rem;
+  }
+
+  #nd-docs-layout .docs-page-header h1 {
+    letter-spacing: -0.04em;
+    line-height: 0.94;
+  }
+
+  #nd-docs-layout .docs-page-header p {
+    color: var(--ink-muted);
+    max-width: 42rem;
+  }
+
+  #nd-docs-layout .docs-page-actions {
+    margin-top: 1.25rem;
+    border-top: 1px solid color-mix(in oklab, var(--line) 90%, transparent);
+    padding-top: 1.25rem;
+  }
+
+  #nd-docs-layout .docs-page-actions > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    #nd-docs-layout .docs-page-header {
+      padding: 2rem;
+    }
+  }
+
+  #nd-docs-layout article :where(p, li, blockquote, td) {
+    color: color-mix(in oklab, var(--ink) 88%, var(--ink-muted));
+  }
+
+  #nd-docs-layout article :where(h1, h2, h3) {
+    letter-spacing: -0.015em;
+  }
+
+  pre,
+  .shiki {
+    border: 1px solid color-mix(in oklab, var(--line) 90%, transparent);
+    border-radius: 1.25rem;
+  }
+
+  .shiki {
+    background: color-mix(in oklab, var(--surface) 94%, black 6%) !important;
+  }
+}
+
+@layer components {
+  .page-wrap {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-stack {
+    @apply flex flex-col gap-10 py-10 sm:py-14 lg:gap-14 lg:py-16;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase;
+    background: color-mix(in oklab, var(--brand) 10%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand) 24%, var(--line));
+    color: var(--brand-strong);
+    letter-spacing: 0.16em;
+  }
+
+  .hero-title {
+    @apply text-4xl leading-none sm:text-5xl lg:text-7xl;
+    letter-spacing: -0.04em;
+  }
+
+  .text-title-large {
+    @apply text-3xl sm:text-4xl;
+    letter-spacing: -0.03em;
+  }
+
+  .text-title-medium {
+    @apply text-2xl sm:text-3xl;
+    letter-spacing: -0.025em;
+  }
+
+  .hero-copy {
+    @apply max-w-3xl text-base leading-7 sm:text-lg sm:leading-8;
+    color: var(--ink-muted);
+  }
+
+  .surface-panel {
+    @apply rounded-5xl border p-6 sm:p-8 lg:p-10;
+    background: color-mix(in oklab, var(--surface) 94%, transparent);
+    box-shadow: var(--surface-shadow);
+  }
+
+  .surface-card {
+    @apply rounded-3xl border p-5 sm:p-6;
+    background: color-mix(in oklab, var(--surface) 97%, transparent);
+    box-shadow: var(--surface-shadow-soft);
+  }
+
+  .surface-card-soft {
+    @apply rounded-3xl border p-5 sm:p-6;
+    background: color-mix(in oklab, var(--surface-muted) 94%, transparent);
+  }
+
+  .section-heading {
+    @apply text-3xl sm:text-4xl;
+    letter-spacing: -0.03em;
+  }
+
+  .section-copy {
+    @apply max-w-2xl text-sm leading-7 sm:text-base;
+    color: var(--ink-muted);
+  }
+
+  .metric-label {
+    @apply text-[0.72rem] font-semibold uppercase;
+    color: var(--ink-muted);
+    letter-spacing: 0.14em;
+  }
+
+  .metric-value {
+    @apply text-3xl sm:text-4xl;
+    color: var(--ink);
+    font-family: var(--font-display), serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  .field-label {
+    @apply mb-2 block text-xs font-semibold uppercase;
+    color: var(--ink-muted);
+    letter-spacing: 0.12em;
+  }
+
+  .small-note {
+    @apply text-sm leading-6;
+    color: var(--ink-muted);
+  }
+}
+
 /* Print styles for PDF export */
 @media print {
   #nd-docs-layout {

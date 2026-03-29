@@ -61,7 +61,9 @@ export function ScatterChart({
           callbacks: {
             label: (context) => {
               const point = context.parsed;
-              return `${context.dataset.label}: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`;
+              const x = typeof point.x === "number" ? point.x : Number(point.x ?? 0);
+              const y = typeof point.y === "number" ? point.y : Number(point.y ?? 0);
+              return `${context.dataset.label}: (${x.toFixed(2)}, ${y.toFixed(2)})`;
             },
           },
         },

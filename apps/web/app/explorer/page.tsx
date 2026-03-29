@@ -1,23 +1,52 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { GraphVisualizer } from "@/components/graph-visualizer";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
+import {
+  Activity,
+  Layers3,
+  RadioTower,
+  Search as SearchIcon,
+  TableProperties,
+  Waypoints,
+  X,
+} from "lucide-react";
+import {
+  getDefaultGraphControls,
+  GraphVisualizer,
+  type GraphControls,
+  type GraphDetailAction,
+  type LayoutType,
+} from "@/components/graph-visualizer";
+import { useSearchParams } from "next/navigation";
+import {
+  type CombinedCatalogGraphData,
+  normalizeTopicValues,
+  type CatalogFeed,
+  type TopicRecord,
+} from "@/lib/catalog-types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
+
+type ExplorerTab = "topics" | "feeds" | "combined";
+type ExplorerView = "table" | "graph";
 
 // Utility to fetch and parse JSON from API routes
-async function fetchData(url: string) {
+async function fetchData<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch");
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 function useExplorerData() {
-  const [topics, setTopics] = useState<any[]>([]);
-  const [feeds, setFeeds] = useState<any[]>([]);
+  const [topics, setTopics] = useState<TopicRecord[]>([]);
+  const [feeds, setFeeds] = useState<CatalogFeed[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([fetchData("/api/topics"), fetchData("/api/feeds")])
+    Promise.all([fetchData<TopicRecord[]>("/api/topics"), fetchData<CatalogFeed[]>("/api/feeds")])
       .then(([topicsData, feedsData]) => {
         setTopics(topicsData);
         setFeeds(feedsData);
@@ -32,18 +61,71 @@ function useExplorerData() {
   return { topics, feeds, loading, error };
 }
 
-export default function ExplorerPage() {
+function ExplorerPageContent() {
+  const searchParams = useSearchParams();
   const { topics, feeds, loading, error } = useExplorerData();
-  const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"topics" | "feeds">("topics");
-  const [view, setView] = useState<"table" | "graph">("graph");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [tab, setTab] = useState<ExplorerTab>(getTabFromSearchParams(searchParams));
+  const [view, setView] = useState<ExplorerView>(getViewFromSearchParams(searchParams));
+  const [selectedTags, setSelectedTags] = useState<string[]>(getTagsFromSearchParams(searchParams));
+  const [sortBy, setSortBy] = useState<string>(searchParams.get("sort") || "name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    searchParams.get("order") === "desc" ? "desc" : "asc",
+  );
+  const [layout, setLayout] = useState<LayoutType>(getLayoutFromSearchParams(searchParams));
+  const [graphControls, setGraphControls] = useState<GraphControls>(() =>
+    getGraphControlsFromSearchParams(searchParams, getTabFromSearchParams(searchParams)),
+  );
+  const [, setHighlightedNode] = useState<string | null>(null);
+  const combinedGraphData = useMemo<CombinedCatalogGraphData>(
+    () => ({ topics, feeds }),
+    [topics, feeds],
+  );
+
+  useEffect(() => {
+    setGraphControls((current) => {
+      const urlControls = getGraphControlsFromSearchParams(searchParams, tab);
+      if (areGraphControlsEqual(current, urlControls)) {
+        return current;
+      }
+      return urlControls;
+    });
+  }, [searchParams, tab]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (tab !== "combined") params.set("tab", tab);
+    if (view !== "graph") params.set("view", view);
+    if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
+    if (sortBy !== "name") params.set("sort", sortBy);
+    if (sortOrder !== "asc") params.set("order", sortOrder);
+    if (layout !== "force") params.set("layout", layout);
+    writeGraphControlsToParams(params, graphControls, getDefaultGraphControls(tab));
+
+    const nextQuery = params.toString();
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(window.history.state, "", nextUrl);
+    }
+  }, [graphControls, layout, search, selectedTags, sortBy, sortOrder, tab, view]);
+
+  useEffect(() => {
+    setLayout(getLayoutFromSearchParams(searchParams));
+  }, [searchParams]);
 
   // Handler for deep linking between graphs
   const handleNodeClick = (nodeId: string, nodeType: "topic" | "feed") => {
+    if (tab === "combined") {
+      setHighlightedNode(nodeId);
+      return;
+    }
+
     if (nodeType === "topic" && tab === "feeds") {
       // Clicked a topic from feeds graph - switch to topics tab and highlight
       setTab("topics");
@@ -65,17 +147,53 @@ export default function ExplorerPage() {
     }
   };
 
+  const handleDetailAction = (detailAction: GraphDetailAction) => {
+    if (detailAction.action === "copy-id") {
+      void navigator.clipboard?.writeText(detailAction.nodeId);
+      return;
+    }
+
+    if (detailAction.action === "open-url") {
+      const selectedFeed = feeds.find(
+        (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
+      );
+      if (selectedFeed?.url) {
+        window.open(selectedFeed.url, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+
+    if (detailAction.action === "open-topics") {
+      setTab("topics");
+      setView("graph");
+      setSearch(detailAction.nodeType === "topic" ? detailAction.nodeId : "");
+      setSelectedTags([]);
+      setHighlightedNode(detailAction.nodeId);
+      return;
+    }
+
+    if (detailAction.action === "open-feeds") {
+      setTab("feeds");
+      setView("graph");
+      if (detailAction.nodeType === "topic") {
+        setSelectedTags([detailAction.nodeId]);
+        setSearch("");
+      } else {
+        const selectedFeed = feeds.find(
+          (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
+        );
+        setSearch(selectedFeed?.title || selectedFeed?.url || "");
+      }
+      setHighlightedNode(detailAction.nodeId);
+    }
+  };
+
   // Extract all unique tags from feeds
   const allTags = useMemo(() => {
     if (!feeds || !Array.isArray(feeds) || feeds.length === 0) return [];
     const tagSet = new Set<string>();
-    feeds.forEach((f) => {
-      const feedTopics = f.topics || f.tags;
-      if (Array.isArray(feedTopics)) {
-        feedTopics.forEach((tag: string) => tagSet.add(tag));
-      } else if (typeof feedTopics === "string") {
-        feedTopics.split(",").forEach((tag: string) => tagSet.add(tag.trim()));
-      }
+    feeds.forEach((feed) => {
+      normalizeTopicValues(feed.topics ?? feed.tags).forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
   }, [feeds]);
@@ -83,17 +201,18 @@ export default function ExplorerPage() {
   // Filtering and sorting logic
   const filteredTopics = useMemo(() => {
     if (!topics || !Array.isArray(topics) || topics.length === 0) return [];
-    let result = topics.filter(
-      (t) =>
-        t.label?.toLowerCase().includes(search.toLowerCase()) ||
-        t.id?.toLowerCase().includes(search.toLowerCase()) ||
-        t.description?.toLowerCase().includes(search.toLowerCase()),
+    const searchValue = search.toLowerCase();
+    const result = topics.filter(
+      (topic) =>
+        topic.label?.toLowerCase().includes(searchValue) ||
+        topic.id?.toLowerCase().includes(searchValue) ||
+        topic.description?.toLowerCase().includes(searchValue),
     );
 
     result.sort((a, b) => {
-      const sortField = sortBy === "name" ? "label" : sortBy;
-      const aVal = a[sortField] || "";
-      const bVal = b[sortField] || "";
+      const sortField: keyof TopicRecord = sortBy === "name" ? "label" : "id";
+      const aVal = String(a[sortField] ?? "");
+      const bVal = String(b[sortField] ?? "");
       const comparison = aVal.localeCompare(bVal);
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -103,21 +222,17 @@ export default function ExplorerPage() {
 
   const filteredFeeds = useMemo(() => {
     if (!feeds || !Array.isArray(feeds) || feeds.length === 0) return [];
-    let result = feeds.filter((f) => {
+    const searchValue = search.toLowerCase();
+    const result = feeds.filter((feed) => {
       const matchesSearch =
-        f.title?.toLowerCase().includes(search.toLowerCase()) ||
-        f.url?.toLowerCase().includes(search.toLowerCase()) ||
-        f.notes?.toLowerCase().includes(search.toLowerCase());
+        feed.title?.toLowerCase().includes(searchValue) ||
+        feed.url?.toLowerCase().includes(searchValue) ||
+        feed.notes?.toLowerCase().includes(searchValue);
 
       if (!matchesSearch) return false;
 
       if (selectedTags.length > 0) {
-        const feedTopics = f.topics || f.tags;
-        const topicsArray = Array.isArray(feedTopics)
-          ? feedTopics
-          : typeof feedTopics === "string"
-            ? feedTopics.split(",").map((t: string) => t.trim())
-            : [];
+        const topicsArray = normalizeTopicValues(feed.topics ?? feed.tags);
         return selectedTags.some((tag) => topicsArray.includes(tag));
       }
 
@@ -125,8 +240,9 @@ export default function ExplorerPage() {
     });
 
     result.sort((a, b) => {
-      const aVal = a[sortBy] || "";
-      const bVal = b[sortBy] || "";
+      const sortField: keyof CatalogFeed = sortBy === "url" ? "url" : "title";
+      const aVal = a[sortField] ?? "";
+      const bVal = b[sortField] ?? "";
       const comparison = String(aVal).localeCompare(String(bVal));
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -140,21 +256,21 @@ export default function ExplorerPage() {
     );
   };
 
+  const visibleCount =
+    tab === "topics"
+      ? filteredTopics.length
+      : tab === "feeds"
+        ? filteredFeeds.length
+        : topics.length + feeds.length;
+
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="max-w-7xl mx-auto py-16 px-4">
-          <div className="flex flex-col items-center justify-center min-h-[600px]">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-200 dark:border-blue-900"></div>
-              <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-600 dark:border-blue-400 absolute top-0"></div>
-            </div>
-            <div className="mt-6 text-lg font-medium text-gray-700 dark:text-gray-300">
-              Loading explorer...
-            </div>
-            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Preparing {topics.length + feeds.length}+ items
-            </div>
+      <div className="page-wrap page-stack">
+        <div className="surface-panel flex min-h-96 flex-col items-center justify-center gap-4 text-center">
+          <div className="size-16 animate-pulse rounded-3xl bg-(--brand-soft)" />
+          <div className="space-y-2">
+            <h1 className="text-3xl">Loading explorer</h1>
+            <p className="small-note">Preparing the catalog graph and feed index.</p>
           </div>
         </div>
       </div>
@@ -163,25 +279,16 @@ export default function ExplorerPage() {
 
   if (error) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="max-w-7xl mx-auto py-16 px-4">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 shadow-lg">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center text-2xl">
-                ⚠️
-              </div>
-              <div>
-                <h2 className="text-red-800 dark:text-red-300 font-bold mb-2 text-2xl">
-                  Error Loading Data
-                </h2>
-                <p className="text-red-600 dark:text-red-400">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  Retry
-                </button>
-              </div>
+      <div className="page-wrap page-stack">
+        <div className="surface-panel border-(--danger-tone)/40">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+            <div className="flex size-14 items-center justify-center rounded-3xl bg-[color-mix(in_oklab,var(--danger-tone)_14%,var(--surface))] text-(--danger-tone)">
+              <Activity className="size-5" />
+            </div>
+            <div className="space-y-3">
+              <h2 className="text-3xl">Explorer data failed to load</h2>
+              <p className="small-note">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
             </div>
           </div>
         </div>
@@ -190,250 +297,275 @@ export default function ExplorerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900">
-      <div className="max-w-[1800px] mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
-              🌐
-            </div>
-            <div>
-              <h1 className="text-5xl sm:text-6xl font-extrabold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-                AI Web Feeds Explorer
-              </h1>
-              <p className="text-gray-700 dark:text-gray-300 text-lg max-w-4xl">
-                Interactive knowledge graph exploration • Discover connections in AI topics and RSS
-                feeds
+    <div className="page-wrap page-stack">
+      <section className="surface-panel space-y-8">
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <div className="space-y-5">
+            <span className="eyebrow">
+              <Waypoints className="size-3.5" />
+              Interactive catalog explorer
+            </span>
+            <div className="space-y-4">
+              <h1 className="hero-title max-w-4xl">Browse feeds and topics as a living index.</h1>
+              <p className="hero-copy max-w-2xl">
+                Switch between graph and table views, move across topics and feeds, and use the
+                explorer as the fastest way to understand how the repository is structured.
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-blue-200 dark:border-blue-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
-                  Total Topics
-                </p>
-                <p className="text-4xl font-black text-blue-600 dark:text-blue-400 mt-2">
-                  {topics.length}
-                </p>
+          <div className="surface-card-soft space-y-4">
+            <p className="metric-label">How to use this surface</p>
+            <p className="small-note">
+              Use graph view for structure and table view for precision. Search narrows the working
+              set, and tag filters let you isolate a slice of the feed catalog without leaving the
+              page.
+            </p>
+            <div className="grid gap-2 text-sm text-(--ink)">
+              <div className="flex items-center gap-3">
+                <Waypoints className="size-4 text-(--brand-strong)" />
+                Graph layouts for structural exploration
               </div>
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
-                🏷️
+              <div className="flex items-center gap-3">
+                <TableProperties className="size-4 text-(--brand-strong)" />
+                Table mode for scanning exact metadata
+              </div>
+              <div className="flex items-center gap-3">
+                <SearchIcon className="size-4 text-(--brand-strong)" />
+                Search and tag filters for narrowing scope
               </div>
             </div>
-            <div className="mt-3 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-          </div>
-
-          <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-purple-200 dark:border-purple-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
-                  Total Feeds
-                </p>
-                <p className="text-4xl font-black text-purple-600 dark:text-purple-400 mt-2">
-                  {feeds.length}
-                </p>
-              </div>
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
-                📡
-              </div>
-            </div>
-            <div className="mt-3 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
-          </div>
-
-          <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-green-200 dark:border-green-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
-                  Unique Tags
-                </p>
-                <p className="text-4xl font-black text-green-600 dark:text-green-400 mt-2">
-                  {allTags.length}
-                </p>
-              </div>
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
-                🔖
-              </div>
-            </div>
-            <div className="mt-3 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full"></div>
-          </div>
-
-          <div className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-orange-200 dark:border-orange-900/50 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
-                  Viewing
-                </p>
-                <p className="text-4xl font-black text-orange-600 dark:text-orange-400 mt-2">
-                  {tab === "topics" ? filteredTopics.length : filteredFeeds.length}
-                </p>
-              </div>
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 rounded-xl flex items-center justify-center text-3xl shadow-lg group-hover:rotate-12 transition-transform">
-                �️
-              </div>
-            </div>
-            <div className="mt-3 h-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full"></div>
           </div>
         </div>
 
-        {/* Tabs and View Toggle */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
-          {/* Tabs */}
-          <div className="flex gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border-2 border-gray-200 dark:border-gray-700 w-full lg:w-auto">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="surface-card flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <p className="metric-label">Topics</p>
+              <p className="metric-value">{topics.length}</p>
+              <p className="small-note">Taxonomy nodes available for browsing</p>
+            </div>
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+              <Layers3 className="size-5" />
+            </span>
+          </div>
+
+          <div className="surface-card flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <p className="metric-label">Feeds</p>
+              <p className="metric-value">{feeds.length}</p>
+              <p className="small-note">Cataloged sources linked to topics</p>
+            </div>
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+              <RadioTower className="size-5" />
+            </span>
+          </div>
+
+          <div className="surface-card flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <p className="metric-label">Unique tags</p>
+              <p className="metric-value">{allTags.length}</p>
+              <p className="small-note">Feed topics available as quick filters</p>
+            </div>
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+              <SearchIcon className="size-5" />
+            </span>
+          </div>
+
+          <div className="surface-card flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <p className="metric-label">Visible now</p>
+              <p className="metric-value">{visibleCount}</p>
+              <p className="small-note">Items in the current tab and filter state</p>
+            </div>
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+              <Activity className="size-5" />
+            </span>
+          </div>
+        </div>
+
+        <div className="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-start">
+          <div className="surface-card flex flex-col gap-3 lg:flex-row lg:items-center">
             <button
-              className={`group flex-1 lg:flex-none px-8 py-4 font-bold transition-all rounded-xl relative overflow-hidden ${
+              type="button"
+              className={cn(
+                "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "topics"
-                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105"
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+                  ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
               onClick={() => setTab("topics")}
+              aria-pressed={tab === "topics"}
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🏷️</span>
+                <Layers3 className="size-4.5" />
                 <span>Topics</span>
               </div>
-              <span
-                className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                  tab === "topics"
-                    ? "bg-white/20 text-white"
-                    : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                }`}
-              >
+              <span className="rounded-full bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink)">
                 {filteredTopics.length}
               </span>
             </button>
             <button
-              className={`group flex-1 lg:flex-none px-8 py-4 font-bold transition-all rounded-xl relative overflow-hidden ${
+              type="button"
+              className={cn(
+                "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "feeds"
-                  ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg scale-105"
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+                  ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
               onClick={() => setTab("feeds")}
+              aria-pressed={tab === "feeds"}
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📡</span>
+                <RadioTower className="size-4.5" />
                 <span>Feeds</span>
               </div>
-              <span
-                className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
-                  tab === "feeds"
-                    ? "bg-white/20 text-white"
-                    : "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                }`}
-              >
+              <span className="rounded-full bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink)">
                 {filteredFeeds.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
+                tab === "combined"
+                  ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
+              onClick={() => setTab("combined")}
+              aria-pressed={tab === "combined"}
+            >
+              <div className="flex items-center gap-3">
+                <Waypoints className="size-4.5" />
+                <span>Combined</span>
+              </div>
+              <span className="rounded-full bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink)">
+                {topics.length + feeds.length}
               </span>
             </button>
           </div>
 
-          {/* View Toggle */}
-          <div className="flex gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border-2 border-gray-200 dark:border-gray-700 w-full lg:w-auto">
+          <div className="surface-card flex gap-3 xl:w-auto">
             <button
+              type="button"
               onClick={() => setView("graph")}
-              className={`flex-1 lg:flex-none px-6 py-3 rounded-xl font-bold transition-all ${
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "graph"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105"
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+                  ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
+              aria-pressed={view === "graph"}
             >
-              <span className="mr-2">📊</span>
+              <Waypoints className="size-4" />
               Graph View
             </button>
             <button
+              type="button"
               onClick={() => setView("table")}
-              className={`flex-1 lg:flex-none px-6 py-3 rounded-xl font-bold transition-all ${
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "table"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105"
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
+                  ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+              )}
+              aria-pressed={view === "table"}
             >
-              <span className="mr-2">📋</span>
+              <TableProperties className="size-4" />
               Table View
             </button>
           </div>
         </div>
 
-        {/* Search and Controls - Only show for table view */}
-        {view === "table" && (
-          <div className="mb-8 space-y-6">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-2 border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
-                    <span className="text-xl">🔍</span>
+        {view === "table" && tab !== "combined" && (
+          <div className="space-y-5">
+            <div className="surface-card">
+              <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
+                <div>
+                  <label htmlFor="catalog-search" className="field-label">
+                    Search {tab}
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--ink-muted)">
+                      <SearchIcon className="size-4" />
+                    </span>
+                    <Input
+                      id="catalog-search"
+                      type="text"
+                      placeholder={`Search ${tab}...`}
+                      value={search}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                      className="pl-11"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder={`Search ${tab}...`}
-                    value={search}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 font-medium transition-all"
-                  />
                 </div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white font-medium transition-all cursor-pointer"
-                >
-                  {tab === "topics" ? (
-                    <>
-                      <option value="name">📝 Sort by Name</option>
-                      <option value="id">🔖 Sort by ID</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="title">📝 Sort by Title</option>
-                      <option value="url">🔗 Sort by URL</option>
-                    </>
-                  )}
-                </select>
-                <button
+                <div>
+                  <label htmlFor="catalog-sort" className="field-label">
+                    Sort by
+                  </label>
+                  <Select
+                    id="catalog-sort"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    aria-label={`Sort ${tab} results by`}
+                  >
+                    {tab === "topics" ? (
+                      <>
+                        <option value="name">Sort by name</option>
+                        <option value="id">Sort by ID</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="title">Sort by title</option>
+                        <option value="url">Sort by URL</option>
+                      </>
+                    )}
+                  </Select>
+                </div>
+                <Button
+                  type="button"
                   onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-2 border-blue-500 rounded-xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 font-bold transition-all shadow-lg hover:shadow-xl"
+                  aria-label={`Toggle sort order, currently ${sortOrder === "asc" ? "ascending" : "descending"}`}
+                  className="lg:self-end"
                 >
-                  {sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
-                </button>
+                  {sortOrder === "asc" ? "Ascending" : "Descending"}
+                </Button>
               </div>
             </div>
 
-            {/* Tag filter for feeds */}
             {tab === "feeds" && allTags.length > 0 && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <span className="text-2xl">🏷️</span>
-                    <span>Filter by Tags</span>
+              <div className="surface-card space-y-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-1">
+                    <p className="metric-label">Tag filter</p>
+                    <h2 className="text-xl">Filter feed results by topic tags</h2>
                   </div>
                   {selectedTags.length > 0 && (
-                    <button
-                      onClick={() => setSelectedTags([])}
-                      className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-xl font-bold transition-all"
-                    >
+                    <Button onClick={() => setSelectedTags([])} variant="ghost">
+                      <X className="size-4" />
                       Clear ({selectedTags.length})
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {allTags.slice(0, 30).map((tag) => (
                     <button
+                      type="button"
                       key={tag}
                       onClick={() => toggleTag(tag)}
-                      className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg ${
+                      className={cn(
+                        "rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-150",
                         selectedTags.includes(tag)
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white scale-110 ring-4 ring-blue-300/50 dark:ring-blue-700/50"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
+                          ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
+                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                      )}
+                      aria-pressed={selectedTags.includes(tag)}
                     >
                       {tag}
                     </button>
                   ))}
                   {allTags.length > 30 && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400 self-center px-4 font-medium">
+                    <span className="self-center px-4 text-sm font-medium text-(--ink-muted)">
                       +{allTags.length - 30} more tags available
                     </span>
                   )}
@@ -443,68 +575,200 @@ export default function ExplorerPage() {
           </div>
         )}
 
-        {/* Content */}
         {view === "graph" ? (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-8 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-slate-800 dark:to-gray-800">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+          <div className="surface-panel overflow-hidden p-0">
+            <div className="border-b border-(--line) px-6 py-6 sm:px-8">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg">
-                    🕸️
+                  <div className="flex size-14 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
+                    <Waypoints className="size-5" />
                   </div>
                   <div>
-                    <h3 className="font-black text-gray-900 dark:text-white text-2xl">
-                      {tab === "topics" ? "Topics Knowledge Graph" : "Feeds Network Graph"}
+                    <h3 className="text-2xl font-semibold text-(--ink)">
+                      {tab === "topics"
+                        ? "Topics Knowledge Graph"
+                        : tab === "feeds"
+                          ? "Feeds Network Graph"
+                          : "Combined Topic + Feed Graph"}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      <span className="font-semibold">Interactive visualization</span> • Pan with
-                      drag • Zoom with scroll • Click nodes for deep linking
+                    <p className="small-note mt-1">
+                      Interactive visualization with zoom, pan, and follow-up exploration through
+                      node details.
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-xl text-sm font-bold border border-blue-300 dark:border-blue-700">
-                    🎨 Multiple layouts
+                  <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
+                    Multiple layouts
                   </span>
-                  <span className="px-4 py-2 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-bold border border-purple-300 dark:border-purple-700">
-                    🔗 Deep linking
+                  <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
+                    Node details
                   </span>
                 </div>
               </div>
             </div>
-            <div className="p-4">
+            <div className="p-4 sm:p-6">
               <GraphVisualizer
-                data={tab === "topics" ? filteredTopics : filteredFeeds}
+                data={
+                  tab === "topics"
+                    ? filteredTopics
+                    : tab === "feeds"
+                      ? filteredFeeds
+                      : combinedGraphData
+                }
                 type={tab}
                 width={1500}
                 height={800}
+                layout={layout}
+                onLayoutChange={setLayout}
+                graphControls={graphControls}
+                onGraphControlsChange={setGraphControls}
                 onNodeClick={handleNodeClick}
+                onDetailAction={handleDetailAction}
               />
             </div>
           </div>
         ) : (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
-            {tab === "topics" ? (
+          <div className="surface-panel overflow-hidden p-0">
+            {tab === "combined" ? (
+              <CombinedGraphTableNotice onSwitchToGraph={() => setView("graph")} />
+            ) : tab === "topics" ? (
               <TopicsTable topics={filteredTopics} />
             ) : (
               <FeedsTable feeds={filteredFeeds} />
             )}
           </div>
         )}
+        </section>
       </div>
+  );
+}
+
+export default function ExplorerPage() {
+  return (
+    <Suspense fallback={<div className="page-wrap py-16" />}>
+      <ExplorerPageContent />
+    </Suspense>
+  );
+}
+
+function getTabFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): ExplorerTab {
+  const value = searchParams.get("tab");
+  return value === "topics" || value === "feeds" || value === "combined" ? value : "combined";
+}
+
+function getViewFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): ExplorerView {
+  return searchParams.get("view") === "table" ? "table" : "graph";
+}
+
+function getTagsFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): string[] {
+  return searchParams.get("tags")?.split(",").filter(Boolean) || [];
+}
+
+function getLayoutFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): LayoutType {
+  const value = searchParams.get("layout");
+  return value === "radial" || value === "tree" || value === "circular" || value === "force"
+    ? value
+    : "force";
+}
+
+function getGraphControlsFromSearchParams(
+  searchParams: ReturnType<typeof useSearchParams>,
+  tab: ExplorerTab,
+): GraphControls {
+  const defaults = getDefaultGraphControls(tab);
+
+  return {
+    chargeStrength: getNumericParam(searchParams.get("charge"), defaults.chargeStrength),
+    linkDistance: getNumericParam(searchParams.get("distance"), defaults.linkDistance),
+    collisionRadius: getNumericParam(searchParams.get("spacing"), defaults.collisionRadius),
+    nodeScale: getNumericParam(searchParams.get("scale"), defaults.nodeScale),
+    labelSize: getNumericParam(searchParams.get("labelSize"), defaults.labelSize),
+    showLabels: getBooleanParam(searchParams.get("labels"), defaults.showLabels),
+  };
+}
+
+function getNumericParam(value: string | null, fallback: number): number {
+  if (!value) return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getBooleanParam(value: string | null, fallback: boolean): boolean {
+  if (value === null) return fallback;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return fallback;
+}
+
+function writeGraphControlsToParams(
+  params: URLSearchParams,
+  current: GraphControls,
+  defaults: GraphControls,
+) {
+  setParamIfChanged(params, "charge", current.chargeStrength, defaults.chargeStrength);
+  setParamIfChanged(params, "distance", current.linkDistance, defaults.linkDistance);
+  setParamIfChanged(params, "spacing", current.collisionRadius, defaults.collisionRadius);
+  setParamIfChanged(params, "scale", current.nodeScale, defaults.nodeScale);
+  setParamIfChanged(params, "labelSize", current.labelSize, defaults.labelSize);
+
+  if (current.showLabels !== defaults.showLabels) {
+    params.set("labels", String(current.showLabels));
+  }
+}
+
+function setParamIfChanged(params: URLSearchParams, key: string, value: number, fallback: number) {
+  if (value !== fallback) {
+    params.set(key, String(value));
+  }
+}
+
+function areGraphControlsEqual(left: GraphControls, right: GraphControls): boolean {
+  return (
+    left.chargeStrength === right.chargeStrength &&
+    left.linkDistance === right.linkDistance &&
+    left.collisionRadius === right.collisionRadius &&
+    left.nodeScale === right.nodeScale &&
+    left.labelSize === right.labelSize &&
+    left.showLabels === right.showLabels
+  );
+}
+
+function CombinedGraphTableNotice({ onSwitchToGraph }: { onSwitchToGraph: () => void }) {
+  return (
+    <div className="px-6 py-16 text-center">
+      <div className="mb-4 flex justify-center">
+        <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
+          <Waypoints className="size-6" />
+        </span>
+      </div>
+      <div className="text-xl font-semibold text-(--ink)">
+        The combined topic/feed network is available in graph view.
+      </div>
+      <p className="small-note mx-auto mt-3 max-w-2xl">
+        This mode overlays taxonomy relationships with feed-to-topic links, so it works best as a
+        single interactive graph rather than a flattened table.
+      </p>
+      <Button onClick={onSwitchToGraph} className="mt-6">
+        Switch To Graph View
+      </Button>
     </div>
   );
 }
 
-function TopicsTable({ topics }: { topics: any[] }) {
+function TopicsTable({ topics }: { topics: TopicRecord[] }) {
   if (topics.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="text-6xl mb-4">🔍</div>
-        <div className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+      <div className="px-6 py-16 text-center">
+        <div className="mb-4 flex justify-center">
+          <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
+            <SearchIcon className="size-6" />
+          </span>
+        </div>
+        <div className="text-lg font-medium text-(--ink)">
           No topics found matching your search criteria
         </div>
-        <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+        <p className="small-note mt-2">
           Try adjusting your search terms or filters
         </p>
       </div>
@@ -515,37 +779,37 @@ function TopicsTable({ topics }: { topics: any[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+          <tr className="border-b border-(--line) bg-(--surface-muted)">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               ID
             </th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               Label
             </th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               Description
             </th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               Facet
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="divide-y divide-(--line)">
           {topics.map((t, idx) => (
             <tr
               key={t.id || idx}
-              className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors"
+              className="transition-colors hover:bg-(--surface-muted)"
             >
-              <td className="px-6 py-4 font-mono text-sm text-gray-600 dark:text-gray-400">
+              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">
                 {t.id}
               </td>
-              <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{t.label}</td>
-              <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+              <td className="px-6 py-4 font-semibold text-(--ink)">{t.label}</td>
+              <td className="px-6 py-4 text-sm text-(--ink-muted)">
                 {t.description}
               </td>
               <td className="px-6 py-4">
                 {t.facet && (
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs font-medium">
+                  <span className="rounded-full bg-(--brand-soft) px-3 py-1 text-xs font-medium text-(--brand-strong)">
                     {t.facet}
                   </span>
                 )}
@@ -558,15 +822,19 @@ function TopicsTable({ topics }: { topics: any[] }) {
   );
 }
 
-function FeedsTable({ feeds }: { feeds: any[] }) {
+function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
   if (feeds.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="text-6xl mb-4">🔍</div>
-        <div className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+      <div className="px-6 py-16 text-center">
+        <div className="mb-4 flex justify-center">
+          <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
+            <SearchIcon className="size-6" />
+          </span>
+        </div>
+        <div className="text-lg font-medium text-(--ink)">
           No feeds found matching your search criteria
         </div>
-        <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+        <p className="small-note mt-2">
           Try adjusting your search terms or tag filters
         </p>
       </div>
@@ -577,33 +845,28 @@ function FeedsTable({ feeds }: { feeds: any[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+          <tr className="border-b border-(--line) bg-(--surface-muted)">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               Title
             </th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               URL
             </th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
               Topics
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="divide-y divide-(--line)">
           {feeds.map((f, idx) => {
-            const feedTopics = f.topics || f.tags || [];
-            const topicsArray = Array.isArray(feedTopics)
-              ? feedTopics
-              : typeof feedTopics === "string"
-                ? feedTopics.split(",").map((t: string) => t.trim())
-                : [];
+            const topicsArray = normalizeTopicValues(f.topics ?? f.tags);
 
             return (
               <tr
                 key={f.url || idx}
-                className="hover:bg-purple-50 dark:hover:bg-gray-700/30 transition-colors"
+                className="transition-colors hover:bg-(--surface-muted)"
               >
-                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                <td className="px-6 py-4 font-semibold text-(--ink)">
                   {f.title || "Untitled Feed"}
                 </td>
                 <td className="px-6 py-4 font-mono text-sm">
@@ -611,7 +874,7 @@ function FeedsTable({ feeds }: { feeds: any[] }) {
                     href={f.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
+                    className="text-(--brand-strong) hover:underline"
                   >
                     {f.url}
                   </a>
@@ -621,7 +884,7 @@ function FeedsTable({ feeds }: { feeds: any[] }) {
                     {topicsArray.map((tag: string, tagIdx: number) => (
                       <span
                         key={tagIdx}
-                        className="px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs font-medium"
+                        className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-medium text-(--brand-strong)"
                       >
                         {tag}
                       </span>

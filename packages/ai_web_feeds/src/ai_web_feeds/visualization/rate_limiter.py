@@ -7,7 +7,7 @@ Implements NFR-026 and FR-060:
 - Whitelist support
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 from fastapi import HTTPException, Request, status
@@ -68,7 +68,7 @@ class RateLimiter:
             return True, None
 
         # Get current time
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         hour_ago = now - timedelta(hours=1)
 
         # Get request history for this device
@@ -124,7 +124,7 @@ class RateLimiter:
             return self.requests_per_hour
 
         # Clean old requests
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         hour_ago = now - timedelta(hours=1)
         self._request_history[device_id] = [
             ts for ts in self._request_history[device_id] if ts > hour_ago

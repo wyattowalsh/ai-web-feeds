@@ -4,17 +4,24 @@ This module handles periodic feed polling, article extraction, and notification
 triggering for real-time feed monitoring.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import feedparser
 import httpx
 from loguru import logger
+from sqlmodel import select
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, FeedPollJob, PollStatus
 from ai_web_feeds.storage import DatabaseManager
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class FeedPoller:
@@ -70,16 +77,16 @@ class FeedPoller:
         """
         job = FeedPollJob(
             feed_id=feed_id,
-            scheduled_at=datetime.utcnow(),
-            started_at=datetime.utcnow(),
+            scheduled_at=_utc_now(),
+            started_at=_utc_now(),
             status=PollStatus.RUNNING,
         )
         job = self.db.create_poll_job(job)
 
         try:
-            start_ms = datetime.utcnow().timestamp() * 1000
+            start_ms = _utc_now().timestamp() * 1000
             parsed_feed = await self.fetch_feed(feed_url)
-            end_ms = datetime.utcnow().timestamp() * 1000
+            end_ms = _utc_now().timestamp() * 1000
 
             articles_count = 0
             for entry in parsed_feed.entries:
@@ -89,7 +96,7 @@ class FeedPoller:
                     articles_count += 1
 
             # Update job success
-            job.completed_at = datetime.utcnow()
+            job.completed_at = _utc_now()
             job.status = PollStatus.SUCCESS
             job.articles_discovered = articles_count
             job.response_time_ms = int(end_ms - start_ms)
@@ -100,7 +107,7 @@ class FeedPoller:
 
         except Exception as e:
             # Update job failure
-            job.completed_at = datetime.utcnow()
+            job.completed_at = _utc_now()
             job.status = PollStatus.FAILURE
             job.error_message = str(e)
             self.db.update_poll_job(job)
@@ -108,7 +115,7 @@ class FeedPoller:
             logger.error(f"Feed poll failed: {feed_id} - {e}")
             raise
 
-    async def _is_new_entry(self, guid: str) -> bool:
+    async def _is_new_entry(self, guid: str | None) -> bool:
         """Check if entry GUID is new (not in database).
 
         Args:
@@ -117,9 +124,12 @@ class FeedPoller:
         Returns:
             True if new entry, False if exists
         """
-        # TODO: Implement efficient GUID lookup in storage.py
-        # For now, assume all entries are new (will be filtered by UNIQUE constraint)
-        return True
+        if not guid:
+            return False
+
+        with self.db.get_session() as session:
+            statement = select(FeedEntry.id).where(FeedEntry.guid == guid).limit(1)
+            return session.exec(statement).first() is None
 
     def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> FeedEntry:
         """Parse feedparser entry into FeedEntry model.
@@ -155,12 +165,16 @@ class FeedPoller:
             Parsed datetime or current time if parsing fails
         """
         if not date_str:
-            return datetime.utcnow()
+            return _utc_now()
 
         try:
-            # feedparser provides parsed time tuple
-            import time
+            parsed = parsedate_to_datetime(date_str)
+        except (TypeError, ValueError, IndexError):
+            try:
+                parsed = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            except ValueError:
+                return _utc_now()
 
-            return datetime.fromtimestamp(time.mktime(feedparser._parse_date(date_str)))
-        except Exception:
-            return datetime.utcnow()
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC)

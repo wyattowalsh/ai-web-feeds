@@ -1,7 +1,7 @@
 [project]
-name = "ai_web_feeds"
+name = "ai-web-feeds"
 version = "0.1.0"
-description = "Core library for AI Web Feeds"
+description = "Core library for ai-web-feeds"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Bookmark, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface SavedSearchFilters {
+  source_type?: string;
+  topics?: string[];
+  verified?: boolean;
+  threshold?: number;
+}
 
 interface SavedSearch {
   id: string;
   search_name: string;
   query_text: string;
-  filters: Record<string, any>;
+  filters: SavedSearchFilters;
   created_at: string;
   last_used_at: string;
 }
@@ -16,19 +25,12 @@ export function SavedSearches({
   onLoadSearch,
 }: {
   userId: string;
-  onLoadSearch: (query: string, filters: Record<string, any>) => void;
+  onLoadSearch: (query: string, filters: SavedSearchFilters) => void;
 }) {
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [searchName, setSearchName] = useState("");
 
-  // Load saved searches
-  useEffect(() => {
-    loadSearches();
-  }, [userId]);
-
-  const loadSearches = async () => {
+  const loadSearches = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/search/saved?user_id=${userId}`);
@@ -41,7 +43,12 @@ export function SavedSearches({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  // Load saved searches
+  useEffect(() => {
+    void loadSearches();
+  }, [loadSearches]);
 
   const handleLoadSearch = (search: SavedSearch) => {
     onLoadSearch(search.query_text, search.filters);
@@ -55,7 +62,7 @@ export function SavedSearches({
         method: "DELETE",
       });
       if (response.ok) {
-        setSearches(searches.filter((s) => s.id !== searchId));
+        setSearches((currentSearches) => currentSearches.filter((search) => search.id !== searchId));
       }
     } catch (error) {
       console.error("Failed to delete saved search:", error);
@@ -64,11 +71,11 @@ export function SavedSearches({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-gray-700 mb-3">Saved Searches</h3>
+      <div className="surface-card">
+        <h3 className="text-lg font-semibold text-(--ink)">Saved Searches</h3>
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-200 rounded h-16 animate-pulse" />
+            <div key={i} className="h-16 animate-pulse rounded-3xl bg-(--surface-muted)" />
           ))}
         </div>
       </div>
@@ -76,41 +83,52 @@ export function SavedSearches({
   }
 
   return (
-    <div className="bg-white rounded-lg border p-4">
+    <div className="surface-card">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-700">Saved Searches</h3>
-        <span className="text-xs text-gray-500">{searches.length} saved</span>
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+            <Bookmark className="size-4" />
+          </span>
+          <div>
+            <p className="metric-label">Saved Searches</p>
+            <h3 className="text-lg font-semibold text-(--ink)">Reusable discovery shortcuts</h3>
+          </div>
+        </div>
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">{searches.length} saved</span>
       </div>
 
       {searches.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <p className="text-sm">No saved searches yet</p>
-          <p className="text-xs mt-1">Save a search to quickly access it later</p>
+        <div className="rounded-[2rem] border border-dashed border-(--line) px-6 py-10 text-center text-(--ink-muted)">
+          <p className="text-sm font-semibold text-(--ink)">No saved searches yet</p>
+          <p className="mt-1 text-xs">Save a search to keep recurring monitoring queries close at hand.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {searches.map((search) => (
             <div
               key={search.id}
-              className="group flex items-start justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+              className="group flex items-start justify-between rounded-3xl border border-(--line) bg-(--surface) p-4 transition duration-150 hover:bg-(--surface-muted)"
             >
-              <button onClick={() => handleLoadSearch(search)} className="flex-1 text-left">
-                <p className="font-medium text-gray-900 text-sm">{search.search_name}</p>
-                <p className="text-xs text-gray-600 truncate">{search.query_text}</p>
+              <button type="button" onClick={() => handleLoadSearch(search)} className="flex-1 text-left">
+                <p className="text-sm font-semibold text-(--ink)">{search.search_name}</p>
+                <p className="mt-1 truncate text-xs text-(--ink-muted)">{search.query_text}</p>
                 {Object.keys(search.filters).length > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="mt-2 text-xs text-(--ink-muted)">
                     {Object.keys(search.filters).length} filter
                     {Object.keys(search.filters).length !== 1 ? "s" : ""} applied
                   </p>
                 )}
               </button>
-              <button
+              <Button
+                type="button"
                 onClick={() => handleDeleteSearch(search.id)}
-                className="opacity-0 group-hover:opacity-100 text-red-600 hover:text-red-800 text-xs px-2 py-1"
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100"
                 title="Delete"
               >
-                ✕
-              </button>
+                <Trash2 className="size-4" />
+              </Button>
             </div>
           ))}
         </div>

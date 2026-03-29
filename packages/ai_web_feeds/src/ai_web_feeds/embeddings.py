@@ -8,6 +8,7 @@ Embeddings are 384-dim vectors from all-MiniLM-L6-v2 model.
 """
 
 import os
+from datetime import datetime, timezone
 from functools import lru_cache
 
 import numpy as np
@@ -18,7 +19,16 @@ from tqdm import tqdm
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEmbedding, FeedSource
 
-settings = Settings()
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 # ============================================================================
@@ -31,6 +41,7 @@ def get_local_model():
     """Get cached Sentence-Transformers model."""
     from sentence_transformers import SentenceTransformer
 
+    settings = get_settings()
     logger.info(f"Loading local model: {settings.embedding.local_model}")
     model = SentenceTransformer(settings.embedding.local_model)
     logger.info("Local model loaded successfully")
@@ -70,6 +81,7 @@ def generate_embeddings_hf(texts: list[str]) -> np.ndarray:
         ValueError: If HF_API_TOKEN not set
         requests.RequestException: If API call fails
     """
+    settings = get_settings()
     hf_api_token = settings.embedding.hf_api_token or os.getenv("HF_API_TOKEN")
     if not hf_api_token:
         raise ValueError("HF_API_TOKEN not set in config or environment")
@@ -120,6 +132,7 @@ def generate_embeddings(
     Returns:
         NumPy array of embeddings (N x 384)
     """
+    settings = get_settings()
     # Determine provider
     if use_api is None:
         use_api = settings.embedding.provider == "huggingface"
@@ -244,6 +257,7 @@ def save_feed_embedding(
     Returns:
         Saved FeedEmbedding object
     """
+    settings = get_settings()
     # Convert to bytes
     embedding_bytes = embedding.tobytes()
 
@@ -254,7 +268,7 @@ def save_feed_embedding(
         # Update existing
         existing.embedding = embedding_bytes
         existing.embedding_provider = provider
-        existing.updated_at = datetime.utcnow()
+        existing.updated_at = datetime.now(timezone.utc)
         session.add(existing)
     else:
         # Create new
@@ -279,6 +293,7 @@ def refresh_all_embeddings(session, show_progress: bool = True):
         session: Database session
         show_progress: Show progress bar
     """
+    settings = get_settings()
     from sqlmodel import select
 
     logger.info("Refreshing all feed embeddings")
@@ -315,7 +330,3 @@ def embedding_to_bytes(embedding: np.ndarray) -> bytes:
 def bytes_to_embedding(embedding_bytes: bytes) -> np.ndarray:
     """Convert bytes to embedding array."""
     return np.frombuffer(embedding_bytes, dtype=np.float32)
-
-
-# Import datetime at the end to avoid circular import
-from datetime import datetime

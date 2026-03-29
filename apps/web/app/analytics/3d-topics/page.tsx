@@ -6,37 +6,53 @@
 
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
-import { TopicCluster3D, generateSampleTopicData, type TopicNode } from "@/components/visualizations/3d/TopicCluster3D";
-import { getDeviceId } from "@/lib/visualization/device-id";
+import type { TopicLink, TopicNode } from "@/components/visualizations/3d/TopicCluster3D";
+
+const TopicCluster3D = dynamic(
+  () =>
+    import("@/components/visualizations/3d/TopicCluster3D").then((module) => ({
+      default: module.TopicCluster3D,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full min-h-[600px] items-center justify-center bg-white dark:bg-gray-800">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+          <p className="text-gray-600 dark:text-gray-400">Loading 3D renderer...</p>
+        </div>
+      </div>
+    ),
+  },
+);
 
 export default function TopicCluster3DPage() {
   const [topicData, setTopicData] = useState<{
     nodes: TopicNode[];
-    links: any[];
+    links: TopicLink[];
   } | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<TopicNode | null>(null);
   const [hoveredTopic, setHoveredTopic] = useState<TopicNode | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<"category" | "size" | "custom">("category");
 
   useEffect(() => {
-    loadTopicData();
+    void loadTopicData();
   }, []);
 
   const loadTopicData = async () => {
     setIsLoading(true);
+    setLoadError(null);
 
     try {
-      // In production, fetch from API
-      // const deviceId = getDeviceId();
-      // const data = await fetch(`/api/v1/topics/cluster?device_id=${deviceId}`);
-      
-      // For now, use sample data
+      const { generateSampleTopicData } = await import("@/components/visualizations/3d/TopicCluster3D");
       const data = generateSampleTopicData();
       setTopicData(data);
     } catch (error) {
-      console.error("Failed to load topic data:", error);
+      setLoadError(error instanceof Error ? error.message : "Failed to load topic data");
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +60,6 @@ export default function TopicCluster3DPage() {
 
   const handleNodeClick = (node: TopicNode) => {
     setSelectedTopic(node);
-    console.log("Topic clicked:", node);
   };
 
   const handleNodeHover = (node: TopicNode | null) => {
@@ -57,6 +72,24 @@ export default function TopicCluster3DPage() {
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading 3D topic graph...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-8">
+        <div className="max-w-lg rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm dark:border-red-900/60 dark:bg-gray-900">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Unable to load 3D topic graph</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => void loadTopicData()}
+            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Try again
+          </button>
         </div>
       </div>
     );
@@ -83,7 +116,12 @@ export default function TopicCluster3DPage() {
             </label>
             <select
               value={colorScheme}
-              onChange={(e) => setColorScheme(e.target.value as any)}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                if (nextValue === "category" || nextValue === "size" || nextValue === "custom") {
+                  setColorScheme(nextValue);
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="category">By Category</option>
@@ -99,6 +137,7 @@ export default function TopicCluster3DPage() {
             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <div>Topics: {topicData?.nodes.length ?? 0}</div>
               <div>Connections: {topicData?.links.length ?? 0}</div>
+              <div>Hovered: {hoveredTopic?.label ?? "None"}</div>
             </div>
           </div>
         </div>

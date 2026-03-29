@@ -1,83 +1,138 @@
 import { NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { BackendError, fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-// Mock storage for saved searches (in production, this would use database)
-const savedSearches = new Map<string, any[]>();
+function getBackendErrorStatus(error: unknown): number {
+  return error instanceof BackendError ? error.status : 500;
+}
 
-export async function GET(request: Request) {
+const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
-  const user_id = searchParams.get("user_id") || "anonymous";
+  const requestedUserId = searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
 
   try {
-    const searches = savedSearches.get(user_id) || [];
+    if (requestedUserId && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
 
-    return NextResponse.json(searches, {
+    if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    const data = await fetchBackend("/storage/saved_searches", {
+      method: "GET",
+      params: {
+        user_id: identity.user_id,
+      },
+    });
+
+    return NextResponse.json(data, {
       headers: {
-        "Cache-Control": "private, no-cache", // User-specific, don't cache
+        "Cache-Control": "private, no-cache",
       },
     });
   } catch (error) {
-    console.error("Get saved searches error:", error);
-    return NextResponse.json({ error: "Failed to retrieve saved searches" }, { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
   }
-}
+};
 
-export async function POST(request: Request) {
+const POSTHandler = async (request: Request) => {
   try {
-    const body = await request.json();
-    const { user_id, search_name, query_text, filters } = body;
+    const body = (await request.json()) as {
+      user_id?: string;
+      search_name?: string;
+      query_text?: string;
+      filters?: Record<string, unknown>;
+    };
+    const identity = getUserIdentity(request, body.user_id ?? null);
 
-    if (!user_id || !search_name || !query_text) {
+    if (body.user_id && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    const { search_name, query_text, filters } = body;
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (!search_name || !query_text) {
       return NextResponse.json(
-        { error: "Missing required fields: user_id, search_name, query_text" },
+        { error: "Missing required fields: search_name, query_text" },
         { status: 400 },
       );
     }
 
-    // Create saved search
-    const savedSearch = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      user_id,
-      search_name,
-      query_text,
-      filters: filters || {},
-      created_at: new Date().toISOString(),
-      last_used_at: new Date().toISOString(),
-    };
+    const data = await fetchBackend("/storage/saved_searches", {
+      method: "POST",
+      body: {
+        user_id: identity.user_id,
+        search_name,
+        query_text,
+        filters: filters || {},
+      },
+    });
 
-    // Save to mock storage
-    const userSearches = savedSearches.get(user_id) || [];
-    userSearches.push(savedSearch);
-    savedSearches.set(user_id, userSearches);
-
-    return NextResponse.json(savedSearch, { status: 201 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("Save search error:", error);
-    return NextResponse.json({ error: "Failed to save search" }, { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
   }
-}
+};
 
-export async function DELETE(request: Request) {
+const DELETEHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const search_id = searchParams.get("id");
-  const user_id = searchParams.get("user_id");
+  const requestedUserId = searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
 
-  if (!search_id || !user_id) {
-    return NextResponse.json(
-      { error: "Missing required parameters: id, user_id" },
-      { status: 400 },
-    );
+  if (!search_id) {
+    return NextResponse.json({ error: "Missing required parameter: id" }, { status: 400 });
   }
 
   try {
-    const userSearches = savedSearches.get(user_id) || [];
-    const filtered = userSearches.filter((s) => s.id !== search_id);
-    savedSearches.set(user_id, filtered);
+    if (requestedUserId && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, deleted: search_id });
+    if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    const data = await fetchBackend(`/storage/saved_searches/${search_id}`, {
+      method: "DELETE",
+      params: {
+        user_id: identity.user_id,
+      },
+    });
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Delete saved search error:", error);
-    return NextResponse.json({ error: "Failed to delete saved search" }, { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
   }
-}
+};
+
+export const GET = withRouteTelemetry("search.saved.list", GETHandler, {
+  backendTarget: "python-backend",
+});
+export const POST = withRouteTelemetry("search.saved.create", POSTHandler, {
+  backendTarget: "python-backend",
+});
+export const DELETE = withRouteTelemetry("search.saved.delete", DELETEHandler, {
+  backendTarget: "python-backend",
+});

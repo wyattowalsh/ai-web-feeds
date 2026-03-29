@@ -1,14 +1,19 @@
 """Batch job for sentiment analysis (Phase 5C)."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from loguru import logger
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import ArticleSentiment, FeedEntry
 from ai_web_feeds.nlp.sentiment_analyzer import SentimentAnalyzer
 from ai_web_feeds.storage import DatabaseManager
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class SentimentBatchJob:
@@ -18,13 +23,16 @@ class SentimentBatchJob:
     and stores results in SQLite for trend analysis.
     """
 
-    def __init__(self, settings: Settings | None = None):
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        db_manager: DatabaseManager | None = None,
+    ):
         """Initialize sentiment batch job."""
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.analyzer = SentimentAnalyzer(settings)
-        self.db_manager = DatabaseManager(self.settings.database_url)
-        self.engine = self.db_manager.engine
+        self.analyzer = SentimentAnalyzer(self.settings)
+        self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:
         """Run sentiment analysis batch job.
@@ -44,7 +52,7 @@ class SentimentBatchJob:
                 "duration_seconds": 18.7
             }
         """
-        start_time = datetime.utcnow()
+        start_time = _utc_now()
         batch_size = batch_size or self.config.sentiment_batch_size
 
         stats = {
@@ -61,7 +69,7 @@ class SentimentBatchJob:
             f"Starting sentiment analysis batch job (batch_size={batch_size}, force={force})"
         )
 
-        with Session(self.engine) as session:
+        with self.db_manager.get_session() as session:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
@@ -95,7 +103,7 @@ class SentimentBatchJob:
                         logger.debug(f"No sentiment result for article {article.id}")
                         # Mark as processed even if analysis failed
                         article.sentiment_processed = True
-                        article.sentiment_processed_at = datetime.utcnow()
+                        article.sentiment_processed_at = _utc_now()
                         session.add(article)
                         continue
 
@@ -106,7 +114,7 @@ class SentimentBatchJob:
                         classification=sentiment_result.classification,
                         model_name=sentiment_result.model_name,
                         confidence=sentiment_result.confidence,
-                        computed_at=datetime.utcnow(),
+                        computed_at=_utc_now(),
                     )
 
                     # Upsert: delete existing sentiment if reprocessing
@@ -128,7 +136,7 @@ class SentimentBatchJob:
 
                     # Mark article as processed
                     article.sentiment_processed = True
-                    article.sentiment_processed_at = datetime.utcnow()
+                    article.sentiment_processed_at = _utc_now()
                     session.add(article)
 
                     logger.debug(
@@ -147,7 +155,7 @@ class SentimentBatchJob:
             # Commit all changes
             session.commit()
 
-        end_time = datetime.utcnow()
+        end_time = _utc_now()
         stats["duration_seconds"] = (end_time - start_time).total_seconds()
 
         logger.info(

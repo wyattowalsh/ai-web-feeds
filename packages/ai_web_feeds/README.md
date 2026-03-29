@@ -1,11 +1,11 @@
-# AI Web Feeds - Core Package
+# ai-web-feeds - Core Package
 
 Core library for managing AI/ML feed sources with SQLModel database, enrichment, and
 OPML generation.
 
 ## Features
 
-### 1. **Database Management** (`aiwebfeeds.db`)
+### 1. **Database Management** (`ai-web-feeds.db`)
 
 - SQLModel-based database with Alembic migrations
 - Tables for:
@@ -55,42 +55,42 @@ The CLI provides commands for enrichment, OPML generation, and statistics.
 
 ```bash
 # Enrich all feeds
-aiwebfeeds enrich all
+ai-web-feeds enrich all
 
 # With custom paths
-aiwebfeeds enrich all \
+ai-web-feeds enrich all \
   --input data/feeds.yaml \
   --output data/feeds.enriched.yaml \
   --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/aiwebfeeds.db
+  --database sqlite:///data/ai-web-feeds.db
 
 # Enrich a single feed (preview)
-aiwebfeeds enrich one huggingface-blog
+ai-web-feeds enrich one huggingface-blog
 ```
 
 ### Generate OPML Files
 
 ```bash
 # Generate all.opml
-aiwebfeeds opml all --output data/all.opml
+ai-web-feeds opml all --output data/all.opml
 
 # Generate categorized.opml
-aiwebfeeds opml categorized --output data/categorized.opml
+ai-web-feeds opml categorized --output data/categorized.opml
 
 # Generate filtered OPML by topic
-aiwebfeeds opml filtered data/topic-nlp.opml --topic nlp
+ai-web-feeds opml filtered data/topic-nlp.opml --topic nlp
 
 # Filter by source type
-aiwebfeeds opml filtered data/type-blog.opml --type blog
+ai-web-feeds opml filtered data/type-blog.opml --type blog
 
 # Filter by tag
-aiwebfeeds opml filtered data/tag-official.opml --tag official
+ai-web-feeds opml filtered data/tag-official.opml --tag official
 
 # Verified feeds only
-aiwebfeeds opml filtered data/verified.opml --verified
+ai-web-feeds opml filtered data/verified.opml --verified
 
 # Combine filters
-aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
+ai-web-feeds opml filtered data/verified-nlp-blogs.opml \
   --topic nlp \
   --type blog \
   --verified
@@ -100,12 +100,12 @@ aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
 
 ```bash
 # Show feed statistics
-aiwebfeeds stats show
+ai-web-feeds stats show
 ```
 
 Output:
 
-```
+```text
 📊 Feed Statistics
 ══════════════════════════════════════════════════
 Total Feeds: 150
@@ -130,7 +130,7 @@ from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.models import FeedSource, SourceType
 
 # Initialize database
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 db.create_db_and_tables()
 
 # Add a feed source
@@ -186,7 +186,7 @@ from ai_web_feeds.utils import (
 )
 
 # Get feeds from database
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 feeds = db.get_all_feed_sources()
 
 # Generate all.opml
@@ -205,7 +205,7 @@ def nlp_filter(feed):
 
 opml_xml = generate_filtered_opml(
     feeds,
-    title="AI Web Feeds - NLP (Verified)",
+    title="ai-web-feeds - NLP (Verified)",
     filter_fn=nlp_filter,
 )
 save_opml(opml_xml, "data/nlp-verified.opml")
@@ -225,14 +225,14 @@ save_json_schema(schema, "data/feeds.enriched.schema.json")
 
 ## Data Flow
 
-```
+```text
 feeds.yaml (source)
     ↓
     ↓ [enrich command]
     ↓
     ├→ feeds.enriched.yaml (enriched YAML)
     ├→ feeds.enriched.schema.json (JSON schema)
-    └→ aiwebfeeds.db (SQLModel database)
+    └→ ai-web-feeds.db (SQLModel database; legacy aiwebfeeds.db is still detected)
             ↓
             ↓ [opml commands]
             ↓
@@ -313,15 +313,15 @@ Set environment variables to configure:
 # Logging
 export AIWF_LOGGING__LEVEL=DEBUG
 export AIWF_LOGGING__FILE=True
-export AIWF_LOGGING__FILE_PATH=logs/aiwebfeeds.log
+export AIWF_LOGGING__FILE_PATH=logs/ai-web-feeds.log
 
 # Database
-export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
+export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
 ```
 
 ## File Structure
 
-```
+```text
 packages/ai_web_feeds/
 ├── src/ai_web_feeds/
 │   ├── __init__.py          # Package initialization

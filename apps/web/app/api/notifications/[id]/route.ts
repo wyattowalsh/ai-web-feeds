@@ -3,14 +3,18 @@
  *
  * Body:
  * - action: "mark_read" | "dismiss"
+ * - user_id?: UUID used to scope anonymous browser data
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
 
-export async function PATCH(
+const PATCHHandler = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+) => {
   const { id } = await params;
   const notificationId = parseInt(id, 10);
 
@@ -19,8 +23,25 @@ export async function PATCH(
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      action?: string;
+      user_id?: string;
+    };
+    const requestedUserId = body.user_id ?? request.nextUrl.searchParams.get("user_id");
+    const identity = getUserIdentity(request, requestedUserId);
     const { action } = body;
+
+    if (requestedUserId && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
 
     if (!action || !["mark_read", "dismiss"].includes(action)) {
       return NextResponse.json(
@@ -29,19 +50,12 @@ export async function PATCH(
       );
     }
 
-    // Call Python backend storage API
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(
-      `${backendUrl}/storage/notifications/${notificationId}/${action}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+    await fetchBackend(`/storage/notifications/${notificationId}/${action}`, {
+      method: "PATCH",
+      params: {
+        user_id: identity.user_id,
       },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
+    });
 
     return NextResponse.json({
       success: true,
@@ -49,13 +63,10 @@ export async function PATCH(
       action,
     });
   } catch (error) {
-    console.error("Failed to update notification:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to update notification",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
+
+export const PATCH = withRouteTelemetry("notifications.update", PATCHHandler, {
+  backendTarget: "python-backend",
+});

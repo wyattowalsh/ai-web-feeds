@@ -52,7 +52,7 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
     try:
         import jsonschema
     except ImportError as e:
-        msg = "jsonschema not installed. Run: uv pip install jsonschema"
+        msg = "jsonschema not installed. Run: uv add jsonschema"
         raise ImportError(msg) from e
 
     result = ValidationResult()
@@ -132,7 +132,7 @@ def validate_topics(
     try:
         import jsonschema
     except ImportError as e:
-        msg = "jsonschema not installed. Run: uv pip install jsonschema"
+        msg = "jsonschema not installed. Run: uv add jsonschema"
         raise ImportError(msg) from e
 
     result = ValidationResult()
@@ -227,13 +227,12 @@ async def validate_feed_url(
             # Parse feed content
             feed_content = response.text
             parsed_feed = feedparser.parse(feed_content)
+            has_parse_error = bool(getattr(parsed_feed, "bozo", False))
+            bozo_exception = getattr(parsed_feed, "bozo_exception", None)
 
             # Check if feed is valid
-            if hasattr(parsed_feed, "bozo") and parsed_feed.bozo:
-                # Feed has parse errors
-                bozo_exception = getattr(parsed_feed, "bozo_exception", None)
+            if has_parse_error:
                 result["error_message"] = f"Feed parse error: {bozo_exception}"
-                # Still might be usable, so don't return yet
 
             # Detect feed format
             feed_format = "unknown"
@@ -246,12 +245,14 @@ async def validate_feed_url(
 
             result["feed_format"] = feed_format
             result["entry_count"] = len(parsed_feed.get("entries", []))
+            has_feed_title = bool(parsed_feed.get("feed", {}).get("title"))
 
-            # Success if we got entries or a valid feed structure
-            if result["entry_count"] > 0 or parsed_feed.get("feed", {}).get("title"):
+            # Consider feeds valid when they have entries, or when they have valid metadata
+            # without parser errors.
+            if result["entry_count"] > 0 or (has_feed_title and not has_parse_error):
                 result["success"] = True
                 result["error_message"] = None
-            else:
+            elif not has_parse_error:
                 result["error_message"] = "No entries found in feed"
 
     except httpx.TimeoutException:

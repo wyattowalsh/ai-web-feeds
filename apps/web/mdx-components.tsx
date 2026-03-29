@@ -1,11 +1,11 @@
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
-import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
-import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { Accordion } from "fumadocs-ui/components/accordion";
+import { Tab } from "fumadocs-ui/components/tabs";
 import { Mermaid } from "@/components/mdx/mermaid";
 import * as Python from "fumadocs-python/components";
 import * as LucideIcons from "lucide-react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ComponentType, ReactNode } from "react";
 
 // Enable printing mode via environment variable
 const isPrinting = process.env.NEXT_PUBLIC_PDF_EXPORT === "true";
@@ -34,19 +34,27 @@ function PrintingTab(props: ComponentProps<typeof Tab>) {
   );
 }
 
+function PrintingContainer({ children }: { children?: ReactNode }) {
+  return <div>{children}</div>;
+}
+
+const lucideMdxComponents = Object.fromEntries(
+  Object.entries(LucideIcons).filter(([key]) => key !== "createLucideIcon" && key !== "icons"),
+) as Record<string, ComponentType<Record<string, unknown>>>;
+
 // use this function to get MDX components, you will need it for rendering MDX
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
     ...Python,
-    ...LucideIcons,
+    ...lucideMdxComponents,
     Mermaid,
     // Override components when in printing mode to show all content
     ...(isPrinting && {
       Accordion: PrintingAccordion,
-      Accordions: "div" as any,
+      Accordions: PrintingContainer,
       Tab: PrintingTab,
-      Tabs: "div" as any,
+      Tabs: PrintingContainer,
     }),
     ...components,
   };

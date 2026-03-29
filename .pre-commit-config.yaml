@@ -216,7 +216,7 @@ repos:
     # Python tests
   - id: pytest
     name: pytest (packages)
-    entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ -v --tb=short'
+    entry: bash -c 'cd tests && uv run pytest -v --tb=short'
     language: system
     pass_filenames: false
     always_run: false
@@ -225,7 +225,7 @@ repos:
     # Python coverage check
   - id: pytest-cov
     name: pytest coverage (≥90%)
-    entry: bash -c 'cd packages/ai_web_feeds && uv run pytest tests/ --cov=src --cov-report=term --cov-fail-under=90 -q'
+    entry: bash -c 'cd tests && uv run pytest --cov=ai_web_feeds --cov-report=term --cov-fail-under=90 -q'
     language: system
     pass_filenames: false
     always_run: false

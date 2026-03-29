@@ -57,7 +57,6 @@ jobs:
   lint-check:
     name: Code Quality Check
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.changed_files, '.py')
 
     steps:
       - name: Checkout repository
@@ -78,12 +77,10 @@ jobs:
 
       - name: Run ruff linter
         run: uv run ruff check . --output-format=github
-        continue-on-error: true
         id: ruff-check
 
       - name: Check code formatting
         run: uv run ruff format --check .
-        continue-on-error: true
         id: ruff-format
 
       - name: Comment linting results
@@ -116,7 +113,6 @@ jobs:
   test-check:
     name: Run Tests
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.changed_files, '.py')
 
     steps:
       - name: Checkout repository

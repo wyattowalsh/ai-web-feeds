@@ -1,38 +1,41 @@
-# ai-web-feeds Development Guidelines
+# ai-web-feeds Copilot Instructions
 
-Auto-generated from all feature plans. Last updated: 2025-10-22
+Read [../AGENTS.md](../AGENTS.md) first, then the nearest component-specific
+`AGENTS.md` before making changes.
 
-## Active Technologies
+## Non-Negotiable Tooling
 
-- SQLite (development), PostgreSQL (production option) for validation cache, enrichment data, and feed entry metadata (001-core-project-spec)
-- Python 3.13+ (backend API), TypeScript 5.9+ (web visualization frontend) (006-advanced-visualization-analytics)
-- SQLite (development), PostgreSQL (production option) with 5-minute cache layer (Redis or in-memory) (006-advanced-visualization-analytics)
-- Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web) (001-core-project-spec)
+- Python commands use `uv` only.
+- Node.js commands use `pnpm` only.
+- Do not introduce bare `python`, `pip`, `npm`, or `yarn` into code, docs, or
+	workflow examples.
 
-## Project Structure
+## Documentation Policy
 
-```text
-src/
-tests/
-```
+Project documentation belongs in `apps/web/content/docs/` as `.mdx` files unless
+the file is an explicitly allowed root exception such as `README.md`,
+`CONTRIBUTING.md`, `LICENSE`, or `AGENTS.md`.
 
-## Commands
+Development specifications under `specs/**/*.md` are also allowed. Treat them as
+repository planning artifacts, not user-facing documentation.
 
-cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES]
-pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES]
-ruff check .
+## GitHub Automation Policy
 
-## Code Style
+- `.github/workflows/*.yml` are active workflows.
+- `.github/workflows/*.md` are reserved for GitHub Agentic Workflows sources and
+	are not active until compiled and reviewed.
+- Prefer additive pilots over immediate workflow replacement.
+- Keep agentic workflows read-only by default and use narrow, reviewable mutation
+	paths.
 
-Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web): Follow standard conventions
+## Prompt and Agent Sources
 
-## Recent Changes
+- `.github/prompts/` is the canonical repository prompt library.
+- `.github/agents/` contains reusable repository-owned agents.
+- Avoid copying prompt logic into multiple tool-specific locations unless the
+	duplicate is generated from the canonical source.
 
-- 006-advanced-visualization-analytics: Added Python 3.13+ (backend API), TypeScript 5.9+ (web visualization frontend)
-- 006-advanced-visualization-analytics: Added Python 3.13+ (backend API), TypeScript 5.9+ (web visualization frontend)
-- 001-core-project-spec: Added Python 3.13+ (backend, CLI) + TypeScript 5.9+ (web)
+## Current Focus
 
-
-<!-- MANUAL ADDITIONS START -->
-
-<!-- MANUAL ADDITIONS END -->
+The repository is beginning selective gh-aw adoption. The first pilot is a
+feed-submission review workflow that is intentionally additive and non-destructive.

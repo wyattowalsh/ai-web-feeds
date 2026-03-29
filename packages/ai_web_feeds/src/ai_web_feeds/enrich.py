@@ -689,14 +689,7 @@ def enrich_all_feeds(
     sources = feeds_data.get("sources", [])
     logger.info(f"Enriching {len(sources)} feed sources...")
 
-    enriched_sources = []
-    for source in sources:
-        try:
-            enriched = asyncio.run(enrich_feed_source(source, db=db))
-            enriched_sources.append(enriched)
-        except Exception as e:
-            logger.error(f"Error enriching {source.get('id')}: {e}")
-            enriched_sources.append(source)
+    enriched_sources = asyncio.run(_enrich_all_feeds_async(sources, db))
 
     # Update metadata
     enriched_data = {
@@ -711,3 +704,26 @@ def enrich_all_feeds(
 
     logger.info(f"Enrichment complete: {len(enriched_sources)} sources processed")
     return enriched_data
+
+
+async def _enrich_all_feeds_async(
+    sources: list[dict[str, Any]], db: DatabaseManager | None = None
+) -> list[dict[str, Any]]:
+    """Asynchronously enrich all feed sources.
+
+    Args:
+        sources: List of feed source dictionaries
+        db: Optional database manager for persistence
+
+    Returns:
+        List of enriched feed source dictionaries
+    """
+    enriched_sources = []
+    for source in sources:
+        try:
+            enriched = await enrich_feed_source(source, db=db)
+            enriched_sources.append(enriched)
+        except Exception as e:
+            logger.error(f"Error enriching {source.get('id')}: {e}")
+            enriched_sources.append(source)
+    return enriched_sources

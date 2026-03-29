@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { parse } from "yaml";
+import type { CatalogFeed } from "@/lib/catalog-types";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-static";
 
-export async function GET() {
+const GETHandler = async (_request: Request) => {
   try {
     // Try enriched YAML first, fallback to feeds.yaml, then feeds.json
     let feedsPath = join(process.cwd(), "../../data/feeds.enriched.yaml");
@@ -34,7 +36,13 @@ export async function GET() {
     const data = isJson ? JSON.parse(content) : parse(content);
 
     // Extract the feeds/sources array from the structure
-    const feeds = data.sources || data.feeds || (Array.isArray(data) ? data : []);
+    const feeds: CatalogFeed[] = Array.isArray(data?.sources)
+      ? data.sources
+      : Array.isArray(data?.feeds)
+        ? data.feeds
+        : Array.isArray(data)
+          ? data
+          : [];
 
     return NextResponse.json(feeds, {
       headers: {
@@ -45,4 +53,6 @@ export async function GET() {
     console.error("Error loading feeds:", error);
     return NextResponse.json({ error: "Failed to load feeds data" }, { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("feeds.list", GETHandler);

@@ -8,7 +8,19 @@ from loguru import logger
 
 from ai_web_feeds.config import Settings
 
-settings = Settings()
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+
+settings = get_settings()
 
 # Ensure log directory exists if file logging is enabled
 if settings.logging.file:

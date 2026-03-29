@@ -4,7 +4,7 @@ This module handles notification creation, bundling, and WebSocket broadcasting
 for real-time alerts.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from loguru import logger
 
@@ -146,7 +146,7 @@ class NotificationManager:
             Number of deleted notifications
         """
         retention_days = self.settings.phase3b.notification_retention_days
-        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
+        cutoff_date = datetime.now(UTC) - timedelta(days=retention_days)
 
         # TODO: Implement bulk delete in storage.py
         # For now, return 0

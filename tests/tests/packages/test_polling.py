@@ -1,6 +1,6 @@
 """Unit tests for ai_web_feeds.polling module"""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -14,12 +14,13 @@ from ai_web_feeds.storage import DatabaseManager
 def mock_db():
     """Mock database manager"""
     db = MagicMock(spec=DatabaseManager)
+    now = datetime.now(UTC)
     db.create_poll_job = MagicMock(
         return_value=FeedPollJob(
             id=1,
             feed_id="test-feed",
-            scheduled_at=datetime.utcnow(),
-            started_at=datetime.utcnow(),
+            scheduled_at=now,
+            started_at=now,
             status=PollStatus.RUNNING,
         )
     )
@@ -171,17 +172,34 @@ class TestFeedPoller:
         result = poller._parse_date(date_str)
 
         assert isinstance(result, datetime)
+        assert result.tzinfo is not None
 
     def test_parse_date_invalid(self, poller):
         """Test date parsing with invalid date falls back to now"""
         result = poller._parse_date("invalid-date")
 
         assert isinstance(result, datetime)
+        assert result.tzinfo is not None
         # Should be close to current time (within 1 second)
-        assert (datetime.utcnow() - result).total_seconds() < 1
+        assert (datetime.now(UTC) - result).total_seconds() < 1
 
     def test_parse_date_none(self, poller):
         """Test date parsing with None falls back to now"""
         result = poller._parse_date(None)
 
         assert isinstance(result, datetime)
+        assert result.tzinfo is not None
+
+    @pytest.mark.asyncio
+    async def test_is_new_entry_queries_existing_guid(self, poller, mock_db):
+        """Test GUID lookup skips entries already present in storage."""
+        mock_session = MagicMock()
+        mock_session.exec.return_value.first.return_value = 1
+        mock_db.get_session.return_value.__enter__.return_value = mock_session
+
+        assert await poller._is_new_entry("article-1") is False
+
+    @pytest.mark.asyncio
+    async def test_is_new_entry_rejects_missing_guid(self, poller):
+        """Test entries without a stable identifier are not treated as new."""
+        assert await poller._is_new_entry(None) is False

@@ -2,7 +2,7 @@
 
 import json
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -944,8 +944,8 @@ def generate_opml(feed_sources: list[FeedSource], title: str = "AI Web Feeds") -
     # Head
     head = SubElement(opml, "head")
     SubElement(head, "title").text = title
-    SubElement(head, "dateCreated").text = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "dateModified").text = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    SubElement(head, "dateCreated").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+    SubElement(head, "dateModified").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
     SubElement(head, "ownerName").text = "AI Web Feeds"
 
     # Body
@@ -987,8 +987,8 @@ def generate_categorized_opml(
     # Head
     head = SubElement(opml, "head")
     SubElement(head, "title").text = title
-    SubElement(head, "dateCreated").text = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "dateModified").text = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    SubElement(head, "dateCreated").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+    SubElement(head, "dateModified").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
     SubElement(head, "ownerName").text = "AI Web Feeds"
 
     # Body - organize by source_type

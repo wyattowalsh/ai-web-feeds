@@ -1,20 +1,40 @@
-/**
- * React hook for WebSocket notifications
- *
- * Provides React components with real-time notification functionality.
- */
-
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import {
+  EMPTY_WEBSOCKET_STATE,
   getWebSocketClient,
-  WebSocketNotification,
-  TrendingAlert,
+  type WebSocketState,
 } from "./websocket";
 
+function useSharedWebSocketState(): {
+  client: ReturnType<typeof getWebSocketClient> | null;
+  snapshot: WebSocketState;
+} {
+  const client = typeof window === "undefined" ? null : getWebSocketClient();
+
+  const subscribe = useCallback(
+    (listener: () => void) => (client ? client.subscribe(listener) : () => {}),
+    [client],
+  );
+
+  const getSnapshot = useCallback(
+    () => (client ? client.getSnapshot() : EMPTY_WEBSOCKET_STATE),
+    [client],
+  );
+
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => EMPTY_WEBSOCKET_STATE,
+  );
+
+  return { client, snapshot };
+}
+
 /**
- * WebSocket connection hook
+ * React hook for WebSocket notifications and trending alerts.
+ *
+ * Multiple consumers safely share the singleton client and receive the same
+ * state updates without overwriting each other's handlers.
  *
  * Usage:
  * ```tsx
@@ -22,75 +42,29 @@ import {
  * ```
  */
 export function useWebSocket() {
-  const [notifications, setNotifications] = useState<WebSocketNotification[]>([]);
-  const [trendingAlerts, setTrendingAlerts] = useState<TrendingAlert[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const client = getWebSocketClient();
-
-  useEffect(() => {
-    // Connect to WebSocket server
-    client.connect({
-      onConnect: () => {
-        setIsConnected(true);
-        setError(null);
-      },
-
-      onDisconnect: () => {
-        setIsConnected(false);
-      },
-
-      onNotification: (notification) => {
-        setNotifications((prev) => [notification, ...prev]);
-      },
-
-      onTrendingAlert: (alert) => {
-        setTrendingAlerts((prev) => [alert, ...prev].slice(0, 10)); // Keep last 10
-      },
-
-      onNotificationsHistory: (history) => {
-        setNotifications(history);
-      },
-
-      onError: (errorMessage) => {
-        setError(errorMessage);
-      },
-    });
-
-    // Cleanup on unmount
-    return () => {
-      client.disconnect();
-    };
-  }, [client]);
+  const { client, snapshot } = useSharedWebSocketState();
 
   const markRead = useCallback(
     (notificationId: number) => {
-      client.markRead(notificationId);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
-        )
-      );
+      client?.markRead(notificationId);
     },
-    [client]
+    [client],
   );
 
   const dismiss = useCallback(
     (notificationId: number) => {
-      client.dismiss(notificationId);
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      client?.dismiss(notificationId);
     },
-    [client]
+    [client],
   );
 
-  const unreadCount = notifications.filter((n) => !n.read_at).length;
+  const unreadCount = snapshot.notifications.filter((notification) => !notification.read_at).length;
 
   return {
-    notifications,
-    trendingAlerts,
-    isConnected,
-    error,
+    notifications: snapshot.notifications,
+    trendingAlerts: snapshot.trendingAlerts,
+    isConnected: snapshot.isConnected,
+    error: snapshot.error,
     unreadCount,
     markRead,
     dismiss,
@@ -98,23 +72,9 @@ export function useWebSocket() {
 }
 
 /**
- * Lightweight hook for connection status only
+ * Lightweight hook for connection status only.
  */
 export function useWebSocketStatus() {
-  const [isConnected, setIsConnected] = useState(false);
-
-  const client = getWebSocketClient();
-
-  useEffect(() => {
-    setIsConnected(client.isConnected());
-
-    const interval = setInterval(() => {
-      setIsConnected(client.isConnected());
-    }, 5000); // Check every 5s
-
-    return () => clearInterval(interval);
-  }, [client]);
-
-  return { isConnected };
+  const { snapshot } = useSharedWebSocketState();
+  return { isConnected: snapshot.isConnected };
 }
-

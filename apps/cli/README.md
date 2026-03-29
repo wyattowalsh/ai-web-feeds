@@ -1,6 +1,8 @@
-# AI Web Feeds CLI
+# ai-web-feeds CLI
 
 Command-line interface for managing AI/ML feed sources.
+
+Preferred command: `ai-web-feeds`. Legacy alias: `aiwebfeeds`.
 
 ## Installation
 
@@ -16,17 +18,17 @@ uv pip install -e apps/cli
 
 ```bash
 # 1. Enrich feeds from feeds.yaml
-aiwebfeeds enrich all
+ai-web-feeds enrich all
 
 # 2. Generate OPML files
-aiwebfeeds opml all
-aiwebfeeds opml categorized
+ai-web-feeds opml all
+ai-web-feeds opml categorized
 
 # 3. View statistics
-aiwebfeeds stats show
+ai-web-feeds stats show
 
 # 4. Generate filtered OPML
-aiwebfeeds opml filtered data/nlp-feeds.opml --topic nlp --verified
+ai-web-feeds opml filtered data/nlp-feeds.opml --topic nlp --verified
 ```
 
 ## Commands
@@ -37,17 +39,17 @@ Enrich feeds with metadata, discover feed URLs, validate formats, and save to da
 
 ```bash
 # Enrich all feeds
-aiwebfeeds enrich all
+ai-web-feeds enrich all
 
 # Custom paths
-aiwebfeeds enrich all \
+ai-web-feeds enrich all \
   --input data/feeds.yaml \
   --output data/feeds.enriched.yaml \
   --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/aiwebfeeds.db
+  --database sqlite:///data/ai-web-feeds.db
 
 # Preview enrichment for one feed
-aiwebfeeds enrich one <feed-id>
+ai-web-feeds enrich one <feed-id>
 ```
 
 **What it does:**
@@ -58,7 +60,7 @@ aiwebfeeds enrich one <feed-id>
 - Saves to:
   - `feeds.enriched.yaml` - Enriched YAML with all metadata
   - `feeds.enriched.schema.json` - JSON schema for validation
-  - `aiwebfeeds.db` - SQLite database
+  - `ai-web-feeds.db` - SQLite database (legacy `aiwebfeeds.db` also works)
 
 ### `opml` - Generate OPML Files
 
@@ -66,13 +68,13 @@ Generate OPML files for feed readers.
 
 ```bash
 # All feeds (flat list)
-aiwebfeeds opml all --output data/all.opml
+ai-web-feeds opml all --output data/all.opml
 
 # Categorized by source type
-aiwebfeeds opml categorized --output data/categorized.opml
+ai-web-feeds opml categorized --output data/categorized.opml
 
 # Filtered OPML
-aiwebfeeds opml filtered <output-file> [OPTIONS]
+ai-web-feeds opml filtered <output-file> [OPTIONS]
 
 Options:
   --topic, -t      Filter by topic (e.g., nlp, mlops)
@@ -85,15 +87,15 @@ Options:
 
 ```bash
 # NLP-related feeds only
-aiwebfeeds opml filtered data/nlp.opml --topic nlp
+ai-web-feeds opml filtered data/nlp.opml --topic nlp
 
 # Official blogs
-aiwebfeeds opml filtered data/official-blogs.opml \
+ai-web-feeds opml filtered data/official-blogs.opml \
   --type blog \
   --tag official
 
 # Verified ML podcasts
-aiwebfeeds opml filtered data/ml-podcasts.opml \
+ai-web-feeds opml filtered data/ml-podcasts.opml \
   --topic ml \
   --type podcast \
   --verified
@@ -104,12 +106,12 @@ aiwebfeeds opml filtered data/ml-podcasts.opml \
 Display feed statistics and summaries.
 
 ```bash
-aiwebfeeds stats show
+ai-web-feeds stats show
 ```
 
 Example output:
 
-```
+```text
 📊 Feed Statistics
 ══════════════════════════════════════════════════
 Total Feeds: 150
@@ -134,8 +136,8 @@ Verified: 120 (80.0%)
 Export feed data in various formats (coming soon).
 
 ```bash
-aiwebfeeds export json    # Export as JSON
-aiwebfeeds export csv     # Export as CSV
+ai-web-feeds export json    # Export as JSON
+ai-web-feeds export csv     # Export as CSV
 ```
 
 ### `validate` - Validate Data
@@ -143,7 +145,7 @@ aiwebfeeds export csv     # Export as CSV
 Validate feed data against schemas (coming soon).
 
 ```bash
-aiwebfeeds validate       # Validate feeds.yaml
+ai-web-feeds validate       # Validate feeds.yaml
 ```
 
 ## Workflow
@@ -153,14 +155,14 @@ aiwebfeeds validate       # Validate feeds.yaml
 ```bash
 # 1. Create or edit data/feeds.yaml with your feed sources
 # 2. Enrich the feeds
-aiwebfeeds enrich all
+ai-web-feeds enrich all
 
 # 3. Generate OPML files for your feed reader
-aiwebfeeds opml all
-aiwebfeeds opml categorized
+ai-web-feeds opml all
+ai-web-feeds opml categorized
 
 # 4. Check the results
-aiwebfeeds stats show
+ai-web-feeds stats show
 ```
 
 ### Adding New Feeds
@@ -168,30 +170,30 @@ aiwebfeeds stats show
 ```bash
 # 1. Add feed entries to data/feeds.yaml
 # 2. Re-enrich
-aiwebfeeds enrich all
+ai-web-feeds enrich all
 
 # 3. Regenerate OPML files
-aiwebfeeds opml all
-aiwebfeeds opml categorized
+ai-web-feeds opml all
+ai-web-feeds opml categorized
 ```
 
 ### Creating Custom Feed Collections
 
 ```bash
 # Create topic-specific OPML files
-aiwebfeeds opml filtered data/nlp.opml --topic nlp
-aiwebfeeds opml filtered data/mlops.opml --topic mlops
-aiwebfeeds opml filtered data/research.opml --topic research
+ai-web-feeds opml filtered data/nlp.opml --topic nlp
+ai-web-feeds opml filtered data/mlops.opml --topic mlops
+ai-web-feeds opml filtered data/research.opml --topic research
 
 # Create type-specific collections
-aiwebfeeds opml filtered data/podcasts.opml --type podcast
-aiwebfeeds opml filtered data/blogs.opml --type blog
+ai-web-feeds opml filtered data/podcasts.opml --type podcast
+ai-web-feeds opml filtered data/blogs.opml --type blog
 
 # Verified feeds only
-aiwebfeeds opml filtered data/verified.opml --verified
+ai-web-feeds opml filtered data/verified.opml --verified
 
 # Combine filters for precise collections
-aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
+ai-web-feeds opml filtered data/verified-nlp-blogs.opml \
   --topic nlp \
   --type blog \
   --verified
@@ -205,37 +207,37 @@ Run tests using `uv` and `pytest`. **New in this version!**
 
 ```bash
 # Run all tests
-aiwebfeeds test all
+ai-web-feeds test all
 
 # Run unit tests only
-aiwebfeeds test unit
+ai-web-feeds test unit
 
 # Run integration tests
-aiwebfeeds test integration
+ai-web-feeds test integration
 
 # Run E2E tests
-aiwebfeeds test e2e
+ai-web-feeds test e2e
 
 # Quick test (fast unit tests)
-aiwebfeeds test quick
+ai-web-feeds test quick
 
 # With coverage report
-aiwebfeeds test coverage
+ai-web-feeds test coverage
 
 # Coverage with browser
-aiwebfeeds test coverage --open
+ai-web-feeds test coverage --open
 
 # Run specific file
-aiwebfeeds test file packages/ai_web_feeds/unit/test_models.py
+ai-web-feeds test file packages/ai_web_feeds/unit/test_models.py
 
 # Debug mode
-aiwebfeeds test debug
+ai-web-feeds test debug
 
 # Watch mode (re-run on changes)
-aiwebfeeds test watch
+ai-web-feeds test watch
 
 # List test markers
-aiwebfeeds test markers
+ai-web-feeds test markers
 ```
 
 **Common Options:**
@@ -258,16 +260,16 @@ aiwebfeeds test markers
 
 ```bash
 # Development workflow
-aiwebfeeds test quick                    # Quick check
-aiwebfeeds test all -v                   # Full run
-aiwebfeeds test coverage --open          # Coverage report
+ai-web-feeds test quick                  # Quick check
+ai-web-feeds test all -v                 # Full run
+ai-web-feeds test coverage --open        # Coverage report
 
 # CI/CD
-aiwebfeeds test all --coverage --parallel
+ai-web-feeds test all --coverage --parallel
 
 # Debugging
-aiwebfeeds test debug packages/ai_web_feeds/unit/test_models.py
-aiwebfeeds test file test_storage.py -k "test_add_feed"
+ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
+ai-web-feeds test file test_storage.py -k "test_add_feed"
 ```
 
 See [TEST_COMMAND.md](./TEST_COMMAND.md) for detailed documentation.
@@ -276,12 +278,12 @@ See [TEST_COMMAND.md](./TEST_COMMAND.md) for detailed documentation.
 
 ```bash
 # Database location
-export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
+export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
 
 # Logging
 export AIWF_LOGGING__LEVEL=INFO
 export AIWF_LOGGING__FILE=True
-export AIWF_LOGGING__FILE_PATH=logs/aiwebfeeds.log
+export AIWF_LOGGING__FILE_PATH=logs/ai-web-feeds.log
 ```
 
 ### File Locations
@@ -291,7 +293,7 @@ By default, the CLI expects:
 - Input: `data/feeds.yaml`
 - Output: `data/feeds.enriched.yaml`
 - Schema: `data/feeds.enriched.schema.json`
-- Database: `data/aiwebfeeds.db`
+- Database: `data/ai-web-feeds.db`
 - OPML: `data/*.opml`
 
 Override with command options (`--input`, `--output`, `--database`, etc.)
@@ -302,12 +304,12 @@ Get help for any command:
 
 ```bash
 # General help
-aiwebfeeds --help
+ai-web-feeds --help
 
 # Command-specific help
-aiwebfeeds enrich --help
-aiwebfeeds opml --help
-aiwebfeeds opml filtered --help
+ai-web-feeds enrich --help
+ai-web-feeds opml --help
+ai-web-feeds opml filtered --help
 ```
 
 ## See Also

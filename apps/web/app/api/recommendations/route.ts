@@ -1,106 +1,47 @@
 import { NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { fetchBackend, formatBackendErrorResponse, clampNumber } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 interface RecommendationParams {
-  user_id?: string;
-  seed_topics?: string;
+  seed_topics?: string[];
   limit?: number;
 }
 
-export async function GET(request: Request) {
+const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
-  const user_id = searchParams.get("user_id") || undefined;
-  const seed_topics = searchParams.get("topics")?.split(",") || undefined;
-  const limit = parseInt(searchParams.get("limit") || "20", 10);
+  const seed_topics = searchParams.get("topics")?.split(",").filter(Boolean) || undefined;
+  const limit = clampNumber(parseInt(searchParams.get("limit") || "20", 10), 1, 100);
 
   try {
-    // In production, this would call the Python backend recommendations API
-    // For now, we'll return mock recommendations
+    const data = await fetchBackend("/recommendations", {
+      method: "GET",
+      params: {
+        limit,
+        ...(seed_topics && { topics: seed_topics.join(",") }),
+      },
+    });
 
-    const mockRecommendations = [
-      {
-        feed: {
-          id: "deepmind-blog",
-          title: "DeepMind Blog",
-          description: "AI research from Google DeepMind",
-          url: "https://deepmind.google/blog/feed/",
-          topics: ["research", "agents", "rl"],
-          source_type: "blog",
-          verified: true,
-          is_active: true,
-        },
-        score: 0.92,
-        reason: "similar_topics",
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "private, s-maxage=300, stale-while-revalidate=600",
       },
-      {
-        feed: {
-          id: "meta-ai",
-          title: "Meta AI Blog",
-          description: "AI research from Meta",
-          url: "https://ai.meta.com/blog/feed.xml",
-          topics: ["llm", "research", "opensource"],
-          source_type: "blog",
-          verified: true,
-          is_active: true,
-        },
-        score: 0.88,
-        reason: "popular",
-      },
-      {
-        feed: {
-          id: "stabilityai",
-          title: "Stability AI Blog",
-          description: "Generative AI and diffusion models",
-          url: "https://stability.ai/blog/feed/",
-          topics: ["genai", "cv", "opensource"],
-          source_type: "blog",
-          verified: true,
-          is_active: true,
-        },
-        score: 0.15,
-        reason: "discover",
-      },
-    ];
-
-    // Filter by topics if provided
-    let results = mockRecommendations;
-    if (seed_topics && seed_topics.length > 0) {
-      results = mockRecommendations.filter((rec) =>
-        rec.feed.topics.some((t) => seed_topics.includes(t)),
-      );
-    }
-
-    results = results.slice(0, limit);
-
-    return NextResponse.json(
-      {
-        recommendations: results,
-        total: results.length,
-        user_id,
-        seed_topics,
-      },
-      {
-        headers: {
-          "Cache-Control": "private, s-maxage=300, stale-while-revalidate=600", // 5 min private cache
-        },
-      },
-    );
+    });
   } catch (error) {
-    console.error("Recommendations error:", error);
-    return NextResponse.json({ error: "Failed to generate recommendations" }, { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function POST(request: Request) {
+const POSTHandler = async (request: Request) => {
   try {
     const body = await request.json();
-    const { user_id, feed_id, interaction_type, reason } = body;
+    const { feed_id, interaction_type, reason } = body;
 
-    if (!user_id || !feed_id || !interaction_type) {
+    if (!feed_id || !interaction_type) {
       return NextResponse.json(
-        { error: "Missing required fields: user_id, feed_id, interaction_type" },
+        { error: "Missing required fields: feed_id, interaction_type" },
         { status: 400 },
       );
     }
@@ -113,12 +54,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // In production, track interaction in database
-    console.log("Tracked interaction:", { user_id, feed_id, interaction_type, reason });
+    const data = await fetchBackend("/recommendations/interactions", {
+      method: "POST",
+      body: {
+        feed_id,
+        interaction_type,
+        reason: reason || null,
+      },
+    });
 
-    return NextResponse.json({ success: true, tracked: true });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Track interaction error:", error);
-    return NextResponse.json({ error: "Failed to track interaction" }, { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("recommendations.list", GETHandler, {
+  backendTarget: "python-backend",
+});
+export const POST = withRouteTelemetry("recommendations.interaction", POSTHandler, {
+  backendTarget: "python-backend",
+});

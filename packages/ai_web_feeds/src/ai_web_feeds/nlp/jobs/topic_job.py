@@ -1,16 +1,21 @@
 """Batch job for topic modeling (Phase 5D)."""
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from loguru import logger
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, Subtopic
 from ai_web_feeds.nlp.topic_modeler import TopicModeler
 from ai_web_feeds.storage import DatabaseManager
+
+
+def _utc_now() -> datetime:
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class TopicModelingJob:
@@ -20,13 +25,16 @@ class TopicModelingJob:
     and stores results for hierarchical taxonomy and evolution tracking.
     """
 
-    def __init__(self, settings: Settings | None = None):
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        db_manager: DatabaseManager | None = None,
+    ):
         """Initialize topic modeling job."""
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.modeler = TopicModeler(settings)
-        self.db_manager = DatabaseManager(self.settings.database_url)
-        self.engine = self.db_manager.engine
+        self.modeler = TopicModeler(self.settings)
+        self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, topic: str | None = None, force: bool = False, min_articles: int = 10) -> dict:
         """Run topic modeling batch job.
@@ -45,7 +53,7 @@ class TopicModelingJob:
                 "duration_seconds": 120.5
             }
         """
-        start_time = datetime.utcnow()
+        start_time = _utc_now()
 
         stats = {
             "topics_processed": 0,
@@ -57,7 +65,7 @@ class TopicModelingJob:
 
         logger.info(f"Starting topic modeling batch job (topic={topic}, force={force})")
 
-        with Session(self.engine) as session:
+        with self.db_manager.get_session() as session:
             # Get articles grouped by topic
             if topic:
                 topics_to_process = [topic]
@@ -107,7 +115,7 @@ class TopicModelingJob:
                             keywords=json.dumps(discovered.keywords),
                             description=f"Auto-discovered subtopic with coherence {discovered.coherence_score:.2f}",
                             article_count=discovered.article_count,
-                            detected_at=datetime.utcnow(),
+                            detected_at=_utc_now(),
                             approved=False,  # Requires manual curation
                             created_by="system",
                         )
@@ -131,7 +139,7 @@ class TopicModelingJob:
             # Commit all changes
             session.commit()
 
-        end_time = datetime.utcnow()
+        end_time = _utc_now()
         stats["duration_seconds"] = (end_time - start_time).total_seconds()
 
         logger.info(

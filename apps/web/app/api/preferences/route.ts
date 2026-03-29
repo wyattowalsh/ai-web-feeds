@@ -1,115 +1,116 @@
 /**
  * Notification preferences API
  *
- * GET /api/preferences?user_id=<uuid> - Get user preferences
+ * GET /api/preferences - Get user preferences
  * POST /api/preferences - Create/update preference
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const userId = searchParams.get("user_id");
+export const dynamic = "force-dynamic";
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user_id parameter" }, { status: 400 });
+const GETHandler = async (request: NextRequest) => {
+  const requestedUserId = request.nextUrl.searchParams.get("user_id");
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/preferences?user_id=${userId}`, {
+    const data = await fetchBackend("/storage/preferences", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      params: {
+        user_id: identity.user_id,
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
-
-    const preferences = await response.json();
 
     return NextResponse.json({
-      user_id: userId,
-      preferences,
-      count: preferences.length,
+      user_id: identity.user_id,
+      preferences: data,
     });
   } catch (error) {
-    console.error("Failed to fetch preferences:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to fetch preferences",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
 
-export async function POST(request: NextRequest) {
+const POSTHandler = async (request: NextRequest) => {
   try {
-    const body = await request.json();
-    const { user_id, feed_id, delivery_method, frequency, quiet_hours_start, quiet_hours_end } =
-      body;
+    const body = (await request.json()) as {
+      user_id?: string;
+      feed_id?: string | null;
+      delivery_method?: string;
+      frequency?: string;
+      quiet_hours_start?: string | null;
+      quiet_hours_end?: string | null;
+    };
+    const identity = getUserIdentity(request, body.user_id ?? null);
+    const { feed_id, delivery_method, frequency, quiet_hours_start, quiet_hours_end } = body;
 
-    // Validate required fields
-    if (!user_id || !delivery_method || !frequency) {
-      return NextResponse.json(
-        { error: "Missing required fields: user_id, delivery_method, frequency" },
-        { status: 400 },
-      );
+    if (body.user_id && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
     }
 
-    // Validate enum values
+    if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
+      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
     const validDeliveryMethods = ["websocket", "email", "in_app"];
     const validFrequencies = ["instant", "hourly", "daily", "weekly", "off"];
 
-    if (!validDeliveryMethods.includes(delivery_method)) {
+    if (!delivery_method || !validDeliveryMethods.includes(delivery_method)) {
       return NextResponse.json(
         { error: `Invalid delivery_method. Must be one of: ${validDeliveryMethods.join(", ")}` },
         { status: 400 },
       );
     }
 
-    if (!validFrequencies.includes(frequency)) {
+    if (!frequency || !validFrequencies.includes(frequency)) {
       return NextResponse.json(
         { error: `Invalid frequency. Must be one of: ${validFrequencies.join(", ")}` },
         { status: 400 },
       );
     }
 
-    // Call Python backend
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8001";
-    const response = await fetch(`${backendUrl}/storage/preferences`, {
+    const data = await fetchBackend("/storage/preferences", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id,
+      body: {
+        user_id: identity.user_id,
         feed_id: feed_id || null,
         delivery_method,
         frequency,
         quiet_hours_start: quiet_hours_start || null,
         quiet_hours_end: quiet_hours_end || null,
-      }),
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
-    }
-
-    const preference = await response.json();
 
     return NextResponse.json({
       success: true,
-      preference,
+      preference: data,
     });
   } catch (error) {
-    console.error("Failed to save preference:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to save preference",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("preferences.list", GETHandler, {
+  backendTarget: "python-backend",
+});
+export const POST = withRouteTelemetry("preferences.save", POSTHandler, {
+  backendTarget: "python-backend",
+});

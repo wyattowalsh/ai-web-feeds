@@ -99,12 +99,10 @@ Jenkinsfile text eol=lf
 # ============================================================================
 .env text eol=lf
 .env.* text eol=lf
-env.example text eol=lf
 
 # ============================================================================
 # Lock Files - Binary to prevent merge conflicts
 # ============================================================================
-package-lock.json binary
 pnpm-lock.yaml binary
 yarn.lock binary
 uv.lock binary
@@ -169,7 +167,6 @@ Pipfile.lock binary
 *.ipynb diff=jupyternotebook merge=union
 
 # Lockfiles - prefer union merge strategy
-package-lock.json merge=union
 pnpm-lock.yaml merge=union
 yarn.lock merge=union
 uv.lock merge=union
@@ -202,7 +199,6 @@ build/ export-ignore
 # Linguist Overrides (GitHub language detection)
 # ============================================================================
 # Exclude generated files from language stats
-package-lock.json linguist-generated=true
 pnpm-lock.yaml linguist-generated=true
 yarn.lock linguist-generated=true
 uv.lock linguist-generated=true

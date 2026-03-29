@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
   const prefix = searchParams.get("prefix");
@@ -69,4 +70,6 @@ export async function GET(request: Request) {
     console.error("Autocomplete error:", error);
     return NextResponse.json({ error: "Autocomplete failed" }, { status: 500 });
   }
-}
+};
+
+export const GET = withRouteTelemetry("search.autocomplete", GETHandler);

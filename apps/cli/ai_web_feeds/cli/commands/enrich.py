@@ -6,6 +6,7 @@ from pathlib import Path
 import typer
 from loguru import logger
 
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.models import FeedSource
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.utils import (
@@ -40,7 +41,7 @@ def enrich_all(
         help="Output JSON schema file",
     ),
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

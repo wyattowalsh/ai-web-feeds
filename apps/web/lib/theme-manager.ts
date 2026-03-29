@@ -61,7 +61,7 @@ export interface ThemeConfig {
 
 class ThemeManager {
   private currentTheme: ThemeMode = 'system';
-  private listeners: Set<(theme: ThemeMode) => void> = new Set();
+  private listeners: Set<(theme: 'light' | 'dark') => void> = new Set();
   private mediaQuery: MediaQueryList | null = null;
 
   constructor() {
@@ -150,26 +150,26 @@ class ThemeManager {
    */
   private getLightColors(): ThemeColors {
     return {
-      background: '#ffffff',
-      backgroundSecondary: '#f8f9fa',
-      backgroundTertiary: '#e9ecef',
-      text: '#212529',
-      textSecondary: '#6c757d',
-      textTertiary: '#adb5bd',
-      border: '#dee2e6',
-      divider: '#e9ecef',
+      background: '#f7f4ee',
+      backgroundSecondary: '#fffdfa',
+      backgroundTertiary: '#ece7dc',
+      text: '#222b3b',
+      textSecondary: '#667086',
+      textTertiary: '#9ca4b6',
+      border: '#ddd6c7',
+      divider: '#e7e0d4',
       overlay: 'rgba(0, 0, 0, 0.5)',
-      primary: '#0066cc',
-      primaryHover: '#0052a3',
-      secondary: '#6c757d',
-      secondaryHover: '#5a6268',
-      success: '#28a745',
-      warning: '#ffc107',
-      error: '#dc3545',
-      info: '#17a2b8',
-      linkText: '#0066cc',
-      linkHover: '#0052a3',
-      selection: 'rgba(0, 102, 204, 0.1)',
+      primary: '#4a5fd4',
+      primaryHover: '#394bb0',
+      secondary: '#768096',
+      secondaryHover: '#5e677c',
+      success: '#2f9f72',
+      warning: '#d6a437',
+      error: '#d2615b',
+      info: '#2e7ba8',
+      linkText: '#4a5fd4',
+      linkHover: '#394bb0',
+      selection: 'rgba(74, 95, 212, 0.14)',
     };
   }
 
@@ -178,26 +178,26 @@ class ThemeManager {
    */
   private getDarkColors(): ThemeColors {
     return {
-      background: '#1a1a1a',
-      backgroundSecondary: '#2d2d2d',
-      backgroundTertiary: '#404040',
-      text: '#e9ecef',
-      textSecondary: '#adb5bd',
-      textTertiary: '#6c757d',
-      border: '#404040',
-      divider: '#2d2d2d',
+      background: '#1f2530',
+      backgroundSecondary: '#2a313d',
+      backgroundTertiary: '#353d4c',
+      text: '#f2ede4',
+      textSecondary: '#c1c7d3',
+      textTertiary: '#8d98ab',
+      border: '#474f5f',
+      divider: '#343b4a',
       overlay: 'rgba(0, 0, 0, 0.7)',
-      primary: '#4d9fff',
-      primaryHover: '#66b3ff',
-      secondary: '#6c757d',
-      secondaryHover: '#868e96',
-      success: '#38c172',
-      warning: '#ffed4e',
-      error: '#ef5753',
-      info: '#2cb1bc',
-      linkText: '#4d9fff',
-      linkHover: '#66b3ff',
-      selection: 'rgba(77, 159, 255, 0.2)',
+      primary: '#8b9cf0',
+      primaryHover: '#a5b1f5',
+      secondary: '#7e889c',
+      secondaryHover: '#a0abbd',
+      success: '#4fbd8a',
+      warning: '#e4bf62',
+      error: '#ef8a84',
+      info: '#5ea4d1',
+      linkText: '#8b9cf0',
+      linkHover: '#a5b1f5',
+      selection: 'rgba(139, 156, 240, 0.22)',
     };
   }
 
@@ -308,7 +308,7 @@ class ThemeManager {
   /**
    * Add theme change listener
    */
-  addListener(listener: (theme: ThemeMode) => void): () => void {
+  addListener(listener: (theme: 'light' | 'dark') => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }

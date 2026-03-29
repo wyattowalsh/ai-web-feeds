@@ -1,11 +1,11 @@
 ---
 title: Conventional Commits
-description: Guide to using Conventional Commits specification in AI Web Feeds
+description: Guide to using Conventional Commits specification in ai-web-feeds
 ---
 
 ## Overview
 
-AI Web Feeds uses the [Conventional Commits](https://www.conventionalcommits.org/) specification for all commit messages. This provides a structured format that enables automated changelog generation, semantic versioning, and clear project history.
+ai-web-feeds uses the [Conventional Commits](https://www.conventionalcommits.org/) specification for all commit messages. This provides a structured format that enables automated changelog generation, semantic versioning, and clear project history.
 
 ## Format
 
@@ -215,13 +215,11 @@ Co-authored-by: Name <email@example.com>
 For interactive commit creation, use commitizen:
 
 ```bash
-# Initialize (one-time setup)
-npx commitizen init cz-conventional-changelog --save-dev --save-exact
+# Install locally in the workspace if needed
+pnpm add -D commitizen cz-conventional-changelog
 
 # Create commits interactively
-npx cz
-# or
-git cz
+pnpm exec cz
 ```
 
 Commitizen will prompt you for:

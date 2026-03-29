@@ -15,6 +15,8 @@
     "export-pdf:specific": "tsx scripts/export-pdf-specific.ts",
     "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!",
     "test": "playwright test",
+    "test:unit": "vitest run",
+    "test:vitest": "vitest",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed"
   },
@@ -28,6 +30,7 @@
     "d3": "^7.9.0",
     "d3-force": "^3.0.0",
     "d3-zoom": "^3.0.0",
+    "fast-xml-parser": "^5.5.9",
     "feed": "^5.2.0",
     "fumadocs-core": "15.8.5",
     "fumadocs-mdx": "12.0.3",
@@ -55,6 +58,8 @@
     "@playwright/test": "^1.58.2",
     "@react-spring/three": "^10.0.3",
     "@tailwindcss/postcss": "^4.2.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bun": "^1.3.10",
     "@types/d3": "^7.4.3",
     "@types/mdx": "^2.0.13",
@@ -63,13 +68,17 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/react-grid-layout": "^1.3.6",
+    "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^9.39.3",
     "eslint-config-next": "15.5.12",
+    "jsdom": "^29.0.1",
     "next-validate-link": "^1.6.4",
     "postcss": "^8.5.8",
     "puppeteer": "^24.38.0",
     "tailwindcss": "^4.2.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.2"
   }
 }

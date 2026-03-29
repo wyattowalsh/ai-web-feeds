@@ -161,7 +161,7 @@ export async function getByIndex<T>(
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
     const index = store.index(indexName);
-    const request = index.getAll(value);
+    const request = index.getAll(value as unknown as IDBValidKey);
 
     request.onsuccess = () => resolve(request.result as T[]);
     request.onerror = () => reject(request.error);
@@ -305,6 +305,8 @@ export const readingHistory = {
   delete: (id: string) => del(STORES.READING_HISTORY, id),
   getByArticle: (articleId: string) =>
     getByIndex<ReadingHistoryEntry>(STORES.READING_HISTORY, 'articleId', articleId),
+  getByRange: (indexName: string, from?: number, to?: number) =>
+    getByRange<ReadingHistoryEntry>(STORES.READING_HISTORY, indexName, from, to),
   getRecent: (from: number) =>
     getByRange<ReadingHistoryEntry>(STORES.READING_HISTORY, 'timestamp', from),
   count: () => count(STORES.READING_HISTORY),

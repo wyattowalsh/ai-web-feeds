@@ -1,11 +1,18 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Compass, Save, Search as SearchIcon, Sparkles } from "lucide-react";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchFilters } from "@/components/search/search-filters";
 import { SearchResults } from "@/components/search/search-results";
 import { SavedSearches } from "@/components/search/saved-searches";
+import { Button } from "@/components/ui/button";
+import { getUserId } from "@/lib/user-identity";
+
+type SearchType = "full_text" | "semantic";
+
+const DEFAULT_THRESHOLD = 0.7;
 
 interface SearchResult {
   id: string;
@@ -19,14 +26,60 @@ interface SearchResult {
   similarity?: number;
 }
 
+interface SavedSearchFilters {
+  source_type?: string;
+  topics?: string[];
+  verified?: boolean;
+  threshold?: number;
+}
+
+interface SearchExecutionState extends SavedSearchFilters {
+  searchType: SearchType;
+  topics: string[];
+  threshold: number;
+}
+
+function parseVerifiedParam(value: string | null): boolean | undefined {
+  if (value === null) {
+    return undefined;
+  }
+
+  return value === "true";
+}
+
+function parseThresholdParam(value: string | null): number {
+  const parsed = Number.parseFloat(value ?? "");
+
+  return Number.isFinite(parsed) ? parsed : DEFAULT_THRESHOLD;
+}
+
+async function getResponseErrorMessage(response: Response, fallback: string): Promise<string> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    const payload = await response.json().catch(() => null);
+
+    if (payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string") {
+      const errorMessage = payload.error.trim();
+      if (errorMessage) {
+        return errorMessage;
+      }
+    }
+  }
+
+  const errorText = await response.text().catch(() => "");
+
+  return errorText.trim() || fallback;
+}
+
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Search state
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [searchType, setSearchType] = useState<"full_text" | "semantic">(
-    (searchParams.get("type") as "full_text" | "semantic") || "full_text",
+  const [searchType, setSearchType] = useState<SearchType>(
+    (searchParams.get("type") as SearchType) || "full_text",
   );
   const [sourceType, setSourceType] = useState<string | undefined>(
     searchParams.get("source_type") || undefined,
@@ -34,10 +87,8 @@ function SearchPageContent() {
   const [topics, setTopics] = useState<string[]>(
     searchParams.get("topics")?.split(",").filter(Boolean) || [],
   );
-  const [verified, setVerified] = useState<boolean | undefined>(
-    searchParams.get("verified") === "true" ? true : undefined,
-  );
-  const [threshold, setThreshold] = useState(parseFloat(searchParams.get("threshold") || "0.7"));
+  const [verified, setVerified] = useState<boolean | undefined>(parseVerifiedParam(searchParams.get("verified")));
+  const [threshold, setThreshold] = useState(parseThresholdParam(searchParams.get("threshold")));
 
   // Results state
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -46,24 +97,31 @@ function SearchPageContent() {
 
   // User ID (localStorage for Phase 1)
   const [userId, setUserId] = useState<string>("");
+  const hasInitializedRef = useRef(false);
 
-  useEffect(() => {
-    // Get or create user ID from localStorage
-    let id = localStorage.getItem("search_user_id");
-    if (!id) {
-      id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("search_user_id", id);
+  const ensureUserId = useCallback(() => {
+    const activeUserId = userId || getUserId();
+
+    if (activeUserId !== userId) {
+      setUserId(activeUserId);
     }
-    setUserId(id);
 
-    // Perform search if query is in URL
-    if (searchParams.get("q")) {
-      performSearch(searchParams.get("q")!);
-    }
-  }, []);
+    return activeUserId;
+  }, [userId]);
 
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = useCallback(async (
+    searchQuery: string,
+    overrides: Partial<SearchExecutionState> = {},
+    requestUserId?: string,
+  ) => {
     if (!searchQuery.trim()) return;
+
+    const effectiveSearchType = overrides.searchType ?? searchType;
+    const effectiveSourceType = "source_type" in overrides ? overrides.source_type : sourceType;
+    const effectiveTopics = "topics" in overrides ? (overrides.topics ?? []) : topics;
+    const effectiveVerified = "verified" in overrides ? overrides.verified : verified;
+    const effectiveThreshold = typeof overrides.threshold === "number" ? overrides.threshold : threshold;
+    const activeUserId = requestUserId ?? ensureUserId();
 
     setLoading(true);
     setHasSearched(true);
@@ -71,11 +129,11 @@ function SearchPageContent() {
     // Update URL
     const params = new URLSearchParams();
     params.set("q", searchQuery);
-    params.set("type", searchType);
-    if (sourceType) params.set("source_type", sourceType);
-    if (topics.length > 0) params.set("topics", topics.join(","));
-    if (verified !== undefined) params.set("verified", String(verified));
-    if (searchType === "semantic") params.set("threshold", String(threshold));
+    params.set("type", effectiveSearchType);
+    if (effectiveSourceType) params.set("source_type", effectiveSourceType);
+    if (effectiveTopics.length > 0) params.set("topics", effectiveTopics.join(","));
+    if (effectiveVerified !== undefined) params.set("verified", String(effectiveVerified));
+    if (effectiveSearchType === "semantic") params.set("threshold", String(effectiveThreshold));
 
     router.push(`/search?${params.toString()}`);
 
@@ -92,10 +150,15 @@ function SearchPageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: searchQuery,
-          type: searchType,
-          filters: { source_type: sourceType, topics, verified, threshold },
+          type: effectiveSearchType,
+          filters: {
+            source_type: effectiveSourceType,
+            topics: effectiveTopics,
+            verified: effectiveVerified,
+            threshold: effectiveThreshold,
+          },
           clicked_results: [],
-          user_id: userId,
+          user_id: activeUserId,
         }),
       });
     } catch (error) {
@@ -104,22 +167,47 @@ function SearchPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ensureUserId, router, searchType, sourceType, threshold, topics, verified]);
+
+  useEffect(() => {
+    if (hasInitializedRef.current) {
+      return;
+    }
+
+    hasInitializedRef.current = true;
+
+    const activeUserId = ensureUserId();
+    const initialQuery = searchParams.get("q");
+
+    if (initialQuery) {
+      void performSearch(initialQuery, {}, activeUserId);
+    }
+  }, [ensureUserId, performSearch, searchParams]);
 
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery);
-    performSearch(newQuery);
+    void performSearch(newQuery);
   };
 
-  const handleLoadSavedSearch = (savedQuery: string, savedFilters: Record<string, any>) => {
+  const handleLoadSavedSearch = (savedQuery: string, savedFilters: SavedSearchFilters) => {
+    const nextFilters: SavedSearchFilters = {
+      source_type: savedFilters.source_type,
+      topics: savedFilters.topics ?? [],
+      verified: savedFilters.verified,
+      threshold: typeof savedFilters.threshold === "number" ? savedFilters.threshold : DEFAULT_THRESHOLD,
+    };
+
     setQuery(savedQuery);
-    if (savedFilters.source_type) setSourceType(savedFilters.source_type);
-    if (savedFilters.topics) setTopics(savedFilters.topics);
-    if (savedFilters.verified !== undefined) setVerified(savedFilters.verified);
-    performSearch(savedQuery);
+    setSourceType(nextFilters.source_type);
+    setTopics(nextFilters.topics ?? []);
+    setVerified(nextFilters.verified);
+    setThreshold(nextFilters.threshold ?? DEFAULT_THRESHOLD);
+    void performSearch(savedQuery, nextFilters);
   };
 
   const handleResultClick = async (feedId: string) => {
+    const activeUserId = ensureUserId();
+
     // Log click for analytics
     await fetch("/api/search", {
       method: "POST",
@@ -129,7 +217,7 @@ function SearchPageContent() {
         type: searchType,
         filters: { source_type: sourceType, topics, verified, threshold },
         clicked_results: [feedId],
-        user_id: userId,
+        user_id: activeUserId,
       }),
     });
   };
@@ -139,42 +227,72 @@ function SearchPageContent() {
     if (!name) return;
 
     try {
-      await fetch("/api/search/saved", {
+      const activeUserId = ensureUserId();
+      const response = await fetch("/api/search/saved", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: userId,
+          user_id: activeUserId,
           search_name: name,
           query_text: query,
           filters: { source_type: sourceType, topics, verified, threshold },
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(await getResponseErrorMessage(response, "Failed to save search. Please try again."));
+      }
+
       alert("Search saved successfully!");
     } catch (error) {
       console.error("Failed to save search:", error);
-      alert("Failed to save search. Please try again.");
+      alert(error instanceof Error ? error.message : "Failed to save search. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Search & Discovery</h1>
-          <p className="text-gray-600">
-            Find feeds with full-text or semantic search, powered by SQLite FTS5 and embeddings
-          </p>
+    <div className="page-wrap page-stack">
+      <section className="surface-panel space-y-8">
+        <div className="grid gap-8 md:gap-6 md:grid-cols-[1fr_0.9fr] lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <div className="space-y-5">
+            <span className="eyebrow">
+              <Compass className="size-3.5" />
+              Search and discovery
+            </span>
+            <div className="space-y-4">
+              <h1 className="hero-title max-w-4xl">Find the right feeds without scanning the catalog manually.</h1>
+              <p className="hero-copy max-w-2xl">
+                Move from exact keyword lookup to semantic discovery, then save the searches worth
+                repeating. This surface is optimized for fast narrowing and deliberate comparison.
+              </p>
+            </div>
+          </div>
+
+          <div className="surface-card-soft space-y-4">
+            <p className="metric-label">Search modes</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
+                <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+                  <SearchIcon className="size-4" />
+                </div>
+                <h2 className="text-base font-semibold text-(--ink)">Full-text</h2>
+                <p className="small-note mt-1">Best for exact titles, topics, and known phrases.</p>
+              </div>
+              <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
+                <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+                  <Sparkles className="size-4" />
+                </div>
+                <h2 className="text-base font-semibold text-(--ink)">Semantic</h2>
+                <p className="small-note mt-1">Best for adjacent concepts and similarity-based exploration.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <SearchBar onSearch={handleSearch} initialQuery={query} />
-        </div>
+        <SearchBar onSearch={handleSearch} initialQuery={query} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar: Filters + Saved Searches */}
-          <div className="lg:col-span-1 space-y-6">
+        <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+          <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
             <SearchFilters
               searchType={searchType}
               onSearchTypeChange={setSearchType}
@@ -191,21 +309,55 @@ function SearchPageContent() {
             {userId && <SavedSearches userId={userId} onLoadSearch={handleLoadSavedSearch} />}
           </div>
 
-          {/* Main: Results */}
-          <div className="lg:col-span-3">
+          <div className="space-y-6">
             {hasSearched && query && (
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  Showing results for: <strong>{query}</strong>
-                </p>
+              <div className="surface-card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="metric-label">Current query</p>
+                  <p className="mt-2 text-base text-(--ink-muted)">
+                    Showing results for <span className="font-semibold text-(--ink)">{query}</span>
+                  </p>
+                  <p className="small-note mt-1">
+                    {searchType === "semantic"
+                      ? `Semantic search with threshold ${threshold.toFixed(2)}`
+                      : "Exact keyword search across the catalog"}
+                  </p>
+                </div>
                 {results.length > 0 && (
-                  <button
-                    onClick={handleSaveSearch}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    💾 Save Search
-                  </button>
+                  <Button onClick={handleSaveSearch} variant="secondary">
+                    <Save className="size-4" />
+                    Save Search
+                  </Button>
                 )}
+              </div>
+            )}
+
+            {!hasSearched && (
+              <div className="surface-card-soft">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+                    <SearchIcon className="size-5" />
+                  </span>
+                  <div>
+                    <p className="metric-label">Start here</p>
+                    <h2 className="text-2xl font-semibold text-(--ink)">Search across 1,000+ AI and ML feeds.</h2>
+                  </div>
+                </div>
+                <p className="hero-copy max-w-2xl">
+                  Use the search bar above to move from broad discovery to a workable shortlist.
+                  Saved searches help you keep recurring monitoring queries one click away.
+                </p>
+                <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="rounded-3xl border border-(--line) bg-(--surface) p-4 text-sm text-(--ink-muted)">
+                    Use <span className="font-semibold text-(--ink)">full-text</span> when you know the exact terms.
+                  </div>
+                  <div className="rounded-3xl border border-(--line) bg-(--surface) p-4 text-sm text-(--ink-muted)">
+                    Use <span className="font-semibold text-(--ink)">semantic</span> when you want related concepts.
+                  </div>
+                  <div className="rounded-3xl border border-(--line) bg-(--surface) p-4 text-sm text-(--ink-muted)">
+                    Try queries like <span className="font-semibold text-(--ink)">machine learning</span>, <span className="font-semibold text-(--ink)">transformers</span>, or <span className="font-semibold text-(--ink)">pytorch</span>.
+                  </div>
+                </div>
               </div>
             )}
 
@@ -215,41 +367,16 @@ function SearchPageContent() {
               loading={loading}
               onResultClick={handleResultClick}
             />
-
-            {!hasSearched && (
-              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-                <p className="text-xl font-semibold text-gray-900 mb-2">🔍 Start searching</p>
-                <p className="text-gray-600 mb-6">
-                  Enter a query above to search through 1,000+ AI/ML feeds
-                </p>
-                <div className="space-y-3 text-sm text-gray-700 text-left inline-block">
-                  <p>
-                    <strong>💡 Search Tips:</strong>
-                  </p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>
-                      Use <strong>full-text</strong> for exact keyword matching
-                    </li>
-                    <li>
-                      Use <strong>semantic</strong> for conceptual similarity
-                    </li>
-                    <li>Filter by topics, source type, and verification status</li>
-                    <li>Save searches for one-click replay</li>
-                    <li>Try: "machine learning", "transformers", "pytorch"</li>
-                  </ul>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<div className="page-wrap py-16" />}>
       <SearchPageContent />
     </Suspense>
   );

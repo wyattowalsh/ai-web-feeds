@@ -1,4 +1,4 @@
-# AIWebFeeds - Root Agent Instructions
+# ai-web-feeds - Root Agent Instructions
 
 > **Navigation Hub**: Start here, then follow component-specific `AGENTS.md` links
 > below.
@@ -21,7 +21,7 @@ uv add package                    # Add Python package
 uv run python script.py           # Run Python scripts
 uv run python -m module           # Run Python modules
 uv run pytest                     # Run Python commands/tools
-uv run aiwebfeeds                 # Run CLI commands
+uv run ai-web-feeds               # Run CLI commands
 pnpm install                      # Install Node dependencies
 pnpm add package                  # Add Node package
 pnpm run dev                      # Run Node scripts
@@ -69,7 +69,7 @@ ______________________________________________________________________
 
 **Hybrid Monorepo**: Python (uv) + TypeScript (pnpm)
 
-```
+```text
 ai-web-feeds/
 ├── packages/ai_web_feeds/    # Core: Fetching, storage, analytics
 ├── apps/cli/                  # Typer CLI interface
@@ -81,7 +81,7 @@ ai-web-feeds/
 │   ├── topics.yaml           # Topic taxonomy (graph structure)
 │   ├── *.schema.json         # JSON Schema validation
 │   ├── *.opml                # Feed reader imports
-│   └── aiwebfeeds.db         # SQLite cache
+│   └── ai-web-feeds.db       # SQLite cache (legacy aiwebfeeds.db also supported)
 └── .github/                   # GitHub templates & workflows
 ```
 
@@ -102,6 +102,9 @@ ______________________________________________________________________
 - ❌ **FORBIDDEN LOCATIONS**: Any `.md` file in `packages/`, `apps/cli/`, `data/`,
   workspace root (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `LICENSE`, `AGENTS.md`)
+- ✅ **DEVELOPMENT ARTIFACT EXCEPTION**: `specs/**/*.md` are allowed for technical
+  specifications, planning, and checklists. They are repository development
+  artifacts, not user-facing project documentation.
 - ✅ **REQUIRED WORKFLOW**:
   1. Create `.mdx` file in `apps/web/content/docs/` (e.g.,
      `apps/web/content/docs/development/database.mdx`)
@@ -113,13 +116,21 @@ ______________________________________________________________________
 
 **Examples of FORBIDDEN files:**
 
-```
+```text
 ❌ packages/ai_web_feeds/DATABASE.md
 ❌ packages/ai_web_feeds/SIMPLIFIED_ARCHITECTURE.md
 ❌ apps/cli/USER_GUIDE.md
 ❌ SIMPLIFICATION_SUMMARY.md
 ❌ NEW_FEATURE_DOCS.md
 ❌ Any other .md file except allowed root files
+```
+
+**Allowed development artifact examples:**
+
+```text
+✅ specs/001-core-project-spec/spec.md
+✅ specs/001-core-project-spec/plan.md
+✅ specs/002-data-discovery-analytics/checklists/test-coverage.md
 ```
 
 **See [Web AGENTS.md](apps/web/AGENTS.md) for detailed documentation structure**
@@ -143,7 +154,7 @@ ______________________________________________________________________
 
 ```bash
 # Python environment (ALWAYS use uv run python)
-uv sync && uv run aiwebfeeds --help
+uv sync && uv run ai-web-feeds --help
 
 # Web development (ALWAYS use pnpm)
 cd apps/web && pnpm install && pnpm dev
@@ -171,7 +182,7 @@ ______________________________________________________________________
 1. **Write tests first** (TDD preferred, see [Tests AGENTS.md](tests/AGENTS.md))
 1. **Implement + lint**: `uv run ruff check --fix .` or `pnpm lint --fix`
 1. **Update documentation**: Edit [`apps/web/content/docs/`](apps/web/content/docs/)
-1. **Verify coverage**: `uv run aiwebfeeds test coverage` (≥90% required)
+1. **Verify coverage**: `uv run ai-web-feeds test coverage` (≥90% required)
 1. **Commit**: `git commit -m "feat(scope): description"` (conventional commits)
 
 **Recent Updates (October 2025)**:
@@ -218,6 +229,8 @@ If you need to document anything:
 - ❌ **FORBIDDEN FILES**: `*.md` in `packages/`, `apps/cli/`, `data/`, workspace root
   (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `LICENSE`, `AGENTS.md`,
   `WARP.md`)
+- ✅ **EXCEPTION**: `specs/**/*.md` are allowed as development-only specification and
+  planning artifacts
 - ✅ **ONLY ALLOWED**: `.mdx` files in `apps/web/content/docs/` with proper frontmatter
 - ✅ **REQUIRED**: Update `apps/web/content/docs/meta.json` for every new doc page
 - ❌ **NO "TEMPORARY" OR "SUPPLEMENTARY" `.md` FILES** - They become permanent clutter
@@ -236,7 +249,7 @@ ______________________________________________________________________
 | `data/feeds.enriched.yaml` | AI-enriched feed metadata                           | `feeds.enriched.schema.json` |
 | `data/topics.yaml`         | Topic taxonomy (graph structure, facets, relations) | `topics.schema.json`         |
 | `data/*.opml`              | Feed reader import files                            | OPML 2.0                     |
-| `data/aiwebfeeds.db`       | SQLite cache (validation, health)                   | SQLAlchemy models            |
+| `data/ai-web-feeds.db`     | SQLite cache (validation, health)                   | SQLAlchemy models            |
 
 **Key**: Always validate data files against their JSON schemas before committing.
 

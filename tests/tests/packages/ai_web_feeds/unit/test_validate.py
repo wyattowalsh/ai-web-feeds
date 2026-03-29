@@ -3,11 +3,13 @@
 import json
 import tempfile
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from ai_web_feeds.validate import (
     ValidationError,
     ValidationResult,
+    validate_feed_url,
     validate_feeds,
     validate_topics,
 )
@@ -417,6 +419,75 @@ class TestValidationError:
             raise ValidationError("Custom validation error")
 
         assert "Custom validation error" in str(exc_info.value)
+
+
+class ParsedFeed(dict):
+    """Small helper to mimic feedparser results in tests."""
+
+    def __init__(
+        self,
+        *,
+        version: str = "rss20",
+        feed: dict[str, str] | None = None,
+        entries: list[dict[str, str]] | None = None,
+        bozo: bool = False,
+        bozo_exception: Exception | None = None,
+    ):
+        super().__init__(version=version, feed=feed or {}, entries=entries or [])
+        self.bozo = bozo
+        self.bozo_exception = bozo_exception
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+class TestValidateFeedUrl:
+    """Test async feed URL validation."""
+
+    @patch("ai_web_feeds.validate.feedparser.parse")
+    @patch("ai_web_feeds.validate.httpx.AsyncClient")
+    async def test_validate_feed_url_success_with_entries(self, mock_client_class, mock_parse):
+        """A parsed feed with entries should validate successfully."""
+        mock_response = Mock(status_code=200, text="<rss></rss>")
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_response)
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+
+        mock_parse.return_value = ParsedFeed(
+            feed={"title": "Example Feed"},
+            entries=[{"title": "Entry 1"}],
+        )
+
+        result = await validate_feed_url("https://example.com/feed.xml")
+
+        assert result["success"] is True
+        assert result["feed_format"] == "rss"
+        assert result["entry_count"] == 1
+        assert result["error_message"] is None
+
+    @patch("ai_web_feeds.validate.feedparser.parse")
+    @patch("ai_web_feeds.validate.httpx.AsyncClient")
+    async def test_validate_feed_url_bozo_without_entries_fails(
+        self, mock_client_class, mock_parse
+    ):
+        """Parser errors without entries should not be treated as success."""
+        mock_response = Mock(status_code=200, text="<rss></rss>")
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_response)
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+
+        parse_error = ValueError("mismatched tag")
+        mock_parse.return_value = ParsedFeed(
+            feed={"title": "Broken Feed"},
+            entries=[],
+            bozo=True,
+            bozo_exception=parse_error,
+        )
+
+        result = await validate_feed_url("https://example.com/broken-feed.xml")
+
+        assert result["success"] is False
+        assert result["entry_count"] == 0
+        assert result["error_message"] == "Feed parse error: mismatched tag"
 
 
 @pytest.mark.unit

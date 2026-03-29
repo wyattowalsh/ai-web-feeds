@@ -84,7 +84,7 @@ apps/cli/ai_web_feeds/cli/
     └── validate.py     # Feed validation
 ```
 
-**Entry point**: `pyproject.toml` → `aiwebfeeds` command
+**Entry point**: `pyproject.toml` → `ai-web-feeds` command (`aiwebfeeds` alias retained)
 
 **See**: [llms-full.txt#cli](https://aiwebfeeds.com/llms-full.txt#cli) for command
 reference

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getMDXComponents } from "@/mdx-components";
 import type { Metadata } from "next";
 import { createRelativeLink } from "fumadocs-ui/mdx";
+import { BookOpenText } from "lucide-react";
 import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
 
 export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
@@ -15,16 +16,28 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+      <div className="docs-page-header not-prose">
+        <div className="space-y-4">
+          <span className="eyebrow">
+            <BookOpenText className="size-3.5" />
+            Documentation
+          </span>
+          <div className="space-y-3">
+            <DocsTitle>{page.data.title}</DocsTitle>
+            <DocsDescription>{page.data.description}</DocsDescription>
+          </div>
+        </div>
 
-      {/* AI Page Actions */}
-      <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6 mb-6">
-        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
-        <ViewOptions
-          markdownUrl={`${page.url}.mdx`}
-          githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/content/docs/${page.file.path}`}
-        />
+        <div className="docs-page-actions">
+          <div className="flex flex-wrap items-center gap-2">
+            <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+            <ViewOptions
+              markdownUrl={`${page.url}.mdx`}
+              githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/content/docs/${page.file.path}`}
+            />
+          </div>
+          <p className="small-note">Source: apps/web/content/docs/{page.file.path}</p>
+        </div>
       </div>
 
       <DocsBody>
@@ -113,7 +126,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
       types: {
         "application/rss+xml": `${baseUrl}/docs/rss.xml`,
         "application/atom+xml": `${baseUrl}/docs/atom.xml`,
-        "application/json": `${baseUrl}/docs/feed.json`,
+        "application/feed+json": `${baseUrl}/docs/feed.json`,
       },
     },
   };

@@ -7,7 +7,7 @@ Implements FR-011d and FR-032e:
 """
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -47,6 +47,14 @@ class DateRangeValidator(BaseModel):
     start: datetime = Field(description="Start date (inclusive)")
     end: datetime = Field(description="End date (inclusive)")
 
+    @field_validator("start", "end")
+    @classmethod
+    def normalize_to_utc(cls, v: datetime) -> datetime:
+        """Normalize datetimes to UTC while tolerating naive input."""
+        if v.tzinfo is None:
+            return v.replace(tzinfo=UTC)
+        return v.astimezone(UTC)
+
     @field_validator("end")
     @classmethod
     def validate_end_after_start(cls, v: datetime, info) -> datetime:
@@ -60,7 +68,7 @@ class DateRangeValidator(BaseModel):
     @classmethod
     def validate_not_future(cls, v: datetime) -> datetime:
         """Ensure dates are not in the future."""
-        if v > datetime.utcnow():
+        if v > datetime.now(UTC):
             raise ValueError("Date cannot be in the future")
         return v
 

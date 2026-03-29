@@ -3,7 +3,7 @@
 This module implements Z-score trending detection for real-time topic monitoring.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 from loguru import logger
@@ -48,7 +48,7 @@ class TrendingDetector:
         Returns:
             List of TrendingTopic objects ordered by rank
         """
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         period_start = now - timedelta(hours=1)
         baseline_start = now - timedelta(days=self.baseline_days)
 
