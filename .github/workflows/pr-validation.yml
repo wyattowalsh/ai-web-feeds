@@ -16,15 +16,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Comment validation results
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
         with:
           script: |
             const conclusion = '${{ job.status }}';
@@ -61,15 +61,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -88,7 +88,7 @@ jobs:
 
       - name: Comment linting results
         if: always() && (steps.ruff-check.outcome == 'failure' || steps.ruff-format.outcome == 'failure')
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
         with:
           script: |
             const lintFailed = '${{ steps.ruff-check.outcome }}' === 'failure';
@@ -120,15 +120,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -140,7 +140,7 @@ jobs:
 
       - name: Comment test results
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
         with:
           script: |
             await github.rest.issues.createComment({
@@ -148,14 +148,4 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body: '❌ **Tests Failed**\n\nPlease fix the failing tests before merging.\n\nRun `uv run aiwebfeeds test all` locally to see full test output.'
-            });
-            const message = conclusion === 'success'
-              ? '✅ **Schema Validation Passed**\n\nAll changes are valid according to the schema.'
-              : '❌ **Schema Validation Failed**\n\nPlease check the validation errors above.';
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: message
             });

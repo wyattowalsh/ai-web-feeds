@@ -27,15 +27,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload ruff reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: ruff-report-${{ github.run_id }}
           path: |
@@ -79,15 +79,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -97,12 +97,11 @@ jobs:
       - name: Run mypy type checking (via uv scripts)
         run: |
           uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests --junit-xml mypy-report.xml --html-report mypy-html || true
-        continue-on-error: true
         id: mypy-check
 
       - name: Upload mypy reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: mypy-report-${{ github.run_id }}
           path: |
@@ -122,22 +121,20 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
       - name: Install dependencies
-        run: |
-          uv sync --all-extras
-          uv pip install bandit[toml]
+        run: uv sync --all-extras
 
       - name: Run bandit security check
         run: |
@@ -148,7 +145,7 @@ jobs:
 
       - name: Upload bandit reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: bandit-report-${{ github.run_id }}
           path: |
@@ -174,15 +171,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -203,7 +200,7 @@ jobs:
           uv run coverage report || true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb161daa5c8b7f32b7d2cf808
         with:
           files: ./tests/reports/coverage/coverage.xml
           flags: unittests
@@ -212,7 +209,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
           path: |

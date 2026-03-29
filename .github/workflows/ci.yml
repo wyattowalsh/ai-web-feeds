@@ -41,15 +41,15 @@ jobs:
           - 6379:6379
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: "3.13"
 
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
 
       - name: Install dependencies
         run: cd packages/ai_web_feeds && uv sync
@@ -76,19 +76,13 @@ jobs:
           DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/aiwebfeeds.db
 
       - name: Run tests
-        id: backend-tests
         run: cd tests && uv run pytest --cov --cov-report=xml
-        continue-on-error: true
         env:
           DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/aiwebfeeds.db
           REDIS_URL: redis://localhost:6379/0
 
-      - name: Report backend test issues
-        if: steps.backend-tests.outcome == 'failure'
-        run: echo "::warning::Backend tests reported failures (non-blocking in CI/CD Pipeline)."
-
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@4fee8191a9b83f4a92b8d31bbdfe36e4c6abbc3a
         with:
           files: ./coverage.xml
 
@@ -97,45 +91,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541d41e51769a0648c87d3d66e5209
         with:
           node-version: "20"
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
 
       - name: Install dependencies
-        run: cd apps/web && pnpm install --no-frozen-lockfile
+        run: cd apps/web && pnpm install --frozen-lockfile
 
       - name: Lint
-        id: frontend-lint
         run: cd apps/web && pnpm lint
-        continue-on-error: true
-
-      - name: Report lint issues
-        if: steps.frontend-lint.outcome == 'failure'
-        run: echo "::warning::Frontend lint reported issues (non-blocking in CI/CD Pipeline)."
 
       - name: Type check
-        id: frontend-typecheck
         run: cd apps/web && pnpm tsc --noEmit
-        continue-on-error: true
-
-      - name: Report type-check issues
-        if: steps.frontend-typecheck.outcome == 'failure'
-        run: echo "::warning::Frontend type checking reported issues (non-blocking in CI/CD Pipeline)."
 
       - name: Build
-        id: frontend-build
         run: cd apps/web && pnpm build
-        continue-on-error: true
-
-      - name: Report build issues
-        if: steps.frontend-build.outcome == 'failure'
-        run: echo "::warning::Frontend build reported issues (non-blocking in CI/CD Pipeline)."
 
   # E2E tests
   e2e-tests:
@@ -143,33 +121,29 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541d41e51769a0648c87d3d66e5209
         with:
           node-version: "20"
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
 
       - name: Install dependencies
-        run: cd apps/web && pnpm install --no-frozen-lockfile
+        run: cd apps/web && pnpm install --frozen-lockfile
 
       - name: Install Playwright
         run: ./apps/web/node_modules/.bin/playwright install --with-deps
 
       - name: Run E2E tests
-        id: e2e-tests
         run: ./apps/web/node_modules/.bin/playwright test
-        continue-on-error: true
-
-      - name: Report E2E issues
-        if: steps.e2e-tests.outcome == 'failure'
-        run: echo "::warning::E2E tests reported failures (non-blocking in CI/CD Pipeline)."
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         if: always()
         with:
           name: playwright-report
@@ -183,7 +157,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b274fc6134d1d699
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -191,7 +165,7 @@ jobs:
           output: "trivy-results.sarif"
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@0ba333c46717850d055f33e33de43640e8a3e639
         with:
           sarif_file: "trivy-results.sarif"
 
@@ -208,7 +182,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa601d98477e57
 
       - name: Login to Docker Hub
         id: docker-creds
@@ -222,14 +196,14 @@ jobs:
 
       - name: Authenticate to Docker Hub
         if: steps.docker-creds.outputs.available == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a9
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build and push
         if: steps.docker-creds.outputs.available == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           context: .
           push: true
