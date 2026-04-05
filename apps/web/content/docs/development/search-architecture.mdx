@@ -1,0 +1,118 @@
+---
+title: Search Architecture
+description: FTS5, trie autocomplete, semantic embeddings, and how the web app splits repo-data search from runtime-backed search
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+# Search Architecture
+
+Search is split across the Python runtime and the web app. The key distinction
+is whether a feature is backed by the **runtime database** or the **checked-in
+catalog files**.
+
+## Runtime search stack
+
+The Python runtime combines three mechanisms:
+
+| Layer | Implementation | Purpose |
+| --- | --- | --- |
+| Full-text | SQLite FTS5 virtual table + triggers | catalog search over stored sources |
+| Autocomplete | trie index built from titles and topics | fast prefix suggestions |
+| Semantic | embeddings + cosine similarity | meaning-based retrieval |
+
+## Search flow
+
+```mermaid
+flowchart LR
+    sources[(SQLite sources table)] --> fts[FTS5 virtual table]
+    sources --> trie[Trie index]
+    sources --> embed[feed_embeddings]
+    fts --> query[search query]
+    trie --> auto[autocomplete]
+    embed --> semantic[semantic search]
+    query --> web[/api/search]
+    auto --> webauto[/api/search/autocomplete]
+```
+
+## Web route split
+
+The `/search` page is server-first for any URL that includes `q=...`.
+The server shell normalizes the query/filter state, fetches the initial result
+set, and hydrates the client with both the result payload and the request
+status.
+
+If that initial runtime-backed fetch fails, the client retries once using the
+same normalized URL state before it falls back to the empty-results view. This
+prevents transient SSR/backend failures from rendering a false "No results
+found" state on first load.
+
+### Runtime-backed routes
+
+These rely on the backend/runtime layer:
+
+- `/api/search` for primary search queries and search logging
+- `/api/search/saved` for saved searches
+
+They proxy to backend search/storage behavior instead of reading the YAML files
+directly.
+
+### Repo-data-backed route
+
+`/api/search/autocomplete` currently reads the checked-in catalog via the web
+feed loader and performs lightweight prefix matching in-process. The route trims
+query whitespace, matches title words by prefix, and normalizes topic labels to
+the same lowercase form the runtime search stack expects.
+
+That means autocomplete and main search do **not** currently share the same
+backend implementation path.
+
+<Callout type="warn" title="Source-of-truth constraint">
+  Main search behavior depends on runtime state, while autocomplete can succeed
+  from repository data alone. When search results drift from autocomplete
+  suggestions, check whether the runtime database is stale before changing docs
+  or UI behavior.
+</Callout>
+
+## Search operations checklist
+
+```bash
+uv run ai-web-feeds search init
+uv run ai-web-feeds search query "llm agents" --type full_text --limit 10
+uv run ai-web-feeds search query "retrieval augmented generation" --type semantic --limit 10
+uv run ai-web-feeds search autocomplete llm --limit 8
+uv run ai-web-feeds search embeddings --provider local
+```
+
+## Embedding fallback rules
+
+The runtime supports two embedding providers:
+
+- `local`
+- `huggingface`
+
+Feed embedding refresh resolves the effective provider in this order:
+
+1. CLI override (`search embeddings --provider ...`)
+2. `AIWF_EMBEDDING__PROVIDER`
+3. local default
+
+If the effective provider is `huggingface`, the runtime requires
+`AIWF_EMBEDDING__HF_API_TOKEN`. Missing tokens, malformed API responses, or API request
+failures trigger a fallback to the local Sentence-Transformers path when fallback is
+allowed. Saved `feed_embeddings` rows record the provider/model that actually succeeded
+so downstream semantic search can regenerate query vectors with matching specs.
+
+## Data dependencies
+
+- search tables are initialized from the runtime database
+- autocomplete in the web app can read from `feeds.enriched.yaml` or `feeds.yaml`
+- semantic search depends on embeddings stored in runtime tables
+- saved searches and search logs are runtime data scoped to the anonymous
+  device binding, not authored YAML
+
+## Related documentation
+
+- [Runtime authority](/docs/development/runtime-authority)
+- [Data lifecycle](/docs/development/data-lifecycle)
+- [CLI usage](/docs/development/cli)
