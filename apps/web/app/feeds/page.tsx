@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { RadioTower, ShieldCheck, Sparkles, Tags } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { loadFeeds, getSourceTypes, getFeedStats } from "@/lib/feeds";
+import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 import { FeedCatalog } from "./feed-catalog";
 
 export const metadata: Metadata = {
@@ -14,11 +15,41 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function FeedsPage() {
+type FeedsPageSearchParams = Record<string, string | string[] | undefined>;
+
+type FeedsPageProps = {
+  searchParams: Promise<FeedsPageSearchParams>;
+};
+
+function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (Array.isArray(value)) {
+      if (value[0]) {
+        params.set(key, value[0]);
+      }
+      continue;
+    }
+
+    if (typeof value === "string") {
+      params.set(key, value);
+    }
+  }
+
+  return params;
+}
+
+export default async function FeedsPage({ searchParams }: FeedsPageProps) {
+  const resolvedSearchParams = toURLSearchParams(await searchParams);
   const feedsData = await loadFeeds();
   const feeds = feedsData.sources;
   const types = getSourceTypes(feeds);
   const stats = getFeedStats(feeds);
+  const initialQuery = normalizeSearchQuery(resolvedSearchParams.get("q")) ?? "";
+  const initialSourceType = resolvedSearchParams.get("source_type")?.trim() || null;
+  const initialTopic = resolvedSearchParams.get("topic")?.trim() || null;
+  const initialVerified = parseVerifiedSearchFilter(resolvedSearchParams.get("verified")) ?? null;
 
   return (
     <div className="page-wrap page-stack">
@@ -73,8 +104,14 @@ export default async function FeedsPage() {
             icon={<Tags className="size-5" />}
           />
         </div>
-
-      <FeedCatalog feeds={feeds} sourceTypes={types} />
+        <FeedCatalog
+          feeds={feeds}
+          sourceTypes={types}
+          initialQuery={initialQuery}
+          initialSourceType={initialSourceType}
+          initialTopic={initialTopic}
+          initialVerified={initialVerified}
+        />
       </section>
     </div>
   );

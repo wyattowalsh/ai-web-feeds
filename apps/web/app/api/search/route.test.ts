@@ -1,0 +1,326 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { fetchBackendMock, runLocalSearchMock } = vi.hoisted(() => ({
+  fetchBackendMock: vi.fn(),
+  runLocalSearchMock: vi.fn(),
+}));
+
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/telemetry-route", () => ({
+  withRouteTelemetry: (_routeKey: string, handler: unknown) => handler,
+}));
+
+vi.mock("@/lib/backend", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/backend")>("@/lib/backend");
+  return {
+    ...actual,
+    fetchBackend: fetchBackendMock,
+  };
+});
+
+vi.mock("@/lib/search-local", () => ({
+  runLocalSearch: runLocalSearchMock,
+}));
+
+import { ANON_USER_BINDING_COOKIE } from "@/lib/user-auth";
+import { BackendConfigurationError, BackendError } from "@/lib/backend";
+
+function createRequest(url: string, init?: RequestInit): Request {
+  return new Request(url, init);
+}
+
+async function loadRouteModule() {
+  return import("./route");
+}
+
+describe("/api/search route", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    fetchBackendMock.mockReset();
+    runLocalSearchMock.mockReset();
+  });
+
+  it("runs local source search for GET requests", async () => {
+    const { GET } = await loadRouteModule();
+    runLocalSearchMock.mockResolvedValue({
+      scope: "sources",
+      results: [
+        {
+          kind: "source",
+          id: "feed-1",
+          title: "Agent Systems Daily",
+          description: "Source result",
+          url: "https://example.com/agents",
+          topics: ["agents"],
+          source_type: "blog",
+          verified: true,
+          is_active: true,
+          match_score: 24,
+        },
+      ],
+      meta: {
+        mode: "unbounded",
+        bounded: false,
+        candidate_sources: 42,
+        scanned_sources: 42,
+        scan_limit: null,
+        per_source_limit: null,
+        truncated: false,
+      },
+    });
+
+    const response = await GET(
+      createRequest("http://localhost/api/search?q=agent%20systems&scope=sources&verified=true"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(runLocalSearchMock).toHaveBeenCalledWith({
+      query: "agent systems",
+      scope: "sources",
+      limit: 20,
+      sourceType: undefined,
+      topics: undefined,
+      verified: true,
+    });
+    await expect(response.json()).resolves.toEqual({
+      results: [
+        expect.objectContaining({
+          id: "feed-1",
+          kind: "source",
+        }),
+      ],
+      scope: "sources",
+      meta: expect.objectContaining({
+        mode: "unbounded",
+        bounded: false,
+      }),
+    });
+  });
+
+  it("passes normalized topic filters into local article search", async () => {
+    const { GET } = await loadRouteModule();
+    runLocalSearchMock.mockResolvedValue({
+      scope: "articles",
+      results: [],
+      meta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 8,
+        scanned_sources: 8,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: false,
+      },
+    });
+
+    const response = await GET(
+      createRequest(
+        "http://localhost/api/search?q=%20rag%20pipelines%20&scope=articles&source_type=podcast&topics=ml,%20agents,,ml",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(runLocalSearchMock).toHaveBeenCalledWith({
+      query: "rag pipelines",
+      scope: "articles",
+      limit: 20,
+      sourceType: "podcast",
+      topics: ["ml", "agents"],
+      verified: undefined,
+    });
+  });
+
+  it("returns a 400 when q is missing on GET", async () => {
+    const { GET } = await loadRouteModule();
+    const response = await GET(createRequest("http://localhost/api/search?scope=sources"));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Query parameter "q" is required',
+    });
+    expect(runLocalSearchMock).not.toHaveBeenCalled();
+  });
+
+  it("treats legacy semantic scope as article search", async () => {
+    const { GET } = await loadRouteModule();
+    runLocalSearchMock.mockResolvedValue({
+      scope: "articles",
+      results: [],
+      meta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 0,
+        scanned_sources: 0,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: false,
+      },
+    });
+
+    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=semantic"));
+
+    expect(response.status).toBe(200);
+    expect(runLocalSearchMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "agents",
+        scope: "articles",
+      }),
+    );
+  });
+
+  it("includes bounded retrieval metadata for article search responses", async () => {
+    const { GET } = await loadRouteModule();
+    runLocalSearchMock.mockResolvedValue({
+      scope: "articles",
+      results: [],
+      meta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 33,
+        scanned_sources: 18,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: true,
+      },
+    });
+
+    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=articles"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        scope: "articles",
+        meta: {
+          mode: "bounded",
+          bounded: true,
+          candidate_sources: 33,
+          scanned_sources: 18,
+          scan_limit: 18,
+          per_source_limit: 4,
+          truncated: true,
+        },
+      }),
+    );
+  });
+
+  it("binds anonymous identity and forwards user_id for POST analytics", async () => {
+    const { POST } = await loadRouteModule();
+    fetchBackendMock.mockResolvedValue({ success: true });
+
+    const response = await POST(
+      createRequest("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "test query",
+          type: "full_text",
+          filters: {},
+          clicked_results: [],
+          result_count: 12,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain(ANON_USER_BINDING_COOKIE);
+    expect(fetchBackendMock).toHaveBeenCalledWith("/search/log", {
+      method: "POST",
+      body: expect.objectContaining({
+        query: "test query",
+        type: "full_text",
+        result_count: 12,
+        user_id: expect.stringMatching(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        ),
+      }),
+    });
+  });
+
+  it("normalizes whitespace and filters before forwarding POST analytics", async () => {
+    const { POST } = await loadRouteModule();
+    fetchBackendMock.mockResolvedValue({ success: true });
+
+    const response = await POST(
+      createRequest("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "  agent   systems  ",
+          type: "semantic",
+          filters: {
+            topics: ["ml", " agents ", "ml"],
+            verified: "false",
+            threshold: "0.2",
+          },
+          clicked_results: [],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(fetchBackendMock).toHaveBeenCalledWith("/search/log", {
+      method: "POST",
+      body: expect.objectContaining({
+        query: "agent systems",
+        type: "semantic",
+        filters: {
+          topics: ["ml", "agents"],
+          verified: false,
+          threshold: 0.5,
+        },
+      }),
+    });
+  });
+
+  it("preserves backend status code fidelity on POST failures", async () => {
+    const { POST } = await loadRouteModule();
+    fetchBackendMock.mockRejectedValue(
+      new BackendError(422, "UNPROCESSABLE_ENTITY", "Search analytics rejected the payload"),
+    );
+
+    const response = await POST(
+      createRequest("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "test query",
+          type: "full_text",
+          filters: {},
+          clicked_results: [],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toEqual({
+      error: "Search analytics rejected the payload",
+      code: "UNPROCESSABLE_ENTITY",
+    });
+  });
+
+  it("returns an accepted response when backend logging is unavailable", async () => {
+    const { POST } = await loadRouteModule();
+    fetchBackendMock.mockRejectedValue(new BackendConfigurationError("missing backend"));
+
+    const response = await POST(
+      createRequest("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "test query",
+          type: "full_text",
+          filters: {},
+          clicked_results: [],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    await expect(response.json()).resolves.toEqual({
+      success: false,
+      skipped: true,
+      code: "BACKEND_UNAVAILABLE",
+      error: "Search analytics logging is unavailable in this deployment.",
+    });
+  });
+});

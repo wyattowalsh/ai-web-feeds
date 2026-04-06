@@ -1,0 +1,502 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
+import { useReaderTimeline } from "@/lib/use-reader-timeline";
+import { useReaderPreferences } from "@/lib/use-reader-preferences";
+import { useArticleState } from "@/lib/use-reader-article-state";
+import type { NormalizedArticle } from "@/lib/reader-types";
+
+type ReaderFeedOption = {
+  id: string;
+  title: string;
+  sourceType: string;
+  topics: string[];
+  verified: boolean;
+  isActive: boolean;
+  url: string;
+};
+
+type ReaderView = "latest" | "unread" | "starred" | "saved" | "archived";
+type ReaderSort = "latest" | "oldest" | "source";
+
+interface ReaderPageClientProps {
+  feeds: ReaderFeedOption[];
+}
+
+const DEFAULT_FETCH_FEED_LIMIT = 18;
+const BROAD_MODE_PER_FEED_LIMIT = 3;
+const BROAD_MODE_TOTAL_LIMIT = 48;
+const SELECTED_FEED_POST_LIMIT = 8;
+
+export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [paramState, setParamState] = useState(() => new URLSearchParams(searchParams.toString()));
+
+  useEffect(() => {
+    setParamState(new URLSearchParams(searchParams.toString()));
+  }, [searchParams]);
+
+  const feed = paramState.get("feed") || "";
+  const topic = paramState.get("topic") || "";
+  const query = paramState.get("q") || "";
+  const view = parseView(paramState.get("view"));
+  const sort = parseSort(paramState.get("sort"));
+  const [queryDraft, setQueryDraft] = useState(query);
+
+  useEffect(() => {
+    setQueryDraft(query);
+  }, [query]);
+
+  const topicOptions = useMemo(() => {
+    return Array.from(
+      new Set(feeds.flatMap((candidateFeed) => candidateFeed.topics).filter(Boolean)),
+    ).sort((left, right) => left.localeCompare(right));
+  }, [feeds]);
+
+  const candidateFeeds = useMemo(() => {
+    return feeds.filter((candidateFeed) => {
+      if (feed) {
+        return candidateFeed.id === feed;
+      }
+
+      if (topic && !candidateFeed.topics.includes(topic)) {
+        return false;
+      }
+
+      return candidateFeed.isActive;
+    });
+  }, [feed, feeds, topic]);
+
+  const feedIdsToFetch = useMemo(() => {
+    if (feed) {
+      return candidateFeeds.map((candidateFeed) => candidateFeed.id);
+    }
+
+    return candidateFeeds
+      .slice(0, DEFAULT_FETCH_FEED_LIMIT)
+      .map((candidateFeed) => candidateFeed.id);
+  }, [candidateFeeds, feed]);
+
+  const { articles, meta, loading, error, refresh } = useReaderTimeline(feedIdsToFetch, {
+    enabled: feedIdsToFetch.length > 0,
+    limit: feed ? SELECTED_FEED_POST_LIMIT : BROAD_MODE_TOTAL_LIMIT,
+    perFeedLimit: feed ? SELECTED_FEED_POST_LIMIT : BROAD_MODE_PER_FEED_LIMIT,
+  });
+  const { preferences, update } = useReaderPreferences();
+
+  const filteredArticles = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const matchesView = (article: NormalizedArticle) => {
+      if (view === "unread") return !article.read;
+      if (view === "starred") return article.starred;
+      if (view === "saved") return article.bookmarked;
+      if (view === "archived") return article.archived;
+      return !article.archived;
+    };
+
+    const matchesQuery = (article: NormalizedArticle) => {
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      const haystack = [
+        article.title,
+        article.feedTitle,
+        article.summary || "",
+        article.author || "",
+        article.categories.join(" "),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalizedQuery);
+    };
+
+    const nextArticles = articles.filter((article) => matchesView(article) && matchesQuery(article));
+
+    if (sort === "oldest") {
+      return [...nextArticles].sort((left, right) => {
+        const leftTime = left.publishedAtMs ?? 0;
+        const rightTime = right.publishedAtMs ?? 0;
+        return leftTime - rightTime;
+      });
+    }
+
+    if (sort === "source") {
+      return [...nextArticles].sort((left, right) => {
+        const feedTitleCompare = left.feedTitle.localeCompare(right.feedTitle);
+        if (feedTitleCompare !== 0) {
+          return feedTitleCompare;
+        }
+
+        return (right.publishedAtMs ?? 0) - (left.publishedAtMs ?? 0);
+      });
+    }
+
+    return nextArticles;
+  }, [articles, query, sort, view]);
+
+  const visibleFeedCount = candidateFeeds.length;
+  const fetchedFeedCount = feedIdsToFetch.length;
+
+  const setParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(paramState.toString());
+    if (!value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    setParamState(params);
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
+
+  return (
+    <main className="flex flex-1 flex-col">
+      <div className="page-wrap page-stack">
+        <section className="surface-panel space-y-8">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+            <div className="space-y-5">
+              <span className="eyebrow">
+                <Rss className="size-3.5" />
+                Reader
+              </span>
+              <div className="space-y-4">
+                <h1 className="hero-title max-w-4xl">Read the latest posts from the AI source registry.</h1>
+                <p className="hero-copy max-w-2xl">
+                  The reader is local-first and query-stateful. Filter by feed or topic, scan the
+                  current article stream, and keep your own reading state on-device.
+                </p>
+              </div>
+            </div>
+
+            <div className="surface-card-soft space-y-4">
+              <p className="metric-label">Current reader scope</p>
+              <div className="grid gap-3 text-sm text-(--ink)">
+                <div>
+                  <span className="font-semibold">{filteredArticles.length}</span> visible article
+                  {filteredArticles.length !== 1 ? "s" : ""}
+                </div>
+                <div>
+                  {feed ? (
+                    <>
+                      Selected-feed mode: latest{" "}
+                      <span className="font-semibold">{SELECTED_FEED_POST_LIMIT}</span> posts from
+                      this source
+                    </>
+                  ) : (
+                    <>
+                      Broad mode scans <span className="font-semibold">{fetchedFeedCount}</span> of{" "}
+                      <span className="font-semibold">{visibleFeedCount}</span> matching feed
+                      {visibleFeedCount !== 1 ? "s" : ""}
+                    </>
+                  )}
+                </div>
+                <div>
+                  Cache: <span className="font-semibold">{meta?.cacheState || "loading"}</span>
+                </div>
+                {!feed ? (
+                  <div>
+                    {visibleFeedCount > fetchedFeedCount
+                      ? `Truncated broad mode: scanning ${fetchedFeedCount} of ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`
+                      : `Scanning all ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`}
+                  </div>
+                ) : null}
+              </div>
+              <Button type="button" variant="outline" onClick={refresh}>
+                <RefreshCcw className="size-4" />
+                Refresh stream
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+            <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+              <div className="surface-card space-y-4">
+                <div>
+                  <p className="metric-label">Scope</p>
+                  <h2 className="text-lg font-semibold">Choose a feed set</h2>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="reader-feed">
+                    Feed
+                  </label>
+                  <Select
+                    id="reader-feed"
+                    value={feed}
+                    onChange={(event) => setParam("feed", event.target.value || null)}
+                  >
+                    <option value="">All matching feeds</option>
+                    {feeds.map((candidateFeed) => (
+                      <option key={candidateFeed.id} value={candidateFeed.id}>
+                        {candidateFeed.title}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="reader-topic">
+                    Topic
+                  </label>
+                  <Select
+                    id="reader-topic"
+                    value={topic}
+                    onChange={(event) => setParam("topic", event.target.value || null)}
+                    disabled={Boolean(feed)}
+                  >
+                    <option value="">All topics</option>
+                    {topicOptions.map((topicOption) => (
+                      <option key={topicOption} value={topicOption}>
+                        {topicOption}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="reader-query">
+                    Filter visible articles
+                  </label>
+                  <Input
+                    id="reader-query"
+                    value={queryDraft}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      setQueryDraft(nextValue);
+                      setParam("q", nextValue || null);
+                    }}
+                    placeholder="Search title, feed, summary, or category"
+                  />
+                </div>
+              </div>
+
+              <div className="surface-card space-y-4">
+                <div>
+                  <p className="metric-label">Views</p>
+                  <h2 className="text-lg font-semibold">Apply local state filters</h2>
+                </div>
+                <div className="grid gap-2">
+                  {VIEW_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setParam("view", option.value === "latest" ? null : option.value)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm transition duration-150",
+                        view === option.value
+                          ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
+                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
+                      )}
+                    >
+                      <option.icon className="size-4" />
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="surface-card space-y-4">
+                <div>
+                  <p className="metric-label">Reading preferences</p>
+                  <h2 className="text-lg font-semibold">Adjust the presentation</h2>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="reader-sort">
+                    Sort
+                  </label>
+                  <Select
+                    id="reader-sort"
+                    value={sort}
+                    onChange={(event) => setParam("sort", event.target.value || null)}
+                  >
+                    <option value="latest">Latest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="source">Group by source</option>
+                  </Select>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant={preferences.showSummaries ? "default" : "secondary"}
+                    onClick={() => void update({ showSummaries: !preferences.showSummaries })}
+                  >
+                    Summaries
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={preferences.layout === "compact" ? "default" : "secondary"}
+                    onClick={() =>
+                      void update({
+                        layout: preferences.layout === "compact" ? "cards" : "compact",
+                      })
+                    }
+                  >
+                    {preferences.layout === "compact" ? "Card layout" : "Compact layout"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {error ? (
+                <div className="surface-card border-(--danger-tone)/40">
+                  <p className="text-lg font-semibold">Reader failed to load</p>
+                  <p className="small-note mt-2">{error.message}</p>
+                </div>
+              ) : null}
+
+              {loading ? (
+                <div className="surface-card">
+                  <p className="metric-label">Loading</p>
+                  <h2 className="mt-2 text-xl font-semibold">Fetching recent articles…</h2>
+                </div>
+              ) : null}
+
+              {!loading && filteredArticles.length === 0 ? (
+                <div className="surface-card">
+                  <p className="metric-label">No articles</p>
+                  <h2 className="mt-2 text-xl font-semibold">Nothing matches the current reader scope.</h2>
+                  <p className="small-note mt-2">
+                    Broaden the feed or topic selection, clear the text filter, or refresh the live
+                    fetch to pull a new article set.
+                  </p>
+                </div>
+              ) : null}
+
+              <div
+                className={cn(
+                  "grid gap-4",
+                  preferences.layout === "cards" ? "grid-cols-1 2xl:grid-cols-2" : "grid-cols-1",
+                  preferences.readingWidth === "narrow" && "max-w-3xl",
+                  preferences.readingWidth === "medium" && "max-w-5xl",
+                  preferences.readingWidth === "wide" && "max-w-none",
+                )}
+              >
+                {filteredArticles.map((article) => (
+                  <ReaderArticleCard
+                    key={article.id}
+                    article={article}
+                    compact={preferences.layout !== "cards"}
+                    showSummary={preferences.showSummaries}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function ReaderArticleCard({
+  article,
+  compact,
+  showSummary,
+}: {
+  article: NormalizedArticle;
+  compact: boolean;
+  showSummary: boolean;
+}) {
+  const { state, toggleArchive, toggleBookmark, toggleStar, markRead, markUnread } = useArticleState(
+    article.id,
+    article,
+  );
+
+  return (
+    <article className="surface-card space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <p className="metric-label">{article.feedTitle}</p>
+          <h2 className={cn(compact ? "text-xl" : "text-2xl", "font-semibold text-(--ink)")}>
+            <a href={article.link} target="_blank" rel="noopener noreferrer" className="hover:underline">
+              {article.title}
+            </a>
+          </h2>
+          <p className="small-note">
+            {article.publishedAt ? new Date(article.publishedAt).toLocaleString() : "No publication date"}
+            {article.author ? ` · ${article.author}` : ""}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant={state.read ? "secondary" : "outline"} onClick={() => void (state.read ? markUnread() : markRead())}>
+            <CircleCheck className="size-4" />
+            {state.read ? "Read" : "Mark read"}
+          </Button>
+          <Button type="button" variant={state.starred ? "default" : "outline"} onClick={() => void toggleStar()}>
+            <Star className="size-4" />
+            Star
+          </Button>
+          <Button type="button" variant={state.bookmarked ? "default" : "outline"} onClick={() => void toggleBookmark()}>
+            <Bookmark className="size-4" />
+            Save
+          </Button>
+          <Button type="button" variant={state.archived ? "secondary" : "outline"} onClick={() => void toggleArchive()}>
+            Archive
+          </Button>
+        </div>
+      </div>
+
+      {showSummary && article.summary ? (
+        <p className="text-sm leading-7 text-(--ink-muted)">{article.summary}</p>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-2">
+        {article.categories.map((category) => (
+          <span
+            key={category}
+            className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
+          >
+            {category}
+          </span>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+const VIEW_OPTIONS = [
+  { value: "latest" as const, label: "Latest", icon: Newspaper },
+  { value: "unread" as const, label: "Unread", icon: CircleCheck },
+  { value: "starred" as const, label: "Starred", icon: Star },
+  { value: "saved" as const, label: "Saved", icon: Bookmark },
+  { value: "archived" as const, label: "Archived", icon: Rss },
+];
+
+function parseView(value: string | null): ReaderView {
+  switch (value) {
+    case "unread":
+    case "starred":
+    case "saved":
+    case "bookmarked":
+    case "archived":
+      return value === "bookmarked" ? "saved" : value;
+    default:
+      return "latest";
+  }
+}
+
+function parseSort(value: string | null): ReaderSort {
+  switch (value) {
+    case "oldest":
+    case "source":
+      return value;
+    default:
+      return "latest";
+  }
+}

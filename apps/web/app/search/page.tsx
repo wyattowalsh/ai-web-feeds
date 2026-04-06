@@ -2,14 +2,15 @@ import { Suspense } from "react";
 import {
   SearchPageClient,
   type InitialSearchRequestState,
-  type SearchResult,
 } from "@/components/search/search-page-client";
-import { fetchBackend } from "@/lib/backend";
+import { runLocalSearch } from "@/lib/search-local";
 import {
-  DEFAULT_SEARCH_THRESHOLD,
+  DEFAULT_UNBOUNDED_SEARCH_META,
   normalizeSearchQuery,
   parseSearchStateFromParams,
   type SearchExecutionState,
+  type SearchResponseMeta,
+  type SearchResult,
 } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,6 @@ type SearchPageSearchParams = Record<string, string | string[] | undefined>;
 
 type SearchPageProps = {
   searchParams: Promise<SearchPageSearchParams>;
-};
-
-type SearchResponse = {
-  results?: SearchResult[];
 };
 
 function toURLSearchParams(searchParams: SearchPageSearchParams): URLSearchParams {
@@ -55,6 +52,7 @@ async function getInitialSearchData(
   initialQuery: string;
   initialSearchState: SearchExecutionState;
   initialResults: SearchResult[];
+  initialMeta: SearchResponseMeta;
   initialSearchRequestState: InitialSearchRequestState;
   shouldLogInitialSearch: boolean;
 }> {
@@ -67,31 +65,27 @@ async function getInitialSearchData(
       initialQuery,
       initialSearchState,
       initialResults: [],
+      initialMeta: DEFAULT_UNBOUNDED_SEARCH_META,
       initialSearchRequestState: "idle",
       shouldLogInitialSearch: false,
     };
   }
 
   try {
-    const data = (await fetchBackend("/search", {
-      method: "GET",
-      params: {
-        q: initialQuery,
-        type: initialSearchState.searchType,
-        ...(initialSearchState.source_type && { source_type: initialSearchState.source_type }),
-        ...(initialSearchState.topics.length > 0 && { topics: initialSearchState.topics.join(",") }),
-        ...(initialSearchState.verified !== undefined && { verified: initialSearchState.verified }),
-        ...(initialSearchState.searchType === "semantic"
-          && initialSearchState.threshold !== DEFAULT_SEARCH_THRESHOLD && {
-            threshold: initialSearchState.threshold,
-          }),
-      },
-    })) as SearchResponse;
+    const payload = await runLocalSearch({
+      query: initialQuery,
+      scope: initialSearchState.scope,
+      limit: 20,
+      sourceType: initialSearchState.source_type,
+      topics: initialSearchState.topics,
+      verified: initialSearchState.verified,
+    });
 
     return {
       initialQuery,
       initialSearchState,
-      initialResults: Array.isArray(data.results) ? data.results : [],
+      initialResults: payload.results,
+      initialMeta: payload.meta,
       initialSearchRequestState: "success",
       shouldLogInitialSearch: true,
     };
@@ -101,6 +95,7 @@ async function getInitialSearchData(
       initialQuery,
       initialSearchState,
       initialResults: [],
+      initialMeta: DEFAULT_UNBOUNDED_SEARCH_META,
       initialSearchRequestState: "failed",
       shouldLogInitialSearch: false,
     };

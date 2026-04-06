@@ -1,23 +1,110 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ExternalLink, Search as SearchIcon } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { ExternalLink, RadioTower, Search as SearchIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds-filters";
+import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
 interface FeedCatalogProps {
   feeds: FeedSource[];
   sourceTypes: string[];
+  initialQuery: string;
+  initialSourceType: string | null;
+  initialTopic: string | null;
+  initialVerified: boolean | null;
 }
 
-export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+function buildFilteredExportHref(feedIds: string[]): string | null {
+  if (feedIds.length === 0) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  params.set("format", "filtered");
+  for (const feedId of feedIds) {
+    params.append("feed", feedId);
+  }
+
+  return `/api/exports/opml?${params.toString()}`;
+}
+
+function buildActiveFilterSummary({
+  query,
+  sourceType,
+  topic,
+  verified,
+}: {
+  query: string;
+  sourceType: string | null;
+  topic: string | null;
+  verified: boolean | null;
+}): string {
+  const parts: string[] = [];
+
+  if (query) {
+    parts.push(`Query "${query}"`);
+  }
+  if (sourceType) {
+    parts.push(`Type ${sourceType}`);
+  }
+  if (topic) {
+    parts.push(`Topic ${topic}`);
+  }
+  if (verified === true) {
+    parts.push("Verified only");
+  } else if (verified === false) {
+    parts.push("Unverified only");
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : "No filters applied";
+}
+
+export function FeedCatalog({
+  feeds,
+  sourceTypes,
+  initialQuery,
+  initialSourceType,
+  initialTopic,
+  initialVerified,
+}: FeedCatalogProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [selectedType, setSelectedType] = useState<string | null>(initialSourceType);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(initialTopic);
+  const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(initialVerified);
+  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
+
+  useEffect(() => {
+    const nextQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
+    const nextSourceType = searchParams.get("source_type")?.trim() || null;
+    const nextTopic = searchParams.get("topic")?.trim() || null;
+    const nextVerified = parseVerifiedSearchFilter(searchParams.get("verified")) ?? null;
+
+    setSearchQuery(nextQuery);
+    setSelectedType(nextSourceType);
+    setSelectedTopic(nextTopic);
+    setVerifiedFilter(nextVerified);
+  }, [searchParams]);
+
+  const setParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
 
   // Get all topics from feeds
   const allTopics = useMemo(() => getTopics(feeds), [feeds]);
@@ -33,21 +120,43 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
     result = filterByTopic(result, selectedTopic);
 
     // Filter by verification
-    result = filterByVerified(result, verifiedOnly ? true : null);
+    result = filterByVerified(result, verifiedFilter);
 
     // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.trim().toLowerCase();
       result = result.filter(
         (feed) =>
           feed.title?.toLowerCase().includes(query) ||
           feed.description?.toLowerCase().includes(query) ||
-          feed.url.toLowerCase().includes(query),
+          feed.url.toLowerCase().includes(query) ||
+          feed.website_url?.toLowerCase().includes(query) ||
+          feed.source_type?.toLowerCase().includes(query) ||
+          feed.topics?.some((topic) => topic.toLowerCase().includes(query)),
       );
     }
 
     return result;
-  }, [feeds, selectedType, selectedTopic, verifiedOnly, searchQuery]);
+  }, [feeds, searchQuery, selectedTopic, selectedType, verifiedFilter]);
+
+  const visibleFeedIds = useMemo(
+    () =>
+      filteredFeeds
+        .map((feed) => feed.id)
+        .filter((feedId): feedId is string => typeof feedId === "string" && feedId.length > 0),
+    [filteredFeeds],
+  );
+  const visibleExportHref = useMemo(() => buildFilteredExportHref(visibleFeedIds), [visibleFeedIds]);
+  const activeFilterSummary = useMemo(
+    () =>
+      buildActiveFilterSummary({
+        query: searchQuery,
+        sourceType: selectedType,
+        topic: selectedTopic,
+        verified: verifiedFilter,
+      }),
+    [searchQuery, selectedTopic, selectedType, verifiedFilter],
+  );
 
   return (
     <div className="space-y-6">
@@ -66,13 +175,17 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
               <SearchIcon className="size-4" />
             </span>
             <Input
-            id="search"
-            type="text"
-            placeholder="Search feeds by title, description, or URL..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11"
-          />
+              id="search"
+              type="text"
+              placeholder="Search feeds by title, description, topic, or URL..."
+              value={searchQuery}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setSearchQuery(nextValue);
+                setParam("q", normalizeSearchQuery(nextValue));
+              }}
+              className="pl-11"
+            />
           </div>
         </div>
 
@@ -82,7 +195,10 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
             <Button
               variant={selectedType === null ? "default" : "outline"}
               size="sm"
-              onClick={() => setSelectedType(null)}
+              onClick={() => {
+                setSelectedType(null);
+                setParam("source_type", null);
+              }}
             >
               All ({feeds.length})
             </Button>
@@ -93,7 +209,10 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
                   key={type}
                   variant={selectedType === type ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedType(type)}
+                  onClick={() => {
+                    setSelectedType(type);
+                    setParam("source_type", type);
+                  }}
                 >
                   {type} ({count})
                 </Button>
@@ -109,7 +228,10 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
               <Button
                 variant={selectedTopic === null ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedTopic(null)}
+                onClick={() => {
+                  setSelectedTopic(null);
+                  setParam("topic", null);
+                }}
               >
                 All Topics
               </Button>
@@ -118,7 +240,10 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
                   key={topic}
                   variant={selectedTopic === topic ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedTopic(topic)}
+                  onClick={() => {
+                    setSelectedTopic(topic);
+                    setParam("topic", topic);
+                  }}
                 >
                   {topic}
                 </Button>
@@ -127,22 +252,60 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <input
-            id="verified"
-            type="checkbox"
-            checked={verifiedOnly}
-            onChange={(e) => setVerifiedOnly(e.target.checked)}
-            className="h-4 w-4 rounded border-(--line) text-(--brand)"
-          />
-          <label htmlFor="verified" className="text-sm font-medium text-(--ink)">
-            Show only verified feeds
-          </label>
+        <div>
+          <label className="field-label">Verification</label>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={verifiedFilter === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setVerifiedFilter(null);
+                setParam("verified", null);
+              }}
+            >
+              Any
+            </Button>
+            <Button
+              variant={verifiedFilter === true ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setVerifiedFilter(true);
+                setParam("verified", "true");
+              }}
+            >
+              Verified
+            </Button>
+            <Button
+              variant={verifiedFilter === false ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setVerifiedFilter(false);
+                setParam("verified", "false");
+              }}
+            >
+              Unverified
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="surface-card flex items-center justify-between text-sm text-(--ink-muted)">
-        Showing {filteredFeeds.length} of {feeds.length} feeds
+      <div className="surface-card flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1 text-sm text-(--ink-muted)">
+          <p>
+            Showing <strong>{filteredFeeds.length}</strong> of <strong>{feeds.length}</strong> feeds
+          </p>
+          <p>{activeFilterSummary}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {visibleExportHref ? (
+            <a
+              href={visibleExportHref}
+              className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+            >
+              Export visible OPML
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -200,6 +363,23 @@ export function FeedCatalog({ feeds, sourceTypes }: FeedCatalogProps) {
               )}
 
               <div className="flex flex-wrap gap-3 pt-1">
+                {feed.id ? (
+                  <Link
+                    href={`/reader?feed=${encodeURIComponent(feed.id)}`}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                  >
+                    <RadioTower className="size-3.5" />
+                    Open in reader
+                  </Link>
+                ) : null}
+                {feed.id ? (
+                  <a
+                    href={buildFilteredExportHref([feed.id]) ?? "#"}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                  >
+                    Export OPML
+                  </a>
+                ) : null}
                 <a
                   href={feed.url}
                   target="_blank"

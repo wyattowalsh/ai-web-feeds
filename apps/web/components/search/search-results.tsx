@@ -1,32 +1,20 @@
 "use client";
 
-import { ExternalLink, Search as SearchIcon, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, ExternalLink, RadioTower, Search as SearchIcon } from "lucide-react";
+import { SearchArtworkSlot, SEARCH_ARTWORKS } from "@/components/search/search-artwork";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
+import type { SearchResponseMeta, SearchResult, SearchScope } from "@/lib/search";
 
-interface SearchResult {
-  id: string;
-  title: string;
-  description?: string;
-  url: string;
-  topics: string[];
-  source_type: string;
-  verified: boolean;
-  is_active: boolean;
-  similarity?: number;
+interface SearchResultsProps {
+  results: SearchResult[];
+  scope: SearchScope;
+  meta?: SearchResponseMeta;
+  loading: boolean;
 }
 
-export function SearchResults({
-  results,
-  searchType,
-  loading,
-  onResultClick,
-}: {
-  results: SearchResult[];
-  searchType: "full_text" | "semantic";
-  loading: boolean;
-  onResultClick?: (feedId: string) => void;
-}) {
+export function SearchResults({ results, scope, meta, loading }: SearchResultsProps) {
   if (loading) {
     return <ContentCardSkeleton count={5} />;
   }
@@ -36,10 +24,19 @@ export function SearchResults({
       <EmptyState
         icon={SearchIcon}
         title="No results found"
-        description="Try adjusting your search query or loosening the current filters."
+        description="Try adjusting your query or loosening the current filters."
+        media={
+          <SearchArtworkSlot
+            {...SEARCH_ARTWORKS.noResults}
+            className="mx-auto w-full max-w-md"
+            sizes="(min-width: 768px) 28rem, 100vw"
+          />
+        }
         tips={[
-          "Use fewer filters or switch between full-text and semantic modes.",
-          "Lower the semantic threshold if similarity matching is too narrow.",
+          "Use fewer filters to broaden the local catalog search.",
+          scope === "articles"
+            ? "Try source search first, then switch back to article search once you find the right feed cluster."
+            : "Search for topics, source names, or provider names.",
         ]}
       />
     );
@@ -48,17 +45,26 @@ export function SearchResults({
   return (
     <div className="space-y-4">
       <div className="surface-card flex items-center justify-between">
-        <p className="text-sm text-(--ink-muted)">
-          Found <strong>{results.length}</strong> result{results.length !== 1 ? "s" : ""}
-          {searchType === "semantic" && " (sorted by similarity)"}
-        </p>
+        <div>
+          <p className="text-sm text-(--ink-muted)">
+            Found <strong>{results.length}</strong> {scope === "articles" ? "article" : "source"} result
+            {results.length !== 1 ? "s" : ""}
+          </p>
+          {scope === "articles" && meta?.bounded ? (
+            <p className="small-note mt-1">
+              Retrieval is bounded: {meta.scanned_sources} of {meta.candidate_sources} matching sources
+              scanned
+              {meta.truncated ? " before ranking article results." : "."}
+            </p>
+          ) : null}
+        </div>
         <div className="flex items-center gap-2 rounded-full bg-(--brand-soft) px-3 py-2 text-xs font-semibold text-(--brand-strong)">
-          <Sparkles className="size-3.5" />
-          {searchType === "semantic" ? "Semantic" : "Full-text"}
+          {scope === "articles" ? <CalendarDays className="size-3.5" /> : <RadioTower className="size-3.5" />}
+          {scope === "articles" ? "Articles" : "Sources"}
         </div>
       </div>
 
-      {results.map((result, idx) => (
+      {results.map((result, index) => (
         <div
           key={result.id}
           className="surface-card transition duration-150 hover:-translate-y-0.5"
@@ -66,7 +72,7 @@ export function SearchResults({
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold text-(--ink-muted)">#{idx + 1}</span>
+                <span className="text-sm font-semibold text-(--ink-muted)">#{index + 1}</span>
                 <h3 className="text-xl font-bold text-(--ink)">{result.title}</h3>
                 {result.verified && (
                   <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
@@ -78,24 +84,41 @@ export function SearchResults({
                     Inactive
                   </span>
                 )}
-                {searchType === "semantic" && result.similarity !== undefined && (
-                  <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-mono text-(--ink)">
-                    {(result.similarity * 100).toFixed(1)}%
-                  </span>
-                )}
               </div>
 
               <a
                 href={result.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => onResultClick?.(result.id)}
                 className="inline-flex items-center gap-2 text-sm font-medium text-(--brand-strong) hover:underline"
               >
                 <ExternalLink className="size-4" />
-                Open source
+                {result.kind === "article" ? "Open article" : "Open source"}
               </a>
             </div>
+
+            {result.kind === "source" && (
+              <Link
+                href={`/reader?feed=${encodeURIComponent(result.id)}`}
+                className="inline-flex items-center gap-2 text-sm font-medium text-(--brand-strong) hover:underline"
+              >
+                <RadioTower className="size-4" />
+                Open in reader
+              </Link>
+            )}
+
+            {result.kind === "article" && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-(--ink-muted)">
+                <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1 font-semibold">
+                  {result.feed_title}
+                </span>
+                {result.published_at && (
+                  <span className="rounded-full border border-(--line) bg-(--surface) px-2.5 py-1">
+                    {new Date(result.published_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
 
             {result.description && (
               <p className="text-sm text-(--ink-muted)">{result.description}</p>
@@ -107,7 +130,7 @@ export function SearchResults({
               </span>
               {result.topics.map((topic) => (
                 <span
-                  key={topic}
+                  key={`${result.id}-${topic}`}
                   className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
                 >
                   {topic.toUpperCase()}

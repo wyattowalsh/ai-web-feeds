@@ -1,18 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import SearchPage from "./page";
 
-const { fetchBackendMock } = vi.hoisted(() => ({
-  fetchBackendMock: vi.fn(),
+const { runLocalSearchMock } = vi.hoisted(() => ({
+  runLocalSearchMock: vi.fn(),
 }));
 
-vi.mock("@/lib/backend", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/backend")>("@/lib/backend");
-  return {
-    ...actual,
-    fetchBackend: fetchBackendMock,
-  };
-});
+vi.mock("@/lib/search-local", () => ({
+  runLocalSearch: runLocalSearchMock,
+}));
 
 vi.mock("@/components/search/search-page-client", () => ({
   SearchPageClient: (props: unknown) => (
@@ -22,21 +17,37 @@ vi.mock("@/components/search/search-page-client", () => ({
 
 type SearchPageSearchParams = Record<string, string | string[] | undefined>;
 
+async function loadSearchPage() {
+  const module = await import("./page");
+  return module.default;
+}
+
 async function renderPage(searchParams: SearchPageSearchParams = {}) {
+  const SearchPage = await loadSearchPage();
   render(await SearchPage({ searchParams: Promise.resolve(searchParams) }));
 }
 
 function getClientProps(): {
   initialQuery: string;
   initialSearchState: {
-    searchType: "full_text" | "semantic";
-    search_type: "full_text" | "semantic";
+    scope: "sources" | "articles";
+    searchType: "sources" | "articles";
+    search_type: "sources" | "articles";
     source_type?: string;
     topics: string[];
     verified?: boolean;
     threshold: number;
   };
   initialResults: Array<{ id: string; title: string }>;
+  initialMeta: {
+    mode: "unbounded" | "bounded";
+    bounded: boolean;
+    candidate_sources: number;
+    scanned_sources: number;
+    scan_limit: number | null;
+    per_source_limit: number | null;
+    truncated: boolean;
+  };
   initialSearchRequestState: "idle" | "success" | "failed";
   shouldLogInitialSearch: boolean;
 } {
@@ -46,113 +57,148 @@ function getClientProps(): {
 
 describe("SearchPage", () => {
   beforeEach(() => {
-    fetchBackendMock.mockReset();
+    vi.resetModules();
+    runLocalSearchMock.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   it("hydrates the client island without fetching when there is no query", async () => {
     await renderPage();
 
-    expect(fetchBackendMock).not.toHaveBeenCalled();
+    expect(runLocalSearchMock).not.toHaveBeenCalled();
     expect(getClientProps()).toEqual({
       initialQuery: "",
       initialSearchState: {
-        searchType: "full_text",
-        search_type: "full_text",
+        scope: "sources",
+        searchType: "sources",
+        search_type: "sources",
         topics: [],
         threshold: 0.7,
       },
       initialResults: [],
+      initialMeta: {
+        mode: "unbounded",
+        bounded: false,
+        candidate_sources: 0,
+        scanned_sources: 0,
+        scan_limit: null,
+        per_source_limit: null,
+        truncated: false,
+      },
       initialSearchRequestState: "idle",
       shouldLogInitialSearch: false,
     });
   });
 
   it("normalizes URL search params before hydrating and fetching initial results", async () => {
-    fetchBackendMock.mockResolvedValue({
+    runLocalSearchMock.mockResolvedValue({
+      scope: "articles",
       results: [
         {
           id: "feed-1",
+          kind: "source",
           title: "Feed One",
           url: "https://example.com/feed-1",
           topics: ["ml", "agents"],
           source_type: "podcast",
           verified: true,
           is_active: true,
+          match_score: 22,
         },
       ],
+      meta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 21,
+        scanned_sources: 18,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: true,
+      },
     });
 
     await renderPage({
       q: "  agent   systems  ",
-      type: "semantic",
+      scope: "articles",
       source_type: " podcast ",
       topics: "ml, agents,,ml",
-      verified: "bogus",
-      threshold: "0.2",
+      verified: "true",
     });
 
-    expect(fetchBackendMock).toHaveBeenCalledWith("/search", {
-      method: "GET",
-      params: {
-        q: "agent systems",
-        type: "semantic",
-        source_type: "podcast",
-        topics: "ml,agents",
-        threshold: 0.5,
-      },
+    expect(runLocalSearchMock).toHaveBeenCalledWith({
+      query: "agent systems",
+      scope: "articles",
+      limit: 20,
+      sourceType: "podcast",
+      topics: ["ml", "agents"],
+      verified: true,
     });
     expect(getClientProps()).toEqual({
       initialQuery: "agent systems",
       initialSearchState: {
-        searchType: "semantic",
-        search_type: "semantic",
+        scope: "articles",
+        searchType: "articles",
+        search_type: "articles",
         source_type: "podcast",
         topics: ["ml", "agents"],
-        threshold: 0.5,
+        verified: true,
+        threshold: 0.7,
       },
       initialResults: [
-        {
+        expect.objectContaining({
           id: "feed-1",
           title: "Feed One",
-          url: "https://example.com/feed-1",
-          topics: ["ml", "agents"],
-          source_type: "podcast",
-          verified: true,
-          is_active: true,
-        },
+        }),
       ],
+      initialMeta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 21,
+        scanned_sources: 18,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: true,
+      },
       initialSearchRequestState: "success",
       shouldLogInitialSearch: true,
     });
   });
 
   it("keeps the normalized initial state but skips initial analytics when hydration fetch fails", async () => {
-    fetchBackendMock.mockRejectedValue(new Error("backend down"));
+    runLocalSearchMock.mockRejectedValue(new Error("search unavailable"));
 
     await renderPage({
       q: "  agents  ",
-      type: "semantic",
-      threshold: "0.9",
+      scope: "articles",
     });
 
-    expect(fetchBackendMock).toHaveBeenCalledWith("/search", {
-      method: "GET",
-      params: {
-        q: "agents",
-        type: "semantic",
-        threshold: 0.9,
-      },
+    expect(runLocalSearchMock).toHaveBeenCalledWith({
+      query: "agents",
+      scope: "articles",
+      limit: 20,
+      sourceType: undefined,
+      topics: [],
+      verified: undefined,
     });
     expect(getClientProps()).toEqual({
       initialQuery: "agents",
       initialSearchState: {
-        searchType: "semantic",
-        search_type: "semantic",
+        scope: "articles",
+        searchType: "articles",
+        search_type: "articles",
         topics: [],
-        threshold: 0.9,
+        threshold: 0.7,
       },
       initialResults: [],
+      initialMeta: {
+        mode: "unbounded",
+        bounded: false,
+        candidate_sources: 0,
+        scanned_sources: 0,
+        scan_limit: null,
+        per_source_limit: null,
+        truncated: false,
+      },
       initialSearchRequestState: "failed",
       shouldLogInitialSearch: false,
     });
