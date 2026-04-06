@@ -16,12 +16,14 @@
     "document_meta": {
       "type": "object",
       "additionalProperties": false,
-      "properties": {
-        "created": { "type": "string", "format": "date" },
-        "updated": { "type": "string", "format": "date" },
-        "generated_with": {
-          "type": "object",
-          "additionalProperties": false,
+        "properties": {
+          "created": { "type": "string", "format": "date" },
+          "updated": { "type": "string", "format": "date" },
+          "enriched_at": { "type": "string", "format": "date-time" },
+          "total_sources": { "type": "integer", "minimum": 0 },
+          "generated_with": {
+            "type": "object",
+            "additionalProperties": false,
           "properties": {
             "tool": { "type": "string" },
             "version": { "type": "string" }
@@ -168,11 +170,12 @@
     "enriched_source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "title", "topics"],
-      "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Stable unique identifier" },
-        "feed": { "$ref": "#/$defs/http_uri", "description": "Direct feed URL or alias" },
-        "site": { "$ref": "#/$defs/http_uri", "description": "Site homepage/section URL" },
+        "required": ["id", "title", "source_type", "topics"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Stable unique identifier" },
+          "url": { "$ref": "#/$defs/http_uri", "description": "Canonical source URL alias retained for compatibility with minimal feeds and downstream consumers" },
+          "feed": { "$ref": "#/$defs/http_uri", "description": "Direct feed URL or alias" },
+          "site": { "$ref": "#/$defs/http_uri", "description": "Site homepage/section URL" },
         "title": { "type": "string", "minLength": 1, "maxLength": 160 },
         "source_type": { "$ref": "#/$defs/source_type" },
         "mediums": {
