@@ -101,7 +101,7 @@ repos:
     name: eslint (apps/web)
     files: ^apps/web/.*\.[jt]sx?$
     types: [file]
-    args: [--fix, --max-warnings=0]
+    args: [--config=apps/web/eslint.config.mjs, --fix, --max-warnings=0]
     additional_dependencies:
     - eslint@9.0.0
     - '@next/eslint-plugin-next'
