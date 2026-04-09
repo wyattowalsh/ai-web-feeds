@@ -1,122 +1,75 @@
 ---
 title: Overview
-description: AI Web Feeds development architecture and implementation
+description: Current development map for the AI Web Feeds runtime, data assets, web app, and automation layers
 ---
 
 # Development Overview
 
-AI Web Feeds is a comprehensive system for managing AI/ML feed sources with database persistence, enrichment, and OPML generation.
+AI Web Feeds is a hybrid monorepo with three distinct kinds of truth:
 
-## What We Built
+1. **Authored repository data** in `data/*.yaml` and `data/*.json`
+2. **Runtime state** in SQLite, browser-local state, and optional backend services
+3. **User-facing surfaces** across the CLI, web app, docs site, and GitHub automation
 
-A production-ready system with the following capabilities:
+## Core surfaces
 
-### 1. Database Layer (`aiwebfeeds.db`)
+| Surface           | Primary paths                                            | What it owns                                                                                  |
+| ----------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Core runtime      | `packages/ai_web_feeds/src/ai_web_feeds/`                | config, models, storage, load/validate/export, enrichment, analytics, search, recommendations |
+| CLI               | `apps/cli/ai_web_feeds/cli/commands/`                    | command UX and workflow entrypoints over the core runtime                                     |
+| Web app           | `apps/web/app`, `apps/web/lib`, `apps/web/components`    | public catalog pages, anonymous user-scoped APIs, admin UI, docs rendering, LLM routes        |
+| Data assets       | `data/`                                                  | canonical feed catalog, enriched catalog, topic taxonomy, schemas, OPML, validation scripts   |
+| GitHub automation | `.github/`                                               | issue intake, validation, release workflows, additive gh-aw pilots                            |
+| Quality harness   | `tests/`, root `pyproject.toml`, `apps/web/package.json` | pytest, coverage, Playwright, Vitest, lint/build checks                                       |
 
-**Technology:** SQLModel + SQLAlchemy + Alembic
+## Repository data flow
 
-**Tables:**
+```mermaid
+flowchart LR
+    authored[data/feeds.yaml\ndata/topics.yaml] --> validate[data/validate_data_assets.py]
+    validate --> enrich[data/feeds.enriched.yaml]
+    validate --> web[/api/feeds + /api/topics]
+    enrich --> runtime[(SQLite runtime store)]
+    runtime --> search[FTS5 + trie + embeddings]
+    runtime --> analytics[analytics snapshots / reports]
+    runtime --> web
+```
 
-- `feed_sources` - Core feed metadata
-- `feed_items` - Individual feed entries
-- `feed_fetch_logs` - Fetch attempt tracking
-- `topics` - Topic taxonomy
+## Current package layout
 
-**Features:**
+```text
+ai-web-feeds/
+├── packages/ai_web_feeds/    # Core Python runtime
+├── apps/cli/                 # Typer CLI package
+├── apps/web/                 # Next.js + Fumadocs app
+├── tests/                    # Pytest suites
+├── data/                     # Canonical YAML/JSON/OPML assets
+└── .github/                  # Workflows, prompts, issue forms, agents
+```
 
-- Full CRUD operations
-- Relationship management
-- Migration support via Alembic
-- JSON field support for flexible data
+## Runtime defaults that matter in development
 
-### 2. Feed Enrichment Pipeline (`feeds.enriched.yaml`)
+- `data/feeds.yaml` is the authored source catalog.
+- `data/topics.yaml` is the authored taxonomy.
+- `data/feeds.enriched.yaml` is a derived repository asset.
+- `data/ai-web-feeds.db` is the canonical runtime SQLite filename.
+- Public web flows are anonymous and device-scoped; admin routes are the only
+  authenticated surface.
 
-**Capabilities:**
-
-- Automatic feed URL discovery from site URLs
-- Feed format detection (RSS/Atom/JSONFeed)
-- Metadata validation and enrichment
-- Quality scoring and curation tracking
-
-**Input:** `data/feeds.yaml` (human-curated)
-**Output:** `data/feeds.enriched.yaml` (fully enriched with automation data)
-
-### 3. Schema Management (`feeds.enriched.schema.json`)
-
-**Features:**
-
-- Auto-generated JSON Schema for enriched feeds
-- Comprehensive validation rules
-- Extends base `feeds.schema.json`
-- Supports all enrichment metadata
-
-### 4. OPML Generation
-
-**Formats:**
-
-- **all.opml** - Flat list of all feeds
-- **categorized.opml** - Organized by source type
-- **Custom filtered** - By topic, type, tag, verification status
-
-**Use Case:** Import into feed readers (Feedly, Inoreader, NetNewsWire, etc.)
-
-### 5. CLI Interface
-
-**Commands:**
+## Recommended local checks
 
 ```bash
-aiwebfeeds enrich all          # Enrich feeds
-aiwebfeeds opml all            # Generate all.opml
-aiwebfeeds opml categorized    # Generate categorized.opml
-aiwebfeeds opml filtered       # Generate custom filtered OPML
-aiwebfeeds stats show          # Display statistics
+uv run pytest
+uv run python data/validate_data_assets.py
+pnpm --dir apps/web build
+pnpm --dir apps/web lint:links
 ```
 
-## Package Structure
+## Read next
 
-```
-ai-web-feeds (workspace root)
-├── packages/ai_web_feeds/          # Core library
-│   └── src/ai_web_feeds/
-│       ├── models.py               # SQLModel tables + Pydantic models
-│       ├── storage.py              # Database manager
-│       ├── utils.py                # Enrichment, OPML, schema utils
-│       ├── config.py               # Configuration
-│       └── logger.py               # Logging setup
-│
-└── apps/cli/                       # CLI application
-    └── ai_web_feeds/cli/
-        ├── __init__.py             # Main CLI app
-        └── commands/
-            ├── enrich.py           # Enrichment commands
-            ├── opml.py             # OPML generation
-            ├── stats.py            # Statistics
-            ├── export.py           # Export (stub)
-            └── validate.py         # Validation (stub)
-```
-
-## Data Flow
-
-```
-feeds.yaml (human-curated)
-    ↓
-    ├─→ Feed Discovery (if discover: true)
-    ├─→ Format Detection
-    ├─→ Metadata Validation
-    └─→ Enrichment
-         ↓
-         ├─→ feeds.enriched.yaml (YAML export)
-         ├─→ feeds.enriched.schema.json (JSON schema)
-         └─→ aiwebfeeds.db (SQLite database)
-              ↓
-              ├─→ all.opml (all feeds)
-              ├─→ categorized.opml (by type)
-              └─→ filtered.opml (custom filters)
-```
-
-## Next Steps
-
-- [Database Setup](/docs/development/database) - Learn about the database layer
-- [CLI Usage](/docs/development/cli) - Using the command-line interface
-- [Python API](/docs/development/python-api) - Using the Python API
-- [Contributing](/docs/development/contributing) - How to contribute
+- [Runtime authority](/docs/development/runtime-authority)
+- [Search architecture](/docs/development/search-architecture)
+- [Data lifecycle](/docs/development/data-lifecycle)
+- [Workflow safety](/docs/development/workflow-safety)
+- [CLI usage](/docs/development/cli)
+- [Python API](/docs/development/python-api)

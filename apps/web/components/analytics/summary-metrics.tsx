@@ -1,20 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, CircleGauge, RadioTower, ShieldCheck } from "lucide-react";
+import { Activity, CalendarClock, Newspaper, RadioTower } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 
-interface SummaryMetrics {
-  total_feeds: number;
-  active_feeds: number;
-  validation_success_rate: number;
-  avg_response_time: number;
-  health_distribution: {
-    healthy: number;
-    moderate: number;
-    unhealthy: number;
+interface SummaryMetricsPayload {
+  total_sources: number;
+  active_sources: number;
+  posts_last_24h: number;
+  posts_last_7d: number;
+  topic_count: number;
+  source_type_distribution: Array<{ source_type: string; count: number }>;
+  scan_summary: {
+    matching_sources: number;
+    scanned_sources: number;
+    scan_limit: number;
+    per_source_limit: number;
+    truncated: boolean;
   };
   last_updated: string;
+}
+
+function formatSourceTypeLabel(value: string): string {
+  return value
+    .split(/[_-]+/)
+    .filter((segment) => segment.length > 0)
+    .map((segment) => {
+      const upper = segment.toUpperCase();
+      if (upper === "AI" || upper === "ML" || upper === "LLM" || upper === "RSS") {
+        return upper;
+      }
+
+      return segment.charAt(0).toUpperCase() + segment.slice(1);
+    })
+    .join(" ");
 }
 
 export function SummaryMetrics({
@@ -24,7 +43,7 @@ export function SummaryMetrics({
   dateRange?: string;
   topic?: string;
 }) {
-  const [metrics, setMetrics] = useState<SummaryMetrics | null>(null);
+  const [metrics, setMetrics] = useState<SummaryMetricsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +59,7 @@ export function SummaryMetrics({
         const response = await fetch(`/api/analytics/summary?${params}`);
         if (!response.ok) throw new Error("Failed to fetch metrics");
 
-        const data = await response.json();
+        const data = (await response.json()) as SummaryMetricsPayload;
         setMetrics(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -49,14 +68,14 @@ export function SummaryMetrics({
       }
     };
 
-    fetchMetrics();
+    void fetchMetrics();
   }, [dateRange, topic]);
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="surface-card space-y-4">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="surface-card space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-3">
                 <div className="h-4 w-24 animate-pulse rounded-full bg-[color:var(--surface-muted)]" />
@@ -80,16 +99,20 @@ export function SummaryMetrics({
     );
   }
 
-  const activeShare = metrics.total_feeds
-    ? ((metrics.active_feeds / metrics.total_feeds) * 100).toFixed(1)
+  const activeShare = metrics.total_sources
+    ? ((metrics.active_sources / metrics.total_sources) * 100).toFixed(1)
     : "0.0";
+  const scanSummary = metrics.scan_summary;
+  const scanCoverageMessage = scanSummary.truncated
+    ? `Scanning ${scanSummary.scanned_sources} of ${scanSummary.matching_sources} matching active sources, up to ${scanSummary.per_source_limit} recent posts per source.`
+    : `Scanning all ${scanSummary.scanned_sources} matching active sources, up to ${scanSummary.per_source_limit} recent posts per source.`;
 
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <span className="eyebrow">Key metrics</span>
-          <h2 className="section-heading">Summary metrics</h2>
+          <h2 className="section-heading">Catalog and activity summary</h2>
         </div>
         <p className="small-note">
           Last updated: {new Date(metrics.last_updated).toLocaleString()}
@@ -98,71 +121,64 @@ export function SummaryMetrics({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Total feeds"
-          value={metrics.total_feeds.toLocaleString()}
-          detail="Structured sources in the current catalog"
+          label="Total sources"
+          value={metrics.total_sources.toLocaleString()}
+          detail={`${metrics.topic_count.toLocaleString()} distinct topics in catalog`}
           icon={<RadioTower className="size-5" />}
         />
         <MetricCard
-          label="Active feeds"
-          value={metrics.active_feeds.toLocaleString()}
-          detail={`${activeShare}% of total currently active`}
-          icon={<ShieldCheck className="size-5" />}
-        />
-        <MetricCard
-          label="Success rate"
-          value={`${(metrics.validation_success_rate * 100).toFixed(1)}%`}
-          detail="Validation success"
+          label="Active sources"
+          value={metrics.active_sources.toLocaleString()}
+          detail={`${activeShare}% of the filtered catalog`}
           icon={<Activity className="size-5" />}
-          iconClassName="bg-[color:color-mix(in_oklab,var(--success-tone)_14%,var(--surface))] text-[color:var(--success-tone)]"
         />
         <MetricCard
-          label="Average response"
-          value={`${metrics.avg_response_time.toFixed(0)} ms`}
-          detail="Latency across recent validation checks"
-          icon={<CircleGauge className="size-5" />}
+          label="Posts in 24h"
+          value={metrics.posts_last_24h.toLocaleString()}
+          detail="Recent post count inside the live analytics window"
+          icon={<CalendarClock className="size-5" />}
+        />
+        <MetricCard
+          label="Posts in 7d"
+          value={metrics.posts_last_7d.toLocaleString()}
+          detail="Seven-day activity in the live analytics window"
+          icon={<Newspaper className="size-5" />}
         />
       </div>
 
-      <div className="surface-card-soft flex flex-wrap gap-4">
-        <HealthChip label="Healthy" value={metrics.health_distribution.healthy} tone="success" />
-        <HealthChip
-          label="Moderate"
-          value={metrics.health_distribution.moderate}
-          tone="warning"
-        />
-        <HealthChip
-          label="Unhealthy"
-          value={metrics.health_distribution.unhealthy}
-          tone="danger"
-        />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="surface-card-soft space-y-3">
+          <div className="space-y-1">
+            <p className="metric-label">Scan coverage</p>
+            <h3 className="text-lg font-semibold text-(--ink)">Live analytics window</h3>
+          </div>
+          <p className="text-sm text-(--ink-muted)">{scanCoverageMessage}</p>
+          <p className="small-note">
+            Scan limit {scanSummary.scan_limit} sources. Freshness, trending, and velocity panels
+            reflect this live scan window rather than the entire catalog history.
+          </p>
+        </div>
+
+        <div className="surface-card-soft space-y-3">
+          <div className="space-y-1">
+            <p className="metric-label">Source type mix</p>
+            <h3 className="text-lg font-semibold text-(--ink)">Filtered catalog distribution</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {metrics.source_type_distribution.slice(0, 6).map((entry) => (
+              <div
+                key={entry.source_type}
+                className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] px-4 py-3"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-muted)]">
+                  {formatSourceTypeLabel(entry.source_type)}
+                </p>
+                <p className="mt-2 text-xl font-semibold text-[color:var(--ink)]">{entry.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
-  );
-}
-
-function HealthChip({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: "success" | "warning" | "danger";
-}) {
-  const toneClasses = {
-    success:
-      "border-[color:color-mix(in_oklab,var(--success-tone)_28%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_14%,var(--surface))] text-[color:var(--success-tone)]",
-    warning:
-      "border-[color:color-mix(in_oklab,var(--warning-tone)_28%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_14%,var(--surface))] text-[color:var(--warning-tone)]",
-    danger:
-      "border-[color:color-mix(in_oklab,var(--danger-tone)_28%,var(--line))] bg-[color:color-mix(in_oklab,var(--danger-tone)_14%,var(--surface))] text-[color:var(--danger-tone)]",
-  };
-
-  return (
-    <div className={`rounded-2xl border px-4 py-3 ${toneClasses[tone]}`}>
-      <p className="metric-label text-current!">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
-    </div>
   );
 }

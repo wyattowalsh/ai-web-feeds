@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { getSiteBaseUrl } from "@/lib/env";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+  const baseUrl = getSiteBaseUrl();
 
   return {
     rules: [

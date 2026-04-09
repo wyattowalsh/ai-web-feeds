@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { BookmarkPlus, Compass, ExternalLink, Sparkles, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BookmarkPlus, Check, Compass, ExternalLink, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
+import {
+  ensureAnonymousUserId,
+  fetchWithAnonymousIdentity,
+  syncAnonymousUserIdFromResponse,
+} from "@/lib/user-identity";
 
 interface Recommendation {
   feed: {
@@ -26,7 +31,11 @@ export function RecommendationsPageClient() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [userId, setUserId] = useState<string>("");
+  // Per-feed follow state: feedId → 'idle' | 'following' | 'followed' | 'error'
+  const [followState, setFollowState] = useState<
+    Record<string, "idle" | "following" | "followed" | "error">
+  >({});
+  const userIdRef = useRef("");
 
   const commonTopics = [
     "llm",
@@ -43,39 +52,57 @@ export function RecommendationsPageClient() {
     "research",
   ];
 
-  useEffect(() => {
-    let id = localStorage.getItem("recommendation_user_id");
-    if (!id) {
-      id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-      localStorage.setItem("recommendation_user_id", id);
+  const syncUserId = useCallback((nextUserId: string | null | undefined) => {
+    if (!nextUserId || nextUserId === userIdRef.current) {
+      return;
     }
-    setUserId(id);
 
-    void loadRecommendations(id, []);
+    userIdRef.current = nextUserId;
   }, []);
 
-  const loadRecommendations = async (user_id: string, topics: string[]) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set("user_id", user_id);
-      if (topics.length > 0) {
-        params.set("topics", topics.join(","));
+  const loadRecommendations = useCallback(
+    async (topics: string[], currentUserId?: string) => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        const resolvedUserId = currentUserId ?? (userIdRef.current || undefined);
+        if (resolvedUserId) {
+          params.set("user_id", resolvedUserId);
+        }
+        if (topics.length > 0) {
+          params.set("topics", topics.join(","));
+        }
+        params.set("limit", "20");
+
+        const response = await fetchWithAnonymousIdentity(
+          `/api/recommendations?${params.toString()}`,
+        );
+        if (!response.ok) throw new Error("Failed to load recommendations");
+        syncUserId(syncAnonymousUserIdFromResponse(response));
+
+        const data = await response.json();
+        setRecommendations(data.recommendations || []);
+      } catch (error) {
+        console.error("Load recommendations error:", error);
+        setRecommendations([]);
+      } finally {
+        setLoading(false);
       }
-      params.set("limit", "20");
+    },
+    [syncUserId],
+  );
 
-      const response = await fetch(`/api/recommendations?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to load recommendations");
-
-      const data = await response.json();
-      setRecommendations(data.recommendations || []);
-    } catch (error) {
-      console.error("Load recommendations error:", error);
-      setRecommendations([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    void ensureAnonymousUserId()
+      .then((resolvedUserId) => {
+        syncUserId(resolvedUserId);
+        return loadRecommendations([], resolvedUserId);
+      })
+      .catch((error) => {
+        console.error("Anonymous identity bootstrap error:", error);
+        void loadRecommendations([]);
+      });
+  }, [loadRecommendations, syncUserId]);
 
   const handleTopicToggle = (topic: string) => {
     const newTopics = selectedTopics.includes(topic)
@@ -83,21 +110,23 @@ export function RecommendationsPageClient() {
       : [...selectedTopics, topic];
 
     setSelectedTopics(newTopics);
-    void loadRecommendations(userId, newTopics);
+    void loadRecommendations(newTopics);
   };
 
   const handleInteraction = async (feedId: string, interactionType: string, reason: string) => {
     try {
-      await fetch("/api/recommendations", {
+      const resolvedUserId = userIdRef.current || undefined;
+      const response = await fetchWithAnonymousIdentity("/api/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: userId,
           feed_id: feedId,
           interaction_type: interactionType,
           reason,
+          ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
         }),
       });
+      syncUserId(syncAnonymousUserIdFromResponse(response));
     } catch (error) {
       console.error("Track interaction error:", error);
     }
@@ -108,9 +137,26 @@ export function RecommendationsPageClient() {
     window.open(rec.feed.url, "_blank", "noopener,noreferrer");
   };
 
-  const handleSubscribe = (rec: Recommendation) => {
-    void handleInteraction(rec.feed.id, "subscribe", rec.reason);
-    alert(`Subscribed to ${rec.feed.title}!`);
+  const handleSubscribe = async (rec: Recommendation) => {
+    setFollowState((prev) => ({ ...prev, [rec.feed.id]: "following" }));
+    try {
+      const resolvedUserId = userIdRef.current || undefined;
+      const response = await fetchWithAnonymousIdentity("/api/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feed_id: rec.feed.id,
+          ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
+        }),
+      });
+      if (!response.ok) throw new Error("Follow request failed");
+      syncUserId(syncAnonymousUserIdFromResponse(response));
+      setFollowState((prev) => ({ ...prev, [rec.feed.id]: "followed" }));
+      void handleInteraction(rec.feed.id, "subscribe", rec.reason);
+    } catch (error) {
+      console.error("Subscribe error:", error);
+      setFollowState((prev) => ({ ...prev, [rec.feed.id]: "error" }));
+    }
   };
 
   const handleDismiss = (rec: Recommendation) => {
@@ -143,7 +189,9 @@ export function RecommendationsPageClient() {
               Personalized recommendations
             </span>
             <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">Discover feeds that fit how you already browse.</h1>
+              <h1 className="hero-title max-w-4xl">
+                Discover feeds that fit how you already browse.
+              </h1>
               <p className="hero-copy max-w-2xl">
                 The recommendation engine combines topic overlap, content similarity, and catalog
                 quality signals to surface relevant sources without flattening everything into a
@@ -183,7 +231,7 @@ export function RecommendationsPageClient() {
                 variant="ghost"
                 onClick={() => {
                   setSelectedTopics([]);
-                  void loadRecommendations(userId, []);
+                  void loadRecommendations([]);
                 }}
               >
                 Clear all filters
@@ -217,7 +265,10 @@ export function RecommendationsPageClient() {
                     icon: "Other",
                   };
                   return (
-                    <span key={reason} className="rounded-full border border-(--line) bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink-muted)">
+                    <span
+                      key={reason}
+                      className="rounded-full border border-(--line) bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                    >
                       {info.label}: {count}
                     </span>
                   );
@@ -227,9 +278,7 @@ export function RecommendationsPageClient() {
           )}
         </div>
 
-        {loading && (
-          <ContentCardSkeleton count={5} />
-        )}
+        {loading && <ContentCardSkeleton count={5} />}
 
         {!loading && recommendations.length === 0 && (
           <EmptyState
@@ -295,14 +344,35 @@ export function RecommendationsPageClient() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <Button type="button" onClick={() => handleFeedClick(rec)} variant="secondary">
+                      <Button
+                        type="button"
+                        onClick={() => handleFeedClick(rec)}
+                        variant="secondary"
+                      >
                         <ExternalLink className="size-4" />
                         Visit Feed
                       </Button>
-                      <Button type="button" onClick={() => handleSubscribe(rec)} variant="secondary">
-                        <BookmarkPlus className="size-4" />
-                        Subscribe
-                      </Button>
+                      {followState[rec.feed.id] === "followed" ? (
+                        <div className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-4 py-2 text-sm font-semibold text-(--brand-strong)">
+                          <Check className="size-4" />
+                          Following
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={() => void handleSubscribe(rec)}
+                          variant="secondary"
+                          disabled={followState[rec.feed.id] === "following"}
+                        >
+                          <BookmarkPlus className="size-4" />
+                          {followState[rec.feed.id] === "following" ? "Following…" : "Follow"}
+                        </Button>
+                      )}
+                      {followState[rec.feed.id] === "error" && (
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          Follow failed — try again
+                        </p>
+                      )}
                       <Button type="button" onClick={() => handleDismiss(rec)} variant="ghost">
                         <Trash2 className="size-4" />
                         Dismiss

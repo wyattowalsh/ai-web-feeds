@@ -1,4 +1,3 @@
----
 name: Feed Processing Pipeline
 on:
   push:
@@ -20,109 +19,48 @@ on:
         default: true
         type: boolean
       export_formats:
-        description: 'Export to JSON/OPML formats'
+        description: 'Export enriched JSON and OPML artifacts'
         required: false
         default: true
         type: boolean
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   process-feeds:
     name: Process Feed Sources
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.13'
-          cache: 'pip'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Install dependencies
-        run: |
-          cd packages/ai_web_feeds
-          uv sync
-          cd ../../apps/cli
-          uv sync
+        run: uv sync --all-extras
 
-      - name: Validate feeds.yaml
-        id: validate
-        run: |
-          uv run python - <<'PY'
-          from pathlib import Path
-          import re
-          import sys
-          import yaml
-
-          feeds = yaml.safe_load(Path('data/feeds.yaml').read_text(encoding='utf-8'))
-          errors: list[str] = []
-
-          if not isinstance(feeds, dict):
-              errors.append("feeds.yaml must be a YAML mapping")
-              feeds = {}
-
-          schema_version = feeds.get('schema_version')
-          if not isinstance(schema_version, str) or not re.match(r'^feeds-2\.[0-9]+\.[0-9]+$', schema_version):
-              errors.append("schema_version must match feeds-2.x.y")
-
-          sources = feeds.get('sources')
-          if not isinstance(sources, list) or not sources:
-              errors.append("sources must be a non-empty list")
-              sources = []
-
-          for idx, source in enumerate(sources):
-              if not isinstance(source, dict):
-                  errors.append(f"source[{idx}] must be an object")
-                  continue
-
-              url = source.get('url')
-              if not isinstance(url, str) or not url.startswith(('http://', 'https://')):
-                  errors.append(f"source[{idx}] has an invalid url")
-
-              topics = source.get('topics')
-              if not isinstance(topics, list) or not (1 <= len(topics) <= 6):
-                  errors.append(f"source[{idx}] must have 1-6 topics")
-              else:
-                  if len(set(topics)) != len(topics):
-                      errors.append(f"source[{idx}] topics must be unique")
-                  if not all(isinstance(topic, str) and topic.strip() for topic in topics):
-                      errors.append(f"source[{idx}] topics must be non-empty strings")
-
-              title = source.get('title')
-              if title is not None and (not isinstance(title, str) or not (1 <= len(title) <= 160)):
-                  errors.append(f"source[{idx}] title must be 1-160 chars when provided")
-
-              notes = source.get('notes')
-              if notes is not None and (not isinstance(notes, str) or len(notes) > 500):
-                  errors.append(f"source[{idx}] notes must be <=500 chars when provided")
-
-          if errors:
-              for error in errors[:20]:
-                  print(f"✗ {error}")
-              if len(errors) > 20:
-                  print(f"... and {len(errors) - 20} more validation errors")
-              sys.exit(1)
-
-          print(f"✓ Validation passed for {len(sources)} sources")
-          PY
+      - name: Validate canonical data assets
+        id: validate_assets
+        run: uv run python data/validate_data_assets.py
 
       - name: Process feeds through pipeline
-        id: process
+        id: process_pipeline
         run: |
-          cd apps/cli
           SKIP_ENRICHMENT=${{ github.event.inputs.skip_enrichment || 'true' }}
           EXPORT_FORMATS=${{ github.event.inputs.export_formats || 'true' }}
 
@@ -138,86 +76,171 @@ jobs:
             EXPORT_FLAG="--no-export"
           fi
 
-          uv run aiwebfeeds process \
-            --input ../../data/feeds.yaml \
-            --output ../../data/feeds.enriched.yaml \
-            --database sqlite:///../../data/aiwebfeeds.db \
+          uv run ai-web-feeds process \
+            --input data/feeds.yaml \
+            --output data/feeds.enriched.yaml \
+            --database sqlite:///data/ai-web-feeds.db \
             $ENRICH_FLAG \
             $EXPORT_FLAG
 
       - name: Verify outputs
+        id: verify_outputs
         run: |
           echo "📊 Verifying generated files..."
-          ls -lh data/*.{yaml,json,opml,db} 2>/dev/null || true
+          ls -lh data/feeds.enriched.yaml data/feeds.enriched.json data/feeds.enriched.opml data/feeds.enriched.categorized.opml data/ai-web-feeds.db 2>/dev/null || true
 
-          if [ -f data/feeds.json ]; then
-            SOURCES=$(jq '.sources | length' data/feeds.json)
-            echo "✓ feeds.json: $SOURCES sources"
+          if [ -f data/feeds.enriched.json ]; then
+            SOURCES=$(jq '.sources | length' data/feeds.enriched.json)
+            echo "✓ feeds.enriched.json: $SOURCES sources"
           fi
 
           if [ -f data/feeds.enriched.yaml ]; then
             echo "✓ feeds.enriched.yaml generated"
           fi
 
-          if [ -f data/aiwebfeeds.db ]; then
-            SIZE=$(stat -f%z data/aiwebfeeds.db 2>/dev/null || stat -c%s data/aiwebfeeds.db)
-            echo "✓ aiwebfeeds.db: $SIZE bytes"
+          if [ -f data/ai-web-feeds.db ]; then
+            SIZE=$(stat -f%z data/ai-web-feeds.db 2>/dev/null || stat -c%s data/ai-web-feeds.db)
+            echo "✓ ai-web-feeds.db: $SIZE bytes"
           fi
 
       - name: Check database content
+        id: check_database
         run: |
           echo "🔍 Checking database content..."
-          sqlite3 data/aiwebfeeds.db ".tables"
+          sqlite3 data/ai-web-feeds.db ".tables"
           echo ""
           echo "Source count:"
-          sqlite3 data/aiwebfeeds.db "SELECT COUNT(*) FROM sources;"
+          sqlite3 data/ai-web-feeds.db "SELECT COUNT(*) FROM sources;"
           echo ""
           echo "Sample sources:"
-          sqlite3 data/aiwebfeeds.db "SELECT id, title FROM sources LIMIT 5;"
+          sqlite3 data/ai-web-feeds.db "SELECT id, title FROM sources LIMIT 5;"
 
-      - name: Commit processed files
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Write processing summary artifact
+        if: always()
+        env:
+          VALIDATE_OUTCOME: ${{ steps.validate_assets.outcome }}
+          PROCESS_OUTCOME: ${{ steps.process_pipeline.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify_outputs.outcome }}
+          DATABASE_OUTCOME: ${{ steps.check_database.outcome }}
+          SKIP_ENRICHMENT: ${{ github.event.inputs.skip_enrichment || 'true' }}
+          EXPORT_FORMATS: ${{ github.event.inputs.export_formats || 'true' }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          uv run python - <<'PY'
+          from __future__ import annotations
 
-          git add data/feeds.enriched.yaml data/feeds.json data/*.opml data/aiwebfeeds.db || true
+          from datetime import datetime, timezone
+          import json
+          import os
+          from pathlib import Path
 
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: update processed feed data [skip ci]"
-            git push
+          artifact_paths = [
+              Path("data/feeds.enriched.yaml"),
+              Path("data/feeds.enriched.json"),
+              Path("data/feeds.enriched.opml"),
+              Path("data/feeds.enriched.categorized.opml"),
+              Path("data/ai-web-feeds.db"),
+          ]
+
+          source_count = None
+          enriched_json_path = Path("data/feeds.enriched.json")
+          if enriched_json_path.exists():
+              payload = json.loads(enriched_json_path.read_text(encoding="utf-8"))
+              source_count = len(payload.get("sources", []))
+
+          summary = {
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "status": (
+                  "success"
+                  if os.environ.get("VALIDATE_OUTCOME") == "success"
+                  and os.environ.get("PROCESS_OUTCOME") == "success"
+                  and os.environ.get("VERIFY_OUTCOME") == "success"
+                  and os.environ.get("DATABASE_OUTCOME") == "success"
+                  else "failed"
+              ),
+              "inputs": {
+                  "skip_enrichment": os.environ.get("SKIP_ENRICHMENT", "true") == "true",
+                  "export_formats": os.environ.get("EXPORT_FORMATS", "true") == "true",
+              },
+              "steps": {
+                  "validate_canonical_data_assets": os.environ.get("VALIDATE_OUTCOME", "skipped"),
+                  "process_pipeline": os.environ.get("PROCESS_OUTCOME", "skipped"),
+                  "verify_outputs": os.environ.get("VERIFY_OUTCOME", "skipped"),
+                  "check_database": os.environ.get("DATABASE_OUTCOME", "skipped"),
+              },
+              "source_count": source_count,
+              "artifacts": [
+                  {
+                      "path": str(path),
+                      "exists": path.exists(),
+                      "size_bytes": path.stat().st_size if path.exists() else None,
+                  }
+                  for path in artifact_paths
+              ],
+          }
+
+          Path("feed-processing-summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Stage processed artifacts
+        if: always()
+        run: |
+          rm -rf processed-feed-artifacts
+          mkdir -p processed-feed-artifacts/reports/github/catalog
+          if [ -f data/feeds.enriched.yaml ]; then
+            cp data/feeds.enriched.yaml processed-feed-artifacts/
+          fi
+          if [ -f data/feeds.enriched.json ]; then
+            cp data/feeds.enriched.json processed-feed-artifacts/
+          fi
+          if [ -f data/feeds.enriched.opml ]; then
+            cp data/feeds.enriched.opml processed-feed-artifacts/
+          fi
+          if [ -f data/feeds.enriched.categorized.opml ]; then
+            cp data/feeds.enriched.categorized.opml processed-feed-artifacts/
+          fi
+          if [ -f data/ai-web-feeds.db ]; then
+            cp data/ai-web-feeds.db processed-feed-artifacts/
+          fi
+          if [ -f feed-processing-summary.json ]; then
+            cp feed-processing-summary.json processed-feed-artifacts/
+            cp feed-processing-summary.json \
+              processed-feed-artifacts/reports/github/catalog/feed-processing-summary.json
           fi
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: processed-feeds
-          path: |
-            data/feeds.enriched.yaml
-            data/feeds.json
-            data/*.opml
-            data/aiwebfeeds.db
+          path: processed-feed-artifacts/
           retention-days: 30
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');
             let comment = '## 📊 Feed Processing Results\n\n';
 
-            if (fs.existsSync('data/feeds.json')) {
-              const data = JSON.parse(fs.readFileSync('data/feeds.json', 'utf8'));
+            if (fs.existsSync('data/feeds.enriched.json')) {
+              const data = JSON.parse(fs.readFileSync('data/feeds.enriched.json', 'utf8'));
               const sourceCount = data.sources?.length || 0;
               comment += `✅ Successfully processed **${sourceCount}** feed sources\n\n`;
             }
 
             comment += '### Generated Files\n';
-            const files = ['feeds.enriched.yaml', 'feeds.json', 'feeds.opml', 'feeds.categorized.opml', 'aiwebfeeds.db'];
+            const files = [
+              'feeds.enriched.yaml',
+              'feeds.enriched.json',
+              'feeds.enriched.opml',
+              'feeds.enriched.categorized.opml',
+              'ai-web-feeds.db',
+            ];
+
             for (const file of files) {
               const path = `data/${file}`;
               if (fs.existsSync(path)) {
@@ -227,9 +250,68 @@ jobs:
               }
             }
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: comment
+              body: comment,
             });
+
+  commit-processed:
+    name: Commit Processed Outputs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: process-feeds
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Download processed artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: processed-feeds
+          path: processed-feed-artifacts
+
+      - name: Restore processed artifacts into data/
+        run: |
+          mkdir -p data
+          if [ -f processed-feed-artifacts/feeds.enriched.yaml ]; then
+            cp processed-feed-artifacts/feeds.enriched.yaml data/feeds.enriched.yaml
+          fi
+          if [ -f processed-feed-artifacts/feeds.enriched.json ]; then
+            cp processed-feed-artifacts/feeds.enriched.json data/feeds.enriched.json
+          fi
+          if [ -f processed-feed-artifacts/feeds.enriched.opml ]; then
+            cp processed-feed-artifacts/feeds.enriched.opml data/feeds.enriched.opml
+          fi
+          if [ -f processed-feed-artifacts/feeds.enriched.categorized.opml ]; then
+            cp processed-feed-artifacts/feeds.enriched.categorized.opml data/feeds.enriched.categorized.opml
+          fi
+          if [ -f processed-feed-artifacts/ai-web-feeds.db ]; then
+            cp processed-feed-artifacts/ai-web-feeds.db data/ai-web-feeds.db
+          fi
+          mkdir -p reports/github/catalog
+          if [ -f processed-feed-artifacts/reports/github/catalog/feed-processing-summary.json ]; then
+            cp processed-feed-artifacts/reports/github/catalog/feed-processing-summary.json \
+              reports/github/catalog/feed-processing-summary.json
+          elif [ -f processed-feed-artifacts/feed-processing-summary.json ]; then
+            cp processed-feed-artifacts/feed-processing-summary.json \
+              reports/github/catalog/feed-processing-summary.json
+          fi
+
+      - name: Commit processed files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add data/feeds.enriched.yaml data/feeds.enriched.json data/feeds.enriched.opml data/feeds.enriched.categorized.opml data/ai-web-feeds.db || true
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update processed feed data [skip ci]"
+            git push
+          fi

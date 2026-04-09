@@ -13,31 +13,21 @@ Implements Phase 1 recommendation strategy:
 """
 
 import random
-from datetime import datetime, timezone
+from collections import Counter
 
 import numpy as np
 from loguru import logger
 from sqlmodel import Session, select
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import get_settings
 from ai_web_feeds.models import (
+    CurationStatus,
     FeedEmbedding,
     FeedSource,
     RecommendationInteraction,
     UserProfile,
 )
-
-# Shared settings instance
-_settings: Settings | None = None
-
-
-def get_settings() -> Settings:
-    """Get or create shared settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
-
+from ai_web_feeds.timestamps import utc_now
 
 # ============================================================================
 # Content-Based Recommendations
@@ -117,8 +107,14 @@ def get_similar_feeds_by_topic(
     """
     logger.debug(f"Finding feeds with topics: {topics}")
 
-    # Get all feeds
-    statement = select(FeedSource).where(FeedSource.id.not_in(exclude_ids))
+    topic_set = set(topics)
+    if not topic_set:
+        return []
+
+    # Get all candidate feeds (exclude inactive feeds up front)
+    statement = select(FeedSource).where(FeedSource.curation_status != CurationStatus.INACTIVE)
+    if exclude_ids:
+        statement = statement.where(FeedSource.id.not_in(exclude_ids))
     all_feeds = list(session.exec(statement).all())
 
     if not all_feeds:
@@ -131,7 +127,6 @@ def get_similar_feeds_by_topic(
             continue
 
         # Calculate Jaccard similarity with topics
-        topic_set = set(topics)
         feed_topic_set = set(feed.topics)
         intersection = len(topic_set & feed_topic_set)
         union = len(topic_set | feed_topic_set)
@@ -196,7 +191,7 @@ def calculate_popularity_scores(
         # Weighted average
         popularity = 0.4 * validation_success + 0.3 * validation_frequency + 0.3 * verified_bonus
 
-        scores[feed.id] = popularity
+        scores[feed.id] = min(max(popularity, 0.0), 1.0)
 
     return scores
 
@@ -221,10 +216,11 @@ def get_popular_feeds(
     # Get all active verified feeds
     statement = (
         select(FeedSource)
-        .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified == True)
-        .where(FeedSource.curation_status != "inactive")
+        .where(FeedSource.verified.is_(True))
+        .where(FeedSource.curation_status != CurationStatus.INACTIVE)
     )
+    if exclude_ids:
+        statement = statement.where(FeedSource.id.not_in(exclude_ids))
     feeds = list(session.exec(statement).all())
 
     if not feeds:
@@ -265,10 +261,11 @@ def get_serendipity_feeds(
     # Get all verified active feeds
     statement = (
         select(FeedSource)
-        .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified == True)
-        .where(FeedSource.curation_status != "inactive")
+        .where(FeedSource.verified.is_(True))
+        .where(FeedSource.curation_status != CurationStatus.INACTIVE)
     )
+    if exclude_ids:
+        statement = statement.where(FeedSource.id.not_in(exclude_ids))
     feeds = list(session.exec(statement).all())
 
     if not feeds:
@@ -324,13 +321,13 @@ def generate_recommendations(
     serendipity_weight /= total_weight
 
     # Exclude seed feeds
-    exclude_ids = seed_feed_ids or []
+    exclude_ids = set(seed_feed_ids or [])
 
     # Get user profile for interaction history
     if user_id:
         user_profile = session.get(UserProfile, user_id)
         if user_profile:
-            exclude_ids.extend(user_profile.viewed_feeds)
+            exclude_ids.update(user_profile.followed_feeds)
 
     # Calculate recommendation counts
     content_count = int(limit * content_weight)
@@ -344,7 +341,10 @@ def generate_recommendations(
         if seed_topics:
             # Topic-based similarity
             content_recs = get_similar_feeds_by_topic(
-                session, seed_topics, exclude_ids, content_count
+                session,
+                seed_topics,
+                list(exclude_ids),
+                content_count,
             )
             for feed in content_recs:
                 recommendations.append((feed, content_weight, "similar_topics"))
@@ -354,21 +354,21 @@ def generate_recommendations(
             seed_feed = session.get(FeedSource, seed_feed_ids[0])
             if seed_feed and seed_feed.topics:
                 content_recs = get_similar_feeds_by_topic(
-                    session, seed_feed.topics, exclude_ids, content_count
+                    session, seed_feed.topics, list(exclude_ids), content_count
                 )
                 for feed in content_recs:
                     recommendations.append((feed, content_weight, "similar_content"))
 
     # 2. Popularity-based recommendations
     if popularity_count > 0:
-        current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
+        current_exclude = list(exclude_ids | {rec[0].id for rec in recommendations})
         popularity_recs = get_popular_feeds(session, current_exclude, popularity_count)
         for feed in popularity_recs:
             recommendations.append((feed, popularity_weight, "popular"))
 
     # 3. Serendipity recommendations
     if serendipity_count > 0:
-        current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
+        current_exclude = list(exclude_ids | {rec[0].id for rec in recommendations})
         serendipity_recs = get_serendipity_feeds(session, current_exclude, serendipity_count)
         for feed in serendipity_recs:
             recommendations.append((feed, serendipity_weight, "discover"))
@@ -391,7 +391,7 @@ def track_recommendation_interaction(
     feed_id: str,
     interaction_type: str,
     recommendation_reason: str,
-):
+) -> None:
     """Track user interaction with recommendations.
 
     Args:
@@ -405,13 +405,10 @@ def track_recommendation_interaction(
         user_id=user_id,
         feed_id=feed_id,
         interaction_type=interaction_type,
-        recommendation_reason=recommendation_reason,
+        context={"recommendation_reason": recommendation_reason},
     )
 
     session.add(interaction)
-    session.commit()
-
-    logger.debug(f"Tracked {interaction_type} interaction: user={user_id}, feed={feed_id}")
 
     # Update user profile
     user_profile = session.get(UserProfile, user_id)
@@ -419,14 +416,16 @@ def track_recommendation_interaction(
         user_profile = UserProfile(user_id=user_id)
         session.add(user_profile)
 
-    # Update viewed/subscribed lists
-    if interaction_type == "view" and feed_id not in user_profile.viewed_feeds:
-        user_profile.viewed_feeds.append(feed_id)
-    elif interaction_type == "subscribe" and feed_id not in user_profile.subscribed_feeds:
-        user_profile.subscribed_feeds.append(feed_id)
+    if user_profile.followed_feeds is None:
+        user_profile.followed_feeds = []
 
-    user_profile.last_active_at = datetime.now(timezone.utc)
+    # Update viewed/subscribed lists
+    if interaction_type in {"view", "subscribe"} and feed_id not in user_profile.followed_feeds:
+        user_profile.followed_feeds.append(feed_id)
+
+    user_profile.updated_at = utc_now()
     session.commit()
+    logger.debug(f"Tracked {interaction_type} interaction: user={user_id}, feed={feed_id}")
 
 
 def get_user_recommendations(
@@ -454,19 +453,14 @@ def get_user_recommendations(
 
     if user_profile:
         # Use subscribed feeds as seeds
-        if user_profile.subscribed_feeds:
-            seed_feed_ids = user_profile.subscribed_feeds[:5]  # Top 5
+        if user_profile.followed_feeds:
+            seed_feed_ids = user_profile.followed_feeds[:5]  # Top 5
         # Extract topics from subscribed feeds
         if seed_feed_ids:
             feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(seed_feed_ids))).all()
-            all_topics = []
-            for feed in feeds:
-                if feed.topics:
-                    all_topics.extend(feed.topics)
+            all_topics = [topic for feed in feeds for topic in (feed.topics or [])]
             # Get most common topics
             if all_topics:
-                from collections import Counter
-
                 topic_counts = Counter(all_topics)
                 seed_topics = [topic for topic, _ in topic_counts.most_common(5)]
 

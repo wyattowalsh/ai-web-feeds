@@ -12,37 +12,42 @@ Uses caching with TTL for performance per config settings.
 """
 
 import csv
-from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+from datetime import datetime, timedelta
 from io import StringIO
 from typing import Any
 
 from loguru import logger
 from sqlmodel import Session, select
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import get_settings
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
+    CurationStatus,
     FeedSource,
     FeedValidationResult,
     TopicStats,
 )
-
-# Shared settings instance
-_settings: Settings | None = None
+from ai_web_feeds.timestamps import utc_now
 
 
-def get_settings() -> Settings:
-    """Get or create shared settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
+def _coerce_date_range(
+    date_range: str = "30d",
+    date_range_days: int | None = None,
+) -> tuple[str, int]:
+    """Normalize legacy day-count inputs to the current date-range string format."""
+    if date_range_days is not None:
+        return f"{date_range_days}d", date_range_days
+
+    days_map = {"7d": 7, "30d": 30, "90d": 90}
+    return date_range, days_map.get(date_range, 30)
 
 
 def calculate_summary_metrics(
     session: Session,
     date_range: str = "30d",
     topic: str | None = None,
+    date_range_days: int | None = None,
 ) -> dict[str, Any]:
     """Calculate summary metrics for analytics dashboard.
 
@@ -50,6 +55,7 @@ def calculate_summary_metrics(
         session: Database session
         date_range: Time range: "7d", "30d", "90d"
         topic: Optional topic filter
+        date_range_days: Legacy compatibility day-count input
 
     Returns:
         Dictionary with summary metrics:
@@ -59,13 +65,10 @@ def calculate_summary_metrics(
         - avg_response_time: float
         - health_score_distribution: dict
     """
-    settings = get_settings()
     logger.info(f"Calculating summary metrics for date_range={date_range}, topic={topic}")
 
-    # Parse date range
-    days_map = {"7d": 7, "30d": 30, "90d": 90}
-    days = days_map.get(date_range, 30)
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    date_range, days = _coerce_date_range(date_range, date_range_days)
+    cutoff_date = utc_now() - timedelta(days=days)
 
     # Base query for feeds
     feed_query = select(FeedSource)
@@ -74,7 +77,9 @@ def calculate_summary_metrics(
 
     feeds = session.exec(feed_query).all()
     total_feeds = len(feeds)
-    active_feeds = sum(1 for f in feeds if f.curation_status != "inactive")
+    active_feeds = sum(1 for f in feeds if f.curation_status != CurationStatus.INACTIVE)
+    verified_feeds = sum(1 for f in feeds if f.verified)
+    total_topics = len({topic_id for feed in feeds for topic_id in (feed.topics or [])})
 
     # Validation metrics
     validation_query = select(FeedValidationResult).where(
@@ -83,9 +88,9 @@ def calculate_summary_metrics(
     validations = session.exec(validation_query).all()
 
     if validations:
-        success_count = sum(1 for v in validations if v.success)
+        success_count = sum(1 for v in validations if v.is_valid)
         validation_success_rate = success_count / len(validations)
-        successful_validations = [v for v in validations if v.success and v.response_time_ms]
+        successful_validations = [v for v in validations if v.is_valid and v.response_time_ms]
         avg_response_time = (
             sum(v.response_time_ms for v in successful_validations) / len(successful_validations)
             if successful_validations
@@ -113,6 +118,8 @@ def calculate_summary_metrics(
     return {
         "total_feeds": total_feeds,
         "active_feeds": active_feeds,
+        "verified_feeds": verified_feeds,
+        "total_topics": total_topics,
         "validation_success_rate": validation_success_rate,
         "avg_response_time": avg_response_time,
         "health_distribution": health_distribution,
@@ -198,24 +205,19 @@ def get_publication_velocity(
         - most_active_feed: dict
         - least_active_feed: dict
     """
-    settings = get_settings()
     logger.info(f"Getting publication velocity: granularity={granularity}, date_range={date_range}")
 
-    # Parse date range
-    days_map = {"7d": 7, "30d": 30, "90d": 90}
-    days = days_map.get(date_range, 30)
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    _, days = _coerce_date_range(date_range)
+    cutoff_date = utc_now() - timedelta(days=days)
 
     # Get validations in date range
     validations = session.exec(
         select(FeedValidationResult)
         .where(FeedValidationResult.validated_at >= cutoff_date)
-        .where(FeedValidationResult.success == True)
+        .where(FeedValidationResult.is_valid.is_(True))
     ).all()
 
     # Group by date based on granularity
-    from collections import defaultdict
-
     date_counts: dict[str, int] = defaultdict(int)
     feed_counts: dict[str, int] = defaultdict(int)
 
@@ -316,7 +318,7 @@ class _ResultCache:
             return None
 
         result, timestamp = self._cache[key]
-        current_time = datetime.now(timezone.utc).timestamp()
+        current_time = utc_now().timestamp()
         if current_time - timestamp > ttl_seconds:
             del self._cache[key]
             return None
@@ -325,7 +327,7 @@ class _ResultCache:
 
     def set(self, key: str, value: Any):
         """Set cached value with current timestamp."""
-        current_time = datetime.now(timezone.utc).timestamp()
+        current_time = utc_now().timestamp()
         self._cache[key] = (value, current_time)
 
 
@@ -382,7 +384,7 @@ def generate_analytics_snapshot(session: Session) -> AnalyticsSnapshot:
     """
     logger.info("Generating analytics snapshot")
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = utc_now().date().isoformat()
 
     # Calculate metrics
     summary = calculate_summary_metrics(session, date_range="30d")
@@ -474,4 +476,131 @@ def export_analytics_csv(
     output.close()
 
     logger.info(f"CSV export complete: {len(csv_content)} bytes")
+    return csv_content
+
+
+def calculate_trending_topics(
+    session: Session,
+    limit: int = 10,
+    date_range_days: int = 30,
+) -> list[dict[str, Any]]:
+    """Legacy compatibility wrapper for topic trending analytics."""
+    cutoff_date = utc_now() - timedelta(days=date_range_days)
+    validations = session.exec(
+        select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
+    ).all()
+
+    validation_counts: dict[str, int] = defaultdict(int)
+    for validation in validations:
+        validation_counts[validation.feed_source_id] += 1
+
+    topic_totals: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"topic": "", "feed_count": 0, "validation_count": 0}
+    )
+    feeds = session.exec(select(FeedSource)).all()
+    for feed in feeds:
+        if feed.curation_status == CurationStatus.INACTIVE:
+            continue
+        feed_validation_count = validation_counts.get(feed.id, 0)
+        for topic_id in feed.topics or []:
+            topic_totals[topic_id]["topic"] = topic_id
+            topic_totals[topic_id]["feed_count"] += 1
+            topic_totals[topic_id]["validation_count"] += feed_validation_count
+
+    return sorted(
+        topic_totals.values(),
+        key=lambda item: (item["validation_count"], item["feed_count"], item["topic"]),
+        reverse=True,
+    )[:limit]
+
+
+def calculate_validation_velocity(
+    session: Session,
+    date_range_days: int = 30,
+    granularity: str = "daily",
+) -> list[dict[str, Any]]:
+    """Legacy compatibility wrapper for validation velocity analytics."""
+    velocity = get_publication_velocity(
+        session,
+        granularity=granularity,
+        date_range=f"{date_range_days}d",
+    )
+    return velocity["data_points"]
+
+
+def calculate_health_distribution(
+    session: Session,
+    date_range_days: int = 30,
+) -> dict[str, int]:
+    """Legacy compatibility wrapper using validation success rates per feed."""
+    cutoff_date = utc_now() - timedelta(days=date_range_days)
+    validations = session.exec(
+        select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
+    ).all()
+
+    validations_by_feed: dict[str, list[FeedValidationResult]] = defaultdict(list)
+    for validation in validations:
+        validations_by_feed[validation.feed_source_id].append(validation)
+
+    distribution = {"healthy": 0, "moderate": 0, "unhealthy": 0}
+    feeds = session.exec(select(FeedSource)).all()
+    for feed in feeds:
+        if feed.curation_status == CurationStatus.INACTIVE:
+            continue
+
+        history = validations_by_feed.get(feed.id, [])
+        if not history:
+            distribution["moderate"] += 1
+            continue
+
+        success_rate = sum(1 for result in history if result.is_valid) / len(history)
+        if success_rate >= 0.8:
+            distribution["healthy"] += 1
+        elif success_rate >= 0.5:
+            distribution["moderate"] += 1
+        else:
+            distribution["unhealthy"] += 1
+
+    return distribution
+
+
+def generate_analytics_csv_report(
+    session: Session,
+    date_range_days: int = 30,
+) -> str:
+    """Legacy compatibility CSV export with a stable column layout."""
+    summary = calculate_summary_metrics(session, date_range_days=date_range_days)
+    trending = calculate_trending_topics(session, date_range_days=date_range_days, limit=10)
+    velocity = calculate_validation_velocity(
+        session,
+        date_range_days=date_range_days,
+        granularity="daily",
+    )
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["section", "name", "value", "detail"])
+
+    writer.writerow(["summary", "total_feeds", summary["total_feeds"], ""])
+    writer.writerow(["summary", "active_feeds", summary["active_feeds"], ""])
+    writer.writerow(
+        ["summary", "validation_success_rate", f"{summary['validation_success_rate']:.4f}", ""]
+    )
+    writer.writerow(["summary", "avg_response_time", f"{summary['avg_response_time']:.2f}", ""])
+
+    for topic in trending:
+        writer.writerow(
+            [
+                "trending_topics",
+                topic["topic"],
+                topic["feed_count"],
+                topic["validation_count"],
+            ]
+        )
+
+    for point in velocity:
+        writer.writerow(["validation_velocity", point["date"], point["count"], ""])
+
+    csv_content = output.getvalue()
+    output.close()
     return csv_content

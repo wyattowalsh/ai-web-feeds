@@ -1,6 +1,6 @@
 {
   "title": "Documentation",
-  "pages": ["index", "test", "security", "taxonomy-visualization"],
+  "pages": ["index", "test", "test-math", "security", "taxonomy-visualization"],
   "---Features": {
     "type": "separator"
   },
@@ -13,7 +13,6 @@
       "analytics",
       "admin-observability",
       "search",
-      "recommendations",
       "data-enrichment",
       "pdf-export",
       "ai-integration",
@@ -43,6 +42,7 @@
       "workflow-reference",
       "deployment",
       "data-explorer",
+      "analytics",
       "opml-viewer",
       "database-quick-start",
       "testing",
@@ -61,6 +61,10 @@
     "pages": [
       "index",
       "architecture",
+      "runtime-authority",
+      "reader-local-state",
+      "search-architecture",
+      "data-lifecycle",
       "implementation",
       "database",
       "database-architecture",
@@ -69,13 +73,28 @@
       "refactoring-summary",
       "final-status",
       "cli",
+      "environment",
+      "naming",
       "python-api",
       "python-autodoc",
       "testing",
+      "workflow-safety",
       "workflows",
       "cli-workflows",
       "pre-commit-fixes",
       "contributing"
+    ]
+  },
+  "---Contributing": {
+    "type": "separator"
+  },
+  "contributing": {
+    "title": "Contributing",
+    "pages": [
+      "development-workflow",
+      "docs-maintenance",
+      "conventional-commits",
+      "pre-commit-hooks"
     ]
   },
   "---Visualization": {
@@ -84,6 +103,6 @@
   "visualization": {
     "title": "Visualization & Analytics",
     "icon": "ChartBar",
-    "pages": ["getting-started"]
+    "pages": ["getting-started", "api-reference", "compatibility-policy"]
   }
 }

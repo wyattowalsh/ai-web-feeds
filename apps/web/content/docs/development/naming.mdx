@@ -1,0 +1,116 @@
+---
+title: Naming conventions
+description: Canonical naming rules for project, package, import, CLI, domain, environment, and runtime file surfaces in ai-web-feeds.
+---
+
+# Naming conventions
+
+This page defines the canonical naming policy for the repository. The goal is not to
+force one spelling into every surface. The goal is to keep one public project name,
+one Python import name, and one small set of compatibility aliases with clear rules.
+
+## Canonical rule
+
+- Use `ai-web-feeds` for public, human-facing, installable, and repository-facing
+  surfaces.
+- Use `ai_web_feeds` for Python import paths, package directories, and module names.
+- Use `aiwebfeeds` only for punctuation-hostile surfaces, compact domain-style
+  hostnames, and backwards compatibility.
+
+## Naming matrix
+
+| Surface                         | Canonical value                           | Why                                                                                 |
+| ------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| Product / project display name  | `ai-web-feeds`                            | Best human-readable public name; matches repository and Python distribution naming. |
+| GitHub repository               | `ai-web-feeds`                            | Readable in URLs and consistent with the public project name.                       |
+| Local clone directory           | `ai-web-feeds`                            | Matches the repository and current workspace layout.                                |
+| Python distribution package     | `ai-web-feeds`                            | Python distribution names can use hyphens; this matches the public project name.    |
+| Python import package           | `ai_web_feeds`                            | Python imports must be valid identifiers and should use underscores.                |
+| Python source directory         | `packages/ai_web_feeds/src/ai_web_feeds/` | Mirrors the import package exactly.                                                 |
+| Preferred CLI command           | `ai-web-feeds`                            | Hyphenated command is the documented primary CLI entrypoint.                        |
+| CLI compatibility alias         | `aiwebfeeds`                              | Keep for backwards compatibility and muscle memory; do not lead with it in docs.    |
+| Primary documentation host      | `aiwebfeeds.com`                          | Compact branded custom domain without stacked punctuation.                          |
+| Recommended `w4w.dev` subdomain | `aiwebfeeds.w4w.dev`                      | Shorter and cleaner than `ai-web-feeds.w4w.dev`; treat this as a branded hostname.  |
+| Default Vercel project hostname | `ai-web-feeds.vercel.app`                 | Platform-generated host can keep the project/repo form.                             |
+| Public env var prefix           | `AIWF_*`                                  | Short, stable, and not tied to any punctuation variant.                             |
+| Legacy env var prefix           | `AIWEBFEEDS_*`                            | Obsolete compatibility only; avoid in new docs and examples.                        |
+| Canonical SQLite filename       | `data/ai-web-feeds.db`                    | Public-facing runtime artifact should use the canonical project form.               |
+| Legacy SQLite filename          | `data/aiwebfeeds.db`                      | Compatibility fallback only when the canonical file is absent.                      |
+
+## When to use each form
+
+### Use `ai-web-feeds`
+
+Use the hyphenated form for:
+
+- repo names and clone examples
+- README and docs page copy
+- Python distribution names in `pyproject.toml`
+- preferred CLI examples such as `uv run ai-web-feeds --help`
+- public file names that a user will read directly
+
+### Use `ai_web_feeds`
+
+Use the underscore form for:
+
+- `import` statements
+- package and module paths
+- internal Python references such as `ai_web_feeds.storage`
+- test coverage targets and Python tool configuration
+
+### Use `aiwebfeeds`
+
+Use the compact form only for:
+
+- custom hostnames where extra punctuation adds noise
+- legacy compatibility aliases
+- historical references that must remain backwards-compatible
+
+Avoid introducing `aiwebfeeds` as a co-equal product spelling in new docs, CLI help,
+or package metadata.
+
+## Decision rules
+
+If a new surface is added, use these checks in order:
+
+1. If the surface is a Python identifier, use `ai_web_feeds`.
+2. If the surface is a public project, repo, package, CLI, or file name, use
+   `ai-web-feeds`.
+3. If the surface is a compact branded hostname or a documented compatibility alias,
+   use `aiwebfeeds`.
+4. If none of the above fit cleanly, prefer `ai-web-feeds` and document the exception.
+
+## Examples
+
+```bash
+# Preferred
+uv run ai-web-feeds --help
+uv run ai-web-feeds validate all --strict
+
+# Compatibility only
+uv run aiwebfeeds --help
+```
+
+```python
+from ai_web_feeds import DatabaseManager, load_feeds
+from ai_web_feeds.storage import DatabaseManager as RuntimeDatabaseManager
+```
+
+```text
+GitHub repo:         https://github.com/wyattowalsh/ai-web-feeds
+Primary docs host:   https://aiwebfeeds.com
+Recommended subhost: https://aiwebfeeds.w4w.dev
+```
+
+## Anti-patterns
+
+- Do not use `aiwebfeeds` as the primary CLI command in new documentation.
+- Do not use `ai-web-feeds` inside Python `import` statements.
+- Do not invent new env var prefixes such as `AI_WEB_FEEDS_*`.
+- Do not treat `aiwebfeeds` and `ai-web-feeds` as equally canonical public names.
+
+## Related rules
+
+- Environment and runtime defaults: `/docs/development/environment`
+- Runtime storage authority: `/docs/development/runtime-authority`
+- CLI usage and examples: `/docs/development/cli`

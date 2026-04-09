@@ -1,31 +1,18 @@
 """ai_web_feeds.logger -- AIWebFeeds logging setup."""
 
-import os
 import sys
 from pathlib import Path
 
 from loguru import logger
 
-from ai_web_feeds.config import Settings
-
-# Shared settings instance
-_settings: Settings | None = None
-
-
-def get_settings() -> Settings:
-    """Get or create shared settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
-
+from ai_web_feeds.config import get_settings
 
 settings = get_settings()
 
 # Ensure log directory exists if file logging is enabled
 if settings.logging.file:
     log_dir = Path(settings.logging.file_path).parent
-    os.makedirs(log_dir, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
 
 logger.remove()  # Remove default logger
 

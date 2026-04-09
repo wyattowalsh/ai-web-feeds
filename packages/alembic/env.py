@@ -11,7 +11,9 @@ from sqlalchemy import engine_from_config, pool
 # Add parent directory to path so we can import ai_web_feeds
 sys.path.insert(0, str(Path(__file__).parent.parent / "ai_web_feeds" / "src"))
 
-from ai_web_feeds.models import SQLModel  # This imports all models via SQLModel registry
+from ai_web_feeds.config import default_database_url, resolve_database_url
+from ai_web_feeds.models import SQLModel  # This imports core storage models via SQLModel registry
+from ai_web_feeds.visualization import models as _visualization_models  # noqa: F401
 
 
 # this is the Alembic Config object, which provides
@@ -33,6 +35,21 @@ target_metadata = SQLModel.metadata
 # ... etc.
 
 
+def _resolve_configured_database_url() -> str:
+    """Resolve the effective Alembic database URL from shared config defaults."""
+    configured_url = config.get_main_option("sqlalchemy.url", "").strip()
+    if not configured_url or configured_url == "__AIWF_DEFAULT_DATABASE_URL__":
+        resolved_url = default_database_url()
+    else:
+        resolved_url = resolve_database_url(configured_url)
+
+    config.set_main_option("sqlalchemy.url", resolved_url)
+    return resolved_url
+
+
+DATABASE_URL = _resolve_configured_database_url()
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -45,7 +62,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,

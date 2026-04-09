@@ -6,15 +6,24 @@ on:
     paths:
       - '**.py'
       - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/coverage.yml'
   pull_request:
     branches: [main]
     paths:
       - '**.py'
       - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/coverage.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   coverage:
@@ -23,17 +32,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -70,7 +79,7 @@ jobs:
           uv run coverage report --format=markdown > ../coverage-summary.md
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: coverage-reports
           path: |
@@ -80,14 +89,14 @@ jobs:
 
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
-        uses: py-cov-action/python-coverage-comment-action@v3
+        uses: py-cov-action/python-coverage-comment-action@7188638f871f721a365d644f505d1ff3df20d683
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MINIMUM_GREEN: 90
           MINIMUM_ORANGE: 75
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb161daa5c8b7f32b7d2cf808
         with:
           files: ./tests/reports/coverage/coverage.xml
           flags: unittests
@@ -95,11 +104,11 @@ jobs:
           fail_ci_if_error: false
 
       - name: Create coverage badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.GIST_SECRET != '' && secrets.COVERAGE_GIST_ID != ''
+        uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: YOUR_GIST_ID_HERE
+          gistID: ${{ secrets.COVERAGE_GIST_ID }}
           filename: coverage-badge.json
           label: coverage
           message: ${{ steps.coverage-summary.outputs.coverage }}%

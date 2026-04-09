@@ -3,6 +3,7 @@
 from datetime import datetime
 
 import pytest
+from ai_web_feeds.config import resolve_database_url
 from ai_web_feeds.models import FeedSource, Topic
 from ai_web_feeds.storage import DatabaseManager
 from sqlalchemy import text
@@ -16,7 +17,7 @@ class TestDatabaseManager:
         """Test DatabaseManager initialization."""
         db_url = f"sqlite:///{temp_db_path}"
         db = DatabaseManager(database_url=db_url)
-        assert db.database_url == db_url
+        assert db.database_url == resolve_database_url(db_url)
         assert db.engine is not None
 
     def test_create_db_and_tables(self, temp_db_path):
@@ -274,3 +275,25 @@ class TestDatabaseManagerEdgeCases:
                 )
                 session.add(duplicate)
                 session.commit()
+
+
+@pytest.mark.unit
+class TestSharedDatabaseManager:
+    """Test shared database manager authority."""
+
+    def test_get_database_manager_uses_runtime_database_url(self, tmp_path, monkeypatch):
+        """Shared manager should follow AIWF_DATABASE_URL and recreate on change."""
+        import ai_web_feeds.storage as storage_module
+
+        first_db_path = tmp_path / "first.db"
+        second_db_path = tmp_path / "second.db"
+
+        monkeypatch.setattr(storage_module, "_db_manager", None)
+        monkeypatch.setenv("AIWF_DATABASE_URL", f"sqlite:///{first_db_path}")
+        first_manager = storage_module.get_database_manager()
+        assert first_manager.database_url == f"sqlite:///{first_db_path}"
+
+        monkeypatch.setenv("AIWF_DATABASE_URL", f"sqlite:///{second_db_path}")
+        second_manager = storage_module.get_database_manager()
+        assert second_manager.database_url == f"sqlite:///{second_db_path}"
+        assert second_manager is not first_manager

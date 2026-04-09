@@ -1,10 +1,11 @@
 """CLI commands for analytics dashboard."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Optional
 
 import typer
-from rich.console import Console
 from rich.table import Table
 
 from ai_web_feeds.analytics import (
@@ -14,19 +15,20 @@ from ai_web_feeds.analytics import (
     get_publication_velocity,
     get_trending_topics,
 )
+from ai_web_feeds.cli.support import console
+from ai_web_feeds.config import resolve_runtime_database_url
 from ai_web_feeds.storage import DatabaseManager
 
-app = typer.Typer(help="Analytics dashboard commands")
-console = Console()
+app = typer.Typer(help="Analytics dashboard commands", no_args_is_help=True)
 
 
 @app.command("summary")
 def analytics_summary(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     date_range: str = typer.Option(
         "30d",
@@ -42,6 +44,7 @@ def analytics_summary(
     ),
 ):
     """Display analytics summary metrics."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Analytics Summary[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -82,11 +85,11 @@ def analytics_summary(
 
 @app.command("trending")
 def analytics_trending(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     limit: int = typer.Option(
         10,
@@ -102,6 +105,7 @@ def analytics_trending(
     ),
 ):
     """Display Most Active Topics."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Most Active Topics[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -110,9 +114,9 @@ def analytics_trending(
 
         if not topics:
             console.print(
-                "[yellow]No topic stats found. Run 'aiwebfeeds analytics snapshot' first.[/yellow]"
+                "[yellow]No topic stats found. Run 'ai-web-feeds analytics snapshot' first.[/yellow]"
             )
-            raise typer.Exit(1)
+            return
 
         table = Table(show_header=True)
         table.add_column("Rank", style="dim")
@@ -137,11 +141,11 @@ def analytics_trending(
 
 @app.command("velocity")
 def analytics_velocity(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     granularity: str = typer.Option(
         "daily",
@@ -157,6 +161,7 @@ def analytics_velocity(
     ),
 ):
     """Display publication velocity metrics."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Publication Velocity ({granularity})[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -194,14 +199,15 @@ def analytics_velocity(
 
 @app.command("snapshot")
 def analytics_snapshot(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
 ):
     """Generate daily analytics snapshot."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Generating Analytics Snapshot[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -217,11 +223,11 @@ def analytics_snapshot(
 
 @app.command("export")
 def analytics_export(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     output: Path = typer.Option(
         "analytics_export.csv",
@@ -237,6 +243,7 @@ def analytics_export(
     ),
 ):
     """Export analytics to CSV."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Exporting Analytics to CSV[/bold cyan]\n")
 
     db = DatabaseManager(database_url)

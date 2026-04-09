@@ -274,7 +274,7 @@ conventional-commits:
   steps:
     - name: Validate PR commits
       run: |
-        npx commitlint --from ${{ github.event.pull_request.base.sha }} \
+        pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} \
                        --to ${{ github.event.pull_request.head.sha }}
 ```
 
@@ -326,13 +326,13 @@ Test your commit message format:
 
 ```bash
 # Test with commitlint
-echo "feat(core): test message" | npx commitlint
+echo "feat(core): test message" | pnpm exec commitlint
 
 # Validate last commit
-npx commitlint --from HEAD~1
+pnpm exec commitlint --from HEAD~1
 
 # Validate range
-npx commitlint --from HEAD~5 --to HEAD
+pnpm exec commitlint --from HEAD~5 --to HEAD
 ```
 
 ## Best Practices
@@ -375,13 +375,13 @@ Conventional commits enable automated changelog generation:
 
 ```bash
 # Generate changelog
-npx standard-version
+pnpm exec standard-version
 
 # Preview next version
-npx standard-version --dry-run
+pnpm exec standard-version --dry-run
 
 # First release
-npx standard-version --first-release
+pnpm exec standard-version --first-release
 ```
 
 ## Resources
@@ -406,7 +406,7 @@ npx standard-version --first-release
 Use commitizen for interactive prompts:
 
 ```bash
-npx cz
+pnpm exec cz
 ```
 
 Or refer to this guide!

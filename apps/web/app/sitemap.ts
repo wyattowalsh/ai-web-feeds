@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
+import { getSiteBaseUrl } from "@/lib/env";
 import { source } from "@/lib/source";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+  const baseUrl = getSiteBaseUrl();
 
   // Get all documentation pages
   const pages = source.getPages();

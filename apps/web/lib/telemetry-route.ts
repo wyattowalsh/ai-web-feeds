@@ -1,11 +1,17 @@
+import "server-only";
 import { randomUUID } from "node:crypto";
 import { after, NextResponse } from "next/server";
 import {
+  extractClientIp,
   hashClientIp,
   recordApiTelemetry,
   redactErrorMessage,
   type ApiTelemetryEvent,
 } from "@/lib/telemetry";
+
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
+  throw new Error("lib/telemetry-route.ts is server-only");
+}
 
 type RouteHandlerContext = { params: Promise<Record<string, string>> };
 
@@ -68,12 +74,11 @@ function readUrl(request: Request): URL {
 }
 
 function readClientIp(request: Request): string | null {
-  const forwardedFor = readHeader(request, "x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() ?? null;
+  try {
+    return extractClientIp(request);
+  } catch {
+    return null;
   }
-
-  return readHeader(request, "x-real-ip") ?? readHeader(request, "cf-connecting-ip");
 }
 
 function hasAdminSessionCookie(request: Request): boolean {
@@ -92,16 +97,18 @@ export function withRouteTelemetry<TRequest extends Request = Request>(
   handler: RouteHandlerWithoutContext<TRequest>,
   options?: TelemetryOptions,
 ): RouteHandlerWithoutContext<TRequest>;
-export function withRouteTelemetry<TRequest extends Request = Request, TContext = RouteHandlerContext>(
+export function withRouteTelemetry<
+  TRequest extends Request = Request,
+  TContext = RouteHandlerContext,
+>(
   routeKey: string,
   handler: RouteHandlerWithContext<TRequest, TContext>,
   options?: TelemetryOptions,
 ): RouteHandlerWithContext<TRequest, TContext>;
-export function withRouteTelemetry<TRequest extends Request = Request, TContext = RouteHandlerContext>(
-  routeKey: string,
-  handler: RouteHandler<TRequest, TContext>,
-  options: TelemetryOptions = {},
-) {
+export function withRouteTelemetry<
+  TRequest extends Request = Request,
+  TContext = RouteHandlerContext,
+>(routeKey: string, handler: RouteHandler<TRequest, TContext>, options: TelemetryOptions = {}) {
   return async (request: TRequest, context?: TContext): Promise<Response> => {
     const startedAt = performance.now();
     const requestId = readHeader(request, "x-request-id") || randomUUID();

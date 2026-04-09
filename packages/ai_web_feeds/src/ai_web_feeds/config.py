@@ -1,47 +1,146 @@
-"""ai_web_feeds.config -- ai-web-feeds configs"""
+"""ai_web_feeds.config -- canonical configuration authority."""
 
+from functools import lru_cache
 from pathlib import Path
+from typing import Any, cast
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 DEFAULT_DATABASE_FILENAME = "ai-web-feeds.db"
 LEGACY_DATABASE_FILENAME = "aiwebfeeds.db"
 DEFAULT_DATABASE_URL = f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
 LEGACY_DATABASE_URL = f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
+SQLITE_IN_MEMORY_URL = "sqlite:///:memory:"
+DEFAULT_LOG_FILE_PATH = "logs/ai-web-feeds.log"
+VALID_LOG_LEVELS = frozenset({"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"})
+
+
+def _build_sqlite_url(path: Path) -> str:
+    """Serialize a filesystem path as a SQLite SQLAlchemy URL."""
+    return f"sqlite:///{path.as_posix()}"
+
+
+@lru_cache(maxsize=1)
+def repository_root() -> Path:
+    """Return the repository root for workspace-relative defaults."""
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / "pyproject.toml").exists() and (parent / "data").exists():
+            return parent
+
+    msg = f"Unable to locate the ai-web-feeds repository root from {current}"
+    raise RuntimeError(msg)
+
+
+def resolve_workspace_path(
+    value: str | Path,
+    *,
+    base: Path | None = None,
+    variable_name: str = "path",
+) -> Path:
+    """Resolve relative paths from the repository root instead of the current cwd."""
+    raw_value = str(value).strip()
+    if not raw_value:
+        msg = f"{variable_name} cannot be empty"
+        raise ValueError(msg)
+
+    candidate = Path(raw_value).expanduser()
+    anchor = base or repository_root()
+    return candidate.resolve() if candidate.is_absolute() else (anchor / candidate).resolve()
+
+
+def default_data_dir() -> Path:
+    """Return the canonical repository data directory."""
+    return repository_root() / "data"
+
+
+def default_data_path(*parts: str) -> Path:
+    """Return a path inside the canonical repository data directory."""
+    return default_data_dir().joinpath(*parts)
+
+
+def default_log_file_path() -> str:
+    """Return the canonical default log file path."""
+    return str(
+        resolve_workspace_path(
+            DEFAULT_LOG_FILE_PATH,
+            variable_name="AIWF_LOGGING__FILE_PATH",
+        )
+    )
+
+
+def _canonical_database_path() -> Path:
+    return default_data_path(DEFAULT_DATABASE_FILENAME)
+
+
+def _legacy_database_path() -> Path:
+    return default_data_path(LEGACY_DATABASE_FILENAME)
 
 
 def _sqlite_path_from_url(database_url: str) -> Path | None:
-    """Return a local filesystem path for SQLite URLs."""
+    """Return a repository-rooted filesystem path for SQLite URLs."""
     prefix = "sqlite:///"
-    if not database_url.startswith(prefix):
+    trimmed = database_url.strip()
+    if not trimmed.startswith(prefix):
         return None
-    return Path(database_url.removeprefix(prefix))
+
+    if trimmed == SQLITE_IN_MEMORY_URL:
+        return None
+
+    raw_path = trimmed.removeprefix(prefix)
+    return resolve_workspace_path(raw_path, variable_name="AIWF_DATABASE_URL")
+
+
+def database_path_from_url(database_url: str) -> Path | None:
+    """Return the resolved SQLite path for a database URL, if applicable."""
+    return _sqlite_path_from_url(resolve_database_url(database_url))
 
 
 def resolve_database_url(database_url: str) -> str:
-    """Prefer the canonical SQLite filename while preserving legacy installs."""
-    if database_url != DEFAULT_DATABASE_URL:
-        return database_url
+    """Return the effective runtime database URL with canonical path resolution."""
+    trimmed = database_url.strip()
+    if not trimmed:
+        msg = f"Database URL cannot be empty. Set AIWF_DATABASE_URL or use {DEFAULT_DATABASE_URL}."
+        raise ValueError(msg)
 
-    default_db_path = _sqlite_path_from_url(DEFAULT_DATABASE_URL)
-    legacy_db_path = _sqlite_path_from_url(LEGACY_DATABASE_URL)
-    if default_db_path is None or legacy_db_path is None:
-        return database_url
+    sqlite_path = _sqlite_path_from_url(trimmed)
+    if sqlite_path is None:
+        return trimmed
 
-    if not default_db_path.exists() and legacy_db_path.exists():
-        return LEGACY_DATABASE_URL
-    return DEFAULT_DATABASE_URL
+    canonical_path = _canonical_database_path()
+    legacy_path = _legacy_database_path()
+    if sqlite_path == canonical_path and not canonical_path.exists() and legacy_path.exists():
+        return _build_sqlite_url(legacy_path)
+    return _build_sqlite_url(sqlite_path)
 
 
 def default_database_url() -> str:
-    """Return the canonical default database URL with legacy fallback."""
+    """Return the canonical default database URL with legacy compatibility."""
     return resolve_database_url(DEFAULT_DATABASE_URL)
+
+
+def runtime_database_url() -> str:
+    """Return the effective runtime database URL from settings/env."""
+    return resolve_database_url(get_settings().database_url)
+
+
+def runtime_database_path(database_url: str | None = None) -> Path | None:
+    """Return the effective resolved SQLite database path, if applicable."""
+    return database_path_from_url(resolve_runtime_database_url(database_url))
+
+
+def resolve_runtime_database_url(database_url: str | None = None) -> str:
+    """Resolve an optional CLI or runtime database override."""
+    if database_url is None or not database_url.strip():
+        return runtime_database_url()
+    return resolve_database_url(database_url)
 
 
 class LoggingConfig(BaseSettings):
     """Logging-specific configs."""
+
+    model_config = SettingsConfigDict(extra="ignore", validate_default=True)
 
     # Log level
     level: str = Field("INFO", description="Logging level")
@@ -61,7 +160,7 @@ class LoggingConfig(BaseSettings):
 
     # File sink
     file: bool = Field(False, description="Enable file logging")
-    file_path: str = Field("logs/ai_web_feeds.log", description="Log file path")
+    file_path: str = Field(default_factory=default_log_file_path, description="Log file path")
     file_serialize: bool = Field(True, description="Serialize logs as JSON (structured logging)")
     file_format: str = Field(
         '{{"ts":"{time:YYYY-MM-DDTHH:mm:ss.SSSZ}",'
@@ -79,6 +178,23 @@ class LoggingConfig(BaseSettings):
     diagnose: bool = Field(
         False, description="Verbose exception formatting (set True for debugging)"
     )
+
+    @field_validator("level", mode="after")
+    @classmethod
+    def validate_level(cls, value: str) -> str:
+        """Normalize supported Loguru log levels."""
+        normalized = value.strip().upper()
+        if normalized not in VALID_LOG_LEVELS:
+            choices = ", ".join(sorted(VALID_LOG_LEVELS))
+            msg = f"AIWF_LOGGING__LEVEL must be one of: {choices}"
+            raise ValueError(msg)
+        return normalized
+
+    @field_validator("file_path", mode="after")
+    @classmethod
+    def validate_file_path(cls, value: str) -> str:
+        """Resolve file logging paths from the repository root."""
+        return str(resolve_workspace_path(value, variable_name="AIWF_LOGGING__FILE_PATH"))
 
 
 class EmbeddingSettings(BaseSettings):
@@ -104,7 +220,9 @@ class AnalyticsSettings(BaseSettings):
     )
     dynamic_cache_ttl: int = Field(
         300,
-        description="Dynamic metrics cache TTL (seconds), e.g., trending_topics, validation_success_rate",
+        description=(
+            "Dynamic metrics cache TTL (seconds), e.g., trending_topics, validation_success_rate"
+        ),
     )
     max_concurrent_queries: int = Field(10, description="Maximum concurrent analytics queries")
 
@@ -220,8 +338,21 @@ class Settings(BaseSettings):
 
     # Core settings
     database_url: str = Field(default_factory=default_database_url, description="Database URL")
-    backend_url: str = Field("http://localhost:8000", description="Backend API URL")
-    jwt_secret_key: str = Field("", description="JWT secret key for authentication (AIWF_JWT_SECRET_KEY)")
+    data_dir: Path = Field(
+        default_factory=default_data_dir,
+        description="Repository data directory",
+    )
+    backend_url: str = Field(
+        "",
+        description="Deprecated core backend URL field; web bridges use BACKEND_URL directly",
+    )
+    jwt_secret_key: str = Field(
+        "",
+        description=(
+            "Visualization-only JWT secret key (AIWF_JWT_SECRET_KEY); "
+            "not used for end-user authentication"
+        ),
+    )
     jwt_algorithm: str = Field("HS256", description="JWT signing algorithm")
 
     # Feature-specific settings
@@ -256,8 +387,39 @@ class Settings(BaseSettings):
         env_prefix="AIWF_",
         env_nested_delimiter="__",
         extra="ignore",
+        validate_default=True,
     )
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def validate_database_url(cls, value: str) -> str:
+        """Normalize database URLs and raise clear env-specific errors."""
+        try:
+            return resolve_database_url(value)
+        except ValueError as exc:
+            raise ValueError(f"Invalid AIWF_DATABASE_URL: {exc}") from exc
+
+    @field_validator("data_dir", mode="after")
+    @classmethod
+    def validate_data_dir(cls, value: Path) -> Path:
+        """Resolve relative data directories from the repository root."""
+        return resolve_workspace_path(value, variable_name="AIWF_DATA_DIR")
+
+
+def get_settings() -> Settings:
+    """Build a settings instance from the current environment."""
+    return Settings()
+
+
+class _SettingsProxy:
+    """Proxy object that keeps `settings` aligned with the current environment."""
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(get_settings(), name)
+
+    def __repr__(self) -> str:
+        return repr(get_settings())
 
 
 # Global settings instance for backward compatibility
-settings = Settings()
+settings = cast(Settings, _SettingsProxy())

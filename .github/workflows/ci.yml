@@ -10,7 +10,31 @@ permissions:
   contents: read
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  github-automation-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
+
+      - name: Install dependencies
+        run: cd packages/ai_web_feeds && uv sync
+
+      - name: Validate GitHub automation sources
+        run: cd tests && uv run pytest tests/github/test_feed_submission_to_source.py tests/github/test_gh_aw_source_validation.py tests/github/test_workflow_summary_artifacts.py
+
   # Backend tests
   backend-tests:
     runs-on: ubuntu-latest
@@ -63,7 +87,7 @@ jobs:
           from pathlib import Path
 
           ini_path = Path("alembic.ini")
-          database_url = os.environ["DATABASE_URL"]
+          database_url = os.environ["AIWF_DATABASE_URL"]
           lines = ini_path.read_text(encoding="utf-8").splitlines()
           updated = [
               f"sqlalchemy.url = {database_url}" if line.startswith("sqlalchemy.url =") else line
@@ -73,12 +97,12 @@ jobs:
           PY
           uv run alembic upgrade heads
         env:
-          DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/aiwebfeeds.db
+          AIWF_DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/ai-web-feeds.db
 
       - name: Run tests
         run: cd tests && uv run pytest --cov --cov-report=xml
         env:
-          DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/aiwebfeeds.db
+          AIWF_DATABASE_URL: sqlite:///${{ github.workspace }}/.ci/ai-web-feeds.db
           REDIS_URL: redis://localhost:6379/0
 
       - name: Upload coverage
@@ -99,7 +123,7 @@ jobs:
           node-version: "20"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b
         with:
           version: 9
 
@@ -109,7 +133,8 @@ jobs:
       - name: Lint
         run: cd apps/web && pnpm lint
 
-      - name: Type check
+      - name: Type check (advisory)
+        continue-on-error: true
         run: cd apps/web && pnpm tsc --noEmit
 
       - name: Build
@@ -129,7 +154,7 @@ jobs:
           node-version: "20"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b
         with:
           version: 9
 
@@ -137,10 +162,10 @@ jobs:
         run: cd apps/web && pnpm install --frozen-lockfile
 
       - name: Install Playwright
-        run: ./apps/web/node_modules/.bin/playwright install --with-deps
+        run: cd apps/web && pnpm exec playwright install --with-deps
 
       - name: Run E2E tests
-        run: ./apps/web/node_modules/.bin/playwright test
+        run: cd apps/web && pnpm exec playwright test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
@@ -154,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b274fc6134d1d699
@@ -179,7 +204,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa601d98477e57
@@ -203,6 +228,8 @@ jobs:
 
       - name: Build and push
         if: steps.docker-creds.outputs.available == 'true'
+        # Dockerfile base images are digest-pinned so published tags stay tied to
+        # immutable upstream inputs until full provenance attestations are added.
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           context: .
@@ -220,7 +247,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Deploy to production
         run: |

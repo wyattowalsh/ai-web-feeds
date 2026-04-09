@@ -1,14 +1,23 @@
 """ai_web_feeds.storage -- Database and storage management"""
 
-from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from datetime import datetime, timedelta
 from typing import Any
 
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from loguru import logger
-from sqlalchemy import and_, create_engine, desc
+from sqlalchemy import DateTime, create_engine, desc, event, inspect
+from sqlalchemy.exc import NoInspectionAvailable
 from sqlmodel import Session, SQLModel, select
 
-from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
+from ai_web_feeds.config import (
+    SQLITE_IN_MEMORY_URL,
+    repository_root,
+    resolve_runtime_database_url,
+    runtime_database_path,
+    runtime_database_url,
+)
+from ai_web_feeds.digest_schedule import calculate_next_send_at, validate_digest_schedule
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
     EmailDigest,
@@ -28,18 +37,85 @@ from ai_web_feeds.models import (
     TrendingTopic,
     UserFeedFollow,
 )
+from ai_web_feeds.timestamps import normalize_utc_datetime, utc_date_string, utc_now
+
+LEGACY_CORE_SCHEMA_REVISION = "146892327439"
+KNOWN_UNVERSIONED_TABLES = frozenset(SQLModel.metadata.tables.keys())
+POST_LEGACY_TABLES = frozenset(
+    {
+        "visualizations",
+        "dashboards",
+        "dashboard_widgets",
+        "forecasts",
+        "api_keys",
+        "export_jobs",
+        "api_usage",
+    }
+)
+LEGACY_BASE_TABLES = tuple(
+    table for name, table in SQLModel.metadata.tables.items() if name not in POST_LEGACY_TABLES
+)
+
+
+class ManagedSession(Session):
+    """SQLModel session with rollback-on-error context-manager semantics."""
+
+    def flush(self, objects=None):  # type: ignore[override]
+        try:
+            return super().flush(objects)
+        except Exception:
+            self.rollback()
+            raise
+
+    def commit(self) -> None:  # type: ignore[override]
+        try:
+            super().commit()
+        except Exception:
+            self.rollback()
+            raise
+
+    def __exit__(self, exc_type, exc_val, exc_tb):  # type: ignore[override]
+        if exc_type is not None:
+            self.rollback()
+        return super().__exit__(exc_type, exc_val, exc_tb)
+
+
+def _normalize_mapped_datetimes(instance: object) -> None:
+    """Normalize mapped datetime attributes to naive UTC before persistence."""
+    try:
+        mapper = inspect(instance).mapper
+    except NoInspectionAvailable:
+        return
+
+    for attribute in mapper.column_attrs:
+        column = attribute.columns[0]
+        if not isinstance(column.type, DateTime):
+            continue
+
+        current_value = getattr(instance, attribute.key, None)
+        normalized_value = normalize_utc_datetime(current_value)
+        if normalized_value != current_value:
+            setattr(instance, attribute.key, normalized_value)
+
+
+@event.listens_for(ManagedSession, "before_flush")
+def _normalize_session_datetimes(session: ManagedSession, flush_context, instances) -> None:
+    """Keep runtime writes aligned with the repository's naive-UTC storage policy."""
+    del flush_context, instances
+    for instance in tuple(session.new) + tuple(session.dirty):
+        _normalize_mapped_datetimes(instance)
 
 
 class DatabaseManager:
     """Manage SQLModel database connections and operations."""
 
-    def __init__(self, database_url: str = DEFAULT_DATABASE_URL):
+    def __init__(self, database_url: str | None = None):
         """Initialize database manager.
 
         Args:
             database_url: SQLAlchemy database URL
         """
-        self.database_url = resolve_database_url(database_url)
+        self.database_url = resolve_runtime_database_url(database_url)
         self.engine = create_engine(
             self.database_url,
             echo=False,  # Set to True for SQL debugging
@@ -50,22 +126,51 @@ class DatabaseManager:
         logger.info(f"Database initialized: {self.database_url}")
 
     def create_db_and_tables(self) -> None:
-        """Create all tables in the database."""
-        # Ensure the data directory exists for SQLite
-        if self.database_url.startswith("sqlite"):
-            db_path = self.database_url.replace("sqlite:///", "")
-            Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+        """Bootstrap the database schema using Alembic with legacy compatibility."""
+        database_path = runtime_database_path(self.database_url)
+        if database_path is not None:
+            database_path.parent.mkdir(parents=True, exist_ok=True)
 
-        SQLModel.metadata.create_all(self.engine)
-        logger.info("Database tables created")
+        if self.database_url == SQLITE_IN_MEMORY_URL:
+            SQLModel.metadata.create_all(self.engine)
+            logger.info("Database schema bootstrapped via SQLModel metadata")
+            return
 
-    def get_session(self) -> Session:
+        alembic_config = self._build_alembic_config()
+        if self._has_unversioned_application_schema():
+            existing_tables = set(inspect(self.engine).get_table_names())
+            logger.warning(
+                "Detected a legacy non-versioned schema; reconciling core tables before "
+                "stamping the legacy base revision"
+            )
+            if existing_tables & POST_LEGACY_TABLES:
+                SQLModel.metadata.create_all(self.engine)
+                command.stamp(alembic_config, "head")
+            else:
+                SQLModel.metadata.create_all(self.engine, tables=LEGACY_BASE_TABLES)
+                command.stamp(alembic_config, LEGACY_CORE_SCHEMA_REVISION)
+
+        command.upgrade(alembic_config, "head")
+        logger.info("Database schema upgraded to Alembic head")
+
+    def get_session(self) -> ManagedSession:
         """Get a database session.
 
         Returns:
             Database session
         """
-        return Session(self.engine)
+        return ManagedSession(self.engine, expire_on_commit=False)
+
+    def _build_alembic_config(self) -> AlembicConfig:
+        """Return an Alembic config bound to this manager's database URL."""
+        alembic_config = AlembicConfig(str(repository_root() / "packages" / "alembic.ini"))
+        alembic_config.set_main_option("sqlalchemy.url", self.database_url)
+        return alembic_config
+
+    def _has_unversioned_application_schema(self) -> bool:
+        """Return whether the connected database has app tables but no Alembic version table."""
+        table_names = set(inspect(self.engine).get_table_names())
+        return "alembic_version" not in table_names and bool(table_names & KNOWN_UNVERSIONED_TABLES)
 
     def add_feed_source(self, feed_source: FeedSource) -> FeedSource:
         """Add or update a feed source.
@@ -408,29 +513,6 @@ class DatabaseManager:
 
             return failed_validations
 
-    def get_validation_history(
-        self,
-        feed_source_id: str,
-        limit: int = 10,
-    ) -> list[FeedValidationResult]:
-        """Get validation history for a feed source.
-
-        Args:
-            feed_source_id: Feed source ID
-            limit: Maximum number of results to return (most recent first)
-
-        Returns:
-            List of FeedValidationResult (newest first)
-        """
-        with self.get_session() as session:
-            statement = (
-                select(FeedValidationResult)
-                .where(FeedValidationResult.feed_source_id == feed_source_id)
-                .order_by(FeedValidationResult.validated_at.desc())
-                .limit(limit)
-            )
-            return list(session.exec(statement).all())
-
     # ===== ANALYTICS METHODS =====
 
     def add_analytics(self, analytics: FeedAnalytics) -> FeedAnalytics:
@@ -447,8 +529,7 @@ class DatabaseManager:
             session.commit()
             session.refresh(analytics)
             logger.info(
-                f"Added analytics for feed: {analytics.feed_source_id} "
-                f"({analytics.period_type})"
+                f"Added analytics for feed: {analytics.feed_source_id} ({analytics.period_type})"
             )
             return analytics
 
@@ -529,7 +610,7 @@ class DatabaseManager:
             statement = (
                 select(FeedItem)
                 .where(FeedItem.feed_source_id == feed_source_id)
-                .order_by(FeedItem.published_at.desc())
+                .order_by(desc(FeedItem.published), desc(FeedItem.created_at))
                 .limit(limit)
             )
             return list(session.exec(statement).all())
@@ -543,7 +624,7 @@ class DatabaseManager:
         with self.get_session() as session:
             # Get all enrichments in a single query to avoid N+1 problem
             enrichments = session.exec(select(FeedEnrichmentData)).all()
-            
+
             total_feeds = len(enrichments)
             health_scores = []
             quality_scores = []
@@ -615,7 +696,7 @@ class DatabaseManager:
                     .order_by(TopicStats.snapshot_date.desc())
                     .limit(1)
                 ).first()
-                snapshot_date = latest if latest else datetime.now(UTC).strftime("%Y-%m-%d")
+                snapshot_date = latest if latest else utc_date_string()
 
             # Query topic stats
             statement = (
@@ -643,7 +724,7 @@ class DatabaseManager:
             List of FeedValidationResult ordered by timestamp desc
         """
         with self.get_session() as session:
-            cutoff_date = datetime.now(UTC) - timedelta(days=days)
+            cutoff_date = utc_now() - timedelta(days=days)
 
             statement = (
                 select(FeedValidationResult)
@@ -817,6 +898,18 @@ class DatabaseManager:
 
             return get_saved_searches(session, user_id)
 
+    def delete_user_saved_search(self, user_id: str, search_id: str) -> None:
+        """Delete a saved search while enforcing user ownership.
+
+        Args:
+            user_id: Anonymous device-scoped user ID
+            search_id: SavedSearch UUID
+        """
+        with self.get_session() as session:
+            from ai_web_feeds.search import delete_saved_search
+
+            delete_saved_search(session, user_id, search_id)
+
     def initialize_search_tables(self):
         """Initialize FTS5 table and Trie index."""
         with self.get_session() as session:
@@ -924,6 +1017,39 @@ class DatabaseManager:
             session.refresh(entry)
             return entry
 
+    def add_feed_entries(self, entries: list[FeedEntry]) -> list[FeedEntry]:
+        """Bulk add feed entries in a single transaction.
+
+        Args:
+            entries: FeedEntry objects to add
+
+        Returns:
+            Added FeedEntry objects
+        """
+        if not entries:
+            return []
+
+        with self.get_session() as session:
+            session.add_all(entries)
+            session.commit()
+            return entries
+
+    def get_existing_entry_guids(self, guids: list[str]) -> set[str]:
+        """Return GUIDs that already exist in feed_entries.
+
+        Args:
+            guids: Candidate GUIDs
+
+        Returns:
+            Set of GUIDs already present in storage
+        """
+        if not guids:
+            return set()
+
+        with self.get_session() as session:
+            statement = select(FeedEntry.guid).where(FeedEntry.guid.in_(guids))
+            return set(session.exec(statement).all())
+
     def get_feed_entries(self, feed_id: str, limit: int = 20, offset: int = 0) -> list[FeedEntry]:
         """Get recent entries for a feed.
 
@@ -955,6 +1081,7 @@ class DatabaseManager:
         Returns:
             List of recent FeedEntry objects
         """
+        since = normalize_utc_datetime(since) or since
         with self.get_session() as session:
             statement = (
                 select(FeedEntry)
@@ -1030,6 +1157,23 @@ class DatabaseManager:
             session.refresh(notification)
             return notification
 
+    def create_notifications(self, notifications: list[Notification]) -> list[Notification]:
+        """Bulk create notifications in a single transaction.
+
+        Args:
+            notifications: Notifications to create
+
+        Returns:
+            Created notifications
+        """
+        if not notifications:
+            return []
+
+        with self.get_session() as session:
+            session.add_all(notifications)
+            session.commit()
+            return notifications
+
     def get_user_notifications(
         self, user_id: str, unread_only: bool = False, limit: int = 50
     ) -> list[Notification]:
@@ -1059,7 +1203,7 @@ class DatabaseManager:
         with self.get_session() as session:
             notification = session.get(Notification, notification_id)
             if notification:
-                notification.read_at = datetime.now(UTC)
+                notification.read_at = utc_now()
                 session.add(notification)
                 session.commit()
 
@@ -1072,7 +1216,7 @@ class DatabaseManager:
         with self.get_session() as session:
             notification = session.get(Notification, notification_id)
             if notification:
-                notification.dismissed_at = datetime.now(UTC)
+                notification.dismissed_at = utc_now()
                 session.add(notification)
                 session.commit()
 
@@ -1112,7 +1256,7 @@ class DatabaseManager:
             Saved NotificationPreference with ID
         """
         with self.get_session() as session:
-            pref.updated_at = datetime.now(UTC)
+            pref.updated_at = utc_now()
             session.add(pref)
             session.commit()
             session.refresh(pref)
@@ -1134,6 +1278,41 @@ class DatabaseManager:
             return list(session.exec(statement).all())
 
     # T020: Email Digests
+    def _get_active_email_digests(self, session: ManagedSession, user_id: str) -> list[EmailDigest]:
+        """Return active digests for a user, newest first."""
+        statement = (
+            select(EmailDigest)
+            .where(EmailDigest.user_id == user_id)
+            .where(EmailDigest.unsubscribed_at.is_(None))
+            .order_by(desc(EmailDigest.created_at), desc(EmailDigest.id))
+        )
+        return list(session.exec(statement).all())
+
+    def _collapse_active_email_digests(
+        self,
+        session: ManagedSession,
+        user_id: str,
+        *,
+        keep_digest_id: int | None = None,
+        unsubscribed_at: datetime | None = None,
+    ) -> list[EmailDigest]:
+        """Ensure at most one active digest remains for a user."""
+        active_digests = self._get_active_email_digests(session, user_id)
+        if len(active_digests) <= 1:
+            return active_digests
+
+        keep_id = keep_digest_id or active_digests[0].id
+        archived_at = normalize_utc_datetime(unsubscribed_at) or utc_now()
+        kept: list[EmailDigest] = []
+        for digest in active_digests:
+            if digest.id == keep_id:
+                kept.append(digest)
+                continue
+            digest.unsubscribed_at = archived_at
+            session.add(digest)
+        session.flush()
+        return kept
+
     def create_email_digest(self, digest: EmailDigest) -> EmailDigest:
         """Create email digest subscription.
 
@@ -1144,6 +1323,47 @@ class DatabaseManager:
             Created EmailDigest with ID
         """
         with self.get_session() as session:
+            digest.schedule_cron, digest.timezone = validate_digest_schedule(
+                schedule_type=digest.schedule_type,
+                schedule_cron=digest.schedule_cron,
+                timezone_name=digest.timezone,
+            )
+            now = utc_now()
+            digest.unsubscribed_at = None
+
+            active_digests = self._collapse_active_email_digests(
+                session,
+                digest.user_id,
+                keep_digest_id=digest.id,
+                unsubscribed_at=now,
+            )
+            active_digest = active_digests[0] if active_digests else None
+            if active_digest is not None:
+                digest.next_send_at = calculate_next_send_at(
+                    schedule_type=digest.schedule_type,
+                    schedule_cron=digest.schedule_cron,
+                    timezone_name=digest.timezone,
+                    from_time=now,
+                )
+                active_digest.email = digest.email
+                active_digest.schedule_type = digest.schedule_type
+                active_digest.schedule_cron = digest.schedule_cron
+                active_digest.timezone = digest.timezone
+                active_digest.next_send_at = digest.next_send_at
+                active_digest.unsubscribed_at = None
+                session.add(active_digest)
+                session.commit()
+                session.refresh(active_digest)
+                return active_digest
+
+            digest.next_send_at = normalize_utc_datetime(
+                digest.next_send_at
+            ) or calculate_next_send_at(
+                schedule_type=digest.schedule_type,
+                schedule_cron=digest.schedule_cron,
+                timezone_name=digest.timezone,
+                from_time=now,
+            )
             session.add(digest)
             session.commit()
             session.refresh(digest)
@@ -1171,7 +1391,13 @@ class DatabaseManager:
             List of EmailDigest objects
         """
         with self.get_session() as session:
-            stmt = select(EmailDigest).where(EmailDigest.user_id == user_id)
+            self._collapse_active_email_digests(session, user_id)
+            session.commit()
+            stmt = (
+                select(EmailDigest)
+                .where(EmailDigest.user_id == user_id)
+                .order_by(desc(EmailDigest.created_at), desc(EmailDigest.id))
+            )
             result = session.execute(stmt)
             return list(result.scalars().all())
 
@@ -1185,6 +1411,11 @@ class DatabaseManager:
             Updated EmailDigest
         """
         with self.get_session() as session:
+            digest.schedule_cron, digest.timezone = validate_digest_schedule(
+                schedule_type=digest.schedule_type,
+                schedule_cron=digest.schedule_cron,
+                timezone_name=digest.timezone,
+            )
             session.add(digest)
             session.commit()
             session.refresh(digest)
@@ -1199,13 +1430,27 @@ class DatabaseManager:
         Returns:
             List of EmailDigest objects due for sending
         """
+        now = normalize_utc_datetime(now) or now
         with self.get_session() as session:
             statement = (
                 select(EmailDigest)
                 .where(EmailDigest.next_send_at <= now)
                 .where(EmailDigest.unsubscribed_at.is_(None))
+                .order_by(EmailDigest.user_id, desc(EmailDigest.created_at), desc(EmailDigest.id))
             )
-            return list(session.exec(statement).all())
+            due_digests = list(session.exec(statement).all())
+            due_by_user: dict[str, EmailDigest] = {}
+            duplicate_due_ids: list[int] = []
+            for digest in due_digests:
+                if digest.user_id in due_by_user:
+                    duplicate_due_ids.append(digest.id)
+                    digest.unsubscribed_at = now
+                    session.add(digest)
+                    continue
+                due_by_user[digest.user_id] = digest
+            if duplicate_due_ids:
+                session.commit()
+            return list(due_by_user.values())
 
     # T020b: User Feed Follows
     def follow_feed(self, user_id: str, feed_id: str) -> UserFeedFollow:
@@ -1275,11 +1520,12 @@ _db_manager: DatabaseManager | None = None
 def get_database_manager() -> DatabaseManager:
     """Return a process-wide database manager singleton."""
     global _db_manager
-    if _db_manager is None:
-        _db_manager = DatabaseManager()
+    effective_database_url = runtime_database_url()
+    if _db_manager is None or _db_manager.database_url != effective_database_url:
+        _db_manager = DatabaseManager(effective_database_url)
     return _db_manager
 
 
-def get_session() -> Session:
+def get_session() -> ManagedSession:
     """Return a database session from the shared manager."""
     return get_database_manager().get_session()

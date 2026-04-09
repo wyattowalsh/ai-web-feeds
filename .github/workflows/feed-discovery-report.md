@@ -1,20 +1,13 @@
 ---
-name: "Feed Discovery Report"
-description: "Experimental gh-aw pilot for weekly feed gap analysis and report-only discovery leads"
-on:
-  schedule:
-    - cron: "0 14 * * 1"
-  workflow_dispatch:
+name: Feed Discovery Report
+description: Experimental gh-aw pilot for weekly feed gap analysis and report-only discovery leads
+engine: copilot
+strict: true
+imports:
+  - .github/agents/feed-discovery-scout.md
 permissions:
   contents: read
   issues: write
-engine: copilot
-imports:
-  - .github/agents/feed-discovery-scout.md
-tools:
-  github:
-    read-only: true
-    toolsets: [repos, issues]
 safe-outputs:
   create-issue:
     max: 1
@@ -25,14 +18,12 @@ safe-outputs:
       - status/needs-review
     close-older-issues: true
     footer: false
-strict: true
 network:
   allowed:
     - defaults
     - github
-timeout-minutes: 12
-labels: [automation, discovery, gh-aw-pilot]
 ---
+
 # Feed Discovery Report
 
 Generate at most one maintainer-facing discovery report issue for this run.
@@ -40,17 +31,18 @@ Generate at most one maintainer-facing discovery report issue for this run.
 ## Scope
 
 - This workflow is report-only.
+- This workflow is source-only and additive. It must not become the canonical mutation
+  path for catalog changes in this pass.
 - Do not create a pull request.
 - Do not request direct repository mutation.
-- Do not recommend or apply labels that trigger feed submission or approval
-  automation.
+- Do not recommend or apply labels that trigger feed submission or approval automation.
 - Prefer a no-op over low-confidence or repetitive output.
 
 ## Repository Context
 
 Use these files as the source of truth before making any recommendation:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `reports/github/catalog/feed-processing-summary.json` when available
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -64,30 +56,39 @@ Use these files as the source of truth before making any recommendation:
 ## Operating Policy
 
 1. Start with gap analysis inside the repository: identify underrepresented topics,
-   duplicate-prone areas, and any recent discovery work already captured in open
-   issues.
-2. This pilot is repository-gap-analysis-first. Only use external discovery after a
-  maintainer adds an approved search provider to the workflow configuration.
-  Until then, produce a gap-only report rather than inventing leads.
-3. If you surface candidate leads, cap the list at 5 and prefer authoritative,
+   duplicate-prone areas, and any recent discovery work already captured in open issues.
+1. Prefer deterministic catalog summary artifacts over ad hoc repository scanning when
+   both are present. Treat the snapshot as `fresh-snapshot` only when it clearly
+   reflects the latest catalog state for this run; otherwise use `stale-snapshot` or
+   `missing-artifact`.
+1. If the snapshot is stale or missing, downgrade the run to `gap-report-only` rather
+   than fabricating candidate certainty.
+1. This pilot is repository-gap-analysis-first. Only use external discovery after a
+   maintainer adds an approved search provider to the workflow configuration. Until
+   then, produce a gap-only report rather than inventing leads.
+1. If you surface candidate leads, cap the list at 5 and prefer authoritative,
    feed-likely publishers over broad aggregators.
-4. Because legacy issue-based feed automation still assumes an older submission
-   shape, never recommend `approved`, `feed-submission`, `validated`, or
+1. Because deterministic issue intake now relies on maintainer-controlled validated
+   snapshots, never recommend `approved`, `feed-submission`, `validated`, or
    `validation-failed` in this workflow.
-5. Keep candidate references at the domain level with optional feed-path hints.
-  Avoid raw URLs in the final issue body.
-6. The handoff for any promising lead is a human-reviewed PR into `data/feeds.yaml`,
+1. Keep candidate references at the domain level with optional feed-path hints. Avoid
+   raw URLs in the final issue body.
+1. Use validator vocabulary exactly: `fresh-snapshot`, `stale-snapshot`,
+   `missing-artifact`, `gap-report-only`, `candidates-found`, `noop`.
+1. The handoff for any promising lead is a human-reviewed PR into `data/feeds.yaml`,
    followed by the existing deterministic processing workflow.
 
 ## Output Requirements
 
 If you create an issue, use this structure:
 
+1. `Report Status`: one of `candidates-found`, `gap-report-only`, or `noop`
+1. `Snapshot Status`: one of `fresh-snapshot`, `stale-snapshot`, or `missing-artifact`
 1. `Weekly Summary`: what changed or what remains under-covered
-2. `Priority Gaps`: up to 3 topic or source-type gaps worth pursuing next
-3. `Candidate Leads`: up to 5 domain-level leads, or state clearly that external
-  discovery is not configured for this pilot
-4. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
-5. `Maintainer Next Step`: the smallest safe follow-up action
+1. `Priority Gaps`: up to 3 topic or source-type gaps worth pursuing next
+1. `Candidate Leads`: up to 5 domain-level leads, or state clearly that external
+   discovery is not configured for this pilot
+1. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
+1. `Maintainer Next Step`: the smallest safe follow-up action
 
 Keep the report concise, operational, and explicit about confidence.

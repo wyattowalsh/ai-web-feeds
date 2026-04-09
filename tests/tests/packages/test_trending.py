@@ -55,10 +55,10 @@ def sample_entries():
         entry = FeedEntry(
             id=i + 1,
             feed_id="test-feed",
-            guid=f"article-{i+1}",
-            link=f"http://example.com/article-{i+1}",
-            title=f"Article {i+1}",
-            summary=f"Summary {i+1}",
+            guid=f"article-{i + 1}",
+            link=f"http://example.com/article-{i + 1}",
+            title=f"Article {i + 1}",
+            summary=f"Summary {i + 1}",
             pub_date=base_time - timedelta(minutes=i * 10),
             discovered_at=base_time - timedelta(minutes=i * 10),
             categories=categories,
@@ -174,7 +174,9 @@ class TestTrendingDetector:
         # Mock session
         mock_session = MagicMock()
         mock_session.exec = MagicMock(return_value=MagicMock(all=lambda: [1, 2, 3, 4, 5]))
-        mock_session.get = MagicMock(side_effect=lambda model, id: sample_entries[id - 1])
+        mock_session.get = MagicMock(
+            side_effect=lambda model, entry_id: sample_entries[entry_id - 1]
+        )
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 

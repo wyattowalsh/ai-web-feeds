@@ -9,7 +9,6 @@ Implements Phase 6 (US4): T058-T074
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -105,14 +104,16 @@ class ForecastService:
 
         predictions = []
         for _, row in future_predictions.iterrows():
-            predictions.append({
-                "date": row["ds"].strftime("%Y-%m-%d"),
-                "value": float(row["yhat"]),
-                "lower": float(row["yhat_lower"]),
-                "upper": float(row["yhat_upper"]),
-                "trend": float(row["trend"]),
-                "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
-            })
+            predictions.append(
+                {
+                    "date": row["ds"].strftime("%Y-%m-%d"),
+                    "value": float(row["yhat"]),
+                    "lower": float(row["yhat_lower"]),
+                    "upper": float(row["yhat_upper"]),
+                    "trend": float(row["trend"]),
+                    "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
+                }
+            )
 
         # Calculate evaluation metrics on historical data
         metrics = self._calculate_metrics(historical_data, forecast_df.head(len(historical_data)))
@@ -169,9 +170,7 @@ class ForecastService:
         if np.any(non_zero_mask):
             mape = float(
                 np.mean(
-                    np.abs(
-                        (y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask]
-                    )
+                    np.abs((y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask])
                 )
                 * 100
             )
@@ -286,18 +285,18 @@ def prepare_historical_data(
     Returns:
         DataFrame with 'ds' and 'y' columns
     """
-    df = pd.DataFrame(data)
+    historical_df = pd.DataFrame(data)
 
     # Rename columns to Prophet format
-    df = df.rename(columns={date_column: "ds", value_column: "y"})
+    historical_df = historical_df.rename(columns={date_column: "ds", value_column: "y"})
 
     # Convert date to datetime
-    df["ds"] = pd.to_datetime(df["ds"])
+    historical_df["ds"] = pd.to_datetime(historical_df["ds"])
 
     # Sort by date
-    df = df.sort_values("ds")
+    historical_df = historical_df.sort_values("ds")
 
-    return df[["ds", "y"]]
+    return historical_df[["ds", "y"]]
 
 
 def generate_sample_time_series(

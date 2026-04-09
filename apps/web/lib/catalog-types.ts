@@ -30,17 +30,25 @@ export interface CombinedCatalogGraphData {
   feeds: CatalogFeed[];
 }
 
+export function normalizeFilterToken(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.toLowerCase() : null;
+}
+
 export function normalizeTopicValues(values?: string[] | string | null): string[] {
-  if (Array.isArray(values)) {
-    return values.filter((value) => value.trim().length > 0);
+  const normalizedValues = (
+    Array.isArray(values) ? values : typeof values === "string" ? values.split(",") : []
+  )
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+  const dedupedValues = new Map<string, string>();
+
+  for (const value of normalizedValues) {
+    const lookupKey = value.toLowerCase();
+    if (!dedupedValues.has(lookupKey)) {
+      dedupedValues.set(lookupKey, value);
+    }
   }
 
-  if (typeof values === "string") {
-    return values
-      .split(",")
-      .map((value) => value.trim())
-      .filter((value) => value.length > 0);
-  }
-
-  return [];
+  return Array.from(dedupedValues.values());
 }

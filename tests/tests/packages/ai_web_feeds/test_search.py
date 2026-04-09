@@ -1,22 +1,28 @@
 """Unit tests for ai_web_feeds.search module."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
+import numpy as np
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
-
 from ai_web_feeds.models import FeedEmbedding, FeedSource, SearchQuery
 from ai_web_feeds.search import (
     TrieIndex,
     TrieNode,
     autocomplete,
     build_trie_index,
+    delete_saved_search,
     full_text_search,
+    generate_query_embedding,
     get_saved_searches,
     log_search_query,
+    normalize_search_filters,
+    normalize_search_query,
+    normalize_search_topics,
     save_search,
     semantic_search,
 )
+from sqlalchemy import text as real_text
+from sqlmodel import Session, SQLModel, create_engine, select
 
 
 @pytest.fixture
@@ -217,8 +223,6 @@ class TestFullTextSearch:
     @patch("ai_web_feeds.search.text")
     def test_full_text_search_uses_parameterized_query(self, mock_text, test_session, sample_feeds):
         """Test that FTS uses SQLAlchemy text() with parameterized query."""
-        from sqlalchemy import text as real_text
-
         # Use the real text() function for this test
         with patch("ai_web_feeds.search.text", side_effect=real_text) as mock_text_call:
             with patch.object(test_session, "exec") as mock_exec:
@@ -261,8 +265,6 @@ class TestSemanticSearch:
     @pytest.fixture
     def sample_embeddings(self, test_session, sample_feeds):
         """Create sample embeddings for testing."""
-        import numpy as np
-
         embeddings = []
         for feed in sample_feeds:
             # Create dummy 384-dim embedding
@@ -282,17 +284,11 @@ class TestSemanticSearch:
     @patch("ai_web_feeds.search.get_local_model")
     def test_generate_query_embedding_uses_cached_model(self, mock_get_model):
         """Test that generate_query_embedding uses cached model from embeddings."""
-        import numpy as np
-
         # Mock the cached model
         mock_model = Mock()
         mock_embedding = np.random.rand(1, 384).astype(np.float32)
         mock_model.encode.return_value = mock_embedding
         mock_get_model.return_value = mock_model
-
-        from ai_web_feeds.search import generate_query_embedding
-
-        # Import fresh to ensure we test the right function
         embedding = generate_query_embedding("test query")
 
         # Verify cached model was used
@@ -304,13 +300,33 @@ class TestSemanticSearch:
         assert embedding.shape == (384,)
         assert embedding.dtype == np.float32
 
+    @patch("ai_web_feeds.search.generate_embeddings_with_metadata")
+    def test_generate_query_embedding_honors_provider_override(self, mock_generate_with_metadata):
+        """Provider overrides should flow through to non-local query embedding generation."""
+        query_embedding = np.random.rand(1, 384).astype(np.float32)
+        mock_generate_with_metadata.return_value = Mock(embeddings=query_embedding)
+
+        embedding = generate_query_embedding(
+            "test query",
+            provider="huggingface",
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+        )
+
+        mock_generate_with_metadata.assert_called_once_with(
+            ["test query"],
+            provider="huggingface",
+            show_progress=False,
+            allow_fallback=False,
+            hf_model="sentence-transformers/all-MiniLM-L6-v2",
+            local_model=None,
+        )
+        assert embedding.shape == (384,)
+
     @patch("ai_web_feeds.search.get_local_model")
     def test_semantic_search_uses_cached_embedding_model(
         self, mock_get_model, test_session, sample_feeds, sample_embeddings
     ):
         """Test that semantic_search uses cached model for query embedding."""
-        import numpy as np
-
         # Mock the cached model
         mock_model = Mock()
         query_embedding = np.random.rand(384).astype(np.float32)
@@ -330,8 +346,6 @@ class TestSemanticSearch:
         self, mock_gen_embedding, test_session, sample_feeds, sample_embeddings
     ):
         """Test semantic search respects similarity threshold."""
-        import numpy as np
-
         # Create query embedding similar to first feed's embedding
         first_embedding = np.frombuffer(sample_embeddings[0].embedding, dtype=np.float32)
         query_embedding = first_embedding + np.random.rand(384).astype(np.float32) * 0.1
@@ -346,6 +360,42 @@ class TestSemanticSearch:
 
         # Low threshold should have more or equal results
         assert len(results_low) >= len(results_high)
+
+    @patch("ai_web_feeds.search.generate_query_embedding")
+    def test_semantic_search_uses_stored_provider_specs(
+        self, mock_generate_query_embedding, test_session, sample_feeds
+    ):
+        """Semantic search should generate query vectors per stored provider/model pair."""
+        local_embedding = np.ones(384, dtype=np.float32)
+        hf_embedding = np.ones(384, dtype=np.float32)
+        test_session.add(
+            FeedEmbedding(
+                feed_id=sample_feeds[0].id,
+                embedding=local_embedding.tobytes(),
+                embedding_model="local-model",
+                embedding_provider="local",
+            )
+        )
+        test_session.add(
+            FeedEmbedding(
+                feed_id=sample_feeds[1].id,
+                embedding=hf_embedding.tobytes(),
+                embedding_model="hf-model",
+                embedding_provider="huggingface",
+            )
+        )
+        test_session.commit()
+
+        mock_generate_query_embedding.side_effect = [local_embedding, hf_embedding]
+
+        semantic_search(test_session, "test query", threshold=0.1, limit=10)
+
+        mock_generate_query_embedding.assert_has_calls(
+            [
+                call("test query", provider="local", model_name="local-model"),
+                call("test query", provider="huggingface", model_name="hf-model"),
+            ]
+        )
 
 
 class TestAutocomplete:
@@ -374,7 +424,8 @@ class TestAutocomplete:
         results = autocomplete(test_session, "open", limit=8)
 
         assert "feeds" in results
-        assert len(results["feeds"]) > 0
+        assert len(results["feeds"]) == 1
+        assert results["feeds"][0]["id"] == "openai-blog"
 
     @patch("ai_web_feeds.search.get_trie_index")
     def test_autocomplete_topic_suggestions(self, mock_get_trie, test_session, sample_feeds):
@@ -389,10 +440,35 @@ class TestAutocomplete:
         results = autocomplete(test_session, "llm", limit=8)
 
         assert "topics" in results
+        assert results["topics"][0]["label"] == "llm"
+
+    @patch("ai_web_feeds.search.get_trie_index")
+    def test_autocomplete_trims_prefix(self, mock_get_trie, test_session, sample_feeds):
+        """Autocomplete should trim and normalize prefix whitespace."""
+        mock_trie = Mock(spec=TrieIndex)
+        mock_trie.search_prefix.return_value = [
+            ("openai", ["openai-blog"], 1),
+        ]
+        mock_get_trie.return_value = mock_trie
+
+        autocomplete(test_session, "  open  ", limit=8)
+
+        mock_trie.search_prefix.assert_called_once_with("open", limit=8)
 
 
 class TestSearchLogging:
     """Tests for search query logging."""
+
+    def test_log_search_query_requires_result_count(self, test_session):
+        """The logging contract should require an explicit result count."""
+        with pytest.raises(TypeError):
+            log_search_query(
+                test_session,
+                user_id="test_user",
+                query_text="machine learning",
+                search_type="full_text",
+                filters={"source_type": "blog"},
+            )
 
     def test_log_search_query(self, test_session):
         """Test logging a search query."""
@@ -417,6 +493,28 @@ class TestSearchLogging:
         assert query.result_count == 10
         assert len(query.clicked_results) == 2
 
+    def test_log_search_query_normalizes_whitespace_filters_and_zero_count(self, test_session):
+        """Search logging should normalize inputs without dropping a zero result count."""
+        log_search_query(
+            test_session,
+            user_id="test_user",
+            query_text="  machine   learning  ",
+            search_type="semantic",
+            filters={"topics": ["llm", " agents ", "llm"], "verified": "false", "threshold": "0.2"},
+            result_count=0,
+        )
+
+        query = test_session.exec(select(SearchQuery)).one()
+        assert query.query_text == "machine learning"
+        assert query.result_count == 0
+        assert query.clicked_results == []
+        assert query.filters_applied == {
+            "search_type": "semantic",
+            "topics": ["llm", "agents"],
+            "verified": False,
+            "threshold": 0.5,
+        }
+
 
 class TestSavedSearches:
     """Tests for saved search functionality."""
@@ -437,6 +535,29 @@ class TestSavedSearches:
         assert saved.query_text == "machine learning"
         assert saved.filters["topics"] == ["llm", "training"]
 
+    def test_save_search_normalizes_query_and_filters(self, test_session):
+        """Saved searches should persist normalized query/filter values."""
+        saved = save_search(
+            test_session,
+            user_id=" test_user ",
+            search_name="  ML   Research  ",
+            query_text="  machine   learning  ",
+            filters={
+                "search_type": "semantic",
+                "topics": ["llm", " training "],
+                "threshold": "0.2",
+            },
+        )
+
+        assert saved.user_id == "test_user"
+        assert saved.search_name == "ML Research"
+        assert saved.query_text == "machine learning"
+        assert saved.filters == {
+            "search_type": "semantic",
+            "topics": ["llm", "training"],
+            "threshold": 0.5,
+        }
+
     def test_get_saved_searches(self, test_session):
         """Test retrieving saved searches."""
         # Save multiple searches
@@ -455,6 +576,46 @@ class TestSavedSearches:
         searches = get_saved_searches(test_session, "nonexistent_user")
 
         assert len(searches) == 0
+
+    def test_delete_saved_search_scopes_to_user(self, test_session):
+        """Deleting a saved search should require the owning user id."""
+        saved = save_search(test_session, "user1", "Search 1", "query1", {})
+
+        delete_saved_search(test_session, "user2", str(saved.id))
+        searches = get_saved_searches(test_session, "user1")
+        assert len(searches) == 1
+
+        delete_saved_search(test_session, "user1", str(saved.id))
+        searches = get_saved_searches(test_session, "user1")
+        assert searches == []
+
+
+class TestSearchNormalization:
+    """Tests for shared normalization helpers."""
+
+    def test_normalize_search_query(self):
+        assert normalize_search_query("  agent   systems  ") == "agent systems"
+        assert normalize_search_query("   ") == ""
+
+    def test_normalize_search_topics(self):
+        assert normalize_search_topics(["ml", " agents ", "ML", ""]) == ["ml", "agents"]
+
+    def test_normalize_search_filters(self):
+        assert normalize_search_filters(
+            {
+                "search_type": "semantic",
+                "source_type": "blog",
+                "topics": ["ml", " agents "],
+                "verified": "true",
+                "threshold": "1.2",
+            }
+        ) == {
+            "search_type": "semantic",
+            "source_type": "blog",
+            "topics": ["ml", "agents"],
+            "verified": True,
+            "threshold": 1.0,
+        }
 
 
 # Property-based tests

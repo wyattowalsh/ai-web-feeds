@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
@@ -19,11 +19,12 @@ type FeedSuggestionItem = Extract<SuggestionItem, { kind: "feed" }>;
 type TopicSuggestionItem = Extract<SuggestionItem, { kind: "topic" }>;
 
 function buildSuggestionId(kind: SuggestionItem["kind"], seed: string, index: number): string {
-  const normalizedSeed = seed
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "item";
+  const normalizedSeed =
+    seed
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "item";
 
   return `${kind}-${normalizedSeed}-${index}`;
 }
@@ -49,17 +50,17 @@ export function SearchBar({
   }, [initialQuery]);
 
   const feedSuggestions: FeedSuggestionItem[] = suggestions.feeds.map((feed, index) => ({
-      kind: "feed" as const,
-      id: buildSuggestionId("feed", feed.id || feed.title, index),
-      title: feed.title,
-      url: feed.url,
-    }));
+    kind: "feed" as const,
+    id: buildSuggestionId("feed", feed.id || feed.title, index),
+    title: feed.title,
+    url: feed.url,
+  }));
   const topicSuggestions: TopicSuggestionItem[] = suggestions.topics.map((topic, index) => ({
-      kind: "topic" as const,
-      id: buildSuggestionId("topic", topic.label, index),
-      label: topic.label,
-      feed_count: topic.feed_count,
-    }));
+    kind: "topic" as const,
+    id: buildSuggestionId("topic", topic.label, index),
+    label: topic.label,
+    feed_count: topic.feed_count,
+  }));
   const suggestionItems: SuggestionItem[] = [...feedSuggestions, ...topicSuggestions];
   const totalSuggestions = suggestionItems.length;
 
@@ -69,7 +70,8 @@ export function SearchBar({
       setQuery(normalizedTitle);
       onSearch(normalizedTitle);
     } else {
-      const topicQuery = normalizeSearchQuery(suggestion.label.toLowerCase()) ?? suggestion.label.toLowerCase();
+      const topicQuery =
+        normalizeSearchQuery(suggestion.label.toLowerCase()) ?? suggestion.label.toLowerCase();
       setQuery(topicQuery);
       onSearch(topicQuery);
     }
@@ -223,11 +225,8 @@ export function SearchBar({
               }
             />
           </div>
-          <Button
-            type="submit"
-            className="h-14 rounded-2xl px-6"
-          >
-            <Sparkles className="size-4" aria-hidden="true" />
+          <Button type="submit" className="h-14 rounded-2xl px-6">
+            <Search className="size-4" aria-hidden="true" />
             Search
           </Button>
         </div>
@@ -259,7 +258,7 @@ export function SearchBar({
                   onClick={() => selectSuggestion(feed)}
                   className={cn(
                     "w-full border-t border-(--line) px-4 py-3 text-left transition duration-150 first:border-t-0 hover:bg-(--surface-muted) focus:bg-(--surface-muted) focus:outline-none",
-                    selectedIndex === idx && "bg-(--surface-muted)"
+                    selectedIndex === idx && "bg-(--surface-muted)",
                   )}
                 >
                   <div className="font-medium text-(--ink)">{feed.title}</div>
@@ -286,7 +285,7 @@ export function SearchBar({
                   onClick={() => selectSuggestion(topic)}
                   className={cn(
                     "w-full border-t border-(--line) px-4 py-3 text-left transition duration-150 first:border-t-0 hover:bg-(--surface-muted) focus:bg-(--surface-muted) focus:outline-none",
-                    selectedIndex === feedSuggestions.length + idx && "bg-(--surface-muted)"
+                    selectedIndex === feedSuggestions.length + idx && "bg-(--surface-muted)",
                   )}
                 >
                   <div className="flex items-center justify-between">

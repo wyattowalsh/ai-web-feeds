@@ -3,6 +3,7 @@ import "katex/dist/katex.css";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { Fraunces, Manrope } from "next/font/google";
 import type { Metadata } from "next";
+import { getSiteBaseUrl } from "@/lib/env";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -16,26 +17,27 @@ const displayFont = Fraunces({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+const baseUrl = getSiteBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
+    default: "AI Web Feeds - Search, Read, Analyze, and Export AI Sources",
     template: "%s | AI Web Feeds",
   },
   description:
-    "Curated RSS/Atom feeds optimized for AI agents and large language models. Access documentation in multiple formats with PDF export, LLM-friendly endpoints, and comprehensive feed support.",
+    "Aggregate AI sources into one local-first web app with catalog search, a built-in reader, analytics, and exportable OPML bundles.",
   keywords: [
     "AI",
     "RSS feeds",
     "Atom feeds",
     "web feeds",
+    "AI reader",
+    "OPML export",
+    "feed analytics",
     "AI agents",
     "LLM",
     "large language models",
-    "documentation",
-    "PDF export",
     "machine learning",
   ],
   authors: [
@@ -55,8 +57,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - Search, Read, Analyze, and Export AI Sources",
+    description:
+      "Aggregate AI sources into one local-first web app with catalog search, a built-in reader, analytics, and exportable OPML bundles.",
     siteName: "AI Web Feeds",
     images: [
       {
@@ -69,8 +72,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - Search, Read, Analyze, and Export AI Sources",
+    description:
+      "Aggregate AI sources into one local-first web app with catalog search, a built-in reader, analytics, and exportable OPML bundles.",
     creator: "@wyattowalsh",
     images: [`${baseUrl}/og-image.png`],
   },

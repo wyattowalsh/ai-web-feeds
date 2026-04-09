@@ -4,17 +4,19 @@ Implements FR-065: API key generation, verification, and management
 """
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import select, update
 
 from ai_web_feeds.storage import get_session
-from ai_web_feeds.visualization.models import APIKey, APIUsage
 from ai_web_feeds.visualization.auth import (
     generate_api_key,
+)
+from ai_web_feeds.visualization.auth import (
     verify_api_key as verify_api_key_hash,
 )
+from ai_web_feeds.visualization.models import APIKey, APIUsage
 
 
 class APIKeyService:
@@ -135,7 +137,7 @@ class APIKeyService:
         endpoint: str,
         request_params: dict[str, Any],
         response_status: int,
-        records_exported: Optional[int],
+        records_exported: int | None,
         response_time_ms: int,
     ) -> None:
         """Log API usage.
@@ -177,7 +179,7 @@ class APIKeyService:
             logger.error(f"Error logging API usage: {e}")
 
 
-async def verify_api_key_and_get_device(plaintext_key: str) -> Optional[str]:
+async def verify_api_key_and_get_device(plaintext_key: str) -> str | None:
     """Verify API key and return device ID.
 
     Args:

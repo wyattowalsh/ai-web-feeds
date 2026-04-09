@@ -1,6 +1,12 @@
+import "server-only";
 import { createHash } from "node:crypto";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
-import { dirname, isAbsolute, resolve } from "node:path";
+import { dirname } from "node:path";
+import { getTelemetryDirectory, getTelemetrySalt } from "@/lib/server-env";
+
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
+  throw new Error("lib/telemetry.ts is server-only");
+}
 
 export type ApiTelemetryEvent = {
   requestId: string;
@@ -56,18 +62,24 @@ export type TelemetrySummary = {
   auditEvents: AdminAuditEvent[];
 };
 
-const DEFAULT_TELEMETRY_DIR = "../../data/telemetry";
+export type TelemetryStore = {
+  recordApiTelemetry(event: ApiTelemetryEvent): Promise<void>;
+  recordAdminAudit(event: AdminAuditEvent): Promise<void>;
+  listApiTelemetryEvents(options?: {
+    limit?: number;
+    routeKey?: string;
+    status?: "error" | "success";
+    windowHours?: number;
+  }): Promise<ApiTelemetryEvent[]>;
+  listAdminAuditEvents(limit?: number): Promise<AdminAuditEvent[]>;
+  getApiTelemetrySummary(windowHours?: number): Promise<TelemetrySummary>;
+};
+
 const API_EVENTS_FILE = "api-events.ndjson";
 const ADMIN_AUDIT_FILE = "admin-audit.ndjson";
 
 function resolveTelemetryDir(): string {
-  const configured = process.env.AIWF_TELEMETRY_DIR?.trim();
-
-  if (!configured) {
-    return resolve(process.cwd(), DEFAULT_TELEMETRY_DIR);
-  }
-
-  return isAbsolute(configured) ? configured : resolve(process.cwd(), configured);
+  return getTelemetryDirectory();
 }
 
 function getApiEventsFile(): string {
@@ -140,10 +152,10 @@ export function hashClientIp(ipAddress: string | null): string | null {
     return null;
   }
 
-  const salt =
-    process.env.AIWF_TELEMETRY_SALT?.trim() || process.env.AIWF_ADMIN_SESSION_SECRET?.trim() || "aiwf-dev-salt";
-
-  return createHash("sha256").update(`${salt}:${ipAddress}`).digest("hex").slice(0, 16);
+  return createHash("sha256")
+    .update(`${getTelemetrySalt()}:${ipAddress}`)
+    .digest("hex")
+    .slice(0, 16);
 }
 
 export async function recordApiTelemetry(event: ApiTelemetryEvent): Promise<void> {
@@ -245,7 +257,9 @@ export async function getApiTelemetrySummary(windowHours = 24): Promise<Telemetr
     errorCount: errorEvents.length,
     errorRate: events.length > 0 ? errorEvents.length / events.length : 0,
     averageDurationMs:
-      durations.length > 0 ? durations.reduce((sum, value) => sum + value, 0) / durations.length : 0,
+      durations.length > 0
+        ? durations.reduce((sum, value) => sum + value, 0) / durations.length
+        : 0,
     p50DurationMs: percentile(durations, 0.5),
     p95DurationMs: percentile(durations, 0.95),
     routeCount: routeMap.size,
@@ -256,3 +270,11 @@ export async function getApiTelemetrySummary(windowHours = 24): Promise<Telemetr
     auditEvents,
   };
 }
+
+export const telemetryStore: TelemetryStore = {
+  recordApiTelemetry,
+  recordAdminAudit,
+  listApiTelemetryEvents,
+  listAdminAuditEvents,
+  getApiTelemetrySummary,
+};

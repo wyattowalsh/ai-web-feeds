@@ -17,11 +17,12 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, FeedPollJob, PollStatus
 from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.timestamps import normalize_utc_datetime, utc_now
 
 
 def _utc_now() -> datetime:
-    """Return the current UTC timestamp as a timezone-aware datetime."""
-    return datetime.now(UTC)
+    """Return the current UTC timestamp normalized for storage."""
+    return utc_now()
 
 
 class FeedPoller:
@@ -88,12 +89,29 @@ class FeedPoller:
             parsed_feed = await self.fetch_feed(feed_url)
             end_ms = _utc_now().timestamp() * 1000
 
-            articles_count = 0
-            for entry in parsed_feed.entries:
-                if await self._is_new_entry(entry.get("id") or entry.get("link")):
-                    feed_entry = self._parse_entry(entry, feed_id)
-                    self.db.add_feed_entry(feed_entry)
-                    articles_count += 1
+            entries = list(parsed_feed.entries)
+            candidate_guids = [
+                guid
+                for guid in (entry.get("id") or entry.get("link") for entry in entries)
+                if guid is not None
+            ]
+            existing_guids = self.db.get_existing_entry_guids(candidate_guids)
+
+            new_entries: list[FeedEntry] = []
+            seen_guids: set[str] = set()
+            for entry in entries:
+                guid = entry.get("id") or entry.get("link")
+                if guid in seen_guids or not await self._is_new_entry(guid, existing_guids):
+                    continue
+                seen_guids.add(guid)
+                new_entries.append(self._parse_entry(entry, feed_id))
+
+            if new_entries:
+                if len(new_entries) == 1:
+                    self.db.add_feed_entry(new_entries[0])
+                else:
+                    self.db.add_feed_entries(new_entries)
+            articles_count = len(new_entries)
 
             # Update job success
             job.completed_at = _utc_now()
@@ -115,20 +133,19 @@ class FeedPoller:
             logger.error(f"Feed poll failed: {feed_id} - {e}")
             raise
 
-    async def _is_new_entry(self, guid: str | None) -> bool:
-        """Check if entry GUID is new (not in database).
-
-        Args:
-            guid: Article GUID
-
-        Returns:
-            True if new entry, False if exists
-        """
+    async def _is_new_entry(
+        self,
+        guid: str | None,
+        existing_guids: set[str] | None = None,
+    ) -> bool:
+        """Return True when the candidate GUID has not been stored yet."""
         if not guid:
             return False
+        if existing_guids is not None:
+            return guid not in existing_guids
 
         with self.db.get_session() as session:
-            statement = select(FeedEntry.id).where(FeedEntry.guid == guid).limit(1)
+            statement = select(FeedEntry.id).where(FeedEntry.guid == guid)
             return session.exec(statement).first() is None
 
     def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> FeedEntry:
@@ -165,7 +182,7 @@ class FeedPoller:
             Parsed datetime or current time if parsing fails
         """
         if not date_str:
-            return _utc_now()
+            return datetime.now(UTC)
 
         try:
             parsed = parsedate_to_datetime(date_str)
@@ -173,8 +190,9 @@ class FeedPoller:
             try:
                 parsed = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
             except ValueError:
-                return _utc_now()
+                return datetime.now(UTC)
 
-        if parsed.tzinfo is None:
-            return parsed.replace(tzinfo=UTC)
-        return parsed.astimezone(UTC)
+        normalized = normalize_utc_datetime(parsed)
+        if normalized is None:
+            return datetime.now(UTC)
+        return normalized.replace(tzinfo=UTC)

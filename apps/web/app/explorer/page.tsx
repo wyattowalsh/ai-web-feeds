@@ -108,7 +108,9 @@ function ExplorerPageContent() {
     writeGraphControlsToParams(params, graphControls, getDefaultGraphControls(tab));
 
     const nextQuery = params.toString();
-    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    const nextUrl = nextQuery
+      ? `${window.location.pathname}?${nextQuery}`
+      : window.location.pathname;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
@@ -250,6 +252,20 @@ function ExplorerPageContent() {
     return result;
   }, [feeds, search, selectedTags, sortBy, sortOrder]);
 
+  const visibleExportFeedIds = useMemo(() => {
+    if (tab !== "feeds") {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        filteredFeeds
+          .map((feed) => (typeof feed.id === "string" ? feed.id.trim() : ""))
+          .filter((feedId) => feedId.length > 0),
+      ),
+    );
+  }, [filteredFeeds, tab]);
+
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
@@ -384,6 +400,31 @@ function ExplorerPageContent() {
           </div>
         </div>
 
+        {tab === "feeds" && (
+          <div className="surface-card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="metric-label">Portable slice</p>
+              <h2 className="text-xl font-semibold">Export the visible feed subset</h2>
+              <p className="small-note">
+                The current explorer filters resolve to canonical feed ids so the OPML download
+                matches the feed slice on screen.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => {
+                const href = buildFilteredOpmlHref(visibleExportFeedIds);
+                if (href) {
+                  window.location.assign(href);
+                }
+              }}
+              disabled={visibleExportFeedIds.length === 0}
+            >
+              Export filtered OPML
+            </Button>
+          </div>
+        )}
+
         <div className="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-start">
           <div className="surface-card flex flex-col gap-3 lg:flex-row lg:items-center">
             <button
@@ -392,7 +433,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "topics"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("topics")}
               aria-pressed={tab === "topics"}
@@ -411,7 +452,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "feeds"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("feeds")}
               aria-pressed={tab === "feeds"}
@@ -430,7 +471,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "combined"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("combined")}
               aria-pressed={tab === "combined"}
@@ -453,7 +494,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "graph"
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               aria-pressed={view === "graph"}
             >
@@ -467,7 +508,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "table"
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               aria-pressed={view === "table"}
             >
@@ -494,7 +535,9 @@ function ExplorerPageContent() {
                       type="text"
                       placeholder={`Search ${tab}...`}
                       value={search}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSearch(e.target.value)
+                      }
                       className="pl-11"
                     />
                   </div>
@@ -525,7 +568,9 @@ function ExplorerPageContent() {
                 <Button
                   type="button"
                   onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                  aria-label={`Toggle sort order, currently ${sortOrder === "asc" ? "ascending" : "descending"}`}
+                  aria-label={`Toggle sort order, currently ${
+                    sortOrder === "asc" ? "ascending" : "descending"
+                  }`}
                   className="lg:self-end"
                 >
                   {sortOrder === "asc" ? "Ascending" : "Descending"}
@@ -557,7 +602,7 @@ function ExplorerPageContent() {
                         "rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-150",
                         selectedTags.includes(tag)
                           ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
                       )}
                       aria-pressed={selectedTags.includes(tag)}
                     >
@@ -639,8 +684,8 @@ function ExplorerPageContent() {
             )}
           </div>
         )}
-        </section>
-      </div>
+      </section>
+    </div>
   );
 }
 
@@ -723,6 +768,21 @@ function setParamIfChanged(params: URLSearchParams, key: string, value: number, 
   }
 }
 
+function buildFilteredOpmlHref(feedIds: string[]): string | null {
+  if (feedIds.length === 0) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  params.set("format", "filtered");
+
+  for (const feedId of feedIds) {
+    params.append("feed", feedId);
+  }
+
+  return `/api/exports/opml?${params.toString()}`;
+}
+
 function areGraphControlsEqual(left: GraphControls, right: GraphControls): boolean {
   return (
     left.chargeStrength === right.chargeStrength &&
@@ -768,9 +828,7 @@ function TopicsTable({ topics }: { topics: TopicRecord[] }) {
         <div className="text-lg font-medium text-(--ink)">
           No topics found matching your search criteria
         </div>
-        <p className="small-note mt-2">
-          Try adjusting your search terms or filters
-        </p>
+        <p className="small-note mt-2">Try adjusting your search terms or filters</p>
       </div>
     );
   }
@@ -796,17 +854,10 @@ function TopicsTable({ topics }: { topics: TopicRecord[] }) {
         </thead>
         <tbody className="divide-y divide-(--line)">
           {topics.map((t, idx) => (
-            <tr
-              key={t.id || idx}
-              className="transition-colors hover:bg-(--surface-muted)"
-            >
-              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">
-                {t.id}
-              </td>
+            <tr key={t.id || idx} className="transition-colors hover:bg-(--surface-muted)">
+              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">{t.id}</td>
               <td className="px-6 py-4 font-semibold text-(--ink)">{t.label}</td>
-              <td className="px-6 py-4 text-sm text-(--ink-muted)">
-                {t.description}
-              </td>
+              <td className="px-6 py-4 text-sm text-(--ink-muted)">{t.description}</td>
               <td className="px-6 py-4">
                 {t.facet && (
                   <span className="rounded-full bg-(--brand-soft) px-3 py-1 text-xs font-medium text-(--brand-strong)">
@@ -834,9 +885,7 @@ function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
         <div className="text-lg font-medium text-(--ink)">
           No feeds found matching your search criteria
         </div>
-        <p className="small-note mt-2">
-          Try adjusting your search terms or tag filters
-        </p>
+        <p className="small-note mt-2">Try adjusting your search terms or tag filters</p>
       </div>
     );
   }
@@ -862,10 +911,7 @@ function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
             const topicsArray = normalizeTopicValues(f.topics ?? f.tags);
 
             return (
-              <tr
-                key={f.url || idx}
-                className="transition-colors hover:bg-(--surface-muted)"
-              >
+              <tr key={f.url || idx} className="transition-colors hover:bg-(--surface-muted)">
                 <td className="px-6 py-4 font-semibold text-(--ink)">
                   {f.title || "Untitled Feed"}
                 </td>

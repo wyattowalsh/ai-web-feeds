@@ -2,6 +2,8 @@ schema_version: feeds-2.1.0
 document_meta:
   created: '2025-11-02'
   updated: '2025-11-02'
+  enriched_at: '2025-11-02T12:00:00Z'
+  total_sources: 4
   generated_with:
     tool: aiwebfeeds-cli
     version: 0.1.0
@@ -12,6 +14,7 @@ document_meta:
 sources:
   # Example 1: Fully enriched blog feed (OpenAI)
 - id: openai-blog
+  url: https://openai.com/blog/rss/
   feed: https://openai.com/blog/rss/
   site: https://openai.com/blog
   title: OpenAI Blog
@@ -122,6 +125,7 @@ sources:
 
   # Example 2: Podcast feed with iTunes extensions (Latent Space)
 - id: latent-space-podcast
+  url: https://www.latent.space/feed
   feed: https://www.latent.space/feed
   site: https://www.latent.space
   title: Latent Space - The AI Engineer Podcast
@@ -227,10 +231,11 @@ sources:
 
   # Example 3: Research feed (arXiv cs.LG)
 - id: arxiv-cs-lg
-  feed: http://export.arxiv.org/rss/cs.LG
+  url: https://export.arxiv.org/rss/cs.LG
+  feed: https://export.arxiv.org/rss/cs.LG
   site: https://arxiv.org/list/cs.LG/recent
   title: arXiv cs.LG - Machine Learning
-  source_type: preprint
+  source_type: arxiv
   mediums:
   - text
   tags:
@@ -299,8 +304,8 @@ sources:
     has_geo: false
     encoding: UTF-8
     generator: arXiv RSS Generator
-    uses_https: false
-    has_valid_ssl: false
+    uses_https: true
+    has_valid_ssl: true
   curation:
     status: verified
     since: '2025-01-01T00:00:00Z'
@@ -324,10 +329,11 @@ sources:
 
   # Example 4: GitHub releases feed
 - id: pytorch-releases
+  url: https://github.com/pytorch/pytorch
   feed: https://github.com/pytorch/pytorch/releases.atom
   site: https://github.com/pytorch/pytorch
   title: PyTorch Releases
-  source_type: code-repo
+  source_type: github
   mediums:
   - text
   - code

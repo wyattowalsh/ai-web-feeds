@@ -318,6 +318,24 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Local scratch databases (repository data assets are scoped to canonical/legacy filenames)
+/data/test1.db
+/data/test2.db
+/data/telemetry/
+
+# Local browser/test artifacts and scratch files
+/.playwright-mcp/
+/.serena/
+/playwright-report/
+/reports/
+/:memory:
+/search-assets-*.png
+/.audit_git.py
+/.cmd*.json
+/.git_parser.py
+/check_v7.py
+/github_api_query.py
+
 # Flask stuff:
 instance/
 .webassets-cache

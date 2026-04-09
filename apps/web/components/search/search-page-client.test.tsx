@@ -77,7 +77,11 @@ vi.mock("@/components/search/search-results", () => ({
     results: Array<{ id: string; title: string }>;
   }) => (
     <div data-testid="results">
-      {loading ? "loading" : results.length > 0 ? results.map((result) => result.title).join(",") : "No results"}
+      {loading
+        ? "loading"
+        : results.length > 0
+          ? results.map((result) => result.title).join(",")
+          : "No results"}
     </div>
   ),
 }));
@@ -104,7 +108,7 @@ function renderSearchPageClient({
   } as const,
   initialResults = [] as SearchResult[],
   initialMeta = {
-    mode: "unbounded",
+    mode: "local",
     bounded: false,
     candidate_sources: 0,
     scanned_sources: 0,
@@ -174,7 +178,9 @@ describe("SearchPageClient", () => {
     getStoredUserIdMock.mockReturnValue(null);
 
     fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
-    currentSearchParams = new URLSearchParams("q=agent+systems&scope=sources&source_type=podcast&topics=ml,agents&verified=true");
+    currentSearchParams = new URLSearchParams(
+      "q=agent+systems&scope=sources&source_type=podcast&topics=ml,agents&verified=true",
+    );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
 
     renderSearchPageClient({
@@ -203,7 +209,7 @@ describe("SearchPageClient", () => {
       ],
       initialSearchRequestState: "success",
       initialMeta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 1,
         scanned_sources: 1,
@@ -257,7 +263,7 @@ describe("SearchPageClient", () => {
             },
           ],
           meta: {
-            mode: "unbounded",
+            mode: "local",
             bounded: false,
             candidate_sources: 1,
             scanned_sources: 1,
@@ -287,7 +293,7 @@ describe("SearchPageClient", () => {
         jsonResponse({
           results: [],
           meta: {
-            mode: "bounded",
+            mode: "local",
             bounded: true,
             candidate_sources: 33,
             scanned_sources: 18,
@@ -312,7 +318,7 @@ describe("SearchPageClient", () => {
       },
       initialResults: [],
       initialMeta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 0,
         scanned_sources: 0,

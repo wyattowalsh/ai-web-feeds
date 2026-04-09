@@ -5,6 +5,7 @@ import { getMDXComponents } from "@/mdx-components";
 import type { Metadata } from "next";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import { BookOpenText } from "lucide-react";
+import { getSiteBaseUrl } from "@/lib/env";
 import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
 
 export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
@@ -61,7 +62,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+  const baseUrl = getSiteBaseUrl();
   const pageUrl = `${baseUrl}${page.url}`;
   const imageUrl = `${baseUrl}${getPageImage(page).url}`;
 

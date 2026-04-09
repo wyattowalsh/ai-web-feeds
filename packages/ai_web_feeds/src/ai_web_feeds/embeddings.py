@@ -8,27 +8,78 @@ Embeddings are 384-dim vectors from all-MiniLM-L6-v2 model.
 """
 
 import os
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 import requests
 from loguru import logger
+from sqlmodel import select
 from tqdm import tqdm
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import settings
 from ai_web_feeds.models import FeedEmbedding, FeedSource
+from ai_web_feeds.timestamps import utc_now
 
-# Shared settings instance
-_settings: Settings | None = None
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:  # pragma: no cover - exercised via patched tests
+    SentenceTransformer = None
+
+SUPPORTED_EMBEDDING_PROVIDERS = frozenset({"local", "huggingface"})
+LOCAL_MODEL_CACHE_SIZE = 8
+HF_API_TIMEOUT_SECONDS = 30
+OFFLINE_ENV_VARS = ("AIWF_OFFLINE", "HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE")
 
 
-def get_settings() -> Settings:
-    """Get or create shared settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
+@dataclass(frozen=True, slots=True)
+class EmbeddingGenerationResult:
+    """Embeddings plus the provider/model that actually produced them."""
+
+    embeddings: np.ndarray
+    provider: str
+    model_name: str
+
+
+def normalize_embedding_provider(provider: str | None = None) -> str:
+    """Return a validated embedding provider name."""
+    resolved = (provider or settings.embedding.provider or "local").strip().lower()
+    if resolved not in SUPPORTED_EMBEDDING_PROVIDERS:
+        supported = ", ".join(sorted(SUPPORTED_EMBEDDING_PROVIDERS))
+        msg = f"Unsupported embedding provider '{resolved}'. Supported providers: {supported}"
+        raise ValueError(msg)
+    return resolved
+
+
+def resolve_local_model_name(model_name: str | None = None) -> str:
+    """Resolve the effective local embedding model name."""
+    resolved = (model_name or settings.embedding.local_model).strip()
+    if not resolved:
+        raise ValueError("Local embedding model must not be empty")
+    return resolved
+
+
+def resolve_hf_model_name(model_name: str | None = None) -> str:
+    """Resolve the effective Hugging Face embedding model name."""
+    resolved = (model_name or settings.embedding.hf_model).strip()
+    if not resolved:
+        raise ValueError("Hugging Face embedding model must not be empty")
+    return resolved
+
+
+def _has_hf_api_token(api_token: str | None = None) -> bool:
+    """Return True when the canonical HF token setting is configured."""
+    candidate = api_token if api_token is not None else settings.embedding.hf_api_token
+    return bool(candidate.strip())
+
+
+def _resolve_hf_api_token(api_token: str | None = None) -> str:
+    """Resolve the canonical Hugging Face API token setting."""
+    resolved = (api_token if api_token is not None else settings.embedding.hf_api_token).strip()
+    if not resolved:
+        raise ValueError("AIWF_EMBEDDING__HF_API_TOKEN is not set")
+    return resolved
 
 
 # ============================================================================
@@ -36,19 +87,67 @@ def get_settings() -> Settings:
 # ============================================================================
 
 
-@lru_cache(maxsize=1)
-def get_local_model():
-    """Get cached Sentence-Transformers model."""
-    from sentence_transformers import SentenceTransformer
-
-    settings = get_settings()
-    logger.info(f"Loading local model: {settings.embedding.local_model}")
-    model = SentenceTransformer(settings.embedding.local_model)
+@lru_cache(maxsize=LOCAL_MODEL_CACHE_SIZE)
+def _load_local_model(
+    model_name: str,
+    cache_folder: str,
+    local_files_only: bool,
+):
+    """Load and cache a local Sentence-Transformers model by its effective load spec."""
+    if SentenceTransformer is None:
+        raise ImportError("sentence-transformers is not installed")
+    logger.info(f"Loading local model: {model_name}")
+    model_kwargs = {}
+    if cache_folder:
+        model_kwargs["cache_folder"] = cache_folder
+    if local_files_only:
+        model_kwargs["local_files_only"] = True
+    model = SentenceTransformer(model_name, **model_kwargs)
     logger.info("Local model loaded successfully")
     return model
 
 
-def generate_embeddings_local(texts: list[str], show_progress: bool = True) -> np.ndarray:
+def _local_model_cache_folder(cache_folder: str | None = None) -> str:
+    """Resolve the effective cache folder for local embedding models."""
+    raw_folder = cache_folder or settings.phase5.model_cache_dir
+    if not raw_folder:
+        return ""
+    return str(Path(raw_folder).expanduser())
+
+
+def _local_files_only_enabled(local_files_only: bool | None = None) -> bool:
+    """Return True when local-only model loading is enabled."""
+    if local_files_only is not None:
+        return local_files_only
+    return any(
+        os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+        for name in OFFLINE_ENV_VARS
+    )
+
+
+def get_local_model(
+    model_name: str | None = None,
+    *,
+    cache_folder: str | None = None,
+    local_files_only: bool | None = None,
+):
+    """Get a cached Sentence-Transformers model for the effective load spec."""
+    return _load_local_model(
+        resolve_local_model_name(model_name),
+        _local_model_cache_folder(cache_folder),
+        _local_files_only_enabled(local_files_only),
+    )
+
+
+get_local_model.cache_clear = _load_local_model.cache_clear  # type: ignore[attr-defined]
+get_local_model.cache_info = _load_local_model.cache_info  # type: ignore[attr-defined]
+
+
+def generate_embeddings_local(
+    texts: list[str],
+    show_progress: bool = True,
+    model_name: str | None = None,
+) -> np.ndarray:
     """Generate embeddings using local Sentence-Transformers.
 
     Args:
@@ -58,7 +157,10 @@ def generate_embeddings_local(texts: list[str], show_progress: bool = True) -> n
     Returns:
         NumPy array of embeddings (N x 384)
     """
-    model = get_local_model()
+    if not texts:
+        return np.empty((0, 0), dtype=np.float32)
+
+    model = get_local_model(model_name)
     embeddings = model.encode(texts, show_progress_bar=show_progress)
     return embeddings.astype(np.float32)
 
@@ -68,7 +170,69 @@ def generate_embeddings_local(texts: list[str], show_progress: bool = True) -> n
 # ============================================================================
 
 
-def generate_embeddings_hf(texts: list[str]) -> np.ndarray:
+def _extract_hf_embedding_payload(payload: object) -> object:
+    """Extract the actual embedding payload from varied HF response shapes."""
+    if isinstance(payload, dict):
+        if payload.get("error"):
+            raise ValueError(f"Hugging Face API returned an error payload: {payload['error']}")
+        for key in ("embedding", "embeddings", "vector"):
+            if key in payload:
+                return payload[key]
+        if "data" in payload:
+            data = payload["data"]
+            if not isinstance(data, list):
+                raise ValueError("Hugging Face embedding payload field 'data' must be a list")
+            if data and isinstance(data[0], dict) and "embedding" in data[0]:
+                if len(data) != 1:
+                    raise ValueError(
+                        "Hugging Face embedding payload unexpectedly returned multiple embeddings"
+                    )
+                return data[0]["embedding"]
+            return data
+        keys = ", ".join(sorted(payload.keys())) or "<empty>"
+        raise ValueError(f"Unsupported Hugging Face embedding payload keys: {keys}")
+
+    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
+        if len(payload) != 1:
+            raise ValueError(
+                "Hugging Face embedding payload unexpectedly returned multiple embedding records"
+            )
+        first_item = payload[0]
+        if "embedding" in first_item:
+            return first_item["embedding"]
+        raise ValueError("Hugging Face embedding payload record did not include 'embedding'")
+
+    return payload
+
+
+def _normalize_hf_embedding(payload: object) -> np.ndarray:
+    """Coerce varied HF response payloads into a single finite vector."""
+    raw_embedding = _extract_hf_embedding_payload(payload)
+    try:
+        embedding = np.asarray(raw_embedding, dtype=np.float32)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Hugging Face embedding payload must be numeric") from exc
+
+    if embedding.size == 0:
+        raise ValueError("Hugging Face embedding payload was empty")
+
+    if embedding.ndim == 2:
+        embedding = embedding.mean(axis=0)
+    elif embedding.ndim != 1:
+        raise ValueError("Hugging Face embedding payload must be a vector or 2D token matrix")
+
+    if not np.isfinite(embedding).all():
+        raise ValueError("Hugging Face embedding payload contained non-finite values")
+
+    return embedding
+
+
+def generate_embeddings_hf(
+    texts: list[str],
+    *,
+    model_name: str | None = None,
+    api_token: str | None = None,
+) -> np.ndarray:
     """Generate embeddings using Hugging Face Inference API.
 
     Args:
@@ -81,33 +245,44 @@ def generate_embeddings_hf(texts: list[str]) -> np.ndarray:
         ValueError: If HF_API_TOKEN not set
         requests.RequestException: If API call fails
     """
-    settings = get_settings()
-    hf_api_token = settings.embedding.hf_api_token or os.getenv("HF_API_TOKEN")
-    if not hf_api_token:
-        raise ValueError("HF_API_TOKEN not set in config or environment")
+    if not texts:
+        return np.empty((0, 0), dtype=np.float32)
 
-    hf_api_url = (
-        f"https://api-inference.huggingface.co/pipeline/feature-extraction/"
-        f"{settings.embedding.hf_model}"
-    )
+    hf_model_name = resolve_hf_model_name(model_name)
+    hf_api_token = _resolve_hf_api_token(api_token)
+
+    hf_api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{hf_model_name}"
 
     headers = {"Authorization": f"Bearer {hf_api_token}"}
 
     logger.info(f"Generating embeddings via HF API for {len(texts)} texts")
 
     embeddings = []
+    expected_dim: int | None = None
     for text in tqdm(texts, desc="HF API Embeddings"):
         response = requests.post(
             hf_api_url,
             headers=headers,
             json={"inputs": text},
-            timeout=30,
+            timeout=HF_API_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
-        embedding = response.json()
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ValueError("Hugging Face API returned invalid JSON") from exc
+        embedding = _normalize_hf_embedding(payload)
+        if expected_dim is None:
+            expected_dim = int(embedding.shape[0])
+        elif embedding.shape[0] != expected_dim:
+            msg = (
+                "Hugging Face embedding payload dimensions changed between requests: "
+                f"expected {expected_dim}, received {embedding.shape[0]}"
+            )
+            raise ValueError(msg)
         embeddings.append(embedding)
 
-    return np.array(embeddings, dtype=np.float32)
+    return np.vstack(embeddings).astype(np.float32)
 
 
 # ============================================================================
@@ -115,10 +290,64 @@ def generate_embeddings_hf(texts: list[str]) -> np.ndarray:
 # ============================================================================
 
 
+def generate_embeddings_with_metadata(
+    texts: list[str],
+    *,
+    provider: str | None = None,
+    show_progress: bool = True,
+    allow_fallback: bool = True,
+    local_model: str | None = None,
+    hf_model: str | None = None,
+    hf_api_token: str | None = None,
+) -> EmbeddingGenerationResult:
+    """Generate embeddings while reporting the provider/model actually used."""
+    resolved_provider = normalize_embedding_provider(provider)
+    if resolved_provider == "huggingface":
+        resolved_hf_model = resolve_hf_model_name(hf_model)
+        if _has_hf_api_token(hf_api_token):
+            try:
+                embeddings = generate_embeddings_hf(
+                    texts,
+                    model_name=resolved_hf_model,
+                    api_token=hf_api_token,
+                )
+                return EmbeddingGenerationResult(
+                    embeddings=embeddings,
+                    provider="huggingface",
+                    model_name=resolved_hf_model,
+                )
+            except Exception as exc:
+                if not allow_fallback:
+                    raise
+                logger.warning(f"HF API failed, falling back to local embeddings: {exc}")
+        elif not allow_fallback:
+            _resolve_hf_api_token(hf_api_token)
+        else:
+            logger.warning(
+                "AIWF_EMBEDDING__HF_API_TOKEN is not set, falling back to local embeddings"
+            )
+
+    resolved_local_model = resolve_local_model_name(local_model)
+    embeddings = generate_embeddings_local(
+        texts,
+        show_progress=show_progress,
+        model_name=resolved_local_model,
+    )
+    return EmbeddingGenerationResult(
+        embeddings=embeddings,
+        provider="local",
+        model_name=resolved_local_model,
+    )
+
+
 def generate_embeddings(
     texts: list[str],
     use_api: bool | None = None,
     show_progress: bool = True,
+    provider: str | None = None,
+    local_model: str | None = None,
+    hf_model: str | None = None,
+    allow_fallback: bool = True,
 ) -> np.ndarray:
     """Generate embeddings with hybrid approach.
 
@@ -132,20 +361,18 @@ def generate_embeddings(
     Returns:
         NumPy array of embeddings (N x 384)
     """
-    settings = get_settings()
-    # Determine provider
-    if use_api is None:
-        use_api = settings.embedding.provider == "huggingface"
+    resolved_provider = provider
+    if resolved_provider is None and use_api is not None:
+        resolved_provider = "huggingface" if use_api else "local"
 
-    # Try HF API first if requested
-    if use_api and (settings.embedding.hf_api_token or os.getenv("HF_API_TOKEN")):
-        try:
-            return generate_embeddings_hf(texts)
-        except (requests.RequestException, KeyError, ValueError) as e:
-            logger.warning(f"HF API failed, falling back to local: {e}")
-
-    # Use local model
-    return generate_embeddings_local(texts, show_progress=show_progress)
+    return generate_embeddings_with_metadata(
+        texts,
+        provider=resolved_provider,
+        show_progress=show_progress,
+        allow_fallback=allow_fallback,
+        local_model=local_model,
+        hf_model=hf_model,
+    ).embeddings
 
 
 # ============================================================================
@@ -165,6 +392,15 @@ def generate_feed_embedding(feed: FeedSource) -> np.ndarray:
         384-dim embedding vector
     """
     # Build text from feed metadata
+    text = _build_feed_embedding_text(feed)
+
+    # Generate embedding
+    embedding = generate_embeddings([text], show_progress=False)[0]
+    return embedding
+
+
+def _build_feed_embedding_text(feed: FeedSource) -> str:
+    """Build a deterministic embedding input string for a feed."""
     parts = []
     if feed.title:
         parts.append(feed.title)
@@ -172,12 +408,17 @@ def generate_feed_embedding(feed: FeedSource) -> np.ndarray:
         parts.append(feed.notes)
     if feed.topics:
         parts.append(" ".join(feed.topics))
+    return " ".join(parts)
 
-    text = " ".join(parts)
 
-    # Generate embedding
-    embedding = generate_embeddings([text], show_progress=False)[0]
-    return embedding
+def _prepare_feed_embedding_inputs(feeds: list[FeedSource]) -> tuple[list[str], list[str]]:
+    """Build batched feed IDs and embedding texts."""
+    texts = []
+    feed_ids = []
+    for feed in feeds:
+        texts.append(_build_feed_embedding_text(feed))
+        feed_ids.append(feed.id)
+    return texts, feed_ids
 
 
 def generate_all_feed_embeddings(
@@ -197,21 +438,9 @@ def generate_all_feed_embeddings(
     """
     logger.info(f"Generating embeddings for {len(feeds)} feeds")
 
-    # Build texts
-    texts = []
-    feed_ids = []
-
-    for feed in feeds:
-        parts = []
-        if feed.title:
-            parts.append(feed.title)
-        if feed.notes:
-            parts.append(feed.notes)
-        if feed.topics:
-            parts.append(" ".join(feed.topics))
-
-        texts.append(" ".join(parts))
-        feed_ids.append(feed.id)
+    texts, feed_ids = _prepare_feed_embedding_inputs(feeds)
+    if not texts:
+        return {}
 
     # Generate embeddings in batches
     all_embeddings = []
@@ -245,6 +474,7 @@ def save_feed_embedding(
     feed_id: str,
     embedding: np.ndarray,
     provider: str = "local",
+    model_name: str | None = None,
 ) -> FeedEmbedding:
     """Save feed embedding to database.
 
@@ -253,13 +483,20 @@ def save_feed_embedding(
         feed_id: Feed source ID
         embedding: 384-dim embedding vector
         provider: Embedding provider ("local" or "huggingface")
+        model_name: Actual embedding model used
 
     Returns:
         Saved FeedEmbedding object
     """
-    settings = get_settings()
     # Convert to bytes
     embedding_bytes = embedding.tobytes()
+    resolved_provider = provider.strip().lower() if provider else "local"
+    resolved_model_name = model_name
+    if not resolved_model_name:
+        if resolved_provider == "huggingface":
+            resolved_model_name = resolve_hf_model_name()
+        else:
+            resolved_model_name = resolve_local_model_name()
 
     # Check if embedding exists
     existing = session.get(FeedEmbedding, feed_id)
@@ -267,16 +504,17 @@ def save_feed_embedding(
     if existing:
         # Update existing
         existing.embedding = embedding_bytes
-        existing.embedding_provider = provider
-        existing.updated_at = datetime.now(timezone.utc)
+        existing.embedding_model = resolved_model_name
+        existing.embedding_provider = resolved_provider
+        existing.updated_at = utc_now()
         session.add(existing)
     else:
         # Create new
         feed_embedding = FeedEmbedding(
             feed_id=feed_id,
             embedding=embedding_bytes,
-            embedding_model=settings.embedding.local_model,
-            embedding_provider=provider,
+            embedding_model=resolved_model_name,
+            embedding_provider=resolved_provider,
         )
         session.add(feed_embedding)
 
@@ -286,35 +524,56 @@ def save_feed_embedding(
     return existing if existing else feed_embedding
 
 
-def refresh_all_embeddings(session, show_progress: bool = True):
+def refresh_all_embeddings(
+    session,
+    show_progress: bool = True,
+    provider: str | None = None,
+    local_model: str | None = None,
+    hf_model: str | None = None,
+):
     """Refresh embeddings for all feeds.
 
     Args:
         session: Database session
         show_progress: Show progress bar
+        provider: Optional provider override
+        local_model: Optional local model override
+        hf_model: Optional Hugging Face model override
     """
-    settings = get_settings()
-    from sqlmodel import select
-
     logger.info("Refreshing all feed embeddings")
 
     # Get all feeds
     feeds = list(session.exec(select(FeedSource)).all())
+    texts, feed_ids = _prepare_feed_embedding_inputs(feeds)
+    if not texts:
+        logger.info("No feeds found; skipping embedding refresh")
+        return
 
-    # Generate embeddings
-    embedding_map = generate_all_feed_embeddings(feeds, batch_size=32, show_progress=show_progress)
-
-    # Save to database
-    provider = settings.embedding.provider
-
-    for feed_id, embedding in tqdm(
-        embedding_map.items(),
-        desc="Saving embeddings",
+    for i in tqdm(
+        range(0, len(texts), 32),
+        desc="Generating embeddings",
         disable=not show_progress,
     ):
-        save_feed_embedding(session, feed_id, embedding, provider=provider)
+        batch_texts = texts[i : i + 32]
+        batch_feed_ids = feed_ids[i : i + 32]
+        batch_result = generate_embeddings_with_metadata(
+            batch_texts,
+            provider=provider,
+            show_progress=False,
+            local_model=local_model,
+            hf_model=hf_model,
+        )
 
-    logger.info(f"Refreshed {len(embedding_map)} embeddings")
+        for feed_id, embedding in zip(batch_feed_ids, batch_result.embeddings, strict=False):
+            save_feed_embedding(
+                session,
+                feed_id,
+                embedding,
+                provider=batch_result.provider,
+                model_name=batch_result.model_name,
+            )
+
+    logger.info(f"Refreshed {len(feed_ids)} embeddings")
 
 
 # ============================================================================

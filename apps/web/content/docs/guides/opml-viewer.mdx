@@ -1,11 +1,16 @@
 ---
 title: OPML Viewer
-description: Browse OPML feed groups, preview recent posts from matched feeds, and compare one merged timeline in the docs app.
+description: Use /downloads for full-catalog exports and previewing, and use /feeds when you need a filtered OPML subset.
 ---
+
+import { Callout } from "fumadocs-ui/components/callout";
 
 # OPML Viewer
 
-The downloads page includes an optional OPML preview so you can inspect the exported feed bundles, preview recent posts from matched feeds, and scan one merged timeline before importing anything into Feedly, Inoreader, NewsBlur, or another reader.
+The downloads page includes an optional OPML preview so you can inspect the
+full exported feed bundles, preview recent posts from matched feeds, and scan
+one merged timeline before importing anything into Feedly, Inoreader, NewsBlur,
+or another reader.
 
 Open the live viewer here: [Downloads and OPML viewer](/downloads#opml-viewer).
 
@@ -13,14 +18,30 @@ Open the live viewer here: [Downloads and OPML viewer](/downloads#opml-viewer).
 
 Use the downloads page in one of two ways:
 
-| Goal | Best path |
-| --- | --- |
-| Import the full collection right away | Stay in `Quick Downloads` and grab the OPML or JSON file you need. |
-| Check that the bundle contains the right feeds | Open the OPML preview and browse the feed list or folder groups. |
-| Spot-check one source before importing | Use `View Recent Posts` on a matched feed. |
-| Compare what is publishing now across many feeds | Use `Load Merged Timeline`, then adjust `Timeline options` only if you need a different depth. |
+| Goal                                             | Best path                                                                                                 |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Import the full collection right away            | Stay in `Quick Downloads` and grab the OPML or JSON file you need.                                        |
+| Export only a filtered subset                    | Start in `/feeds`, define the slice there, then call the filtered export route with explicit `feed=` ids. |
+| Check that the bundle contains the right feeds   | Open the OPML preview and browse the feed list or folder groups.                                          |
+| Spot-check one source before importing           | Use `View Recent Posts` on a matched feed.                                                                |
+| Compare what is publishing now across many feeds | Use `Load Merged Timeline`, then adjust `Timeline options` only if you need a different depth.            |
 
-The preview is optional. If you already know which file you need, you can skip straight to the download cards.
+The preview is optional. If you already know which full-catalog file you need,
+you can skip straight to the download cards.
+
+## Current routes behind the page
+
+| Surface              | Route                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| Downloads page       | `/downloads`                                                                              |
+| Flat OPML export     | `/api/exports/opml?format=all`                                                            |
+| Foldered OPML export | `/api/exports/opml?format=categorized`                                                    |
+| Filtered OPML export | `/api/exports/opml?format=filtered&feed=<id>&feed=<id>`                                   |
+| JSON catalog export  | `/api/feeds`                                                                              |
+| Single-feed preview  | `/api/feeds/posts?feedId=<id>&limit=6`                                                    |
+| Merged timeline      | `GET /api/feeds/posts/aggregate?feed=<id>&feed=<id>` or `POST /api/feeds/posts/aggregate` |
+
+<Callout type="info">Filtered OPML exports are real at the API level. The canonical path is to choose the slice in `/feeds`, then export with repeated `feed=` query parameters such as `/api/exports/opml?format=filtered&feed=<id>&feed=<id>`.</Callout>
 
 ## What it shows
 
@@ -32,6 +53,7 @@ The preview is optional. If you already know which file you need, you can skip s
 - `Sort controls`: reorder the feed list or the currently visible post list without leaving the page.
 - Feed metadata from the canonical catalog when the OPML label matches a feed we can preview live.
 - Raw OPML samples so you can inspect the exported XML shape directly.
+- `Download Visible OPML`: export only the currently visible catalog-backed feeds.
 
 ## What the labels mean
 
@@ -63,6 +85,14 @@ OPML files are useful for readers, but they are awkward to inspect by hand once 
 10. Expand folders to inspect the actual entries that will be imported.
 11. Download the export you want.
 
+### Filtered export workflow
+
+1. Open `/feeds`.
+2. Narrow the catalog to the sources you want.
+3. Resolve that filtered slice to explicit feed ids.
+4. Export with `/api/exports/opml?format=filtered&feed=<id>&feed=<id>`.
+5. Use `/downloads` only if you want the full-catalog bundles or the optional preview surface.
+
 ## Notes
 
 - The viewer is both an OPML preview surface and a lightweight live feed inspector for matched feeds.
@@ -71,11 +101,19 @@ OPML files are useful for readers, but they are awkward to inspect by hand once 
 - On very large visible source sets, using the search filter first will make the aggregated live scan return sooner.
 - Catalog links and badges come from the canonical feed dataset when a matching title exists.
 - If an OPML label does not map back to a catalog record, the viewer marks it as export-only so it is easy to spot.
+- `/reader` is now a live route, so the downloads page complements the reader instead of acting as its stand-in.
 
 ## When to use each export
 
-| Export | Best for | Notes |
-| --- | --- | --- |
-| `Flat OPML` | Fast import into a reader that does its own organization | Smallest decision surface, one list of feeds. |
-| `Categorized OPML` | Readers where folder structure matters during import | Mirrors the repository taxonomy more closely. |
-| `JSON Feed Data` | Scripts, apps, or custom tooling | Includes structured metadata instead of reader-focused OPML. |
+| Export             | Best for                                                                           | Notes                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `Flat OPML`        | Fast import into a reader that does its own organization                           | Smallest decision surface, one list of feeds.                                    |
+| `Categorized OPML` | Readers where folder structure matters during import                               | Mirrors the repository taxonomy more closely.                                    |
+| `Filtered OPML`    | Exporting a precise slice from the feed catalog or another catalog-backed selector | Requires explicit repeated `feed=` ids and only includes matching catalog feeds. |
+| `JSON Feed Data`   | Scripts, apps, or custom tooling                                                   | Includes structured metadata instead of reader-focused OPML.                     |
+
+## Related pages
+
+- [Getting Started](/docs/guides/getting-started)
+- [Data Explorer](/docs/guides/data-explorer)
+- [Quick Reference](/docs/guides/quick-reference)

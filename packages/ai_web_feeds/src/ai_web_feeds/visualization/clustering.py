@@ -105,7 +105,7 @@ class TopicClusteringService:
     def _force_directed_layout(
         self,
         embeddings: np.ndarray,
-        topic_ids: list[str],
+        _topic_ids: list[str],
         iterations: int = 100,
     ) -> list[tuple[float, float, float]]:
         """
@@ -129,7 +129,6 @@ class TopicClusteringService:
 
         # Force-directed layout parameters
         k = 20  # Optimal distance
-        area = 100 * 100 * 100  # 3D volume
         t = 10.0  # Temperature
 
         for _ in range(iterations):
@@ -191,11 +190,7 @@ class TopicClusteringService:
 
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        labels = kmeans.fit_predict(embeddings)
-
-        # Spread clusters apart in 3D space
-        cluster_centers = kmeans.cluster_centers_
-        cluster_centers_3d = pca.transform(cluster_centers)
+        kmeans.fit_predict(embeddings)
 
         # Scale positions
         positions_3d = positions_3d * 30  # Scale up for visibility
@@ -221,7 +216,7 @@ class TopicClusteringService:
 
         # Perform DBSCAN clustering
         dbscan = DBSCAN(eps=0.5, min_samples=2)
-        labels = dbscan.fit_predict(embeddings)
+        dbscan.fit_predict(embeddings)
 
         # Scale positions
         positions_3d = positions_3d * 30

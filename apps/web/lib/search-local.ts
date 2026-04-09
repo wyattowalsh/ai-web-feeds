@@ -2,7 +2,12 @@ import "server-only";
 
 import { loadAggregatedFeedPostsByIds } from "@/lib/feed-posts";
 import { loadFeedCatalog, type FeedSource } from "@/lib/feeds";
-import type { SearchResponseMeta, SearchResponsePayload, SearchResult, SearchScope } from "@/lib/search";
+import type {
+  SearchResponseMeta,
+  SearchResponsePayload,
+  SearchResult,
+  SearchScope,
+} from "@/lib/search";
 
 export interface LocalSearchOptions {
   query: string;
@@ -48,7 +53,10 @@ function filterFeeds(feeds: FeedSource[], options: LocalSearchOptions): Searchab
     }
 
     if (options.topics && options.topics.length > 0) {
-      const feedTopics = normalizeList([...normalizeTopics(feed.topics), ...normalizeTopics(feed.tags)]);
+      const feedTopics = normalizeList([
+        ...normalizeTopics(feed.topics),
+        ...normalizeTopics(feed.tags),
+      ]);
       if (!options.topics.some((topic) => feedTopics.includes(topic))) {
         return false;
       }
@@ -182,7 +190,7 @@ async function searchArticles(
 
 function buildUnboundedMeta(candidateSources: number): SearchResponseMeta {
   return {
-    mode: "unbounded",
+    mode: "local",
     bounded: false,
     candidate_sources: candidateSources,
     scanned_sources: candidateSources,
@@ -194,7 +202,7 @@ function buildUnboundedMeta(candidateSources: number): SearchResponseMeta {
 
 function buildBoundedMeta(candidateSources: number, scannedSources: number): SearchResponseMeta {
   return {
-    mode: "bounded",
+    mode: "local",
     bounded: true,
     candidate_sources: candidateSources,
     scanned_sources: scannedSources,
@@ -218,11 +226,7 @@ function normalizeTopics(values: string[] | string | null | undefined): string[]
 
 function normalizeList(values: readonly string[]): string[] {
   return Array.from(
-    new Set(
-      values
-        .map((value) => normalizeText(value))
-        .filter((value) => value.length > 0),
-    ),
+    new Set(values.map((value) => normalizeText(value)).filter((value) => value.length > 0)),
   );
 }
 
@@ -262,10 +266,7 @@ function scoreList(query: string, values: readonly string[], weight: number): nu
   return values.reduce((total, value) => total + scoreText(query, value, weight), 0);
 }
 
-function compareResults(
-  left: SearchResult,
-  right: SearchResult,
-): number {
+function compareResults(left: SearchResult, right: SearchResult): number {
   if (left.match_score !== right.match_score) {
     return right.match_score - left.match_score;
   }

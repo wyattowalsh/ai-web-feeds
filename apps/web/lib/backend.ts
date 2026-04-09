@@ -4,6 +4,8 @@
  * Shared utilities for calling the Python backend, handling URLs, and standardizing error responses.
  */
 
+import { getRequiredBackendUrl } from "@/lib/env";
+
 export class BackendError extends Error {
   constructor(
     public status: number,
@@ -16,15 +18,26 @@ export class BackendError extends Error {
   }
 }
 
-export function getBackendUrl(): string {
-  const url = process.env.BACKEND_URL?.trim();
-  if (!url) {
-    throw new Error("BACKEND_URL environment variable not configured");
+export class BackendConfigurationError extends Error {
+  constructor(message = "BACKEND_URL is not configured for proxied backend routes") {
+    super(message);
+    this.name = "BackendConfigurationError";
   }
-  return url;
 }
 
-export function buildBackendUrl(path: string, params?: Record<string, string | number | boolean>): string {
+export function getBackendUrl(): string {
+  try {
+    return getRequiredBackendUrl();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "BACKEND_URL is not configured";
+    throw new BackendConfigurationError(message);
+  }
+}
+
+export function buildBackendUrl(
+  path: string,
+  params?: Record<string, string | number | boolean>,
+): string {
   const url = new URL(path, getBackendUrl());
   if (params) {
     for (const [key, value] of Object.entries(params)) {
@@ -70,9 +83,23 @@ export async function fetchBackend(
   return response.json();
 }
 
-export function formatBackendErrorResponse(
-  error: unknown,
-): { error: string; request_id?: string; code?: string } {
+export function getBackendErrorStatus(error: unknown): number {
+  if (error instanceof BackendConfigurationError) {
+    return 503;
+  }
+
+  if (error instanceof BackendError) {
+    return error.status;
+  }
+
+  return 500;
+}
+
+export function formatBackendErrorResponse(error: unknown): {
+  error: string;
+  request_id?: string;
+  code?: string;
+} {
   if (error instanceof BackendError) {
     return {
       error: error.message,

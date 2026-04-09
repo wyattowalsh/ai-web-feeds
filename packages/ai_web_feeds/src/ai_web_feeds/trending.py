@@ -3,7 +3,7 @@
 This module implements Z-score trending detection for real-time topic monitoring.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 import numpy as np
 from loguru import logger
@@ -12,6 +12,7 @@ from sqlmodel import select
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, TrendingTopic
 from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.timestamps import normalize_utc_datetime, utc_now
 
 
 class TrendingDetector:
@@ -48,7 +49,7 @@ class TrendingDetector:
         Returns:
             List of TrendingTopic objects ordered by rank
         """
-        now = datetime.now(UTC)
+        now = utc_now()
         period_start = now - timedelta(hours=1)
         baseline_start = now - timedelta(days=self.baseline_days)
 
@@ -120,6 +121,9 @@ class TrendingDetector:
         Returns:
             Dict mapping topic_id -> article_count
         """
+        start = normalize_utc_datetime(start) or start
+        end = normalize_utc_datetime(end) or end
+
         # TODO: This requires topic extraction from articles
         # For Phase 3B MVP, we'll use article categories as proxy for topics
         with self.db.get_session() as session:
@@ -132,7 +136,7 @@ class TrendingDetector:
             # Count by category (proxy for topic)
             topic_counts: dict[str, int] = {}
             for entry in entries:
-                for category in entry.categories:
+                for category in entry.categories or []:
                     topic_counts[category] = topic_counts.get(category, 0) + 1
 
             return topic_counts
@@ -149,7 +153,11 @@ class TrendingDetector:
         Returns:
             Dict mapping topic_id -> (mean, std_dev)
         """
-        # Group articles by day, then calculate stats per topic
+        start = normalize_utc_datetime(start) or start
+        end = normalize_utc_datetime(end) or end
+
+        # Group articles into fixed 24h windows from the baseline start so the
+        # baseline is stable regardless of the current wall-clock time.
         with self.db.get_session() as session:
             statement = select(FeedEntry).where(
                 FeedEntry.discovered_at >= start,
@@ -157,33 +165,18 @@ class TrendingDetector:
             )
             entries = session.exec(statement).all()
 
-            # Group by topic and day
+            bucket_count = max(1, int(np.ceil((end - start).total_seconds() / 86400)))
             daily_counts: dict[str, list[int]] = {}
-            current_day = None
-            day_topics: dict[str, int] = {}
 
-            for entry in sorted(entries, key=lambda e: e.discovered_at):
-                entry_day = entry.discovered_at.date()
-                if current_day != entry_day:
-                    # New day, save previous day counts
-                    if current_day is not None:
-                        for topic, count in day_topics.items():
-                            if topic not in daily_counts:
-                                daily_counts[topic] = []
-                            daily_counts[topic].append(count)
-                    current_day = entry_day
-                    day_topics = {}
+            for entry in entries:
+                discovered_at = entry.discovered_at
+                bucket_index = int((discovered_at - start).total_seconds() // 86400)
+                if bucket_index < 0 or bucket_index >= bucket_count:
+                    continue
 
-                # Count categories for this day
-                for category in entry.categories:
-                    day_topics[category] = day_topics.get(category, 0) + 1
-
-            # Save last day
-            if day_topics:
-                for topic, count in day_topics.items():
-                    if topic not in daily_counts:
-                        daily_counts[topic] = []
-                    daily_counts[topic].append(count)
+                for category in entry.categories or []:
+                    counts = daily_counts.setdefault(category, [0] * bucket_count)
+                    counts[bucket_index] += 1
 
             # Calculate mean and std dev per topic
             baseline_stats = {}
@@ -209,25 +202,33 @@ class TrendingDetector:
         Returns:
             List of article IDs
         """
+        start = normalize_utc_datetime(start) or start
+        end = normalize_utc_datetime(end) or end
+
         with self.db.get_session() as session:
-            # Find articles with this category (proxy for topic)
             statement = (
-                select(FeedEntry.id)
+                select(FeedEntry)
                 .where(
                     FeedEntry.discovered_at >= start,
                     FeedEntry.discovered_at < end,
                 )
                 .order_by(FeedEntry.pub_date.desc())
-                .limit(limit)
             )
             entries = session.exec(statement).all()
 
-            # Filter by category
-            article_ids = []
-            for entry_id in entries:
-                entry = session.get(FeedEntry, entry_id)
-                if entry and topic_id in entry.categories:
-                    article_ids.append(entry_id)
+            article_ids: list[int] = []
+            for row in entries:
+                entry = row
+                if isinstance(row, int):
+                    entry = session.get(FeedEntry, row)
+                elif isinstance(row, tuple):
+                    entry = session.get(FeedEntry, row[0])
+
+                if entry is None:
+                    continue
+
+                if topic_id in (entry.categories or []):
+                    article_ids.append(entry.id)
                     if len(article_ids) >= limit:
                         break
 

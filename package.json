@@ -2,6 +2,7 @@
   "name": "ai-web-feeds",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.12.3",
   "description": "Curated, AI-enriched feeds from top sources in AI/ML, software engineering, and technology",
   "repository": {
     "type": "git",

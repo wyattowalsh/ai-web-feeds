@@ -1,10 +1,27 @@
-import { source } from "@/lib/source";
+import { getDocSectionInfo, source } from "@/lib/source";
 
 export const revalidate = false;
 
 export async function GET(request: Request) {
   const { origin } = new URL(request.url);
   const pages = source.getPages();
+  const groupedPages = Array.from(
+    pages.reduce((groups, page) => {
+      const section = getDocSectionInfo(page.slugs);
+      const existing = groups.get(section.key);
+
+      if (existing) {
+        existing.pages.push(page);
+        return groups;
+      }
+
+      groups.set(section.key, {
+        section,
+        pages: [page],
+      });
+      return groups;
+    }, new Map<string, { section: ReturnType<typeof getDocSectionInfo>; pages: Array<(typeof pages)[number]> }>()),
+  );
 
   // Generate llms.txt format with links to markdown versions
   const lines = [
@@ -14,12 +31,17 @@ export async function GET(request: Request) {
     "",
     "## Documentation Pages",
     "",
-    ...pages.map(
-      (page) =>
-        `- [${page.data.title}](${origin}${page.url}.mdx): ${
-          page.data.description || page.data.title
-        }`,
-    ),
+    ...groupedPages.flatMap(({ section, pages: sectionPages }) => [
+      `### ${section.title}`,
+      "",
+      ...sectionPages.map(
+        (page) =>
+          `- [${section.title} / ${page.data.title}](${origin}${page.url}.mdx): ${
+            page.data.description || page.data.title
+          }`,
+      ),
+      "",
+    ]),
     "",
     "## Full Documentation",
     "",
@@ -28,7 +50,9 @@ export async function GET(request: Request) {
     "## Individual Pages",
     "",
     "Append `.mdx` or `.md` to any documentation URL to get the markdown version.",
-    "Example: `/docs/getting-started.mdx`",
+    "Canonical nested path example: `/docs/guides/getting-started.mdx`",
+    "Root index example: `/docs.mdx`",
+    "`.md` and `.mdx` currently return the same `text/markdown` payload.",
     "",
     "## API",
     "",

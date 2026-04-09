@@ -80,7 +80,8 @@ python -m pip install     # NEVER
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install pnpm (if not already installed)
-corepack enable pnpm
+corepack enable
+corepack prepare pnpm@9.12.3 --activate
 
 # Clone repository
 git clone https://github.com/wyattowalsh/ai-web-feeds.git
@@ -91,6 +92,9 @@ uv sync
 
 # Install web dependencies
 cd apps/web && pnpm install
+
+# apps/web is a nested pnpm workspace root with its own pnpm-lock.yaml
+# Run web package-manager commands from this directory unless a doc explicitly says otherwise.
 
 # Install pre-commit hooks
 uv run pre-commit install
@@ -210,9 +214,9 @@ cd apps/cli
 uv run ai-web-feeds --help
 
 # Test commands
-uv run ai-web-feeds fetch --url https://example.com/feed
-uv run ai-web-feeds validate --all
-uv run ai-web-feeds export --format json
+uv run ai-web-feeds fetch url "https://example.com/feed"
+uv run ai-web-feeds validate all
+uv run ai-web-feeds export json --input data/feeds.enriched.yaml --output reports/feeds.json
 ```
 
 ### 3. Testing
@@ -262,7 +266,7 @@ uv run pytest tests/
 git add .
 
 # Interactive commit
-npx cz
+pnpm exec cz
 
 # Follow prompts:
 # 1. Select type (feat, fix, docs, etc.)
@@ -388,10 +392,13 @@ gh pr create --draft
 - [ ] Coverage ≥90%
 - [ ] Conventional commits used
 - [ ] Documentation updated
+- [ ] `/llms.txt`, `/llms-full.txt`, and markdown route examples checked if docs/navigation changed
 - [ ] Pre-commit hooks pass
 - [ ] No new linting warnings
 - [ ] Type hints added
 - [ ] CHANGELOG.md updated (if significant)
+
+For the docs-specific flow, see [Docs Maintenance Checklist](/docs/contributing/docs-maintenance).
 
 ### 8. CI/CD Pipeline
 
@@ -474,10 +481,11 @@ git push origin --delete feat/your-feature
 - **Location:** `apps/web/content/docs/`
 - **Style:** Clear, concise, with examples
 - **Code blocks:** With language and titles
+- **LLM output:** Keep frontmatter summaries, `meta.json`, `/llms.txt`, and `/llms-full.txt` aligned
 
 ### Testing
 
-- **Framework:** Pytest (Python), Jest (TypeScript)
+- **Framework:** Pytest (Python), Vitest + Playwright (TypeScript/web)
 - **Coverage:** ≥90% required
 - **Style:** Descriptive test names
 - **Structure:** Arrange-Act-Assert
@@ -536,12 +544,12 @@ uv run pre-commit run --all-files    # Run all hooks
 uv run pre-commit autoupdate         # Update hooks
 
 # Commitizen
-npx cz                    # Interactive commit
+pnpm exec cz              # Interactive commit
 git cz                    # Alternative
 
 # Commitlint
-npx commitlint --from HEAD~1         # Validate last commit
-echo "msg" | npx commitlint          # Test message
+pnpm exec commitlint --from HEAD~1   # Validate last commit
+echo "msg" | pnpm exec commitlint    # Test message
 ```
 
 ## Troubleshooting
@@ -604,10 +612,10 @@ pnpm build
 
 ## Resources
 
-- [Contributing Guide](/docs/contributing)
+- [Contributing Guide](/docs/development/contributing)
 - [Conventional Commits](/docs/contributing/conventional-commits)
 - [Pre-commit Hooks](/docs/contributing/pre-commit-hooks)
-- [Testing Guide](/docs/contributing/testing)
+- [Testing Guide](/docs/development/testing)
 - [GitHub Repository](https://github.com/wyattowalsh/ai-web-feeds)
 
 ## FAQ
@@ -647,7 +655,7 @@ cd apps/web && pnpm update package
 
 ### What's the release process?
 
-See [Release Process](/docs/contributing/release-process) (coming soon).
+See [Workflow Reference](/docs/guides/workflow-reference) for the current release and automation entrypoints.
 
 ## Support
 

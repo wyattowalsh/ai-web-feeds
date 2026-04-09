@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,14 +16,25 @@ type SocketMock = {
 let currentSocket: SocketMock;
 
 const ioMock = vi.fn(() => currentSocket);
-const getUserIdMock = vi.fn(() => "user-123");
+const ensureAnonymousUserIdMock = vi.fn(async () => "11111111-1111-4111-8111-111111111111");
+const fetchWithAnonymousIdentityMock = vi.fn(
+  async () =>
+    new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "x-aiwf-anonymous-user-id": "11111111-1111-4111-8111-111111111111",
+      },
+    }),
+);
 
 vi.mock("socket.io-client", () => ({
   io: ioMock,
 }));
 
 vi.mock("./user-identity", () => ({
-  getUserId: getUserIdMock,
+  ensureAnonymousUserId: ensureAnonymousUserIdMock,
+  fetchWithAnonymousIdentity: fetchWithAnonymousIdentityMock,
 }));
 
 function createSocketMock(): SocketMock {
@@ -61,7 +72,8 @@ describe("useWebSocket", () => {
   beforeEach(() => {
     currentSocket = createSocketMock();
     ioMock.mockClear();
-    getUserIdMock.mockClear();
+    ensureAnonymousUserIdMock.mockClear();
+    fetchWithAnonymousIdentityMock.mockClear();
     vi.clearAllMocks();
     vi.resetModules();
   });
@@ -99,7 +111,9 @@ describe("useWebSocket", () => {
 
     const { unmount } = render(<Harness />);
 
-    expect(ioMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
 
     act(() => {
       currentSocket.active = true;
@@ -138,7 +152,9 @@ describe("useWebSocket", () => {
     currentSocket = createSocketMock();
     const { unmount: unmountFresh } = render(<Probe name="fresh" />);
 
-    expect(ioMock).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(2);
+    });
     expect(screen.getByTestId("fresh-count").textContent).toBe("0");
     expect(screen.getByTestId("fresh-unread").textContent).toBe("0");
     expect(screen.getByTestId("fresh-connected").textContent).toBe("false");

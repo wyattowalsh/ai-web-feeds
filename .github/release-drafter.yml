@@ -56,6 +56,8 @@ autolabeler:
   - label: 'component/docs'
     files:
       - '*.md'
+      - '*.mdx'
+      - 'apps/web/content/docs/**/*'
       - 'docs/**/*'
   - label: 'component/cli'
     files:
@@ -74,9 +76,12 @@ autolabeler:
       - '.github/**/*'
   - label: 'dependencies'
     files:
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/pnpm-lock.yaml'
       - 'package.json'
       - 'pnpm-lock.yaml'
-      - 'pyproject.toml'
       - 'requirements*.txt'
 
 template: |

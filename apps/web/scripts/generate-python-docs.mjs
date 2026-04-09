@@ -9,8 +9,9 @@ import * as path from 'node:path';
  * This script converts Python docstrings to MDX format using fumadocs-python.
  *
  * Prerequisites:
- * 1. Install fumadocs-python: pip install fumadocs-python
- * 2. Generate JSON: fumapy-generate ai_web_feeds
+ * 1. Generate JSON with uv:
+ *    uv tool run --from ./node_modules/fumadocs-python fumapy-generate ai_web_feeds
+ * 2. Run this script from the apps/web workspace root via pnpm
  *
  * Usage:
  *   pnpm generate:docs
@@ -29,11 +30,12 @@ async function generate() {
     // Check if JSON file exists
     try {
       await fs.access(JSON_PATH);
-    } catch (error) {
+    } catch {
       console.error(`❌ JSON file not found: ${JSON_PATH}`);
       console.log(`\n📝 To generate the JSON file, run:`);
-      console.log(`   pip install fumadocs-python`);
-      console.log(`   fumapy-generate ${PACKAGE_NAME}`);
+      console.log(
+        `   uv tool run --from ./node_modules/fumadocs-python fumapy-generate ${PACKAGE_NAME}`,
+      );
       process.exit(1);
     }
 

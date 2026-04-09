@@ -1,0 +1,122 @@
+---
+title: Visualization Compatibility Policy
+description: Versioning, alias support, and deprecation rules for visualization APIs and models
+---
+
+# Visualization Compatibility Policy
+
+The visualization backend currently ships as a **v1** contract under `/api/v1`
+and `ai_web_feeds.visualization`.
+
+## Versioning rules
+
+### HTTP APIs
+
+- `/api/v1` is the current stable path.
+- Additive response fields are allowed in v1.
+- Breaking wire changes require either:
+  - a new versioned path, or
+  - a documented deprecation window before removing compatibility aliases.
+- When an alias or v1 behavior is scheduled for removal, document at least a
+  **6-month notice window** in repository docs or release notes.
+
+### Python model surface
+
+- Canonical fields remain snake_case.
+- Legacy constructor aliases stay accepted during v1 when they are already in
+  use by repository-owned clients or tests.
+- Canonical fields are always emitted in serialized payloads.
+
+## Canonical fields vs. accepted aliases
+
+| Canonical                             | Accepted / emitted compatibility aliases      |
+| ------------------------------------- | --------------------------------------------- |
+| `layout`                              | `layout_config`                               |
+| `position`                            | `position_x`, `position_y`, `width`, `height` |
+| `forecast_horizon_days`               | `horizon_days`                                |
+| `accuracy_metrics`                    | `metrics`                                     |
+| forecast prediction `lower` / `upper` | confidence interval aliases                   |
+| `file_url`                            | `file_path`                                   |
+| `error_message`                       | `error`                                       |
+| `response_status`                     | `status_code`                                 |
+| `is_revoked`                          | `is_active`                                   |
+| `last_used_at`                        | `last_used`                                   |
+
+## Enum compatibility
+
+### Widget types
+
+Canonical values:
+
+- `chart`
+- `metric_card`
+- `feed_list`
+- `topic_cloud`
+
+Accepted aliases:
+
+- `metric`
+- `metricCard`
+- `list`
+- `table`
+- `cloud`
+
+### Export status
+
+Canonical value:
+
+- `in_progress`
+
+Accepted aliases:
+
+- `processing`
+- `inProgress`
+
+## Filter and customization normalization
+
+The backend normalizes the following request aliases before validation, cache
+key generation, and storage:
+
+- `topicIds` → `topic_ids`
+- `feedIds` → `feed_ids`
+- `dateRange` → `date_range`
+- `datePreset` → `date_preset`
+- `startDate` / `endDate` → `start` / `end`
+- `showLegend` → `show_legend`
+- `legendPosition` → `legend_position`
+- `titleFontSize` → `title_font_size`
+- `xAxisLabel` / `yAxisLabel` → `x_axis_label` / `y_axis_label`
+- `gridLines` → `grid_lines`
+- `showTooltips` → `show_tooltips`
+- forecast prediction aliases:
+  - `confidence_lower` / `confidenceLower` → `lower`
+  - `confidence_upper` / `confidenceUpper` → `upper`
+
+## Error compatibility
+
+- In-process Python callers can keep using `str(error)`.
+- HTTP clients receive a normalized validation detail object with:
+  - `code`
+  - `message`
+  - optional `field`
+  - optional `details`
+
+## Cache compatibility
+
+Cache keys are an internal implementation detail, but the current backend uses:
+
+```text
+v1:query:{query_type}:{sha256(normalized_payload)}
+```
+
+Key version changes are allowed when internal cache semantics change. They do
+not require an HTTP API version bump as long as response semantics remain
+compatible.
+
+## Deprecation policy
+
+- Existing v1 aliases should remain available for the current release line.
+- Remove aliases only after:
+  1. updating repository docs,
+  2. updating regression tests,
+  3. documenting the removal in the changelog or migration notes.

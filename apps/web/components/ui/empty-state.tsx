@@ -7,6 +7,7 @@ interface EmptyStateProps {
   title: string;
   description: string;
   tips?: string[];
+  media?: ReactNode;
   className?: string;
   children?: ReactNode;
 }
@@ -16,6 +17,7 @@ export function EmptyState({
   title,
   description,
   tips,
+  media,
   className,
   children,
 }: EmptyStateProps) {
@@ -31,6 +33,8 @@ export function EmptyState({
         <p className="text-title-medium text-(--ink)">{title}</p>
         <p className="small-note mx-auto max-w-2xl">{description}</p>
       </div>
+
+      {media ? <div className="mt-6">{media}</div> : null}
 
       {tips?.length ? (
         <div className="mt-6 grid gap-3 text-left md:grid-cols-2">

@@ -39,7 +39,7 @@ Fixes # Relates to #
 
 - [ ] I have tested these changes locally
 - [ ] I have added/updated tests for these changes
-- [ ] All tests pass locally (`uv run aiwebfeeds test`)
+- [ ] All tests pass locally (`uv run aiwebfeeds test all`)
 - [ ] I have tested on multiple platforms/browsers (if applicable)
 
 ### Test Commands Run
@@ -57,10 +57,10 @@ uv run ruff format --check .
 uv run mypy .
 
 # Tests with coverage
-uv run aiwebfeeds test --coverage
+uv run aiwebfeeds test coverage --html
 
 # Feed validation (if feeds changed)
-uv run aiwebfeeds validate --all
+uv run aiwebfeeds validate all
 
 # CLI smoke test
 uv run aiwebfeeds --help
@@ -92,9 +92,9 @@ uv run aiwebfeeds --help
 - [ ] Topics are from canonical `topics.yaml` list
 - [ ] Platform configuration is correct (if applicable)
 - [ ] Feed URL is accessible and working (tested with
-  `uv run aiwebfeeds validate --feeds <url>`)
+  `uv run aiwebfeeds validate url "<feed-url>"`)
 - [ ] Feed ID is unique and follows naming conventions
-- [ ] Feed parsing succeeds (`uv run aiwebfeeds fetch --url <url>`)
+- [ ] Feed parsing succeeds (`uv run aiwebfeeds fetch url "<feed-url>" --metadata-only`)
 
 ### Feed Validation Output
 
@@ -102,7 +102,7 @@ uv run aiwebfeeds --help
 
 ```bash
 # Validation command:
-uv run aiwebfeeds validate --feeds "your-feed-url"
+uv run aiwebfeeds validate url "your-feed-url"
 
 # Output:
 # (paste here)
@@ -115,7 +115,7 @@ uv run aiwebfeeds validate --feeds "your-feed-url"
 - [ ] Ruff linting passes (`uv run ruff check .`)
 - [ ] Ruff formatting passes (`uv run ruff format --check .`)
 - [ ] MyPy type checking passes (`uv run mypy .`)
-- [ ] All tests pass with ≥90% coverage (`uv run aiwebfeeds test --coverage`)
+- [ ] All tests pass with ≥90% coverage (`uv run aiwebfeeds test coverage --html`)
 - [ ] No new linting warnings introduced
 - [ ] My code follows the project's style guidelines
 

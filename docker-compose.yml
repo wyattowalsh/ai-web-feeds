@@ -4,20 +4,29 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://ai-web-feeds.vercel.app}
+        NEXT_PUBLIC_WEBSOCKET_URL: ${NEXT_PUBLIC_WEBSOCKET_URL:-}
+        NEXT_PUBLIC_PDF_EXPORT: ${NEXT_PUBLIC_PDF_EXPORT:-false}
     container_name: aiwebfeeds_web
     env_file:
-      - .env
+    - .env
     environment:
       AIWF_ADMIN_PASSWORD: ${AIWF_ADMIN_PASSWORD:?set AIWF_ADMIN_PASSWORD in .env}
       AIWF_ADMIN_SESSION_SECRET: ${AIWF_ADMIN_SESSION_SECRET:?set AIWF_ADMIN_SESSION_SECRET in .env}
+      AIWF_ANON_BINDING_SECRET: ${AIWF_ANON_BINDING_SECRET:-}
       AIWF_TELEMETRY_DIR: ${AIWF_TELEMETRY_DIR:-/app/data/telemetry}
+      AIWF_TELEMETRY_SALT: ${AIWF_TELEMETRY_SALT:-}
       BACKEND_URL: ${BACKEND_URL:-}
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://ai-web-feeds.vercel.app}
+      NEXT_PUBLIC_WEBSOCKET_URL: ${NEXT_PUBLIC_WEBSOCKET_URL:-}
+      NEXT_PUBLIC_PDF_EXPORT: ${NEXT_PUBLIC_PDF_EXPORT:-false}
       HOSTNAME: 0.0.0.0
       PORT: 3000
     ports:
-      - "3000:3000"
+    - 3000:3000
     volumes:
-      - ./data:/app/data
+    - ./data:/app/data
     restart: unless-stopped
 
   monitor:
@@ -27,13 +36,12 @@ services:
       target: monitor
     container_name: aiwebfeeds_monitor
     env_file:
-      - .env
+    - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///data/ai-web-feeds.db}
-      AIWF_JWT_SECRET_KEY: ${AIWF_JWT_SECRET_KEY:-}
+      AIWF_DATABASE_URL: ${AIWF_DATABASE_URL:-sqlite:///data/ai-web-feeds.db}
       AIWF_TELEMETRY_DIR: ${AIWF_TELEMETRY_DIR:-/app/data/telemetry}
     ports:
-      - "8000:8000"
+    - 8000:8000
     volumes:
-      - ./data:/app/data
+    - ./data:/app/data
     restart: unless-stopped

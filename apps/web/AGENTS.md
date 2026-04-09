@@ -11,7 +11,7 @@
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **FumaDocs**: [fumadocs.dev](https://fumadocs.dev)
 
-______________________________________________________________________
+---
 
 ## 🎯 Purpose
 
@@ -29,7 +29,7 @@ Next.js 15 documentation site providing:
 **Data Integration**: Reads `data/feeds.yaml`, `data/topics.yaml`,
 `data/feeds.enriched.yaml`
 
-______________________________________________________________________
+---
 
 ## 🏗️ Architecture
 
@@ -64,7 +64,7 @@ apps/web/
 **See**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web) for complete
 structure
 
-______________________________________________________________________
+---
 
 ## 📐 Development Rules
 
@@ -176,7 +176,7 @@ import { Mermaid } from "@/components/mdx/mermaid";
 - **Concise**: Update in `app/llms.txt/route.ts`
 - Auto-generated from `content/docs/`
 
-______________________________________________________________________
+---
 
 ## 🧪 Testing
 
@@ -196,7 +196,7 @@ pnpm lint:links
 
 **See**: [../../tests/AGENTS.md](../../tests/AGENTS.md) for testing patterns
 
-______________________________________________________________________
+---
 
 ## 🔄 Common Tasks
 
@@ -225,7 +225,7 @@ ______________________________________________________________________
 - Auto-generated per page
 - Customize: Edit `app/docs/opengraph-image.tsx`
 
-______________________________________________________________________
+---
 
 ## 🚨 Critical Patterns
 
@@ -247,7 +247,7 @@ ______________________________________________________________________
 ❌ Use `any` types\
 ❌ Commit without linting
 
-______________________________________________________________________
+---
 
 ## 📚 Reference
 
@@ -256,11 +256,11 @@ ______________________________________________________________________
 **Full implementation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)\
 **Root workflow**: [../../AGENTS.md](../../AGENTS.md#standard-workflow)
 
-______________________________________________________________________
+---
 
 _Updated: October 15, 2025 · Version: 0.1.0_
 
-______________________________________________________________________
+---
 
 ## 🆕 Recent Updates
 
@@ -286,7 +286,7 @@ New REST APIs:
 
 **Data Source**: `data/feeds.yaml`, `data/topics.yaml`, `data/feeds.enriched.yaml`
 
-______________________________________________________________________
+---
 
 ## 🛠️ Development Guidelines
 
@@ -364,7 +364,7 @@ pnpm lint:links
 pnpm lint:links:bun  # Using Bun runtime
 ```
 
-______________________________________________________________________
+---
 
 ## 📝 Content Management
 
@@ -442,8 +442,7 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
   <Card title="Card 2" description="Description" href="/link" />
 </Cards>
 
-<Tabs items={["npm", "pnpm", "yarn"]}>
-  <Tab value="npm">```bash npm install package ```</Tab>
+<Tabs items={["pnpm"]}>
   <Tab value="pnpm">```bash pnpm add package ```</Tab>
 </Tabs>
 ````
@@ -472,7 +471,7 @@ export default defineConfig({
 });
 ```
 
-______________________________________________________________________
+---
 
 ## ✨ Special Features
 
@@ -694,7 +693,7 @@ export async function POST(request: Request) {
 }
 ```
 
-______________________________________________________________________
+---
 
 ## 🐛 Troubleshooting
 
@@ -742,7 +741,7 @@ pnpm dev --turbo
 next dev
 ```
 
-______________________________________________________________________
+---
 
 ## 📚 Resources
 
@@ -753,6 +752,6 @@ ______________________________________________________________________
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [React 19 Docs](https://react.dev/)
 
-______________________________________________________________________
+---
 
 _Last Updated: October 2025_

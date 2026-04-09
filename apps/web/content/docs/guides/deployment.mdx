@@ -52,6 +52,7 @@ For the password-protected admin observability flow, this is the minimum local s
 ```bash
 AIWF_ADMIN_PASSWORD=change-me
 AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
 ```
 
 Optional local overrides:
@@ -60,6 +61,9 @@ Optional local overrides:
 AIWF_TELEMETRY_DIR=../../data/telemetry
 # AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
 # BACKEND_URL=http://localhost:8001
+# NEXT_PUBLIC_BASE_URL=http://localhost:3000
+# NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:8000
+# NEXT_PUBLIC_PDF_EXPORT=false
 ```
 
 You do not need email or SMTP variables for the simple admin telemetry setup.
@@ -86,15 +90,18 @@ Notes:
   Python HTTP backend that the repository does not currently assemble.
 - `BACKEND_URL` remains optional. Set it only if you are running an external
   Python HTTP backend for the proxied storage/search routes.
+- `NEXT_PUBLIC_BASE_URL`, `NEXT_PUBLIC_WEBSOCKET_URL`, and
+  `NEXT_PUBLIC_PDF_EXPORT` are build-time values for the Next.js app. Set them
+  before `docker compose build` when you need non-default values.
 - `NEXT_PUBLIC_WEBSOCKET_URL` is optional. Local development defaults to
   `http://localhost:8000`; deployed environments default to same-origin WebSocket
   connections unless you set this variable to an explicit monitor/WebSocket URL.
 - The monitor service uses the default SQLite database at
-  `sqlite:///data/ai-web-feeds.db` unless you override `DATABASE_URL`.
+  `sqlite:///data/ai-web-feeds.db` unless you override `AIWF_DATABASE_URL`.
 
 ---
 
-## Backend Deployment
+## Optional Runtime Services
 
 ### 1. Install Dependencies
 
@@ -116,7 +123,7 @@ db = DatabaseManager()
 print('✓ Database initialized')
 "
 
-# Initialize search tables (FTS5 + Trie)
+# Initialize runtime search tables (optional for CLI/runtime workflows)
 uv run aiwebfeeds search init
 ```
 
@@ -129,11 +136,11 @@ uv run aiwebfeeds load --input data/feeds.yaml
 # Validate feeds
 uv run aiwebfeeds validate http --concurrency 10
 
-# Generate embeddings (optional, for semantic search)
+# Generate embeddings (optional, for runtime semantic search experiments)
 uv run aiwebfeeds search embeddings --provider local
 ```
 
-### 4. Verify Backend
+### 4. Verify Runtime Workflows
 
 ```bash
 # Test CLI commands
@@ -141,6 +148,11 @@ uv run aiwebfeeds analytics summary
 uv run aiwebfeeds search query "machine learning" --limit 5
 uv run aiwebfeeds recommend get --topics llm --limit 5
 ```
+
+These commands are useful when you are running the Python runtime and its storage
+features. They are **not** required for the default public web loop:
+
+`catalog -> search -> reader -> analytics -> OPML export`
 
 ---
 
@@ -177,6 +189,23 @@ vercel --prod
 
 # Configure environment variables in Vercel dashboard
 ```
+
+For the default deployment, the important point is that `BACKEND_URL` is optional.
+The primary public read-only surfaces work without it:
+
+- `/search`
+- `/reader`
+- `/explorer`
+- `/downloads`
+- `/analytics`
+
+Only backend-dependent personalized or storage-backed routes need `BACKEND_URL`,
+for example:
+
+- `/api/search/saved`
+- `/api/follows`
+- `/api/digests`
+- `/api/recommendations`
 
 ### Alternative: Deploy to Netlify
 
@@ -229,7 +258,7 @@ netlify deploy --prod
 
 - **SQLite (Current)**: Good for 1K-50K feeds, 100-1K concurrent users
 - **PostgreSQL (Future)**: For >50K feeds or >1K concurrent users
-- **Migration Path**: SQLModel supports both, change `DATABASE_URL`
+- **Migration Path**: SQLModel supports both, change `AIWF_DATABASE_URL`
 
 ### Caching
 
@@ -254,10 +283,10 @@ netlify deploy --prod
 
 ```bash
 # Backup SQLite database
-cp data/aiwebfeeds.db data/backups/aiwebfeeds-$(date +%Y%m%d).db
+cp data/ai-web-feeds.db data/backups/ai-web-feeds-$(date +%Y%m%d).db
 
 # Compress backup
-gzip data/backups/aiwebfeeds-$(date +%Y%m%d).db
+gzip data/backups/ai-web-feeds-$(date +%Y%m%d).db
 ```
 
 ### Log Rotation
@@ -372,9 +401,9 @@ export default {
 
 ```bash
 # Restore database backup
-cp data/backups/aiwebfeeds-YYYYMMDD.db.gz data/
-gunzip data/aiwebfeeds-YYYYMMDD.db.gz
-mv data/aiwebfeeds-YYYYMMDD.db data/aiwebfeeds.db
+cp data/backups/ai-web-feeds-YYYYMMDD.db.gz data/
+gunzip data/ai-web-feeds-YYYYMMDD.db.gz
+mv data/ai-web-feeds-YYYYMMDD.db data/ai-web-feeds.db
 
 # Reinstall previous version
 git checkout <previous-commit>

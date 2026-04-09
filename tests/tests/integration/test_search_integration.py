@@ -5,20 +5,19 @@ These tests verify the integration between search, embeddings, and storage modul
 
 import numpy as np
 import pytest
+from ai_web_feeds.analytics import calculate_summary_metrics
 from ai_web_feeds.embeddings import save_feed_embedding
 from ai_web_feeds.models import FeedEmbedding, FeedSource
-from ai_web_feeds.search import autocomplete, build_trie_index
+from ai_web_feeds.search import autocomplete, build_trie_index, delete_saved_search, save_search
 from ai_web_feeds.storage import DatabaseManager
-from sqlmodel import SQLModel, create_engine
 
 
 @pytest.fixture
-def integration_db():
+def integration_db(tmp_path):
     """Create temporary database for integration tests."""
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-
-    db = DatabaseManager(str(engine.url))
+    db_path = tmp_path / "integration-search.db"
+    db = DatabaseManager(f"sqlite:///{db_path}")
+    db.create_db_and_tables()
     return db
 
 
@@ -74,10 +73,26 @@ class TestSearchStorageIntegration:
             build_trie_index(session)
 
             # Test autocomplete
-            results = autocomplete(session, "open", limit=5)
+            results = autocomplete(session, "  OPEN  ", limit=5)
 
             assert "feeds" in results
             assert "topics" in results
+            assert results["feeds"][0]["title"] == "OpenAI Blog"
+
+    def test_saved_search_delete_enforces_user_scope(self, populated_db):
+        """Saved-search deletes should not cross anonymous user boundaries."""
+        with populated_db.get_session() as session:
+            saved = save_search(session, "user-1", "OpenAI", "  openai  ", {"topics": [" agents "]})
+
+        with populated_db.get_session() as session:
+            delete_saved_search(session, "user-2", str(saved.id))
+
+        searches = populated_db.get_user_saved_searches("user-1")
+        assert len(searches) == 1
+        assert searches[0].query_text == "openai"
+
+        populated_db.delete_user_saved_search("user-1", str(saved.id))
+        assert populated_db.get_user_saved_searches("user-1") == []
 
 
 class TestEmbeddingSearchIntegration:
@@ -142,8 +157,6 @@ class TestFullWorkflowIntegration:
         """Test analytics data collection and retrieval."""
         # 1. Get summary metrics
         with populated_db.get_session() as session:
-            from ai_web_feeds.analytics import calculate_summary_metrics
-
             metrics = calculate_summary_metrics(session, date_range_days=30)
 
             assert "total_feeds" in metrics

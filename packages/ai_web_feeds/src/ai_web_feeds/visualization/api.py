@@ -9,41 +9,41 @@ Implements FR-055 through FR-065:
 - Rate limiting
 """
 
-from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Query, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
+from pydantic import BaseModel, Field
 
+from ai_web_feeds.visualization.auth import (
+    get_current_device_id,
+)
+from ai_web_feeds.visualization.dashboard_service import DashboardService
 from ai_web_feeds.visualization.models import (
     ChartType,
     DataSource,
-    Dashboard,
-    DashboardWidget,
     ExportFormat,
-    ExportJob,
-    ExportStatus,
-    Forecast,
     ForecastModelType,
-    Visualization,
     WidgetType,
 )
-from ai_web_feeds.visualization.auth import (
-    get_current_device_id,
-    verify_api_key,
-    create_jwt_token,
-)
-from ai_web_feeds.visualization.visualization_service import VisualizationService
-from ai_web_feeds.visualization.dashboard_service import DashboardService
 from ai_web_feeds.visualization.rate_limiter import check_rate_limit
+from ai_web_feeds.visualization.validators import ValidationError, validation_error_detail
+from ai_web_feeds.visualization.visualization_service import VisualizationService
 
 # Create router
 router = APIRouter(prefix="/api/v1", tags=["visualization"])
 
 # Services (will be initialized on startup)
-visualization_service: Optional[VisualizationService] = None
-dashboard_service: Optional[DashboardService] = None
+visualization_service: VisualizationService | None = None
+dashboard_service: DashboardService | None = None
+
+
+def _validation_http_exception(error: ValidationError) -> HTTPException:
+    """Convert validation failures into normalized 400 responses."""
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=validation_error_detail(error),
+    )
 
 
 # ============================================================================
@@ -64,9 +64,9 @@ class CreateVisualizationRequest(BaseModel):
 class UpdateVisualizationRequest(BaseModel):
     """Request model for updating a visualization."""
 
-    name: Optional[str] = Field(None, max_length=255)
-    filters: Optional[dict[str, Any]] = None
-    customization: Optional[dict[str, Any]] = None
+    name: str | None = Field(None, max_length=255)
+    filters: dict[str, Any] | None = None
+    customization: dict[str, Any] | None = None
 
 
 class VisualizationResponse(BaseModel):
@@ -86,7 +86,7 @@ class VisualizationResponse(BaseModel):
 class VisualizationDataRequest(BaseModel):
     """Request model for fetching visualization data."""
 
-    date_range: Optional[dict[str, str]] = None
+    date_range: dict[str, str] | None = None
     limit: int = Field(default=1000, le=100_000)
 
 
@@ -94,17 +94,17 @@ class CreateDashboardRequest(BaseModel):
     """Request model for creating a dashboard."""
 
     name: str = Field(max_length=255)
-    description: Optional[str] = None
-    template_id: Optional[str] = None
+    description: str | None = None
+    template_id: str | None = None
     layout: dict[str, Any] = Field(default_factory=dict)
 
 
 class UpdateDashboardRequest(BaseModel):
     """Request model for updating a dashboard."""
 
-    name: Optional[str] = None
-    description: Optional[str] = None
-    layout: Optional[dict[str, Any]] = None
+    name: str | None = None
+    description: str | None = None
+    layout: dict[str, Any] | None = None
     version: int  # For optimistic locking
 
 
@@ -117,7 +117,7 @@ class AddWidgetRequest(BaseModel):
     refresh_interval_seconds: int = Field(default=300, ge=60, le=3600)
     position: dict[str, int]
     config: dict[str, Any] = Field(default_factory=dict)
-    visualization_id: Optional[int] = None
+    visualization_id: int | None = None
 
 
 class CreateForecastRequest(BaseModel):
@@ -134,7 +134,7 @@ class ExportRequest(BaseModel):
     entity_type: str = Field(pattern="^(feeds|topics|articles)$")
     filters: dict[str, Any] = Field(default_factory=dict)
     format: ExportFormat
-    limit: Optional[int] = Field(None, le=100_000)
+    limit: int | None = Field(None, le=100_000)
 
 
 # ============================================================================
@@ -190,14 +190,17 @@ async def create_visualization(
     """
     await check_rate_limit(device_id)
 
-    visualization = await visualization_service.create_visualization(
-        device_id=device_id,
-        name=request.name,
-        chart_type=request.chart_type,
-        data_source=request.data_source,
-        filters=request.filters,
-        customization=request.customization,
-    )
+    try:
+        visualization = await visualization_service.create_visualization(
+            device_id=device_id,
+            name=request.name,
+            chart_type=request.chart_type,
+            data_source=request.data_source,
+            filters=request.filters,
+            customization=request.customization,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Created visualization {visualization['id']} for device {device_id[:8]}")
     return visualization
@@ -258,13 +261,16 @@ async def update_visualization(
     """
     await check_rate_limit(device_id)
 
-    visualization = await visualization_service.update_visualization(
-        visualization_id=visualization_id,
-        device_id=device_id,
-        name=request.name,
-        filters=request.filters,
-        customization=request.customization,
-    )
+    try:
+        visualization = await visualization_service.update_visualization(
+            visualization_id=visualization_id,
+            device_id=device_id,
+            name=request.name,
+            filters=request.filters,
+            customization=request.customization,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     if not visualization:
         raise HTTPException(
@@ -346,7 +352,17 @@ async def get_visualization_data(
         limit=request.limit,
     )
 
-    logger.debug(f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}")
+    if isinstance(data.get("error"), dict) and "code" in data["error"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=data["error"],
+        )
+
+    logger.debug(
+        "Fetched {} data points for visualization {}",
+        len(data.get("records", [])),
+        visualization_id,
+    )
     return data
 
 
@@ -380,13 +396,16 @@ async def create_dashboard(
     """Create a new dashboard."""
     await check_rate_limit(device_id)
 
-    dashboard = await dashboard_service.create_dashboard(
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        template_id=request.template_id,
-        layout=request.layout,
-    )
+    try:
+        dashboard = await dashboard_service.create_dashboard(
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            template_id=request.template_id,
+            layout=request.layout,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Created dashboard {dashboard['id']} for device {device_id[:8]}")
     return dashboard
@@ -425,14 +444,17 @@ async def update_dashboard(
     """Update a dashboard."""
     await check_rate_limit(device_id)
 
-    dashboard = await dashboard_service.update_dashboard(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        layout=request.layout,
-        expected_version=request.version,
-    )
+    try:
+        dashboard = await dashboard_service.update_dashboard(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            layout=request.layout,
+            expected_version=request.version,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     if not dashboard:
         raise HTTPException(
@@ -475,17 +497,20 @@ async def add_widget(
     """Add a widget to dashboard."""
     await check_rate_limit(device_id)
 
-    widget = await dashboard_service.add_widget(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        widget_type=request.widget_type,
-        data_source=request.data_source,
-        filters=request.filters,
-        refresh_interval_seconds=request.refresh_interval_seconds,
-        position=request.position,
-        config=request.config,
-        visualization_id=request.visualization_id,
-    )
+    try:
+        widget = await dashboard_service.add_widget(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            widget_type=request.widget_type,
+            data_source=request.data_source,
+            filters=request.filters,
+            refresh_interval_seconds=request.refresh_interval_seconds,
+            position=request.position,
+            config=request.config,
+            visualization_id=request.visualization_id,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Added widget {widget['id']} to dashboard {dashboard_id}")
     return widget
@@ -500,8 +525,8 @@ async def startup_event():
     """Initialize services on startup."""
     global visualization_service, dashboard_service
 
-    from ai_web_feeds.visualization.visualization_service import VisualizationService
     from ai_web_feeds.visualization.dashboard_service import DashboardService
+    from ai_web_feeds.visualization.visualization_service import VisualizationService
 
     visualization_service = VisualizationService()
     dashboard_service = DashboardService()

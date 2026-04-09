@@ -1,83 +1,77 @@
 ---
 title: Search Architecture
-description: FTS5, trie autocomplete, semantic embeddings, and how the web app splits repo-data search from runtime-backed search
+description: How the web app keeps public search local-first while the runtime still supports deeper CLI and backend-backed search workflows
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
 # Search Architecture
 
-Search is split across the Python runtime and the web app. The key distinction
-is whether a feature is backed by the **runtime database** or the **checked-in
-catalog files**.
+Search is now split by responsibility rather than by a hard public/backend
+boundary. The key distinction is whether a feature is backed by the
+**checked-in catalog files and aggregate post loader** or by **optional runtime
+storage services**.
 
-## Runtime search stack
+## Public web search
 
-The Python runtime combines three mechanisms:
+The default web deployment keeps read-only search local-first:
 
-| Layer | Implementation | Purpose |
-| --- | --- | --- |
-| Full-text | SQLite FTS5 virtual table + triggers | catalog search over stored sources |
-| Autocomplete | trie index built from titles and topics | fast prefix suggestions |
-| Semantic | embeddings + cosine similarity | meaning-based retrieval |
+| Surface                      | Backing data                             | Purpose                                                   |
+| ---------------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| `/api/search?scope=sources`  | checked-in catalog                       | lexical search across source metadata                     |
+| `/api/search?scope=articles` | aggregate post loader over matched feeds | lexical search across recent article titles and summaries |
+| `/api/search/autocomplete`   | checked-in catalog                       | lightweight prefix suggestions for feeds and topics       |
 
-## Search flow
+The public search experience does not require `BACKEND_URL`.
 
-```mermaid
-flowchart LR
-    sources[(SQLite sources table)] --> fts[FTS5 virtual table]
-    sources --> trie[Trie index]
-    sources --> embed[feed_embeddings]
-    fts --> query[search query]
-    trie --> auto[autocomplete]
-    embed --> semantic[semantic search]
-    query --> web[/api/search]
-    auto --> webauto[/api/search/autocomplete]
-```
+## Optional backend-backed search storage
+
+Two routes still optionally proxy to backend/runtime storage when configured:
+
+- `/api/search` `POST` for search analytics logging
+- `/api/search/saved` for saved-search storage
+
+If the backend is not configured, these routes return safe unavailable or
+accepted responses instead of breaking the main search UI.
 
 ## Web route split
 
 The `/search` page is server-first for any URL that includes `q=...`.
 The server shell normalizes the query/filter state, fetches the initial result
 set, and hydrates the client with both the result payload and the request
-status.
+status. Those server-side reads come from local catalog data and recent
+aggregate feed scans rather than a remote backend.
 
-If that initial runtime-backed fetch fails, the client retries once using the
-same normalized URL state before it falls back to the empty-results view. This
-prevents transient SSR/backend failures from rendering a false "No results
-found" state on first load.
+### Source search path
 
-### Runtime-backed routes
+Source search ranks lexical matches across:
 
-These rely on the backend/runtime layer:
+- source titles
+- descriptions
+- notes
+- source types
+- topic labels
+- verification state as a tie-breaker
 
-- `/api/search` for primary search queries and search logging
-- `/api/search/saved` for saved searches
+### Article search path
 
-They proxy to backend search/storage behavior instead of reading the YAML files
-directly.
+Article search first finds candidate feeds from the catalog, then loads recent
+posts for those feeds and ranks the resulting article set lexically with
+freshness as a tie-breaker.
 
-### Repo-data-backed route
+### Autocomplete path
 
-`/api/search/autocomplete` currently reads the checked-in catalog via the web
-feed loader and performs lightweight prefix matching in-process. The route trims
-query whitespace, matches title words by prefix, and normalizes topic labels to
-the same lowercase form the runtime search stack expects.
+Autocomplete stays intentionally lightweight and reads the checked-in catalog
+directly. It trims the query, matches by prefix, and returns a small mixed set
+of feed and topic suggestions.
 
-That means autocomplete and main search do **not** currently share the same
-backend implementation path.
-
-<Callout type="warn" title="Source-of-truth constraint">
-  Main search behavior depends on runtime state, while autocomplete can succeed
-  from repository data alone. When search results drift from autocomplete
-  suggestions, check whether the runtime database is stale before changing docs
-  or UI behavior.
+<Callout type="info" title="Catalog-first product flow">
+  `/feeds` is the primary subset-selection surface. `/search` is the text retrieval layer on top of that catalog. If a user is trying to build an exportable shortlist rather than retrieve text, point them to `/feeds` first.
 </Callout>
 
 ## Search operations checklist
 
 ```bash
-uv run ai-web-feeds search init
 uv run ai-web-feeds search query "llm agents" --type full_text --limit 10
 uv run ai-web-feeds search query "retrieval augmented generation" --type semantic --limit 10
 uv run ai-web-feeds search autocomplete llm --limit 8
@@ -105,11 +99,12 @@ so downstream semantic search can regenerate query vectors with matching specs.
 
 ## Data dependencies
 
-- search tables are initialized from the runtime database
-- autocomplete in the web app can read from `feeds.enriched.yaml` or `feeds.yaml`
-- semantic search depends on embeddings stored in runtime tables
-- saved searches and search logs are runtime data scoped to the anonymous
-  device binding, not authored YAML
+- public source search reads from `data/feeds.enriched.yaml` or `data/feeds.yaml`
+- public article search reads recent entries through the aggregate post loader
+- autocomplete reads from the checked-in catalog
+- semantic search remains a runtime/CLI concern, not the default public web mode
+- saved searches and search logs are optional backend-backed storage concerns, not
+  authored YAML
 
 ## Related documentation
 

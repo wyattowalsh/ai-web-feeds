@@ -8,11 +8,13 @@ from typing import Any
 
 import feedparser
 import httpx
+import jsonschema
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm as async_tqdm
 
-from ai_web_feeds.models import FeedSource, FeedValidationResult
+from ai_web_feeds.load import canonicalize_catalog_source
+from ai_web_feeds.models import CurationStatus, FeedSource, FeedValidationResult
 
 
 class ValidationError(Exception):
@@ -49,12 +51,6 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
     Raises:
         ImportError: If jsonschema is not installed
     """
-    try:
-        import jsonschema
-    except ImportError as e:
-        msg = "jsonschema not installed. Run: uv add jsonschema"
-        raise ImportError(msg) from e
-
     result = ValidationResult()
 
     # Load schema if provided
@@ -85,28 +81,40 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
 
     logger.info(f"Validating {len(sources)} feed sources")
 
-    # Check for duplicate IDs
-    ids = [s.get("id") for s in sources if s.get("id")]
-    duplicates = [id for id in set(ids) if ids.count(id) > 1]
+    canonical_ids: list[str] = []
 
+    # Check for required fields using the canonical source contract
+    for i, source in enumerate(sources):
+        if not isinstance(source, dict):
+            error_msg = f"Source at index {i} must be an object"
+            logger.error(error_msg)
+            result.add_error(error_msg)
+            continue
+
+        try:
+            canonical_source = canonicalize_catalog_source(source)
+        except ValueError as exc:
+            error_msg = f"Source at index {i} invalid: {exc}"
+            logger.error(error_msg)
+            result.add_error(error_msg)
+            continue
+
+        canonical_ids.append(canonical_source["id"])
+
+        if not canonical_source.get("topics"):
+            error_msg = f"Source '{canonical_source['id']}' missing required field: topics"
+            logger.error(error_msg)
+            result.add_error(error_msg)
+
+    duplicates = [
+        source_id for source_id in set(canonical_ids) if canonical_ids.count(source_id) > 1
+    ]
     if duplicates:
-        error_msg = f"Duplicate IDs found: {', '.join(duplicates)}"
+        error_msg = f"Duplicate canonical IDs found: {', '.join(sorted(duplicates))}"
         logger.error(error_msg)
         result.add_error(error_msg)
     else:
-        logger.debug("No duplicate IDs found")
-
-    # Check for required fields
-    for i, source in enumerate(sources):
-        if not source.get("id"):
-            error_msg = f"Source at index {i} missing required field: id"
-            logger.error(error_msg)
-            result.add_error(error_msg)
-
-        if not source.get("title"):
-            error_msg = f"Source '{source.get('id', i)}' missing required field: title"
-            logger.error(error_msg)
-            result.add_error(error_msg)
+        logger.debug("No duplicate canonical IDs found")
 
     if result.valid:
         logger.info("All validations passed!")
@@ -114,7 +122,7 @@ def validate_feeds(data: dict[str, Any], schema_path: Path | str | None = None) 
     return result
 
 
-def validate_topics(
+def validate_topics(  # noqa: PLR0912
     data: dict[str, Any], schema_path: Path | str | None = None
 ) -> ValidationResult:
     """Validate topics data against JSON schema.
@@ -129,12 +137,6 @@ def validate_topics(
     Raises:
         ImportError: If jsonschema is not installed
     """
-    try:
-        import jsonschema
-    except ImportError as e:
-        msg = "jsonschema not installed. Run: uv add jsonschema"
-        raise ImportError(msg) from e
-
     result = ValidationResult()
 
     # Load schema if provided
@@ -157,15 +159,62 @@ def validate_topics(
             result.add_error(error_msg)
 
     # Additional validations
-    topics = data.get("topics", [])
+    raw_topics = data.get("topics", [])
+    topics = raw_topics if isinstance(raw_topics, list) else []
     logger.info(f"Validating {len(topics)} topics")
 
     # Check for duplicate IDs
-    ids = [t.get("id") for t in topics if t.get("id")]
+    ids = [t.get("id") for t in topics if isinstance(t, dict) and t.get("id")]
     duplicates = [id for id in set(ids) if ids.count(id) > 1]
 
     if duplicates:
         error_msg = f"Duplicate topic IDs found: {', '.join(duplicates)}"
+        logger.error(error_msg)
+        result.add_error(error_msg)
+
+    valid_ids = set(ids)
+    alias_owners: dict[str, set[str]] = {}
+    relation_fields = (
+        "depends_on",
+        "implements",
+        "influences",
+        "contrasts_with",
+        "same_as",
+        "related_to",
+    )
+
+    for topic in topics:
+        if not isinstance(topic, dict):
+            result.add_error("Topic entries must be objects")
+            continue
+
+        topic_id = topic.get("id", "<unknown>")
+
+        for parent in topic.get("parents", []):
+            if parent not in valid_ids:
+                error_msg = f"Topic '{topic_id}' references unknown parent '{parent}'"
+                logger.error(error_msg)
+                result.add_error(error_msg)
+
+        relations = topic.get("relations") or {}
+        for relation_name in relation_fields:
+            for related_id in relations.get(relation_name, []):
+                if related_id not in valid_ids:
+                    error_msg = (
+                        f"Topic '{topic_id}' references unknown {relation_name} target "
+                        f"'{related_id}'"
+                    )
+                    logger.error(error_msg)
+                    result.add_error(error_msg)
+
+        for alias in topic.get("aliases", []):
+            normalized_alias = alias.strip().lower()
+            if normalized_alias:
+                alias_owners.setdefault(normalized_alias, set()).add(topic_id)
+
+    duplicate_aliases = {alias: owners for alias, owners in alias_owners.items() if len(owners) > 1}
+    for alias, owners in sorted(duplicate_aliases.items()):
+        error_msg = f"Alias '{alias}' is assigned to multiple topics: {', '.join(sorted(owners))}"
         logger.error(error_msg)
         result.add_error(error_msg)
 
@@ -281,8 +330,14 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
     if not url_to_validate:
         return FeedValidationResult(
             feed_source_id=feed_source.id,
-            success=False,
-            error_message="No feed or site URL provided",
+            is_valid=False,
+            is_accessible=False,
+            schema_valid=False,
+            format_valid=False,
+            has_required_fields=False,
+            schema_errors=["No feed or site URL provided"],
+            warnings=["No feed or site URL provided"],
+            validation_report={"error_message": "No feed or site URL provided"},
             validated_at=datetime.now(),
         )
 
@@ -292,12 +347,18 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
     # Convert to FeedValidationResult model
     return FeedValidationResult(
         feed_source_id=feed_source.id,
-        success=result_dict["success"],
-        status_code=result_dict["status_code"],
+        is_valid=result_dict["success"],
+        is_accessible=result_dict["status_code"] == 200,
+        schema_valid=result_dict["success"],
+        format_valid=result_dict["feed_format"] != "unknown",
+        has_required_fields=result_dict["success"],
+        has_items=result_dict["entry_count"] > 0,
+        item_count=result_dict["entry_count"],
+        http_status=result_dict["status_code"],
         response_time_ms=result_dict["response_time_ms"],
-        error_message=result_dict["error_message"],
-        feed_format=result_dict["feed_format"],
-        entry_count=result_dict["entry_count"],
+        schema_errors=[result_dict["error_message"]] if result_dict["error_message"] else [],
+        warnings=[result_dict["error_message"]] if result_dict["error_message"] else [],
+        validation_report=result_dict,
         validated_at=result_dict["validated_at"],
     )
 
@@ -359,7 +420,7 @@ def calculate_health_score(
     recent_results = validation_results[:max_results]
 
     # Calculate success rate
-    success_count = sum(1 for r in recent_results if r.success)
+    success_count = sum(1 for r in recent_results if r.is_valid)
     success_rate = success_count / len(recent_results)
 
     # Calculate average response time factor (lower is better)
@@ -405,11 +466,11 @@ def mark_inactive_feeds(
 
         # Check if any recent validation was successful
         recent_success = any(
-            result.success and result.validated_at >= cutoff_date for result in history
+            result.is_valid and result.validated_at >= cutoff_date for result in history
         )
 
         if not recent_success:
-            feed.is_active = False
+            feed.curation_status = CurationStatus.INACTIVE
             marked_inactive.append(feed.id)
             logger.warning(
                 f"Marked feed {feed.id} as inactive (no success in {inactive_threshold_days} days)"

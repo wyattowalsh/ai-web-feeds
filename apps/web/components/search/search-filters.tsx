@@ -1,65 +1,64 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { Newspaper, RadioTower, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+import type { SearchScope } from "@/lib/search";
 
 interface SearchFiltersProps {
-  searchType: "full_text" | "semantic";
-  onSearchTypeChange: (type: "full_text" | "semantic") => void;
+  scope: SearchScope;
+  onScopeChange: (scope: SearchScope) => void;
   sourceType?: string;
   onSourceTypeChange: (type: string | undefined) => void;
   topics: string[];
   onTopicsChange: (topics: string[]) => void;
   verified?: boolean;
   onVerifiedChange: (verified: boolean | undefined) => void;
-  threshold: number;
-  onThresholdChange: (threshold: number) => void;
 }
 
+const SOURCE_TYPES = [
+  { value: "", label: "All source types" },
+  { value: "blog", label: "Blog" },
+  { value: "newsletter", label: "Newsletter" },
+  { value: "podcast", label: "Podcast" },
+  { value: "video", label: "Video" },
+  { value: "github", label: "GitHub" },
+  { value: "arxiv", label: "ArXiv" },
+  { value: "reddit", label: "Reddit" },
+  { value: "youtube", label: "YouTube" },
+];
+
+const COMMON_TOPICS = [
+  "llm",
+  "agents",
+  "research",
+  "mlops",
+  "retrieval",
+  "inference",
+  "evaluation",
+  "open-source",
+  "safety",
+  "governance",
+];
+
 export function SearchFilters({
-  searchType,
-  onSearchTypeChange,
+  scope,
+  onScopeChange,
   sourceType,
   onSourceTypeChange,
   topics,
   onTopicsChange,
   verified,
   onVerifiedChange,
-  threshold,
-  onThresholdChange,
 }: SearchFiltersProps) {
-  const sourceTypes = [
-    { value: "", label: "All Sources" },
-    { value: "blog", label: "Blog" },
-    { value: "newsletter", label: "Newsletter" },
-    { value: "podcast", label: "Podcast" },
-    { value: "video", label: "Video" },
-    { value: "journal", label: "Journal" },
-    { value: "preprint", label: "Preprint" },
-  ];
-
-  const commonTopics = [
-    "llm",
-    "agents",
-    "training",
-    "inference",
-    "genai",
-    "ml",
-    "cv",
-    "nlp",
-    "rl",
-    "data",
-    "safety",
-  ];
-
   const handleTopicToggle = (topic: string) => {
     if (topics.includes(topic)) {
-      onTopicsChange(topics.filter((t) => t !== topic));
-    } else {
-      onTopicsChange([...topics, topic]);
+      onTopicsChange(topics.filter((value) => value !== topic));
+      return;
     }
+
+    onTopicsChange([...topics, topic]);
   };
 
   return (
@@ -71,56 +70,44 @@ export function SearchFilters({
           </span>
           <div>
             <p className="metric-label">Filters</p>
-            <h3 className="text-lg font-semibold text-(--ink)">Tune the search strategy</h3>
+            <h3 className="text-lg font-semibold text-(--ink)">Choose what to search</h3>
           </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
-            onClick={() => onSearchTypeChange("full_text")}
-            variant={searchType === "full_text" ? "default" : "secondary"}
+            onClick={() => onScopeChange("sources")}
+            variant={scope === "sources" ? "default" : "secondary"}
           >
-            Full-Text
+            <RadioTower className="size-4" />
+            Sources
           </Button>
           <Button
             type="button"
-            onClick={() => onSearchTypeChange("semantic")}
-            variant={searchType === "semantic" ? "default" : "secondary"}
+            onClick={() => onScopeChange("articles")}
+            variant={scope === "articles" ? "default" : "secondary"}
           >
-            Semantic
+            <Newspaper className="size-4" />
+            Articles
           </Button>
         </div>
-        {searchType === "semantic" && (
-          <div className="mt-4 rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Similarity Threshold: {threshold.toFixed(2)}
-            </label>
-            <input
-              type="range"
-              min="0.5"
-              max="1.0"
-              step="0.05"
-              value={threshold}
-              onChange={(e) => onThresholdChange(parseFloat(e.target.value))}
-              className="w-full"
-            />
-            <div className="mt-2 flex justify-between text-xs text-(--ink-muted)">
-              <span>Less strict</span>
-              <span>More strict</span>
-            </div>
-          </div>
-        )}
+
+        <p className="mt-4 text-sm text-(--ink-muted)">
+          Source search matches the catalog itself. Article search scans recent posts from the most
+          relevant candidate feeds available in the local deployment.
+        </p>
       </div>
 
       <div>
-        <label className="field-label">Source Type</label>
+        <label className="field-label">Source type</label>
         <Select
           value={sourceType || ""}
-          onChange={(e) => onSourceTypeChange(e.target.value || undefined)}
+          onChange={(event) => onSourceTypeChange(event.target.value || undefined)}
         >
-          {sourceTypes.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
+          {SOURCE_TYPES.map((source) => (
+            <option key={source.value} value={source.value}>
+              {source.label}
             </option>
           ))}
         </Select>
@@ -129,7 +116,7 @@ export function SearchFilters({
       <div>
         <label className="field-label">Topics</label>
         <div className="flex flex-wrap gap-2">
-          {commonTopics.map((topic) => (
+          {COMMON_TOPICS.map((topic) => (
             <button
               key={topic}
               type="button"
@@ -138,7 +125,7 @@ export function SearchFilters({
                 "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
                 topics.includes(topic)
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
             >
               {topic.toUpperCase()}
@@ -151,14 +138,14 @@ export function SearchFilters({
             onClick={() => onTopicsChange([])}
             className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-(--brand-strong)"
           >
-            Clear all topics
+            Clear topics
           </button>
         )}
       </div>
 
       <div>
-        <label className="field-label">Verification Status</label>
-        <div className="flex gap-2">
+        <label className="field-label">Verification</label>
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             onClick={() => onVerifiedChange(undefined)}
@@ -171,7 +158,7 @@ export function SearchFilters({
             onClick={() => onVerifiedChange(true)}
             variant={verified === true ? "default" : "secondary"}
           >
-            ✓ Verified
+            Verified
           </Button>
           <Button
             type="button"

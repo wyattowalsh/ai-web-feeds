@@ -8,41 +8,166 @@ import {
   scanURLs,
   validateFiles,
 } from 'next-validate-link';
-import { readFile } from 'fs/promises';
-import { loader } from 'fumadocs-core/source';
-import { createMDXSource } from 'fumadocs-mdx';
-import { map } from '@/.map';
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const source = loader({
-  baseUrl: '/docs',
-  source: createMDXSource(map),
-});
+const DOCS_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'content',
+  'docs',
+);
 
-/**
- * Get headings from a page for anchor validation
- */
-function getHeadings(page) {
-  return page.data.toc?.map((heading) => heading.url.slice(1)) ?? [];
+function toAnchorSlug(text) {
+  const normalized = text
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/`+/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\{[^}]+\}/g, '')
+    .replace(/[*_~]/g, '')
+    .replace(/&amp;/gi, 'and')
+    .replace(/&/g, 'and')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
+  return normalized;
+}
+
+function extractHeadings(content) {
+  const hashes = [];
+  const seen = new Map();
+  const lines = content.split('\n');
+  let inFrontmatter = false;
+  let frontmatterConsumed = false;
+  let inCodeFence = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!frontmatterConsumed && trimmed === '---') {
+      inFrontmatter = !inFrontmatter;
+      if (!inFrontmatter) {
+        frontmatterConsumed = true;
+      }
+      continue;
+    }
+
+    if (inFrontmatter) {
+      continue;
+    }
+
+    if (/^(```|~~~)/.test(trimmed)) {
+      inCodeFence = !inCodeFence;
+      continue;
+    }
+
+    if (inCodeFence) {
+      continue;
+    }
+
+    const match = /^(#{1,6})\s+(.+)$/.exec(line);
+    if (!match) {
+      continue;
+    }
+
+    const base = toAnchorSlug(match[2]);
+    if (!base) {
+      continue;
+    }
+
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+    hashes.push(count === 0 ? base : `${base}-${count}`);
+  }
+
+  return hashes;
+}
+
+function toSlugs(relativePath) {
+  const slugs = relativePath
+    .replace(/\.mdx$/, '')
+    .split(path.sep)
+    .filter(Boolean);
+
+  if (slugs.at(-1) === 'index') {
+    slugs.pop();
+  }
+
+  return slugs;
+}
+
+function toDocUrl(slugs) {
+  return slugs.length === 0 ? '/docs' : `/docs/${slugs.join('/')}`;
+}
+
+function sanitizeForLinkValidation(content) {
+  return content.replace(/\$\$[\s\S]*?\$\$/g, '\nMATH_BLOCK\n');
+}
+
+async function collectDocPages(dir = DOCS_ROOT) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const pages = await Promise.all(
+    entries.map(async (entry) => {
+      const absolutePath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        return collectDocPages(absolutePath);
+      }
+
+      if (!entry.isFile() || !entry.name.endsWith('.mdx')) {
+        return [];
+      }
+
+      const content = await readFile(absolutePath, 'utf-8');
+      const relativePath = path.relative(DOCS_ROOT, absolutePath);
+      const slugs = toSlugs(relativePath);
+
+      return [
+        {
+          path: absolutePath,
+          content: sanitizeForLinkValidation(content),
+          url: toDocUrl(slugs),
+          slugs,
+          hashes: extractHeadings(content),
+        },
+      ];
+    }),
+  );
+
+  return pages.flat();
 }
 
 /**
  * Get all documentation files with their content
  */
-async function getFiles() {
-  const pages = source.getPages();
+function getFiles(pages) {
+  return pages.map(({ path: pagePath, content, url }) => ({
+    path: pagePath,
+    content,
+    url,
+    data: {},
+  }));
+}
 
-  const promises = pages.map(async (page) => {
-    const content = await readFile(page.absolutePath, 'utf-8');
+async function validatePageFiles(pages, options) {
+  const errors = [];
 
-    return {
-      path: page.absolutePath,
-      content,
-      url: page.url,
-      data: page.data,
-    };
-  });
+  for (const file of getFiles(pages)) {
+    try {
+      errors.push(...(await validateFiles([file], options)));
+    } catch (error) {
+      throw new Error(
+        `Failed while parsing ${path.relative(DOCS_ROOT, file.path)}: ${error.message}`,
+        { cause: error },
+      );
+    }
+  }
 
-  return Promise.all(promises);
+  return errors;
 }
 
 /**
@@ -50,20 +175,21 @@ async function getFiles() {
  */
 async function checkLinks() {
   console.log('🔍 Scanning URLs and validating links...\n');
+  const pages = await collectDocPages();
 
   // Scan all URLs from Next.js routes
   const scanned = await scanURLs({
     preset: 'next',
     populate: {
-      'docs/[[...slug]]': source.getPages().map((page) => ({
+      'docs/[[...slug]]': pages.map((page) => ({
         value: { slug: page.slugs },
-        hashes: getHeadings(page),
+        hashes: page.hashes,
       })),
     },
   });
 
   // Get all files and validate
-  const errors = await validateFiles(await getFiles(), {
+  const errors = await validatePageFiles(pages, {
     scanned,
     markdown: {
       components: {

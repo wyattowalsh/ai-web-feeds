@@ -1,7 +1,11 @@
 name: Validate Feed Submission
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   validate-feed:
@@ -10,214 +14,252 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
+        with:
+          version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: Install dependencies
-        run: |
-          pip install pyyaml jsonschema requests feedparser
+        run: uv sync --all-extras
 
-      - name: Parse issue and validate
-        id: validate
-        uses: actions/github-script@v7
+      - name: Normalize issue submission
+        id: normalize_submission
+        run: |
+          uv run python .github/scripts/feed_submission_to_source.py \
+            --event-path "${GITHUB_EVENT_PATH}" \
+            --output-source parsed_feed.json \
+            --output-summary parsed_feed_summary.md
+
+      - name: Check duplicate source URL
+        id: duplicate_check
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          import yaml
+
+          parsed = json.loads(Path("parsed_feed.json").read_text(encoding="utf-8"))
+          candidate_url = parsed["url"].rstrip("/")
+          feeds = yaml.safe_load(Path("data/feeds.yaml").read_text(encoding="utf-8")) or {}
+          sources = feeds.get("sources", [])
+          for source in sources:
+              url = source.get("url")
+              if isinstance(url, str) and url.rstrip("/") == candidate_url:
+                  raise SystemExit(f"Duplicate source URL already exists: {candidate_url}")
+          print(f"No duplicate URL found for {candidate_url}")
+          PY
+
+      - name: Validate repository data assets
+        id: validate_assets
+        run: uv run python data/validate_data_assets.py
+
+      - name: Write validation summary artifact
+        if: always()
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          NORMALIZE_OUTCOME: ${{ steps.normalize_submission.outcome }}
+          DUPLICATE_OUTCOME: ${{ steps.duplicate_check.outcome }}
+          VALIDATE_OUTCOME: ${{ steps.validate_assets.outcome }}
+        run: |
+          uv run python - <<'PY'
+          from __future__ import annotations
+
+          from datetime import datetime, timezone
+          import json
+          import os
+          from pathlib import Path
+
+          normalize_outcome = os.environ.get("NORMALIZE_OUTCOME", "skipped")
+          duplicate_outcome = os.environ.get("DUPLICATE_OUTCOME", "skipped")
+          validate_outcome = os.environ.get("VALIDATE_OUTCOME", "skipped")
+
+          summary = {
+              "issue_number": int(os.environ["ISSUE_NUMBER"]) if os.environ.get("ISSUE_NUMBER") else None,
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "status": (
+                  "validated"
+                  if normalize_outcome == "success"
+                  and duplicate_outcome == "success"
+                  and validate_outcome == "success"
+                  else "validation-failed"
+              ),
+              "steps": {
+                  "normalize_submission": normalize_outcome,
+                  "duplicate_check": duplicate_outcome,
+                  "validate_repository_data_assets": validate_outcome,
+              },
+              "artifacts": {
+                  "parsed_feed_json": Path("parsed_feed.json").exists(),
+                  "parsed_feed_summary_md": Path("parsed_feed_summary.md").exists(),
+              },
+              "normalized_source": None,
+              "summary_markdown": None,
+          }
+
+          parsed_feed_path = Path("parsed_feed.json")
+          if parsed_feed_path.exists():
+              summary["normalized_source"] = json.loads(parsed_feed_path.read_text(encoding="utf-8"))
+
+          parsed_summary_path = Path("parsed_feed_summary.md")
+          if parsed_summary_path.exists():
+              summary["summary_markdown"] = parsed_summary_path.read_text(encoding="utf-8")
+
+          Path("feed-submission-validation-summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Stage issue-scoped validation evidence
+        if: always()
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          NORMALIZE_OUTCOME: ${{ steps.normalize_submission.outcome }}
+          DUPLICATE_OUTCOME: ${{ steps.duplicate_check.outcome }}
+          VALIDATE_OUTCOME: ${{ steps.validate_assets.outcome }}
+        run: |
+          ISSUE_ARTIFACT_DIR="reports/github/feed-submissions/issue-${ISSUE_NUMBER}"
+          mkdir -p "${ISSUE_ARTIFACT_DIR}"
+
+          if [ -f parsed_feed.json ]; then
+            cp parsed_feed.json "${ISSUE_ARTIFACT_DIR}/normalized-source.json"
+          fi
+          if [ -f parsed_feed_summary.md ]; then
+            cp parsed_feed_summary.md "${ISSUE_ARTIFACT_DIR}/validation-summary.md"
+          fi
+          if [ -f feed-submission-validation-summary.json ]; then
+            cp feed-submission-validation-summary.json \
+              "${ISSUE_ARTIFACT_DIR}/feed-submission-validation-summary.json"
+          fi
+
+          uv run python - <<'PY'
+          from __future__ import annotations
+
+          from datetime import datetime, timezone
+          import json
+          import os
+          from pathlib import Path
+
+          issue_number = os.environ.get("ISSUE_NUMBER")
+          issue_artifact_dir = Path("reports/github/feed-submissions") / f"issue-{issue_number}"
+          manifest = {
+              "issue_number": int(issue_number) if issue_number else None,
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "steps": {
+                  "normalize_submission": os.environ.get("NORMALIZE_OUTCOME", "skipped"),
+                  "duplicate_check": os.environ.get("DUPLICATE_OUTCOME", "skipped"),
+                  "validate_repository_data_assets": os.environ.get("VALIDATE_OUTCOME", "skipped"),
+              },
+              "artifacts": {
+                  "normalized_source_json": (issue_artifact_dir / "normalized-source.json").exists(),
+                  "validation_summary_md": (issue_artifact_dir / "validation-summary.md").exists(),
+                  "validation_summary_json": (
+                      issue_artifact_dir / "feed-submission-validation-summary.json"
+                  ).exists(),
+              },
+          }
+          (issue_artifact_dir / "snapshot-manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload validation summary artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: feed-submission-validation-summary
+          path: feed-submission-validation-summary.json
+          retention-days: 30
+
+      - name: Upload issue-scoped validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: feed-submission-evidence-issue-${{ github.event.issue.number }}
+          path: reports/github/feed-submissions/issue-${{ github.event.issue.number }}/
+          retention-days: 30
+
+      - name: Post validation status
+        if: always()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');
-            const yaml = require('js-yaml');
+            const crypto = require('crypto');
+            const marker = '<!-- ai-web-feeds:validation -->';
+            const snapshotMarker = '<!-- ai-web-feeds:validated-source ';
+            const success = '${{ job.status }}' === 'success';
+            const summary = fs.existsSync('parsed_feed_summary.md')
+              ? fs.readFileSync('parsed_feed_summary.md', 'utf8')
+              : 'Could not parse submission details.';
+            const trustBoundary = 'Automation is additive: maintainers must approve a validated snapshot, and approval opens a reviewable pull request instead of mutating `main` directly.';
 
-            // Parse issue body to extract feed data
-            const issueBody = context.payload.issue.body;
-            const lines = issueBody.split('\n');
-
-            // Extract fields from issue form
-            function extractField(label) {
-              const regex = new RegExp(`### ${label}\\s*\\n\\s*(.+?)(?=\\n###|$)`, 's');
-              const match = issueBody.match(regex);
-              return match ? match[1].trim() : '';
+            let snapshotDetails = '';
+            if (success && fs.existsSync('parsed_feed.json')) {
+              const parsed = JSON.parse(fs.readFileSync('parsed_feed.json', 'utf8'));
+              const bodyHash = crypto
+                .createHash('sha256')
+                .update(context.payload.issue?.body || '')
+                .digest('hex');
+              const encodedSnapshot = Buffer.from(
+                JSON.stringify({ body_sha256: bodyHash, source: parsed }),
+                'utf8',
+              ).toString('base64');
+              snapshotDetails = `\n<details>\n<summary>Validated source snapshot</summary>\n\n\`\`\`json\n${JSON.stringify(parsed, null, 2)}\n\`\`\`\n</details>\n\n${snapshotMarker}${encodedSnapshot} -->`;
             }
 
-            const feedData = {
-              id: extractField('Feed ID'),
-              feed: extractField('Feed URL') || undefined,
-              site: extractField('Website URL') || undefined,
-              title: extractField('Feed Title'),
-              source_type: extractField('Source Type').toLowerCase(),
-              topics: extractField('Topics')
-                .split('\n')
-                .filter(line => line.includes('- [x]'))
-                .map(line => line.match(/\(([^)]+)\)/)?.[1])
-                .filter(Boolean),
-              mediums: extractField('Content Mediums')
-                .split('\n')
-                .filter(line => line.includes('- [x]'))
-                .map(line => line.replace('- [x]', '').trim().toLowerCase())
-                .filter(Boolean),
+            const message = success
+              ? `✅ **Validation Passed**\n\n${summary}\n\nSubmission is ready for maintainer review.${snapshotDetails}\n\n---\n\n${trustBoundary}`
+              : `❌ **Validation Failed**\n\n${summary}\n\nPlease correct the submission fields and run validation again.\n\n---\n\n${trustBoundary}`;
+
+            const issueParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
             };
 
-            // Add optional fields
-            const language = extractField('Language');
-            if (language) {
-              feedData.meta = { language };
-            }
-
-            const platform = extractField('Platform (if applicable)');
-            if (platform && platform !== 'None') {
-              const platformDetails = extractField('Platform Details');
-              if (platformDetails) {
-                try {
-                  feedData.platform_config = {
-                    platform: platform.toLowerCase(),
-                    [platform.toLowerCase()]: JSON.parse(platformDetails)
-                  };
-                } catch (e) {
-                  core.warning(`Failed to parse platform details: ${e.message}`);
+            for (const label of success ? ['validation-failed', 'status/needs-info'] : ['validated', 'status/needs-review', 'approved']) {
+              try {
+                await github.rest.issues.removeLabel({ ...issueParams, name: label });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
                 }
               }
             }
 
-            const tags = extractField('Tags');
-            if (tags) {
-              feedData.tags = tags.split(',').map(t => t.trim()).filter(Boolean);
-            }
-
-            const notes = extractField('Additional Notes');
-            if (notes) {
-              feedData.notes = notes;
-            }
-
-            const autoDiscover = extractField('Enable Auto-Discovery?');
-            if (autoDiscover === 'Yes (recommended)') {
-              feedData.discover = true;
-            }
-
-            // Save parsed data for next step
-            fs.writeFileSync('parsed_feed.json', JSON.stringify(feedData, null, 2));
-
-            // Comment on issue with parsed data
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `## 🔍 Validation Results\n\n### Parsed Feed Data:\n\`\`\`json\n${JSON.stringify(feedData, null, 2)}\n\`\`\``
+            await github.rest.issues.addLabels({
+              ...issueParams,
+              labels: success ? ['validated', 'status/needs-review'] : ['validation-failed', 'status/needs-info'],
             });
 
-      - name: Validate against schema
-        run: |
-          python3 << 'EOF'
-          import json
-          import jsonschema
-          import sys
-
-          # Load schema
-          with open('data/feeds.schema.json', 'r') as f:
-              schema = json.load(f)
-
-          # Load parsed feed data
-          with open('parsed_feed.json', 'r') as f:
-              feed_data = json.load(f)
-
-          # Validate
-          try:
-              # Create a minimal valid document
-              document = {
-                  'schema_version': 'feeds-1.0.0',
-                  'sources': [feed_data]
-              }
-
-              jsonschema.validate(instance=document, schema=schema)
-              print("✅ Validation successful!")
-
-              # Write to output file
-              with open('validation_result.txt', 'w') as f:
-                  f.write('success')
-
-          except jsonschema.exceptions.ValidationError as e:
-              print(f"❌ Validation failed: {e.message}")
-              with open('validation_result.txt', 'w') as f:
-                  f.write(f'failed: {e.message}')
-              sys.exit(1)
-          EOF
-
-      - name: Test feed accessibility
-        run: |
-          python3 << 'EOF'
-          import json
-          import requests
-          import feedparser
-
-          with open('parsed_feed.json', 'r') as f:
-              feed_data = json.load(f)
-
-          feed_url = feed_data.get('feed') or feed_data.get('site')
-          if not feed_url:
-              print("⚠️ No feed or site URL provided")
-              exit(0)
-
-          try:
-              # Try to fetch the feed
-              response = requests.get(feed_url, timeout=10)
-              if response.status_code == 200:
-                  print(f"✅ Feed URL accessible (status: {response.status_code})")
-
-                  # Try to parse as feed
-                  feed = feedparser.parse(feed_url)
-                  if feed.bozo:
-                      print(f"⚠️ Feed parsing warning: {feed.bozo_exception}")
-                  else:
-                      print(f"✅ Feed parsed successfully ({len(feed.entries)} entries)")
-              else:
-                  print(f"⚠️ Feed URL returned status: {response.status_code}")
-          except Exception as e:
-              print(f"⚠️ Failed to access feed: {e}")
-          EOF
-
-      - name: Post validation result
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-
-            let validationResult = 'unknown';
-            let message = '';
-
-            try {
-              const result = fs.readFileSync('validation_result.txt', 'utf8');
-              if (result.startsWith('success')) {
-                validationResult = 'success';
-                message = '✅ **Validation Passed**\n\nYour feed submission is valid and ready for review!';
-
-                // Add label
-                await github.rest.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  labels: ['validated']
-                });
-              } else {
-                validationResult = 'failed';
-                message = `❌ **Validation Failed**\n\n${result.replace('failed: ', '')}`;
-
-                // Add label
-                await github.rest.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  labels: ['validation-failed']
-                });
-              }
-            } catch (e) {
-              message = `⚠️ **Validation Error**\n\nAn error occurred during validation: ${e.message}`;
-            }
-
-            // Post comment
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: message + '\n\n---\n\nA maintainer will review this submission soon.'
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...issueParams,
+              per_page: 100,
             });
+            const existing = [...comments].reverse().find(
+              (comment) => comment.body?.includes(marker) && comment.user?.login?.endsWith('[bot]'),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: `${marker}\n${message}`,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...issueParams,
+                body: `${marker}\n${message}`,
+              });
+            }

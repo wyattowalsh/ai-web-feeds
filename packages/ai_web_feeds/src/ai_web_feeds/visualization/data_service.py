@@ -8,7 +8,7 @@ Implements FR-011 through FR-011g:
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import text
@@ -21,11 +21,11 @@ from tenacity import (
 )
 
 from ai_web_feeds.storage import get_session
-from ai_web_feeds.visualization.cache import get_cache
+from ai_web_feeds.visualization.cache import TOPIC_GRAPH_TTL, get_cache
 from ai_web_feeds.visualization.validators import (
     DateRangeValidator,
     QueryValidator,
-    ValidationError,
+    normalize_date_range_payload,
 )
 
 
@@ -72,6 +72,7 @@ class DataService:
         """
         # Validate inputs
         limit = self.validator.validate_result_limit(limit)
+        date_range = normalize_date_range_payload(date_range)
 
         # Parse and validate date range
         if date_range:
@@ -187,6 +188,7 @@ class DataService:
             List of feed health records
         """
         limit = self.validator.validate_result_limit(limit)
+        date_range = normalize_date_range_payload(date_range)
 
         # Parse date range
         if date_range:
@@ -342,14 +344,14 @@ class DataService:
                     "edges": edges,
                 }
 
-                # Cache results (long TTL since topics change infrequently)
+                # Cache results for the same 5-minute window as other analytics queries.
                 self.cache.set(
                     query_type="topic_graph",
                     filters=filters,
                     date_range={"start": "", "end": ""},
                     device_id=device_id,
                     data=graph_data,
-                    ttl=3600,  # 1 hour
+                    ttl=TOPIC_GRAPH_TTL,
                 )
 
                 logger.info(f"Retrieved graph data: {len(nodes)} nodes")

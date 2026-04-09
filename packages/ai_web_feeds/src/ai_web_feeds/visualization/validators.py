@@ -7,13 +7,13 @@ Implements FR-011d and FR-032e:
 """
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from itertools import pairwise
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
-
 from loguru import logger
-
+from pydantic import BaseModel, Field, field_validator
+from pydantic import ValidationError as PydanticValidationError
 
 # Allowed table names for direct queries
 ALLOWED_TABLES = frozenset(
@@ -36,9 +36,201 @@ MAX_GRID_COLUMN = 11  # 0-indexed, so 12 columns = 0-11
 
 
 class ValidationError(Exception):
-    """Validation error with detailed message."""
+    """Validation error with stable compatibility metadata."""
 
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "validation_error",
+        field: str | None = None,
+        details: dict[str, Any] | None = None,
+    ):
+        super().__init__(message)
+        self.message = message
+        self.code = code
+        self.field = field
+        self.details = details or {}
+
+    @classmethod
+    def from_pydantic_error(
+        cls,
+        error: dict[str, Any],
+        *,
+        code: str = "validation_error",
+    ) -> "ValidationError":
+        """Build a normalized validation error from a Pydantic error payload."""
+        raw_location = [str(part) for part in error.get("loc", ()) if part != "__root__"]
+        field = ".".join(raw_location) or None
+
+        details: dict[str, Any] = {}
+        error_type = error.get("type")
+        if isinstance(error_type, str) and error_type:
+            details["type"] = error_type
+
+        return cls(
+            str(error.get("msg", "Validation error")),
+            code=code,
+            field=field,
+            details=details or None,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the error to an API-friendly detail payload."""
+        payload: dict[str, Any] = {
+            "code": self.code,
+            "message": self.message,
+        }
+        if self.field is not None:
+            payload["field"] = self.field
+        if self.details:
+            payload["details"] = self.details
+        return payload
+
+
+def validation_error_detail(
+    error: ValidationError | str,
+    *,
+    code: str = "validation_error",
+) -> dict[str, Any]:
+    """Return a normalized error detail payload for API responses."""
+    if isinstance(error, ValidationError):
+        return error.to_dict()
+    return ValidationError(str(error), code=code).to_dict()
+
+
+_DATE_RANGE_ALIASES = {
+    "startDate": "start",
+    "start_date": "start",
+    "endDate": "end",
+    "end_date": "end",
+}
+_FILTER_ALIASES = {
+    "topicIds": "topic_ids",
+    "feedIds": "feed_ids",
+    "datePreset": "date_preset",
+    "dateRange": "date_range",
+}
+_CUSTOMIZATION_ALIASES = {
+    "showLegend": "show_legend",
+    "legendPosition": "legend_position",
+    "titleFontSize": "title_font_size",
+    "xAxisLabel": "x_axis_label",
+    "yAxisLabel": "y_axis_label",
+    "gridLines": "grid_lines",
+    "showTooltips": "show_tooltips",
+}
+_FORECAST_ALIASES = {
+    "horizon_days": "forecast_horizon_days",
+    "metrics": "accuracy_metrics",
+}
+_FORECAST_PREDICTION_ALIASES = {
+    "confidence_lower": "lower",
+    "confidenceLower": "lower",
+    "confidence_upper": "upper",
+    "confidenceUpper": "upper",
+}
+
+
+def _normalize_mapping_aliases(
+    payload: dict[str, Any],
+    aliases: dict[str, str],
+) -> dict[str, Any]:
+    normalized = dict(payload)
+    for legacy_key, canonical_key in aliases.items():
+        if legacy_key in normalized and canonical_key not in normalized:
+            normalized[canonical_key] = normalized.pop(legacy_key)
+    return normalized
+
+
+def normalize_cache_payload(payload: Any) -> Any:
+    """Canonicalize compatible cache inputs before key generation."""
+    if isinstance(payload, dict):
+        normalized = _normalize_mapping_aliases(dict(payload), _FILTER_ALIASES)
+        normalized = _normalize_mapping_aliases(normalized, _DATE_RANGE_ALIASES)
+        normalized = _normalize_mapping_aliases(normalized, _CUSTOMIZATION_ALIASES)
+
+        return {key: normalize_cache_payload(value) for key, value in normalized.items()}
+
+    if isinstance(payload, list):
+        normalized_items = [normalize_cache_payload(item) for item in payload]
+        if all(not isinstance(item, dict | list) for item in normalized_items):
+            try:
+                return sorted(normalized_items)
+            except TypeError:
+                return normalized_items
+        return normalized_items
+
+    return payload
+
+
+def normalize_date_range_payload(date_range: dict[str, Any] | None) -> dict[str, Any]:
+    """Normalize legacy date-range aliases to the canonical API shape."""
+    if not isinstance(date_range, dict):
+        return {}
+    return normalize_cache_payload(date_range)
+
+
+def normalize_filter_payload(filters: dict[str, Any] | None) -> dict[str, Any]:
+    """Normalize visualization filter aliases used by web and legacy clients."""
+    if not isinstance(filters, dict):
+        return {}
+    return normalize_cache_payload(filters)
+
+
+def normalize_customization_payload(customization: dict[str, Any] | None) -> dict[str, Any]:
+    """Normalize chart customization aliases to snake_case keys."""
+    if not isinstance(customization, dict):
+        return {}
+    return normalize_cache_payload(customization)
+
+
+def normalize_dashboard_widget_payload(widget: dict[str, Any] | None) -> dict[str, Any]:
+    """Normalize legacy dashboard widget coordinates to a position object."""
+    if not isinstance(widget, dict):
+        return {}
+
+    normalized = dict(widget)
+    position = normalized.get("position")
+    if isinstance(position, dict):
+        normalized["position"] = {
+            "x": position.get("x", position.get("position_x", 0)),
+            "y": position.get("y", position.get("position_y", 0)),
+            "w": position.get("w", position.get("width", 12)),
+            "h": position.get("h", position.get("height", 4)),
+        }
+        return normalized
+
+    if any(key in normalized for key in ("position_x", "position_y", "width", "height")):
+        normalized["position"] = {
+            "x": normalized.pop("position_x", 0),
+            "y": normalized.pop("position_y", 0),
+            "w": normalized.pop("width", 12),
+            "h": normalized.pop("height", 4),
+        }
+
+    return normalized
+
+
+def normalize_forecast_payload(payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Normalize forecast request/response aliases to canonical field names."""
+    if not isinstance(payload, dict):
+        return {}
+
+    normalized = _normalize_mapping_aliases(payload, _FORECAST_ALIASES)
+    if isinstance(normalized.get("accuracy_metrics"), dict):
+        normalized["accuracy_metrics"] = normalize_cache_payload(normalized["accuracy_metrics"])
+    return normalized
+
+
+def normalize_forecast_prediction_payload(
+    prediction: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Normalize forecast prediction interval aliases."""
+    if not isinstance(prediction, dict):
+        return {}
+
+    return _normalize_mapping_aliases(prediction, _FORECAST_PREDICTION_ALIASES)
 
 
 class DateRangeValidator(BaseModel):
@@ -84,8 +276,7 @@ class DateRangeValidator(BaseModel):
         delta = self.end - self.start
         if delta.days > max_days:
             raise ValidationError(
-                f"Date range exceeds maximum of {max_days} days "
-                f"(requested: {delta.days} days)"
+                f"Date range exceeds maximum of {max_days} days (requested: {delta.days} days)"
             )
 
 
@@ -108,7 +299,10 @@ class QueryValidator:
         if table_name not in ALLOWED_TABLES:
             raise ValidationError(
                 f"Table '{table_name}' not allowed. "
-                f"Allowed tables: {', '.join(sorted(ALLOWED_TABLES))}"
+                f"Allowed tables: {', '.join(sorted(ALLOWED_TABLES))}",
+                code="invalid_table_name",
+                field="table_name",
+                details={"allowed_values": sorted(ALLOWED_TABLES)},
             )
         return table_name
 
@@ -126,11 +320,17 @@ class QueryValidator:
             ValidationError: If limit exceeds maximum
         """
         if limit <= 0:
-            raise ValidationError("Limit must be positive")
+            raise ValidationError(
+                "Limit must be positive",
+                code="invalid_limit",
+                field="limit",
+            )
         if limit > MAX_QUERY_RESULTS:
             raise ValidationError(
-                f"Limit exceeds maximum of {MAX_QUERY_RESULTS:,} rows "
-                f"(requested: {limit:,})"
+                f"Limit exceeds maximum of {MAX_QUERY_RESULTS:,} rows (requested: {limit:,})",
+                code="invalid_limit",
+                field="limit",
+                details={"max_limit": MAX_QUERY_RESULTS, "requested": limit},
             )
         return limit
 
@@ -163,9 +363,7 @@ class QueryValidator:
         value_upper = value.upper()
         for pattern in suspicious_patterns:
             if re.search(pattern, value_upper, re.IGNORECASE):
-                raise ValidationError(
-                    f"Input contains suspicious pattern: {pattern}"
-                )
+                raise ValidationError(f"Input contains suspicious pattern: {pattern}")
 
         # Escape special characters for LIKE
         # User wants literal %, _ → escape them
@@ -212,34 +410,22 @@ class DashboardValidator:
         """
         required_keys = {"x", "y", "w", "h"}
         if not required_keys.issubset(position.keys()):
-            raise ValidationError(
-                f"Position must contain keys: {', '.join(required_keys)}"
-            )
+            raise ValidationError(f"Position must contain keys: {', '.join(required_keys)}")
 
         x, y, w, h = position["x"], position["y"], position["w"], position["h"]
 
         # Validate dimensions
         if w < MIN_WIDGET_WIDTH:
-            raise ValidationError(
-                f"Widget width must be at least {MIN_WIDGET_WIDTH} "
-                f"(got: {w})"
-            )
+            raise ValidationError(f"Widget width must be at least {MIN_WIDGET_WIDTH} (got: {w})")
         if h < MIN_WIDGET_HEIGHT:
-            raise ValidationError(
-                f"Widget height must be at least {MIN_WIDGET_HEIGHT} "
-                f"(got: {h})"
-            )
+            raise ValidationError(f"Widget height must be at least {MIN_WIDGET_HEIGHT} (got: {h})")
 
         # Validate column boundaries
         if x < 0 or x > MAX_GRID_COLUMN:
-            raise ValidationError(
-                f"Widget x position must be 0-{MAX_GRID_COLUMN} (got: {x})"
-            )
+            raise ValidationError(f"Widget x position must be 0-{MAX_GRID_COLUMN} (got: {x})")
 
         if x + w > MAX_GRID_COLUMN + 1:  # +1 because width is inclusive
-            raise ValidationError(
-                f"Widget extends beyond grid boundary (x={x}, w={w})"
-            )
+            raise ValidationError(f"Widget extends beyond grid boundary (x={x}, w={w})")
 
         # Validate row boundaries
         if y < 0:
@@ -248,9 +434,7 @@ class DashboardValidator:
         return position
 
     @staticmethod
-    def check_widget_overlap(
-        positions: list[dict[str, int]]
-    ) -> list[tuple[int, int]]:
+    def check_widget_overlap(positions: list[dict[str, int]]) -> list[tuple[int, int]]:
         """Check for overlapping widgets.
 
         Args:
@@ -276,9 +460,7 @@ class DashboardValidator:
                     overlaps.append((i, j))
 
         if overlaps:
-            overlap_desc = ", ".join(
-                f"widgets {i} and {j}" for i, j in overlaps
-            )
+            overlap_desc = ", ".join(f"widgets {i} and {j}" for i, j in overlaps)
             raise ValidationError(f"Widget overlap detected: {overlap_desc}")
 
         return overlaps
@@ -426,10 +608,7 @@ class ForecastValidator:
         # Check for large data gaps
         large_gaps = [g for g in gaps if g > ForecastValidator.MAX_DATA_GAP_DAYS]
         if large_gaps:
-            logger.warning(
-                f"Data gap detected: {max(large_gaps)} days "
-                f"(may affect accuracy)"
-            )
+            logger.warning(f"Data gap detected: {max(large_gaps)} days (may affect accuracy)")
 
         # Check data completeness
         completeness = data_points / date_range_days
@@ -438,3 +617,141 @@ class ForecastValidator:
                 f"Data quality too low: {completeness:.1%} completeness "
                 f"(minimum: {ForecastValidator.MIN_COMPLETENESS:.1%})"
             )
+
+
+def validate_table_name(table_name: str) -> str:
+    """Compatibility wrapper for direct table-name validation."""
+    if not isinstance(table_name, str) or not table_name:
+        raise ValidationError(
+            "Table name must be a non-empty string",
+            code="invalid_table_name",
+            field="table_name",
+        )
+    return QueryValidator.validate_table_name(table_name)
+
+
+def validate_query_limit(limit: int | None, max_limit: int = 10_000) -> int:
+    """Compatibility wrapper that caps large limits instead of raising."""
+    if limit is None or limit <= 0:
+        raise ValidationError(
+            "Limit must be positive",
+            code="invalid_limit",
+            field="limit",
+        )
+    return min(limit, max_limit)
+
+
+def validate_date_range(
+    start: str,
+    end: str,
+    max_days: int = 365,
+) -> tuple[str, str]:
+    """Validate ISO date strings and preserve the original string representation."""
+    try:
+        start_dt = datetime.fromisoformat(start)
+        end_dt = datetime.fromisoformat(end)
+    except ValueError as exc:
+        raise ValidationError(
+            "Date range must use YYYY-MM-DD format",
+            code="invalid_date_range",
+            field="date_range",
+        ) from exc
+
+    try:
+        validator = DateRangeValidator(start=start_dt, end=end_dt)
+    except PydanticValidationError as exc:
+        raise ValidationError.from_pydantic_error(
+            exc.errors()[0],
+            code="invalid_date_range",
+        ) from exc
+    validator.validate_max_range(max_days=max_days)
+    return start, end
+
+
+def sanitize_like_clause(value: str) -> str:
+    """Compatibility helper that escapes LIKE special characters only."""
+    if not isinstance(value, str):
+        raise ValidationError("LIKE clause must be a string")
+    return value.replace("'", "''").replace("%", r"\%").replace("_", r"\_")
+
+
+def validate_dashboard_constraints(widgets: list[dict[str, int]]) -> None:
+    """Validate legacy dashboard widget payloads."""
+    try:
+        DashboardValidator.validate_widget_count(len(widgets))
+    except ValidationError as exc:
+        if "more than" in str(exc):
+            raise ValidationError(
+                f"Dashboard supports a maximum {MAX_WIDGETS_PER_DASHBOARD} widgets"
+            ) from exc
+        raise
+
+    normalized_positions = []
+    for widget in widgets:
+        normalized_widget = normalize_dashboard_widget_payload(widget)
+        position = normalized_widget.get("position")
+        if not isinstance(position, dict):
+            raise ValidationError("Widget position must contain x, y, w, and h values")
+        try:
+            DashboardValidator.validate_widget_position(position)
+        except ValidationError as exc:
+            message = str(exc)
+            if "boundary" in message:
+                raise ValidationError("Widget is out of bounds") from exc
+            raise
+        normalized_positions.append(position)
+
+    DashboardValidator.check_widget_overlap(normalized_positions)
+
+
+def validate_customization(customization: dict[str, Any]) -> None:
+    """Validate the legacy customization payload shape."""
+    normalized = normalize_customization_payload(customization)
+
+    title = normalized.get("title")
+    if isinstance(title, str):
+        CustomizationValidator.validate_title(title)
+
+    legend_position = normalized.get("legend_position")
+    if legend_position and legend_position not in {"top", "bottom", "left", "right"}:
+        raise ValidationError(
+            "Invalid legend position",
+            code="invalid_customization",
+            field="legend_position",
+            details={"allowed_values": ["top", "bottom", "left", "right"]},
+        )
+
+    colors = normalized.get("colors")
+    if colors:
+        CustomizationValidator.validate_colors(colors)
+
+    title_font_size = normalized.get("title_font_size")
+    if title_font_size is not None:
+        CustomizationValidator.validate_font_size(title_font_size)
+
+
+def validate_forecast_data(predictions: list[dict[str, Any]], horizon_days: int) -> None:
+    """Validate the legacy forecast payload shape."""
+    if len(predictions) != horizon_days:
+        raise ValidationError("Forecast predictions count does not match horizon days")
+
+    required_fields = {"date", "value", "lower", "upper"}
+    parsed_dates: list[datetime] = []
+    for raw_prediction in predictions:
+        prediction = normalize_forecast_prediction_payload(raw_prediction)
+        if not required_fields.issubset(prediction):
+            raise ValidationError("Forecast predictions must include required fields")
+
+        if prediction["lower"] > prediction["upper"]:
+            raise ValidationError("Forecast lower bound must not exceed upper bound")
+        if prediction["lower"] > prediction["value"] or prediction["value"] > prediction["upper"]:
+            raise ValidationError("Forecast value must be between lower and upper bounds")
+
+        try:
+            parsed_dates.append(datetime.fromisoformat(prediction["date"]))
+        except ValueError as exc:
+            raise ValidationError("Forecast dates must use YYYY-MM-DD format") from exc
+
+    for previous, current in pairwise(parsed_dates):
+        if current - previous != timedelta(days=1):
+            raise ValidationError("Forecast dates must be sequential")

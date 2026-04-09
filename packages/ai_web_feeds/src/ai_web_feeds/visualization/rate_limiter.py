@@ -8,7 +8,6 @@ Implements NFR-026 and FR-060:
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import Optional
 
 from fastapi import HTTPException, Request, status
 from loguru import logger
@@ -53,7 +52,9 @@ class RateLimiter:
         """Check if device is whitelisted."""
         return device_id in self._whitelist
 
-    def check_rate_limit(self, device_id: str, ip_address: Optional[str] = None) -> tuple[bool, Optional[int]]:
+    def check_rate_limit(
+        self, device_id: str, ip_address: str | None = None
+    ) -> tuple[bool, int | None]:
         """Check if request is within rate limit.
 
         Args:
@@ -159,7 +160,7 @@ class RateLimiter:
 
 
 # Global rate limiter instance
-_rate_limiter: Optional[RateLimiter] = None
+_rate_limiter: RateLimiter | None = None
 
 
 def get_rate_limiter() -> RateLimiter:
@@ -170,7 +171,7 @@ def get_rate_limiter() -> RateLimiter:
     return _rate_limiter
 
 
-async def check_rate_limit(device_id: str, request: Optional[Request] = None) -> None:
+async def check_rate_limit(device_id: str, request: Request | None = None) -> None:
     """FastAPI dependency to check rate limit.
 
     Args:

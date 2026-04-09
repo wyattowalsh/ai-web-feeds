@@ -9,7 +9,6 @@ Generate a weekly discovery report for AI Web Feeds.
 
 Work from repository source-of-truth files first:
 
-- `FEED_DISCOVERY_PROMPT.md`
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -20,13 +19,15 @@ Work from repository source-of-truth files first:
 ## Goals
 
 1. Identify topic, source-type, or perspective gaps in the current feed inventory.
-2. Surface a short list of plausible discovery leads only when evidence is strong.
-3. Explain why each lead is worth maintainer attention now.
-4. Hand off findings in a form that is safe for human review and PR-based curation.
+1. Surface a short list of plausible discovery leads only when evidence is strong.
+1. Explain why each lead is worth maintainer attention now.
+1. Hand off findings in a form that is safe for human review and PR-based curation.
 
 ## Rules
 
 - Start with repository gap analysis before considering external discovery.
+- Prefer deterministic catalog artifacts over ad hoc repository scanning when those
+  artifacts are available.
 - Assume external discovery is unavailable unless the workflow explicitly adds an
   approved search provider.
 - Treat external search results as hints until corroborated by multiple signals.
@@ -34,20 +35,25 @@ Work from repository source-of-truth files first:
   specialized practitioner sources over generic news aggregators.
 - Avoid raw URLs in the final report body; use bare domains and optional feed-path
   hints.
-- Never recommend `approved`, `feed-submission`, `validated`, or
-  `validation-failed` in this workflow.
+- Never recommend `approved`, `feed-submission`, `validated`, or `validation-failed` in
+  this workflow.
+- Treat deterministic feed intake as a maintainer-controlled validated-snapshot flow,
+  not a direct repository mutation path.
+- Use validator vocabulary exactly: `fresh-snapshot`, `stale-snapshot`,
+  `missing-artifact`, `gap-report-only`, `candidates-found`, `noop`.
 - Never recommend direct mutation or automatic addition to `data/feeds.yaml`.
-- If external discovery is unavailable, provide a useful gap report with concrete
-  search hypotheses instead of fabricating candidates.
+- If external discovery is unavailable, provide a useful gap report with concrete search
+  hypotheses instead of fabricating candidates.
 
 ## Recommended Output Shape
 
 Use this structure in the final response:
 
+1. `Snapshot Status`: `fresh-snapshot`, `stale-snapshot`, or `missing-artifact`
 1. `Report Status`: `candidates-found`, `gap-report-only`, or `noop`
-2. `Weekly Summary`: short maintainer-facing synopsis
-3. `Priority Gaps`: up to 3 high-value gaps with why they matter
-4. `Candidate Leads`: up to 5 entries with domain, suggested title, proposed topics,
+1. `Weekly Summary`: short maintainer-facing synopsis
+1. `Priority Gaps`: up to 3 high-value gaps with why they matter
+1. `Candidate Leads`: up to 5 entries with domain, suggested title, proposed topics,
    rationale, duplicate risk, and confidence
-5. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
-6. `Maintainer Next Step`: smallest safe follow-up action
+1. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
+1. `Maintainer Next Step`: smallest safe follow-up action

@@ -882,16 +882,16 @@ ai-web-feeds analytics report --output reports/week-$(date +%U).json
     ```bash
     # 1. Install core library
     cd packages/ai_web_feeds
-    pip install -e .
+    uv sync
 
     # 2. Install CLI tool
     cd ../../apps/cli
-    pip install -e .
+    uv sync
 
     # 3. Verify installation
-    ai-web-feeds --version
-    ai-web-feeds fetch --help
-    ai-web-feeds analytics --help
+    uv run ai-web-feeds --version
+    uv run ai-web-feeds fetch --help
+    uv run ai-web-feeds analytics --help
     ```
 
   </Tab>

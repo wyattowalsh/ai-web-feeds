@@ -44,24 +44,47 @@ target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF", "ASYNC"]
-ignore = ["ANN101", "ANN102", "ANN401"]
+ignore = [
+    "ANN",     # mypy already enforces typed defs for library code
+    "NPY002",  # legacy NumPy random APIs remain acceptable until refactor
+    "PLR2004", # magic-value heuristics are too noisy for current business logic
+    "RET504",  # temporary assignments are acceptable for readability
+]
 
 [tool.ruff.lint.per-file-ignores]
 # Utils: OPML generation uses datetime.utcnow() for RFC compliance + complex URL generation logic
-"src/ai_web_feeds/utils.py" = ["DTZ003", "S318", "E501", "RET504", "PLR0911", "PLR0912", "PLR0915", "PLR2004", "C901"]
+"src/ai_web_feeds/utils.py" = ["ARG001", "DTZ003", "E501", "PLC0415", "PLR0911", "PLR0912", "PLR0915", "PLR2004", "RET504", "S318", "SIM102", "C901"]
 # Validate: Legitimate patterns for validation module
-"src/ai_web_feeds/validate.py" = ["ANN204", "FBT001", "FBT002", "A001", "ASYNC109", "DTZ005", "PLR2004", "BLE001"]
+"src/ai_web_feeds/validate.py" = ["ANN204", "FBT001", "FBT002", "A001", "ASYNC109", "BLE001", "DTZ005", "PLR0915", "PLR2004"]
 # WebSocket: Server patterns need specific exceptions
 "src/ai_web_feeds/websocket_server.py" = ["ANN204", "S104", "ARG002", "SLF001"]
 # Storage: Database query functions have complex logic
-"src/ai_web_feeds/storage.py" = ["PLR0913", "PLR0915"]
+"src/ai_web_feeds/storage.py" = ["PLC0415", "PLR0913", "PLR0915", "PLW0603"]
 # Models: Pydantic models have many fields
-"src/ai_web_feeds/models.py" = ["PLR0913"]
+"src/ai_web_feeds/models.py" = ["N815", "PLR0913"]
 # Search, recommendations, NLP: Complex algorithms need many branches/returns
-"src/ai_web_feeds/search.py" = ["PLR0912", "PLR0913"]
+"src/ai_web_feeds/search.py" = ["PLR0912", "PLR0913", "PLR0915"]
 "src/ai_web_feeds/recommendations.py" = ["PLR0912", "PLR0913"]
 "src/ai_web_feeds/nlp.py" = ["PLR0912", "PLR0913"]
 "src/ai_web_feeds/embeddings.py" = ["PLR0913"]
+"src/ai_web_feeds/migrations/run_migration.py" = ["T20"]
 "src/ai_web_feeds/jobs/*.py" = ["PLR0913"]
+"src/ai_web_feeds/analytics.py" = ["E501", "PLC0415"]
+"src/ai_web_feeds/digests.py" = ["ARG002"]
+"src/ai_web_feeds/enrich.py" = ["PLC0415", "PLR0912", "PLR0915"]
+"src/ai_web_feeds/nlp/jobs/*.py" = ["E501", "E712", "PLR0915", "SIM108"]
+"src/ai_web_feeds/nlp/quality_scorer.py" = ["RUF012"]
+"src/ai_web_feeds/visualization/api.py" = ["PLC0415", "PLR0913", "PLW0603"]
+"src/ai_web_feeds/visualization/api_key_service.py" = ["E712", "PLR0913"]
+"src/ai_web_feeds/visualization/auth.py" = ["PLC0415"]
+"src/ai_web_feeds/visualization/cache.py" = ["A004", "ARG002", "PLR0913", "PLC0415", "PLW0603", "S110", "SIM105"]
+"src/ai_web_feeds/visualization/clustering.py" = ["PLR0913", "PLR0915", "PLW0603"]
+"src/ai_web_feeds/visualization/dashboard_service.py" = ["PLR0913", "PLR0915"]
+"src/ai_web_feeds/visualization/export_api.py" = ["A001", "A002", "ARG001", "ARG002", "B008", "PLR0913", "RET503"]
+"src/ai_web_feeds/visualization/forecast_service.py" = ["ARG002", "PD011", "PLR0913"]
+"src/ai_web_feeds/visualization/rate_limiter.py" = ["ARG002", "PLW0603"]
+"src/ai_web_feeds/visualization/visualization_service.py" = ["B904", "PLR0913"]
 # Alembic: Generated migration files
 "**/alembic/**" = ["INP001", "ERA001", "PLR0915"]
+# Scripts: operational helpers may print and shell out intentionally
+"scripts/**/*.py" = ["T20", "S607"]

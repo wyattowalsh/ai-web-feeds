@@ -168,171 +168,32 @@ bash scripts/setup.sh
 
 If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
 
-# YouTube channel
-- id: "youtube-channel"
-  site: "https://youtube.com/channel/UC123..."
-  discover: true
+## Current Web Surfaces
 
-# GitHub repository
-- id: "github-repo"
-  site: "https://github.com/owner/repo"
-  discover: true
-  platform_config:
-    github:
-      feed_type: "releases" # or "commits", "tags"
-```
+Once `pnpm dev` is running, these are the routes worth checking first:
 
-See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.
+| Route        | Status | What to expect                                                                                        |
+| ------------ | ------ | ----------------------------------------------------------------------------------------------------- |
+| `/feeds`     | Live   | Primary catalog and subset-selection surface for source-type, topic, verification, and text filtering |
+| `/search`    | Live   | Local-first source and article search with URL-driven filters                                         |
+| `/reader`    | Live   | Built-in reader over recent posts, including saved/starred local views                                |
+| `/explorer`  | Live   | Graph + table catalog browser for topics and feeds                                                    |
+| `/downloads` | Live   | Full-catalog OPML/JSON downloads plus the optional OPML preview and merged timeline                   |
+| `/analytics` | Live   | Local analytics for source counts, topic momentum, freshest sources, and velocity                     |
+| `/docs`      | Live   | Fumadocs site, including `/llms.txt`, `/llms-full.txt`, and markdown routes                           |
 
-### Monitoring Feed Health
+## Recommended Next Steps
 
-Set up regular health checks:
-
-```bash
-# Check all feeds
-ai-web-feeds fetch all --verified-only
-
-# Review performance
-ai-web-feeds analytics performance --days 7
-
-# Check specific feed health
-ai-web-feeds analytics health <feed-id>
-```
-
-### Exporting Data
-
-Export to different formats:
-
-```bash
-# OPML for feed readers
-ai-web-feeds opml generate --output feeds.opml
-
-# Categorized OPML
-ai-web-feeds opml categorize --output feeds-categorized.opml
-
-# JSON analytics report
-ai-web-feeds analytics report --output analytics.json
-```
-
-## Configuration
-
-### Database Configuration
-
-By default, SQLite is used. To use a different database:
-
-```bash
-ai-web-feeds fetch all --database "postgresql://user:pass@localhost/dbname"
-```
-
-Or set an environment variable:
-
-```bash
-export AI_WEB_FEEDS_DB="postgresql://user:pass@localhost/dbname"
-```
-
-### Fetch Configuration
-
-Create a config file (e.g., `.env`):
-
-```bash
-AI_WEB_FEEDS_TIMEOUT=30
-AI_WEB_FEEDS_USER_AGENT="MyApp/1.0"
-```
-
-## Troubleshooting
-
-<Callout type="info" title="Common Issues">
-
-**Feed Not Found Error**
-
-```bash
-# Verify feed exists in database
-ai-web-feeds stats show
-
-# Check feeds.yaml for typos
-cat data/feeds.yaml | grep "id:"
-```
-
-**Fetch Failures**
-
-```bash
-# Check error details
-ai-web-feeds analytics performance
-
-# Test single feed with verbose output
-ai-web-feeds fetch one <feed-id> --metadata
-```
-
-**Database Issues**
-
-```bash
-# Reinitialize database
-rm data/aiwebfeeds.db
-python3 -c "
-from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
-db.create_db_and_tables()
-"
-```
-
-</Callout>
-
-## Next Steps
-
-1. **Explore Analytics** - Try different analytics commands to understand your feed data
-2. **Set Up Automation** - Create cron jobs for regular fetching
-3. **Customize Feeds** - Add feeds relevant to your interests
-4. **Build Integrations** - Use the Python API to integrate with other tools
-5. **Contribute** - Share your curated feeds with the community
-
-## Example Session
-
-Here's a complete example workflow:
-
-```bash
-# 1. Install
-./setup-enhanced-features.sh
-
-# 2. Check what's in the database
-ai-web-feeds stats show
-
-# 3. Enrich existing feeds
-ai-web-feeds enrich all
-
-# 4. Fetch content
-ai-web-feeds fetch all --limit 10
-
-# 5. View analytics
-ai-web-feeds analytics overview
-ai-web-feeds analytics distributions
-ai-web-feeds analytics quality
-
-# 6. Check a specific feed
-ai-web-feeds analytics health huggingface-blog
-
-# 7. Generate reports
-ai-web-feeds analytics report --output report.json
-ai-web-feeds opml generate --output feeds.opml
-
-# 8. View trends
-ai-web-feeds analytics trends --days 30
-```
-
-## What's Next?
-
-Now that you're set up, you can:
-
-- Add more feeds to your collection
-- Set up automated fetching (cron jobs)
-- Build custom analytics scripts
-- Integrate with other tools
-- Contribute back to the project
+1. Start with the feed catalog at `/feeds` to define the slice you care about.
+2. Move to [Search & Discovery](/docs/features/search) or open `/search` when you need text retrieval across sources or recent articles.
+3. Use the [Reader](/reader) to browse recent posts from the same catalog slice.
+4. Review the [OPML Viewer](/docs/guides/opml-viewer) guide before exporting a full bundle from `/downloads` or a filtered bundle from `/feeds`.
+5. Use the [Data Explorer](/docs/guides/data-explorer) to inspect the catalog structure.
+6. Read [Contributing](/docs/development/contributing) before opening a docs or code change.
 
 ## Resources
 
-- [Feature Overview](/docs/features) - Comprehensive feature list
-- [CLI Reference](/docs/development/cli) - Command-line interface guide
-- [Python API](/docs/development/python-api) - Programmatic usage
-- [Analytics Guide](/docs/guides/analytics) - Advanced analytics
-
-Happy feed aggregating! 🚀
+- [Feature Overview](/docs/features/overview)
+- [CLI Usage](/docs/development/cli)
+- [Python API](/docs/development/python-api)
+- [Workflow Quick Reference](/docs/guides/workflow-reference)

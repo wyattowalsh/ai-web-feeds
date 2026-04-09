@@ -18,8 +18,8 @@ vi.mock("@/components/search/search-page-client", () => ({
 type SearchPageSearchParams = Record<string, string | string[] | undefined>;
 
 async function loadSearchPage() {
-  const module = await import("./page");
-  return module.default;
+  const pageModule = await import("./page");
+  return pageModule.default;
 }
 
 async function renderPage(searchParams: SearchPageSearchParams = {}) {
@@ -40,7 +40,7 @@ function getClientProps(): {
   };
   initialResults: Array<{ id: string; title: string }>;
   initialMeta: {
-    mode: "unbounded" | "bounded";
+    mode: "local";
     bounded: boolean;
     candidate_sources: number;
     scanned_sources: number;
@@ -77,7 +77,7 @@ describe("SearchPage", () => {
       },
       initialResults: [],
       initialMeta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 0,
         scanned_sources: 0,
@@ -107,7 +107,7 @@ describe("SearchPage", () => {
         },
       ],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 21,
         scanned_sources: 18,
@@ -151,7 +151,7 @@ describe("SearchPage", () => {
         }),
       ],
       initialMeta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 21,
         scanned_sources: 18,
@@ -191,7 +191,7 @@ describe("SearchPage", () => {
       },
       initialResults: [],
       initialMeta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 0,
         scanned_sources: 0,

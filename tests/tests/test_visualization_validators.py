@@ -4,17 +4,25 @@ Unit tests for visualization validators.
 Tests input validation and sanitization functions.
 """
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from ai_web_feeds.visualization.validators import (
-    validate_table_name,
-    validate_query_limit,
-    validate_date_range,
-    sanitize_like_clause,
-    validate_dashboard_constraints,
-    validate_customization,
-    validate_forecast_data,
+    CustomizationValidator,
     ValidationError,
+    normalize_customization_payload,
+    normalize_dashboard_widget_payload,
+    normalize_filter_payload,
+    normalize_forecast_payload,
+    normalize_forecast_prediction_payload,
+    sanitize_like_clause,
+    validate_customization,
+    validate_dashboard_constraints,
+    validate_date_range,
+    validate_forecast_data,
+    validate_query_limit,
+    validate_table_name,
+    validation_error_detail,
 )
 
 
@@ -29,7 +37,7 @@ class TestTableNameValidation:
             "validation_logs",
             "article_metadata",
         ]
-        
+
         for name in valid_names:
             assert validate_table_name(name) == name
 
@@ -41,7 +49,7 @@ class TestTableNameValidation:
             "table_name'--",
             "invalid_table",
         ]
-        
+
         for name in invalid_names:
             with pytest.raises(ValidationError):
                 validate_table_name(name)
@@ -65,7 +73,7 @@ class TestQueryLimitValidation:
         """Test limit below minimum is rejected."""
         with pytest.raises(ValidationError):
             validate_query_limit(0)
-        
+
         with pytest.raises(ValidationError):
             validate_query_limit(-1)
 
@@ -86,9 +94,9 @@ class TestDateRangeValidation:
         """Test valid date ranges."""
         start = "2024-01-01"
         end = "2024-01-31"
-        
+
         validated_start, validated_end = validate_date_range(start, end)
-        
+
         assert validated_start == start
         assert validated_end == end
 
@@ -101,7 +109,7 @@ class TestDateRangeValidation:
         """Test future dates are rejected."""
         future_date = (datetime.now() + timedelta(days=10)).strftime("%Y-%m-%d")
         today = datetime.now().strftime("%Y-%m-%d")
-        
+
         with pytest.raises(ValidationError):
             validate_date_range(today, future_date)
 
@@ -114,7 +122,7 @@ class TestDateRangeValidation:
         """Test date ranges exceeding max days are rejected."""
         start = "2020-01-01"
         end = "2024-01-01"  # > 3 years
-        
+
         with pytest.raises(ValidationError):
             validate_date_range(start, end, max_days=365)
 
@@ -156,7 +164,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
             {"position_x": 6, "position_y": 0, "width": 6, "height": 4},
         ]
-        
+
         validate_dashboard_constraints(widgets)
         # Should not raise
 
@@ -166,7 +174,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": i * 4, "width": 12, "height": 4}
             for i in range(21)  # Max is 20
         ]
-        
+
         with pytest.raises(ValidationError, match="maximum 20 widgets"):
             validate_dashboard_constraints(widgets)
 
@@ -176,7 +184,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
             {"position_x": 2, "position_y": 2, "width": 6, "height": 4},  # Overlaps
         ]
-        
+
         with pytest.raises(ValidationError, match="overlap"):
             validate_dashboard_constraints(widgets)
 
@@ -185,7 +193,7 @@ class TestDashboardConstraints:
         widgets = [
             {"position_x": 10, "position_y": 0, "width": 6, "height": 4},  # Extends beyond 12
         ]
-        
+
         with pytest.raises(ValidationError, match="out of bounds"):
             validate_dashboard_constraints(widgets)
 
@@ -193,9 +201,9 @@ class TestDashboardConstraints:
         """Test widget size constraints."""
         # Min size 2x2, max 12x12
         with pytest.raises(ValidationError):
-            validate_dashboard_constraints([
-                {"position_x": 0, "position_y": 0, "width": 1, "height": 1}
-            ])
+            validate_dashboard_constraints(
+                [{"position_x": 0, "position_y": 0, "width": 1, "height": 1}]
+            )
 
 
 class TestCustomizationValidation:
@@ -209,25 +217,24 @@ class TestCustomizationValidation:
             "legend_position": "top",
             "colors": ["#ff0000", "#00ff00", "#0000ff"],
         }
-        
+
         validate_customization(customization)
         # Should not raise
 
-    def test_validate_customization_title_too_long(self):
-        """Test title length constraint (FR-011g)."""
-        customization = {
-            "title": "A" * 101,  # Max is 100
-        }
-        
-        with pytest.raises(ValidationError, match="title.*100"):
-            validate_customization(customization)
+    def test_validate_customization_uses_canonical_title_limit(self):
+        """Legacy wrapper should follow the canonical 200-character title limit."""
+        validate_customization({"title": "A" * 150})
+        truncated = CustomizationValidator.validate_title("B" * 205)
+
+        assert truncated.endswith("...")
+        assert len(truncated) == 203
 
     def test_validate_customization_invalid_color(self):
         """Test invalid color format."""
         customization = {
             "colors": ["invalid-color"],
         }
-        
+
         with pytest.raises(ValidationError, match="color"):
             validate_customization(customization)
 
@@ -236,7 +243,7 @@ class TestCustomizationValidation:
         customization = {
             "legend_position": "invalid",
         }
-        
+
         with pytest.raises(ValidationError, match="legend"):
             validate_customization(customization)
 
@@ -244,7 +251,7 @@ class TestCustomizationValidation:
         """Test font size constraints."""
         with pytest.raises(ValidationError):
             validate_customization({"title_font_size": 5})  # Too small
-        
+
         with pytest.raises(ValidationError):
             validate_customization({"title_font_size": 100})  # Too large
 
@@ -258,7 +265,7 @@ class TestForecastDataValidation:
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
             {"date": "2024-02-02", "value": 105, "lower": 95, "upper": 115},
         ]
-        
+
         validate_forecast_data(predictions, horizon_days=2)
         # Should not raise
 
@@ -267,7 +274,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100},  # Missing lower/upper
         ]
-        
+
         with pytest.raises(ValidationError, match="required fields"):
             validate_forecast_data(predictions, horizon_days=1)
 
@@ -276,7 +283,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100, "lower": 110, "upper": 90},  # Invalid
         ]
-        
+
         with pytest.raises(ValidationError, match="lower.*upper"):
             validate_forecast_data(predictions, horizon_days=1)
 
@@ -285,7 +292,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
         ]
-        
+
         with pytest.raises(ValidationError, match="predictions count"):
             validate_forecast_data(predictions, horizon_days=7)
 
@@ -295,7 +302,7 @@ class TestForecastDataValidation:
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
             {"date": "2024-02-03", "value": 105, "lower": 95, "upper": 115},  # Gap
         ]
-        
+
         with pytest.raises(ValidationError, match="sequential"):
             validate_forecast_data(predictions, horizon_days=2)
 
@@ -322,3 +329,112 @@ class TestEdgeCases:
     def test_validate_extremely_large_numbers(self):
         """Test validation with extremely large numbers."""
         assert validate_query_limit(999999999) == 10000  # Capped
+
+
+class TestNormalizationCompatibility:
+    """Regression tests for legacy alias normalization."""
+
+    def test_normalize_filter_payload_aliases(self):
+        """Filter payloads should normalize camelCase keys used by older clients."""
+        normalized = normalize_filter_payload(
+            {
+                "topicIds": [2, 1],
+                "feedIds": ["feed-b", "feed-a"],
+                "dateRange": {
+                    "startDate": "2024-01-01",
+                    "endDate": "2024-01-31",
+                },
+            }
+        )
+
+        assert normalized == {
+            "topic_ids": [1, 2],
+            "feed_ids": ["feed-a", "feed-b"],
+            "date_range": {
+                "start": "2024-01-01",
+                "end": "2024-01-31",
+            },
+        }
+
+    def test_normalize_customization_payload_aliases(self):
+        """Customization payloads should normalize camelCase keys."""
+        normalized = normalize_customization_payload(
+            {
+                "showLegend": True,
+                "legendPosition": "bottom",
+                "titleFontSize": 18,
+                "gridLines": False,
+            }
+        )
+
+        assert normalized["show_legend"] is True
+        assert normalized["legend_position"] == "bottom"
+        assert normalized["title_font_size"] == 18
+        assert normalized["grid_lines"] is False
+
+    def test_normalize_dashboard_widget_payload_aliases(self):
+        """Dashboard widgets should normalize legacy coordinate aliases."""
+        normalized = normalize_dashboard_widget_payload(
+            {
+                "position_x": 1,
+                "position_y": 2,
+                "width": 3,
+                "height": 4,
+            }
+        )
+
+        assert normalized["position"] == {"x": 1, "y": 2, "w": 3, "h": 4}
+
+    def test_normalize_forecast_payload_aliases(self):
+        """Forecast payloads should normalize horizon and metrics aliases."""
+        normalized = normalize_forecast_payload(
+            {
+                "horizon_days": 30,
+                "metrics": {"meanAbsoluteError": 1.5},
+            }
+        )
+
+        assert normalized["forecast_horizon_days"] == 30
+        assert normalized["accuracy_metrics"] == {"meanAbsoluteError": 1.5}
+
+    def test_normalize_forecast_prediction_payload_aliases(self):
+        """Forecast prediction intervals should normalize confidence aliases."""
+        normalized = normalize_forecast_prediction_payload(
+            {
+                "date": "2024-02-01",
+                "value": 100,
+                "confidenceLower": 95,
+                "confidenceUpper": 110,
+            }
+        )
+
+        assert normalized["lower"] == 95
+        assert normalized["upper"] == 110
+
+
+class TestValidationErrorCompatibility:
+    """Regression tests for the normalized validation error model."""
+
+    def test_validation_error_detail_preserves_legacy_message(self):
+        """ValidationError should keep its string form while exposing structured detail."""
+        error = ValidationError(
+            "Invalid legend position",
+            code="invalid_customization",
+            field="legend_position",
+            details={"allowed_values": ["top", "bottom"]},
+        )
+
+        assert str(error) == "Invalid legend position"
+        assert validation_error_detail(error) == {
+            "code": "invalid_customization",
+            "message": "Invalid legend position",
+            "field": "legend_position",
+            "details": {"allowed_values": ["top", "bottom"]},
+        }
+
+    def test_validate_date_range_error_has_normalized_detail(self):
+        """Date-range validation should expose a stable error code for API consumers."""
+        with pytest.raises(ValidationError) as exc_info:
+            validate_date_range("2024-02-01", "2024-01-01")
+
+        assert exc_info.value.to_dict()["code"] == "invalid_date_range"

@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import Image from "next/image";
+import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 
 /**
  * Shared layout configurations
@@ -30,20 +30,36 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        text: 'Documentation',
-        url: '/docs',
+        text: "Search",
+        url: "/search",
       },
       {
-        text: 'Explorer',
-        url: '/explorer',
+        text: "Reader",
+        url: "/reader",
       },
       {
-        text: 'Analytics',
-        url: '/analytics',
+        text: "Explorer",
+        url: "/explorer",
       },
       {
-        text: 'GitHub',
-        url: 'https://github.com/wyattowalsh/ai-web-feeds',
+        text: "Analytics",
+        url: "/analytics",
+      },
+      {
+        text: "Downloads",
+        url: "/downloads",
+      },
+      {
+        text: "Docs",
+        url: "/docs",
+      },
+      {
+        text: "Blog",
+        url: "/blog",
+      },
+      {
+        text: "GitHub",
+        url: "https://github.com/wyattowalsh/ai-web-feeds",
         external: true,
       },
     ],

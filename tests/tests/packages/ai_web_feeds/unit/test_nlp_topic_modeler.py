@@ -4,7 +4,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.topic_modeler import TopicModeler
+from ai_web_feeds.nlp.topic_modeler import (
+    TopicModeler,
+    detect_evolution,
+    discover_subtopics,
+    extract_subtopics,
+)
 
 
 class TestTopicModeler:
@@ -254,6 +259,58 @@ class TestTopicModeler:
         growth_rate = modeler._compute_growth_rate(50, 100)
 
         assert growth_rate == -0.5  # 50% decline
+
+    @patch("ai_web_feeds.nlp.topic_modeler.TopicModeler")
+    def test_module_level_extract_subtopics_wrapper(self, mock_modeler_cls, sample_articles):
+        """Legacy module-level extract_subtopics helper should delegate to TopicModeler."""
+        mock_modeler = MagicMock()
+        mock_modeler.extract_subtopics.return_value = []
+        mock_modeler_cls.return_value = mock_modeler
+
+        result = extract_subtopics("NLP", sample_articles, num_topics=2, min_articles=1)
+
+        assert result == []
+        mock_modeler.extract_subtopics.assert_called_once_with(
+            "NLP",
+            sample_articles,
+            num_topics=2,
+            min_articles=1,
+        )
+
+    @patch("ai_web_feeds.nlp.topic_modeler.TopicModeler")
+    def test_module_level_discover_subtopics_wrapper(self, mock_modeler_cls, sample_articles):
+        """Legacy module-level discover_subtopics helper should delegate to TopicModeler."""
+        mock_modeler = MagicMock()
+        mock_modeler.discover_subtopics.return_value = []
+        mock_modeler_cls.return_value = mock_modeler
+
+        result = discover_subtopics("NLP", sample_articles, num_topics=2, min_articles=1)
+
+        assert result == []
+        mock_modeler.discover_subtopics.assert_called_once_with(
+            "NLP",
+            sample_articles,
+            num_topics=2,
+            min_articles=1,
+        )
+
+    @patch("ai_web_feeds.nlp.topic_modeler.TopicModeler")
+    def test_module_level_detect_evolution_wrapper(self, mock_modeler_cls):
+        """Legacy module-level detect_evolution helper should delegate to TopicModeler."""
+        current_topics = [{"name": "Topic1", "keywords": ["a"], "article_count": 1}]
+        previous_topics = [{"name": "Topic0", "keywords": ["b"], "article_count": 1}]
+        mock_modeler = MagicMock()
+        mock_modeler.detect_evolution.return_value = []
+        mock_modeler_cls.return_value = mock_modeler
+
+        result = detect_evolution(current_topics, previous_topics, threshold=0.3)
+
+        assert result == []
+        mock_modeler.detect_evolution.assert_called_once_with(
+            current_topics,
+            previous_topics=previous_topics,
+            threshold=0.3,
+        )
 
 
 class TestTopicModelingEdgeCases:

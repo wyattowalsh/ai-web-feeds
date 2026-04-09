@@ -1,0 +1,60 @@
+---
+title: Environment authority
+description: Canonical environment variables, precedence rules, and deployment defaults for ai-web-feeds.
+---
+
+## Authority order
+
+Use these rules when the same surface can be configured from multiple places:
+
+1. **Explicit CLI flags** such as `--database`
+2. **Canonical environment variables** (`AIWF_*`, `BACKEND_URL`, `NEXT_PUBLIC_*`)
+3. **Repository defaults** such as `data/ai-web-feeds.db` and `logs/ai-web-feeds.log`
+4. **Legacy compatibility only** for `data/aiwebfeeds.db` when the canonical SQLite file is missing
+
+## Core variables
+
+| Variable                  | Scope                       | Default                          | Notes                                                                              |
+| ------------------------- | --------------------------- | -------------------------------- | ---------------------------------------------------------------------------------- |
+| `AIWF_DATABASE_URL`       | Core Python + CLI + monitor | `sqlite:///data/ai-web-feeds.db` | Relative SQLite paths resolve from the repository root.                            |
+| `AIWF_LOGGING__LEVEL`     | Core Python logging         | `INFO`                           | Valid values: `TRACE`, `DEBUG`, `INFO`, `SUCCESS`, `WARNING`, `ERROR`, `CRITICAL`. |
+| `AIWF_LOGGING__FILE`      | Core Python logging         | `false`                          | Enables file logging when `true`.                                                  |
+| `AIWF_LOGGING__FILE_PATH` | Core Python logging         | `logs/ai-web-feeds.log`          | Relative paths resolve from the repository root.                                   |
+
+## Web and admin variables
+
+| Variable                    | Scope                     | Default                                   | Notes                                                                           |
+| --------------------------- | ------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------- |
+| `AIWF_ADMIN_PASSWORD`       | Admin telemetry UI        | none                                      | Required for `/admin`.                                                          |
+| `AIWF_ADMIN_SESSION_SECRET` | Admin telemetry UI        | none                                      | Required for signed admin sessions.                                             |
+| `AIWF_ANON_BINDING_SECRET`  | Anonymous browser binding | falls back to `AIWF_ADMIN_SESSION_SECRET` | Signs anonymous browser-state cookies. This is **not** end-user authentication. |
+| `AIWF_TELEMETRY_DIR`        | Telemetry sink            | `../../data/telemetry` from `apps/web`    | Override when telemetry files should live elsewhere.                            |
+| `AIWF_TELEMETRY_SALT`       | Telemetry hashing         | falls back to `AIWF_ADMIN_SESSION_SECRET` | Used only for hashing client IPs before persistence.                            |
+| `BACKEND_URL`               | Server-side web bridge    | none                                      | Required only for proxied storage/search routes.                                |
+
+## Public build-time variables
+
+Set these **before** `pnpm build` or `docker compose build`:
+
+| Variable                    | Default                           | Notes                                                                                                                                        |
+| --------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_BASE_URL`      | `https://ai-web-feeds.vercel.app` | Canonical site origin for metadata, RSS, sitemap, and robots output.                                                                         |
+| `NEXT_PUBLIC_WEBSOCKET_URL` | optional                          | Overrides the monitor/WebSocket origin. Without it, localhost uses `http://localhost:8000` and deployed browsers use same-origin WebSockets. |
+| `NEXT_PUBLIC_PDF_EXPORT`    | `false`                           | Enables print-friendly docs rendering for PDF export builds.                                                                                 |
+
+## Local example
+
+```bash
+export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
+export AIWF_ADMIN_PASSWORD=change-me
+export AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+export AIWF_LOGGING__LEVEL=DEBUG
+export NEXT_PUBLIC_BASE_URL=http://localhost:3000
+export NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:8000
+```
+
+## Notes
+
+- Older `AIWEBFEEDS_*` examples are obsolete; use the canonical names above.
+- `AIWF_JWT_SECRET_KEY` is a legacy visualization-only setting and is not required for the default product because ai-web-feeds does **not** ship end-user authentication.
+- Docker and CI should pass `AIWF_DATABASE_URL`, not `DATABASE_URL`, to match the core settings authority.

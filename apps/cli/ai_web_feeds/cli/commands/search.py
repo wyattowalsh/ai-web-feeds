@@ -1,26 +1,28 @@
 """CLI commands for search and discovery."""
 
+from __future__ import annotations
+
 from typing import Optional
 
 import typer
-from rich.console import Console
 from rich.table import Table
 
-from ai_web_feeds.config import DEFAULT_DATABASE_URL
+from ai_web_feeds.cli.support import console
+from ai_web_feeds.config import resolve_runtime_database_url
+from ai_web_feeds.embeddings import SUPPORTED_EMBEDDING_PROVIDERS
 from ai_web_feeds.storage import DatabaseManager
 
-app = typer.Typer(help="Search and discovery commands")
-console = Console()
+app = typer.Typer(help="Search and discovery commands", no_args_is_help=True)
 
 
 @app.command("query")
 def search_query(
     query: str = typer.Argument(..., help="Search query"),
-    database_url: str = typer.Option(
-        DEFAULT_DATABASE_URL,
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     search_type: str = typer.Option(
         "full_text",
@@ -51,6 +53,7 @@ def search_query(
     ),
 ):
     """Search for feeds with full-text or semantic search."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Search Query:[/bold cyan] {query}\n")
 
     db = DatabaseManager(database_url)
@@ -125,11 +128,11 @@ def search_query(
 @app.command("autocomplete")
 def search_autocomplete(
     prefix: str = typer.Argument(..., help="Search prefix"),
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     limit: int = typer.Option(
         8,
@@ -139,6 +142,7 @@ def search_autocomplete(
     ),
 ):
     """Get autocomplete suggestions."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Autocomplete:[/bold cyan] {prefix}\n")
 
     db = DatabaseManager(database_url)
@@ -164,14 +168,15 @@ def search_autocomplete(
 
 @app.command("init")
 def search_init(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
 ):
     """Initialize search tables (FTS5 + Trie index)."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Initializing Search Tables[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -187,11 +192,11 @@ def search_init(
 
 @app.command("embeddings")
 def search_embeddings(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     provider: Optional[str] = typer.Option(
         None,
@@ -201,14 +206,18 @@ def search_embeddings(
     ),
 ):
     """Generate embeddings for all feeds."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Generating Feed Embeddings[/bold cyan]\n")
 
+    resolved_provider = None
     if provider:
-        # Temporarily override config
-        from ai_web_feeds.config import settings
-
-        settings.embedding.provider = provider
-        console.print(f"Using provider: [bold]{provider}[/bold]")
+        resolved_provider = provider.strip().lower()
+        if resolved_provider not in SUPPORTED_EMBEDDING_PROVIDERS:
+            supported = ", ".join(sorted(SUPPORTED_EMBEDDING_PROVIDERS))
+            raise typer.BadParameter(
+                f"Unsupported provider '{provider}'. Supported providers: {supported}"
+            )
+        console.print(f"Using provider: [bold]{resolved_provider}[/bold]")
 
     db = DatabaseManager(database_url)
 
@@ -216,7 +225,11 @@ def search_embeddings(
         with db.get_session() as session:
             from ai_web_feeds.embeddings import refresh_all_embeddings
 
-            refresh_all_embeddings(session, show_progress=True)
+            refresh_all_embeddings(
+                session,
+                show_progress=True,
+                provider=resolved_provider,
+            )
 
     console.print("\n[green]✓[/green] Embeddings generated successfully")
 
@@ -225,11 +238,11 @@ def search_embeddings(
 def save_search_cmd(
     name: str = typer.Argument(..., help="Search name"),
     query: str = typer.Argument(..., help="Search query"),
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     user_id: str = typer.Option(
         "cli_user",
@@ -244,6 +257,7 @@ def save_search_cmd(
     ),
 ):
     """Save a search for one-click replay."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Saving Search:[/bold cyan] {name}\n")
 
     db = DatabaseManager(database_url)
@@ -265,11 +279,11 @@ def save_search_cmd(
 
 @app.command("list-saved")
 def list_saved_searches(
-    database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
-        "--database-url",
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
         "-d",
-        help="Database URL",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
     ),
     user_id: str = typer.Option(
         "cli_user",
@@ -279,6 +293,7 @@ def list_saved_searches(
     ),
 ):
     """List all saved searches for a user."""
+    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Saved Searches for:[/bold cyan] {user_id}\n")
 
     db = DatabaseManager(database_url)
@@ -304,7 +319,7 @@ def list_saved_searches(
             search.search_name,
             search.query_text,
             filters_str[:30],
-            search.last_used_at.strftime("%Y-%m-%d %H:%M"),
+            search.last_used_at.strftime("%Y-%m-%d %H:%M") if search.last_used_at else "Never",
         )
 
     console.print(table)

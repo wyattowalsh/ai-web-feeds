@@ -1,70 +1,78 @@
 ---
 title: Analytics Dashboard
-description: Real-time feed analytics with interactive visualizations, trending topics, and health insights
+description: Local analytics for the shipped AI source catalog, including topic momentum, publication velocity, freshest sources, and CSV export.
 ---
 
 # Analytics Dashboard
 
-> **Status**: ✅ Fully Implemented
-> **Phase**: Phase 1 (MVP)
-> **Completion**: 100%
+> **Status**: ✅ Live in the default deployment
+> **Mode**: Local-first read-only analytics
+> **Scope**: Catalog + recent post activity
 
-The Analytics Dashboard provides curators with comprehensive metrics and insights for the AIWebFeeds collection.
+The Analytics Dashboard now works without `BACKEND_URL`. It combines the checked-in
+catalog with recent post timestamps gathered through the aggregate feed loader so
+visitors can inspect what is publishing, which topics are most active, and which
+sources are freshest in the current catalog slice.
+
+Use `/feeds` first when you want to decide which part of the catalog matters.
+Use `/analytics` when you want to understand what that catalog is publishing now.
 
 ## Features
 
 ### Key Metrics
 
-- **Total Feeds**: Count of all feeds in the collection
-- **Validation Success Rate**: Percentage of feeds passing health checks
-- **Average Response Time**: Mean latency for feed validation
-- **Health Score Distribution**: Feed quality buckets (healthy, moderate, unhealthy)
+- **Total sources**: Count of sources in the current catalog slice
+- **Active sources**: Sources not marked inactive in the catalog
+- **Posts in 24h**: Recent post count observed in the live analytics window
+- **Posts in 7d**: Seven-day publication activity across the scanned source set
+- **Topic count**: Number of distinct topics represented in the filtered catalog
+- **Source type mix**: Distribution of source types across the filtered catalog
+- **Scan coverage**: Explicit `matching_sources`, `scanned_sources`, `scan_limit`, `per_source_limit`, and `truncated` values for the live analytics window
 
 ### Interactive Charts
 
 #### Most Active Topics
 
-Bar chart showing topics ranked by validation frequency (last 30 days), weighted by feed health scores.
+Bar chart showing recent post volume by topic, plus how many sources contribute to
+each topic.
 
 #### Publication Velocity
 
-Line chart displaying daily/weekly/monthly validation frequency trends, used as proxy for publication activity.
+Time-series view showing recent publication timestamps bucketed by day, week, or month.
 
-#### Feed Health Distribution
+#### Freshest Sources
 
-Pie chart showing distribution of feeds by health category:
-
-- **Healthy**: ≥0.8 health score
-- **Moderate**: 0.5-0.8 health score
-- **Unhealthy**: &lt;0.5 health score
-
-#### Validation Success Over Time
-
-Area chart tracking validation success rate over time ranges (7d, 30d, 90d).
+Panel listing the newest observed publishing sources in the active analytics window.
 
 ### Filtering
 
-- **Time Range**: Last 7 days, Last 30 days, Last 90 days, Custom date range
-- **Topic Filter**: Filter all analytics by specific topic (e.g., "Show only LLM feeds")
+- **Time Range**: Last 7 days, 30 days, or 90 days
+- **Topic Filter**: Limit the dashboard to a single topic slice
+- **Refresh**: Re-run the local analytics fetch without leaving the page
 
 ### Data Export
 
-- **CSV Export**: Download raw metrics for external analysis
-- **API Endpoint**: Programmatic access at `/api/analytics/summary`
+- **CSV export**: Download the current analytics snapshot for external analysis
+- **Summary API**: `/api/analytics/summary`
+- **Trending API**: `/api/analytics/trending`
+- **Velocity API**: `/api/analytics/velocity`
+
+The summary payload includes `source_type_distribution` for the full filtered
+catalog and `scan_summary` for the bounded live scan. CSV exports include both
+sections so downstream consumers can distinguish catalog shape from scanned
+activity coverage.
 
 ## Configuration
 
-Analytics caching is configurable via environment variables:
+The public analytics dashboard does not require backend configuration. The current
+implementation uses short-lived route caching to keep repeat visits fast.
 
 ```bash
-# Static metrics (total_feeds, health_distribution) - 1 hour TTL
-AIWF_ANALYTICS__STATIC_CACHE_TTL=3600
+# Optional: explicit site URL for metadata and production deployments
+NEXT_PUBLIC_BASE_URL=https://aiwebfeeds.com
 
-# Dynamic metrics (trending_topics, validation_success_rate) - 5 minutes TTL
-AIWF_ANALYTICS__DYNAMIC_CACHE_TTL=300
-
-# Maximum concurrent analytics queries
-AIWF_ANALYTICS__MAX_CONCURRENT_QUERIES=10
+# Optional: external backend for non-core personalized routes only
+BACKEND_URL=http://localhost:8001
 ```
 
 ## Usage
@@ -73,21 +81,20 @@ AIWF_ANALYTICS__MAX_CONCURRENT_QUERIES=10
 
 Navigate to `/analytics` to access the dashboard.
 
-**Manual Refresh**: Click "Refresh Now" button to bypass cache and fetch real-time data.
-
-**Data Freshness**: Dashboard displays "Last updated: [timestamp]" with auto-refresh option.
+Use the filter bar to change the date range, limit the view to a topic, refresh the
+snapshot, or download a CSV export.
 
 ### CLI
 
 ```bash
-# Display analytics summary
-uv run aiwebfeeds analytics summary --date-range 30d
+# Runtime analytics summary
+uv run ai-web-feeds analytics summary --date-range 30d
 
-# Filter by topic
-uv run aiwebfeeds analytics summary --topic llm
+# Topic momentum
+uv run ai-web-feeds analytics trending --limit 10 --date-range 30d
 
-# Export to CSV
-uv run aiwebfeeds analytics export --output metrics.csv
+# CSV export
+uv run ai-web-feeds analytics export --output reports/analytics.csv --date-range 30d
 ```
 
 ### API
@@ -97,27 +104,32 @@ uv run aiwebfeeds analytics export --output metrics.csv
 const response = await fetch("/api/analytics/summary?date_range=30d&topic=llm");
 const data = await response.json();
 
-console.log(data.total_feeds);
-console.log(data.validation_success_rate);
-console.log(data.trending_topics);
+console.log(data.total_sources);
+console.log(data.active_sources);
+console.log(data.posts_last_24h);
+console.log(data.source_type_distribution);
+console.log(data.scan_summary);
 ```
 
-## Performance
+```typescript
+// Fetch trending topics
+const trending = await fetch("/api/analytics/trending?date_range=30d&limit=10");
+```
 
-- **Page Load**: &lt;2 seconds on 4G connection (NFR-001)
-- **Cache Hit Rate**: 95% of queries served from cache
-- **Database Load Reduction**: ≥80% via hybrid caching strategy
+## Current limits
 
-## Success Criteria
-
-- ✅ Dashboard loads within 2 seconds for 95% of requests
-- ✅ Curators can identify top 10 trending topics in ≤30 seconds
-- ✅ 80% of curators use dashboard at least weekly
-- ✅ Curators identify and disable 20+ inactive feeds within first month
-- ✅ Export feature used by 30% of curators within first quarter
+- The dashboard is built from the shipped catalog plus recent aggregate feed scans,
+  not from a long-term analytics warehouse.
+- Freshness, trending, and velocity panels disclose when the live scan window is
+  truncated instead of silently implying exhaustive coverage.
+- Topic momentum reflects recent publication timestamps, not embeddings or
+  behavioral recommendation signals.
+- Personalized analytics, recommendation attribution, and user-specific reporting
+  remain backend-dependent and are not part of the default deployment.
 
 ## Related
 
-- [Search & Discovery](./search) - Find feeds by keywords and semantic similarity
-- [Recommendations](./recommendations) - AI-powered feed suggestions
-- [Data Model](/docs/development/data-model#analyticssnapshot) - AnalyticsSnapshot entity schema
+- [Feed catalog](/feeds) - Narrow the source set before you inspect activity
+- [Search & Discovery](./search) - Search sources or recent articles from the same catalog
+- [OPML Viewer](/docs/guides/opml-viewer) - Export full or filtered OPML bundles
+- [Analytics & Monitoring](/docs/guides/analytics) - CLI-focused runtime analytics workflows

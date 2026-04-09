@@ -3,8 +3,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
-
 from ai_web_feeds.analytics import (
     calculate_health_distribution,
     calculate_summary_metrics,
@@ -17,6 +15,7 @@ from ai_web_feeds.models import (
     FeedSource,
     FeedValidationResult,
 )
+from sqlmodel import Session, SQLModel, create_engine, select
 
 
 @pytest.fixture

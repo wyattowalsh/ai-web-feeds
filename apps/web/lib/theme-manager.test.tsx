@@ -78,9 +78,8 @@ async function loadThemeModule(
   document.documentElement.className = "";
   document.documentElement.style.cssText = "";
   document.documentElement.removeAttribute("data-layout");
-  document.head.innerHTML = options.includeMeta === false
-    ? ""
-    : '<meta name="theme-color" content="#ffffff">';
+  document.head.innerHTML =
+    options.includeMeta === false ? "" : '<meta name="theme-color" content="#ffffff">';
 
   const matchMedia = installMatchMedia(options.prefersDark ?? false);
 
@@ -149,8 +148,12 @@ describe("theme-manager", () => {
       expect(document.documentElement).toHaveClass("dark");
     });
 
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#1a1a1a");
-    expect(document.documentElement.style.getPropertyValue("--color-background")).toBe("#1f2530");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
+      "content",
+      "#1a1a1a",
+    );
+    expect(document.documentElement).toHaveAttribute("data-theme-mode", "system");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
     expect(document.documentElement.style.getPropertyValue("--font-size-base")).toBe("18px");
     expect(document.documentElement.style.getPropertyValue("--font-family")).toBe("Inter");
     expect(document.documentElement.style.getPropertyValue("--reading-width")).toBe("1000px");
@@ -158,7 +161,10 @@ describe("theme-manager", () => {
   });
 
   it("syncs system theme changes only while the theme mode is system", async () => {
-    const { themeModule, matchMedia } = await loadThemeModule({ theme: "system" }, { prefersDark: false });
+    const { themeModule, matchMedia } = await loadThemeModule(
+      { theme: "system" },
+      { prefersDark: false },
+    );
 
     await waitFor(() => {
       expect(document.documentElement).toHaveClass("light");
@@ -205,8 +211,9 @@ describe("theme-manager", () => {
     expect(document.documentElement).toHaveClass("light");
 
     const css = themeModule.themeManager.exportThemeCSS();
-    expect(css).toContain("--color-background-secondary: #fffdfa;");
-    expect(css).toContain("--color-link-text: #4a5fd4;");
+    expect(css).toContain("color-scheme: light;");
+    expect(css).toContain("--reading-width: 800px;");
+    expect(css).not.toContain("--color-background-secondary");
   });
 
   it("updates font, layout, and image preferences", async () => {

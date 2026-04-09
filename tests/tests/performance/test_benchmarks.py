@@ -5,11 +5,13 @@ These tests measure performance and ensure operations meet SLA requirements.
 
 import time
 
+import ai_web_feeds.search as search_module
 import numpy as np
 import pytest
 from ai_web_feeds.analytics import calculate_summary_metrics, calculate_trending_topics
-from ai_web_feeds.models import FeedSource
-from ai_web_feeds.search import autocomplete, build_trie_index, full_text_search
+from ai_web_feeds.models import FeedEmbedding, FeedSource, UserProfile
+from ai_web_feeds.recommendations import generate_recommendations, get_user_recommendations
+from ai_web_feeds.search import autocomplete, build_trie_index, full_text_search, semantic_search
 from sqlmodel import Session, SQLModel, create_engine, select
 
 
@@ -18,6 +20,8 @@ def perf_db():
     """Create database with performance test data."""
     engine = create_engine("sqlite:///:memory:")
     SQLModel.metadata.create_all(engine)
+    rng = np.random.default_rng(42)
+    topic_embedding = rng.random(384, dtype=np.float32)
 
     with Session(engine) as session:
         # Create 1000 test feeds
@@ -31,9 +35,29 @@ def perf_db():
                 validation_count=i % 100,
             )
             session.add(feed)
+
+            if i < 250:
+                noise = rng.normal(0, 0.01, 384).astype(np.float32)
+                embedding_vector = np.asarray(topic_embedding + noise, dtype=np.float32)
+                session.add(
+                    FeedEmbedding(
+                        feed_id=feed.id,
+                        embedding=embedding_vector.tobytes(),
+                        embedding_model="benchmark-model",
+                        embedding_provider="benchmark",
+                    )
+                )
+
+        session.add(
+            UserProfile(
+                user_id="benchmark-user",
+                followed_feeds=["feed0", "feed2", "feed4"],
+            )
+        )
         session.commit()
 
-    return engine
+    yield engine
+    engine.dispose()
 
 
 class TestSearchPerformance:
@@ -92,6 +116,23 @@ class TestSearchPerformance:
             except Exception as e:
                 pytest.skip(f"FTS5 not available: {e}")
 
+    @pytest.mark.benchmark
+    def test_semantic_search_performance(self, perf_db, monkeypatch):
+        """Test semantic search scoring performance with cached embeddings."""
+        query_embedding = np.ones(384, dtype=np.float32)
+        monkeypatch.setattr(
+            search_module, "generate_query_embedding", lambda _query: query_embedding
+        )
+
+        with Session(perf_db) as session:
+            start = time.time()
+            results = semantic_search(session, "test feed", threshold=0.3, limit=20)
+            duration = time.time() - start
+
+            assert results
+            assert duration < 0.5, f"Semantic search took {duration:.3f}s, expected < 0.5s"
+            print(f"\n✓ Semantic search: {duration:.3f}s for 250 embeddings")
+
 
 class TestAnalyticsPerformance:
     """Performance tests for analytics operations."""
@@ -141,7 +182,7 @@ class TestEmbeddingPerformance:
             # Should generate in < 5 seconds for 10 texts
             assert duration < 5.0, f"Embedding generation took {duration:.3f}s, expected < 5.0s"
             print(
-                f"\n✓ Embedding generation: {duration:.3f}s for 10 texts ({duration/10:.3f}s per text)"
+                f"\n✓ Embedding generation: {duration:.3f}s for 10 texts ({duration / 10:.3f}s per text)"
             )
         except ImportError:
             pytest.skip("Sentence-transformers not available")
@@ -182,6 +223,38 @@ class TestDatabasePerformance:
             print(f"\n✓ Filtered query (50 rows): {duration:.3f}s")
 
 
+class TestRecommendationPerformance:
+    """Performance tests for recommendation generation."""
+
+    @pytest.mark.benchmark
+    def test_generate_recommendations_performance(self, perf_db):
+        """Test topic-driven recommendation generation time."""
+        with Session(perf_db) as session:
+            start = time.time()
+            recommendations = generate_recommendations(
+                session,
+                seed_topics=["llm", "research"],
+                limit=20,
+            )
+            duration = time.time() - start
+
+            assert recommendations
+            assert duration < 0.5, f"Recommendations took {duration:.3f}s, expected < 0.5s"
+            print(f"\n✓ Recommendations: {duration:.3f}s for 1000 feeds")
+
+    @pytest.mark.benchmark
+    def test_get_user_recommendations_performance(self, perf_db):
+        """Test personalized recommendations for an existing user profile."""
+        with Session(perf_db) as session:
+            start = time.time()
+            recommendations = get_user_recommendations(session, "benchmark-user", limit=20)
+            duration = time.time() - start
+
+            assert recommendations
+            assert duration < 0.5, f"User recommendations took {duration:.3f}s, expected < 0.5s"
+            print(f"\n✓ User recommendations: {duration:.3f}s for benchmark-user")
+
+
 # Performance summary
 @pytest.fixture(scope="session", autouse=True)
 def performance_summary(request):
@@ -195,15 +268,10 @@ def performance_summary(request):
     print("  - Trie build: < 1.0s for 1000 feeds")
     print("  - Autocomplete: < 200ms")
     print("  - Full-text search: < 500ms")
+    print("  - Semantic search: < 500ms")
     print("  - Summary metrics: < 1.0s")
     print("  - Trending topics: < 2.0s")
+    print("  - Recommendations: < 500ms")
     print("  - Embedding generation: < 500ms per text")
     print("  - Database queries: < 100ms for simple, < 200ms for complex")
     print("\n" + "=" * 70)
-
-
-# Configuration
-def pytest_configure(config):
-    """Configure pytest markers."""
-    config.addinivalue_line("markers", "benchmark: mark test as performance benchmark")
-    config.addinivalue_line("markers", "slow: mark test as slow running")

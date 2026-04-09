@@ -59,7 +59,7 @@ describe("/api/search route", () => {
         },
       ],
       meta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 42,
         scanned_sources: 42,
@@ -91,7 +91,7 @@ describe("/api/search route", () => {
       ],
       scope: "sources",
       meta: expect.objectContaining({
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
       }),
     });
@@ -103,7 +103,7 @@ describe("/api/search route", () => {
       scope: "articles",
       results: [],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 8,
         scanned_sources: 8,
@@ -147,7 +147,7 @@ describe("/api/search route", () => {
       scope: "articles",
       results: [],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 0,
         scanned_sources: 0,
@@ -157,7 +157,9 @@ describe("/api/search route", () => {
       },
     });
 
-    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=semantic"));
+    const response = await GET(
+      createRequest("http://localhost/api/search?q=agents&scope=semantic"),
+    );
 
     expect(response.status).toBe(200);
     expect(runLocalSearchMock).toHaveBeenCalledWith(
@@ -174,7 +176,7 @@ describe("/api/search route", () => {
       scope: "articles",
       results: [],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 33,
         scanned_sources: 18,
@@ -184,14 +186,16 @@ describe("/api/search route", () => {
       },
     });
 
-    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=articles"));
+    const response = await GET(
+      createRequest("http://localhost/api/search?q=agents&scope=articles"),
+    );
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual(
       expect.objectContaining({
         scope: "articles",
         meta: {
-          mode: "bounded",
+          mode: "local",
           bounded: true,
           candidate_sources: 33,
           scanned_sources: 18,

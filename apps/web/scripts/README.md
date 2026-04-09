@@ -18,7 +18,7 @@ Converts Python docstrings to MDX documentation pages.
 
 ```bash
 # 1. Generate JSON from Python package
-fumapy-generate ai_web_feeds
+uv tool run --from ./node_modules/fumadocs-python fumapy-generate ai_web_feeds
 mv ai_web_feeds.json apps/web/
 
 # 2. Convert to MDX
@@ -30,7 +30,7 @@ pnpm generate:docs
 
 **See**: [Python Autodoc Documentation](/docs/development/python-autodoc) for details
 
-______________________________________________________________________
+---
 
 ## PDF Export Scripts
 

@@ -1,7 +1,7 @@
 """ai_web_feeds.__init__ -- ai-web-feeds package initialization."""
 
-import ai_web_feeds.logger  # Ensure logger is configured on import
-from ai_web_feeds.config import Settings
+import ai_web_feeds.logger as _logger  # noqa: F401 - ensure logger is configured on import
+from ai_web_feeds.config import Settings, get_settings
 from ai_web_feeds.enrich import enrich_all_feeds, enrich_feed_source
 from ai_web_feeds.export import export_all_formats, export_to_json, export_to_opml
 
@@ -18,30 +18,24 @@ from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.validate import ValidationResult, validate_feeds, validate_topics
 
 __all__ = [
-    # Load
+    "DatabaseManager",
+    "FeedAnalytics",
+    "FeedEnrichmentData",
+    "FeedSource",
+    "FeedValidationResult",
+    "Settings",
+    "Topic",
+    "ValidationResult",
+    "enrich_all_feeds",
+    "enrich_feed_source",
+    "export_all_formats",
+    "export_to_json",
+    "export_to_opml",
+    "get_settings",
     "load_feeds",
     "load_topics",
     "save_feeds",
     "save_topics",
-    # Validate
     "validate_feeds",
     "validate_topics",
-    "ValidationResult",
-    # Enrich
-    "enrich_all_feeds",
-    "enrich_feed_source",
-    # Export
-    "export_all_formats",
-    "export_to_json",
-    "export_to_opml",
-    # Models
-    "FeedSource",
-    "FeedEnrichmentData",
-    "FeedValidationResult",
-    "FeedAnalytics",
-    "Topic",
-    # Storage
-    "DatabaseManager",
-    # Config
-    "Settings",
 ]

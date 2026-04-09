@@ -10,28 +10,35 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, clampNumber } from "@/lib/backend";
+import {
+  applyUserIdentityBinding,
+  isValidUserId,
+  resolveUserIdentity,
+  validateTrustedUserOwnership,
+} from "@/lib/user-auth";
+import {
+  clampNumber,
+  fetchBackend,
+  formatBackendErrorResponse,
+  getBackendErrorStatus,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const requestedUserId = searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+  if (requestedUserId && !isValidUserId(requestedUserId)) {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
+  const { identity } = resolvedIdentity;
   const unreadOnly = searchParams.get("unread_only") === "true";
   const limit = clampNumber(parseInt(searchParams.get("limit") || "50", 10), 1, 1000);
 
-  if (requestedUserId && identity.source === "anonymous") {
-    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-  }
-
-  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+  if (requestedUserId && !validateTrustedUserOwnership(requestedUserId, identity)) {
     return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
-  }
-
-  if (identity.source === "anonymous") {
-    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
@@ -44,13 +51,17 @@ const GETHandler = async (request: NextRequest) => {
       },
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user_id: identity.user_id,
       notifications: data,
       count: Array.isArray(data) ? data.length : 0,
     });
+    applyUserIdentityBinding(response, resolvedIdentity);
+    return response;
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

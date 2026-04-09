@@ -1,12 +1,12 @@
 """Unit tests for ai_web_feeds.embeddings module."""
 
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
-
 from ai_web_feeds.embeddings import (
+    EmbeddingGenerationResult,
     bytes_to_embedding,
     embedding_to_bytes,
     generate_all_feed_embeddings,
@@ -15,9 +15,11 @@ from ai_web_feeds.embeddings import (
     generate_embeddings_local,
     generate_feed_embedding,
     get_local_model,
+    refresh_all_embeddings,
     save_feed_embedding,
 )
-from ai_web_feeds.models import FeedSource
+from ai_web_feeds.models import FeedEmbedding, FeedSource
+from sqlmodel import Session, SQLModel, create_engine
 
 
 @pytest.fixture
@@ -141,6 +143,62 @@ class TestLocalEmbeddings:
 
         assert embeddings.shape == (1, 384)
 
+    @patch("ai_web_feeds.embeddings.SentenceTransformer")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_get_local_model_cache_distinguishes_load_options(self, mock_settings, mock_st):
+        """Changing cache-folder inputs should produce distinct cached model loads."""
+        mock_settings.embedding.local_model = "sentence-transformers/all-MiniLM-L6-v2"
+        mock_settings.phase5.model_cache_dir = "~/.cache/ai_web_feeds/models"
+        mock_st.side_effect = [Mock(name="cache-a"), Mock(name="cache-b")]
+
+        get_local_model.cache_clear()
+
+        model1 = get_local_model(cache_folder="cache-a")
+        model2 = get_local_model(cache_folder="cache-b")
+
+        assert model1 is not model2
+        assert mock_st.call_count == 2
+
+    @patch("ai_web_feeds.embeddings.SentenceTransformer")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_get_local_model_offline_uses_local_files_only(self, mock_settings, mock_st):
+        """Offline/local-only loads should pass through cache-folder and local-only flags."""
+        mock_settings.embedding.local_model = "sentence-transformers/all-MiniLM-L6-v2"
+        mock_settings.phase5.model_cache_dir = "~/.cache/ai_web_feeds/models"
+        mock_model = Mock()
+        mock_st.return_value = mock_model
+
+        get_local_model.cache_clear()
+        resolved = get_local_model(local_files_only=True)
+
+        assert resolved is mock_model
+        _args, kwargs = mock_st.call_args
+        assert kwargs["local_files_only"] is True
+        assert kwargs["cache_folder"] == str(
+            Path(mock_settings.phase5.model_cache_dir).expanduser()
+        )
+
+    def test_get_local_model_missing_dependency_raises_importerror(self):
+        """Missing sentence-transformers dependency should surface a clear ImportError."""
+        get_local_model.cache_clear()
+
+        with patch("ai_web_feeds.embeddings.SentenceTransformer", None):
+            with pytest.raises(ImportError, match="sentence-transformers is not installed"):
+                get_local_model(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    @patch("ai_web_feeds.embeddings.SentenceTransformer")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_get_local_model_missing_cached_files_raises(self, mock_settings, mock_st):
+        """Local-only loads should surface missing cached-model failures."""
+        mock_settings.embedding.local_model = "sentence-transformers/all-MiniLM-L6-v2"
+        mock_settings.phase5.model_cache_dir = "~/.cache/ai_web_feeds/models"
+        mock_st.side_effect = OSError("model files not found locally")
+
+        get_local_model.cache_clear()
+
+        with pytest.raises(OSError, match="not found locally"):
+            get_local_model(local_files_only=True)
+
 
 class TestHuggingFaceEmbeddings:
     """Tests for Hugging Face API embeddings."""
@@ -169,14 +227,14 @@ class TestHuggingFaceEmbeddings:
         assert embeddings.shape == (2, 384)
         assert embeddings.dtype == np.float32
 
-    @patch("ai_web_feeds.embeddings.os.getenv")
     @patch("ai_web_feeds.embeddings.settings")
-    def test_generate_embeddings_hf_no_token(self, mock_settings, mock_getenv):
-        """Test HF API fails without token."""
+    def test_generate_embeddings_hf_no_token(self, mock_settings, monkeypatch):
+        """Test HF API fails without the canonical AIWF token variable."""
         mock_settings.embedding.hf_api_token = ""
-        mock_getenv.return_value = None
+        mock_settings.embedding.hf_model = "test-model"
+        monkeypatch.setenv("HF_API_TOKEN", "bare-token-should-be-ignored")
 
-        with pytest.raises(ValueError, match="HF_API_TOKEN not set"):
+        with pytest.raises(ValueError, match="AIWF_EMBEDDING__HF_API_TOKEN is not set"):
             generate_embeddings_hf(["text"])
 
     @patch("ai_web_feeds.embeddings.requests.post")
@@ -192,18 +250,80 @@ class TestHuggingFaceEmbeddings:
         with pytest.raises(Exception):
             generate_embeddings_hf(["text"])
 
+    @patch("ai_web_feeds.embeddings.requests.post")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_generate_embeddings_hf_rejects_invalid_json(self, mock_settings, mock_post):
+        """Non-JSON HF responses should fail with a clear validation error."""
+        mock_settings.embedding.hf_api_token = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.side_effect = ValueError("bad json")
+        mock_post.return_value = mock_response
+
+        with pytest.raises(ValueError, match="invalid JSON"):
+            generate_embeddings_hf(["text"])
+
+    @patch("ai_web_feeds.embeddings.requests.post")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_generate_embeddings_hf_rejects_multi_record_payload(self, mock_settings, mock_post):
+        """Malformed HF payloads with multiple embedding records should be rejected."""
+        mock_settings.embedding.hf_api_token = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = [
+            {"embedding": [0.1] * 4},
+            {"embedding": [0.2] * 4},
+        ]
+        mock_post.return_value = mock_response
+
+        with pytest.raises(ValueError, match="multiple embedding records"):
+            generate_embeddings_hf(["text"])
+
+    @patch("ai_web_feeds.embeddings.requests.post")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_generate_embeddings_hf_rejects_non_numeric_payload(self, mock_settings, mock_post):
+        """Malformed HF payloads must not be coerced into embeddings."""
+        mock_settings.embedding.hf_api_token = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {"embedding": ["oops", "still-not-a-number"]}
+        mock_post.return_value = mock_response
+
+        with pytest.raises(ValueError, match="must be numeric"):
+            generate_embeddings_hf(["text"])
+
+    @patch("ai_web_feeds.embeddings.requests.post")
+    @patch("ai_web_feeds.embeddings.settings")
+    def test_generate_embeddings_hf_rejects_error_payload(self, mock_settings, mock_post):
+        """HF error payloads should fail fast instead of being treated as embeddings."""
+        mock_settings.embedding.hf_api_token = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {"error": "Model loading"}
+        mock_post.return_value = mock_response
+
+        with pytest.raises(ValueError, match="error payload"):
+            generate_embeddings_hf(["text"])
+
 
 class TestHybridEmbeddings:
     """Tests for hybrid embedding generation."""
 
     @patch("ai_web_feeds.embeddings.generate_embeddings_hf")
     @patch("ai_web_feeds.embeddings.settings")
-    @patch("ai_web_feeds.embeddings.os.getenv")
-    def test_generate_embeddings_uses_api(self, mock_getenv, mock_settings, mock_gen_hf):
+    def test_generate_embeddings_uses_api(self, mock_settings, mock_gen_hf):
         """Test hybrid mode uses HF API when requested."""
         mock_settings.embedding.provider = "huggingface"
         mock_settings.embedding.hf_api_token = "test_token"
-        mock_getenv.return_value = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
 
         mock_embeddings = np.random.rand(2, 384).astype(np.float32)
         mock_gen_hf.return_value = mock_embeddings
@@ -212,20 +332,24 @@ class TestHybridEmbeddings:
         embeddings = generate_embeddings(texts, use_api=True, show_progress=False)
 
         # Verify HF API was called
-        mock_gen_hf.assert_called_once_with(texts)
+        mock_gen_hf.assert_called_once_with(
+            texts,
+            model_name="test-model",
+            api_token=None,
+        )
         np.testing.assert_array_equal(embeddings, mock_embeddings)
 
     @patch("ai_web_feeds.embeddings.generate_embeddings_local")
     @patch("ai_web_feeds.embeddings.generate_embeddings_hf")
     @patch("ai_web_feeds.embeddings.settings")
-    @patch("ai_web_feeds.embeddings.os.getenv")
     def test_generate_embeddings_fallback_to_local(
-        self, mock_getenv, mock_settings, mock_gen_hf, mock_gen_local
+        self, mock_settings, mock_gen_hf, mock_gen_local
     ):
         """Test hybrid mode falls back to local on API failure."""
         mock_settings.embedding.provider = "huggingface"
         mock_settings.embedding.hf_api_token = "test_token"
-        mock_getenv.return_value = "test_token"
+        mock_settings.embedding.hf_model = "test-model"
+        mock_settings.embedding.local_model = "local-model"
 
         # HF API fails
         mock_gen_hf.side_effect = Exception("API error")
@@ -238,8 +362,34 @@ class TestHybridEmbeddings:
         embeddings = generate_embeddings(texts, use_api=True, show_progress=False)
 
         # Verify fallback to local
-        mock_gen_local.assert_called_once()
+        mock_gen_local.assert_called_once_with(
+            texts,
+            show_progress=False,
+            model_name="local-model",
+        )
         np.testing.assert_array_equal(embeddings, mock_embeddings)
+
+    @patch("ai_web_feeds.embeddings.generate_embeddings_with_metadata")
+    def test_refresh_all_embeddings_persists_actual_fallback_provider(
+        self, mock_generate_with_metadata, test_session, sample_feed
+    ):
+        """Refresh should save the provider/model that actually produced each embedding."""
+        test_session.add(sample_feed)
+        test_session.commit()
+
+        embedding = np.random.rand(1, 384).astype(np.float32)
+        mock_generate_with_metadata.return_value = EmbeddingGenerationResult(
+            embeddings=embedding,
+            provider="local",
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+        )
+
+        refresh_all_embeddings(test_session, show_progress=False, provider="huggingface")
+
+        saved = test_session.get(FeedEmbedding, sample_feed.id)
+        assert saved is not None
+        assert saved.embedding_provider == "local"
+        assert saved.embedding_model == "sentence-transformers/all-MiniLM-L6-v2"
 
 
 class TestFeedEmbeddings:

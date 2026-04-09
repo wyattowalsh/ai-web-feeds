@@ -1,12 +1,28 @@
 import { NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { clampNumber } from "@/lib/backend";
+import { loadFeeds } from "@/lib/feeds";
+import { normalizeSearchQuery, normalizeSearchTopics } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
+
+interface AutocompleteFeedSuggestion {
+  id: string;
+  title: string;
+  type: "feed";
+  url: string;
+}
+
+interface AutocompleteTopicSuggestion {
+  label: string;
+  type: "topic";
+  feed_count: number;
+}
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
-  const prefix = searchParams.get("prefix");
+  const prefix = normalizeSearchQuery(searchParams.get("prefix"));
   if (!prefix || prefix.length < 2) {
     return NextResponse.json({
       feeds: [],
@@ -14,46 +30,47 @@ const GETHandler = async (request: Request) => {
     });
   }
 
-  const limit = parseInt(searchParams.get("limit") || "8", 10);
+  const limit = clampNumber(parseInt(searchParams.get("limit") || "8", 10), 1, 20);
 
   try {
-    // In production, this would call the Python backend autocomplete API
-    // For now, we'll return mock suggestions
-
-    const mockFeeds = [
-      { id: "openai-blog", title: "OpenAI Blog", type: "feed", url: "https://openai.com/blog" },
-      {
-        id: "huggingface",
-        title: "Hugging Face Blog",
-        type: "feed",
-        url: "https://huggingface.co/blog",
-      },
-      { id: "pytorch", title: "PyTorch Blog", type: "feed", url: "https://pytorch.org/blog" },
-      {
-        id: "tensorflow",
-        title: "TensorFlow Blog",
-        type: "feed",
-        url: "https://blog.tensorflow.org",
-      },
-      { id: "anthropic", title: "Anthropic Blog", type: "feed", url: "https://anthropic.com/blog" },
-    ];
-
-    const mockTopics = [
-      { label: "LLM", type: "topic", feed_count: 245 },
-      { label: "AGENTS", type: "topic", feed_count: 180 },
-      { label: "TRAINING", type: "topic", feed_count: 165 },
-      { label: "ML", type: "topic", feed_count: 298 },
-      { label: "NLP", type: "topic", feed_count: 156 },
-    ];
-
-    // Filter by prefix (case-insensitive)
+    const feedsData = await loadFeeds();
     const lowerPrefix = prefix.toLowerCase();
+    const maxFeedSuggestions = Math.min(5, limit);
 
-    const feeds = mockFeeds.filter((f) => f.title.toLowerCase().includes(lowerPrefix)).slice(0, 5);
+    const feeds: AutocompleteFeedSuggestion[] = feedsData.sources
+      .filter((feed) => typeof feed.title === "string" && feed.title.trim().length > 0)
+      .filter((feed) =>
+        feed.title
+          .trim()
+          .toLowerCase()
+          .split(/\s+/)
+          .some((word) => word.startsWith(lowerPrefix)),
+      )
+      .slice(0, maxFeedSuggestions)
+      .map((feed, index) => ({
+        id: feed.id || `${feed.url}-${index}`,
+        title: feed.title,
+        type: "feed",
+        url: feed.url,
+      }));
+    const maxTopicSuggestions = Math.max(0, limit - feeds.length);
 
-    const topics = mockTopics
-      .filter((t) => t.label.toLowerCase().includes(lowerPrefix))
-      .slice(0, 3);
+    const topicCounts = new Map<string, number>();
+    for (const feed of feedsData.sources) {
+      for (const normalizedTopic of normalizeSearchTopics(feed.topics ?? [])) {
+        topicCounts.set(normalizedTopic, (topicCounts.get(normalizedTopic) ?? 0) + 1);
+      }
+    }
+
+    const topics: AutocompleteTopicSuggestion[] = Array.from(topicCounts.entries())
+      .map(([label, feedCount]) => ({
+        label,
+        type: "topic" as const,
+        feed_count: feedCount,
+      }))
+      .filter((topic) => topic.label.startsWith(lowerPrefix))
+      .sort((left, right) => right.feed_count - left.feed_count)
+      .slice(0, maxTopicSuggestions);
 
     return NextResponse.json(
       {
@@ -66,8 +83,7 @@ const GETHandler = async (request: Request) => {
         },
       },
     );
-  } catch (error) {
-    console.error("Autocomplete error:", error);
+  } catch {
     return NextResponse.json({ error: "Autocomplete failed" }, { status: 500 });
   }
 };

@@ -9,6 +9,7 @@ from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, Subtopic
+from ai_web_feeds.nlp.content import build_article_payload
 from ai_web_feeds.nlp.topic_modeler import TopicModeler
 from ai_web_feeds.storage import DatabaseManager
 
@@ -90,20 +91,14 @@ class TopicModelingJob:
                     stats["topics_processed"] += 1
                     stats["articles_analyzed"] += len(articles)
 
-                    # Convert to dicts
-                    article_dicts = [
-                        {
-                            "id": a.id,
-                            "title": a.title,
-                            "content": a.content or a.summary or "",
-                            "summary": a.summary,
-                        }
-                        for a in articles
-                    ]
+                    article_dicts = [build_article_payload(article) for article in articles]
 
                     # Discover subtopics
                     subtopics = self.modeler.discover_subtopics(
-                        parent_topic, article_dicts, num_topics=5
+                        parent_topic,
+                        article_dicts,
+                        num_topics=5,
+                        min_articles=min_articles,
                     )
 
                     # Store discovered subtopics

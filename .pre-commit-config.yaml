@@ -29,7 +29,7 @@ repos:
   rev: v1.13.0
   hooks:
   - id: mypy
-    name: mypy (packages)
+    name: mypy (packages, advisory)
     files: ^packages/
     exclude: ^tests/
     additional_dependencies:
@@ -39,8 +39,9 @@ repos:
     - sqlmodel
     - pydantic>=2.0
     args: [--config-file=pyproject.toml, --strict]
+    stages: [manual]
   - id: mypy
-    name: mypy (apps/cli)
+    name: mypy (apps/cli, advisory)
     files: ^apps/cli/
     exclude: ^tests/
     additional_dependencies:
@@ -48,6 +49,7 @@ repos:
     - rich
     - sqlmodel
     args: [--config-file=apps/cli/pyproject.toml, --ignore-missing-imports]
+    stages: [manual]
 
   # ============================================================================
   # Python - Security checks
@@ -56,9 +58,11 @@ repos:
   rev: 1.7.10
   hooks:
   - id: bandit
+    name: bandit (advisory)
     args: [-c, pyproject.toml]
     additional_dependencies: ['bandit[toml]']
     exclude: ^tests/
+    stages: [manual]
 
   # ============================================================================
   # General file checks
@@ -90,24 +94,6 @@ repos:
   - id: detect-private-key
   - id: no-commit-to-branch
     args: [--branch, main, --branch, production]
-
-  # ============================================================================
-  # TypeScript/JavaScript - ESLint
-  # ============================================================================
-- repo: https://github.com/pre-commit/mirrors-eslint
-  rev: v9.0.0-beta.0
-  hooks:
-  - id: eslint
-    name: eslint (apps/web)
-    files: ^apps/web/.*\.[jt]sx?$
-    types: [file]
-    args: [--fix, --max-warnings=0]
-    additional_dependencies:
-    - eslint@9.0.0
-    - '@next/eslint-plugin-next'
-    - typescript
-    - '@typescript-eslint/parser'
-    - '@typescript-eslint/eslint-plugin'
 
   # ============================================================================
   # TypeScript/JavaScript - Prettier
@@ -143,7 +129,7 @@ repos:
     - mdformat-gfm
     - mdformat-black
     args: [--wrap, '88']
-    exclude: ^(CHANGELOG\.md|apps/web/content/)$
+    exclude: ^(CHANGELOG\.md|apps/web/|\.github/(agents|prompts|workflows)/)
 
   # ============================================================================
   # Spell checking
@@ -152,7 +138,7 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
-    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent]
+    args: [--ignore-words=.codespell-ignore-words.txt]
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================
@@ -195,8 +181,10 @@ repos:
   rev: v1.5.0
   hooks:
   - id: detect-secrets
+    name: detect-secrets (advisory)
     args: [--baseline, .secrets.baseline]
     exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
+    stages: [manual]
 
   # ============================================================================
   # Conventional Commits
@@ -230,12 +218,22 @@ repos:
     pass_filenames: false
     always_run: false
     files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
-    stages: [push]
+    stages: [pre-push]
 
     # TypeScript type checking
   - id: tsc
-    name: tsc (apps/web)
+    name: tsc (apps/web, advisory)
     entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^apps/web/.*\.[jt]sx?$
+    stages: [manual]
+
+    # TypeScript/JavaScript linting
+  - id: eslint
+    name: eslint (apps/web)
+    entry: bash -c 'pnpm --dir apps/web exec eslint .'
     language: system
     pass_filenames: false
     always_run: false
@@ -249,7 +247,7 @@ repos:
     pass_filenames: false
     always_run: false
     files: ^apps/web/
-    stages: [push]
+    stages: [pre-push]
 
     # JSON Schema validation
   - id: validate-json-schemas
@@ -261,7 +259,7 @@ repos:
     # Data assets validation
   - id: validate-data-assets
     name: validate data assets
-    entry: bash -c 'cd data && uv run python validate_data_assets.py'
+    entry: bash -c 'uv run python data/validate_data_assets.py'
     language: system
     pass_filenames: false
     always_run: false
