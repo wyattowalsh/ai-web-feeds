@@ -77,7 +77,11 @@ vi.mock("@/components/search/search-results", () => ({
     results: Array<{ id: string; title: string }>;
   }) => (
     <div data-testid="results">
-      {loading ? "loading" : results.length > 0 ? results.map((result) => result.title).join(",") : "No results"}
+      {loading
+        ? "loading"
+        : results.length > 0
+          ? results.map((result) => result.title).join(",")
+          : "No results"}
     </div>
   ),
 }));
@@ -157,7 +161,7 @@ describe("SearchPageClient", () => {
   it("shows the onboarding state without rendering results", async () => {
     renderSearchPageClient();
 
-    expect(screen.getByText("Start here")).toBeInTheDocument();
+    expect(screen.getByText("Search workflow")).toBeInTheDocument();
     expect(screen.queryByTestId("results")).not.toBeInTheDocument();
 
     await waitFor(() => {
@@ -174,7 +178,9 @@ describe("SearchPageClient", () => {
     getStoredUserIdMock.mockReturnValue(null);
 
     fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
-    currentSearchParams = new URLSearchParams("q=agent+systems&scope=sources&source_type=podcast&topics=ml,agents&verified=true");
+    currentSearchParams = new URLSearchParams(
+      "q=agent+systems&scope=sources&source_type=podcast&topics=ml,agents&verified=true",
+    );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
 
     renderSearchPageClient({

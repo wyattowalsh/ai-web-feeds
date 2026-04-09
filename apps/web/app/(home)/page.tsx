@@ -2,12 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowRight,
-  Binary,
   BookOpenText,
-  Bot,
-  ChartNoAxesCombined,
   Download,
-  Network,
   Newspaper,
   RadioTower,
   Search,
@@ -19,12 +15,13 @@ import { cn } from "@/lib/cn";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 
 export const metadata: Metadata = {
-  title: "AI Web Feeds - RSS/Atom Feeds for AI Agents & LLMs",
+  title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
   description:
-    "Curated RSS/Atom feeds optimized for AI agents and large language models. Features PDF export, LLM-friendly endpoints, and comprehensive feed support for seamless AI integration.",
+    "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
   openGraph: {
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    description:
+      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
     url: baseUrl,
     type: "website",
     images: [
@@ -38,194 +35,130 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    description:
+      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
     images: [`${baseUrl}/og-image.png`],
   },
 };
 
+const coreSteps = [
+  {
+    eyebrow: "Step 1",
+    title: "Browse feeds",
+    description:
+      "Start from the curated source catalog and narrow by topic, source type, or verification state.",
+    href: "/feeds",
+    cta: "Open catalog",
+    icon: RadioTower,
+  },
+  {
+    eyebrow: "Step 2",
+    title: "Search what is new",
+    description:
+      "Switch between source search and recent-article search without leaving the app or relying on a remote backend.",
+    href: "/search",
+    cta: "Search feeds and posts",
+    icon: Search,
+  },
+  {
+    eyebrow: "Step 3",
+    title: "Read and triage",
+    description:
+      "Open the live reader, keep local read-state, and move promising sources into your own downstream setup.",
+    href: "/reader",
+    cta: "Open reader",
+    icon: Newspaper,
+  },
+] as const;
+
+const supportRoutes = [
+  {
+    title: "Downloads",
+    description: "Export OPML and other portable outputs once you have the right set of feeds.",
+    href: "/downloads",
+    icon: Download,
+  },
+  {
+    title: "Docs",
+    description: "Reference the project docs when you need implementation details or API context.",
+    href: "/docs",
+    icon: BookOpenText,
+  },
+  {
+    title: "LLM Output",
+    description: "Use machine-friendly long-form docs when the consumer is another tool or agent.",
+    href: "/llms-full.txt",
+    icon: Sparkles,
+  },
+] as const;
+
 export default function HomePage() {
-  const highlights = [
-    {
-      label: "Curated feeds",
-      value: "Human-reviewed catalog",
-      description:
-        "A cleaner layer over raw RSS, Atom, and JSON feed discovery for AI-heavy workflows.",
-    },
-    {
-      label: "Live reading",
-      value: "Local-first reader",
-      description:
-        "Open the latest posts from selected feeds without leaving the catalog or search flow.",
-    },
-    {
-      label: "Machine-friendly outputs",
-      value: "Docs, feeds, and LLM formats",
-      description:
-        "Move from browsing to ingestion quickly with endpoints that fit both humans and agents.",
-    },
-    {
-      label: "Operational visibility",
-      value: "Analytics and explorer surfaces",
-      description:
-        "Understand topic coverage, feed health, and relationships instead of guessing what the catalog contains.",
-    },
-  ];
-
-  const features = [
-    {
-      title: "Reader",
-      description:
-        "Read the latest posts from selected feeds, filter by topic, and keep local reading state in the browser.",
-      href: "/reader",
-      icon: Newspaper,
-      eyebrow: "Read",
-    },
-    {
-      title: "Explorer",
-      description:
-        "Inspect topics and feeds as a searchable table or graph so relationships and gaps become legible fast.",
-      href: "/explorer",
-      icon: Network,
-      eyebrow: "Discovery",
-    },
-    {
-      title: "Analytics",
-      description:
-        "Track health, validation velocity, and trending topics through a calmer dashboard tuned for signal over clutter.",
-      href: "/analytics",
-      icon: ChartNoAxesCombined,
-      eyebrow: "Monitoring",
-    },
-    {
-      title: "Search",
-      description:
-        "Find relevant sources quickly with full-text and semantic discovery surfaces built around the catalog.",
-      href: "/search",
-      icon: Search,
-      eyebrow: "Findability",
-    },
-    {
-      title: "Feed catalog",
-      description:
-        "Browse the source registry, validation posture, and structured metadata without diving into raw files.",
-      href: "/feeds",
-      icon: RadioTower,
-      eyebrow: "Registry",
-    },
-    {
-      title: "Downloads",
-      description:
-        "Export the catalog in portable formats for feed readers, downstream processing, or local experimentation.",
-      href: "/downloads",
-      icon: Download,
-      eyebrow: "Portability",
-    },
-    {
-      title: "LLM formats",
-      description:
-        "Serve long-form repository knowledge in formats that are easier to consume inside AI workflows and tools.",
-      href: "/llms-full.txt",
-      icon: Bot,
-      eyebrow: "Agent ready",
-    },
-  ];
-
-  const routes = [
-    { label: "Reader", href: "/reader", icon: Newspaper },
-    { label: "Feeds", href: "/feeds", icon: RadioTower },
-    { label: "Docs", href: "/docs", icon: BookOpenText },
-    { label: "Analytics", href: "/analytics", icon: ChartNoAxesCombined },
-    { label: "LLM output", href: "/llms-full.txt", icon: Binary },
-  ];
-
   return (
     <main className="flex flex-1 flex-col">
       <div className="page-wrap page-stack">
-        <section className="surface-panel overflow-hidden">
-          <div className="grid gap-10 lg:grid-cols-[1.25fr_0.85fr] lg:items-start">
-            <div className="space-y-6">
+        <section className="surface-panel space-y-8">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+            <div className="space-y-5">
               <span className="eyebrow">
                 <Sparkles className="size-3.5" />
                 AI web feed aggregator
               </span>
-              <div className="space-y-5">
-                <h1 className="hero-title">
-                  Track AI sources, read fresh posts, export the graph.
+              <div className="space-y-4">
+                <h1 className="hero-title max-w-4xl">
+                  Find strong AI sources, search recent posts, and keep a cleaner reading queue.
                 </h1>
-                <p className="hero-copy">
-                  AI Web Feeds is supposed to be more than a docs shell. It is a working feed
-                  aggregator: browse the source registry, open a live reader, search recent posts,
-                  and export the catalog for your own stack.
+                <p className="hero-copy max-w-2xl">
+                  The product should do three jobs well: help you pick feeds, inspect what is new,
+                  and export the set you want to keep using. Everything else should stay secondary.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/reader"
+                  href="/feeds"
                   className={cn(buttonVariants({ variant: "default", size: "lg" }))}
                 >
-                  Open the reader
+                  Browse feeds
                   <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/feeds"
+                  href="/search"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                 >
-                  Browse feeds
+                  Search recent posts
                 </Link>
                 <Link
-                  href="/search"
+                  href="/reader"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
-                  Search articles
+                  Open reader
                 </Link>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                {highlights.map((item) => (
-                  <div key={item.label} className="surface-card-soft space-y-3">
-                    <p className="metric-label">{item.label}</p>
-                    <p className="text-xl font-semibold text-(--ink)">{item.value}</p>
-                    <p className="small-note">{item.description}</p>
-                  </div>
-                ))}
               </div>
             </div>
 
-            <aside className="grid gap-4">
-              <div className="surface-card space-y-5">
-                <div className="space-y-2">
-                  <p className="metric-label">Primary surfaces</p>
-                  <h2 className="text-2xl">Move between reading, discovery, search, and export.</h2>
-                </div>
-                <div className="grid gap-3">
-                  {routes.map((route) => {
-                    const Icon = route.icon;
-                    return (
-                      <Link
-                        key={route.href}
-                        href={route.href}
-                        className="flex items-center justify-between rounded-2xl border border-(--line) bg-(--surface) px-4 py-4 text-sm font-medium text-(--ink) transition duration-150 hover:border-(--brand) hover:bg-(--brand-soft)"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
-                            <Icon className="size-4.5" />
-                          </span>
-                          {route.label}
-                        </span>
-                        <ArrowRight className="size-4 text-(--ink-muted)" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="surface-card-soft space-y-3">
-                <p className="metric-label">Product direction</p>
-                <p className="small-note">
-                  The core job is aggregation. Docs and LLM endpoints still matter, but they now
-                  support the feed reader instead of replacing it.
+            <aside className="surface-card-soft space-y-4">
+              <p className="metric-label">Core workflow</p>
+              <div className="space-y-3 text-sm text-(--ink-muted)">
+                <p>
+                  <span className="font-semibold text-(--ink)">1.</span> Use{" "}
+                  <span className="font-semibold text-(--ink)">Feeds</span> to narrow the source
+                  list.
+                </p>
+                <p>
+                  <span className="font-semibold text-(--ink)">2.</span> Use{" "}
+                  <span className="font-semibold text-(--ink)">Search</span> when you need either
+                  the right publication or the right recent post.
+                </p>
+                <p>
+                  <span className="font-semibold text-(--ink)">3.</span> Use{" "}
+                  <span className="font-semibold text-(--ink)">Reader</span> to skim, save, star,
+                  and archive what matters.
+                </p>
+                <p>
+                  <span className="font-semibold text-(--ink)">4.</span> Use{" "}
+                  <span className="font-semibold text-(--ink)">Downloads</span> once you are ready
+                  to move the chosen feeds into another system.
                 </p>
               </div>
             </aside>
@@ -234,37 +167,36 @@ export default function HomePage() {
 
         <section className="space-y-5">
           <div className="space-y-3">
-            <span className="eyebrow">Core capabilities</span>
-            <h2 className="section-heading">
-              A feed product first, with docs and exports around it.
-            </h2>
+            <span className="eyebrow">Primary surfaces</span>
+            <h2 className="section-heading">The product is the workflow, not the sitemap.</h2>
             <p className="section-copy">
-              Each surface should answer a direct user question: what should I subscribe to, what is
-              new right now, how do I search it, and how do I take it elsewhere.
+              Each primary page now maps to a direct task: choose sources, search recent activity,
+              or read the latest stream. Docs and exports still exist, but they support the core
+              flow instead of distracting from it.
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {features.map((feature) => {
-              const Icon = feature.icon;
+          <div className="grid gap-5 md:grid-cols-3">
+            {coreSteps.map((step) => {
+              const Icon = step.icon;
               return (
                 <Link
-                  key={feature.href}
-                  href={feature.href}
+                  key={step.href}
+                  href={step.href}
                   className="surface-card group flex h-full flex-col gap-5 transition duration-150 hover:-translate-y-1"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3">
-                      <span className="eyebrow">{feature.eyebrow}</span>
-                      <h3 className="text-2xl">{feature.title}</h3>
+                      <span className="eyebrow">{step.eyebrow}</span>
+                      <h3 className="text-2xl">{step.title}</h3>
                     </div>
                     <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong) transition duration-150 group-hover:bg-(--brand) group-hover:text-(--fd-primary-foreground)">
                       <Icon className="size-5" />
                     </span>
                   </div>
-                  <p className="small-note flex-1">{feature.description}</p>
+                  <p className="small-note flex-1">{step.description}</p>
                   <span className="inline-flex items-center gap-2 text-sm font-semibold text-(--brand-strong)">
-                    Open surface
+                    {step.cta}
                     <ArrowRight className="size-4" />
                   </span>
                 </Link>
@@ -273,57 +205,37 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="surface-card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="surface-card flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className="metric-label">Open source and portable</p>
-            <h2 className="text-2xl">
-              Use the catalog in the browser, through feed formats, or directly from GitHub.
-            </h2>
+            <p className="metric-label">Support surfaces</p>
+            <h2 className="text-2xl">Keep exports, docs, and machine-facing outputs close by.</h2>
             <p className="small-note max-w-2xl">
-              The site remains the human-facing layer, but the same repository still supports
-              downstream automation, feed reader exports, and machine-friendly long-form docs.
+              The supporting pages are still useful, but they should sit behind the feed workflow
+              instead of trying to define the product.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="https://github.com/wyattowalsh/ai-web-feeds"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-            >
-              View on GitHub
-            </a>
-            <Link
-              href="/llms-full.txt"
-              className={cn(buttonVariants({ variant: "default", size: "lg" }))}
-            >
-              Open LLM output
-            </Link>
+
+          <div className="grid gap-3 sm:min-w-[24rem]">
+            {supportRoutes.map((route) => {
+              const Icon = route.icon;
+              return (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className="flex items-start gap-3 rounded-2xl border border-(--line) bg-(--surface) px-4 py-4 transition duration-150 hover:border-(--brand) hover:bg-(--brand-soft)"
+                >
+                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+                    <Icon className="size-4.5" />
+                  </span>
+                  <span className="space-y-1">
+                    <span className="block text-sm font-semibold text-(--ink)">{route.title}</span>
+                    <span className="small-note block">{route.description}</span>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
-
-        <div className="pb-8 text-center">
-          <p className="small-note">
-            Open source project by{" "}
-            <a
-              href="https://github.com/wyattowalsh"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-(--brand-strong)"
-            >
-              Wyatt Walsh
-            </a>
-            {" · "}
-            <a
-              href="https://github.com/wyattowalsh/ai-web-feeds"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-(--brand-strong)"
-            >
-              View on GitHub
-            </a>
-          </p>
-        </div>
       </div>
     </main>
   );

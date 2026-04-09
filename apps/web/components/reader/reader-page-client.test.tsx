@@ -191,7 +191,9 @@ describe("ReaderPageClient", () => {
     );
     expect(screen.getByText("Agent systems roundup")).toBeInTheDocument();
     expect(screen.queryByText("Agent release notes")).not.toBeInTheDocument();
-    expect(screen.getByText("Scanning all 1 matching feeds, up to 3 posts per source.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Scanning all 1 matching feeds, up to 3 posts per source."),
+    ).toBeInTheDocument();
   });
 
   it("updates URL params for feed, query, and sort changes", () => {
@@ -205,15 +207,16 @@ describe("ReaderPageClient", () => {
     fireEvent.change(screen.getByLabelText("Filter visible articles"), {
       target: { value: "newsletter" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter", {
+      scroll: false,
+    });
 
     fireEvent.change(screen.getByLabelText("Sort"), {
       target: { value: "source" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith(
-      "/reader?feed=feed-2&q=newsletter&sort=source",
-      { scroll: false },
-    );
+    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter&sort=source", {
+      scroll: false,
+    });
   });
 
   it("uses selected-feed mode to fetch the latest 8 posts from a single feed", () => {
@@ -231,7 +234,9 @@ describe("ReaderPageClient", () => {
       }),
     );
     expect(
-      screen.getByText((_, element) => element?.textContent === "Selected-feed mode: latest 8 posts from this source"),
+      screen.getByText(
+        (_, element) => element?.textContent === "Focused on one feed, up to 8 recent posts",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -249,10 +254,14 @@ describe("ReaderPageClient", () => {
     render(<ReaderPageClient feeds={manyFeeds} />);
 
     expect(
-      screen.getByText((_, element) => element?.textContent === "Broad mode scans 18 of 20 matching feeds"),
+      screen.getByText(
+        (_, element) => element?.textContent === "Showing 1 visible article from 18 scanned feeds",
+      ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Truncated broad mode: scanning 18 of 20 matching feeds, up to 3 posts per source."),
+      screen.getByText(
+        "Truncated broad mode: scanning 18 of 20 matching feeds, up to 3 posts per source.",
+      ),
     ).toBeInTheDocument();
   });
 

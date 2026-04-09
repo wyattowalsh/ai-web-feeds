@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import type { FeedSource } from "@/lib/feeds-filters";
-import { filterBySourceType, filterByVerified, getTopics, filterByTopic } from "@/lib/feeds-filters";
+import {
+  filterBySourceType,
+  filterByVerified,
+  getTopics,
+  filterByTopic,
+} from "@/lib/feeds-filters";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
 interface FeedCatalogProps {
@@ -32,6 +37,66 @@ function buildFilteredExportHref(feedIds: string[]): string | null {
   }
 
   return `/api/exports/opml?${params.toString()}`;
+}
+
+function buildReaderHref(feedIds: string[], topic: string | null): string {
+  if (feedIds.length === 1) {
+    return `/reader?feed=${encodeURIComponent(feedIds[0])}`;
+  }
+
+  if (topic) {
+    return `/reader?topic=${encodeURIComponent(topic)}`;
+  }
+
+  return "/reader";
+}
+
+function buildScopedSearchHref({
+  query,
+  sourceType,
+  topic,
+  verified,
+}: {
+  query: string;
+  sourceType: string | null;
+  topic: string | null;
+  verified: boolean | null;
+}): string {
+  const params = new URLSearchParams();
+  params.set("scope", "sources");
+
+  if (query) {
+    params.set("q", query);
+  }
+  if (sourceType) {
+    params.set("source_type", sourceType);
+  }
+  if (topic) {
+    params.set("topics", topic);
+  }
+  if (verified !== null) {
+    params.set("verified", String(verified));
+  }
+
+  return `/search?${params.toString()}`;
+}
+
+function buildFeedArticleSearchHref(feed: FeedSource): string {
+  const params = new URLSearchParams();
+  params.set("scope", "articles");
+  params.set("q", feed.title);
+
+  if (feed.source_type) {
+    params.set("source_type", feed.source_type);
+  }
+  if (feed.topics && feed.topics.length > 0) {
+    params.set("topics", feed.topics.slice(0, 2).join(","));
+  }
+  if (feed.verified === true) {
+    params.set("verified", "true");
+  }
+
+  return `/search?${params.toString()}`;
 }
 
 function buildActiveFilterSummary({
@@ -146,7 +211,24 @@ export function FeedCatalog({
         .filter((feedId): feedId is string => typeof feedId === "string" && feedId.length > 0),
     [filteredFeeds],
   );
-  const visibleExportHref = useMemo(() => buildFilteredExportHref(visibleFeedIds), [visibleFeedIds]);
+  const visibleExportHref = useMemo(
+    () => buildFilteredExportHref(visibleFeedIds),
+    [visibleFeedIds],
+  );
+  const readerHref = useMemo(
+    () => buildReaderHref(visibleFeedIds, selectedTopic),
+    [selectedTopic, visibleFeedIds],
+  );
+  const searchHref = useMemo(
+    () =>
+      buildScopedSearchHref({
+        query: searchQuery,
+        sourceType: selectedType,
+        topic: selectedTopic,
+        verified: verifiedFilter,
+      }),
+    [searchQuery, selectedTopic, selectedType, verifiedFilter],
+  );
   const activeFilterSummary = useMemo(
     () =>
       buildActiveFilterSummary({
@@ -297,6 +379,18 @@ export function FeedCatalog({
           <p>{activeFilterSummary}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link
+            href={readerHref}
+            className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+          >
+            Read matching feeds
+          </Link>
+          <Link
+            href={searchHref}
+            className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+          >
+            Search matching sources
+          </Link>
           {visibleExportHref ? (
             <a
               href={visibleExportHref}
@@ -372,6 +466,13 @@ export function FeedCatalog({
                     Open in reader
                   </Link>
                 ) : null}
+                <Link
+                  href={buildFeedArticleSearchHref(feed)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                >
+                  <SearchIcon className="size-3.5" />
+                  Search posts
+                </Link>
                 {feed.id ? (
                   <a
                     href={buildFilteredExportHref([feed.id]) ?? "#"}

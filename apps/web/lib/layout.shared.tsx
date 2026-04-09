@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import Image from "next/image";
+import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 
 /**
  * Shared layout configurations
@@ -21,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
               AI Web Feeds
             </span>
             <span className="font-serif text-lg font-semibold text-(--ink)">
-              Feed intelligence for agents
+              AI source feeds for humans and agents
             </span>
           </span>
         </span>
@@ -30,20 +30,24 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        text: 'Documentation',
-        url: '/docs',
+        text: "Feeds",
+        url: "/feeds",
       },
       {
-        text: 'Explorer',
-        url: '/explorer',
+        text: "Search",
+        url: "/search",
       },
       {
-        text: 'Analytics',
-        url: '/analytics',
+        text: "Reader",
+        url: "/reader",
       },
       {
-        text: 'GitHub',
-        url: 'https://github.com/wyattowalsh/ai-web-feeds',
+        text: "Documentation",
+        url: "/docs",
+      },
+      {
+        text: "GitHub",
+        url: "https://github.com/wyattowalsh/ai-web-feeds",
         external: true,
       },
     ],

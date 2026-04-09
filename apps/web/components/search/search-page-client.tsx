@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Compass, Newspaper, RadioTower, Search as SearchIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/search/search-bar";
-import { SearchArtworkSlot, SEARCH_ARTWORKS } from "@/components/search/search-artwork";
 import { SearchFilters } from "@/components/search/search-filters";
 import { SearchResults } from "@/components/search/search-results";
 import {
@@ -347,22 +347,21 @@ export function SearchPageClient({
           <div className="space-y-5">
             <span className="eyebrow">
               <Compass className="size-3.5" />
-              Search and discovery
+              Search
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Search the AI source catalog or the latest pulled articles.
+                Find feeds or recent posts without leaving the app.
               </h1>
               <p className="hero-copy max-w-2xl">
-                Default deployment is local-first: source search runs against the shipped catalog,
-                and article search scans recent posts from the most relevant feeds without requiring
-                an external backend.
+                Use source search when you are choosing subscriptions. Switch to article search when
+                you want to skim the freshest pulled posts from matching feeds.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">Search scopes</p>
+            <p className="metric-label">Search modes</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
                 <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
@@ -370,7 +369,7 @@ export function SearchPageClient({
                 </div>
                 <h2 className="text-base font-semibold text-(--ink)">Sources</h2>
                 <p className="small-note mt-1">
-                  Search feed titles, descriptions, notes, and topics.
+                  Search feed titles, descriptions, notes, and topic labels.
                 </p>
               </div>
               <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
@@ -383,11 +382,9 @@ export function SearchPageClient({
                 </p>
               </div>
             </div>
-            <SearchArtworkSlot
-              {...SEARCH_ARTWORKS.modesComparison}
-              priority
-              sizes="(min-width: 1280px) 32rem, (min-width: 768px) 42vw, 100vw"
-            />
+            <p className="small-note">
+              Both modes are local-first, so the default experience stays fast and predictable.
+            </p>
           </div>
         </div>
 
@@ -438,21 +435,30 @@ export function SearchPageClient({
                     <SearchIcon className="size-5" />
                   </span>
                   <div>
-                    <p className="metric-label">Start here</p>
+                    <p className="metric-label">Search workflow</p>
                     <h2 className="text-2xl font-semibold text-(--ink)">
-                      Search the catalog without leaving the app.
+                      Start from a feed, topic, or keyword.
                     </h2>
                   </div>
                 </div>
                 <p className="hero-copy max-w-2xl">
-                  Use source search when you want the right publication, and switch to article
-                  search when you want matching recent posts from the most relevant feeds.
+                  Search sources when you want the right publication. Search articles when you want
+                  matching recent posts from that part of the catalog.
                 </p>
-                <SearchArtworkSlot
-                  {...SEARCH_ARTWORKS.startHereOnboarding}
-                  className="mt-6 max-w-3xl"
-                  sizes="(min-width: 1280px) 48rem, (min-width: 768px) 70vw, 100vw"
-                />
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/feeds"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+                  >
+                    Browse feeds first
+                  </Link>
+                  <Link
+                    href="/reader"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+                  >
+                    Open reader
+                  </Link>
+                </div>
               </div>
             )}
 

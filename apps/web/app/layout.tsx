@@ -21,11 +21,11 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
+    default: "AI Web Feeds - AI Source Discovery, Search, and Reading",
     template: "%s | AI Web Feeds",
   },
   description:
-    "Curated RSS/Atom feeds optimized for AI agents and large language models. Access documentation in multiple formats with PDF export, LLM-friendly endpoints, and comprehensive feed support.",
+    "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
   keywords: [
     "AI",
     "RSS feeds",
@@ -55,8 +55,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    description:
+      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
     siteName: "AI Web Feeds",
     images: [
       {
@@ -69,8 +70,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    description:
+      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
     creator: "@wyattowalsh",
     images: [`${baseUrl}/og-image.png`],
   },

@@ -61,10 +61,12 @@ export default async function FeedsPage({ searchParams }: FeedsPageProps) {
               Feed catalog
             </span>
             <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">Browse the collection as a working source library.</h1>
+              <h1 className="hero-title max-w-4xl">
+                Choose the feed set you actually want to keep.
+              </h1>
               <p className="hero-copy max-w-2xl">
-                Filter by source type, topic, and verification state to move from a broad catalog
-                to a shortlist you can actually use or export into your reader.
+                Filter by source type, topic, and verification state, then move straight into the
+                reader, search recent posts, or export the visible set.
               </p>
             </div>
           </div>
@@ -72,8 +74,8 @@ export default async function FeedsPage({ searchParams }: FeedsPageProps) {
           <div className="surface-card-soft space-y-4">
             <p className="metric-label">Catalog summary</p>
             <p className="small-note">
-              The feed catalog combines curated metadata, verification state, and topical
-              classification so you can browse strategically instead of scrolling raw YAML.
+              The catalog is the starting point for the product flow: narrow the source list first,
+              then read, search, or export from there.
             </p>
           </div>
         </div>

@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
@@ -121,7 +122,9 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
       return haystack.includes(normalizedQuery);
     };
 
-    const nextArticles = articles.filter((article) => matchesView(article) && matchesQuery(article));
+    const nextArticles = articles.filter(
+      (article) => matchesView(article) && matchesQuery(article),
+    );
 
     if (sort === "oldest") {
       return [...nextArticles].sort((left, right) => {
@@ -172,33 +175,42 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                 Reader
               </span>
               <div className="space-y-4">
-                <h1 className="hero-title max-w-4xl">Read the latest posts from the AI source registry.</h1>
+                <h1 className="hero-title max-w-4xl">
+                  Read the latest posts from the AI source registry.
+                </h1>
                 <p className="hero-copy max-w-2xl">
-                  The reader is local-first and query-stateful. Filter by feed or topic, scan the
-                  current article stream, and keep your own reading state on-device.
+                  Filter by feed or topic, scan the current article stream, and keep your own
+                  reading state on-device. The goal is simple: open a feed set and triage it fast.
                 </p>
               </div>
             </div>
 
             <div className="surface-card-soft space-y-4">
-              <p className="metric-label">Current reader scope</p>
+              <p className="metric-label">Live scope</p>
               <div className="grid gap-3 text-sm text-(--ink)">
                 <div>
-                  <span className="font-semibold">{filteredArticles.length}</span> visible article
-                  {filteredArticles.length !== 1 ? "s" : ""}
+                  Showing <span className="font-semibold">{filteredArticles.length}</span> visible
+                  article{filteredArticles.length !== 1 ? "s" : ""} from{" "}
+                  <span className="font-semibold">{fetchedFeedCount}</span> scanned feed
+                  {fetchedFeedCount !== 1 ? "s" : ""}
                 </div>
                 <div>
                   {feed ? (
                     <>
-                      Selected-feed mode: latest{" "}
-                      <span className="font-semibold">{SELECTED_FEED_POST_LIMIT}</span> posts from
-                      this source
+                      Focused on one feed, up to{" "}
+                      <span className="font-semibold">{SELECTED_FEED_POST_LIMIT}</span> recent posts
+                    </>
+                  ) : topic ? (
+                    <>
+                      Filtered to <span className="font-semibold">{topic}</span>, up to{" "}
+                      <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
+                      matching source
                     </>
                   ) : (
                     <>
-                      Broad mode scans <span className="font-semibold">{fetchedFeedCount}</span> of{" "}
-                      <span className="font-semibold">{visibleFeedCount}</span> matching feed
-                      {visibleFeedCount !== 1 ? "s" : ""}
+                      Broad mode samples active feeds across the catalog, up to{" "}
+                      <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
+                      source
                     </>
                   )}
                 </div>
@@ -213,10 +225,18 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   </div>
                 ) : null}
               </div>
-              <Button type="button" variant="outline" onClick={refresh}>
-                <RefreshCcw className="size-4" />
-                Refresh stream
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={refresh}>
+                  <RefreshCcw className="size-4" />
+                  Refresh stream
+                </Button>
+                <Link href="/feeds" className={cn(buttonVariants({ variant: "secondary" }))}>
+                  Choose feeds
+                </Link>
+                <Link href="/search" className={cn(buttonVariants({ variant: "ghost" }))}>
+                  Search posts
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -292,7 +312,9 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => setParam("view", option.value === "latest" ? null : option.value)}
+                      onClick={() =>
+                        setParam("view", option.value === "latest" ? null : option.value)
+                      }
                       className={cn(
                         "flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm transition duration-150",
                         view === option.value
@@ -369,7 +391,9 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
               {!loading && filteredArticles.length === 0 ? (
                 <div className="surface-card">
                   <p className="metric-label">No articles</p>
-                  <h2 className="mt-2 text-xl font-semibold">Nothing matches the current reader scope.</h2>
+                  <h2 className="mt-2 text-xl font-semibold">
+                    Nothing matches the current reader scope.
+                  </h2>
                   <p className="small-note mt-2">
                     Broaden the feed or topic selection, clear the text filter, or refresh the live
                     fetch to pull a new article set.
@@ -412,10 +436,8 @@ function ReaderArticleCard({
   compact: boolean;
   showSummary: boolean;
 }) {
-  const { state, toggleArchive, toggleBookmark, toggleStar, markRead, markUnread } = useArticleState(
-    article.id,
-    article,
-  );
+  const { state, toggleArchive, toggleBookmark, toggleStar, markRead, markUnread } =
+    useArticleState(article.id, article);
 
   return (
     <article className="surface-card space-y-4">
@@ -423,30 +445,53 @@ function ReaderArticleCard({
         <div className="space-y-2">
           <p className="metric-label">{article.feedTitle}</p>
           <h2 className={cn(compact ? "text-xl" : "text-2xl", "font-semibold text-(--ink)")}>
-            <a href={article.link} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <a
+              href={article.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
               {article.title}
             </a>
           </h2>
           <p className="small-note">
-            {article.publishedAt ? new Date(article.publishedAt).toLocaleString() : "No publication date"}
+            {article.publishedAt
+              ? new Date(article.publishedAt).toLocaleString()
+              : "No publication date"}
             {article.author ? ` · ${article.author}` : ""}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant={state.read ? "secondary" : "outline"} onClick={() => void (state.read ? markUnread() : markRead())}>
+          <Button
+            type="button"
+            variant={state.read ? "secondary" : "outline"}
+            onClick={() => void (state.read ? markUnread() : markRead())}
+          >
             <CircleCheck className="size-4" />
             {state.read ? "Read" : "Mark read"}
           </Button>
-          <Button type="button" variant={state.starred ? "default" : "outline"} onClick={() => void toggleStar()}>
+          <Button
+            type="button"
+            variant={state.starred ? "default" : "outline"}
+            onClick={() => void toggleStar()}
+          >
             <Star className="size-4" />
             Star
           </Button>
-          <Button type="button" variant={state.bookmarked ? "default" : "outline"} onClick={() => void toggleBookmark()}>
+          <Button
+            type="button"
+            variant={state.bookmarked ? "default" : "outline"}
+            onClick={() => void toggleBookmark()}
+          >
             <Bookmark className="size-4" />
             Save
           </Button>
-          <Button type="button" variant={state.archived ? "secondary" : "outline"} onClick={() => void toggleArchive()}>
+          <Button
+            type="button"
+            variant={state.archived ? "secondary" : "outline"}
+            onClick={() => void toggleArchive()}
+          >
             Archive
           </Button>
         </div>
