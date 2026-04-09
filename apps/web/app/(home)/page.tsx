@@ -8,6 +8,7 @@ import {
   ChartNoAxesCombined,
   Download,
   Network,
+  Newspaper,
   RadioTower,
   Search,
   Sparkles,
@@ -48,28 +49,37 @@ export default function HomePage() {
     {
       label: "Curated feeds",
       value: "Human-reviewed catalog",
-      description: "A cleaner layer over raw RSS, Atom, and JSON feed discovery for AI-heavy workflows.",
+      description:
+        "A cleaner layer over raw RSS, Atom, and JSON feed discovery for AI-heavy workflows.",
+    },
+    {
+      label: "Live reading",
+      value: "Local-first reader",
+      description:
+        "Open the latest posts from selected feeds without leaving the catalog or search flow.",
     },
     {
       label: "Machine-friendly outputs",
       value: "Docs, feeds, and LLM formats",
-      description: "Move from browsing to ingestion quickly with endpoints that fit both humans and agents.",
+      description:
+        "Move from browsing to ingestion quickly with endpoints that fit both humans and agents.",
     },
     {
       label: "Operational visibility",
       value: "Analytics and explorer surfaces",
-      description: "Understand topic coverage, feed health, and relationships instead of guessing what the catalog contains.",
+      description:
+        "Understand topic coverage, feed health, and relationships instead of guessing what the catalog contains.",
     },
   ];
 
   const features = [
     {
-      title: "Documentation",
+      title: "Reader",
       description:
-        "Browse guides, API reference, and implementation notes in a format that reads cleanly for both maintainers and agents.",
-      href: "/docs",
-      icon: BookOpenText,
-      eyebrow: "Reference",
+        "Read the latest posts from selected feeds, filter by topic, and keep local reading state in the browser.",
+      href: "/reader",
+      icon: Newspaper,
+      eyebrow: "Read",
     },
     {
       title: "Explorer",
@@ -122,8 +132,9 @@ export default function HomePage() {
   ];
 
   const routes = [
+    { label: "Reader", href: "/reader", icon: Newspaper },
+    { label: "Feeds", href: "/feeds", icon: RadioTower },
     { label: "Docs", href: "/docs", icon: BookOpenText },
-    { label: "Explorer", href: "/explorer", icon: Network },
     { label: "Analytics", href: "/analytics", icon: ChartNoAxesCombined },
     { label: "LLM output", href: "/llms-full.txt", icon: Binary },
   ];
@@ -136,36 +147,38 @@ export default function HomePage() {
             <div className="space-y-6">
               <span className="eyebrow">
                 <Sparkles className="size-3.5" />
-                Editorial feed infrastructure for AI workflows
+                AI web feed aggregator
               </span>
               <div className="space-y-5">
-                <h1 className="hero-title">Readable by humans. Structured for agents.</h1>
+                <h1 className="hero-title">
+                  Track AI sources, read fresh posts, export the graph.
+                </h1>
                 <p className="hero-copy">
-                  AI Web Feeds turns a raw ecosystem of feeds, topics, and documentation into a
-                  browsable knowledge surface with machine-friendly outputs, clearer navigation, and
-                  operational visibility built in.
+                  AI Web Feeds is supposed to be more than a docs shell. It is a working feed
+                  aggregator: browse the source registry, open a live reader, search recent posts,
+                  and export the catalog for your own stack.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/docs"
+                  href="/reader"
                   className={cn(buttonVariants({ variant: "default", size: "lg" }))}
                 >
-                  Read the docs
+                  Open the reader
                   <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/explorer"
+                  href="/feeds"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                 >
-                  Explore the catalog
+                  Browse feeds
                 </Link>
                 <Link
-                  href="/analytics"
+                  href="/search"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
-                  Review analytics
+                  Search articles
                 </Link>
               </div>
 
@@ -184,7 +197,7 @@ export default function HomePage() {
               <div className="surface-card space-y-5">
                 <div className="space-y-2">
                   <p className="metric-label">Primary surfaces</p>
-                  <h2 className="text-2xl">Move between docs, discovery, analytics, and exports.</h2>
+                  <h2 className="text-2xl">Move between reading, discovery, search, and export.</h2>
                 </div>
                 <div className="grid gap-3">
                   {routes.map((route) => {
@@ -209,11 +222,10 @@ export default function HomePage() {
               </div>
 
               <div className="surface-card-soft space-y-3">
-                <p className="metric-label">What this app is doing better now</p>
+                <p className="metric-label">Product direction</p>
                 <p className="small-note">
-                  Cleaner hierarchy, stronger typography, calmer surfaces, and shared UI primitives
-                  that make the app feel like one product instead of a set of separate route
-                  experiments.
+                  The core job is aggregation. Docs and LLM endpoints still matter, but they now
+                  support the feed reader instead of replacing it.
                 </p>
               </div>
             </aside>
@@ -223,11 +235,12 @@ export default function HomePage() {
         <section className="space-y-5">
           <div className="space-y-3">
             <span className="eyebrow">Core capabilities</span>
-            <h2 className="section-heading">A better front door into the repository’s feed intelligence.</h2>
+            <h2 className="section-heading">
+              A feed product first, with docs and exports around it.
+            </h2>
             <p className="section-copy">
-              The main product surfaces are now framed as clear entry points rather than a single
-              undifferentiated card wall. Each one answers a different question: how to use the
-              system, what it contains, how it is performing, and how to export it.
+              Each surface should answer a direct user question: what should I subscribe to, what is
+              new right now, how do I search it, and how do I take it elsewhere.
             </p>
           </div>
 
@@ -263,7 +276,9 @@ export default function HomePage() {
         <section className="surface-card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
             <p className="metric-label">Open source and portable</p>
-            <h2 className="text-2xl">Use the catalog in the browser, through feed formats, or directly from GitHub.</h2>
+            <h2 className="text-2xl">
+              Use the catalog in the browser, through feed formats, or directly from GitHub.
+            </h2>
             <p className="small-note max-w-2xl">
               The site remains the human-facing layer, but the same repository still supports
               downstream automation, feed reader exports, and machine-friendly long-form docs.

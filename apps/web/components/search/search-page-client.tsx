@@ -10,7 +10,6 @@ import { SearchResults } from "@/components/search/search-results";
 import {
   ensureAnonymousUserId,
   fetchWithAnonymousIdentity,
-  getStoredUserId,
   syncAnonymousUserIdFromResponse,
 } from "@/lib/user-identity";
 import {
@@ -91,9 +90,10 @@ export function SearchPageClient({
   const [verified, setVerified] = useState<boolean | undefined>(initialSearchState.verified);
   const [results, setResults] = useState<SearchResult[]>(initialResults);
   const [searchMeta, setSearchMeta] = useState<SearchResponseMeta>(initialMeta);
-  const [loading, setLoading] = useState(initialSearchRequestState === "failed" && Boolean(initialQuery));
+  const [loading, setLoading] = useState(
+    initialSearchRequestState === "failed" && Boolean(initialQuery),
+  );
   const [hasSearched, setHasSearched] = useState(Boolean(initialQuery));
-  const [userId, setUserId] = useState<string>(() => getStoredUserId() ?? "");
 
   const searchStateRef = useRef<SearchExecutionState>(initialSearchState);
   const hasInitializedRef = useRef(false);
@@ -113,14 +113,6 @@ export function SearchPageClient({
     };
   }, [initialSearchState.threshold, scope, sourceType, topics, verified]);
 
-  const syncUserId = useCallback((nextUserId: string | null | undefined) => {
-    if (!nextUserId || nextUserId === userId) {
-      return;
-    }
-
-    setUserId(nextUserId);
-  }, [userId]);
-
   const logSearchAnalytics = useCallback(
     async (searchQuery: string, state: SearchExecutionState, resultCount: number) => {
       const normalizedQuery = normalizeSearchQuery(searchQuery);
@@ -130,7 +122,6 @@ export function SearchPageClient({
 
       try {
         const authoritativeUserId = await ensureAnonymousUserId();
-        syncUserId(authoritativeUserId);
         const response = await fetchWithAnonymousIdentity("/api/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -148,21 +139,21 @@ export function SearchPageClient({
           }),
         });
 
-        syncUserId(syncAnonymousUserIdFromResponse(response));
+        syncAnonymousUserIdFromResponse(response);
       } catch (error) {
         console.error("Search analytics logging error:", error);
       }
     },
-    [syncUserId],
+    [],
   );
 
   useEffect(() => {
     void ensureAnonymousUserId()
-      .then(syncUserId)
+      .then(() => undefined)
       .catch((error) => {
         console.error("Anonymous identity bootstrap error:", error);
       });
-  }, [syncUserId]);
+  }, []);
 
   useEffect(() => {
     if (!shouldLogInitialSearch || !initialQuery || hasLoggedInitialSearchRef.current) {
@@ -171,7 +162,13 @@ export function SearchPageClient({
 
     hasLoggedInitialSearchRef.current = true;
     void logSearchAnalytics(initialQuery, initialSearchState, initialResults.length);
-  }, [initialQuery, initialResults.length, initialSearchState, logSearchAnalytics, shouldLogInitialSearch]);
+  }, [
+    initialQuery,
+    initialResults.length,
+    initialSearchState,
+    logSearchAnalytics,
+    shouldLogInitialSearch,
+  ]);
 
   const performSearch = useCallback(
     async (
@@ -212,7 +209,10 @@ export function SearchPageClient({
           throw new Error("Search failed");
         }
 
-        const data = (await response.json()) as { results?: SearchResult[]; meta?: SearchResponseMeta };
+        const data = (await response.json()) as {
+          results?: SearchResult[];
+          meta?: SearchResponseMeta;
+        };
         if (requestSequence !== searchRequestSequenceRef.current) {
           return;
         }
@@ -247,12 +247,16 @@ export function SearchPageClient({
       queryFromUrl === initialQuery && areSearchStatesEqual(searchStateFromUrl, initialSearchState);
 
     setQuery((current) => (current === queryFromUrl ? current : queryFromUrl));
-    setScope((current) => (current === searchStateFromUrl.scope ? current : searchStateFromUrl.scope));
+    setScope((current) =>
+      current === searchStateFromUrl.scope ? current : searchStateFromUrl.scope,
+    );
     setSourceType((current) =>
       current === searchStateFromUrl.source_type ? current : searchStateFromUrl.source_type,
     );
     setTopics((current) =>
-      areStringArraysEqual(current, searchStateFromUrl.topics) ? current : searchStateFromUrl.topics,
+      areStringArraysEqual(current, searchStateFromUrl.topics)
+        ? current
+        : searchStateFromUrl.topics,
     );
     setVerified((current) =>
       current === searchStateFromUrl.verified ? current : searchStateFromUrl.verified,
@@ -262,7 +266,11 @@ export function SearchPageClient({
       hasInitializedRef.current = true;
 
       if (matchesInitialSearch) {
-        if (queryFromUrl && normalizedParamsString && normalizedParamsString !== searchParamsString) {
+        if (
+          queryFromUrl &&
+          normalizedParamsString &&
+          normalizedParamsString !== searchParamsString
+        ) {
           lastPushedSearchRef.current = normalizedParamsString;
           push(`/search?${normalizedParamsString}`);
         }
@@ -289,7 +297,14 @@ export function SearchPageClient({
     }
 
     void performSearch(queryFromUrl, searchStateFromUrl, { skipUrlSync: true });
-  }, [initialQuery, initialSearchRequestState, initialSearchState, performSearch, push, searchParamsString]);
+  }, [
+    initialQuery,
+    initialSearchRequestState,
+    initialSearchState,
+    performSearch,
+    push,
+    searchParamsString,
+  ]);
 
   const handleSearch = (nextQuery: string) => {
     const normalizedQuery = normalizeSearchQuery(nextQuery) ?? nextQuery.trim();
@@ -335,7 +350,9 @@ export function SearchPageClient({
               Search and discovery
             </span>
             <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">Search the AI source catalog or the latest pulled articles.</h1>
+              <h1 className="hero-title max-w-4xl">
+                Search the AI source catalog or the latest pulled articles.
+              </h1>
               <p className="hero-copy max-w-2xl">
                 Default deployment is local-first: source search runs against the shipped catalog,
                 and article search scans recent posts from the most relevant feeds without requiring
@@ -352,14 +369,18 @@ export function SearchPageClient({
                   <RadioTower className="size-4" />
                 </div>
                 <h2 className="text-base font-semibold text-(--ink)">Sources</h2>
-                <p className="small-note mt-1">Search feed titles, descriptions, notes, and topics.</p>
+                <p className="small-note mt-1">
+                  Search feed titles, descriptions, notes, and topics.
+                </p>
               </div>
               <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
                 <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
                   <Newspaper className="size-4" />
                 </div>
                 <h2 className="text-base font-semibold text-(--ink)">Articles</h2>
-                <p className="small-note mt-1">Search recent pulled posts from the most relevant feeds.</p>
+                <p className="small-note mt-1">
+                  Search recent pulled posts from the most relevant feeds.
+                </p>
               </div>
             </div>
             <SearchArtworkSlot
@@ -402,8 +423,8 @@ export function SearchPageClient({
                   </p>
                   {scope === "articles" && searchMeta.bounded ? (
                     <p className="small-note mt-2">
-                      Scanned {searchMeta.scanned_sources} of {searchMeta.candidate_sources} matching
-                      sources, up to {searchMeta.per_source_limit} posts per source.
+                      Scanned {searchMeta.scanned_sources} of {searchMeta.candidate_sources}{" "}
+                      matching sources, up to {searchMeta.per_source_limit} posts per source.
                     </p>
                   ) : null}
                 </div>
@@ -418,7 +439,9 @@ export function SearchPageClient({
                   </span>
                   <div>
                     <p className="metric-label">Start here</p>
-                    <h2 className="text-2xl font-semibold text-(--ink)">Search the catalog without leaving the app.</h2>
+                    <h2 className="text-2xl font-semibold text-(--ink)">
+                      Search the catalog without leaving the app.
+                    </h2>
                   </div>
                 </div>
                 <p className="hero-copy max-w-2xl">
@@ -434,12 +457,7 @@ export function SearchPageClient({
             )}
 
             {hasSearched && (
-              <SearchResults
-                results={results}
-                scope={scope}
-                meta={searchMeta}
-                loading={loading}
-              />
+              <SearchResults results={results} scope={scope} meta={searchMeta} loading={loading} />
             )}
           </div>
         </div>

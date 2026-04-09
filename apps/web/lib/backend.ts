@@ -16,15 +16,25 @@ export class BackendError extends Error {
   }
 }
 
+export class BackendConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BackendConfigurationError";
+  }
+}
+
 export function getBackendUrl(): string {
   const url = process.env.BACKEND_URL?.trim();
   if (!url) {
-    throw new Error("BACKEND_URL environment variable not configured");
+    throw new BackendConfigurationError("BACKEND_URL environment variable not configured");
   }
   return url;
 }
 
-export function buildBackendUrl(path: string, params?: Record<string, string | number | boolean>): string {
+export function buildBackendUrl(
+  path: string,
+  params?: Record<string, string | number | boolean>,
+): string {
   const url = new URL(path, getBackendUrl());
   if (params) {
     for (const [key, value] of Object.entries(params)) {
@@ -70,9 +80,11 @@ export async function fetchBackend(
   return response.json();
 }
 
-export function formatBackendErrorResponse(
-  error: unknown,
-): { error: string; request_id?: string; code?: string } {
+export function formatBackendErrorResponse(error: unknown): {
+  error: string;
+  request_id?: string;
+  code?: string;
+} {
   if (error instanceof BackendError) {
     return {
       error: error.message,
@@ -89,6 +101,14 @@ export function formatBackendErrorResponse(
   return {
     error: "Internal server error",
   };
+}
+
+export function getBackendErrorStatus(error: unknown): number {
+  if (error instanceof BackendError) {
+    return error.status;
+  }
+
+  return 500;
 }
 
 export function encodeQueryParam(value: string): string {

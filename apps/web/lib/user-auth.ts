@@ -7,9 +7,17 @@
 
 import { validateUUID } from "@/lib/backend";
 
+export const ANON_USER_BINDING_COOKIE = "aiwf_anon_user_id";
+export const ANON_USER_ID_RESPONSE_HEADER = "x-aiwf-anon-user-id";
+
 export type UserIdentity = {
   user_id: string;
   source: "session" | "header" | "client" | "anonymous";
+};
+
+export type ResolvedUserIdentity = {
+  identity: UserIdentity;
+  shouldBindCookie: boolean;
 };
 
 function normalizeUserId(value: string | null | undefined): string | null {
@@ -61,6 +69,43 @@ export function getUserIdentity(
   };
 }
 
+export function isValidUserId(value: string | null | undefined): boolean {
+  return normalizeUserId(value) !== null;
+}
+
+export function resolveUserIdentity(
+  request: Request,
+  candidateUserId?: string | null,
+  options: { allowTrustedHeader?: boolean } = {},
+): ResolvedUserIdentity {
+  const directIdentity = getUserIdentity(request, candidateUserId, options);
+  if (directIdentity.source !== "anonymous") {
+    return {
+      identity: directIdentity,
+      shouldBindCookie: false,
+    };
+  }
+
+  const cookieUserId = normalizeUserId(readBindingCookie(request));
+  if (cookieUserId) {
+    return {
+      identity: {
+        user_id: cookieUserId,
+        source: "client",
+      },
+      shouldBindCookie: false,
+    };
+  }
+
+  return {
+    identity: {
+      user_id: crypto.randomUUID(),
+      source: "client",
+    },
+    shouldBindCookie: true,
+  };
+}
+
 /**
  * Validate that client-supplied user_id matches authenticated identity
  *
@@ -71,7 +116,10 @@ export function getUserIdentity(
  * @param actualIdentity - authenticated identity from headers/session
  * @returns true if client-supplied ID matches authenticated identity
  */
-export function validateUserOwnership(clientSuppliedId: string | null, actualIdentity: UserIdentity): boolean {
+export function validateUserOwnership(
+  clientSuppliedId: string | null,
+  actualIdentity: UserIdentity,
+): boolean {
   const normalizedClientId = normalizeUserId(clientSuppliedId);
 
   if (!normalizedClientId) {
@@ -83,4 +131,44 @@ export function validateUserOwnership(clientSuppliedId: string | null, actualIde
   }
 
   return normalizedClientId === actualIdentity.user_id;
+}
+
+export function validateTrustedUserOwnership(
+  clientSuppliedId: string | null,
+  actualIdentity: UserIdentity,
+): boolean {
+  return validateUserOwnership(clientSuppliedId, actualIdentity);
+}
+
+export function applyUserIdentityBinding(
+  response: Response,
+  resolvedIdentity: ResolvedUserIdentity,
+): Response {
+  response.headers.set(ANON_USER_ID_RESPONSE_HEADER, resolvedIdentity.identity.user_id);
+
+  if (!resolvedIdentity.shouldBindCookie) {
+    return response;
+  }
+
+  response.headers.append(
+    "Set-Cookie",
+    `${ANON_USER_BINDING_COOKIE}=${resolvedIdentity.identity.user_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`,
+  );
+  return response;
+}
+
+function readBindingCookie(request: Request): string | null {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) {
+    return null;
+  }
+
+  for (const part of cookieHeader.split(";")) {
+    const [rawName, ...rawValue] = part.trim().split("=");
+    if (rawName === ANON_USER_BINDING_COOKIE) {
+      return decodeURIComponent(rawValue.join("="));
+    }
+  }
+
+  return null;
 }

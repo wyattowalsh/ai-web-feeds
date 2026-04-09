@@ -6,29 +6,25 @@ import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 interface SearchFiltersProps {
-  searchType: "full_text" | "semantic";
-  onSearchTypeChange: (type: "full_text" | "semantic") => void;
+  scope: "sources" | "articles";
+  onScopeChange: (scope: "sources" | "articles") => void;
   sourceType?: string;
   onSourceTypeChange: (type: string | undefined) => void;
   topics: string[];
   onTopicsChange: (topics: string[]) => void;
   verified?: boolean;
   onVerifiedChange: (verified: boolean | undefined) => void;
-  threshold: number;
-  onThresholdChange: (threshold: number) => void;
 }
 
 export function SearchFilters({
-  searchType,
-  onSearchTypeChange,
+  scope,
+  onScopeChange,
   sourceType,
   onSourceTypeChange,
   topics,
   onTopicsChange,
   verified,
   onVerifiedChange,
-  threshold,
-  onThresholdChange,
 }: SearchFiltersProps) {
   const sourceTypes = [
     { value: "", label: "All Sources" },
@@ -77,39 +73,19 @@ export function SearchFilters({
         <div className="flex gap-2">
           <Button
             type="button"
-            onClick={() => onSearchTypeChange("full_text")}
-            variant={searchType === "full_text" ? "default" : "secondary"}
+            onClick={() => onScopeChange("sources")}
+            variant={scope === "sources" ? "default" : "secondary"}
           >
-            Full-Text
+            Sources
           </Button>
           <Button
             type="button"
-            onClick={() => onSearchTypeChange("semantic")}
-            variant={searchType === "semantic" ? "default" : "secondary"}
+            onClick={() => onScopeChange("articles")}
+            variant={scope === "articles" ? "default" : "secondary"}
           >
-            Semantic
+            Articles
           </Button>
         </div>
-        {searchType === "semantic" && (
-          <div className="mt-4 rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Similarity Threshold: {threshold.toFixed(2)}
-            </label>
-            <input
-              type="range"
-              min="0.5"
-              max="1.0"
-              step="0.05"
-              value={threshold}
-              onChange={(e) => onThresholdChange(parseFloat(e.target.value))}
-              className="w-full"
-            />
-            <div className="mt-2 flex justify-between text-xs text-(--ink-muted)">
-              <span>Less strict</span>
-              <span>More strict</span>
-            </div>
-          </div>
-        )}
       </div>
 
       <div>
@@ -138,7 +114,7 @@ export function SearchFilters({
                 "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
                 topics.includes(topic)
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
             >
               {topic.toUpperCase()}

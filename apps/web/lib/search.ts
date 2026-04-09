@@ -3,6 +3,7 @@ export type SearchType = SearchScope;
 
 export type SearchFilterInput = {
   search_type?: SearchType | string;
+  scope?: SearchScope | string;
   source_type?: string;
   topics?: string[] | string;
   verified?: boolean | string;

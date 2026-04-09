@@ -6,7 +6,7 @@
  * establishes the authoritative anonymous binding via an HttpOnly cookie.
  */
 
-import { ANON_USER_ID_RESPONSE_HEADER } from "@/lib/anonymous-identity";
+import { ANON_USER_ID_RESPONSE_HEADER } from "@/lib/user-auth";
 import { validateUUID } from "@/lib/backend";
 
 const USER_ID_KEY = "aiwebfeeds_user_id";
@@ -20,9 +20,9 @@ function canUseStorage(): boolean {
 
   const storage = window.localStorage;
   return (
-    typeof storage?.getItem === "function"
-    && typeof storage?.setItem === "function"
-    && typeof storage?.removeItem === "function"
+    typeof storage?.getItem === "function" &&
+    typeof storage?.setItem === "function" &&
+    typeof storage?.removeItem === "function"
   );
 }
 
@@ -87,7 +87,9 @@ export function getUserId(): string | null {
   return setUserId(crypto.randomUUID());
 }
 
-export function syncAnonymousUserIdFromResponse(response: Pick<Response, "headers">): string | null {
+export function syncAnonymousUserIdFromResponse(
+  response: Pick<Response, "headers">,
+): string | null {
   const responseUserId = response.headers.get(ANON_USER_ID_RESPONSE_HEADER);
   if (responseUserId === null) {
     return getStoredUserId();
