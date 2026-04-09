@@ -9,6 +9,7 @@ import { parse } from "yaml";
 
 export interface FeedSource {
   id?: string;
+  feed?: string;
   url: string;
   title: string;
   source_type?: string;
@@ -53,6 +54,13 @@ function normalizeFeedRecord(feed: FeedSource, index: number): FeedSource {
     topics: feed.topics ?? feed.tags ?? [],
     tags: feed.tags ?? feed.topics ?? [],
   };
+}
+
+function hasExplicitBooleanValue<Key extends "verified" | "is_active">(
+  feeds: FeedSource[],
+  key: Key,
+): boolean {
+  return feeds.some((feed) => typeof feed[key] === "boolean");
 }
 
 function normalizeFeedsData(data: unknown): FeedsData {
@@ -169,11 +177,18 @@ export function getTopics(feeds: FeedSource[]): string[] {
  * Get feed statistics
  */
 export function getFeedStats(feeds: FeedSource[]) {
+  const sourceTypes = getSourceTypes(feeds);
+  const hasVerificationMetadata = hasExplicitBooleanValue(feeds, "verified");
+  const hasActivityMetadata = hasExplicitBooleanValue(feeds, "is_active");
+
   return {
     total: feeds.length,
-    verified: feeds.filter((f) => f.verified).length,
-    active: feeds.filter((f) => f.is_active !== false).length,
-    byType: getSourceTypes(feeds).reduce(
+    verified: feeds.filter((feed) => feed.verified === true).length,
+    active: feeds.filter((feed) => feed.is_active === true).length,
+    hasVerificationMetadata,
+    hasActivityMetadata,
+    sourceTypeCount: sourceTypes.length,
+    byType: sourceTypes.reduce(
       (acc, type) => {
         acc[type] = feeds.filter((f) => f.source_type === type).length;
         return acc;

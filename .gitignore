@@ -263,6 +263,12 @@ build/
 develop-eggs/
 dist/
 downloads/
+# Keep the app downloads route tracked; the generic packaging ignore above is broader than intended.
+!apps/web/app/downloads/
+apps/web/app/downloads/*
+!apps/web/app/downloads/page.tsx
+!apps/web/app/downloads/opml-viewer.tsx
+!apps/web/app/downloads/advanced-preview-section.tsx
 eggs/
 .eggs/
 lib/

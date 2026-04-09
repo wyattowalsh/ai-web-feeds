@@ -2,7 +2,12 @@ import "server-only";
 
 import { loadAggregatedFeedPostsByIds } from "@/lib/feed-posts";
 import { loadFeedCatalog, type FeedSource } from "@/lib/feeds";
-import type { SearchResponseMeta, SearchResponsePayload, SearchResult, SearchScope } from "@/lib/search";
+import type {
+  SearchResponseMeta,
+  SearchResponsePayload,
+  SearchResult,
+  SearchScope,
+} from "@/lib/search";
 
 export interface LocalSearchOptions {
   query: string;
@@ -13,8 +18,8 @@ export interface LocalSearchOptions {
   verified?: boolean;
 }
 
-const ARTICLE_FEED_SCAN_LIMIT = 18;
-const ARTICLE_PER_FEED_LIMIT = 4;
+const ARTICLE_FEED_SCAN_LIMIT = 30;
+const ARTICLE_PER_FEED_LIMIT = 3;
 const ARTICLE_TOTAL_LIMIT = 120;
 
 type SearchableFeedSource = FeedSource & {
@@ -38,17 +43,26 @@ export async function runLocalSearch(options: LocalSearchOptions): Promise<Searc
 }
 
 function filterFeeds(feeds: FeedSource[], options: LocalSearchOptions): SearchableFeedSource[] {
+  const hasVerificationSignals = feeds.some((feed) => typeof feed.verified === "boolean");
+
   return feeds.filter((feed) => {
     if (options.sourceType && feed.source_type !== options.sourceType) {
       return false;
     }
 
-    if (options.verified !== undefined && feed.verified !== options.verified) {
+    if (
+      hasVerificationSignals &&
+      options.verified !== undefined &&
+      feed.verified !== options.verified
+    ) {
       return false;
     }
 
     if (options.topics && options.topics.length > 0) {
-      const feedTopics = normalizeList([...normalizeTopics(feed.topics), ...normalizeTopics(feed.tags)]);
+      const feedTopics = normalizeList([
+        ...normalizeTopics(feed.topics),
+        ...normalizeTopics(feed.tags),
+      ]);
       if (!options.topics.some((topic) => feedTopics.includes(topic))) {
         return false;
       }
@@ -141,7 +155,7 @@ async function searchArticles(
     ARTICLE_PER_FEED_LIMIT,
   );
 
-  const results = payload.posts
+  const rankedResults = payload.posts
     .map((post) => {
       const feed = feedLookup.get(post.feedId);
       const feedTopics = normalizeTopics(feed?.topics);
@@ -170,8 +184,9 @@ async function searchArticles(
       };
     })
     .filter((result) => result.match_score > 0)
-    .sort((left, right) => compareResults(left, right))
-    .slice(0, options.limit);
+    .sort((left, right) => compareResults(left, right));
+
+  const results = diversifyArticleResults(rankedResults, options.limit);
 
   return {
     scope: "articles",
@@ -190,6 +205,64 @@ function buildUnboundedMeta(candidateSources: number): SearchResponseMeta {
     per_source_limit: null,
     truncated: false,
   };
+}
+
+function diversifyArticleResults(results: SearchResult[], limit: number): SearchResult[] {
+  if (results.length <= limit) {
+    return results;
+  }
+
+  const buckets = new Map<string, SearchResult[]>();
+  const orderedFeedIds: string[] = [];
+  const fallback: SearchResult[] = [];
+
+  for (const result of results) {
+    if (result.kind !== "article" || !result.feed_id) {
+      fallback.push(result);
+      continue;
+    }
+
+    if (!buckets.has(result.feed_id)) {
+      buckets.set(result.feed_id, []);
+      orderedFeedIds.push(result.feed_id);
+    }
+
+    buckets.get(result.feed_id)!.push(result);
+  }
+
+  const diversified: SearchResult[] = [];
+  while (diversified.length < limit) {
+    let advanced = false;
+
+    for (const feedId of orderedFeedIds) {
+      const bucket = buckets.get(feedId);
+      if (!bucket || bucket.length === 0) {
+        continue;
+      }
+
+      diversified.push(bucket.shift()!);
+      advanced = true;
+
+      if (diversified.length >= limit) {
+        break;
+      }
+    }
+
+    if (!advanced) {
+      break;
+    }
+  }
+
+  if (diversified.length < limit && fallback.length > 0) {
+    diversified.push(...fallback.slice(0, limit - diversified.length));
+  }
+
+  if (diversified.length < limit) {
+    const remaining = orderedFeedIds.flatMap((feedId) => buckets.get(feedId) || []);
+    diversified.push(...remaining.slice(0, limit - diversified.length));
+  }
+
+  return diversified.slice(0, limit);
 }
 
 function buildBoundedMeta(candidateSources: number, scannedSources: number): SearchResponseMeta {
@@ -218,11 +291,7 @@ function normalizeTopics(values: string[] | string | null | undefined): string[]
 
 function normalizeList(values: readonly string[]): string[] {
   return Array.from(
-    new Set(
-      values
-        .map((value) => normalizeText(value))
-        .filter((value) => value.length > 0),
-    ),
+    new Set(values.map((value) => normalizeText(value)).filter((value) => value.length > 0)),
   );
 }
 
@@ -262,10 +331,7 @@ function scoreList(query: string, values: readonly string[], weight: number): nu
   return values.reduce((total, value) => total + scoreText(query, value, weight), 0);
 }
 
-function compareResults(
-  left: SearchResult,
-  right: SearchResult,
-): number {
+function compareResults(left: SearchResult, right: SearchResult): number {
   if (left.match_score !== right.match_score) {
     return right.match_score - left.match_score;
   }

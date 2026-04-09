@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RadioTower, ShieldCheck, Sparkles, Tags } from "lucide-react";
+import { RadioTower, Shapes, Sparkles, Tags } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { loadFeeds, getSourceTypes, getFeedStats } from "@/lib/feeds";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
@@ -50,6 +50,35 @@ export default async function FeedsPage({ searchParams }: FeedsPageProps) {
   const initialSourceType = resolvedSearchParams.get("source_type")?.trim() || null;
   const initialTopic = resolvedSearchParams.get("topic")?.trim() || null;
   const initialVerified = parseVerifiedSearchFilter(resolvedSearchParams.get("verified")) ?? null;
+  const metricCards = [
+    {
+      label: "Total feeds",
+      value: stats.total,
+      detail: "Curated sources in the catalog",
+      icon: <RadioTower className="size-5" />,
+    },
+    {
+      label: "Source types",
+      value: stats.sourceTypeCount,
+      detail: "Distinct source formats represented",
+      icon: <Shapes className="size-5" />,
+    },
+    {
+      label: "Topics",
+      value: stats.topicCount,
+      detail: "Distinct topic labels represented",
+      icon: <Tags className="size-5" />,
+    },
+  ];
+
+  if (stats.hasVerificationMetadata) {
+    metricCards.push({
+      label: "Verified",
+      value: stats.verified,
+      detail: `${Math.round((stats.verified / stats.total) * 100)}% of the catalog`,
+      icon: <Sparkles className="size-5" />,
+    });
+  }
 
   return (
     <div className="page-wrap page-stack">
@@ -77,34 +106,25 @@ export default async function FeedsPage({ searchParams }: FeedsPageProps) {
               The catalog is the starting point for the product flow: narrow the source list first,
               then read, search, or export from there.
             </p>
+            {!stats.hasVerificationMetadata && (
+              <p className="small-note">
+                This published snapshot does not include verification labels, so the catalog keeps
+                the core workflow focused on source type and topic instead of implied quality flags.
+              </p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total feeds"
-            value={stats.total}
-            detail="Curated sources in the catalog"
-            icon={<RadioTower className="size-5" />}
-          />
-          <MetricCard
-            label="Verified"
-            value={stats.verified}
-            detail={`${Math.round((stats.verified / stats.total) * 100)}% of the catalog`}
-            icon={<ShieldCheck className="size-5" />}
-          />
-          <MetricCard
-            label="Active"
-            value={stats.active}
-            detail={`${Math.round((stats.active / stats.total) * 100)}% currently active`}
-            icon={<Sparkles className="size-5" />}
-          />
-          <MetricCard
-            label="Topics"
-            value={stats.topicCount}
-            detail="Distinct topic labels represented"
-            icon={<Tags className="size-5" />}
-          />
+          {metricCards.map((card) => (
+            <MetricCard
+              key={card.label}
+              label={card.label}
+              value={card.value}
+              detail={card.detail}
+              icon={card.icon}
+            />
+          ))}
         </div>
         <FeedCatalog
           feeds={feeds}

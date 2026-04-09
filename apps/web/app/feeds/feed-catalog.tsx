@@ -146,21 +146,42 @@ export function FeedCatalog({
   const [selectedTopic, setSelectedTopic] = useState<string | null>(initialTopic);
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(initialVerified);
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
+  const hasVerificationSignals = useMemo(
+    () => feeds.some((feed) => typeof feed.verified === "boolean"),
+    [feeds],
+  );
+  const effectiveVerifiedFilter = hasVerificationSignals ? verifiedFilter : null;
 
   useEffect(() => {
     const nextQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
     const nextSourceType = searchParams.get("source_type")?.trim() || null;
     const nextTopic = searchParams.get("topic")?.trim() || null;
-    const nextVerified = parseVerifiedSearchFilter(searchParams.get("verified")) ?? null;
+    const nextVerified = hasVerificationSignals
+      ? parseVerifiedSearchFilter(searchParams.get("verified")) ?? null
+      : null;
 
     setSearchQuery(nextQuery);
     setSelectedType(nextSourceType);
     setSelectedTopic(nextTopic);
     setVerifiedFilter(nextVerified);
-  }, [searchParams]);
+  }, [hasVerificationSignals, searchParams]);
+
+  useEffect(() => {
+    if (hasVerificationSignals || !searchParams.has("verified")) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("verified");
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [hasVerificationSignals, pathname, router, searchParams]);
 
   const setParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
+    if (!hasVerificationSignals) {
+      params.delete("verified");
+    }
     if (!value) {
       params.delete(key);
     } else {
@@ -185,7 +206,7 @@ export function FeedCatalog({
     result = filterByTopic(result, selectedTopic);
 
     // Filter by verification
-    result = filterByVerified(result, verifiedFilter);
+    result = filterByVerified(result, effectiveVerifiedFilter);
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -202,7 +223,7 @@ export function FeedCatalog({
     }
 
     return result;
-  }, [feeds, searchQuery, selectedTopic, selectedType, verifiedFilter]);
+  }, [effectiveVerifiedFilter, feeds, searchQuery, selectedTopic, selectedType]);
 
   const visibleFeedIds = useMemo(
     () =>
@@ -225,9 +246,9 @@ export function FeedCatalog({
         query: searchQuery,
         sourceType: selectedType,
         topic: selectedTopic,
-        verified: verifiedFilter,
+        verified: effectiveVerifiedFilter,
       }),
-    [searchQuery, selectedTopic, selectedType, verifiedFilter],
+    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType],
   );
   const activeFilterSummary = useMemo(
     () =>
@@ -235,9 +256,9 @@ export function FeedCatalog({
         query: searchQuery,
         sourceType: selectedType,
         topic: selectedTopic,
-        verified: verifiedFilter,
+        verified: effectiveVerifiedFilter,
       }),
-    [searchQuery, selectedTopic, selectedType, verifiedFilter],
+    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType],
   );
 
   return (
@@ -334,41 +355,43 @@ export function FeedCatalog({
           </div>
         )}
 
-        <div>
-          <label className="field-label">Verification</label>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={verifiedFilter === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setVerifiedFilter(null);
-                setParam("verified", null);
-              }}
-            >
-              Any
-            </Button>
-            <Button
-              variant={verifiedFilter === true ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setVerifiedFilter(true);
-                setParam("verified", "true");
-              }}
-            >
-              Verified
-            </Button>
-            <Button
-              variant={verifiedFilter === false ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setVerifiedFilter(false);
-                setParam("verified", "false");
-              }}
-            >
-              Unverified
-            </Button>
+        {hasVerificationSignals && (
+          <div>
+            <label className="field-label">Verification</label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={verifiedFilter === null ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setVerifiedFilter(null);
+                  setParam("verified", null);
+                }}
+              >
+                Any
+              </Button>
+              <Button
+                variant={verifiedFilter === true ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setVerifiedFilter(true);
+                  setParam("verified", "true");
+                }}
+              >
+                Verified
+              </Button>
+              <Button
+                variant={verifiedFilter === false ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setVerifiedFilter(false);
+                  setParam("verified", "false");
+                }}
+              >
+                Unverified
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="surface-card flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -412,12 +435,12 @@ export function FeedCatalog({
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-(--ink)">{feed.title}</h3>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
-                  {feed.verified && (
+                  {feed.verified === true && (
                     <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
                       ✓ Verified
                     </span>
                   )}
-                  {!feed.is_active && (
+                  {feed.is_active === false && (
                     <span className="rounded-full bg-(--surface-muted) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)">
                       Inactive
                     </span>
@@ -511,11 +534,19 @@ export function FeedCatalog({
         <EmptyState
           icon={SearchIcon}
           title="No feeds match this filter set"
-          description="Try widening the source types, removing topic constraints, or turning off verified-only mode."
-          tips={[
-            "Use a broader search phrase or clear the topic filter.",
-            "Verified-only mode can hide newer additions that have not been reviewed yet.",
-          ]}
+          description={
+            hasVerificationSignals
+              ? "Try widening the source types, removing topic constraints, or turning off verified-only mode."
+              : "Try widening the source types, removing topic constraints, or using a broader search phrase."
+          }
+          tips={
+            hasVerificationSignals
+              ? [
+                  "Use a broader search phrase or clear the topic filter.",
+                  "Verified-only mode can hide newer additions that have not been reviewed yet.",
+                ]
+              : ["Use a broader search phrase or clear the topic filter."]
+          }
         />
       )}
     </div>
