@@ -5,8 +5,7 @@ document_meta:
   generated_with:
     tool: aiwebfeeds-cli
     version: 0.1.0
-  notes: Simplified schema - only URL and topics required. Titles and metadata auto-enriched,
-    but can be customized.
+  notes: Simplified schema - only URL and topics required. Titles and metadata auto-enriched, but can be customized.
   enriched_at: '2026-04-03T18:12:03.887689+00:00'
   total_sources: 262
 sources:
@@ -1876,8 +1875,7 @@ sources:
   - trust-audit
   - evaluation
   title: AI Verify Foundation — Latest
-  notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards
-    updates.
+  notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards updates.
   id: 2b970ad8e9d28e5a
   feed: https://www.aiverifyfoundation.sg/latest
   site: https://www.aiverifyfoundation.sg/latest
@@ -1902,8 +1900,7 @@ sources:
   - open-source
   - blogs
   title: Ontotext — Knowledge Graph Blog
-  notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case
-    studies.
+  notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case studies.
   id: fef68c7680a9013f
   feed: https://www.ontotext.com/blog/
   site: https://www.ontotext.com/blog/
@@ -1967,8 +1964,7 @@ sources:
   - evaluation
   - blogs
   title: Microsoft Research — AI for Science (News & Awards)
-  notes: Active AI4Science lab stream (materials, bio, physics); RSS available from
-    lab pages.
+  notes: Active AI4Science lab stream (materials, bio, physics); RSS available from lab pages.
   id: 65b321f4f6fc4343
   feed: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
   site: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
@@ -2849,8 +2845,7 @@ sources:
   - papers
   - ai
   title: arXiv — cs.AI RSS
-  notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence;
-    primary preprint venue for labs/venues.
+  notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence; primary preprint venue for labs/venues.
   id: 4317c649bc1b9ce7
   feed: https://rss.arxiv.org/rss/cs.AI
   source_type: arxiv
@@ -2860,8 +2855,7 @@ sources:
   - optimization
   - inference
   title: AMD ROCm — Blogs
-  notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises
-    RSS; frequent updates.
+  notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises RSS; frequent updates.
   id: 1ef09deabb13281c
   feed: https://www.amd.com/en/technologies/rocm/blogs.html
   site: https://www.amd.com/en/technologies/rocm/blogs.html
@@ -2873,8 +2867,7 @@ sources:
   - accelerators
   - optimization
   title: Arm — AI & ML Blog
-  notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active
-    2025 cadence.
+  notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active 2025 cadence.
   id: 33c91748e0480bca
   feed: https://community.arm.com/arm-community-blogs/b/ai-blog
   site: https://community.arm.com/arm-community-blogs/b/ai-blog
@@ -2885,8 +2878,7 @@ sources:
   - optimization
   - accelerators
   title: MLIR — The LLVM Project Blog
-  notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects,
-    lowering). Maintained under LLVM; feed autodiscovery.
+  notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects, lowering). Maintained under LLVM; feed autodiscovery.
   id: 807a2a1630af1988
   feed: https://blog.llvm.org/tags/mlir/
   site: https://blog.llvm.org/tags/mlir/
@@ -2897,8 +2889,7 @@ sources:
   - regulation
   - privacy
   title: FTC Business Blog — RSS
-  notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed;
-    frequent policy/complaint analysis.
+  notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed; frequent policy/complaint analysis.
   id: 231f8b7a061b8b6b
   feed: https://www.ftc.gov/feeds/blog-business.xml
   source_type: blog
@@ -2908,8 +2899,7 @@ sources:
   - papers
   - ai
   title: Journal of Artificial Intelligence Research (JAIR)
-  notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major
-    indices; feed autodiscovery from site.
+  notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major indices; feed autodiscovery from site.
   id: b9edcea7e5067db8
   feed: https://www.jair.org
   site: https://www.jair.org
@@ -2921,9 +2911,7 @@ sources:
   - hardware
   - research
   title: Quantum Computing Report
-  notes: Industry news and analysis covering quantum computing companies, research
-    developments, and market trends. RSS 2.0 with ~10 recent entries; established
-    publication since 2016.
+  notes: Industry news and analysis covering quantum computing companies, research developments, and market trends. RSS 2.0 with ~10 recent entries; established publication since 2016.
   id: 580eb14015a8c19d
   feed: https://quantumcomputingreport.com/feed/
   source_type: newsroom
@@ -2934,8 +2922,7 @@ sources:
   - product
   - research
   title: The Quantum Insider
-  notes: Leading provider of market intelligence on the quantum technology industry.
-    RSS 2.0; useful for company, investment, and policy coverage.
+  notes: Leading provider of market intelligence on the quantum technology industry. RSS 2.0; useful for company, investment, and policy coverage.
   id: c87eea6960de906c
   feed: https://thequantuminsider.com/feed
   source_type: newsroom
@@ -2946,8 +2933,7 @@ sources:
   - education
   - hardware
   title: MIT News — Quantum Computing
-  notes: MIT News coverage of quantum computing research, including algorithms, information
-    theory, superconducting qubits, and networking.
+  notes: MIT News coverage of quantum computing research, including algorithms, information theory, superconducting qubits, and networking.
   id: 9b1f428f43a34025
   feed: https://news.mit.edu/topic/mitquantum-computing-rss.xml
   source_type: newsroom
@@ -2958,8 +2944,7 @@ sources:
   - research
   - hardware
   title: IBM Research Blog — Quantum Computing
-  notes: IBM Research quantum-computing posts covering hardware, Qiskit, and algorithms.
-    Platform URL; RSS autodiscovery expected.
+  notes: IBM Research quantum-computing posts covering hardware, Qiskit, and algorithms. Platform URL; RSS autodiscovery expected.
   id: da8ebfcd6a451d00
   feed: https://research.ibm.com/blog
   site: https://research.ibm.com/blog
@@ -2971,8 +2956,7 @@ sources:
   - industry
   - hardware
   title: Google Quantum AI
-  notes: Google Quantum AI updates on processors, error correction, and algorithms.
-    Platform URL; RSS autodiscovery expected.
+  notes: Google Quantum AI updates on processors, error correction, and algorithms. Platform URL; RSS autodiscovery expected.
   id: d94657e6bf284e3c
   feed: https://quantumai.google/
   site: https://quantumai.google/
@@ -2984,8 +2968,7 @@ sources:
   - serving
   - product
   title: Microsoft Azure Quantum Blog
-  notes: Azure Quantum posts on cloud services, algorithms, partnerships, and chemistry/materials
-    applications.
+  notes: Azure Quantum posts on cloud services, algorithms, partnerships, and chemistry/materials applications.
   id: ac90267ef4e5af9f
   feed: https://azure.microsoft.com/en-us/blog/quantum/
   site: https://azure.microsoft.com/en-us/blog/quantum/
@@ -2997,8 +2980,7 @@ sources:
   - hardware
   - serving
   title: IonQ Blog
-  notes: IonQ updates on trapped-ion hardware, partnerships, and applications. Publicly
-    traded; cloud access across major providers.
+  notes: IonQ updates on trapped-ion hardware, partnerships, and applications. Publicly traded; cloud access across major providers.
   id: 78f1d7b84e39ad8c
   feed: https://ionq.com/blog
   site: https://ionq.com/blog
@@ -3010,8 +2992,7 @@ sources:
   - hardware
   - research
   title: Rigetti Computing Blog
-  notes: Rigetti posts on superconducting processors and quantum-classical hybrid
-    approaches; RSS autodiscovery expected.
+  notes: Rigetti posts on superconducting processors and quantum-classical hybrid approaches; RSS autodiscovery expected.
   id: 7088018a6bbabdf8
   feed: https://rigetti.com/blog
   site: https://rigetti.com/blog
