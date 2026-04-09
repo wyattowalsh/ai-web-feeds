@@ -92,24 +92,6 @@ repos:
     args: [--branch, main, --branch, production]
 
   # ============================================================================
-  # TypeScript/JavaScript - ESLint
-  # ============================================================================
-- repo: https://github.com/pre-commit/mirrors-eslint
-  rev: v9.0.0-beta.0
-  hooks:
-  - id: eslint
-    name: eslint (apps/web)
-    files: ^apps/web/.*\.[jt]sx?$
-    types: [file]
-    args: [--config=apps/web/eslint.config.mjs, --fix, --max-warnings=0]
-    additional_dependencies:
-    - eslint@9.0.0
-    - '@next/eslint-plugin-next'
-    - typescript
-    - '@typescript-eslint/parser'
-    - '@typescript-eslint/eslint-plugin'
-
-  # ============================================================================
   # TypeScript/JavaScript - Prettier
   # ============================================================================
 - repo: https://github.com/pre-commit/mirrors-prettier
@@ -238,6 +220,19 @@ repos:
     entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
     language: system
     pass_filenames: false
+    always_run: false
+    files: ^apps/web/.*\.[jt]sx?$
+
+    # ESLint using the app's local config and dependency graph
+  - id: eslint-web
+    name: eslint (apps/web)
+    entry: >-
+      bash -lc 'cd apps/web &&
+      files=();
+      for f in "$@"; do files+=("${f#apps/web/}"); done;
+      pnpm exec eslint --fix --max-warnings=0 "${files[@]}"' --
+    language: system
+    pass_filenames: true
     always_run: false
     files: ^apps/web/.*\.[jt]sx?$
 
