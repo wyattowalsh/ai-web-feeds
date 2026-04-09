@@ -300,6 +300,15 @@ htmlcov/
 .tox/
 .nox/
 .coverage
+.playwright-mcp/
+.serena/
+playwright-report/
+reports/
+htmlcov/
+coverage.xml
+:memory:
+search-assets-*.png
+data/telemetry/
 .coverage.*
 nosetests.xml
 coverage.xml
