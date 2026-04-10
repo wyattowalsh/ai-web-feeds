@@ -11,6 +11,7 @@ import {
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
+const OPML_ROOT_FOLDER = "aiwebfeeds";
 
 /**
  * OPML export API endpoint
@@ -46,7 +47,9 @@ const GETHandler = async (request: Request) => {
         topic,
         verified,
       });
-      const opmlContent = generateOpml(filteredFeeds, buildFilteredTitle(filteredFeeds.length));
+      const opmlContent = wrapOpmlDocument(
+        generateOpml(filteredFeeds, buildFilteredTitle(filteredFeeds.length)),
+      );
 
       return new NextResponse(opmlContent, {
         headers: {
@@ -61,7 +64,7 @@ const GETHandler = async (request: Request) => {
     }
 
     // Read OPML file
-    const opmlContent = readFileSync(opmlPath, "utf-8");
+    const opmlContent = wrapOpmlDocument(readFileSync(opmlPath, "utf-8"));
 
     return new NextResponse(opmlContent, {
       headers: {
@@ -127,6 +130,7 @@ function generateOpml(feeds: FeedSource[], title: string): string {
     "    <ownerName>AI Web Feeds</ownerName>",
     "  </head>",
     "  <body>",
+    `    <outline text="${OPML_ROOT_FOLDER}" title="${OPML_ROOT_FOLDER}">`,
   ];
 
   for (const feed of feeds) {
@@ -147,9 +151,10 @@ function generateOpml(feeds: FeedSource[], title: string): string {
       attributes.push(`category="${escapeXml(categories.join(","))}"`);
     }
 
-    lines.push(`    <outline ${attributes.join(" ")} />`);
+    lines.push(`      <outline ${attributes.join(" ")} />`);
   }
 
+  lines.push("    </outline>");
   lines.push("  </body>");
   lines.push("</opml>");
   return lines.join("\n");
@@ -180,4 +185,35 @@ function escapeXml(value: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll("'", "&apos;");
+}
+
+function wrapOpmlDocument(opmlContent: string): string {
+  const lines = opmlContent.split("\n");
+  const bodyStartIndex = lines.findIndex((line) => line.trim() === "<body>");
+  const bodyEndIndex = lines.findIndex((line) => line.trim() === "</body>");
+
+  if (bodyStartIndex === -1 || bodyEndIndex === -1 || bodyEndIndex <= bodyStartIndex) {
+    return opmlContent;
+  }
+
+  const innerLines = lines.slice(bodyStartIndex + 1, bodyEndIndex);
+  const firstMeaningfulLine = innerLines.find((line) => line.trim().length > 0);
+
+  if (
+    firstMeaningfulLine?.includes(`text="${OPML_ROOT_FOLDER}"`) &&
+    firstMeaningfulLine?.includes(`title="${OPML_ROOT_FOLDER}"`)
+  ) {
+    return opmlContent;
+  }
+
+  const bodyIndent = lines[bodyStartIndex].match(/^\s*/)?.[0] ?? "";
+  const wrappedInnerLines = innerLines.map((line) => (line.length > 0 ? `  ${line}` : line));
+
+  return [
+    ...lines.slice(0, bodyStartIndex + 1),
+    `${bodyIndent}  <outline text="${OPML_ROOT_FOLDER}" title="${OPML_ROOT_FOLDER}">`,
+    ...wrappedInnerLines,
+    `${bodyIndent}  </outline>`,
+    ...lines.slice(bodyEndIndex),
+  ].join("\n");
 }

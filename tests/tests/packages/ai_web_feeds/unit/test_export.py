@@ -6,14 +6,32 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import pytest
+import yaml
 from ai_web_feeds.export import (
     _add_feed_outline,
     export_all_formats,
     export_to_json,
     export_to_opml,
 )
+from ai_web_feeds.load import load_feeds
 from hypothesis import given
 from hypothesis import strategies as st
+
+
+def _get_opml_wrapper(output_path: Path) -> ET.Element:
+    tree = ET.parse(output_path)
+    root = tree.getroot()
+    body = root.find("body")
+
+    assert body is not None
+
+    outlines = body.findall("outline")
+    assert len(outlines) == 1
+
+    wrapper = outlines[0]
+    assert wrapper.attrib["text"] == "aiwebfeeds"
+    assert wrapper.attrib["title"] == "aiwebfeeds"
+    return wrapper
 
 
 @pytest.mark.unit
@@ -142,11 +160,16 @@ class TestExportToOpml:
             assert output_path.exists()
 
             # Parse and verify OPML structure
-            tree = ET.parse(output_path)
-            root = tree.getroot()
+            root = ET.parse(output_path).getroot()
+            body = root.find("body")
+            wrapper = _get_opml_wrapper(output_path)
+            outline = wrapper.find("outline")
 
             assert root.tag == "opml"
             assert root.attrib["version"] == "2.0"
+            assert body is not None
+            assert outline is not None
+            assert outline.attrib["title"] == "Test Feed"
 
     def test_export_opml_flat_structure(self):
         """Test OPML export with flat structure."""
@@ -161,13 +184,11 @@ class TestExportToOpml:
             output_path = Path(tmpdir) / "feeds.opml"
             export_to_opml(data, output_path, categorized=False)
 
-            tree = ET.parse(output_path)
-            root = tree.getroot()
-            body = root.find("body")
-
-            assert body is not None
-            outlines = body.findall("outline")
+            wrapper = _get_opml_wrapper(output_path)
+            outlines = wrapper.findall("outline")
             assert len(outlines) == 2
+            assert outlines[0].attrib["title"] == "Feed One"
+            assert outlines[1].attrib["title"] == "Feed Two"
 
     def test_export_opml_categorized_structure(self):
         """Test OPML export with categorized structure."""
@@ -198,14 +219,12 @@ class TestExportToOpml:
             output_path = Path(tmpdir) / "feeds.opml"
             export_to_opml(data, output_path, categorized=True)
 
-            tree = ET.parse(output_path)
-            root = tree.getroot()
-            body = root.find("body")
+            wrapper = _get_opml_wrapper(output_path)
 
-            assert body is not None
-            # Should have category outlines
-            category_outlines = body.findall("outline")
+            category_outlines = wrapper.findall("outline")
             assert len(category_outlines) == 2  # Two categories
+            assert category_outlines[0].attrib["text"] == "artificial-intelligence"
+            assert category_outlines[1].attrib["text"] == "machine-learning"
 
     def test_export_opml_uncategorized_feeds(self):
         """Test OPML export with feeds without topics."""
@@ -219,14 +238,13 @@ class TestExportToOpml:
             output_path = Path(tmpdir) / "feeds.opml"
             export_to_opml(data, output_path, categorized=True)
 
-            tree = ET.parse(output_path)
-            root = tree.getroot()
-            body = root.find("body")
+            wrapper = _get_opml_wrapper(output_path)
 
             # Should have "Uncategorized" category
-            category_outline = body.find("outline")
+            category_outline = wrapper.find("outline")
             assert category_outline is not None
             assert category_outline.attrib["text"] == "Uncategorized"
+            assert category_outline.find("outline") is not None
 
     def test_export_opml_creates_directories(self):
         """Test that export_to_opml creates parent directories."""
@@ -337,6 +355,8 @@ class TestExportAllFormats:
             assert json_file.exists()
             assert opml_file.exists()
             assert categorized_opml.exists()
+            assert _get_opml_wrapper(opml_file).find("outline") is not None
+            assert _get_opml_wrapper(categorized_opml).find("outline") is not None
 
     def test_export_all_formats_creates_base_directory(self):
         """Test that export_all_formats creates base directory."""
@@ -360,6 +380,7 @@ class TestExportAllFormats:
 
             assert custom_json.exists()
             assert custom_opml.exists()
+            assert _get_opml_wrapper(custom_opml) is not None
 
 
 @pytest.mark.unit
@@ -368,8 +389,6 @@ class TestExportIntegration:
 
     def test_load_and_export_workflow(self):
         """Test loading and exporting feeds workflow."""
-        import yaml
-
         # Create temp feed file
         feed_data = {
             "sources": [
@@ -389,8 +408,6 @@ class TestExportIntegration:
                 yaml.dump(feed_data, f)
 
             # Load and export
-            from ai_web_feeds.load import load_feeds
-
             data = load_feeds(yaml_path)
 
             # Export to JSON

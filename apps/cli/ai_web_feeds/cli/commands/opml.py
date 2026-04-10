@@ -5,6 +5,7 @@ from pathlib import Path
 import typer
 from loguru import logger
 
+from ai_web_feeds.export import wrap_opml_with_root_folder
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.utils import (
     generate_categorized_opml,
@@ -40,7 +41,9 @@ def generate_all_opml(
         raise typer.Exit(1)
 
     logger.info(f"Generating OPML for {len(feed_sources)} feeds")
-    opml_xml = generate_opml(feed_sources, title="AI Web Feeds - All Feeds")
+    opml_xml = wrap_opml_with_root_folder(
+        generate_opml(feed_sources, title="AI Web Feeds - All Feeds")
+    )
 
     save_opml(opml_xml, output_path)
     typer.echo(f"✓ Generated OPML with {len(feed_sources)} feeds: {output_path}")
@@ -70,7 +73,9 @@ def generate_categorized_opml_cmd(
         raise typer.Exit(1)
 
     logger.info(f"Generating categorized OPML for {len(feed_sources)} feeds")
-    opml_xml = generate_categorized_opml(feed_sources, title="AI Web Feeds - Categorized")
+    opml_xml = wrap_opml_with_root_folder(
+        generate_categorized_opml(feed_sources, title="AI Web Feeds - Categorized")
+    )
 
     save_opml(opml_xml, output_path)
     typer.echo(f"✓ Generated categorized OPML with {len(feed_sources)} feeds: {output_path}")
@@ -123,7 +128,9 @@ def generate_filtered_opml_cmd(
     title = " - ".join(title_parts)
 
     logger.info(f"Generating filtered OPML: {title}")
-    opml_xml = generate_filtered_opml(feed_sources, title=title, filter_fn=filter_fn)
+    opml_xml = wrap_opml_with_root_folder(
+        generate_filtered_opml(feed_sources, title=title, filter_fn=filter_fn)
+    )
 
     save_opml(opml_xml, output_path)
 

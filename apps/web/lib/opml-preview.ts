@@ -1,7 +1,8 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from "fs";
+import { join } from "path";
+import { XMLParser } from "fast-xml-parser";
 
-import type { FeedSource } from '@/lib/feeds';
+import type { FeedSource } from "@/lib/feeds";
 
 export interface OpmlPreviewFeed {
   id: string;
@@ -23,7 +24,7 @@ export interface OpmlPreviewGroup {
 }
 
 export interface OpmlPreviewCollection {
-  id: 'flat' | 'categorized';
+  id: "flat" | "categorized";
   title: string;
   description: string;
   totalOutlines: number;
@@ -48,10 +49,35 @@ interface GroupRecord {
   outlines: OutlineRecord[];
 }
 
+interface OutlineNode {
+  "@_text"?: string;
+  "@_title"?: string;
+  "@_type"?: string;
+  outline?: OutlineNode | OutlineNode[];
+  [key: string]: unknown;
+}
+
+interface OpmlDocument {
+  opml?: {
+    body?: {
+      outline?: OutlineNode | OutlineNode[];
+    };
+  };
+}
+
+const opmlParser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+  removeNSPrefix: true,
+  trimValues: true,
+  parseTagValue: false,
+  parseAttributeValue: false,
+});
+
 export function loadOpmlPreviewData(feeds: FeedSource[]): OpmlPreviewData {
-  const dataDir = join(process.cwd(), '../../data');
-  const allOpml = readFileSync(join(dataDir, 'all.opml'), 'utf-8');
-  const categorizedOpml = readFileSync(join(dataDir, 'categorized.opml'), 'utf-8');
+  const dataDir = join(process.cwd(), "../../data");
+  const allOpml = readFileSync(join(dataDir, "all.opml"), "utf-8");
+  const categorizedOpml = readFileSync(join(dataDir, "categorized.opml"), "utf-8");
 
   const flatOutlines = parseFlatOutlines(allOpml);
   const categorizedGroups = parseCategorizedGroups(categorizedOpml);
@@ -59,12 +85,12 @@ export function loadOpmlPreviewData(feeds: FeedSource[]): OpmlPreviewData {
 
   return {
     flat: buildCollection({
-      id: 'flat',
-      title: 'All Feeds OPML',
-      description: 'Flat OPML export for RSS readers that prefer a single subscription list.',
+      id: "flat",
+      title: "All Feeds OPML",
+      description: "Flat OPML export for RSS readers that prefer a single subscription list.",
       groups: [
         {
-          title: 'All Feeds',
+          title: "All Feeds",
           outlines: flatOutlines,
         },
       ],
@@ -72,9 +98,10 @@ export function loadOpmlPreviewData(feeds: FeedSource[]): OpmlPreviewData {
       feedIndex,
     }),
     categorized: buildCollection({
-      id: 'categorized',
-      title: 'Categorized OPML',
-      description: 'Foldered OPML export grouped by the repository taxonomy so readers can import topic buckets.',
+      id: "categorized",
+      title: "Categorized OPML",
+      description:
+        "Foldered OPML export grouped by the repository taxonomy so readers can import topic buckets.",
       groups: categorizedGroups,
       rawSample: getRawSample(categorizedOpml),
       feedIndex,
@@ -90,7 +117,7 @@ function buildCollection({
   rawSample,
   feedIndex,
 }: {
-  id: 'flat' | 'categorized';
+  id: "flat" | "categorized";
   title: string;
   description: string;
   groups: GroupRecord[];
@@ -103,19 +130,21 @@ function buildCollection({
 
   const previewGroups = groups
     .map((group) => {
-      const previewFeeds = group.outlines.map((outline, index) => {
-        totalOutlines += 1;
-        if (outline.title.length > 0) {
-          namedOutlines += 1;
-        }
+      const previewFeeds = group.outlines
+        .map((outline, index) => {
+          totalOutlines += 1;
+          if (outline.title.length > 0) {
+            namedOutlines += 1;
+          }
 
-        const catalogFeed = feedIndex.get(normalizeKey(outline.title));
-        if (catalogFeed) {
-          matchedCatalogFeeds += 1;
-        }
+          const catalogFeed = feedIndex.get(normalizeKey(outline.title));
+          if (catalogFeed) {
+            matchedCatalogFeeds += 1;
+          }
 
-        return buildPreviewFeed(outline.title, catalogFeed, `${group.title}-${index}`);
-      }).filter((feed) => feed.title !== 'Untitled OPML entry');
+          return buildPreviewFeed(outline.title, catalogFeed, `${group.title}-${index}`);
+        })
+        .filter((feed) => feed.title !== "Untitled OPML entry");
 
       return {
         id: slugify(group.title),
@@ -138,12 +167,46 @@ function buildCollection({
   };
 }
 
+function parseFlatOutlines(opmlContent: string): OutlineRecord[] {
+  return collectFeedOutlines(parseOutlineTree(opmlContent));
+}
+
+function parseCategorizedGroups(opmlContent: string): GroupRecord[] {
+  const rootOutlines = parseOutlineTree(opmlContent);
+  const folders = rootOutlines.filter((outline) => !isFeedOutline(outline));
+
+  if (folders.length === 0) {
+    const flatFeeds = collectFeedOutlines(rootOutlines);
+    if (flatFeeds.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        title: "All Feeds",
+        outlines: flatFeeds,
+      },
+    ];
+  }
+
+  return folders
+    .map((outline) => {
+      const title = readOutlineTitle(outline) || "Untitled Folder";
+      const outlines = collectFeedOutlines(normalizeOutlineList(outline.outline));
+      return {
+        title,
+        outlines,
+      };
+    })
+    .filter((group) => group.outlines.length > 0);
+}
+
 function buildPreviewFeed(
   outlineTitle: string,
   catalogFeed: FeedSource | undefined,
   fallbackId: string,
 ): OpmlPreviewFeed {
-  const title = outlineTitle.trim() || 'Untitled OPML entry';
+  const title = outlineTitle.trim() || "Untitled OPML entry";
   const lookupKey = normalizeKey(title);
 
   return {
@@ -164,7 +227,7 @@ function buildFeedIndex(feeds: FeedSource[]): Map<string, FeedSource> {
   const index = new Map<string, FeedSource>();
 
   for (const feed of feeds) {
-    const titleKey = normalizeKey(feed.title || '');
+    const titleKey = normalizeKey(feed.title || "");
     if (titleKey.length > 0 && !index.has(titleKey)) {
       index.set(titleKey, feed);
     }
@@ -173,63 +236,76 @@ function buildFeedIndex(feeds: FeedSource[]): Map<string, FeedSource> {
   return index;
 }
 
-function parseFlatOutlines(opmlContent: string): OutlineRecord[] {
-  return opmlContent
-    .split('\n')
-    .filter((line) => line.includes('<outline') && line.includes('type="rss"'))
-    .map((line) => ({ title: readOutlineTitle(line) }));
-}
+function parseOutlineTree(opmlContent: string): OutlineNode[] {
+  const parsed = opmlParser.parse(opmlContent) as OpmlDocument;
+  const outlines = normalizeOutlineList(parsed.opml?.body?.outline);
 
-function parseCategorizedGroups(opmlContent: string): GroupRecord[] {
-  const groups: GroupRecord[] = [];
-  let currentGroup: GroupRecord | null = null;
-
-  for (const line of opmlContent.split('\n')) {
-    const trimmed = line.trim();
-
-    if (trimmed.startsWith('<outline') && !trimmed.includes('type="rss"') && !trimmed.endsWith('/>')) {
-      const title = readAttribute(trimmed, 'title') || readAttribute(trimmed, 'text') || 'Untitled Folder';
-      currentGroup = { title, outlines: [] };
-      continue;
-    }
-
-    if (trimmed.startsWith('<outline') && trimmed.includes('type="rss"')) {
-      const title = readOutlineTitle(trimmed);
-      if (currentGroup) {
-        currentGroup.outlines.push({ title });
-      }
-      continue;
-    }
-
-    if (trimmed === '</outline>' && currentGroup) {
-      groups.push(currentGroup);
-      currentGroup = null;
-    }
+  if (
+    outlines.length === 1 &&
+    isRootWrapper(outlines[0]) &&
+    normalizeKey(readOutlineTitle(outlines[0])) === "aiwebfeeds"
+  ) {
+    return normalizeOutlineList(outlines[0].outline);
   }
 
-  return groups;
+  return outlines;
 }
 
-function readOutlineTitle(line: string): string {
-  return readAttribute(line, 'title') || readAttribute(line, 'text') || '';
+function collectFeedOutlines(outlines: OutlineNode[]): OutlineRecord[] {
+  const collected: OutlineRecord[] = [];
+
+  for (const outline of outlines) {
+    if (isFeedOutline(outline)) {
+      collected.push({ title: readOutlineTitle(outline) });
+      continue;
+    }
+
+    collected.push(...collectFeedOutlines(normalizeOutlineList(outline.outline)));
+  }
+
+  return collected;
 }
 
-function readAttribute(line: string, attribute: string): string {
-  const match = line.match(new RegExp(`${attribute}="([^"]*)"`));
-  return decodeEntities(match?.[1] || '').trim();
+function normalizeOutlineList(outline: OutlineNode | OutlineNode[] | undefined): OutlineNode[] {
+  if (!outline) {
+    return [];
+  }
+
+  return Array.isArray(outline) ? outline : [outline];
+}
+
+function isFeedOutline(outline: OutlineNode): boolean {
+  return readAttribute(outline, "type") === "rss";
+}
+
+function isRootWrapper(outline: OutlineNode): boolean {
+  return normalizeOutlineList(outline.outline).length > 0;
+}
+
+function readOutlineTitle(outline: OutlineNode): string {
+  return readAttribute(outline, "title") || readAttribute(outline, "text") || "";
+}
+
+function readAttribute(outline: OutlineNode, attribute: "title" | "text" | "type"): string {
+  const value = outline[`@_${attribute}`];
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return decodeEntities(value).trim();
 }
 
 function decodeEntities(value: string): string {
   return value
-    .replaceAll('&amp;', '&')
-    .replaceAll('&quot;', '"')
-    .replaceAll('&apos;', "'")
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>');
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&apos;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">");
 }
 
 function getRawSample(opmlContent: string): string {
-  return opmlContent.split('\n').slice(0, 18).join('\n');
+  return opmlContent.split("\n").slice(0, 18).join("\n");
 }
 
 function normalizeKey(value: string): string {
@@ -239,6 +315,6 @@ function normalizeKey(value: string): string {
 function slugify(value: string): string {
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

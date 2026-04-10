@@ -1,21 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { loadFeedCatalogMock, readFileSyncMock } = vi.hoisted(() => ({
+const { loadFeedCatalogMock } = vi.hoisted(() => ({
   loadFeedCatalogMock: vi.fn(),
-  readFileSyncMock: vi.fn(),
 }));
 
 vi.mock("@/lib/telemetry-route", () => ({
   withRouteTelemetry: (_routeKey: string, handler: unknown) => handler,
 }));
-
-vi.mock("fs", async () => {
-  const actual = await vi.importActual<typeof import("fs")>("fs");
-  return {
-    ...actual,
-    readFileSync: readFileSyncMock,
-  };
-});
 
 vi.mock("@/lib/feeds", async () => {
   const actual = await vi.importActual<typeof import("@/lib/feeds")>("@/lib/feeds");
@@ -29,8 +20,6 @@ import { GET } from "./route";
 
 describe("GET /api/exports/opml", () => {
   beforeEach(() => {
-    readFileSyncMock.mockReset();
-    readFileSyncMock.mockReturnValue("<opml />");
     loadFeedCatalogMock.mockReset();
     loadFeedCatalogMock.mockReturnValue({
       sources: [
@@ -64,6 +53,19 @@ describe("GET /api/exports/opml", () => {
     });
   });
 
+  it.each([
+    ["all", 'attachment; filename="ai-ml-feeds-all.opml"'],
+    ["categorized", 'attachment; filename="ai-ml-feeds-categorized.opml"'],
+  ])("wraps file-backed OPML exports in the aiwebfeeds folder (%s)", async (format, filename) => {
+    const response = await GET(new Request(`http://localhost/api/exports/opml?format=${format}`));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Disposition")).toBe(filename);
+
+    const body = await response.text();
+    expect(body).toContain('<outline text="aiwebfeeds" title="aiwebfeeds">');
+  });
+
   it("builds a filtered OPML export from explicit feed ids in request order", async () => {
     const response = await GET(
       new Request("http://localhost/api/exports/opml?format=filtered&feed=feed-2&feed=feed-1"),
@@ -75,6 +77,7 @@ describe("GET /api/exports/opml", () => {
     );
 
     const body = await response.text();
+    expect(body).toContain('<outline text="aiwebfeeds" title="aiwebfeeds">');
     expect(body).toContain('title="Reader Signals"');
     expect(body).toContain('title="Agent Feed"');
     expect(body).not.toContain('title="MLOps Weekly"');

@@ -2,11 +2,13 @@
 
 import json
 from pathlib import Path
-from typing import Any
-from xml.dom import minidom
-from xml.etree.ElementTree import Element, SubElement, tostring
+from typing import Any, cast
+from xml.etree.ElementTree import Element, SubElement, indent, tostring  # nosec B405
 
+from defusedxml.ElementTree import fromstring
 from loguru import logger
+
+OPML_ROOT_FOLDER = "aiwebfeeds"
 
 
 def export_to_json(data: dict[str, Any], output_path: Path | str) -> None:
@@ -71,7 +73,7 @@ def export_to_opml(
             _add_feed_outline(body, source)
 
     # Pretty print and save
-    xml_str = minidom.parseString(tostring(opml, encoding="utf-8")).toprettyxml(indent="  ")
+    xml_str = wrap_opml_with_root_folder(_serialize_xml(opml))
     with output_path.open("w", encoding="utf-8") as f:
         f.write(xml_str)
 
@@ -99,6 +101,49 @@ def _add_feed_outline(parent: Element, source: dict[str, Any]) -> None:
         attrs["description"] = source["description"]
 
     SubElement(parent, "outline", **attrs)
+
+
+def wrap_opml_with_root_folder(opml_xml: str, folder_name: str = OPML_ROOT_FOLDER) -> str:
+    """Wrap an OPML document body in a top-level folder outline.
+
+    Args:
+        opml_xml: OPML XML string to wrap.
+        folder_name: Top-level folder name to insert.
+
+    Returns:
+        OPML XML string with a single wrapper folder inside the body.
+    """
+
+    root = fromstring(opml_xml)
+    body = root.find("body")
+    if body is None:
+        return opml_xml
+
+    existing_outlines = [child for child in list(body) if child.tag == "outline"]
+    if len(existing_outlines) == 1 and _outline_matches_folder(existing_outlines[0], folder_name):
+        return _serialize_xml(root)
+
+    wrapper = Element("outline", text=folder_name, title=folder_name)
+    for child in list(body):
+        body.remove(child)
+        wrapper.append(child)
+
+    body.append(wrapper)
+    return _serialize_xml(root)
+
+
+def _outline_matches_folder(outline: Element, folder_name: str) -> bool:
+    """Return whether an outline element already matches the wrapper folder."""
+
+    return outline.get("text") == folder_name and outline.get("title") == folder_name
+
+
+def _serialize_xml(root: Element) -> str:
+    """Serialize XML with stable indentation and an XML declaration."""
+
+    indent(root, space="  ")
+    xml_bytes = cast(bytes, tostring(root, encoding="utf-8", xml_declaration=True))
+    return xml_bytes.decode("utf-8")
 
 
 def export_all_formats(
