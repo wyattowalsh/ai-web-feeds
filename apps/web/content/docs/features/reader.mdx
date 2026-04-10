@@ -6,11 +6,12 @@ description: Local-first AI feed reader that merges recent posts from selected s
 # Reader
 
 > **Status**: ✅ Available
-> **Surface**: `/reader`
+> **Surface**: `/feeds?mode=reader`
 
 The reader is the live aggregation surface for AI Web Feeds. It takes the checked-in
 source catalog, resolves a feed set, fetches recent posts from those sources, and
-renders one merged timeline in the browser.
+renders one merged timeline in the browser without leaving the unified `/feeds`
+workspace.
 
 ## What it does
 
@@ -21,8 +22,8 @@ renders one merged timeline in the browser.
 - **Local state** keeps read, starred, saved, and archived status on-device.
 - **Reader preferences** store presentation controls such as compact vs card layout
   and summary visibility in browser storage.
-- **Query-stateful URLs** keep the current feed, topic, view, sort, and text filter
-  in the address bar.
+- **Query-stateful URLs** keep the current feed scope, filters, reader state, and
+  pagination cursor in the address bar.
 
 ## URL parameters
 
@@ -30,37 +31,42 @@ The reader is meant to be linkable and restorable directly from the URL.
 
 | Parameter | Purpose                                                                    |
 | --------- | -------------------------------------------------------------------------- |
-| `feed`    | Limit the reader to one source ID from the catalog                         |
-| `topic`   | Filter the candidate feed set by topic                                     |
-| `q`       | Filter visible articles by title, feed title, summary, author, or category |
-| `view`    | Switch between `latest`, `unread`, `starred`, `saved`, and `archived`      |
-| `sort`    | Order the visible timeline by `latest`, `oldest`, or `source`              |
+| `feed`         | Limit the reader to one or more source IDs from the catalog; repeated params preserve pinned slices |
+| `topics`       | Filter the candidate feed set by one or more topic labels                             |
+| `source_type`  | Limit the candidate set by source format                                              |
+| `verified`     | Limit the candidate set by verification state                                         |
+| `q`            | Filter visible articles by title, feed title, summary, author, or category            |
+| `reader_view`  | Switch between `latest`, `unread`, `starred`, `saved`, and `archived`                 |
+| `reader_sort`  | Order the visible timeline by `latest`, `oldest`, or `source`                         |
+| `stream`       | Choose between the fast sampled stream and the full cursor-paginated stream            |
+| `cursor`       | Track pagination state for `stream=all`                                                |
 
 ## Data flow
 
 ```mermaid
 flowchart LR
-    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/reader"]
+    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/feeds?mode=reader"]
     route --> ui["ReaderPageClient"]
     ui --> aggregate["/api/feeds/posts/aggregate"]
     aggregate --> fetch["Live feed fetch + cache"]
     ui --> local["localStorage + IndexedDB"]
 ```
 
-The catalog decides which feeds are available. The reader route resolves the current
-scope and calls the aggregation API for recent posts. Reading state and presentation
-preferences stay in browser storage.
+The catalog decides which feeds are available. Reader mode resolves the current scope
+from the `/feeds` URL state and calls the aggregation API for recent posts. Reading
+state and presentation preferences stay in browser storage.
 
 ## Current limits
 
-- Broad mode scans up to **18 feeds** from the current candidate set.
-- Broad mode fetches up to **3 posts per source**.
+- Sample mode scans up to **18 feeds** from the current candidate set.
+- Sample mode fetches up to **3 posts per source**.
 - Selected-feed mode fetches up to **8 posts** for that source.
+- Full stream mode pages through the matching feed set with `stream=all` and `cursor`.
 - Aggregated fetches are cached server-side when available and surfaced in the reader
   status card as `live` or `cached`.
 
-These limits keep the page responsive without pretending the reader is a full
-infinite-scroll news client yet.
+These limits keep the page responsive while still allowing opt-in infinite scroll
+for the broader merged stream.
 
 ## Related APIs
 
@@ -76,7 +82,8 @@ constructs this automatically from the current scope.
 
 ## Reader behavior
 
-- Source search results link directly into the reader using the feed ID.
+- Catalog and article-search results link directly into reader mode using the feed ID, and
+  multi-feed catalog slices are preserved with repeated `feed=` params when needed.
 - Topic filtering happens before aggregation, so the reader only fetches the active
   feeds that match the current topic.
 - Empty states are local and reversible: broaden the scope, clear the text filter, or
@@ -84,7 +91,7 @@ constructs this automatically from the current scope.
 
 ## Related
 
-- [Search & Discovery](./search) for finding sources before opening them in the reader
+- [Search & Discovery](./search) for finding sources and recent posts before opening reader mode
 - [OPML Viewer](/docs/guides/opml-viewer) for export-oriented timeline previews
 - [Runtime authority](/docs/development/runtime-authority) for the split between
   repository data, runtime fetches, and browser-local state

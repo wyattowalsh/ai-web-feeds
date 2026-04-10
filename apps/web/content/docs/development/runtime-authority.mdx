@@ -28,7 +28,7 @@ split across four bounded contexts:
 | Context | Primary responsibility | Typical paths |
 | --- | --- | --- |
 | Docs shell | static docs, content rendering, and navigation | `app/docs`, `content/docs`, docs UI components |
-| Public search and reader app | catalog, search, recommendations, saved state, and reader UX | `app/search`, `app/feeds`, `components/search`, browser state helpers |
+| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
 | Admin | operational dashboards, telemetry inspection, and admin session enforcement | `app/admin`, `components/admin`, `lib/admin-auth.ts` |
 | Backend proxy | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers |
 

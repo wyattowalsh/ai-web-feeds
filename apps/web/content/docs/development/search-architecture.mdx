@@ -37,10 +37,10 @@ flowchart LR
 
 ## Web route split
 
-The `/search` page is server-first for any URL that includes `q=...`.
-The server shell normalizes the query/filter state, fetches the initial result
-set, and hydrates the client with both the result payload and the request
-status.
+The canonical product route is `/feeds`, and article search is server-first for
+URLs like `/feeds?mode=articles&q=...`. The server shell normalizes the
+workspace query/filter state, fetches the initial result set, and hydrates the
+client with both the result payload and the request status.
 
 If that initial runtime-backed fetch fails, the client retries once using the
 same normalized URL state before it falls back to the empty-results view. This
@@ -73,6 +73,10 @@ backend implementation path.
   suggestions, check whether the runtime database is stale before changing docs
   or UI behavior.
 </Callout>
+
+Catalog filtering and source discovery remain repo-data-backed in `/feeds`
+itself, while recent-article search under `/feeds?mode=articles` uses the
+runtime-backed search flow described here.
 
 ## Search operations checklist
 

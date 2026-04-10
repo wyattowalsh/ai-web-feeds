@@ -1,6 +1,6 @@
 ---
 title: Search & Discovery
-description: Local-first source and article search for the AI Web Feeds catalog
+description: Catalog filtering plus local recent-article search inside the unified /feeds workspace
 ---
 
 # Search & Discovery
@@ -9,29 +9,37 @@ description: Local-first source and article search for the AI Web Feeds catalog
 > **Phase**: Phase 1 (MVP)
 > **Completion**: 100%
 
-The Search & Discovery surface helps users answer two different questions:
+The Search & Discovery experience now lives inside the unified `/feeds` workspace
+and helps users answer two different questions:
 
-- **Which source should I follow?** Search the checked-in source catalog.
-- **What has been published recently?** Search recent pulled articles from the most
-  relevant feeds.
+- **Which source should I follow?** Use catalog mode to filter the checked-in source catalog.
+- **What has been published recently?** Switch to article mode to search recent pulled
+  articles from the most relevant feeds.
 
 ## Features
 
-### Unified Search Interface
+### Unified Feeds Workspace
 
-Single search bar at `/search` with an explicit scope switch for **Sources** vs
-**Articles**.
+The canonical product route is `/feeds`. Search is split across local workspace
+modes instead of separate top-level routes:
 
-### Local Source Search
+- `/feeds` for catalog filtering and source discovery
+- `/feeds?mode=articles` for recent-article search
+- `/feeds?mode=reader` for the merged reader stream
 
-Source search reads the repository catalog directly and returns feeds that match:
+### Catalog Search
+
+Catalog mode reads the repository catalog directly and returns feeds that match:
 
 - Feed titles
 - Descriptions and notes
 - Topics
 - Source type and verification filters
 
-This is the default mode and works without any external backend.
+This is the default workspace mode and works without any external backend.
+When you jump from catalog mode into article search or reader mode, the workspace
+preserves the exact visible feed slice with repeated `feed=` params when a free-text
+filter would otherwise widen the scope.
 
 ### Recent Article Search
 
@@ -55,13 +63,13 @@ It is powered by the shipped feed catalog, not by runtime search infrastructure.
 
 ### Faceted Filtering
 
-Filter both scopes with shared controls:
+Filter the catalog and article-search modes with shared controls:
 
 - **Source Type**
 - **Topics**
 - **Verified status**
 
-For source results, each match can link directly into the live reader.
+For source results, each match can link directly into reader mode under `/feeds`.
 
 ### Analytics Logging
 
@@ -80,13 +88,13 @@ BACKEND_URL=http://localhost:8000
 
 ### Web Interface
 
-Navigate to `/search`:
+Navigate to `/feeds?mode=articles`:
 
 1. Type query in search bar
-2. Choose **Sources** or **Articles**
+2. Keep or adjust the shared source-type, topic, and verified filters
 3. Select an autocomplete suggestion or press Enter
-4. Apply source-type, topic, or verified filters
-5. Open a matching source in the reader when you want the live post stream
+4. Open a matching source in reader mode when you want the live post stream
+5. Return to `/feeds` when you want to widen or change the catalog slice
 
 **Keyboard Shortcuts**:
 
@@ -131,19 +139,19 @@ const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
 
 When no results are found, the UI steers the user toward:
 
-- Broader source search
+- Returning to catalog mode for broader source discovery
 - Fewer filters
-- Switching from article search back to source search first
+- Wider topic or source-type scope before rerunning recent-article search
 
 ## Success Criteria
 
 - ✅ Local source search returns feed matches without a backend dependency
 - ✅ Article search exposes bounded-scan metadata to explain its coverage
-- ✅ Source results can jump directly into the reader
+- ✅ Source results can jump directly into reader mode within `/feeds`
 
 ## Related
 
 - [Analytics Dashboard](./analytics) - View search analytics and popular queries
-- [Reader](./reader) - Open matching sources as a live merged timeline
+- [Reader](./reader) - Open matching sources as a live merged timeline inside `/feeds`
 - [Recommendations](./recommendations) - AI-powered feed suggestions
 - [Search architecture](/docs/development/search-architecture) - Runtime and local search split

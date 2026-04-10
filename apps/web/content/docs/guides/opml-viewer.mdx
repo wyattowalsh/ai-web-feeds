@@ -26,6 +26,8 @@ The preview is optional. If you already know which file you need, you can skip s
 
 - `Flat OPML`: a single list of feed subscriptions.
 - `Categorized OPML`: the same feed catalog arranged into folders based on the repository taxonomy.
+- `aiwebfeeds` wrapper: both OPML variants now nest the export inside a single top-level
+  folder named `aiwebfeeds` so imports stay grouped consistently.
 - `Recent posts`: fetches recent entries for a selected matched feed and renders them inline.
 - `Merged timeline`: combines the newest posts from the currently visible matched feeds into one list.
 - `Download visible OPML`: exports the exact visible catalog-backed feed ids shown in the viewer instead of falling back to the full catalog.
@@ -46,6 +48,7 @@ The preview is optional. If you already know which file you need, you can skip s
 OPML files are useful for readers, but they are awkward to inspect by hand once the export grows large. The viewer gives you a readable preview of:
 
 - how many outlines are in each export
+- that the top-level `aiwebfeeds` wrapper is present before the feed or topic folders
 - which entries have recognizable catalog metadata
 - which folders appear in the categorized export
 - whether any OPML entries are unnamed or incomplete
