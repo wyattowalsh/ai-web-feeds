@@ -56,18 +56,18 @@ const coreSteps = [
     eyebrow: "Step 2",
     title: "Search what is new",
     description:
-      "Switch between source search and recent-article search without leaving the app or relying on a remote backend.",
-    href: "/search",
-    cta: "Search feeds and posts",
+      "Run local recent-article search from the same workspace after you narrow the current feed slice.",
+    href: "/feeds?mode=articles",
+    cta: "Search recent posts",
     icon: Search,
   },
   {
     eyebrow: "Step 3",
     title: "Read and triage",
     description:
-      "Open the live reader, keep local read-state, and move promising sources into your own downstream setup.",
-    href: "/reader",
-    cta: "Open reader",
+      "Open the live reader inside the unified workspace, keep local read-state, and widen into full-stream mode when needed.",
+    href: "/feeds?mode=reader",
+    cta: "Open reader mode",
     icon: Newspaper,
   },
 ] as const;
@@ -123,13 +123,13 @@ export default function HomePage() {
                   <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/search"
+                  href="/feeds?mode=articles"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                 >
                   Search recent posts
                 </Link>
                 <Link
-                  href="/reader"
+                  href="/feeds?mode=reader"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
                   Open reader
@@ -147,13 +147,13 @@ export default function HomePage() {
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">2.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Search</span> when you need either
-                  the right publication or the right recent post.
+                  <span className="font-semibold text-(--ink)">Articles</span> inside the feeds
+                  workspace when you need the right recent post.
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Reader</span> to skim, save, star,
-                  and archive what matters.
+                  <span className="font-semibold text-(--ink)">Reader</span> inside that same
+                  workspace to skim, save, star, and archive what matters.
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">4.</span> Use{" "}
@@ -170,9 +170,9 @@ export default function HomePage() {
             <span className="eyebrow">Primary surfaces</span>
             <h2 className="section-heading">The product is the workflow, not the sitemap.</h2>
             <p className="section-copy">
-              Each primary page now maps to a direct task: choose sources, search recent activity,
-              or read the latest stream. Docs and exports still exist, but they support the core
-              flow instead of distracting from it.
+              The product flow now stays inside one canonical route: choose sources, search recent
+              activity, then read the latest stream. Docs and exports still exist, but they support
+              the core flow instead of defining it.
             </p>
           </div>
 

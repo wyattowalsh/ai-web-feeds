@@ -152,4 +152,45 @@ describe("runLocalSearch", () => {
     expect(payload.scope).toBe("articles");
     expect(payload.results.map((result) => result.feed_id)).toEqual(["feed-1", "feed-2", "feed-3"]);
   });
+
+  it("respects explicit feed-id slices before ranking article results", async () => {
+    loadFeedCatalogMock.mockReturnValue({
+      sources: [
+        {
+          id: "feed-1",
+          title: "Agent Alpha",
+          url: "https://example.com/feed-1.xml",
+          source_type: "blog",
+          topics: ["agents"],
+        },
+        {
+          id: "feed-2",
+          title: "Agent Beta",
+          url: "https://example.com/feed-2.xml",
+          source_type: "newsletter",
+          topics: ["agents"],
+        },
+      ],
+    });
+
+    loadAggregatedFeedPostsByIdsMock.mockResolvedValue({
+      posts: [],
+      feeds: [],
+      fetchedAt: "2026-04-06T12:00:00.000Z",
+      expiresAt: "2026-04-06T12:10:00.000Z",
+      cacheState: "live",
+      totalSources: 1,
+      successfulSources: 1,
+      failedSources: 0,
+    });
+
+    await runLocalSearch({
+      query: "agents",
+      scope: "articles",
+      limit: 10,
+      feedIds: ["feed-2", "feed-2"],
+    });
+
+    expect(loadAggregatedFeedPostsByIdsMock).toHaveBeenCalledWith(["feed-2"], 120, 3);
+  });
 });

@@ -13,6 +13,7 @@ export interface LocalSearchOptions {
   query: string;
   scope: SearchScope;
   limit: number;
+  feedIds?: string[];
   sourceType?: string;
   topics?: string[];
   verified?: boolean;
@@ -44,8 +45,15 @@ export async function runLocalSearch(options: LocalSearchOptions): Promise<Searc
 
 function filterFeeds(feeds: FeedSource[], options: LocalSearchOptions): SearchableFeedSource[] {
   const hasVerificationSignals = feeds.some((feed) => typeof feed.verified === "boolean");
+  const explicitFeedIds = new Set(
+    (options.feedIds ?? []).map((feedId) => feedId.trim()).filter((feedId) => feedId.length > 0),
+  );
 
   return feeds.filter((feed) => {
+    if (explicitFeedIds.size > 0 && !explicitFeedIds.has(getFeedIdentifier(feed))) {
+      return false;
+    }
+
     if (options.sourceType && feed.source_type !== options.sourceType) {
       return false;
     }

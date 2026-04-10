@@ -4,6 +4,7 @@ export type SearchType = SearchScope;
 export type SearchFilterInput = {
   search_type?: SearchType | string;
   scope?: SearchScope | string;
+  feed_ids?: string[] | string;
   source_type?: string;
   topics?: string[] | string;
   verified?: boolean | string;
@@ -13,16 +14,18 @@ export type SearchFilterInput = {
 export type SearchFilters = {
   search_type?: SearchType;
   scope?: SearchScope;
+  feed_ids?: string[];
   source_type?: string;
   topics?: string[];
   verified?: boolean;
   threshold?: number;
 };
 
-export type SearchExecutionState = Omit<SearchFilters, "topics"> & {
+export type SearchExecutionState = Omit<SearchFilters, "topics" | "feed_ids"> & {
   scope: SearchScope;
   searchType: SearchType;
   search_type: SearchType;
+  feed_ids: string[];
   topics: string[];
   threshold: number;
 };
@@ -88,6 +91,27 @@ function clampNumber(value: number, min: number, max: number): number {
 
 function collapseWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeFeedIds(feedIds: readonly string[] | null | undefined): string[] {
+  if (!feedIds) {
+    return [];
+  }
+
+  const normalizedFeedIds: string[] = [];
+  const seen = new Set<string>();
+
+  for (const feedId of feedIds) {
+    const normalizedFeedId = collapseWhitespace(String(feedId));
+    if (!normalizedFeedId || seen.has(normalizedFeedId)) {
+      continue;
+    }
+
+    seen.add(normalizedFeedId);
+    normalizedFeedIds.push(normalizedFeedId);
+  }
+
+  return normalizedFeedIds;
 }
 
 export function normalizeSearchQuery(value: string | null | undefined): string | null {
@@ -162,6 +186,17 @@ export function parseSearchTopicsParam(value: string | null | undefined): string
   return normalizeSearchTopics(value.split(","));
 }
 
+export function parseSearchFeedIdsParam(
+  value: readonly string[] | string | null | undefined,
+): string[] {
+  if (!value) {
+    return [];
+  }
+
+  const values = Array.isArray(value) ? value : String(value).split(",");
+  return normalizeFeedIds(values);
+}
+
 export function parseThresholdSearchFilter(value: number | string | null | undefined): number {
   const parsed =
     typeof value === "number"
@@ -206,6 +241,18 @@ export function normalizeSearchFilters(
     }
   }
 
+  if (Array.isArray(filters.feed_ids)) {
+    const normalizedFeedIds = parseSearchFeedIdsParam(filters.feed_ids);
+    if (normalizedFeedIds.length > 0) {
+      normalized.feed_ids = normalizedFeedIds;
+    }
+  } else if (typeof filters.feed_ids === "string") {
+    const normalizedFeedIds = parseSearchFeedIdsParam(filters.feed_ids);
+    if (normalizedFeedIds.length > 0) {
+      normalized.feed_ids = normalizedFeedIds;
+    }
+  }
+
   if (Array.isArray(filters.topics)) {
     const normalizedTopics = normalizeSearchTopics(
       filters.topics.filter((topic): topic is string => typeof topic === "string"),
@@ -237,11 +284,12 @@ export function normalizeSearchFilters(
 }
 
 export function parseSearchStateFromParams(
-  searchParams: Pick<URLSearchParams, "get">,
+  searchParams: Pick<URLSearchParams, "get" | "getAll">,
 ): SearchExecutionState {
   const scope = parseSearchScope(searchParams.get("scope") || searchParams.get("type"));
   const normalizedFilters = normalizeSearchFilters({
     scope,
+    feed_ids: parseSearchFeedIdsParam(searchParams.getAll("feed")),
     source_type: searchParams.get("source_type") ?? undefined,
     topics: parseSearchTopicsParam(searchParams.get("topics")),
     verified: parseVerifiedSearchFilter(searchParams.get("verified")),
@@ -252,6 +300,7 @@ export function parseSearchStateFromParams(
     scope,
     searchType: scope,
     search_type: scope,
+    feed_ids: normalizedFilters.feed_ids ?? [],
     source_type: normalizedFilters.source_type,
     topics: normalizedFilters.topics ?? [],
     verified: normalizedFilters.verified,

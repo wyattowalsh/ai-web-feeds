@@ -44,6 +44,14 @@ const GETHandler = async (request: Request) => {
     topics: parseSearchTopicsParam(searchParams.get("topics")),
     verified: parseVerifiedSearchFilter(searchParams.get("verified")),
   });
+  const feedIds = Array.from(
+    new Set(
+      searchParams
+        .getAll("feed")
+        .map((feedId) => feedId.trim())
+        .filter((feedId) => feedId.length > 0),
+    ),
+  );
   const sourceType = normalizedFilters.source_type;
   const topics = normalizedFilters.topics;
   const verified = normalizedFilters.verified;
@@ -53,6 +61,7 @@ const GETHandler = async (request: Request) => {
       query,
       scope,
       limit,
+      feedIds: feedIds.length > 0 ? feedIds : undefined,
       sourceType,
       topics,
       verified,
@@ -104,7 +113,10 @@ const POSTHandler = async (request: Request) => {
         : 0;
 
     if (body.user_id && !validateTrustedUserOwnership(body.user_id, identity)) {
-      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
     }
 
     if (!query) {
@@ -141,7 +153,9 @@ const POSTHandler = async (request: Request) => {
       return response;
     }
 
-    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

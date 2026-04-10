@@ -78,6 +78,7 @@ describe("/api/search route", () => {
       query: "agent systems",
       scope: "sources",
       limit: 20,
+      feedIds: undefined,
       sourceType: undefined,
       topics: undefined,
       verified: true,
@@ -124,8 +125,43 @@ describe("/api/search route", () => {
       query: "rag pipelines",
       scope: "articles",
       limit: 20,
+      feedIds: undefined,
       sourceType: "podcast",
       topics: ["ml", "agents"],
+      verified: undefined,
+    });
+  });
+
+  it("preserves explicit feed ids when the search request is scoped from catalog mode", async () => {
+    const { GET } = await loadRouteModule();
+    runLocalSearchMock.mockResolvedValue({
+      scope: "articles",
+      results: [],
+      meta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 2,
+        scanned_sources: 2,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: false,
+      },
+    });
+
+    const response = await GET(
+      createRequest(
+        "http://localhost/api/search?q=agents&scope=articles&feed=feed-2&feed=feed-1&feed=feed-2",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(runLocalSearchMock).toHaveBeenCalledWith({
+      query: "agents",
+      scope: "articles",
+      limit: 20,
+      feedIds: ["feed-2", "feed-1"],
+      sourceType: undefined,
+      topics: undefined,
       verified: undefined,
     });
   });
@@ -157,7 +193,9 @@ describe("/api/search route", () => {
       },
     });
 
-    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=semantic"));
+    const response = await GET(
+      createRequest("http://localhost/api/search?q=agents&scope=semantic"),
+    );
 
     expect(response.status).toBe(200);
     expect(runLocalSearchMock).toHaveBeenCalledWith(
@@ -184,7 +222,9 @@ describe("/api/search route", () => {
       },
     });
 
-    const response = await GET(createRequest("http://localhost/api/search?q=agents&scope=articles"));
+    const response = await GET(
+      createRequest("http://localhost/api/search?q=agents&scope=articles"),
+    );
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual(

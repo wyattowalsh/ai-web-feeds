@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 interface SearchFiltersProps {
   scope: "sources" | "articles";
   onScopeChange: (scope: "sources" | "articles") => void;
+  showScopeToggle?: boolean;
   sourceType?: string;
   onSourceTypeChange: (type: string | undefined) => void;
   topics: string[];
@@ -19,6 +20,7 @@ interface SearchFiltersProps {
 export function SearchFilters({
   scope,
   onScopeChange,
+  showScopeToggle = true,
   sourceType,
   onSourceTypeChange,
   topics,
@@ -70,22 +72,28 @@ export function SearchFilters({
             <h3 className="text-lg font-semibold text-(--ink)">Tune the search strategy</h3>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            onClick={() => onScopeChange("sources")}
-            variant={scope === "sources" ? "default" : "secondary"}
-          >
-            Sources
-          </Button>
-          <Button
-            type="button"
-            onClick={() => onScopeChange("articles")}
-            variant={scope === "articles" ? "default" : "secondary"}
-          >
-            Articles
-          </Button>
-        </div>
+        {showScopeToggle ? (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => onScopeChange("sources")}
+              variant={scope === "sources" ? "default" : "secondary"}
+            >
+              Sources
+            </Button>
+            <Button
+              type="button"
+              onClick={() => onScopeChange("articles")}
+              variant={scope === "articles" ? "default" : "secondary"}
+            >
+              Articles
+            </Button>
+          </div>
+        ) : (
+          <p className="small-note">
+            Filters apply to the recent-article search inside the unified feeds workspace.
+          </p>
+        )}
       </div>
 
       <div>

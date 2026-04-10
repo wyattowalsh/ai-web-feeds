@@ -39,31 +39,65 @@ function buildFilteredExportHref(feedIds: string[]): string | null {
   return `/api/exports/opml?${params.toString()}`;
 }
 
-function buildReaderHref(feedIds: string[], topic: string | null): string {
-  if (feedIds.length === 1) {
-    return `/reader?feed=${encodeURIComponent(feedIds[0])}`;
-  }
-
-  if (topic) {
-    return `/reader?topic=${encodeURIComponent(topic)}`;
-  }
-
-  return "/reader";
-}
-
-function buildScopedSearchHref({
+function buildReaderHref({
+  feedIds,
   query,
   sourceType,
   topic,
   verified,
 }: {
+  feedIds: string[];
   query: string;
   sourceType: string | null;
   topic: string | null;
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("scope", "sources");
+  params.set("mode", "reader");
+  const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
+  if (shouldCarryExplicitFeedIds) {
+    for (const feedId of feedIds) {
+      params.append("feed", feedId);
+    }
+  }
+
+  if (query) {
+    params.set("q", query);
+  }
+  if (sourceType) {
+    params.set("source_type", sourceType);
+  }
+  if (verified !== null) {
+    params.set("verified", String(verified));
+  }
+  if (topic) {
+    params.set("topics", topic);
+  }
+
+  return `/feeds?${params.toString()}`;
+}
+
+function buildScopedSearchHref({
+  feedIds,
+  query,
+  sourceType,
+  topic,
+  verified,
+}: {
+  feedIds: string[];
+  query: string;
+  sourceType: string | null;
+  topic: string | null;
+  verified: boolean | null;
+}): string {
+  const params = new URLSearchParams();
+  params.set("mode", "articles");
+  const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
+  if (shouldCarryExplicitFeedIds) {
+    for (const feedId of feedIds) {
+      params.append("feed", feedId);
+    }
+  }
 
   if (query) {
     params.set("q", query);
@@ -78,12 +112,12 @@ function buildScopedSearchHref({
     params.set("verified", String(verified));
   }
 
-  return `/search?${params.toString()}`;
+  return `/feeds?${params.toString()}`;
 }
 
 function buildFeedArticleSearchHref(feed: FeedSource): string {
   const params = new URLSearchParams();
-  params.set("scope", "articles");
+  params.set("mode", "articles");
   params.set("q", feed.title);
 
   if (feed.source_type) {
@@ -96,7 +130,35 @@ function buildFeedArticleSearchHref(feed: FeedSource): string {
     params.set("verified", "true");
   }
 
-  return `/search?${params.toString()}`;
+  return `/feeds?${params.toString()}`;
+}
+
+function buildFeedReaderHref({
+  feedId,
+  query,
+  sourceType,
+  verified,
+}: {
+  feedId: string;
+  query: string;
+  sourceType: string | null;
+  verified: boolean | null;
+}): string {
+  const params = new URLSearchParams();
+  params.set("mode", "reader");
+  params.set("feed", feedId);
+
+  if (query) {
+    params.set("q", query);
+  }
+  if (sourceType) {
+    params.set("source_type", sourceType);
+  }
+  if (verified !== null) {
+    params.set("verified", String(verified));
+  }
+
+  return `/feeds?${params.toString()}`;
 }
 
 function buildActiveFilterSummary({
@@ -155,7 +217,10 @@ export function FeedCatalog({
   useEffect(() => {
     const nextQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
     const nextSourceType = searchParams.get("source_type")?.trim() || null;
-    const nextTopic = searchParams.get("topic")?.trim() || null;
+    const nextTopic =
+      searchParams.get("topics")?.split(",")[0]?.trim() ||
+      searchParams.get("topic")?.trim() ||
+      null;
     const nextVerified = hasVerificationSignals
       ? parseVerifiedSearchFilter(searchParams.get("verified")) ?? null
       : null;
@@ -179,6 +244,7 @@ export function FeedCatalog({
 
   const setParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("topic");
     if (!hasVerificationSignals) {
       params.delete("verified");
     }
@@ -237,18 +303,26 @@ export function FeedCatalog({
     [visibleFeedIds],
   );
   const readerHref = useMemo(
-    () => buildReaderHref(visibleFeedIds, selectedTopic),
-    [selectedTopic, visibleFeedIds],
-  );
-  const searchHref = useMemo(
     () =>
-      buildScopedSearchHref({
+      buildReaderHref({
+        feedIds: visibleFeedIds,
         query: searchQuery,
         sourceType: selectedType,
         topic: selectedTopic,
         verified: effectiveVerifiedFilter,
       }),
-    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType],
+    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
+  );
+  const searchHref = useMemo(
+    () =>
+      buildScopedSearchHref({
+        feedIds: visibleFeedIds,
+        query: searchQuery,
+        sourceType: selectedType,
+        topic: selectedTopic,
+        verified: effectiveVerifiedFilter,
+      }),
+    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
   );
   const activeFilterSummary = useMemo(
     () =>
@@ -333,7 +407,7 @@ export function FeedCatalog({
                 size="sm"
                 onClick={() => {
                   setSelectedTopic(null);
-                  setParam("topic", null);
+                  setParam("topics", null);
                 }}
               >
                 All Topics
@@ -345,7 +419,7 @@ export function FeedCatalog({
                   size="sm"
                   onClick={() => {
                     setSelectedTopic(topic);
-                    setParam("topic", topic);
+                    setParam("topics", topic);
                   }}
                 >
                   {topic}
@@ -412,7 +486,7 @@ export function FeedCatalog({
             href={searchHref}
             className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
           >
-            Search matching sources
+            Search recent posts
           </Link>
           {visibleExportHref ? (
             <a
@@ -482,7 +556,12 @@ export function FeedCatalog({
               <div className="flex flex-wrap gap-3 pt-1">
                 {feed.id ? (
                   <Link
-                    href={`/reader?feed=${encodeURIComponent(feed.id)}`}
+                    href={buildFeedReaderHref({
+                      feedId: feed.id,
+                      query: searchQuery,
+                      sourceType: selectedType,
+                      verified: effectiveVerifiedFilter,
+                    })}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
                   >
                     <RadioTower className="size-3.5" />

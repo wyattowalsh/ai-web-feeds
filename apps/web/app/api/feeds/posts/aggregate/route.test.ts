@@ -28,7 +28,7 @@ describe("GET /api/feeds/posts/aggregate", () => {
     });
   });
 
-  it("filters, sorts, paginates, and forwards refresh parameters for GET requests", async () => {
+  it("filters, sorts, paginates, and forwards refresh parameters for full streams", async () => {
     loadAggregatedFeedPostsByIdsMock.mockResolvedValue({
       posts: [
         {
@@ -91,7 +91,7 @@ describe("GET /api/feeds/posts/aggregate", () => {
 
     const response = await GET(
       new Request(
-        "http://localhost/api/feeds/posts/aggregate?feed=feed-1,feed-2&q=agents&sort=oldest&limit=1&cursor=1&per_feed_limit=2&refresh=true",
+        "http://localhost/api/feeds/posts/aggregate?feed=feed-1,feed-2&q=agents&sort=oldest&limit=1&cursor=1&per_feed_limit=2&refresh=true&stream=all",
       ),
     );
 
@@ -107,11 +107,57 @@ describe("GET /api/feeds/posts/aggregate", () => {
         total_matched_posts: 3,
         applied_query: "agents",
         applied_sort: "oldest",
+        applied_stream: "all",
         posts: [
           expect.objectContaining({
             id: "post-2",
           }),
         ],
+      }),
+    );
+  });
+
+  it("treats sample streams as non-paginated previews with the lower per-feed default", async () => {
+    loadAggregatedFeedPostsByIdsMock.mockResolvedValue({
+      posts: [
+        {
+          id: "post-1",
+          feedId: "feed-1",
+          feedTitle: "Agent Systems Daily",
+          sourceUrl: "https://example.com/feed-1",
+          title: "Agent planning for real teams",
+          link: "https://example.com/post-1",
+          summary: "Agent orchestration in production",
+          author: "Alice",
+          categories: ["agents"],
+          publishedAt: "2026-04-05T12:00:00.000Z",
+        },
+      ],
+      feeds: [],
+      fetchedAt: "2026-04-06T12:00:00.000Z",
+      expiresAt: "2026-04-06T12:10:00.000Z",
+      cacheState: "live",
+      totalSources: 1,
+      successfulSources: 1,
+      failedSources: 0,
+    });
+
+    const response = await GET(
+      new Request(
+        "http://localhost/api/feeds/posts/aggregate?feed=feed-1&stream=sample&limit=1&cursor=3",
+      ),
+    );
+
+    expect(loadAggregatedFeedPostsByIdsMock).toHaveBeenCalledWith(["feed-1"], 48, 3, {
+      forceRefresh: false,
+    });
+    expect(response.status).toBe(200);
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        cursor: 0,
+        next_cursor: null,
+        applied_stream: "sample",
       }),
     );
   });

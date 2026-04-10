@@ -22,8 +22,8 @@ class TestSearchWorkflow:
     @pytest.mark.e2e
     def test_search_to_result_click(self, page: Page):
         """Test user flow: navigate to search → enter query → click result."""
-        # Navigate to search page
-        page.goto("/search")
+        # Navigate to article search mode in the unified feeds workspace
+        page.goto("/feeds?mode=articles")
 
         # Verify search bar is visible
         search_input = page.locator('input[placeholder*="Search"]')
@@ -43,7 +43,7 @@ class TestSearchWorkflow:
     @pytest.mark.e2e
     def test_autocomplete_workflow(self, page: Page):
         """Test autocomplete suggestions workflow."""
-        page.goto("/search")
+        page.goto("/feeds?mode=articles")
 
         # Type in search bar
         search_input = page.locator('input[placeholder*="Search"]')
@@ -59,7 +59,7 @@ class TestSearchWorkflow:
     @pytest.mark.e2e
     def test_search_filter_workflow(self, page: Page):
         """Test applying search filters."""
-        page.goto("/search")
+        page.goto("/feeds?mode=articles")
 
         # Enter search
         page.locator('input[placeholder*="Search"]').fill("AI")
@@ -153,9 +153,9 @@ class TestNavigationWorkflow:
         # Navigate back to home
         page.goto("/")
 
-        # Navigate to search
-        page.locator('a[href="/search"]').click()
-        expect(page).to_have_url("/search")
+        # Navigate to article search mode
+        page.locator('a[href="/feeds?mode=articles"]').click()
+        expect(page).to_have_url("/feeds?mode=articles")
 
     @pytest.mark.e2e
     def test_mobile_responsive(self, page: Page):
@@ -169,7 +169,7 @@ class TestNavigationWorkflow:
         expect(page.locator('text="AI Web Feeds"')).to_be_visible()
 
         # Test navigation on mobile
-        page.goto("/search")
+        page.goto("/feeds?mode=articles")
         expect(page.locator('input[placeholder*="Search"]')).to_be_visible()
 
 

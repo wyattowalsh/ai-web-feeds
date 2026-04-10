@@ -78,14 +78,66 @@ describe("FeedCatalog", () => {
     const visibleExport = screen.getByRole("link", { name: "Export visible OPML" });
     expect(visibleExport).toHaveAttribute("href", "/api/exports/opml?format=filtered&feed=feed-1");
 
-    expect(screen.getByRole("link", { name: "Open in reader" })).toHaveAttribute(
+    const directReaderLink = screen.getAllByRole("link", { name: "Open in reader" })[0];
+    const matchingFeedsReaderLink = screen.getByRole("link", { name: "Read matching feeds" });
+    const directReaderUrl = new URL(
+      directReaderLink.getAttribute("href") ?? "",
+      "https://aiwebfeeds.test",
+    );
+    const matchingFeedsUrl = new URL(
+      matchingFeedsReaderLink.getAttribute("href") ?? "",
+      "https://aiwebfeeds.test",
+    );
+
+    expect(directReaderUrl.pathname).toBe("/feeds");
+    expect(directReaderUrl.searchParams.get("mode")).toBe("reader");
+    expect(directReaderUrl.searchParams.get("feed")).toBe("feed-1");
+    expect(directReaderUrl.searchParams.get("q")).toBe("agent");
+    expect(directReaderUrl.searchParams.get("source_type")).toBe("blog");
+    expect(directReaderUrl.searchParams.get("verified")).toBe("true");
+
+    expect(matchingFeedsUrl.pathname).toBe("/feeds");
+    expect(matchingFeedsUrl.searchParams.get("mode")).toBe("reader");
+    expect(matchingFeedsUrl.searchParams.get("feed")).toBe("feed-1");
+    expect(matchingFeedsUrl.searchParams.get("q")).toBe("agent");
+    expect(matchingFeedsUrl.searchParams.get("source_type")).toBe("blog");
+    expect(matchingFeedsUrl.searchParams.get("verified")).toBe("true");
+    expect(screen.getByRole("link", { name: "Search recent posts" })).toHaveAttribute(
       "href",
-      "/reader?feed=feed-1",
+      "/feeds?mode=articles&feed=feed-1&q=agent&source_type=blog&verified=true",
     );
     expect(screen.getByRole("link", { name: "Export OPML" })).toHaveAttribute(
       "href",
       "/api/exports/opml?format=filtered&feed=feed-1",
     );
+  });
+
+  it("carries the exact visible feed slice into reader and article mode links", () => {
+    currentSearchParams = new URLSearchParams("q=feed");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    render(
+      <FeedCatalog
+        feeds={feeds}
+        sourceTypes={["blog", "newsletter"]}
+        initialQuery="feed"
+        initialSourceType={null}
+        initialTopic={null}
+        initialVerified={null}
+      />,
+    );
+
+    const matchingFeedsReaderUrl = new URL(
+      screen.getByRole("link", { name: "Read matching feeds" }).getAttribute("href") ?? "",
+      "https://aiwebfeeds.test",
+    );
+    const matchingFeedsSearchUrl = new URL(
+      screen.getByRole("link", { name: "Search recent posts" }).getAttribute("href") ?? "",
+      "https://aiwebfeeds.test",
+    );
+
+    expect(matchingFeedsReaderUrl.searchParams.getAll("feed")).toEqual(["feed-1", "feed-2"]);
+    expect(matchingFeedsSearchUrl.searchParams.getAll("feed")).toEqual(["feed-1", "feed-2"]);
   });
 
   it("keeps q/source_type/topic/verified in URL state as filters change", () => {
@@ -106,17 +158,18 @@ describe("FeedCatalog", () => {
     expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents", { scroll: false });
 
     fireEvent.click(screen.getByRole("button", { name: "blog (1)" }));
-    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents&source_type=blog", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents&source_type=blog", {
+      scroll: false,
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "agents" }));
-    expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?q=agents&source_type=blog&topic=agents",
-      { scroll: false },
-    );
+    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents&source_type=blog&topics=agents", {
+      scroll: false,
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "Verified" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?q=agents&source_type=blog&topic=agents&verified=true",
+      "/feeds?q=agents&source_type=blog&topics=agents&verified=true",
       { scroll: false },
     );
   });

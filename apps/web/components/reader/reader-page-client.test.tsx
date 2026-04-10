@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NormalizedArticle } from "@/lib/reader-types";
 
 const {
+  loadMoreMock,
   refreshMock,
   replaceMock,
   updatePreferencesMock,
@@ -11,6 +12,7 @@ const {
   useReaderTimelineMock,
   useSearchParamsMock,
 } = vi.hoisted(() => ({
+  loadMoreMock: vi.fn(),
   refreshMock: vi.fn(),
   replaceMock: vi.fn(),
   updatePreferencesMock: vi.fn(async () => undefined),
@@ -21,9 +23,10 @@ const {
 }));
 
 let currentSearchParams = new URLSearchParams();
+let currentPathname = "/reader";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/reader",
+  usePathname: () => currentPathname,
   useRouter: () => ({ replace: replaceMock }),
   useSearchParams: () => useSearchParamsMock(),
 }));
@@ -96,6 +99,7 @@ const feeds = [
 describe("ReaderPageClient", () => {
   beforeEach(() => {
     currentSearchParams = new URLSearchParams();
+    currentPathname = "/reader";
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
 
     replaceMock.mockReset();
@@ -122,7 +126,10 @@ describe("ReaderPageClient", () => {
         failedSources: 0,
       },
       loading: false,
+      loadingMore: false,
       error: null,
+      hasMore: false,
+      loadMore: loadMoreMock,
       refresh: refreshMock,
     });
 
@@ -157,25 +164,28 @@ describe("ReaderPageClient", () => {
     }));
   });
 
-  it("derives the timeline scope from topic filters and applies the saved view alias", () => {
-    currentSearchParams = new URLSearchParams("topic=agents&q=roundup&view=bookmarked");
+  it("honors /feeds workspace filters and reader-specific query state", () => {
+    currentPathname = "/feeds";
+    currentSearchParams = new URLSearchParams(
+      "source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24",
+    );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
 
     useReaderTimelineMock.mockReturnValue({
-      articles: [
-        makeArticle({ id: "saved-1", bookmarked: true, title: "Agent systems roundup" }),
-        makeArticle({ id: "other-1", bookmarked: false, title: "Agent release notes" }),
-      ],
+      articles: [makeArticle({ id: "saved-1", bookmarked: true, title: "Agent systems roundup" })],
       meta: {
         cacheState: "cached",
         fetchedAt: "2026-04-06T00:00:00.000Z",
         expiresAt: "2026-04-06T00:10:00.000Z",
-        totalSources: 2,
-        successfulSources: 2,
+        totalSources: 1,
+        successfulSources: 1,
         failedSources: 0,
       },
       loading: false,
+      loadingMore: false,
       error: null,
+      hasMore: true,
+      loadMore: loadMoreMock,
       refresh: refreshMock,
     });
 
@@ -185,15 +195,30 @@ describe("ReaderPageClient", () => {
       ["feed-1"],
       expect.objectContaining({
         enabled: true,
-        limit: 48,
-        perFeedLimit: 3,
+        limit: 24,
+        perFeedLimit: 8,
+        stream: "all",
+        cursor: 24,
       }),
     );
     expect(screen.getByText("Agent systems roundup")).toBeInTheDocument();
-    expect(screen.queryByText("Agent release notes")).not.toBeInTheDocument();
-    expect(
-      screen.getByText("Scanning all 1 matching feeds, up to 3 posts per source."),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Reader stream" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Catalog" })).toHaveAttribute(
+      "href",
+      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24",
+    );
+    expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute(
+      "href",
+      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24&mode=articles",
+    );
+
+    fireEvent.change(screen.getByLabelText("Sort"), {
+      target: { value: "oldest" },
+    });
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=oldest&stream=all&cursor=24",
+      { scroll: false },
+    );
   });
 
   it("updates URL params for feed, query, and sort changes", () => {
@@ -217,6 +242,56 @@ describe("ReaderPageClient", () => {
     expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter&sort=source", {
       scroll: false,
     });
+
+    fireEvent.change(screen.getByLabelText("Stream"), {
+      target: { value: "all" },
+    });
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/reader?feed=feed-2&q=newsletter&sort=source&stream=all",
+      { scroll: false },
+    );
+  });
+
+  it("keeps the embedded /feeds surface compact and canonical", () => {
+    currentPathname = "/feeds";
+    currentSearchParams = new URLSearchParams("feed=feed-1&source_type=blog&q=roundup");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    render(<ReaderPageClient feeds={feeds} />);
+
+    expect(
+      screen.queryByText("Read the latest posts from the AI source registry."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Catalog" })).toHaveAttribute(
+      "href",
+      "/feeds?feed=feed-1&source_type=blog&q=roundup",
+    );
+    expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute(
+      "href",
+      "/feeds?feed=feed-1&source_type=blog&q=roundup&mode=articles",
+    );
+  });
+
+  it("treats repeated feed params as an explicit workspace slice", () => {
+    currentPathname = "/feeds";
+    currentSearchParams = new URLSearchParams("feed=feed-1&feed=feed-2&mode=reader");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    render(<ReaderPageClient feeds={feeds} />);
+
+    expect(useReaderTimelineMock).toHaveBeenCalledWith(
+      ["feed-1", "feed-2"],
+      expect.objectContaining({
+        enabled: true,
+        limit: 48,
+        perFeedLimit: 3,
+        stream: "sample",
+        cursor: 0,
+      }),
+    );
+    expect(
+      screen.getByText("Pinned to 2 feeds carried over from the current catalog slice."),
+    ).toBeInTheDocument();
   });
 
   it("uses selected-feed mode to fetch the latest 8 posts from a single feed", () => {
@@ -231,6 +306,8 @@ describe("ReaderPageClient", () => {
         enabled: true,
         limit: 8,
         perFeedLimit: 8,
+        stream: "sample",
+        cursor: 0,
       }),
     );
     expect(
@@ -255,14 +332,46 @@ describe("ReaderPageClient", () => {
 
     expect(
       screen.getByText(
-        (_, element) => element?.textContent === "Showing 1 visible article from 18 scanned feeds",
+        (_, element) =>
+          element?.textContent?.replace(/\s+/g, " ").trim() ===
+          "Showing 1 visible article from 18 scanned feeds",
       ),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Truncated broad mode: scanning 18 of 20 matching feeds, up to 3 posts per source.",
+        (_, element) =>
+          element?.textContent?.replace(/\s+/g, " ").trim() ===
+          "Truncated broad mode: scanning 18 of 20 matching feeds, up to 3 posts per source.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("renders a manual load-more fallback when the full stream has another page", () => {
+    currentSearchParams = new URLSearchParams("stream=all");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    useReaderTimelineMock.mockReturnValue({
+      articles: [makeArticle()],
+      meta: {
+        cacheState: "live",
+        fetchedAt: "2026-04-06T00:00:00.000Z",
+        expiresAt: "2026-04-06T00:10:00.000Z",
+        totalSources: 1,
+        successfulSources: 1,
+        failedSources: 0,
+      },
+      loading: false,
+      loadingMore: false,
+      error: null,
+      hasMore: true,
+      loadMore: loadMoreMock,
+      refresh: refreshMock,
+    });
+
+    render(<ReaderPageClient feeds={feeds} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Load more posts" }));
+    expect(loadMoreMock).toHaveBeenCalledTimes(1);
   });
 
   it("wires local article-state interactions through the existing hook", async () => {

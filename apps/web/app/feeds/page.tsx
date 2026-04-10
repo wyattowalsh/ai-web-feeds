@@ -1,17 +1,30 @@
 import type { Metadata } from "next";
-import { RadioTower, Shapes, Sparkles, Tags } from "lucide-react";
-import { MetricCard } from "@/components/ui/metric-card";
-import { loadFeeds, getSourceTypes, getFeedStats } from "@/lib/feeds";
-import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
+import {
+  SearchPageClient,
+  type InitialSearchRequestState,
+} from "@/components/search/search-page-client";
+import { ReaderPageClient } from "@/components/reader/reader-page-client";
+import { loadFeedCatalog, getSourceTypes, getFeedStats } from "@/lib/feeds";
+import { runLocalSearch } from "@/lib/search-local";
+import {
+  DEFAULT_UNBOUNDED_SEARCH_META,
+  normalizeSearchQuery,
+  parseSearchStateFromParams,
+  parseVerifiedSearchFilter,
+  type SearchExecutionState,
+  type SearchResponseMeta,
+  type SearchResult,
+} from "@/lib/search";
 import { FeedCatalog } from "./feed-catalog";
+import { FeedsWorkspaceClient, type FeedsWorkspaceMode } from "./feeds-workspace-client";
 
 export const metadata: Metadata = {
-  title: "Feed Catalog - AIWebFeeds",
+  title: "Feeds Workspace - AIWebFeeds",
   description:
-    "Browse and download curated AI/ML feeds for your RSS reader. High-quality feeds from blogs, podcasts, newsletters, preprints, and more.",
+    "Browse curated AI feeds, search recent posts, and read the merged timeline from one canonical workspace.",
   openGraph: {
-    title: "Feed Catalog - AIWebFeeds",
-    description: "Browse and download curated AI/ML feeds for your RSS reader.",
+    title: "Feeds Workspace - AIWebFeeds",
+    description: "Browse, search, and read AI feeds from one unified workspace.",
   },
 };
 
@@ -26,8 +39,17 @@ function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams
 
   for (const [key, value] of Object.entries(searchParams)) {
     if (Array.isArray(value)) {
-      if (value[0]) {
-        params.set(key, value[0]);
+      const normalizedValues = value.filter((entry): entry is string => typeof entry === "string");
+      if (normalizedValues.length === 0) {
+        continue;
+      }
+
+      if (key === "topics") {
+        params.set(key, normalizedValues.join(","));
+      } else {
+        for (const entry of normalizedValues) {
+          params.append(key, entry);
+        }
       }
       continue;
     }
@@ -40,100 +62,142 @@ function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams
   return params;
 }
 
+function parseMode(searchParams: URLSearchParams): FeedsWorkspaceMode {
+  const rawMode = searchParams.get("mode")?.trim().toLowerCase();
+  if (rawMode === "articles" || rawMode === "reader") {
+    return rawMode;
+  }
+
+  return "catalog";
+}
+
+async function getInitialArticleSearchData(searchParams: URLSearchParams): Promise<{
+  initialQuery: string;
+  initialSearchState: SearchExecutionState;
+  initialResults: SearchResult[];
+  initialMeta: SearchResponseMeta;
+  initialSearchRequestState: InitialSearchRequestState;
+  shouldLogInitialSearch: boolean;
+}> {
+  const initialQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
+  const initialSearchState: SearchExecutionState = {
+    ...parseSearchStateFromParams(searchParams),
+    scope: "articles",
+    searchType: "articles",
+    search_type: "articles",
+  };
+
+  if (!initialQuery) {
+    return buildArticleSearchData(initialQuery, initialSearchState, "idle");
+  }
+
+  try {
+    const payload = await runLocalSearch({
+      query: initialQuery,
+      scope: "articles",
+      limit: 20,
+      feedIds: initialSearchState.feed_ids,
+      sourceType: initialSearchState.source_type,
+      topics: initialSearchState.topics,
+      verified: initialSearchState.verified,
+    });
+
+    return buildArticleSearchData(initialQuery, initialSearchState, "success", {
+      initialResults: payload.results,
+      initialMeta: payload.meta,
+      shouldLogInitialSearch: true,
+    });
+  } catch (error) {
+    console.error("Initial article search hydration error:", error);
+    return buildArticleSearchData(initialQuery, initialSearchState, "failed");
+  }
+}
+
+function buildArticleSearchData(
+  initialQuery: string,
+  initialSearchState: SearchExecutionState,
+  initialSearchRequestState: InitialSearchRequestState,
+  overrides?: Partial<{
+    initialResults: SearchResult[];
+    initialMeta: SearchResponseMeta;
+    shouldLogInitialSearch: boolean;
+  }>,
+) {
+  return {
+    initialQuery,
+    initialSearchState,
+    initialResults: overrides?.initialResults ?? [],
+    initialMeta: overrides?.initialMeta ?? DEFAULT_UNBOUNDED_SEARCH_META,
+    initialSearchRequestState,
+    shouldLogInitialSearch: overrides?.shouldLogInitialSearch ?? false,
+  };
+}
+
 export default async function FeedsPage({ searchParams }: FeedsPageProps) {
   const resolvedSearchParams = toURLSearchParams(await searchParams);
-  const feedsData = await loadFeeds();
+  const mode = parseMode(resolvedSearchParams);
+  const feedsData = loadFeedCatalog();
   const feeds = feedsData.sources;
   const types = getSourceTypes(feeds);
   const stats = getFeedStats(feeds);
   const initialQuery = normalizeSearchQuery(resolvedSearchParams.get("q")) ?? "";
   const initialSourceType = resolvedSearchParams.get("source_type")?.trim() || null;
-  const initialTopic = resolvedSearchParams.get("topic")?.trim() || null;
+  const initialTopic =
+    resolvedSearchParams.get("topics")?.split(",")[0]?.trim() ||
+    resolvedSearchParams.get("topic")?.trim() ||
+    null;
   const initialVerified = parseVerifiedSearchFilter(resolvedSearchParams.get("verified")) ?? null;
-  const metricCards = [
-    {
-      label: "Total feeds",
-      value: stats.total,
-      detail: "Curated sources in the catalog",
-      icon: <RadioTower className="size-5" />,
-    },
-    {
-      label: "Source types",
-      value: stats.sourceTypeCount,
-      detail: "Distinct source formats represented",
-      icon: <Shapes className="size-5" />,
-    },
-    {
-      label: "Topics",
-      value: stats.topicCount,
-      detail: "Distinct topic labels represented",
-      icon: <Tags className="size-5" />,
-    },
-  ];
-
-  if (stats.hasVerificationMetadata) {
-    metricCards.push({
-      label: "Verified",
-      value: stats.verified,
-      detail: `${Math.round((stats.verified / stats.total) * 100)}% of the catalog`,
-      icon: <Sparkles className="size-5" />,
-    });
-  }
+  const articleSearchData =
+    mode === "articles"
+      ? await getInitialArticleSearchData(resolvedSearchParams)
+      : buildArticleSearchData(
+          "",
+          {
+            ...parseSearchStateFromParams(new URLSearchParams()),
+            scope: "articles",
+            searchType: "articles",
+            search_type: "articles",
+            feed_ids: [],
+          },
+          "idle",
+        );
+  const readerFeeds = feeds.map((feed) => ({
+    id: feed.id || feed.url,
+    title: feed.title,
+    sourceType: feed.source_type || "feed",
+    topics: feed.topics ?? [],
+    verified: feed.verified === true,
+    isActive: feed.is_active !== false,
+    url: feed.url,
+  }));
 
   return (
     <div className="page-wrap page-stack">
       <section className="surface-panel space-y-8">
-        <div className="grid gap-8 md:gap-6 md:grid-cols-[1fr_0.9fr] lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-          <div className="space-y-5">
-            <span className="eyebrow">
-              <RadioTower className="size-3.5" />
-              Feed catalog
-            </span>
-            <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">
-                Choose the feed set you actually want to keep.
-              </h1>
-              <p className="hero-copy max-w-2xl">
-                Filter by source type, topic, and verification state, then move straight into the
-                reader, search recent posts, or export the visible set.
-              </p>
-            </div>
-          </div>
-
-          <div className="surface-card-soft space-y-4">
-            <p className="metric-label">Catalog summary</p>
-            <p className="small-note">
-              The catalog is the starting point for the product flow: narrow the source list first,
-              then read, search, or export from there.
-            </p>
-            {!stats.hasVerificationMetadata && (
-              <p className="small-note">
-                This published snapshot does not include verification labels, so the catalog keeps
-                the core workflow focused on source type and topic instead of implied quality flags.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {metricCards.map((card) => (
-            <MetricCard
-              key={card.label}
-              label={card.label}
-              value={card.value}
-              detail={card.detail}
-              icon={card.icon}
-            />
-          ))}
-        </div>
-        <FeedCatalog
-          feeds={feeds}
-          sourceTypes={types}
-          initialQuery={initialQuery}
-          initialSourceType={initialSourceType}
-          initialTopic={initialTopic}
-          initialVerified={initialVerified}
-        />
+        <FeedsWorkspaceClient mode={mode} stats={stats} />
+        {mode === "articles" ? (
+          <SearchPageClient
+            {...articleSearchData}
+            basePath="/feeds"
+            browseFeedsHref="/feeds"
+            embedded
+            forceScope="articles"
+            readerBasePath="/feeds"
+            readerMode="reader"
+            routeMode="articles"
+          />
+        ) : mode === "reader" ? (
+          <ReaderPageClient feeds={readerFeeds} />
+        ) : (
+          <FeedCatalog
+            feeds={feeds}
+            sourceTypes={types}
+            initialQuery={initialQuery}
+            initialSourceType={initialSourceType}
+            initialTopic={initialTopic}
+            initialVerified={initialVerified}
+          />
+        )}
       </section>
     </div>
   );

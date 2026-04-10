@@ -1,16 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 import {
   loadAggregatedFeedPostsByIds,
   type AggregateFeedPost,
   type AggregateFeedPostsResponse,
-} from '@/lib/feed-posts';
-import { normalizeSearchQuery } from '@/lib/search';
-import { withRouteTelemetry } from '@/lib/telemetry-route';
+} from "@/lib/feed-posts";
+import { normalizeSearchQuery } from "@/lib/search";
+import { withRouteTelemetry } from "@/lib/telemetry-route";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-type AggregateSort = 'latest' | 'oldest' | 'title' | 'source';
+type AggregateSort = "latest" | "oldest" | "title" | "source";
+type AggregateStream = "sample" | "all";
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -23,16 +24,22 @@ const GETHandler = async (request: Request) => {
     );
   }
 
-  const limit = clampNumber(searchParams.get('limit'), 1, 48, 24);
-  const perFeedLimit = clampNumber(searchParams.get('per_feed_limit'), 1, 8, 3);
-  const cursor = clampNumber(searchParams.get('cursor'), 0, 500, 0);
-  const sort = parseAggregateSort(searchParams.get('sort'));
-  const query = normalizeSearchQuery(searchParams.get('q'));
+  const limit = clampNumber(searchParams.get("limit"), 1, 48, 24);
+  const stream = parseAggregateStream(searchParams.get("stream"));
+  const perFeedLimit = clampNumber(
+    searchParams.get("per_feed_limit"),
+    1,
+    8,
+    stream === "all" ? 8 : 3,
+  );
+  const cursor = stream === "sample" ? 0 : clampNumber(searchParams.get("cursor"), 0, 500, 0);
+  const sort = parseAggregateSort(searchParams.get("sort"));
+  const query = normalizeSearchQuery(searchParams.get("q"));
   const totalLimit = Math.max(cursor + limit, feedIds.length * perFeedLimit, 48);
 
   try {
     const payload = await loadAggregatedFeedPostsByIds(feedIds, totalLimit, perFeedLimit, {
-      forceRefresh: searchParams.get('refresh') === 'true',
+      forceRefresh: searchParams.get("refresh") === "true",
     });
 
     const filteredPosts = sortAggregatePosts(
@@ -45,35 +52,35 @@ const GETHandler = async (request: Request) => {
         ...payload,
         posts: filteredPosts.slice(cursor, cursor + limit),
         cursor,
-        next_cursor: cursor + limit < filteredPosts.length ? cursor + limit : null,
+        next_cursor:
+          stream !== "sample" && cursor + limit < filteredPosts.length ? cursor + limit : null,
         total_matched_posts: filteredPosts.length,
         applied_query: query,
         applied_sort: sort,
+        applied_stream: stream ?? "legacy",
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+          "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600",
         },
       },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load aggregated feed posts';
+    const message = error instanceof Error ? error.message : "Failed to load aggregated feed posts";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 };
 
 const POSTHandler = async (request: Request) => {
-  const body = (await request.json().catch(() => null)) as
-    | {
-        feedIds?: string[];
-        limit?: number;
-        perFeedLimit?: number;
-        refresh?: boolean;
-      }
-    | null;
+  const body = (await request.json().catch(() => null)) as {
+    feedIds?: string[];
+    limit?: number;
+    perFeedLimit?: number;
+    refresh?: boolean;
+  } | null;
 
   if (!Array.isArray(body?.feedIds) || body.feedIds.length === 0) {
-    return NextResponse.json({ error: 'feedIds is required' }, { status: 400 });
+    return NextResponse.json({ error: "feedIds is required" }, { status: 400 });
   }
 
   const limit = clampNumber(body.limit, 1, 48, 24);
@@ -86,11 +93,11 @@ const POSTHandler = async (request: Request) => {
 
     return NextResponse.json(payload, {
       headers: {
-        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600",
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load aggregated feed posts';
+    const message = error instanceof Error ? error.message : "Failed to load aggregated feed posts";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 };
@@ -99,8 +106,8 @@ function readFeedIds(searchParams: URLSearchParams): string[] {
   return Array.from(
     new Set(
       searchParams
-        .getAll('feed')
-        .flatMap((value) => value.split(','))
+        .getAll("feed")
+        .flatMap((value) => value.split(","))
         .map((value) => value.trim())
         .filter((value) => value.length > 0),
     ),
@@ -114,9 +121,9 @@ function clampNumber(
   fallback: number,
 ): number {
   const parsed =
-    typeof value === 'number'
+    typeof value === "number"
       ? value
-      : typeof value === 'string'
+      : typeof value === "string"
         ? Number.parseInt(value, 10)
         : Number.NaN;
 
@@ -129,12 +136,22 @@ function clampNumber(
 
 function parseAggregateSort(value: string | null): AggregateSort {
   switch (value) {
-    case 'oldest':
-    case 'title':
-    case 'source':
+    case "oldest":
+    case "title":
+    case "source":
       return value;
     default:
-      return 'latest';
+      return "latest";
+  }
+}
+
+function parseAggregateStream(value: string | null): AggregateStream | null {
+  switch (value) {
+    case "sample":
+    case "all":
+      return value;
+    default:
+      return null;
   }
 }
 
@@ -143,26 +160,26 @@ function postMatchesQuery(post: AggregateFeedPost, query: string): boolean {
   const haystack = [
     post.title,
     post.feedTitle,
-    post.summary ?? '',
-    post.author ?? '',
-    post.categories.join(' '),
+    post.summary ?? "",
+    post.author ?? "",
+    post.categories.join(" "),
   ]
-    .join(' ')
+    .join(" ")
     .toLowerCase();
 
   return haystack.includes(normalizedQuery);
 }
 
 function sortAggregatePosts(
-  posts: AggregateFeedPostsResponse['posts'],
+  posts: AggregateFeedPostsResponse["posts"],
   sort: AggregateSort,
-): AggregateFeedPostsResponse['posts'] {
+): AggregateFeedPostsResponse["posts"] {
   return [...posts].sort((left, right) => {
-    if (sort === 'title') {
+    if (sort === "title") {
       return left.title.localeCompare(right.title);
     }
 
-    if (sort === 'source') {
+    if (sort === "source") {
       const feedTitleCompare = left.feedTitle.localeCompare(right.feedTitle);
       if (feedTitleCompare !== 0) {
         return feedTitleCompare;
@@ -172,7 +189,7 @@ function sortAggregatePosts(
     }
 
     const timestampComparison = comparePostTimestamps(left.publishedAt, right.publishedAt);
-    if (sort === 'oldest') {
+    if (sort === "oldest") {
       return -timestampComparison;
     }
 
@@ -199,5 +216,5 @@ function comparePostTimestamps(left: string | null, right: string | null): numbe
   return rightTime - leftTime;
 }
 
-export const GET = withRouteTelemetry('feeds.posts.aggregate.list', GETHandler);
-export const POST = withRouteTelemetry('feeds.posts.aggregate', POSTHandler);
+export const GET = withRouteTelemetry("feeds.posts.aggregate.list", GETHandler);
+export const POST = withRouteTelemetry("feeds.posts.aggregate", POSTHandler);

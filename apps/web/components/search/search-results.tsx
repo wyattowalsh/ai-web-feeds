@@ -12,9 +12,31 @@ interface SearchResultsProps {
   scope: SearchScope;
   meta?: SearchResponseMeta;
   loading: boolean;
+  readerBasePath?: string;
+  readerMode?: "reader" | null;
 }
 
-export function SearchResults({ results, scope, meta, loading }: SearchResultsProps) {
+function buildReaderHref(
+  feedId: string,
+  readerBasePath: string,
+  readerMode: "reader" | null,
+): string {
+  const params = new URLSearchParams();
+  if (readerMode) {
+    params.set("mode", readerMode);
+  }
+  params.set("feed", feedId);
+  return `${readerBasePath}?${params.toString()}`;
+}
+
+export function SearchResults({
+  results,
+  scope,
+  meta,
+  loading,
+  readerBasePath = "/reader",
+  readerMode = null,
+}: SearchResultsProps) {
   if (loading) {
     return <ContentCardSkeleton count={5} />;
   }
@@ -35,7 +57,7 @@ export function SearchResults({ results, scope, meta, loading }: SearchResultsPr
         tips={[
           "Use fewer filters to broaden the local catalog search.",
           scope === "articles"
-            ? "Try source search first, then switch back to article search once you find the right feed cluster."
+            ? "Remove one or more filters to widen the recent-post slice and surface more articles."
             : "Search for topics, source names, or provider names.",
         ]}
       />
@@ -47,19 +69,24 @@ export function SearchResults({ results, scope, meta, loading }: SearchResultsPr
       <div className="surface-card flex items-center justify-between">
         <div>
           <p className="text-sm text-(--ink-muted)">
-            Found <strong>{results.length}</strong> {scope === "articles" ? "article" : "source"} result
+            Found <strong>{results.length}</strong> {scope === "articles" ? "article" : "source"}{" "}
+            result
             {results.length !== 1 ? "s" : ""}
           </p>
           {scope === "articles" && meta?.bounded ? (
             <p className="small-note mt-1">
-              Retrieval is bounded: {meta.scanned_sources} of {meta.candidate_sources} matching sources
-              scanned
+              Retrieval is bounded: {meta.scanned_sources} of {meta.candidate_sources} matching
+              sources scanned
               {meta.truncated ? " before ranking article results." : "."}
             </p>
           ) : null}
         </div>
         <div className="flex items-center gap-2 rounded-full bg-(--brand-soft) px-3 py-2 text-xs font-semibold text-(--brand-strong)">
-          {scope === "articles" ? <CalendarDays className="size-3.5" /> : <RadioTower className="size-3.5" />}
+          {scope === "articles" ? (
+            <CalendarDays className="size-3.5" />
+          ) : (
+            <RadioTower className="size-3.5" />
+          )}
           {scope === "articles" ? "Articles" : "Sources"}
         </div>
       </div>
@@ -99,7 +126,7 @@ export function SearchResults({ results, scope, meta, loading }: SearchResultsPr
 
             {result.kind === "source" && (
               <Link
-                href={`/reader?feed=${encodeURIComponent(result.id)}`}
+                href={buildReaderHref(result.id, readerBasePath, readerMode)}
                 className="inline-flex items-center gap-2 text-sm font-medium text-(--brand-strong) hover:underline"
               >
                 <RadioTower className="size-4" />

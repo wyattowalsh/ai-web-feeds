@@ -103,6 +103,7 @@ function renderSearchPageClient({
     scope: "sources",
     searchType: "sources",
     search_type: "sources",
+    feed_ids: [],
     topics: [],
     threshold: 0.7,
   } as const,
@@ -189,6 +190,7 @@ describe("SearchPageClient", () => {
         scope: "sources",
         searchType: "sources",
         search_type: "sources",
+        feed_ids: [],
         source_type: "podcast",
         topics: ["ml", "agents"],
         verified: true,
@@ -313,6 +315,7 @@ describe("SearchPageClient", () => {
         scope: "sources",
         searchType: "sources",
         search_type: "sources",
+        feed_ids: [],
         topics: [],
         threshold: 0.7,
       },
@@ -335,5 +338,61 @@ describe("SearchPageClient", () => {
       expect(pushMock).toHaveBeenCalledWith("/search?q=agents&scope=articles");
     });
     expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/search?q=agents&scope=articles");
+  });
+
+  it("preserves explicit feed slices across follow-up article searches", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({
+          results: [],
+          meta: {
+            mode: "bounded",
+            bounded: true,
+            candidate_sources: 2,
+            scanned_sources: 2,
+            scan_limit: 18,
+            per_source_limit: 4,
+            truncated: false,
+          },
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    currentSearchParams = new URLSearchParams("q=agents&scope=articles&feed=feed-2&feed=feed-1");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    renderSearchPageClient({
+      initialQuery: "agents",
+      initialSearchState: {
+        scope: "articles",
+        searchType: "articles",
+        search_type: "articles",
+        feed_ids: ["feed-2", "feed-1"],
+        topics: [],
+        threshold: 0.7,
+      },
+      initialResults: [],
+      initialMeta: {
+        mode: "bounded",
+        bounded: true,
+        candidate_sources: 2,
+        scanned_sources: 2,
+        scan_limit: 18,
+        per_source_limit: 4,
+        truncated: false,
+      },
+      initialSearchRequestState: "success",
+    });
+
+    fireEvent.click(screen.getByText("Run Search"));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith(
+        "/search?q=fresh+query&scope=articles&feed=feed-2&feed=feed-1",
+      );
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "/api/search?q=fresh+query&scope=articles&feed=feed-2&feed=feed-1",
+    );
   });
 });

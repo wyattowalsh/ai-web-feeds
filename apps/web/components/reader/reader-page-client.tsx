@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 import { useReaderTimeline } from "@/lib/use-reader-timeline";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 import { useArticleState } from "@/lib/use-reader-article-state";
@@ -25,6 +26,7 @@ type ReaderFeedOption = {
 
 type ReaderView = "latest" | "unread" | "starred" | "saved" | "archived";
 type ReaderSort = "latest" | "oldest" | "source";
+type ReaderStream = "sample" | "all";
 
 interface ReaderPageClientProps {
   feeds: ReaderFeedOption[];
@@ -34,23 +36,122 @@ const DEFAULT_FETCH_FEED_LIMIT = 18;
 const BROAD_MODE_PER_FEED_LIMIT = 3;
 const BROAD_MODE_TOTAL_LIMIT = 48;
 const SELECTED_FEED_POST_LIMIT = 8;
+const ALL_STREAM_PAGE_LIMIT = 24;
+const ALL_STREAM_PER_FEED_LIMIT = 8;
+
+function readFirstParam(params: URLSearchParams, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = params.get(key);
+    if (value && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function readTopicFilters(params: URLSearchParams): string[] {
+  return Array.from(
+    new Set(
+      [...params.getAll("topic"), ...params.getAll("topics"), params.get("topic") ?? ""]
+        .flatMap((value) => value.split(","))
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  );
+}
+
+function parseReaderStream(value: string | null, cursorValue: string | null): ReaderStream {
+  if (value === "all") {
+    return "all";
+  }
+
+  if (value === "sample") {
+    return "sample";
+  }
+
+  return cursorValue && cursorValue.trim().length > 0 ? "all" : "sample";
+}
+
+function parseCursor(value: string | null): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+function buildFeedsWorkspaceHref(
+  params: URLSearchParams,
+  overrides: Record<string, string | null | undefined> = {},
+): string {
+  const nextParams = new URLSearchParams(params.toString());
+
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === null || value === undefined || value.length === 0) {
+      nextParams.delete(key);
+    } else {
+      nextParams.set(key, value);
+    }
+  }
+
+  const nextQuery = nextParams.toString();
+  return nextQuery ? `/feeds?${nextQuery}` : "/feeds";
+}
 
 export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [paramState, setParamState] = useState(() => new URLSearchParams(searchParams.toString()));
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setParamState(new URLSearchParams(searchParams.toString()));
   }, [searchParams]);
 
-  const feed = paramState.get("feed") || "";
-  const topic = paramState.get("topic") || "";
-  const query = paramState.get("q") || "";
-  const view = parseView(paramState.get("view"));
-  const sort = parseSort(paramState.get("sort"));
+  const isFeedsEmbed = pathname.startsWith("/feeds");
+  const readerViewKey = isFeedsEmbed ? "reader_view" : "view";
+  const readerSortKey = isFeedsEmbed ? "reader_sort" : "sort";
+  const topicKey = isFeedsEmbed ? "topics" : "topic";
+
+  const explicitFeedIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          paramState
+            .getAll("feed")
+            .map((feedId) => feedId.trim())
+            .filter((feedId) => feedId.length > 0),
+        ),
+      ),
+    [paramState],
+  );
+  const selectedFeedId = explicitFeedIds.length === 1 ? explicitFeedIds[0] ?? "" : "";
+  const topicFilters = useMemo(() => readTopicFilters(paramState), [paramState]);
+  const topic = topicFilters[0] || "";
+  const query = normalizeSearchQuery(paramState.get("q")) || "";
+  const sourceType = paramState.get("source_type")?.trim() || "";
+  const verified = parseVerifiedSearchFilter(paramState.get("verified")) ?? null;
+  const stream = parseReaderStream(paramState.get("stream"), paramState.get("cursor"));
+  const cursor = parseCursor(paramState.get("cursor"));
+  const view = parseView(
+    readFirstParam(paramState, [
+      readerViewKey,
+      readerViewKey === "reader_view" ? "view" : "reader_view",
+    ]),
+  );
+  const sort = parseSort(
+    readFirstParam(paramState, [
+      readerSortKey,
+      readerSortKey === "reader_sort" ? "sort" : "reader_sort",
+    ]),
+  );
   const [queryDraft, setQueryDraft] = useState(query);
+  const catalogHref = buildFeedsWorkspaceHref(paramState, { mode: null });
+  const articlesHref = buildFeedsWorkspaceHref(paramState, { mode: "articles" });
+  const Root = isFeedsEmbed ? "div" : "main";
 
   useEffect(() => {
     setQueryDraft(query);
@@ -64,34 +165,90 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
 
   const candidateFeeds = useMemo(() => {
     return feeds.filter((candidateFeed) => {
-      if (feed) {
-        return candidateFeed.id === feed;
-      }
-
-      if (topic && !candidateFeed.topics.includes(topic)) {
+      if (explicitFeedIds.length > 0 && !explicitFeedIds.includes(candidateFeed.id)) {
         return false;
       }
 
-      return candidateFeed.isActive;
+      if (explicitFeedIds.length === 0 && !candidateFeed.isActive) {
+        return false;
+      }
+
+      if (sourceType && candidateFeed.sourceType !== sourceType) {
+        return false;
+      }
+
+      if (verified !== null && candidateFeed.verified !== verified) {
+        return false;
+      }
+
+      if (
+        topicFilters.length > 0 &&
+        !topicFilters.some((topicFilter) => candidateFeed.topics.includes(topicFilter))
+      ) {
+        return false;
+      }
+
+      return true;
     });
-  }, [feed, feeds, topic]);
+  }, [explicitFeedIds, feeds, sourceType, topicFilters, verified]);
 
   const feedIdsToFetch = useMemo(() => {
-    if (feed) {
+    if (stream === "all" || explicitFeedIds.length > 0) {
       return candidateFeeds.map((candidateFeed) => candidateFeed.id);
     }
 
     return candidateFeeds
       .slice(0, DEFAULT_FETCH_FEED_LIMIT)
       .map((candidateFeed) => candidateFeed.id);
-  }, [candidateFeeds, feed]);
+  }, [candidateFeeds, explicitFeedIds.length, stream]);
 
-  const { articles, meta, loading, error, refresh } = useReaderTimeline(feedIdsToFetch, {
-    enabled: feedIdsToFetch.length > 0,
-    limit: feed ? SELECTED_FEED_POST_LIMIT : BROAD_MODE_TOTAL_LIMIT,
-    perFeedLimit: feed ? SELECTED_FEED_POST_LIMIT : BROAD_MODE_PER_FEED_LIMIT,
-  });
+  const { articles, meta, loading, loadingMore, error, hasMore, loadMore, refresh } =
+    useReaderTimeline(feedIdsToFetch, {
+      enabled: feedIdsToFetch.length > 0,
+      limit:
+        stream === "all"
+          ? ALL_STREAM_PAGE_LIMIT
+          : selectedFeedId
+            ? SELECTED_FEED_POST_LIMIT
+            : BROAD_MODE_TOTAL_LIMIT,
+      perFeedLimit:
+        stream === "all"
+          ? ALL_STREAM_PER_FEED_LIMIT
+          : selectedFeedId
+            ? SELECTED_FEED_POST_LIMIT
+            : BROAD_MODE_PER_FEED_LIMIT,
+      stream,
+      cursor,
+    });
   const { preferences, update } = useReaderPreferences();
+
+  useEffect(() => {
+    if (stream !== "all" || !hasMore || loading || loadingMore) {
+      return;
+    }
+
+    const observerTarget = loadMoreRef.current;
+    if (!observerTarget || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void loadMore();
+        }
+      },
+      {
+        rootMargin: "800px 0px",
+      },
+    );
+
+    observer.observe(observerTarget);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, loadMore, loading, loadingMore, stream]);
 
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -151,12 +308,21 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
   const visibleFeedCount = candidateFeeds.length;
   const fetchedFeedCount = feedIdsToFetch.length;
 
-  const setParam = (key: string, value: string | null) => {
+  const setParam = (key: string, value: string | null, options?: { resetCursor?: boolean }) => {
     const params = new URLSearchParams(paramState.toString());
+    if (key === "topic" || key === "topics") {
+      params.delete("topic");
+      params.delete("topics");
+    }
+
     if (!value) {
       params.delete(key);
     } else {
       params.set(key, value);
+    }
+
+    if (options?.resetCursor) {
+      params.delete("cursor");
     }
 
     setParamState(params);
@@ -165,80 +331,123 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
   };
 
   return (
-    <main className="flex flex-1 flex-col">
+    <Root className="flex flex-1 flex-col">
       <div className="page-wrap page-stack">
-        <section className="surface-panel space-y-8">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-            <div className="space-y-5">
-              <span className="eyebrow">
-                <Rss className="size-3.5" />
-                Reader
-              </span>
-              <div className="space-y-4">
-                <h1 className="hero-title max-w-4xl">
-                  Read the latest posts from the AI source registry.
+        <section className={cn(isFeedsEmbed ? "space-y-6" : "surface-panel space-y-8")}>
+          {isFeedsEmbed ? (
+            <div className="surface-card flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="metric-label">Feeds workspace</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-(--ink)">
+                  Reader stream
                 </h1>
-                <p className="hero-copy max-w-2xl">
-                  Filter by feed or topic, scan the current article stream, and keep your own
-                  reading state on-device. The goal is simple: open a feed set and triage it fast.
+                <p className="small-note max-w-3xl">
+                  Canonical feed browsing lives under /feeds. Use feed, topic, source type,
+                  verification, stream, and reader state filters together while keeping the page
+                  shell compact inside the workspace.
                 </p>
               </div>
-            </div>
 
-            <div className="surface-card-soft space-y-4">
-              <p className="metric-label">Live scope</p>
-              <div className="grid gap-3 text-sm text-(--ink)">
-                <div>
-                  Showing <span className="font-semibold">{filteredArticles.length}</span> visible
-                  article{filteredArticles.length !== 1 ? "s" : ""} from{" "}
-                  <span className="font-semibold">{fetchedFeedCount}</span> scanned feed
-                  {fetchedFeedCount !== 1 ? "s" : ""}
-                </div>
-                <div>
-                  {feed ? (
-                    <>
-                      Focused on one feed, up to{" "}
-                      <span className="font-semibold">{SELECTED_FEED_POST_LIMIT}</span> recent posts
-                    </>
-                  ) : topic ? (
-                    <>
-                      Filtered to <span className="font-semibold">{topic}</span>, up to{" "}
-                      <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
-                      matching source
-                    </>
-                  ) : (
-                    <>
-                      Broad mode samples active feeds across the catalog, up to{" "}
-                      <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
-                      source
-                    </>
-                  )}
-                </div>
-                <div>
-                  Cache: <span className="font-semibold">{meta?.cacheState || "loading"}</span>
-                </div>
-                {!feed ? (
-                  <div>
-                    {visibleFeedCount > fetchedFeedCount
-                      ? `Truncated broad mode: scanning ${fetchedFeedCount} of ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`
-                      : `Scanning all ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`}
-                  </div>
-                ) : null}
-              </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={refresh}>
                   <RefreshCcw className="size-4" />
                   Refresh stream
                 </Button>
-                <Link href="/feeds" className={cn(buttonVariants({ variant: "secondary" }))}>
-                  Choose feeds
+                <Link href={catalogHref} className={cn(buttonVariants({ variant: "secondary" }))}>
+                  Catalog
                 </Link>
-                <Link href="/search" className={cn(buttonVariants({ variant: "ghost" }))}>
-                  Search posts
+                <Link href={articlesHref} className={cn(buttonVariants({ variant: "ghost" }))}>
+                  Articles
                 </Link>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+              <div className="space-y-5">
+                <span className="eyebrow">
+                  <Rss className="size-3.5" />
+                  Reader
+                </span>
+                <div className="space-y-4">
+                  <h1 className="hero-title max-w-4xl">
+                    Read the latest posts from the AI source registry.
+                  </h1>
+                  <p className="hero-copy max-w-2xl">
+                    Filter by feed or topic, scan the current article stream, and keep your own
+                    reading state on-device. The goal is simple: open a feed set and triage it fast.
+                  </p>
+                </div>
+              </div>
+
+              <div className="surface-card-soft space-y-4">
+                <p className="metric-label">Live scope</p>
+                <div className="grid gap-3 text-sm text-(--ink)">
+                  <div>
+                    Showing <span className="font-semibold">{filteredArticles.length}</span> visible
+                    article{filteredArticles.length !== 1 ? "s" : ""} from{" "}
+                    <span className="font-semibold">{fetchedFeedCount}</span> scanned feed
+                    {fetchedFeedCount !== 1 ? "s" : ""}
+                  </div>
+                  <div>
+                    {stream === "all" ? (
+                      <>
+                        Full stream mode pages through{" "}
+                        <span className="font-semibold">{visibleFeedCount}</span> matching feed
+                        {visibleFeedCount !== 1 ? "s" : ""} with cursor-aware loading.
+                      </>
+                    ) : selectedFeedId ? (
+                      <>
+                        Focused on one feed, up to{" "}
+                        <span className="font-semibold">{SELECTED_FEED_POST_LIMIT}</span> recent
+                        posts
+                      </>
+                    ) : explicitFeedIds.length > 1 ? (
+                      <>
+                        Pinned to <span className="font-semibold">{visibleFeedCount}</span> selected
+                        feeds, up to{" "}
+                        <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
+                        source
+                      </>
+                    ) : topic ? (
+                      <>
+                        Filtered to <span className="font-semibold">{topic}</span>, up to{" "}
+                        <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
+                        matching source
+                      </>
+                    ) : (
+                      <>
+                        Broad mode samples active feeds across the catalog, up to{" "}
+                        <span className="font-semibold">{BROAD_MODE_PER_FEED_LIMIT}</span> posts per
+                        source
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    Cache: <span className="font-semibold">{meta?.cacheState || "loading"}</span>
+                  </div>
+                  {stream !== "all" && explicitFeedIds.length === 0 ? (
+                    <div>
+                      {visibleFeedCount > fetchedFeedCount
+                        ? `Truncated broad mode: scanning ${fetchedFeedCount} of ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`
+                        : `Scanning all ${visibleFeedCount} matching feeds, up to ${BROAD_MODE_PER_FEED_LIMIT} posts per source.`}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={refresh}>
+                    <RefreshCcw className="size-4" />
+                    Refresh stream
+                  </Button>
+                  <Link href={catalogHref} className={cn(buttonVariants({ variant: "secondary" }))}>
+                    Catalog
+                  </Link>
+                  <Link href={articlesHref} className={cn(buttonVariants({ variant: "ghost" }))}>
+                    Articles
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
             <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
@@ -254,8 +463,10 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   </label>
                   <Select
                     id="reader-feed"
-                    value={feed}
-                    onChange={(event) => setParam("feed", event.target.value || null)}
+                    value={selectedFeedId}
+                    onChange={(event) =>
+                      setParam("feed", event.target.value || null, { resetCursor: true })
+                    }
                   >
                     <option value="">All matching feeds</option>
                     {feeds.map((candidateFeed) => (
@@ -264,6 +475,12 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                       </option>
                     ))}
                   </Select>
+                  {explicitFeedIds.length > 1 ? (
+                    <p className="small-note mt-2">
+                      Pinned to {explicitFeedIds.length} feeds carried over from the current catalog
+                      slice.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div>
@@ -273,8 +490,10 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   <Select
                     id="reader-topic"
                     value={topic}
-                    onChange={(event) => setParam("topic", event.target.value || null)}
-                    disabled={Boolean(feed)}
+                    onChange={(event) =>
+                      setParam(topicKey, event.target.value || null, { resetCursor: true })
+                    }
+                    disabled={Boolean(selectedFeedId)}
                   >
                     <option value="">All topics</option>
                     {topicOptions.map((topicOption) => (
@@ -300,6 +519,22 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                     placeholder="Search title, feed, summary, or category"
                   />
                 </div>
+
+                <div>
+                  <label className="field-label" htmlFor="reader-stream">
+                    Stream
+                  </label>
+                  <Select
+                    id="reader-stream"
+                    value={stream}
+                    onChange={(event) =>
+                      setParam("stream", event.target.value || null, { resetCursor: true })
+                    }
+                  >
+                    <option value="sample">Sample</option>
+                    <option value="all">All posts</option>
+                  </Select>
+                </div>
               </div>
 
               <div className="surface-card space-y-4">
@@ -313,7 +548,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                       key={option.value}
                       type="button"
                       onClick={() =>
-                        setParam("view", option.value === "latest" ? null : option.value)
+                        setParam(readerViewKey, option.value === "latest" ? null : option.value)
                       }
                       className={cn(
                         "flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm transition duration-150",
@@ -342,7 +577,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   <Select
                     id="reader-sort"
                     value={sort}
-                    onChange={(event) => setParam("sort", event.target.value || null)}
+                    onChange={(event) => setParam(readerSortKey, event.target.value || null)}
                   >
                     <option value="latest">Latest first</option>
                     <option value="oldest">Oldest first</option>
@@ -419,11 +654,30 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   />
                 ))}
               </div>
+
+              {stream === "all" && hasMore ? (
+                <div className="surface-card space-y-3">
+                  <div ref={loadMoreRef} aria-hidden="true" className="h-px w-full" />
+                  <p className="small-note">
+                    Keep scrolling to auto-load more posts, or use the fallback button below.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => void loadMore()}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? "Loading more…" : "Load more posts"}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
       </div>
-    </main>
+    </Root>
   );
 }
 

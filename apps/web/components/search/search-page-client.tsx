@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Compass, Newspaper, RadioTower, Search as SearchIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/search/search-bar";
@@ -34,6 +34,13 @@ interface SearchPageClientProps {
   initialMeta: SearchResponseMeta;
   initialSearchRequestState: InitialSearchRequestState;
   shouldLogInitialSearch: boolean;
+  basePath?: string;
+  browseFeedsHref?: string;
+  embedded?: boolean;
+  forceScope?: SearchScope;
+  readerBasePath?: string;
+  readerMode?: "reader" | null;
+  routeMode?: "catalog" | "articles" | "reader" | null;
 }
 
 function areStringArraysEqual(left: string[], right: string[]): boolean {
@@ -49,14 +56,27 @@ function areSearchStatesEqual(left: SearchExecutionState, right: SearchExecution
     left.scope === right.scope &&
     left.source_type === right.source_type &&
     left.verified === right.verified &&
+    areStringArraysEqual(left.feed_ids, right.feed_ids) &&
     areStringArraysEqual(left.topics, right.topics)
   );
 }
 
-function buildSearchParamsString(query: string, state: SearchExecutionState): string {
+function buildSearchParamsString(
+  query: string,
+  state: SearchExecutionState,
+  options?: {
+    includeScope?: boolean;
+    routeMode?: "catalog" | "articles" | "reader" | null;
+  },
+): string {
   const params = new URLSearchParams();
+  if (options?.routeMode) {
+    params.set("mode", options.routeMode);
+  }
   params.set("q", query);
-  params.set("scope", state.scope);
+  if (options?.includeScope !== false) {
+    params.set("scope", state.scope);
+  }
 
   if (state.source_type) {
     params.set("source_type", state.source_type);
@@ -67,8 +87,27 @@ function buildSearchParamsString(query: string, state: SearchExecutionState): st
   if (state.verified !== undefined) {
     params.set("verified", String(state.verified));
   }
+  for (const feedId of state.feed_ids) {
+    params.append("feed", feedId);
+  }
 
   return params.toString();
+}
+
+function withForcedScope(
+  state: SearchExecutionState,
+  forceScope?: SearchScope,
+): SearchExecutionState {
+  if (!forceScope) {
+    return state;
+  }
+
+  return {
+    ...state,
+    scope: forceScope,
+    searchType: forceScope,
+    search_type: forceScope,
+  };
 }
 
 export function SearchPageClient({
@@ -78,16 +117,28 @@ export function SearchPageClient({
   initialMeta,
   initialSearchRequestState,
   shouldLogInitialSearch,
+  basePath = "/search",
+  browseFeedsHref = "/feeds",
+  embedded = false,
+  forceScope,
+  readerBasePath = "/reader",
+  readerMode = null,
+  routeMode = null,
 }: SearchPageClientProps) {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
   const { push } = useRouter();
 
+  const initialState = useMemo(
+    () => withForcedScope(initialSearchState, forceScope),
+    [forceScope, initialSearchState],
+  );
   const [query, setQuery] = useState(initialQuery);
-  const [scope, setScope] = useState<SearchScope>(initialSearchState.scope);
-  const [sourceType, setSourceType] = useState<string | undefined>(initialSearchState.source_type);
-  const [topics, setTopics] = useState<string[]>(initialSearchState.topics);
-  const [verified, setVerified] = useState<boolean | undefined>(initialSearchState.verified);
+  const [scope, setScope] = useState<SearchScope>(initialState.scope);
+  const [feedIds, setFeedIds] = useState<string[]>(initialState.feed_ids);
+  const [sourceType, setSourceType] = useState<string | undefined>(initialState.source_type);
+  const [topics, setTopics] = useState<string[]>(initialState.topics);
+  const [verified, setVerified] = useState<boolean | undefined>(initialState.verified);
   const [results, setResults] = useState<SearchResult[]>(initialResults);
   const [searchMeta, setSearchMeta] = useState<SearchResponseMeta>(initialMeta);
   const [loading, setLoading] = useState(
@@ -95,7 +146,7 @@ export function SearchPageClient({
   );
   const [hasSearched, setHasSearched] = useState(Boolean(initialQuery));
 
-  const searchStateRef = useRef<SearchExecutionState>(initialSearchState);
+  const searchStateRef = useRef<SearchExecutionState>(initialState);
   const hasInitializedRef = useRef(false);
   const hasLoggedInitialSearchRef = useRef(false);
   const searchRequestSequenceRef = useRef(0);
@@ -103,15 +154,16 @@ export function SearchPageClient({
 
   useEffect(() => {
     searchStateRef.current = {
-      scope,
-      searchType: scope,
-      search_type: scope,
+      scope: forceScope ?? scope,
+      searchType: forceScope ?? scope,
+      search_type: forceScope ?? scope,
+      feed_ids: feedIds,
       source_type: sourceType,
       topics,
       verified,
-      threshold: initialSearchState.threshold ?? DEFAULT_SEARCH_THRESHOLD,
+      threshold: initialState.threshold ?? DEFAULT_SEARCH_THRESHOLD,
     };
-  }, [initialSearchState.threshold, scope, sourceType, topics, verified]);
+  }, [feedIds, forceScope, initialState.threshold, scope, sourceType, topics, verified]);
 
   const logSearchAnalytics = useCallback(
     async (searchQuery: string, state: SearchExecutionState, resultCount: number) => {
@@ -161,11 +213,11 @@ export function SearchPageClient({
     }
 
     hasLoggedInitialSearchRef.current = true;
-    void logSearchAnalytics(initialQuery, initialSearchState, initialResults.length);
+    void logSearchAnalytics(initialQuery, initialState, initialResults.length);
   }, [
     initialQuery,
     initialResults.length,
-    initialSearchState,
+    initialState,
     logSearchAnalytics,
     shouldLogInitialSearch,
   ]);
@@ -183,9 +235,10 @@ export function SearchPageClient({
 
       const currentSearchState = searchStateRef.current;
       const nextSearchState: SearchExecutionState = {
-        scope: overrides.scope ?? currentSearchState.scope,
-        searchType: overrides.scope ?? currentSearchState.scope,
-        search_type: overrides.scope ?? currentSearchState.scope,
+        scope: forceScope ?? overrides.scope ?? currentSearchState.scope,
+        searchType: forceScope ?? overrides.scope ?? currentSearchState.scope,
+        search_type: forceScope ?? overrides.scope ?? currentSearchState.scope,
+        feed_ids: "feed_ids" in overrides ? overrides.feed_ids ?? [] : currentSearchState.feed_ids,
         source_type:
           "source_type" in overrides ? overrides.source_type : currentSearchState.source_type,
         topics: "topics" in overrides ? overrides.topics ?? [] : currentSearchState.topics,
@@ -198,9 +251,17 @@ export function SearchPageClient({
       setHasSearched(true);
 
       const paramsString = buildSearchParamsString(normalizedSearchQuery, nextSearchState);
+      const canonicalParamsString = buildSearchParamsString(
+        normalizedSearchQuery,
+        nextSearchState,
+        {
+          includeScope: !forceScope,
+          routeMode,
+        },
+      );
       if (!options?.skipUrlSync) {
-        lastPushedSearchRef.current = paramsString;
-        push(`/search?${paramsString}`);
+        lastPushedSearchRef.current = canonicalParamsString;
+        push(`${basePath}?${canonicalParamsString}`);
       }
 
       try {
@@ -233,22 +294,33 @@ export function SearchPageClient({
         }
       }
     },
-    [logSearchAnalytics, push],
+    [basePath, forceScope, logSearchAnalytics, push, routeMode],
   );
 
   useEffect(() => {
     const paramsSnapshot = new URLSearchParams(searchParamsString);
     const queryFromUrl = normalizeSearchQuery(paramsSnapshot.get("q")) || "";
-    const searchStateFromUrl = parseSearchStateFromParams(paramsSnapshot);
+    const searchStateFromUrl = withForcedScope(
+      parseSearchStateFromParams(paramsSnapshot),
+      forceScope,
+    );
     const normalizedParamsString = queryFromUrl
-      ? buildSearchParamsString(queryFromUrl, searchStateFromUrl)
+      ? buildSearchParamsString(queryFromUrl, searchStateFromUrl, {
+          includeScope: !forceScope,
+          routeMode,
+        })
       : "";
     const matchesInitialSearch =
-      queryFromUrl === initialQuery && areSearchStatesEqual(searchStateFromUrl, initialSearchState);
+      queryFromUrl === initialQuery && areSearchStatesEqual(searchStateFromUrl, initialState);
 
     setQuery((current) => (current === queryFromUrl ? current : queryFromUrl));
     setScope((current) =>
       current === searchStateFromUrl.scope ? current : searchStateFromUrl.scope,
+    );
+    setFeedIds((current) =>
+      areStringArraysEqual(current, searchStateFromUrl.feed_ids)
+        ? current
+        : searchStateFromUrl.feed_ids,
     );
     setSourceType((current) =>
       current === searchStateFromUrl.source_type ? current : searchStateFromUrl.source_type,
@@ -272,7 +344,7 @@ export function SearchPageClient({
           normalizedParamsString !== searchParamsString
         ) {
           lastPushedSearchRef.current = normalizedParamsString;
-          push(`/search?${normalizedParamsString}`);
+          push(`${basePath}?${normalizedParamsString}`);
         }
 
         if (initialSearchRequestState !== "failed") {
@@ -300,9 +372,12 @@ export function SearchPageClient({
   }, [
     initialQuery,
     initialSearchRequestState,
-    initialSearchState,
+    initialState,
     performSearch,
+    forceScope,
+    basePath,
     push,
+    routeMode,
     searchParamsString,
   ]);
 
@@ -313,6 +388,10 @@ export function SearchPageClient({
   };
 
   const handleScopeChange = (nextScope: SearchScope) => {
+    if (forceScope) {
+      return;
+    }
+
     setScope(nextScope);
     if (query) {
       void performSearch(query, { scope: nextScope });
@@ -339,6 +418,103 @@ export function SearchPageClient({
       void performSearch(query, { verified: nextVerified });
     }
   };
+
+  const content = (
+    <>
+      <SearchBar onSearch={handleSearch} initialQuery={query} />
+
+      <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+        <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+          <SearchFilters
+            scope={scope}
+            onScopeChange={handleScopeChange}
+            showScopeToggle={!forceScope}
+            sourceType={sourceType}
+            onSourceTypeChange={handleSourceTypeChange}
+            topics={topics}
+            onTopicsChange={handleTopicsChange}
+            verified={verified}
+            onVerifiedChange={handleVerifiedChange}
+          />
+        </div>
+
+        <div className="space-y-6">
+          {hasSearched && query && (
+            <div className="surface-card flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="metric-label">Current query</p>
+                <p className="mt-2 text-base text-(--ink-muted)">
+                  Showing {scope === "articles" ? "article" : "source"} results for{" "}
+                  <span className="font-semibold text-(--ink)">{query}</span>
+                </p>
+                <p className="small-note mt-1">
+                  {scope === "articles"
+                    ? "Recent posts are pulled from the most relevant feeds in the local catalog."
+                    : "Lexical matching is applied to source metadata in the shipped catalog."}
+                </p>
+                {scope === "articles" && searchMeta.bounded ? (
+                  <p className="small-note mt-2">
+                    Scanned {searchMeta.scanned_sources} of {searchMeta.candidate_sources} matching
+                    sources, up to {searchMeta.per_source_limit} posts per source.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          {!hasSearched && (
+            <div className="surface-card-soft">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
+                  <SearchIcon className="size-5" />
+                </span>
+                <div>
+                  <p className="metric-label">Search workflow</p>
+                  <h2 className="text-2xl font-semibold text-(--ink)">
+                    Start from a feed, topic, or keyword.
+                  </h2>
+                </div>
+              </div>
+              <p className="hero-copy max-w-2xl">
+                {forceScope === "articles"
+                  ? "Search recent posts from the current feed slice without leaving the unified workspace."
+                  : "Search sources when you want the right publication. Search articles when you want matching recent posts from that part of the catalog."}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href={browseFeedsHref}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+                >
+                  Browse feeds first
+                </Link>
+                <Link
+                  href={readerMode ? `${readerBasePath}?mode=${readerMode}` : readerBasePath}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+                >
+                  Open reader
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {hasSearched && (
+            <SearchResults
+              results={results}
+              scope={scope}
+              meta={searchMeta}
+              loading={loading}
+              readerBasePath={readerBasePath}
+              readerMode={readerMode}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-8">{content}</div>;
+  }
 
   return (
     <div className="page-wrap page-stack">
@@ -387,86 +563,7 @@ export function SearchPageClient({
             </p>
           </div>
         </div>
-
-        <SearchBar onSearch={handleSearch} initialQuery={query} />
-
-        <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
-          <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
-            <SearchFilters
-              scope={scope}
-              onScopeChange={handleScopeChange}
-              sourceType={sourceType}
-              onSourceTypeChange={handleSourceTypeChange}
-              topics={topics}
-              onTopicsChange={handleTopicsChange}
-              verified={verified}
-              onVerifiedChange={handleVerifiedChange}
-            />
-          </div>
-
-          <div className="space-y-6">
-            {hasSearched && query && (
-              <div className="surface-card flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="metric-label">Current query</p>
-                  <p className="mt-2 text-base text-(--ink-muted)">
-                    Showing {scope === "articles" ? "article" : "source"} results for{" "}
-                    <span className="font-semibold text-(--ink)">{query}</span>
-                  </p>
-                  <p className="small-note mt-1">
-                    {scope === "articles"
-                      ? "Recent posts are pulled from the most relevant feeds in the local catalog."
-                      : "Lexical matching is applied to source metadata in the shipped catalog."}
-                  </p>
-                  {scope === "articles" && searchMeta.bounded ? (
-                    <p className="small-note mt-2">
-                      Scanned {searchMeta.scanned_sources} of {searchMeta.candidate_sources}{" "}
-                      matching sources, up to {searchMeta.per_source_limit} posts per source.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            )}
-
-            {!hasSearched && (
-              <div className="surface-card-soft">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
-                    <SearchIcon className="size-5" />
-                  </span>
-                  <div>
-                    <p className="metric-label">Search workflow</p>
-                    <h2 className="text-2xl font-semibold text-(--ink)">
-                      Start from a feed, topic, or keyword.
-                    </h2>
-                  </div>
-                </div>
-                <p className="hero-copy max-w-2xl">
-                  Search sources when you want the right publication. Search articles when you want
-                  matching recent posts from that part of the catalog.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href="/feeds"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
-                  >
-                    Browse feeds first
-                  </Link>
-                  <Link
-                    href="/reader"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
-                  >
-                    Open reader
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {hasSearched && (
-              <SearchResults results={results} scope={scope} meta={searchMeta} loading={loading} />
-            )}
-          </div>
-        </div>
+        {content}
       </section>
     </div>
   );

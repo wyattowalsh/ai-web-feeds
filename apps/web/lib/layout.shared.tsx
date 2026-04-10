@@ -34,12 +34,8 @@ export function baseOptions(): BaseLayoutProps {
         url: "/feeds",
       },
       {
-        text: "Search",
-        url: "/search",
-      },
-      {
-        text: "Reader",
-        url: "/reader",
+        text: "Downloads",
+        url: "/downloads",
       },
       {
         text: "Documentation",
