@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { DESIGN_ASSETS } from "@/lib/design-assets";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 
@@ -94,6 +96,10 @@ const supportRoutes = [
 ] as const;
 
 export default function HomePage() {
+  const heroAsset = DESIGN_ASSETS.home.heroWorkflow;
+  const primarySurfacesAsset = DESIGN_ASSETS.home.primarySurfaces;
+  const supportSurfacesAsset = DESIGN_ASSETS.home.supportSurfaces;
+
   return (
     <main className="flex flex-1 flex-col">
       <div className="page-wrap page-stack">
@@ -138,6 +144,21 @@ export default function HomePage() {
             </div>
 
             <aside className="surface-card-soft space-y-4">
+              <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-(--surface) p-3 shadow-sm">
+                <div
+                  className="relative overflow-hidden rounded-[1.25rem] border border-(--line) bg-white/60"
+                  style={{ aspectRatio: `${heroAsset.width} / ${heroAsset.height}` }}
+                >
+                  <Image
+                    src={heroAsset.publicPath}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 30rem, 100vw"
+                    className="object-contain"
+                  />
+                </div>
+              </div>
               <p className="metric-label">Core workflow</p>
               <div className="space-y-3 text-sm text-(--ink-muted)">
                 <p>
@@ -176,6 +197,21 @@ export default function HomePage() {
             </p>
           </div>
 
+          <div className="surface-card-soft overflow-hidden border border-(--line) bg-linear-to-br from-sky-500/10 via-white to-cyan-500/10 p-4">
+            <div
+              className="relative overflow-hidden rounded-[1.5rem] border border-(--line) bg-white/65"
+              style={{ aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}` }}
+            >
+              <Image
+                src={primarySurfacesAsset.publicPath}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 72rem, 100vw"
+                className="object-contain"
+              />
+            </div>
+          </div>
+
           <div className="grid gap-5 md:grid-cols-3">
             {coreSteps.map((step) => {
               const Icon = step.icon;
@@ -206,13 +242,27 @@ export default function HomePage() {
         </section>
 
         <section className="surface-card flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
+          <div className="space-y-4 lg:max-w-[38rem]">
             <p className="metric-label">Support surfaces</p>
             <h2 className="text-2xl">Keep exports, docs, and machine-facing outputs close by.</h2>
             <p className="small-note max-w-2xl">
               The supporting pages are still useful, but they should sit behind the feed workflow
               instead of trying to define the product.
             </p>
+            <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-linear-to-br from-white via-sky-500/5 to-cyan-500/10 p-3 shadow-sm">
+              <div
+                className="relative overflow-hidden rounded-[1.25rem] border border-(--line) bg-white/75"
+                style={{ aspectRatio: `${supportSurfacesAsset.width} / ${supportSurfacesAsset.height}` }}
+              >
+                <Image
+                  src={supportSurfacesAsset.publicPath}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 38rem, 100vw"
+                  className="object-contain"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-3 sm:min-w-[24rem]">

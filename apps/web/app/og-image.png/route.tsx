@@ -1,8 +1,13 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+import { DESIGN_ASSETS } from "@/lib/design-assets";
+import { getEmbeddedDesignAssetDataUrl } from "@/lib/design-assets.server";
+
+export const runtime = "nodejs";
 
 export async function GET() {
+  const plateUrl = await getEmbeddedDesignAssetDataUrl(DESIGN_ASSETS.social.sitewidePlate);
+
   return new ImageResponse(
     (
       <div
@@ -13,14 +18,35 @@ export async function GET() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#0a0a0a",
-          backgroundImage:
-            "radial-gradient(circle at 25px 25px, #18181b 2%, transparent 0%), radial-gradient(circle at 75px 75px, #18181b 2%, transparent 0%)",
-          backgroundSize: "100px 100px",
+          backgroundColor: "#f8f5ed",
           padding: "80px",
           fontFamily: "Inter, system-ui, sans-serif",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* next/og ImageResponse renders plain HTML, so next/image is not available here. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={plateUrl}
+          alt=""
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "1200px",
+            height: "630px",
+            objectFit: "cover",
+            opacity: 0.92,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(248, 245, 237, 0.22) 0%, rgba(248, 245, 237, 0.7) 100%)",
+          }}
+        />
         {/* Main Content Container */}
         <div
           style={{
@@ -29,6 +55,7 @@ export async function GET() {
             alignItems: "center",
             justifyContent: "center",
             gap: "48px",
+            position: "relative",
           }}
         >
           {/* Logo/Icon */}
@@ -37,15 +64,15 @@ export async function GET() {
               width: "120px",
               height: "120px",
               borderRadius: "24px",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: "linear-gradient(135deg, #147fe6 0%, #1d4ed8 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "72px",
-              boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)",
+              boxShadow: "0 20px 60px rgba(20, 127, 230, 0.22)",
             }}
           >
-            🤖
+            📡
           </div>
 
           {/* Title */}
@@ -61,7 +88,7 @@ export async function GET() {
               style={{
                 fontSize: "82px",
                 fontWeight: 900,
-                background: "linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%)",
+                background: "linear-gradient(135deg, #0f172a 0%, #2563eb 100%)",
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 color: "transparent",
@@ -78,7 +105,7 @@ export async function GET() {
               style={{
                 fontSize: "36px",
                 fontWeight: 500,
-                color: "#a1a1aa",
+                color: "#334155",
                 textAlign: "center",
                 maxWidth: "900px",
                 lineHeight: 1.4,
@@ -100,12 +127,12 @@ export async function GET() {
             <div
               style={{
                 padding: "16px 32px",
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
+                backgroundColor: "rgba(255, 255, 255, 0.82)",
+                border: "1px solid rgba(148, 163, 184, 0.35)",
                 borderRadius: "12px",
                 fontSize: "24px",
                 fontWeight: 600,
-                color: "#a1a1aa",
+                color: "#0f172a",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
@@ -117,12 +144,12 @@ export async function GET() {
             <div
               style={{
                 padding: "16px 32px",
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
+                backgroundColor: "rgba(255, 255, 255, 0.82)",
+                border: "1px solid rgba(148, 163, 184, 0.35)",
                 borderRadius: "12px",
                 fontSize: "24px",
                 fontWeight: 600,
-                color: "#a1a1aa",
+                color: "#0f172a",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
@@ -134,12 +161,12 @@ export async function GET() {
             <div
               style={{
                 padding: "16px 32px",
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
+                backgroundColor: "rgba(255, 255, 255, 0.82)",
+                border: "1px solid rgba(148, 163, 184, 0.35)",
                 borderRadius: "12px",
                 fontSize: "24px",
                 fontWeight: 600,
-                color: "#a1a1aa",
+                color: "#0f172a",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
@@ -149,19 +176,16 @@ export async function GET() {
               <span>RSS Feeds</span>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "60px",
-            fontSize: "24px",
-            color: "#52525b",
-            display: "flex",
-          }}
-        >
-          ai-web-feeds.vercel.app
+          <div
+            style={{
+              fontSize: "22px",
+              color: "#475569",
+              display: "flex",
+              marginTop: "12px",
+            }}
+          >
+            ai-web-feeds.vercel.app
+          </div>
         </div>
       </div>
     ),
