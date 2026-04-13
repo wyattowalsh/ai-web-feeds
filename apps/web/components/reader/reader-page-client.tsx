@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
+import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star, Search } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -13,7 +13,8 @@ import { useReaderTimeline } from "@/lib/use-reader-timeline";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 import { useArticleState } from "@/lib/use-reader-article-state";
 import type { NormalizedArticle } from "@/lib/reader-types";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Search as SearchIcon } from "lucide-react";
+import { useKeyboardShortcut } from "@/lib/keyboard-shortcuts";
 
 type ReaderFeedOption = {
   id: string;
@@ -222,6 +223,39 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
       cursor,
     });
   const { preferences, update } = useReaderPreferences();
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+
+  useKeyboardShortcut(
+    "next_article",
+    () => {
+      if (filteredArticles.length === 0) return;
+      setFocusedIndex((prev) => {
+        const next = prev < filteredArticles.length - 1 ? prev + 1 : prev;
+        document.getElementById(`article-${filteredArticles[next]?.id}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        return next;
+      });
+    },
+    "Next article"
+  );
+
+  useKeyboardShortcut(
+    "previous_article",
+    () => {
+      if (filteredArticles.length === 0) return;
+      setFocusedIndex((prev) => {
+        const next = prev > 0 ? prev - 1 : 0;
+        document.getElementById(`article-${filteredArticles[next]?.id}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        return next;
+      });
+    },
+    "Previous article"
+  );
 
   useEffect(() => {
     if (stream !== "all" || !hasMore || loading || loadingMore) {
@@ -625,15 +659,27 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
               ) : null}
 
               {!loading && filteredArticles.length === 0 ? (
-                <div className="surface-card">
-                  <p className="metric-label">No articles</p>
-                  <h2 className="mt-2 text-xl font-semibold">
-                    Nothing matches the current reader scope.
+                <div className="surface-card flex flex-col items-center justify-center py-16 text-center border-dashed">
+                  <div className="mb-4 rounded-full bg-(--surface-muted) p-4">
+                    <SearchIcon className="size-8 text-(--ink-muted)" />
+                  </div>
+                  <h2 className="text-xl font-semibold">
+                    Nothing matches the current reader scope
                   </h2>
-                  <p className="small-note mt-2">
-                    Broaden the feed or topic selection, clear the text filter, or refresh the live
-                    fetch to pull a new article set.
+                  <p className="small-note mt-2 max-w-md">
+                    Broaden your feed or topic selection, clear the text filter, or refresh the live fetch to pull a new article set.
                   </p>
+                  <div className="mt-6 flex gap-3">
+                    <Button type="button" variant="outline" onClick={() => {
+                        setParamState(new URLSearchParams());
+                        router.replace(pathname, { scroll: false });
+                    }}>
+                      Clear all filters
+                    </Button>
+                    <Link href={catalogHref} className={cn(buttonVariants({ variant: "default" }))}>
+                      Browse catalog
+                    </Link>
+                  </div>
                 </div>
               ) : null}
 
@@ -646,12 +692,14 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   preferences.readingWidth === "wide" && "max-w-none",
                 )}
               >
-                {filteredArticles.map((article) => (
+                {filteredArticles.map((article, index) => (
                   <ReaderArticleCard
                     key={article.id}
                     article={article}
                     compact={preferences.layout !== "cards"}
                     showSummary={preferences.showSummaries}
+                    isFocused={index === focusedIndex}
+                    onClick={() => setFocusedIndex(index)}
                   />
                 ))}
               </div>
@@ -686,18 +734,55 @@ function ReaderArticleCard({
   article,
   compact,
   showSummary,
+  isFocused,
+  onClick,
 }: {
   article: NormalizedArticle;
   compact: boolean;
   showSummary: boolean;
+  isFocused?: boolean;
+  onClick?: () => void;
 }) {
   const { state, toggleArchive, toggleBookmark, toggleStar, markRead, markUnread } =
     useArticleState(article.id, article);
 
+  useKeyboardShortcut(
+    "mark_as_read",
+    () => {
+      if (isFocused) {
+        state.read ? markUnread() : markRead();
+      }
+    },
+    "Mark as read"
+  );
+
+  useKeyboardShortcut(
+    "star",
+    () => {
+      if (isFocused) {
+        toggleStar();
+      }
+    },
+    "Star"
+  );
+
+  useKeyboardShortcut(
+    "archive",
+    () => {
+      if (isFocused) {
+        toggleArchive();
+      }
+    },
+    "Archive"
+  );
+
   return (
     <article
+      id={`article-${article.id}`}
+      onClick={onClick}
       className={cn(
-        "surface-card space-y-6 transition-all duration-200",
+        "surface-card space-y-6 transition-all duration-200 ring-offset-2 ring-offset-(--bg)",
+        isFocused ? "ring-2 ring-(--brand)" : "ring-0",
         state.read && "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100",
         state.starred && "border-yellow-400/50 shadow-sm shadow-yellow-400/10",
         state.bookmarked && "border-(--brand)/50 shadow-sm shadow-(--brand)/10",
@@ -751,6 +836,7 @@ function ReaderArticleCard({
             <span className="sr-only sm:not-sr-only sm:ml-2">
               {state.read ? "Read" : "Mark read"}
             </span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[m]</span> : null}
           </Button>
           <Button
             type="button"
@@ -764,6 +850,7 @@ function ReaderArticleCard({
           >
             <Star className={cn("size-4", state.starred && "fill-yellow-500 text-yellow-500")} />
             <span className="sr-only">Star</span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[s]</span> : null}
           </Button>
           <Button
             type="button"
@@ -794,6 +881,7 @@ function ReaderArticleCard({
           >
             <Rss className={cn("size-4")} />
             <span className="sr-only">Archive</span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[a]</span> : null}
           </Button>
         </div>
       </div>
@@ -807,7 +895,13 @@ function ReaderArticleCard({
         >
           {article.summary}
         </div>
-      ) : null}
+      ) : (
+        showSummary ? (
+          <div className="prose prose-sm sm:prose-base max-w-none text-(--ink-muted) italic opacity-75">
+            This article was published without a summary.
+          </div>
+        ) : null
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-2 mt-2 border-t border-(--line-soft)">
         <div className="flex flex-wrap items-center gap-2">
