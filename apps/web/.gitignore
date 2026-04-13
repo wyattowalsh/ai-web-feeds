@@ -19,6 +19,7 @@ ai_web_feeds.json
 /out/
 /build
 *.tsbuildinfo
+/test-results/
 
 # misc
 .DS_Store
