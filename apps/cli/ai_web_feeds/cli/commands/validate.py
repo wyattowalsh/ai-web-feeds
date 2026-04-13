@@ -298,7 +298,7 @@ def validate_http_feeds(
 
     console.print(f"Total Feeds:     {len(validation_results)}")
     console.print(f"[green]Successful:      {success_count} ({success_rate:.1f}%)[/green]")
-    console.print(f"[red]Failed:          {failure_count} ({100-success_rate:.1f}%)[/red]")
+    console.print(f"[red]Failed:          {failure_count} ({100 - success_rate:.1f}%)[/red]")
 
     # Average response time
     response_times = [r.response_time_ms for r in validation_results if r.response_time_ms]
@@ -417,6 +417,6 @@ def validation_report(
     console.print("\n[bold]Summary:[/bold]")
     console.print(f"Average Health Score: {avg_health:.2f}")
     console.print(
-        f"Healthy Feeds (≥0.8): {healthy_feeds} ({healthy_feeds/len(health_data)*100:.1f}%)"
+        f"Healthy Feeds (≥0.8): {healthy_feeds} ({healthy_feeds / len(health_data) * 100:.1f}%)"
     )
     console.print(f"Total Feeds Analyzed: {len(health_data)}")

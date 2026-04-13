@@ -10,10 +10,12 @@ from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
 
+
 # Helper function for UTC-aware datetime defaults
 def _utc_now() -> datetime:
     """Return current UTC time with timezone awareness."""
     return datetime.now(UTC)
+
 
 # ============================================================================
 # Enums

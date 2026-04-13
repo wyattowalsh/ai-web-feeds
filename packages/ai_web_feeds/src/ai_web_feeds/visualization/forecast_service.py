@@ -105,14 +105,16 @@ class ForecastService:
 
         predictions = []
         for _, row in future_predictions.iterrows():
-            predictions.append({
-                "date": row["ds"].strftime("%Y-%m-%d"),
-                "value": float(row["yhat"]),
-                "lower": float(row["yhat_lower"]),
-                "upper": float(row["yhat_upper"]),
-                "trend": float(row["trend"]),
-                "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
-            })
+            predictions.append(
+                {
+                    "date": row["ds"].strftime("%Y-%m-%d"),
+                    "value": float(row["yhat"]),
+                    "lower": float(row["yhat_lower"]),
+                    "upper": float(row["yhat_upper"]),
+                    "trend": float(row["trend"]),
+                    "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
+                }
+            )
 
         # Calculate evaluation metrics on historical data
         metrics = self._calculate_metrics(historical_data, forecast_df.head(len(historical_data)))
@@ -169,9 +171,7 @@ class ForecastService:
         if np.any(non_zero_mask):
             mape = float(
                 np.mean(
-                    np.abs(
-                        (y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask]
-                    )
+                    np.abs((y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask])
                 )
                 * 100
             )

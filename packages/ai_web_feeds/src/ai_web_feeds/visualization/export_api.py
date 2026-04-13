@@ -233,8 +233,7 @@ async def bulk_export(
 
     # In production, would create export jobs and return job IDs
     export_urls = {
-        table: f"/api/v1/export/data/{table}?format={format}"
-        for table in validated_tables
+        table: f"/api/v1/export/data/{table}?format={format}" for table in validated_tables
     }
 
     return {
@@ -258,34 +257,45 @@ def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
         Sample DataFrame
     """
     if table == "topic_metrics":
-        return pd.DataFrame({
-            "topic_id": [f"topic-{i}" for i in range(limit)],
-            "date": pd.date_range(start="2024-01-01", periods=limit, freq="D"),
-            "mention_count": pd.np.random.randint(10, 100, size=limit),
-            "sentiment_score": pd.np.random.uniform(-1, 1, size=limit),
-        })
+        return pd.DataFrame(
+            {
+                "topic_id": [f"topic-{i}" for i in range(limit)],
+                "date": pd.date_range(start="2024-01-01", periods=limit, freq="D"),
+                "mention_count": pd.np.random.randint(10, 100, size=limit),
+                "sentiment_score": pd.np.random.uniform(-1, 1, size=limit),
+            }
+        )
 
     elif table == "feed_health":
-        return pd.DataFrame({
-            "feed_id": [f"feed-{i % 20}" for i in range(limit)],
-            "timestamp": pd.date_range(start="2024-01-01", periods=limit, freq="h"),
-            "status": pd.np.random.choice(["success", "error", "timeout"], size=limit),
-            "response_time_ms": pd.np.random.randint(100, 5000, size=limit),
-            "error": [None if status == "success" else "Sample error" for status in pd.np.random.choice(["success", "error"], size=limit)],
-        })
+        return pd.DataFrame(
+            {
+                "feed_id": [f"feed-{i % 20}" for i in range(limit)],
+                "timestamp": pd.date_range(start="2024-01-01", periods=limit, freq="h"),
+                "status": pd.np.random.choice(["success", "error", "timeout"], size=limit),
+                "response_time_ms": pd.np.random.randint(100, 5000, size=limit),
+                "error": [
+                    None if status == "success" else "Sample error"
+                    for status in pd.np.random.choice(["success", "error"], size=limit)
+                ],
+            }
+        )
 
     elif table == "article_metadata":
-        return pd.DataFrame({
-            "article_id": [f"article-{i}" for i in range(limit)],
-            "feed_id": [f"feed-{i % 20}" for i in range(limit)],
-            "title": [f"Article Title {i}" for i in range(limit)],
-            "published_at": pd.date_range(start="2024-01-01", periods=limit, freq="6h"),
-            "author": [f"Author {i % 50}" for i in range(limit)],
-        })
+        return pd.DataFrame(
+            {
+                "article_id": [f"article-{i}" for i in range(limit)],
+                "feed_id": [f"feed-{i % 20}" for i in range(limit)],
+                "title": [f"Article Title {i}" for i in range(limit)],
+                "published_at": pd.date_range(start="2024-01-01", periods=limit, freq="6h"),
+                "author": [f"Author {i % 50}" for i in range(limit)],
+            }
+        )
 
     else:
         # Default empty DataFrame
-        return pd.DataFrame({
-            "id": range(limit),
-            "value": pd.np.random.random(limit),
-        })
+        return pd.DataFrame(
+            {
+                "id": range(limit),
+                "value": pd.np.random.random(limit),
+            }
+        )

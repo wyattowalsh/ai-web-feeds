@@ -118,7 +118,10 @@ def test_validate_sample_analytics_data_rejects_legacy_snapshot_topic_shape(
         "sample analytics",
         {"llm"},
     )
-    assert "missing fields: avg_health_score, feed_count, validation_frequency" in capsys.readouterr().out
+    assert (
+        "missing fields: avg_health_score, feed_count, validation_frequency"
+        in capsys.readouterr().out
+    )
 
 
 @pytest.mark.unit

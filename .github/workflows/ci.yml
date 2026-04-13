@@ -82,7 +82,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
 
       - name: Upload coverage
-        uses: codecov/codecov-action@4fee8191a9b83f4a92b8d31bbdfe36e4c6abbc3a
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
 
@@ -94,12 +94,12 @@ jobs:
       - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d41e51769a0648c87d3d66e5209
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -124,12 +124,12 @@ jobs:
       - uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d41e51769a0648c87d3d66e5209
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 

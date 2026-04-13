@@ -53,7 +53,9 @@ class RateLimiter:
         """Check if device is whitelisted."""
         return device_id in self._whitelist
 
-    def check_rate_limit(self, device_id: str, ip_address: Optional[str] = None) -> tuple[bool, Optional[int]]:
+    def check_rate_limit(
+        self, device_id: str, ip_address: Optional[str] = None
+    ) -> tuple[bool, Optional[int]]:
         """Check if request is within rate limit.
 
         Args:

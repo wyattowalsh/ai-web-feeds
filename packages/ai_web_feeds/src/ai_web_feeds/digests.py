@@ -103,9 +103,7 @@ class DigestManager:
         articles = []
         for feed_id in user_feeds:
             feed_articles = self.db.get_feed_entries(feed_id, limit=self.max_articles)
-            articles.extend(
-                [a for a in feed_articles if self._ensure_utc(a.pub_date) >= since]
-            )
+            articles.extend([a for a in feed_articles if self._ensure_utc(a.pub_date) >= since])
 
         # Sort by pub_date (most recent first)
         articles.sort(key=lambda a: a.pub_date, reverse=True)
