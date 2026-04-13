@@ -447,8 +447,7 @@ class DatabaseManager:
             session.commit()
             session.refresh(analytics)
             logger.info(
-                f"Added analytics for feed: {analytics.feed_source_id} "
-                f"({analytics.period_type})"
+                f"Added analytics for feed: {analytics.feed_source_id} ({analytics.period_type})"
             )
             return analytics
 
@@ -543,7 +542,7 @@ class DatabaseManager:
         with self.get_session() as session:
             # Get all enrichments in a single query to avoid N+1 problem
             enrichments = session.exec(select(FeedEnrichmentData)).all()
-            
+
             total_feeds = len(enrichments)
             health_scores = []
             quality_scores = []

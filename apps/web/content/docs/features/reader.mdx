@@ -20,6 +20,7 @@ workspace.
 - **Selected-feed mode** focuses on one feed and expands the post budget for that
   source.
 - **Local state** keeps read, starred, saved, and archived status on-device.
+- **Enhanced UI/UX** featuring a sticky reading progress bar for trackable scroll depth and estimated reading times per article.
 - **Reader preferences** store presentation controls such as compact vs card layout
   and summary visibility in browser storage.
 - **Query-stateful URLs** keep the current feed scope, filters, reader state, and
@@ -55,6 +56,13 @@ flowchart LR
 The catalog decides which feeds are available. Reader mode resolves the current scope
 from the `/feeds` URL state and calls the aggregation API for recent posts. Reading
 state and presentation preferences stay in browser storage.
+
+## User Experience Enhancements
+
+Recent updates to the reader mode provide a more refined reading experience:
+- **Sticky Progress Bar**: A visual indicator tracks your scroll progress as you read through articles.
+- **Estimated Reading Time**: Articles display an estimated reading time based on content length, helping you manage your reading queue.
+- **Polished Interface**: Improved hover states, borders, and typography throughout the article cards make scanning and reading easier.
 
 ## Current limits
 

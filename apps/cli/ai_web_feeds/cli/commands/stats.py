@@ -38,7 +38,7 @@ def show(
     typer.echo("\n📊 Feed Statistics")
     typer.echo("═" * 50)
     typer.echo(f"Total Feeds: {total}")
-    typer.echo(f"Verified: {verified} ({verified/total*100:.1f}%)")
+    typer.echo(f"Verified: {verified} ({verified / total * 100:.1f}%)")
     typer.echo("\n By Source Type:")
     for source_type, count in sorted(by_type.items(), key=lambda x: -x[1]):
         typer.echo(f"  {source_type:15} : {count:3}")

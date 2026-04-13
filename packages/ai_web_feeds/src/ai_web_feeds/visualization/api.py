@@ -346,7 +346,9 @@ async def get_visualization_data(
         limit=request.limit,
     )
 
-    logger.debug(f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}")
+    logger.debug(
+        f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}"
+    )
     return data
 
 

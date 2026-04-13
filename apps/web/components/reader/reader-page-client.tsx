@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star, Search } from "lucide-react";
+import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -683,6 +683,24 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                 </div>
               ) : null}
 
+              <div className="sticky top-0 z-10 w-full mb-4 bg-(--bg) pt-2 pb-4">
+                 {filteredArticles.length > 0 && (
+                   <div className="w-full h-1.5 bg-(--surface-muted) rounded-full overflow-hidden mb-2 shadow-inner">
+                     <div
+                       className="h-full bg-(--brand) transition-all duration-300 ease-out rounded-full"
+                       style={{
+                         width: `${Math.max(0, Math.min(100, ((focusedIndex + 1) / filteredArticles.length) * 100))}%`
+                       }}
+                     />
+                   </div>
+                 )}
+                 <div className="flex justify-between items-center text-[11px] font-semibold uppercase tracking-wider text-(--ink-muted) px-1">
+                   <span>Reading Progress</span>
+                   {filteredArticles.length > 0 && (
+                     <span>{focusedIndex + 1} / {filteredArticles.length}</span>
+                   )}
+                 </div>
+              </div>
               <div
                 className={cn(
                   "grid gap-4",
@@ -776,25 +794,29 @@ function ReaderArticleCard({
     "Archive"
   );
 
+  // Calculate reading time estimate
+  const wordCount = article.summary ? article.summary.split(/\s+/).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
   return (
     <article
       id={`article-${article.id}`}
       onClick={onClick}
       className={cn(
-        "surface-card space-y-6 transition-all duration-200 ring-offset-2 ring-offset-(--bg)",
-        isFocused ? "ring-2 ring-(--brand)" : "ring-0",
-        state.read && "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100",
+        "group relative overflow-hidden surface-card space-y-5 transition-all duration-300 ring-offset-2 ring-offset-(--bg)",
+        isFocused ? "ring-2 ring-(--brand) shadow-md" : "ring-1 ring-transparent hover:ring-(--line) hover:shadow-sm",
+        state.read && "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100 bg-(--surface-muted)/30",
         state.starred && "border-yellow-400/50 shadow-sm shadow-yellow-400/10",
         state.bookmarked && "border-(--brand)/50 shadow-sm shadow-(--brand)/10",
       )}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3 flex-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-semibold text-(--brand-strong) bg-(--brand-soft) px-2.5 py-0.5 rounded-full">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+            <span className="font-semibold text-(--brand-strong) bg-(--brand-soft) px-2.5 py-1 rounded-full shadow-sm ring-1 ring-(--brand)/10">
               {article.feedTitle}
             </span>
-            <span className="text-(--ink-muted)">
+            <span className="text-(--ink-muted) flex items-center gap-1.5">
               {article.publishedAt
                 ? new Date(article.publishedAt).toLocaleDateString(undefined, {
                     year: "numeric",
@@ -803,93 +825,129 @@ function ReaderArticleCard({
                   })
                 : "No date"}
             </span>
-            {article.author ? <span className="text-(--ink-muted)">· {article.author}</span> : null}
+            {article.author ? (
+              <span className="text-(--ink-muted) flex items-center gap-1.5">
+                <span className="size-1 rounded-full bg-(--line)" />
+                {article.author}
+              </span>
+            ) : null}
+            {article.summary ? (
+              <span className="text-(--ink-muted) flex items-center gap-1.5 opacity-70">
+                <span className="size-1 rounded-full bg-(--line)" />
+                ~{readingTime} min read
+              </span>
+            ) : null}
           </div>
 
           <h2
             className={cn(
-              compact ? "text-xl" : "text-3xl",
-              "font-bold text-(--ink) leading-tight tracking-tight",
+              compact ? "text-xl" : "text-2xl sm:text-3xl",
+              "font-bold text-(--ink) leading-snug tracking-tight",
             )}
           >
             <a
               href={article.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-(--brand-strong) transition-colors"
+              className="hover:text-(--brand-strong) transition-colors decoration-(--brand)/30 hover:underline hover:underline-offset-4"
             >
               {article.title}
             </a>
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end shrink-0 sm:opacity-80 sm:group-hover:opacity-100 transition-opacity">
           <Button
             type="button"
             size="sm"
             variant={state.read ? "secondary" : "ghost"}
-            onClick={() => void (state.read ? markUnread() : markRead())}
-            className={cn(state.read && "bg-green-100/50 text-green-700 hover:bg-green-200/50")}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (state.read) {
+                 markUnread();
+              } else {
+                 markRead();
+              }
+            }}
+            className={cn(
+              "rounded-full h-8 px-3 transition-colors",
+              state.read ? "bg-green-100/50 text-green-700 hover:bg-green-200/50 ring-1 ring-green-600/20" : "hover:bg-(--surface-muted)"
+            )}
             title={state.read ? "Mark as unread" : "Mark as read"}
           >
-            <CircleCheck className={cn("size-4", state.read && "fill-green-600 text-white")} />
-            <span className="sr-only sm:not-sr-only sm:ml-2">
+            <CircleCheck className={cn("size-4", state.read ? "fill-green-600 text-white" : "text-(--ink-muted)")} />
+            <span className="sr-only sm:not-sr-only sm:ml-2 text-xs font-medium">
               {state.read ? "Read" : "Mark read"}
             </span>
             {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[m]</span> : null}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={state.starred ? "secondary" : "ghost"}
-            onClick={() => void toggleStar()}
-            className={cn(
-              state.starred && "bg-yellow-100/50 text-yellow-700 hover:bg-yellow-200/50",
-            )}
-            title={state.starred ? "Unstar" : "Star"}
-          >
-            <Star className={cn("size-4", state.starred && "fill-yellow-500 text-yellow-500")} />
-            <span className="sr-only">Star</span>
-            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[s]</span> : null}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={state.bookmarked ? "secondary" : "ghost"}
-            onClick={() => void toggleBookmark()}
-            className={cn(
-              state.bookmarked &&
-                "bg-(--brand-soft) text-(--brand-strong) hover:bg-(--brand-soft)/80",
-            )}
-            title={state.bookmarked ? "Remove bookmark" : "Bookmark"}
-          >
-            <Bookmark
+          <div className="flex items-center gap-1 bg-(--surface-muted)/50 rounded-full p-0.5">
+            <Button
+              type="button"
+              size="icon"
+              variant={state.starred ? "secondary" : "ghost"}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStar();
+              }}
               className={cn(
-                "size-4",
-                state.bookmarked && "fill-(--brand-strong) text-(--brand-strong)",
+                "size-7 rounded-full transition-colors",
+                state.starred ? "bg-yellow-100/50 text-yellow-700 hover:bg-yellow-200/50 ring-1 ring-yellow-500/20" : "hover:bg-black/5 dark:hover:bg-white/10"
               )}
-            />
-            <span className="sr-only">Bookmark</span>
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={state.archived ? "secondary" : "ghost"}
-            onClick={() => void toggleArchive()}
-            className={cn(state.archived && "bg-gray-100 text-gray-700 hover:bg-gray-200")}
-            title={state.archived ? "Unarchive" : "Archive"}
-          >
-            <Rss className={cn("size-4")} />
-            <span className="sr-only">Archive</span>
-            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[a]</span> : null}
-          </Button>
+              title={state.starred ? "Unstar" : "Star"}
+            >
+              <Star className={cn("size-3.5", state.starred ? "fill-yellow-500 text-yellow-500" : "text-(--ink-muted)")} />
+              <span className="sr-only">Star</span>
+              {isFocused ? <span className="sr-only">[s]</span> : null}
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant={state.bookmarked ? "secondary" : "ghost"}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark();
+              }}
+              className={cn(
+                "size-7 rounded-full transition-colors",
+                state.bookmarked ? "bg-(--brand-soft) text-(--brand-strong) hover:bg-(--brand-soft)/80 ring-1 ring-(--brand)/20" : "hover:bg-black/5 dark:hover:bg-white/10"
+              )}
+              title={state.bookmarked ? "Remove bookmark" : "Bookmark"}
+            >
+              <Bookmark
+                className={cn(
+                  "size-3.5",
+                  state.bookmarked ? "fill-(--brand-strong) text-(--brand-strong)" : "text-(--ink-muted)",
+                )}
+              />
+              <span className="sr-only">Bookmark</span>
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant={state.archived ? "secondary" : "ghost"}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleArchive();
+              }}
+              className={cn(
+                "size-7 rounded-full transition-colors",
+                state.archived ? "bg-gray-200 text-gray-800 hover:bg-gray-300 ring-1 ring-gray-400/20 dark:bg-gray-800 dark:text-gray-200" : "hover:bg-black/5 dark:hover:bg-white/10"
+              )}
+              title={state.archived ? "Unarchive" : "Archive"}
+            >
+              <Rss className={cn("size-3.5", state.archived ? "" : "text-(--ink-muted)")} />
+              <span className="sr-only">Archive</span>
+              {isFocused ? <span className="sr-only">[a]</span> : null}
+            </Button>
+          </div>
         </div>
       </div>
 
       {showSummary && article.summary ? (
         <div
           className={cn(
-            "prose prose-sm sm:prose-base max-w-none text-(--ink-muted)",
+            "prose prose-sm sm:prose-base max-w-none text-(--ink-muted) leading-relaxed",
             compact ? "line-clamp-3" : "",
           )}
         >
@@ -903,23 +961,29 @@ function ReaderArticleCard({
         ) : null
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-2 mt-2 border-t border-(--line-soft)">
-        <div className="flex flex-wrap items-center gap-2">
-          {article.categories.map((category) => (
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-4 mt-2 border-t border-(--line-soft)/50">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {article.categories.slice(0, 5).map((category) => (
             <span
               key={category}
-              className="rounded-md bg-(--surface-muted) border border-(--line) px-2 py-0.5 text-xs font-medium text-(--ink-muted)"
+              className="rounded-md bg-(--surface-muted)/50 border border-(--line)/50 px-2 py-0.5 text-[11px] font-medium text-(--ink-muted) uppercase tracking-wider"
             >
               {category}
             </span>
           ))}
+          {article.categories.length > 5 && (
+            <span className="rounded-md bg-(--surface-muted)/50 border border-(--line)/50 px-2 py-0.5 text-[11px] font-medium text-(--ink-muted) uppercase tracking-wider">
+              +{article.categories.length - 5} more
+            </span>
+          )}
         </div>
 
         <a
           href={article.link}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5")}
+          className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5 rounded-full px-4 font-semibold shadow-sm hover:shadow transition-all")}
+          onClick={(e) => { e.stopPropagation(); }}
         >
           Read full article
           <ExternalLink className="size-3.5" />

@@ -29,7 +29,7 @@ class TestTableNameValidation:
             "validation_logs",
             "article_metadata",
         ]
-        
+
         for name in valid_names:
             assert validate_table_name(name) == name
 
@@ -41,7 +41,7 @@ class TestTableNameValidation:
             "table_name'--",
             "invalid_table",
         ]
-        
+
         for name in invalid_names:
             with pytest.raises(ValidationError):
                 validate_table_name(name)
@@ -65,7 +65,7 @@ class TestQueryLimitValidation:
         """Test limit below minimum is rejected."""
         with pytest.raises(ValidationError):
             validate_query_limit(0)
-        
+
         with pytest.raises(ValidationError):
             validate_query_limit(-1)
 
@@ -86,9 +86,9 @@ class TestDateRangeValidation:
         """Test valid date ranges."""
         start = "2024-01-01"
         end = "2024-01-31"
-        
+
         validated_start, validated_end = validate_date_range(start, end)
-        
+
         assert validated_start == start
         assert validated_end == end
 
@@ -101,7 +101,7 @@ class TestDateRangeValidation:
         """Test future dates are rejected."""
         future_date = (datetime.now() + timedelta(days=10)).strftime("%Y-%m-%d")
         today = datetime.now().strftime("%Y-%m-%d")
-        
+
         with pytest.raises(ValidationError):
             validate_date_range(today, future_date)
 
@@ -114,7 +114,7 @@ class TestDateRangeValidation:
         """Test date ranges exceeding max days are rejected."""
         start = "2020-01-01"
         end = "2024-01-01"  # > 3 years
-        
+
         with pytest.raises(ValidationError):
             validate_date_range(start, end, max_days=365)
 
@@ -156,7 +156,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
             {"position_x": 6, "position_y": 0, "width": 6, "height": 4},
         ]
-        
+
         validate_dashboard_constraints(widgets)
         # Should not raise
 
@@ -166,7 +166,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": i * 4, "width": 12, "height": 4}
             for i in range(21)  # Max is 20
         ]
-        
+
         with pytest.raises(ValidationError, match="maximum 20 widgets"):
             validate_dashboard_constraints(widgets)
 
@@ -176,7 +176,7 @@ class TestDashboardConstraints:
             {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
             {"position_x": 2, "position_y": 2, "width": 6, "height": 4},  # Overlaps
         ]
-        
+
         with pytest.raises(ValidationError, match="overlap"):
             validate_dashboard_constraints(widgets)
 
@@ -185,7 +185,7 @@ class TestDashboardConstraints:
         widgets = [
             {"position_x": 10, "position_y": 0, "width": 6, "height": 4},  # Extends beyond 12
         ]
-        
+
         with pytest.raises(ValidationError, match="out of bounds"):
             validate_dashboard_constraints(widgets)
 
@@ -193,9 +193,9 @@ class TestDashboardConstraints:
         """Test widget size constraints."""
         # Min size 2x2, max 12x12
         with pytest.raises(ValidationError):
-            validate_dashboard_constraints([
-                {"position_x": 0, "position_y": 0, "width": 1, "height": 1}
-            ])
+            validate_dashboard_constraints(
+                [{"position_x": 0, "position_y": 0, "width": 1, "height": 1}]
+            )
 
 
 class TestCustomizationValidation:
@@ -209,7 +209,7 @@ class TestCustomizationValidation:
             "legend_position": "top",
             "colors": ["#ff0000", "#00ff00", "#0000ff"],
         }
-        
+
         validate_customization(customization)
         # Should not raise
 
@@ -218,7 +218,7 @@ class TestCustomizationValidation:
         customization = {
             "title": "A" * 101,  # Max is 100
         }
-        
+
         with pytest.raises(ValidationError, match="title.*100"):
             validate_customization(customization)
 
@@ -227,7 +227,7 @@ class TestCustomizationValidation:
         customization = {
             "colors": ["invalid-color"],
         }
-        
+
         with pytest.raises(ValidationError, match="color"):
             validate_customization(customization)
 
@@ -236,7 +236,7 @@ class TestCustomizationValidation:
         customization = {
             "legend_position": "invalid",
         }
-        
+
         with pytest.raises(ValidationError, match="legend"):
             validate_customization(customization)
 
@@ -244,7 +244,7 @@ class TestCustomizationValidation:
         """Test font size constraints."""
         with pytest.raises(ValidationError):
             validate_customization({"title_font_size": 5})  # Too small
-        
+
         with pytest.raises(ValidationError):
             validate_customization({"title_font_size": 100})  # Too large
 
@@ -258,7 +258,7 @@ class TestForecastDataValidation:
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
             {"date": "2024-02-02", "value": 105, "lower": 95, "upper": 115},
         ]
-        
+
         validate_forecast_data(predictions, horizon_days=2)
         # Should not raise
 
@@ -267,7 +267,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100},  # Missing lower/upper
         ]
-        
+
         with pytest.raises(ValidationError, match="required fields"):
             validate_forecast_data(predictions, horizon_days=1)
 
@@ -276,7 +276,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100, "lower": 110, "upper": 90},  # Invalid
         ]
-        
+
         with pytest.raises(ValidationError, match="lower.*upper"):
             validate_forecast_data(predictions, horizon_days=1)
 
@@ -285,7 +285,7 @@ class TestForecastDataValidation:
         predictions = [
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
         ]
-        
+
         with pytest.raises(ValidationError, match="predictions count"):
             validate_forecast_data(predictions, horizon_days=7)
 
@@ -295,7 +295,7 @@ class TestForecastDataValidation:
             {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
             {"date": "2024-02-03", "value": 105, "lower": 95, "upper": 115},  # Gap
         ]
-        
+
         with pytest.raises(ValidationError, match="sequential"):
             validate_forecast_data(predictions, horizon_days=2)
 

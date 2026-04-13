@@ -141,7 +141,7 @@ class TestEmbeddingPerformance:
             # Should generate in < 5 seconds for 10 texts
             assert duration < 5.0, f"Embedding generation took {duration:.3f}s, expected < 5.0s"
             print(
-                f"\n✓ Embedding generation: {duration:.3f}s for 10 texts ({duration/10:.3f}s per text)"
+                f"\n✓ Embedding generation: {duration:.3f}s for 10 texts ({duration / 10:.3f}s per text)"
             )
         except ImportError:
             pytest.skip("Sentence-transformers not available")

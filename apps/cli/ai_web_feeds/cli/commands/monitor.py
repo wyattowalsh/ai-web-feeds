@@ -43,9 +43,7 @@ def start_monitoring(
     # Initialize components
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
     db.create_db_and_tables()
 
@@ -107,9 +105,7 @@ def monitoring_status():
     # Initialize components
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
     scheduler = SchedulerManager(db, settings)
 

@@ -252,11 +252,7 @@ class CacheLayer:
             Dictionary with cache metrics
         """
         total_requests = self._cache_hits + self._cache_misses
-        hit_rate = (
-            (self._cache_hits / total_requests * 100)
-            if total_requests > 0
-            else 0.0
-        )
+        hit_rate = (self._cache_hits / total_requests * 100) if total_requests > 0 else 0.0
 
         stats = {
             "cache_type": "redis" if self.redis_enabled else "lru",

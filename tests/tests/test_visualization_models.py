@@ -29,9 +29,9 @@ def db_session():
     engine = create_engine("sqlite:///:memory:")
     # Import Base and create tables
     from sqlmodel import SQLModel
-    
+
     SQLModel.metadata.create_all(engine)
-    
+
     Session = sessionmaker(bind=engine)
     session = Session()
     yield session
@@ -51,10 +51,10 @@ class TestVisualizationModel:
             filters={"date_range": {"start": "2024-01-01", "end": "2024-01-31"}},
             customization={"color": "blue", "show_legend": True},
         )
-        
+
         db_session.add(viz)
         db_session.commit()
-        
+
         assert viz.id is not None
         assert viz.device_id == "test-device-123"
         assert viz.chart_type == ChartType.LINE
@@ -69,7 +69,7 @@ class TestVisualizationModel:
             chart_type=ChartType.BAR,
             data_source=DataSource.FEEDS,
         )
-        
+
         assert viz.filters == {}
         assert viz.customization == {}
         assert viz.created_at is not None
@@ -84,7 +84,7 @@ class TestVisualizationModel:
             ChartType.AREA,
             ChartType.HEATMAP,
         ]
-        
+
         for chart_type in chart_types:
             viz = Visualization(
                 device_id="test",
@@ -105,10 +105,10 @@ class TestDashboardModel:
             name="My Dashboard",
             layout_config={"cols": 12, "rows": "auto"},
         )
-        
+
         db_session.add(dashboard)
         db_session.commit()
-        
+
         assert dashboard.id is not None
         assert dashboard.name == "My Dashboard"
         assert dashboard.created_at is not None
@@ -123,7 +123,7 @@ class TestDashboardModel:
         )
         db_session.add(dashboard)
         db_session.commit()
-        
+
         # Add widgets
         widget1 = DashboardWidget(
             dashboard_id=dashboard.id,
@@ -141,15 +141,13 @@ class TestDashboardModel:
             width=6,
             height=4,
         )
-        
+
         db_session.add_all([widget1, widget2])
         db_session.commit()
-        
+
         # Query widgets
-        widgets = db_session.query(DashboardWidget).filter_by(
-            dashboard_id=dashboard.id
-        ).all()
-        
+        widgets = db_session.query(DashboardWidget).filter_by(dashboard_id=dashboard.id).all()
+
         assert len(widgets) == 2
         assert widgets[0].width == 6
         assert widgets[1].position_x == 6
@@ -165,15 +163,13 @@ class TestForecastModel:
             data_source=DataSource.TOPICS,
             horizon_days=30,
             confidence_level=0.95,
-            predictions=[
-                {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110}
-            ],
+            predictions=[{"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110}],
             metrics={"mae": 5.2, "rmse": 6.8},
         )
-        
+
         db_session.add(forecast)
         db_session.commit()
-        
+
         assert forecast.id is not None
         assert forecast.horizon_days == 30
         assert forecast.confidence_level == 0.95
@@ -192,10 +188,10 @@ class TestAPIKeyModel:
             name="Production Key",
             scopes=["read", "write"],
         )
-        
+
         db_session.add(api_key)
         db_session.commit()
-        
+
         assert api_key.id is not None
         assert api_key.is_active is True
         assert api_key.created_at is not None
@@ -208,15 +204,15 @@ class TestAPIKeyModel:
             key_hash="hashed_key",
             name="Test Key",
         )
-        
+
         db_session.add(api_key)
         db_session.commit()
-        
+
         # Revoke the key
         api_key.is_active = False
         api_key.revoked_at = datetime.now(timezone.utc)
         db_session.commit()
-        
+
         assert api_key.is_active is False
         assert api_key.revoked_at is not None
 
@@ -233,10 +229,10 @@ class TestExportJobModel:
             dpi=300,
             status=ExportStatus.PENDING,
         )
-        
+
         db_session.add(job)
         db_session.commit()
-        
+
         assert job.id is not None
         assert job.status == ExportStatus.PENDING
         assert job.dpi == 300
@@ -250,16 +246,16 @@ class TestExportJobModel:
             format=ExportFormat.SVG,
             status=ExportStatus.PENDING,
         )
-        
+
         db_session.add(job)
         db_session.commit()
-        
+
         # Simulate job completion
         job.status = ExportStatus.COMPLETED
         job.file_path = "/exports/chart_123.svg"
         job.completed_at = datetime.now(timezone.utc)
         db_session.commit()
-        
+
         assert job.status == ExportStatus.COMPLETED
         assert job.file_path is not None
         assert job.completed_at is not None
@@ -272,16 +268,16 @@ class TestExportJobModel:
             format=ExportFormat.HTML,
             status=ExportStatus.PENDING,
         )
-        
+
         db_session.add(job)
         db_session.commit()
-        
+
         # Simulate job failure
         job.status = ExportStatus.FAILED
         job.error = "Insufficient memory"
         job.completed_at = datetime.now(timezone.utc)
         db_session.commit()
-        
+
         assert job.status == ExportStatus.FAILED
         assert job.error is not None
 
@@ -298,10 +294,10 @@ class TestAPIUsageModel:
             status_code=200,
             response_time_ms=125,
         )
-        
+
         db_session.add(usage)
         db_session.commit()
-        
+
         assert usage.id is not None
         assert usage.status_code == 200
         assert usage.response_time_ms == 125
@@ -316,7 +312,7 @@ class TestAPIUsageModel:
         )
         db_session.add(api_key)
         db_session.commit()
-        
+
         usage = APIUsage(
             device_id="test-device",
             api_key_id=api_key.id,
@@ -325,10 +321,10 @@ class TestAPIUsageModel:
             status_code=201,
             response_time_ms=234,
         )
-        
+
         db_session.add(usage)
         db_session.commit()
-        
+
         assert usage.api_key_id == api_key.id
 
 
@@ -350,13 +346,13 @@ class TestModelValidation:
             )
             for i in range(20)
         ]
-        
+
         assert len(widgets) == 20
 
     def test_export_format_enum(self):
         """Test all export format enum values."""
         formats = [ExportFormat.PNG, ExportFormat.SVG, ExportFormat.HTML]
-        
+
         for fmt in formats:
             job = ExportJob(
                 device_id="test",
@@ -374,7 +370,7 @@ class TestModelValidation:
             ExportStatus.COMPLETED,
             ExportStatus.FAILED,
         ]
-        
+
         for status in statuses:
             job = ExportJob(
                 device_id="test",

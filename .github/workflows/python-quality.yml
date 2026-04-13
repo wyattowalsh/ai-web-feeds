@@ -196,7 +196,7 @@ jobs:
           uv run coverage report || true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb161daa5c8b7f32b7d2cf808
+        uses: codecov/codecov-action@v5
         with:
           files: ./tests/reports/coverage/coverage.xml
           flags: unittests
