@@ -397,10 +397,10 @@ describe("ReaderPageClient", () => {
 
     render(<ReaderPageClient feeds={feeds} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Mark read" }));
-    fireEvent.click(screen.getByRole("button", { name: "Star" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    fireEvent.click(screen.getByTitle("Mark as read"));
+    fireEvent.click(screen.getByTitle("Star"));
+    fireEvent.click(screen.getByTitle("Bookmark"));
+    fireEvent.click(screen.getByTitle("Archive"));
 
     expect(markRead).toHaveBeenCalledTimes(1);
     expect(toggleStar).toHaveBeenCalledTimes(1);

@@ -24,8 +24,30 @@ type ReaderTimelinePageResponse = AggregateFeedPostsResponse & {
 };
 
 function normalizeArticle(post: AggregateFeedPost): NormalizedArticle {
+  const articleId = `${post.feedId}:${post.id}`;
+
+  let read = false;
+  let starred = false;
+  let archived = false;
+  let bookmarked = false;
+
+  if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+    try {
+      const stored = window.localStorage.getItem(`aiwebfeeds.reader.article.${articleId}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        read = parsed.read ?? false;
+        starred = parsed.starred ?? false;
+        archived = parsed.archived ?? false;
+        bookmarked = parsed.bookmarked ?? false;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   return {
-    id: `${post.feedId}:${post.id}`,
+    id: articleId,
     feedId: post.feedId,
     feedTitle: post.feedTitle,
     sourceUrl: post.sourceUrl,
@@ -36,10 +58,10 @@ function normalizeArticle(post: AggregateFeedPost): NormalizedArticle {
     categories: post.categories,
     publishedAt: post.publishedAt,
     publishedAtMs: post.publishedAt ? Date.parse(post.publishedAt) : null,
-    read: false,
-    starred: false,
-    archived: false,
-    bookmarked: false,
+    read,
+    starred,
+    archived,
+    bookmarked,
   };
 }
 

@@ -95,17 +95,24 @@ describe("FeedsPage", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("renders catalog mode by default and skips article hydration work", async () => {
+  it("renders reader mode by default and skips article hydration work", async () => {
     await renderPage({ q: "agents", source_type: "blog", verified: "true" });
 
     expect(runLocalSearchMock).not.toHaveBeenCalled();
     expect(getJsonProps("feeds-workspace-client")).toMatchObject({
-      mode: "catalog",
+      mode: "reader",
     });
-    expect(getJsonProps("feed-catalog")).toMatchObject({
-      initialQuery: "agents",
-      initialSourceType: "blog",
-      initialVerified: true,
+    expect(getJsonProps("reader-page-client")).toMatchObject({
+      feeds: [
+        expect.objectContaining({
+          id: "feed-1",
+          title: "Agent Feed",
+        }),
+        expect.objectContaining({
+          id: "feed-2",
+          title: "ML Digest",
+        }),
+      ],
     });
   });
 

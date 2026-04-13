@@ -27,15 +27,15 @@ const MODE_OPTIONS: Array<{
   label: string;
   icon: typeof RadioTower;
 }> = [
-  { value: "catalog", label: "Catalog", icon: RadioTower },
-  { value: "articles", label: "Articles", icon: SearchIcon },
   { value: "reader", label: "Reader", icon: Newspaper },
+  { value: "articles", label: "Articles", icon: SearchIcon },
+  { value: "catalog", label: "Catalog", icon: RadioTower },
 ];
 
 function buildModeHref(searchParams: URLSearchParams, mode: FeedsWorkspaceMode): string {
   const params = new URLSearchParams(searchParams.toString());
 
-  if (mode === "catalog") {
+  if (mode === "reader") {
     params.delete("mode");
   } else {
     params.set("mode", mode);

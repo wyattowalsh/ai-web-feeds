@@ -64,11 +64,11 @@ function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams
 
 function parseMode(searchParams: URLSearchParams): FeedsWorkspaceMode {
   const rawMode = searchParams.get("mode")?.trim().toLowerCase();
-  if (rawMode === "articles" || rawMode === "reader") {
+  if (rawMode === "catalog" || rawMode === "articles") {
     return rawMode;
   }
 
-  return "catalog";
+  return "reader";
 }
 
 async function getInitialArticleSearchData(searchParams: URLSearchParams): Promise<{

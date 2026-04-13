@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star } from "lucide-react";
+import { Bookmark, CircleCheck, Newspaper, RefreshCcw, Rss, Star, Search } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -13,6 +13,8 @@ import { useReaderTimeline } from "@/lib/use-reader-timeline";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 import { useArticleState } from "@/lib/use-reader-article-state";
 import type { NormalizedArticle } from "@/lib/reader-types";
+import { ExternalLink, Search as SearchIcon } from "lucide-react";
+import { useKeyboardShortcut } from "@/lib/keyboard-shortcuts";
 
 type ReaderFeedOption = {
   id: string;
@@ -128,7 +130,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
       ),
     [paramState],
   );
-  const selectedFeedId = explicitFeedIds.length === 1 ? explicitFeedIds[0] ?? "" : "";
+  const selectedFeedId = explicitFeedIds.length === 1 ? (explicitFeedIds[0] ?? "") : "";
   const topicFilters = useMemo(() => readTopicFilters(paramState), [paramState]);
   const topic = topicFilters[0] || "";
   const query = normalizeSearchQuery(paramState.get("q")) || "";
@@ -221,6 +223,39 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
       cursor,
     });
   const { preferences, update } = useReaderPreferences();
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+
+  useKeyboardShortcut(
+    "next_article",
+    () => {
+      if (filteredArticles.length === 0) return;
+      setFocusedIndex((prev) => {
+        const next = prev < filteredArticles.length - 1 ? prev + 1 : prev;
+        document.getElementById(`article-${filteredArticles[next]?.id}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        return next;
+      });
+    },
+    "Next article"
+  );
+
+  useKeyboardShortcut(
+    "previous_article",
+    () => {
+      if (filteredArticles.length === 0) return;
+      setFocusedIndex((prev) => {
+        const next = prev > 0 ? prev - 1 : 0;
+        document.getElementById(`article-${filteredArticles[next]?.id}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        return next;
+      });
+    },
+    "Previous article"
+  );
 
   useEffect(() => {
     if (stream !== "all" || !hasMore || loading || loadingMore) {
@@ -624,15 +659,27 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
               ) : null}
 
               {!loading && filteredArticles.length === 0 ? (
-                <div className="surface-card">
-                  <p className="metric-label">No articles</p>
-                  <h2 className="mt-2 text-xl font-semibold">
-                    Nothing matches the current reader scope.
+                <div className="surface-card flex flex-col items-center justify-center py-16 text-center border-dashed">
+                  <div className="mb-4 rounded-full bg-(--surface-muted) p-4">
+                    <SearchIcon className="size-8 text-(--ink-muted)" />
+                  </div>
+                  <h2 className="text-xl font-semibold">
+                    Nothing matches the current reader scope
                   </h2>
-                  <p className="small-note mt-2">
-                    Broaden the feed or topic selection, clear the text filter, or refresh the live
-                    fetch to pull a new article set.
+                  <p className="small-note mt-2 max-w-md">
+                    Broaden your feed or topic selection, clear the text filter, or refresh the live fetch to pull a new article set.
                   </p>
+                  <div className="mt-6 flex gap-3">
+                    <Button type="button" variant="outline" onClick={() => {
+                        setParamState(new URLSearchParams());
+                        router.replace(pathname, { scroll: false });
+                    }}>
+                      Clear all filters
+                    </Button>
+                    <Link href={catalogHref} className={cn(buttonVariants({ variant: "default" }))}>
+                      Browse catalog
+                    </Link>
+                  </div>
                 </div>
               ) : null}
 
@@ -645,12 +692,14 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   preferences.readingWidth === "wide" && "max-w-none",
                 )}
               >
-                {filteredArticles.map((article) => (
+                {filteredArticles.map((article, index) => (
                   <ReaderArticleCard
                     key={article.id}
                     article={article}
                     compact={preferences.layout !== "cards"}
                     showSummary={preferences.showSummaries}
+                    isFocused={index === focusedIndex}
+                    onClick={() => setFocusedIndex(index)}
                   />
                 ))}
               </div>
@@ -685,85 +734,196 @@ function ReaderArticleCard({
   article,
   compact,
   showSummary,
+  isFocused,
+  onClick,
 }: {
   article: NormalizedArticle;
   compact: boolean;
   showSummary: boolean;
+  isFocused?: boolean;
+  onClick?: () => void;
 }) {
   const { state, toggleArchive, toggleBookmark, toggleStar, markRead, markUnread } =
     useArticleState(article.id, article);
 
+  useKeyboardShortcut(
+    "mark_as_read",
+    () => {
+      if (isFocused) {
+        state.read ? markUnread() : markRead();
+      }
+    },
+    "Mark as read"
+  );
+
+  useKeyboardShortcut(
+    "star",
+    () => {
+      if (isFocused) {
+        toggleStar();
+      }
+    },
+    "Star"
+  );
+
+  useKeyboardShortcut(
+    "archive",
+    () => {
+      if (isFocused) {
+        toggleArchive();
+      }
+    },
+    "Archive"
+  );
+
   return (
-    <article className="surface-card space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-2">
-          <p className="metric-label">{article.feedTitle}</p>
-          <h2 className={cn(compact ? "text-xl" : "text-2xl", "font-semibold text-(--ink)")}>
+    <article
+      id={`article-${article.id}`}
+      onClick={onClick}
+      className={cn(
+        "surface-card space-y-6 transition-all duration-200 ring-offset-2 ring-offset-(--bg)",
+        isFocused ? "ring-2 ring-(--brand)" : "ring-0",
+        state.read && "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100",
+        state.starred && "border-yellow-400/50 shadow-sm shadow-yellow-400/10",
+        state.bookmarked && "border-(--brand)/50 shadow-sm shadow-(--brand)/10",
+      )}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3 flex-1">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-semibold text-(--brand-strong) bg-(--brand-soft) px-2.5 py-0.5 rounded-full">
+              {article.feedTitle}
+            </span>
+            <span className="text-(--ink-muted)">
+              {article.publishedAt
+                ? new Date(article.publishedAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "No date"}
+            </span>
+            {article.author ? <span className="text-(--ink-muted)">· {article.author}</span> : null}
+          </div>
+
+          <h2
+            className={cn(
+              compact ? "text-xl" : "text-3xl",
+              "font-bold text-(--ink) leading-tight tracking-tight",
+            )}
+          >
             <a
               href={article.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:underline"
+              className="hover:text-(--brand-strong) transition-colors"
             >
               {article.title}
             </a>
           </h2>
-          <p className="small-note">
-            {article.publishedAt
-              ? new Date(article.publishedAt).toLocaleString()
-              : "No publication date"}
-            {article.author ? ` · ${article.author}` : ""}
-          </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end shrink-0">
           <Button
             type="button"
-            variant={state.read ? "secondary" : "outline"}
+            size="sm"
+            variant={state.read ? "secondary" : "ghost"}
             onClick={() => void (state.read ? markUnread() : markRead())}
+            className={cn(state.read && "bg-green-100/50 text-green-700 hover:bg-green-200/50")}
+            title={state.read ? "Mark as unread" : "Mark as read"}
           >
-            <CircleCheck className="size-4" />
-            {state.read ? "Read" : "Mark read"}
+            <CircleCheck className={cn("size-4", state.read && "fill-green-600 text-white")} />
+            <span className="sr-only sm:not-sr-only sm:ml-2">
+              {state.read ? "Read" : "Mark read"}
+            </span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[m]</span> : null}
           </Button>
           <Button
             type="button"
-            variant={state.starred ? "default" : "outline"}
+            size="sm"
+            variant={state.starred ? "secondary" : "ghost"}
             onClick={() => void toggleStar()}
+            className={cn(
+              state.starred && "bg-yellow-100/50 text-yellow-700 hover:bg-yellow-200/50",
+            )}
+            title={state.starred ? "Unstar" : "Star"}
           >
-            <Star className="size-4" />
-            Star
+            <Star className={cn("size-4", state.starred && "fill-yellow-500 text-yellow-500")} />
+            <span className="sr-only">Star</span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[s]</span> : null}
           </Button>
           <Button
             type="button"
-            variant={state.bookmarked ? "default" : "outline"}
+            size="sm"
+            variant={state.bookmarked ? "secondary" : "ghost"}
             onClick={() => void toggleBookmark()}
+            className={cn(
+              state.bookmarked &&
+                "bg-(--brand-soft) text-(--brand-strong) hover:bg-(--brand-soft)/80",
+            )}
+            title={state.bookmarked ? "Remove bookmark" : "Bookmark"}
           >
-            <Bookmark className="size-4" />
-            Save
+            <Bookmark
+              className={cn(
+                "size-4",
+                state.bookmarked && "fill-(--brand-strong) text-(--brand-strong)",
+              )}
+            />
+            <span className="sr-only">Bookmark</span>
           </Button>
           <Button
             type="button"
-            variant={state.archived ? "secondary" : "outline"}
+            size="sm"
+            variant={state.archived ? "secondary" : "ghost"}
             onClick={() => void toggleArchive()}
+            className={cn(state.archived && "bg-gray-100 text-gray-700 hover:bg-gray-200")}
+            title={state.archived ? "Unarchive" : "Archive"}
           >
-            Archive
+            <Rss className={cn("size-4")} />
+            <span className="sr-only">Archive</span>
+            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[a]</span> : null}
           </Button>
         </div>
       </div>
 
       {showSummary && article.summary ? (
-        <p className="text-sm leading-7 text-(--ink-muted)">{article.summary}</p>
-      ) : null}
+        <div
+          className={cn(
+            "prose prose-sm sm:prose-base max-w-none text-(--ink-muted)",
+            compact ? "line-clamp-3" : "",
+          )}
+        >
+          {article.summary}
+        </div>
+      ) : (
+        showSummary ? (
+          <div className="prose prose-sm sm:prose-base max-w-none text-(--ink-muted) italic opacity-75">
+            This article was published without a summary.
+          </div>
+        ) : null
+      )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        {article.categories.map((category) => (
-          <span
-            key={category}
-            className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
-          >
-            {category}
-          </span>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-2 mt-2 border-t border-(--line-soft)">
+        <div className="flex flex-wrap items-center gap-2">
+          {article.categories.map((category) => (
+            <span
+              key={category}
+              className="rounded-md bg-(--surface-muted) border border-(--line) px-2 py-0.5 text-xs font-medium text-(--ink-muted)"
+            >
+              {category}
+            </span>
+          ))}
+        </div>
+
+        <a
+          href={article.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5")}
+        >
+          Read full article
+          <ExternalLink className="size-3.5" />
+        </a>
       </div>
     </article>
   );
