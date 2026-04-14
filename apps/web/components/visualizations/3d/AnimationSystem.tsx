@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { animated, useSpring } from "@react-spring/three";
@@ -17,8 +17,6 @@ interface AnimatedNodeProps {
   scale: number;
   targetScale: number;
   color: string;
-  targetColor: string;
-  animationDuration?: number;
   onAnimationComplete?: () => void;
 }
 
@@ -31,8 +29,6 @@ export function AnimatedNode({
   scale,
   targetScale,
   color,
-  targetColor,
-  animationDuration = 1000,
   onAnimationComplete,
 }: AnimatedNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -53,7 +49,7 @@ export function AnimatedNode({
   });
 
   return (
-    <animated.mesh ref={meshRef} position={pos as any} scale={scl}>
+    <animated.mesh ref={meshRef} position={pos} scale={scl}>
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial color={color} />
     </animated.mesh>
@@ -78,9 +74,9 @@ export function PulsingNode({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (meshRef.current) {
-      const scale = baseScale + Math.sin(clock.getElapsedTime() * pulseSpeed) * pulseAmplitude;
+      const scale = baseScale + Math.sin(performance.now() / 1000 * pulseSpeed) * pulseAmplitude;
       meshRef.current.scale.set(scale, scale, scale);
     }
   });
@@ -198,29 +194,17 @@ export function AnimatedLink({
  * Camera animation controller.
  */
 export function CameraAnimator({
-  targetPosition,
-  targetLookAt,
   duration = 2000,
   onComplete,
 }: {
-  targetPosition: [number, number, number];
-  targetLookAt: [number, number, number];
   duration?: number;
   onComplete?: () => void;
 }) {
-  const { position } = useSpring({
-    position: targetPosition,
-    config: { duration },
-    onRest: onComplete,
-  });
-
-  const { lookAt } = useSpring({
-    lookAt: targetLookAt,
-    config: { duration },
-  });
-
   // This would be used with camera controls
   // Implementation depends on the camera setup
+
+  void duration;
+  void onComplete;
 
   return null;
 }
@@ -243,7 +227,7 @@ export function ParticleEffect({
 }) {
   const particlesRef = useRef<THREE.Points>(null);
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (particlesRef.current) {
       const positions = particlesRef.current.geometry.attributes.position
         .array as Float32Array;

@@ -66,7 +66,10 @@ export function PieChart({
             label: (context) => {
               const label = context.label || "";
               const value = context.parsed;
-              const total = context.dataset.data.reduce((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0);
+              const total = context.dataset.data.reduce(
+                (sum: number, item) => sum + (typeof item === "number" ? item : 0),
+                0,
+              );
               const percentage = ((value / total) * 100).toFixed(1);
               return `${label}: ${value} (${percentage}%)`;
             },
@@ -75,7 +78,7 @@ export function PieChart({
       },
     };
 
-    const mergedOptions = {
+    const mergedOptions: ChartOptions<"pie"> = {
       ...defaultOptions,
       ...options,
       plugins: {
@@ -87,7 +90,7 @@ export function PieChart({
     chartRef.current = new ChartJS(ctx, {
       type: doughnut ? "doughnut" : "pie",
       data,
-      options: mergedOptions as any,
+      options: mergedOptions,
     });
 
     return () => {

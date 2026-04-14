@@ -7,7 +7,7 @@
 "use client";
 
 import { LineChart } from "../charts/LineChart";
-import type { ChartData, ChartOptions } from "chart.js";
+import type { ChartData, ChartDataset, ChartOptions, TooltipItem } from "chart.js";
 
 export interface ForecastDataPoint {
   date: string;
@@ -42,7 +42,7 @@ export function ForecastChart({
   ];
 
   // Prepare datasets
-  const datasets: any[] = [
+  const datasets: ChartDataset<"line", Array<number | null>>[] = [
     {
       label: "Historical",
       data: historical.map((h) => h.value),
@@ -136,7 +136,7 @@ export function ForecastChart({
       },
       tooltip: {
         callbacks: {
-          label: (context) => {
+          label: (context: TooltipItem<"line">) => {
             const label = context.dataset.label || "";
             const value = context.parsed.y;
             if (value === null) return "";

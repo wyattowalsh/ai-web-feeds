@@ -8,7 +8,6 @@
 
 import { LineChart, createLineChartData } from "../charts/LineChart";
 import { BarChart, createBarChartData } from "../charts/BarChart";
-import type { ChartData } from "chart.js";
 
 export interface ComparisonDataset {
   id: string;

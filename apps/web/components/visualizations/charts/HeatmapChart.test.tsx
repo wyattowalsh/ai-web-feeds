@@ -40,8 +40,9 @@ vi.mock("chartjs-chart-matrix", () => ({
 import { HeatmapChart, createHeatmapData } from "./HeatmapChart";
 
 function createMockCanvasContext(
-  ..._args: Parameters<HTMLCanvasElement["getContext"]>
+  ...args: Parameters<HTMLCanvasElement["getContext"]>
 ): ReturnType<HTMLCanvasElement["getContext"]> {
+  void args;
   return {} as never;
 }
 

@@ -6,7 +6,8 @@
 
 "use client";
 
-import { useState, useEffect, type ReactElement } from "react";
+import { useState, useEffect, useCallback, type ReactElement } from "react";
+import type { ChartData, ChartOptions } from "chart.js";
 import { DataSourceSelector, type DataSource } from "./DataSourceSelector";
 import { ChartTypeSelector, type ChartType } from "./ChartTypeSelector";
 import { DateRangeFilter, type DateRange, type DateRangePreset } from "./DateRangeFilter";
@@ -29,8 +30,16 @@ export interface ChartConfiguration {
   dateRange: DateRange;
   datePreset: DateRangePreset;
   customization: ChartCustomization;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
+
+type ChartPreviewData =
+  | ChartData<"line">
+  | ChartData<"bar">
+  | ChartData<"scatter">
+  | ChartData<"pie">
+  | { data: unknown; xLabels: string[]; yLabels: string[] }
+  | null;
 
 export function ChartBuilder({ onSave }: ChartBuilderProps) {
   // State management
@@ -47,7 +56,7 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
     titleFontSize: 16,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [chartData, setChartData] = useState<any>(null);
+  const [chartData, setChartData] = useState<ChartPreviewData>(null);
 
   // Auto-advance steps when selections are made
   useEffect(() => {
@@ -62,28 +71,32 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
     }
   }, [dataSource, chartType, dateRange, step]);
 
-  // Fetch chart data when configuration changes
-  useEffect(() => {
-    if (dataSource && chartType && dateRange) {
-      fetchChartData();
+  const fetchChartData = useCallback(async () => {
+    if (!dataSource || !chartType || !dateRange) {
+      return;
     }
-  }, [dataSource, chartType, dateRange]);
 
-  const fetchChartData = async () => {
     setIsLoading(true);
     try {
       // Simulate API call with sample data
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Generate sample data based on chart type
-      const sampleData = generateSampleData(chartType!, dataSource!);
+      const sampleData = generateSampleData(chartType, dataSource);
       setChartData(sampleData);
     } catch (error) {
       console.error("Failed to fetch chart data:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [chartType, dataSource, dateRange]);
+
+  // Fetch chart data when configuration changes
+  useEffect(() => {
+    if (dataSource && chartType && dateRange) {
+      void fetchChartData();
+    }
+  }, [fetchChartData, dataSource, chartType, dateRange]);
 
   const handleSave = () => {
     if (!dataSource || !chartType || !dateRange) {
@@ -274,12 +287,12 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
  */
 function renderChart(
   type: ChartType,
-  data: any,
+  data: ChartPreviewData,
   customization: ChartCustomization
 ): ReactElement | null {
   if (!data) return null;
 
-  const commonOptions = {
+  const commonOptions: ChartOptions<"line"> = {
     plugins: {
       title: {
         display: !!customization.title,
@@ -320,17 +333,17 @@ function renderChart(
 
   switch (type) {
     case "line":
-      return <LineChart data={data} options={commonOptions as any} height={400} />;
+      return <LineChart data={data as ChartData<"line">} options={commonOptions} height={400} />;
     case "bar":
-      return <BarChart data={data} options={commonOptions as any} height={400} />;
+      return <BarChart data={data as ChartData<"bar">} options={commonOptions as ChartOptions<"bar">} height={400} />;
     case "scatter":
-      return <ScatterChart data={data} options={commonOptions as any} height={400} />;
+      return <ScatterChart data={data as ChartData<"scatter">} options={commonOptions as ChartOptions<"scatter">} height={400} />;
     case "pie":
-      return <PieChart data={data} height={400} />;
+      return <PieChart data={data as ChartData<"pie">} height={400} />;
     case "area":
-      return <AreaChart data={data} options={commonOptions as any} height={400} stacked={customization.stacked} />;
+      return <AreaChart data={data as ChartData<"line">} options={commonOptions as ChartOptions<"line">} height={400} stacked={customization.stacked} />;
     case "heatmap":
-      return <HeatmapChart {...data} height={400} />;
+      return <HeatmapChart {...(data as { data: unknown; xLabels: string[]; yLabels: string[] })} height={400} />;
     default:
       return null;
   }
@@ -339,7 +352,7 @@ function renderChart(
 /**
  * Generate sample data for preview.
  */
-function generateSampleData(chartType: ChartType, dataSource: DataSource): any {
+function generateSampleData(chartType: ChartType, dataSource: DataSource): ChartPreviewData {
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const values = Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 20);
 

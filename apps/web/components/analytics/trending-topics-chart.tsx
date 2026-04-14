@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   type ChartOptions,
+  type TooltipItem,
 } from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
 import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
@@ -108,7 +109,7 @@ export function TrendingTopicsChart({
       },
       tooltip: {
         callbacks: {
-          afterLabel: (context: any) => {
+          afterLabel: (context: TooltipItem<"bar">) => {
             const topic = topics[context.dataIndex];
             return [
               `Feed Count: ${topic.feed_count}`,

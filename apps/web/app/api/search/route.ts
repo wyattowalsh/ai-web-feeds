@@ -13,10 +13,14 @@ import {
   getBackendErrorStatus,
   formatBackendErrorResponse,
 } from "@/lib/backend";
-import { runLocalSearch } from "@/lib/search-local";
+import {
+  searchArticlesInCorpus,
+  searchCatalogSources,
+} from "@/lib/article-corpus";
 import {
   normalizeSearchFilters,
   normalizeSearchQuery,
+  parseSearchFeedIdsParam,
   parseSearchScope,
   parseSearchTopicsParam,
   parseSearchType,
@@ -41,35 +45,37 @@ const GETHandler = async (request: Request) => {
   const limit = clampNumber(parseInt(searchParams.get("limit") || "20", 10), 1, 100);
   const normalizedFilters = normalizeSearchFilters({
     source_type: searchParams.get("source_type"),
-    topics: parseSearchTopicsParam(searchParams.get("topics")),
+    topics: parseSearchTopicsParam(searchParams.getAll("topics").join(",")),
     verified: parseVerifiedSearchFilter(searchParams.get("verified")),
   });
-  const feedIds = Array.from(
-    new Set(
-      searchParams
-        .getAll("feed")
-        .map((feedId) => feedId.trim())
-        .filter((feedId) => feedId.length > 0),
-    ),
-  );
+  const feedIds = parseSearchFeedIdsParam(searchParams.getAll("feed"));
   const sourceType = normalizedFilters.source_type;
   const topics = normalizedFilters.topics;
   const verified = normalizedFilters.verified;
 
   try {
-    const payload = await runLocalSearch({
-      query,
-      scope,
-      limit,
-      feedIds: feedIds.length > 0 ? feedIds : undefined,
-      sourceType,
-      topics,
-      verified,
-    });
+    const payload =
+      scope === "articles"
+        ? await searchArticlesInCorpus({
+            q: query,
+            limit,
+            feedIds,
+            sourceType,
+            topics,
+            verified,
+          })
+        : await searchCatalogSources({
+            query,
+            limit,
+            feedIds,
+            sourceType,
+            topics,
+            verified,
+          });
 
     return NextResponse.json(payload, {
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
       },
     });
   } catch (error) {

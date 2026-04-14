@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title, type ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title,
+  type ChartOptions,
+  type TooltipItem,
+} from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
 import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
 import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
@@ -82,7 +90,7 @@ export function HealthDistributionChart({
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
+          label: (context: TooltipItem<"pie">) => {
             const value = context.raw;
             const percentage = ((value / total) * 100).toFixed(1);
             return `${context.label}: ${value} (${percentage}%)`;

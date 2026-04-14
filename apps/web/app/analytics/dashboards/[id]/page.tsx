@@ -6,14 +6,23 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import type { Layouts } from "react-grid-layout";
 import { DashboardBuilder, type DashboardWidget } from "@/components/visualizations/dashboards/DashboardBuilder";
 import { getDeviceId } from "@/lib/visualization/device-id";
+
+interface StoredDashboard {
+  id: number;
+  name: string;
+  layout_config: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function DashboardDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const dashboardId = params.id;
-  const [dashboard, setDashboard] = useState<any>(null);
+  const [dashboard, setDashboard] = useState<StoredDashboard | null>(null);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,71 +30,72 @@ export default function DashboardDetailPage() {
 
   useEffect(() => {
     if (!dashboardId) return;
-    loadDashboard();
+    const loadDashboard = async () => {
+      setIsLoading(true);
+
+      try {
+        const deviceId = getDeviceId();
+
+        // Simulate API call with sample data
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        const sampleDashboard: StoredDashboard = {
+          id: parseInt(dashboardId, 10),
+          name: "Sample Dashboard",
+          layout_config: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        const sampleWidgets: DashboardWidget[] = [
+          {
+            id: "widget-1",
+            visualization_id: 1,
+            type: "chart",
+            title: "Topic Trends",
+            layout: { i: "widget-1", x: 0, y: 0, w: 6, h: 4 },
+            config: {},
+          },
+          {
+            id: "widget-2",
+            visualization_id: 2,
+            type: "metric",
+            title: "Total Articles",
+            layout: { i: "widget-2", x: 6, y: 0, w: 3, h: 2 },
+            config: {},
+          },
+          {
+            id: "widget-3",
+            visualization_id: 3,
+            type: "metric",
+            title: "Active Feeds",
+            layout: { i: "widget-3", x: 9, y: 0, w: 3, h: 2 },
+            config: {},
+          },
+          {
+            id: "widget-4",
+            visualization_id: 4,
+            type: "chart",
+            title: "Feed Health",
+            layout: { i: "widget-4", x: 6, y: 2, w: 6, h: 4 },
+            config: {},
+          },
+        ];
+
+        void deviceId;
+        setDashboard(sampleDashboard);
+        setWidgets(sampleWidgets);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadDashboard();
   }, [dashboardId]);
 
-  const loadDashboard = async () => {
-    setIsLoading(true);
-
-    try {
-      const deviceId = getDeviceId();
-
-      // Simulate API call with sample data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const sampleDashboard = {
-        id: parseInt(dashboardId, 10),
-        name: "Sample Dashboard",
-        layout_config: {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const sampleWidgets: DashboardWidget[] = [
-        {
-          id: "widget-1",
-          visualization_id: 1,
-          type: "chart",
-          title: "Topic Trends",
-          layout: { i: "widget-1", x: 0, y: 0, w: 6, h: 4 },
-          config: {},
-        },
-        {
-          id: "widget-2",
-          visualization_id: 2,
-          type: "metric",
-          title: "Total Articles",
-          layout: { i: "widget-2", x: 6, y: 0, w: 3, h: 2 },
-          config: {},
-        },
-        {
-          id: "widget-3",
-          visualization_id: 3,
-          type: "metric",
-          title: "Active Feeds",
-          layout: { i: "widget-3", x: 9, y: 0, w: 3, h: 2 },
-          config: {},
-        },
-        {
-          id: "widget-4",
-          visualization_id: 4,
-          type: "chart",
-          title: "Feed Health",
-          layout: { i: "widget-4", x: 6, y: 2, w: 6, h: 4 },
-          config: {},
-        },
-      ];
-
-      setDashboard(sampleDashboard);
-      setWidgets(sampleWidgets);
-    } catch (error) {
-      console.error("Failed to load dashboard:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async (updatedWidgets: DashboardWidget[], layouts: any) => {
+  const handleSave = async (updatedWidgets: DashboardWidget[], layouts: Layouts) => {
     try {
       const deviceId = getDeviceId();
 
@@ -104,7 +114,7 @@ export default function DashboardDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const deviceId = getDeviceId();
+      void getDeviceId();
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -127,6 +137,10 @@ export default function DashboardDetailPage() {
         </div>
       </div>
     );
+  }
+
+  if (!dashboard) {
+    return null;
   }
 
   return (
@@ -190,7 +204,7 @@ export default function DashboardDetailPage() {
               Delete Dashboard?
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Are you sure you want to delete "{dashboard.name}"? This action cannot be
+              Are you sure you want to delete &quot;{dashboard.name}&quot;? This action cannot be
               undone.
             </p>
             <div className="flex gap-3">

@@ -34,7 +34,7 @@ export default function ForecastsPage() {
     setIsLoading(true);
 
     try {
-      const deviceId = getDeviceId();
+      getDeviceId();
 
       // Simulate API call with sample data
       await new Promise((resolve) => setTimeout(resolve, 500));
