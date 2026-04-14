@@ -156,7 +156,15 @@ const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
 
 ## Zero Results Handling
 
-When no article results are found, the UI steers the user toward:
+When no article or catalog results are found inside `/feeds`, the UI now
+offers direct recovery actions instead of leaving the user at a dead end.
+
+- reset to the full catalog when a feed slice is over-constrained
+- jump straight back into the article workspace when catalog filters get too narrow
+- clear article-specific filters while preserving the underlying source slice
+- open catalog mode with the current source constraints so you can inspect or widen them
+
+The UI still reinforces the broader guidance of:
 
 - returning to catalog mode for broader source discovery
 - fewer filters

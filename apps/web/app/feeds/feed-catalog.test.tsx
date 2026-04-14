@@ -173,4 +173,30 @@ describe("FeedCatalog", () => {
       { scroll: false },
     );
   });
+
+  it("turns zero-result catalog states into recovery links", () => {
+    currentSearchParams = new URLSearchParams("mode=catalog&q=nonexistent&source_type=blog");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    render(
+      <FeedCatalog
+        feeds={feeds}
+        sourceTypes={["blog", "newsletter"]}
+        initialQuery="nonexistent"
+        initialSourceType="blog"
+        initialTopic={null}
+        initialVerified={null}
+      />,
+    );
+
+    expect(screen.getByText("No feeds match this filter set")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Reset to full catalog" })).toHaveAttribute(
+      "href",
+      "/feeds?mode=catalog",
+    );
+    expect(screen.getByRole("link", { name: "Browse posts for this query" })).toHaveAttribute(
+      "href",
+      "/feeds?q=nonexistent",
+    );
+  });
 });

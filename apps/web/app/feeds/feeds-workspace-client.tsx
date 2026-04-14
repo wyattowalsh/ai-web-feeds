@@ -18,10 +18,7 @@ import {
 } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
-import type {
-  FeedsWorkspaceInitialBrowse,
-  FeedsWorkspaceInitialState,
-} from "./page";
+import type { FeedsWorkspaceInitialBrowse, FeedsWorkspaceInitialState } from "./page";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -473,8 +470,7 @@ function ReaderWorkspace({
     const query = searchParams.get("q")?.trim().replace(/\s+/g, " ") ?? "";
     const sourceType = searchParams.get("source_type")?.trim() || null;
     const verifiedValue = searchParams.get("verified");
-    const verified =
-      verifiedValue === "true" ? true : verifiedValue === "false" ? false : null;
+    const verified = verifiedValue === "true" ? true : verifiedValue === "false" ? false : null;
     const cursor = Number.parseInt(searchParams.get("cursor") ?? "0", 10);
     const limit = Number.parseInt(searchParams.get("limit") ?? `${DEFAULT_PAGE_LIMIT}`, 10);
     const sortValue =
@@ -485,14 +481,14 @@ function ReaderWorkspace({
 
     return {
       query,
-      feedIds: searchParams.getAll("feed").map((feedId) => feedId.trim()).filter(Boolean),
+      feedIds: searchParams
+        .getAll("feed")
+        .map((feedId) => feedId.trim())
+        .filter(Boolean),
       sourceType,
       topics: parseTopicsValue(searchParams.get("topics") ?? ""),
       verified,
-      sort:
-        sortValue === "oldest" || sortValue === "source"
-          ? sortValue
-          : "latest",
+      sort: sortValue === "oldest" || sortValue === "source" ? sortValue : "latest",
       readerView:
         readerView === "unread" ||
         readerView === "starred" ||
@@ -593,7 +589,13 @@ function ReaderWorkspace({
           verified: currentState.verified,
         }),
       ),
-    [currentState.feedIds, currentState.sourceType, currentState.topics, currentState.verified, feeds],
+    [
+      currentState.feedIds,
+      currentState.sourceType,
+      currentState.topics,
+      currentState.verified,
+      feeds,
+    ],
   );
 
   const articleStateMap = useMemo(() => {
@@ -635,7 +637,10 @@ function ReaderWorkspace({
 
   const visibleArticles = useMemo(() => {
     return mergedArticles.filter((article) =>
-      matchesReaderView(currentState.readerView, articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE),
+      matchesReaderView(
+        currentState.readerView,
+        articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE,
+      ),
     );
   }, [articleStateMap, currentState.readerView, mergedArticles]);
 
@@ -645,13 +650,18 @@ function ReaderWorkspace({
       return;
     }
 
-    if (!selectedArticleId || !visibleArticles.some((article) => article.id === selectedArticleId)) {
+    if (
+      !selectedArticleId ||
+      !visibleArticles.some((article) => article.id === selectedArticleId)
+    ) {
       setSelectedArticleId(visibleArticles[0]?.id ?? null);
     }
   }, [selectedArticleId, visibleArticles]);
 
   const selectedArticle =
-    visibleArticles.find((article) => article.id === selectedArticleId) ?? visibleArticles[0] ?? null;
+    visibleArticles.find((article) => article.id === selectedArticleId) ??
+    visibleArticles[0] ??
+    null;
 
   const selectedArticleState = selectedArticle
     ? articleStateMap[selectedArticle.id] ?? DEFAULT_ARTICLE_STATE
@@ -677,9 +687,13 @@ function ReaderWorkspace({
   };
 
   const refreshLatest = async () => {
-    const feedIds = currentState.feedIds.length > 0
-      ? currentState.feedIds
-      : candidateFeeds.slice(0, LIVE_REFRESH_SAMPLE_FEED_LIMIT).map((feed) => feed.id ?? "").filter(Boolean);
+    const feedIds =
+      currentState.feedIds.length > 0
+        ? currentState.feedIds
+        : candidateFeeds
+            .slice(0, LIVE_REFRESH_SAMPLE_FEED_LIMIT)
+            .map((feed) => feed.id ?? "")
+            .filter(Boolean);
 
     if (feedIds.length === 0) {
       setRefreshError("No feed slice is selected for refresh.");
@@ -722,12 +736,10 @@ function ReaderWorkspace({
       const existingKeys = new Set(
         mergedArticles.map((article) => article.id || `${article.feed_id}:${article.link}`),
       );
-      const nextOverlay = payload.posts
-        .map(normalizeLiveArticle)
-        .filter((article) => {
-          const key = article.id || `${article.feed_id}:${article.link}`;
-          return !existingKeys.has(key);
-        });
+      const nextOverlay = payload.posts.map(normalizeLiveArticle).filter((article) => {
+        const key = article.id || `${article.feed_id}:${article.link}`;
+        return !existingKeys.has(key);
+      });
 
       setOverlayArticles(nextOverlay);
     } catch (nextError) {
@@ -742,6 +754,29 @@ function ReaderWorkspace({
   const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
   const topicOptions = useMemo(() => getTopics(feeds), [feeds]);
   const corpusEmpty = browse.corpus.is_empty;
+  const canClearArticleFilters =
+    Boolean(currentState.query) || currentState.readerView !== "latest" || currentState.cursor > 0;
+  const canResetWorkspace =
+    canClearArticleFilters ||
+    Boolean(currentState.sourceType) ||
+    currentState.topics.length > 0 ||
+    currentState.feedIds.length > 0 ||
+    currentState.verified !== null ||
+    currentState.sort !== "latest";
+  const clearArticleFiltersHref = buildReaderHref(pathname, currentState, {
+    q: null,
+    reader_view: null,
+    cursor: null,
+  });
+  const resetWorkspaceHref = pathname;
+  const catalogRecoveryHref = buildReaderHref(pathname, currentState, {
+    mode: "catalog",
+    q: null,
+    reader_view: null,
+    sort: null,
+    reader_sort: null,
+    cursor: null,
+  });
   const filterSummary =
     currentState.feedIds.length > 0
       ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
@@ -763,7 +798,10 @@ function ReaderWorkspace({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href={buildReaderHref(pathname, currentState, { mode: "catalog" })} className={cn(buttonVariants({ variant: "outline" }))}>
+            <Link
+              href={buildReaderHref(pathname, currentState, { mode: "catalog" })}
+              className={cn(buttonVariants({ variant: "outline" }))}
+            >
               Open catalog
             </Link>
             <Link href="/downloads" className={cn(buttonVariants({ variant: "ghost" }))}>
@@ -804,7 +842,10 @@ function ReaderWorkspace({
             <RefreshCcw className={cn("size-4", refreshing && "animate-spin")} />
             {refreshing ? "Refreshing..." : "Refresh latest"}
           </Button>
-          <Link href={buildReaderHref(pathname, currentState, { mode: "catalog" })} className={cn(buttonVariants({ variant: "secondary" }))}>
+          <Link
+            href={buildReaderHref(pathname, currentState, { mode: "catalog" })}
+            className={cn(buttonVariants({ variant: "secondary" }))}
+          >
             Catalog
           </Link>
           <Link href="/downloads" className={cn(buttonVariants({ variant: "ghost" }))}>
@@ -879,7 +920,10 @@ function ReaderWorkspace({
                   onChange={(event) => setTopicsDraft(event.target.value)}
                   onBlur={() =>
                     updateUrl({
-                      topics: parseTopicsValue(topicsDraft).length > 0 ? normalizeTopicsValue(parseTopicsValue(topicsDraft)) : null,
+                      topics:
+                        parseTopicsValue(topicsDraft).length > 0
+                          ? normalizeTopicsValue(parseTopicsValue(topicsDraft))
+                          : null,
                       cursor: null,
                     })
                   }
@@ -1021,14 +1065,40 @@ function ReaderWorkspace({
             <EmptyState
               icon={Newspaper}
               title="No posts match this slice"
-              description="Try a broader topic mix, clear the text query, or switch back to the catalog to pick a different feed slice."
-            />
+              description="Clear article-specific filters, reset the workspace, or inspect the current source slice in catalog mode."
+            >
+              <div className="flex flex-wrap justify-center gap-3">
+                {canClearArticleFilters ? (
+                  <Link
+                    href={clearArticleFiltersHref}
+                    className={cn(buttonVariants({ variant: "default" }))}
+                  >
+                    Clear article filters
+                  </Link>
+                ) : null}
+                {canResetWorkspace ? (
+                  <Link
+                    href={resetWorkspaceHref}
+                    className={cn(buttonVariants({ variant: "outline" }))}
+                  >
+                    Reset workspace
+                  </Link>
+                ) : null}
+                <Link
+                  href={catalogRecoveryHref}
+                  className={cn(buttonVariants({ variant: "secondary" }))}
+                >
+                  Open catalog
+                </Link>
+              </div>
+            </EmptyState>
           ) : (
             <div className="space-y-3">
               {visibleArticles.map((article) => {
                 const state = articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE;
                 const isSelected = article.id === selectedArticle?.id;
-                const articleTopics = article.topics.length > 0 ? article.topics : article.categories;
+                const articleTopics =
+                  article.topics.length > 0 ? article.topics : article.categories;
 
                 return (
                   <button
@@ -1078,7 +1148,9 @@ function ReaderWorkspace({
                         <div className="flex flex-wrap justify-end gap-2">
                           {state.starred ? <Star className="size-4 text-amber-500" /> : null}
                           {state.bookmarked ? <Bookmark className="size-4 text-sky-600" /> : null}
-                          {state.archived ? <Archive className="size-4 text-(--ink-muted)" /> : null}
+                          {state.archived ? (
+                            <Archive className="size-4 text-(--ink-muted)" />
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -1175,23 +1247,25 @@ export function FeedsWorkspaceClient({
       feeds={feeds}
       stats={stats}
       initialState={initialState}
-      initialBrowse={initialBrowse ?? {
-        items: [],
-        next_cursor: null,
-        total_matched: 0,
-        cursor: 0,
-        limit: DEFAULT_PAGE_LIMIT,
-        applied_query: null,
-        applied_sort: "latest",
-        corpus: {
-          generated_at: null,
-          source_db: "data/ai-web-feeds.db",
-          article_count: 0,
-          feed_count: 0,
-          latest_published_at: null,
-          is_empty: true,
-        },
-      }}
+      initialBrowse={
+        initialBrowse ?? {
+          items: [],
+          next_cursor: null,
+          total_matched: 0,
+          cursor: 0,
+          limit: DEFAULT_PAGE_LIMIT,
+          applied_query: null,
+          applied_sort: "latest",
+          corpus: {
+            generated_at: null,
+            source_db: "data/ai-web-feeds.db",
+            article_count: 0,
+            feed_count: 0,
+            latest_published_at: null,
+            is_empty: true,
+          },
+        }
+      }
     />
   );
 }

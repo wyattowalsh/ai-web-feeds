@@ -1,12 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { replaceMock, useSearchParamsMock, useArticleStateMock, useReaderPreferencesMock } = vi.hoisted(() => ({
-  replaceMock: vi.fn(),
-  useSearchParamsMock: vi.fn(() => new URLSearchParams()),
-  useArticleStateMock: vi.fn(),
-  useReaderPreferencesMock: vi.fn(),
-}));
+const { replaceMock, useSearchParamsMock, useArticleStateMock, useReaderPreferencesMock } =
+  vi.hoisted(() => ({
+    replaceMock: vi.fn(),
+    useSearchParamsMock: vi.fn(() => new URLSearchParams()),
+    useArticleStateMock: vi.fn(),
+    useReaderPreferencesMock: vi.fn(),
+  }));
 
 let currentSearchParams = new URLSearchParams();
 
@@ -108,7 +109,9 @@ function makeResponse(body: unknown, ok = true, status = 200) {
 
 describe("FeedsWorkspaceClient", () => {
   beforeEach(() => {
-    currentSearchParams = new URLSearchParams("q=agents&source_type=blog&verified=true&feed=feed-1");
+    currentSearchParams = new URLSearchParams(
+      "q=agents&source_type=blog&verified=true&feed=feed-1",
+    );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
     replaceMock.mockReset();
     useArticleStateMock.mockReset();
@@ -132,20 +135,25 @@ describe("FeedsWorkspaceClient", () => {
       update: vi.fn(async () => undefined),
     });
 
-    useArticleStateMock.mockImplementation((_articleId: string, article?: { read?: boolean; starred?: boolean; archived?: boolean; bookmarked?: boolean }) => ({
-      state: {
-        read: article?.read ?? false,
-        starred: article?.starred ?? false,
-        archived: article?.archived ?? false,
-        bookmarked: article?.bookmarked ?? false,
-      },
-      loading: false,
-      markRead: vi.fn(async () => undefined),
-      markUnread: vi.fn(async () => undefined),
-      toggleStar: vi.fn(async () => undefined),
-      toggleArchive: vi.fn(async () => undefined),
-      toggleBookmark: vi.fn(async () => undefined),
-    }));
+    useArticleStateMock.mockImplementation(
+      (
+        _articleId: string,
+        article?: { read?: boolean; starred?: boolean; archived?: boolean; bookmarked?: boolean },
+      ) => ({
+        state: {
+          read: article?.read ?? false,
+          starred: article?.starred ?? false,
+          archived: article?.archived ?? false,
+          bookmarked: article?.bookmarked ?? false,
+        },
+        loading: false,
+        markRead: vi.fn(async () => undefined),
+        markUnread: vi.fn(async () => undefined),
+        toggleStar: vi.fn(async () => undefined),
+        toggleArchive: vi.fn(async () => undefined),
+        toggleBookmark: vi.fn(async () => undefined),
+      }),
+    );
   });
 
   it("renders the reader-first corpus workspace from the seeded browse snapshot", () => {
@@ -174,7 +182,9 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Browse posts across the full feed corpus" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Browse posts across the full feed corpus" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Agent systems roundup")).toBeInTheDocument();
     expect(screen.getAllByText("Fresh research notes").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Refresh latest/i })).toBeInTheDocument();
@@ -270,6 +280,54 @@ describe("FeedsWorkspaceClient", () => {
 
     expect(await screen.findByText("Article corpus unavailable")).toBeInTheDocument();
     expect(screen.getByText(/The article corpus has not been built yet/)).toBeInTheDocument();
+  });
+
+  it("adds recovery links when the current reader slice returns no visible posts", () => {
+    currentSearchParams = new URLSearchParams(
+      "q=missing&source_type=blog&verified=true&feed=feed-1&reader_view=archived",
+    );
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+    vi.stubGlobal("fetch", vi.fn());
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={{
+          ...initialState,
+          query: "missing",
+          readerView: "archived",
+        }}
+        initialBrowse={
+          {
+            ...initialBrowse,
+            items: [],
+            total_matched: 0,
+            applied_query: "missing",
+          } as never
+        }
+      />,
+    );
+
+    expect(screen.getByText("No posts match this slice")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
+      "href",
+      "/feeds?source_type=blog&verified=true&feed=feed-1",
+    );
+    expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/feeds");
+    expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
+      "href",
+      "/feeds?mode=catalog&source_type=blog&verified=true&feed=feed-1",
+    );
   });
 
   it("keeps catalog mode as the explicit source picker", () => {
