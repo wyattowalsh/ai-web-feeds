@@ -12,8 +12,9 @@ Implements Phase 1 recommendation strategy:
 - 10% serendipity (random high-quality feeds)
 """
 
-import random
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from functools import lru_cache
+from secrets import SystemRandom
 
 import numpy as np
 from loguru import logger
@@ -27,16 +28,14 @@ from ai_web_feeds.models import (
     UserProfile,
 )
 
-# Shared settings instance
-_settings: Settings | None = None
+EMBEDDING_NORM_EPSILON = 1e-8
+_random = SystemRandom()
 
 
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Get or create shared settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
+    return Settings()
 
 
 # ============================================================================
@@ -74,7 +73,7 @@ def calculate_content_similarity(
 
     # Guard against zero-norm target embedding
     target_norm = np.linalg.norm(target_embedding)
-    if target_norm < 1e-8:
+    if target_norm < EMBEDDING_NORM_EPSILON:
         logger.warning("Target embedding has zero norm, returning no results")
         return []
 
@@ -85,7 +84,7 @@ def calculate_content_similarity(
 
         # Guard against zero-norm feed embedding
         feed_norm = np.linalg.norm(feed_vector)
-        if feed_norm < 1e-8:
+        if feed_norm < EMBEDDING_NORM_EPSILON:
             logger.debug(f"Feed {emb.feed_id} has zero-norm embedding, skipping")
             continue
 
@@ -118,7 +117,11 @@ def get_similar_feeds_by_topic(
     logger.debug(f"Finding feeds with topics: {topics}")
 
     # Get all feeds
-    statement = select(FeedSource).where(FeedSource.id.not_in(exclude_ids))
+    statement = (
+        select(FeedSource)
+        .where(FeedSource.id.not_in(exclude_ids))
+        .where(FeedSource.curation_status != "inactive")
+    )
     all_feeds = list(session.exec(statement).all())
 
     if not all_feeds:
@@ -136,7 +139,7 @@ def get_similar_feeds_by_topic(
         intersection = len(topic_set & feed_topic_set)
         union = len(topic_set | feed_topic_set)
 
-        if union > 0:
+        if intersection > 0 and union > 0:
             jaccard_score = intersection / union
             scored_feeds.append((feed, jaccard_score))
 
@@ -183,7 +186,7 @@ def calculate_popularity_scores(
 
     for feed in feeds:
         # Component 1: Validation success (from popularity_score field)
-        validation_success = feed.popularity_score or 0.0
+        validation_success = min(max(feed.popularity_score or 0.0, 0.0), 1.0)
 
         # Component 2: Validation frequency (normalized)
         validation_frequency = (
@@ -196,7 +199,7 @@ def calculate_popularity_scores(
         # Weighted average
         popularity = 0.4 * validation_success + 0.3 * validation_frequency + 0.3 * verified_bonus
 
-        scores[feed.id] = popularity
+        scores[feed.id] = min(max(popularity, 0.0), 1.0)
 
     return scores
 
@@ -222,7 +225,7 @@ def get_popular_feeds(
     statement = (
         select(FeedSource)
         .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified == True)
+        .where(FeedSource.verified.is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
     feeds = list(session.exec(statement).all())
@@ -266,7 +269,7 @@ def get_serendipity_feeds(
     statement = (
         select(FeedSource)
         .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified == True)
+        .where(FeedSource.verified.is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
     feeds = list(session.exec(statement).all())
@@ -276,7 +279,7 @@ def get_serendipity_feeds(
 
     # Random sample
     sample_size = min(limit, len(feeds))
-    return random.sample(feeds, sample_size)
+    return _random.sample(feeds, sample_size)
 
 
 # ============================================================================
@@ -324,13 +327,14 @@ def generate_recommendations(
     serendipity_weight /= total_weight
 
     # Exclude seed feeds
-    exclude_ids = seed_feed_ids or []
+    exclude_ids = list(seed_feed_ids or [])
 
     # Get user profile for interaction history
     if user_id:
         user_profile = session.get(UserProfile, user_id)
         if user_profile:
-            exclude_ids.extend(user_profile.viewed_feeds)
+            exclude_ids.extend(user_profile.followed_feeds)
+            exclude_ids.extend((user_profile.interaction_history or {}).keys())
 
     # Calculate recommendation counts
     content_count = int(limit * content_weight)
@@ -374,7 +378,7 @@ def generate_recommendations(
             recommendations.append((feed, serendipity_weight, "discover"))
 
     # Shuffle to mix different recommendation types
-    random.shuffle(recommendations)
+    _random.shuffle(recommendations)
 
     logger.debug(f"Generated {len(recommendations)} recommendations")
     return recommendations[:limit]
@@ -391,7 +395,7 @@ def track_recommendation_interaction(
     feed_id: str,
     interaction_type: str,
     recommendation_reason: str,
-):
+) -> None:
     """Track user interaction with recommendations.
 
     Args:
@@ -405,7 +409,7 @@ def track_recommendation_interaction(
         user_id=user_id,
         feed_id=feed_id,
         interaction_type=interaction_type,
-        recommendation_reason=recommendation_reason,
+        context={"reason": recommendation_reason},
     )
 
     session.add(interaction)
@@ -419,13 +423,28 @@ def track_recommendation_interaction(
         user_profile = UserProfile(user_id=user_id)
         session.add(user_profile)
 
-    # Update viewed/subscribed lists
-    if interaction_type == "view" and feed_id not in user_profile.viewed_feeds:
-        user_profile.viewed_feeds.append(feed_id)
-    elif interaction_type == "subscribe" and feed_id not in user_profile.subscribed_feeds:
-        user_profile.subscribed_feeds.append(feed_id)
+    feed = session.get(FeedSource, feed_id)
 
-    user_profile.last_active_at = datetime.now(timezone.utc)
+    if interaction_type == "subscribe":
+        followed_feeds = list(user_profile.followed_feeds or [])
+        if feed_id not in followed_feeds:
+            followed_feeds.append(feed_id)
+            user_profile.followed_feeds = followed_feeds
+
+    if interaction_type in {"view", "click", "subscribe"} and feed is not None:
+        preferred_topics = set(user_profile.preferred_topics or [])
+        preferred_topics.update(feed.topics or [])
+        user_profile.preferred_topics = sorted(preferred_topics)
+
+    interaction_history = dict(user_profile.interaction_history or {})
+    interaction_history[feed_id] = {
+        "interaction_type": interaction_type,
+        "reason": recommendation_reason,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+    user_profile.interaction_history = interaction_history
+
+    user_profile.updated_at = datetime.now(UTC)
     session.commit()
 
 
@@ -453,10 +472,14 @@ def get_user_recommendations(
     seed_topics = None
 
     if user_profile:
-        # Use subscribed feeds as seeds
-        if user_profile.subscribed_feeds:
-            seed_feed_ids = user_profile.subscribed_feeds[:5]  # Top 5
-        # Extract topics from subscribed feeds
+        # Use followed feeds as seeds
+        if user_profile.followed_feeds:
+            seed_feed_ids = user_profile.followed_feeds[:5]  # Top 5
+
+        if user_profile.preferred_topics:
+            seed_topics = user_profile.preferred_topics[:5]
+
+        # Extract topics from followed feeds when no explicit topic preference exists
         if seed_feed_ids:
             feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(seed_feed_ids))).all()
             all_topics = []
@@ -464,7 +487,7 @@ def get_user_recommendations(
                 if feed.topics:
                     all_topics.extend(feed.topics)
             # Get most common topics
-            if all_topics:
+            if all_topics and not seed_topics:
                 from collections import Counter
 
                 topic_counts = Counter(all_topics)

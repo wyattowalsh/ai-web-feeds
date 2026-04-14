@@ -23,6 +23,8 @@ export class BackendConfigurationError extends Error {
   }
 }
 
+export const FEATURE_UNAVAILABLE_CODE = "FEATURE_UNAVAILABLE";
+
 export function getBackendUrl(): string {
   const url = process.env.BACKEND_URL?.trim();
   if (!url) {
@@ -46,7 +48,7 @@ export function buildBackendUrl(
   return url.toString();
 }
 
-export async function fetchBackend(
+export async function fetchBackendResponse(
   path: string,
   options: {
     method?: string;
@@ -54,7 +56,7 @@ export async function fetchBackend(
     body?: Record<string, unknown>;
     headers?: Record<string, string>;
   } = {},
-): Promise<unknown> {
+): Promise<Response> {
   const { method = "GET", params, body, headers = {} } = options;
   const url = buildBackendUrl(path, params);
 
@@ -76,6 +78,20 @@ export async function fetchBackend(
       errorBody.context,
     );
   }
+
+  return response;
+}
+
+export async function fetchBackend(
+  path: string,
+  options: {
+    method?: string;
+    params?: Record<string, string | number | boolean>;
+    body?: Record<string, unknown>;
+    headers?: Record<string, string>;
+  } = {},
+): Promise<unknown> {
+  const response = await fetchBackendResponse(path, options);
 
   return response.json();
 }
@@ -108,7 +124,25 @@ export function getBackendErrorStatus(error: unknown): number {
     return error.status;
   }
 
+  if (error instanceof BackendConfigurationError) {
+    return 503;
+  }
+
   return 500;
+}
+
+export function createFeatureUnavailableResponse(
+  feature: string,
+  detail?: string,
+): {
+  error: string;
+  code: string;
+} {
+  return {
+    error:
+      detail ?? `${feature} requires a configured BACKEND_URL backend service in this deployment.`,
+    code: FEATURE_UNAVAILABLE_CODE,
+  };
 }
 
 export function encodeQueryParam(value: string): string {

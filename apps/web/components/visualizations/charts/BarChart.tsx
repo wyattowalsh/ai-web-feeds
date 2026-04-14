@@ -7,19 +7,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartOptions,
-  ChartData,
-} from "chart.js";
+import { Chart as ChartJS, ChartOptions, ChartData } from "chart.js";
+import { ensureChartJsRegistered } from "./chartjs-registry";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ensureChartJsRegistered();
 
 interface BarChartProps {
   data: ChartData<"bar">;
@@ -114,7 +105,7 @@ export function createBarChartData(
     data: number[];
     backgroundColor?: string | string[];
     borderColor?: string | string[];
-  }>
+  }>,
 ): ChartData<"bar"> {
   return {
     labels,

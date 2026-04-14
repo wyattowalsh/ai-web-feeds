@@ -7,29 +7,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartOptions,
-  ChartData,
-} from "chart.js";
+import { Chart as ChartJS, ChartOptions, ChartData } from "chart.js";
+import { ensureChartJsRegistered } from "./chartjs-registry";
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ensureChartJsRegistered();
 
 interface LineChartProps {
   data: ChartData<"line">;
@@ -38,12 +19,7 @@ interface LineChartProps {
   className?: string;
 }
 
-export function LineChart({
-  data,
-  options,
-  height = 300,
-  className = "",
-}: LineChartProps) {
+export function LineChart({ data, options, height = 300, className = "" }: LineChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<ChartJS<"line"> | null>(null);
 
@@ -145,7 +121,7 @@ export function createLineChartData(
     borderColor?: string;
     backgroundColor?: string;
     tension?: number;
-  }>
+  }>,
 ): ChartData<"line"> {
   return {
     labels,

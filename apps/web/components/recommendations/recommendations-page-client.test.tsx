@@ -81,4 +81,16 @@ describe("RecommendationsPageClient", () => {
       expect(pushMock).toHaveBeenCalledWith("/feeds?mode=catalog&feed=feed-1&q=Agent+Feed");
     });
   });
+
+  it("shows the unavailable state without fetching when the backend is not configured", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { RecommendationsPageClient } = await import("./recommendations-page-client");
+
+    render(<RecommendationsPageClient backendConfigured={false} />);
+
+    expect(await screen.findByText("Recommendations backend unavailable")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

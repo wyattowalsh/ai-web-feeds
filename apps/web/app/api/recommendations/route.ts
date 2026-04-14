@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { fetchBackend, formatBackendErrorResponse, clampNumber } from "@/lib/backend";
+import {
+  BackendConfigurationError,
+  clampNumber,
+  createFeatureUnavailableResponse,
+  fetchBackend,
+  formatBackendErrorResponse,
+  getBackendErrorStatus,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
-
-interface RecommendationParams {
-  seed_topics?: string[];
-  limit?: number;
-}
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
   const seed_topics = searchParams.get("topics")?.split(",").filter(Boolean) || undefined;
+  const userId = searchParams.get("user_id")?.trim() || undefined;
   const limit = clampNumber(parseInt(searchParams.get("limit") || "20", 10), 1, 100);
 
   try {
@@ -20,6 +23,7 @@ const GETHandler = async (request: Request) => {
       method: "GET",
       params: {
         limit,
+        ...(userId && { user_id: userId }),
         ...(seed_topics && { topics: seed_topics.join(",") }),
       },
     });
@@ -30,24 +34,40 @@ const GETHandler = async (request: Request) => {
       },
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    if (error instanceof BackendConfigurationError) {
+      return NextResponse.json(
+        createFeatureUnavailableResponse(
+          "Recommendations",
+          "Recommendations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
+        ),
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
 const POSTHandler = async (request: Request) => {
   try {
     const body = await request.json();
-    const { feed_id, interaction_type, reason } = body;
+    const userId = typeof body?.user_id === "string" ? body.user_id.trim() : "";
+    const feedId = typeof body?.feed_id === "string" ? body.feed_id.trim() : "";
+    const interactionType =
+      typeof body?.interaction_type === "string" ? body.interaction_type.trim() : "";
+    const reason = typeof body?.reason === "string" ? body.reason : null;
 
-    if (!feed_id || !interaction_type) {
+    if (!userId || !feedId || !interactionType) {
       return NextResponse.json(
-        { error: "Missing required fields: feed_id, interaction_type" },
+        { error: "Missing required fields: user_id, feed_id, interaction_type" },
         { status: 400 },
       );
     }
 
     const valid_interactions = ["view", "click", "subscribe", "dismiss"];
-    if (!valid_interactions.includes(interaction_type)) {
+    if (!valid_interactions.includes(interactionType)) {
       return NextResponse.json(
         { error: `Invalid interaction_type. Must be one of: ${valid_interactions.join(", ")}` },
         { status: 400 },
@@ -57,15 +77,28 @@ const POSTHandler = async (request: Request) => {
     const data = await fetchBackend("/recommendations/interactions", {
       method: "POST",
       body: {
-        feed_id,
-        interaction_type,
-        reason: reason || null,
+        user_id: userId,
+        feed_id: feedId,
+        interaction_type: interactionType,
+        reason,
       },
     });
 
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    if (error instanceof BackendConfigurationError) {
+      return NextResponse.json(
+        createFeatureUnavailableResponse(
+          "Recommendations",
+          "Recommendations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
+        ),
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

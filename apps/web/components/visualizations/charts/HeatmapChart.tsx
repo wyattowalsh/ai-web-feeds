@@ -7,28 +7,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  Chart as ChartJS,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend,
-  ScriptableContext,
-  ChartOptions,
-  TooltipItem,
-} from "chart.js";
-import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
+import { Chart as ChartJS, ScriptableContext, ChartOptions, TooltipItem } from "chart.js";
+import { ensureChartJsRegistered } from "./chartjs-registry";
 
-ChartJS.register(
-  MatrixController,
-  MatrixElement,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend
-);
+ensureChartJsRegistered();
 
 interface HeatmapDataPoint {
   x: string | number;
@@ -249,7 +231,7 @@ function interpolateColor(color1: string, color2: string, factor: number): strin
 export function createHeatmapData(
   xLabels: string[],
   yLabels: string[],
-  matrix: number[][]
+  matrix: number[][],
 ): HeatmapDataPoint[] {
   const data: HeatmapDataPoint[] = [];
 

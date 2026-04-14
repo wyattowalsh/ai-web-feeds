@@ -1,18 +1,48 @@
 import { NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
+import {
+  BackendConfigurationError,
+  createFeatureUnavailableResponse,
+  fetchBackend,
+  formatBackendErrorResponse,
+  getBackendErrorStatus,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-const GETHandler = async () => {
-  return NextResponse.json(
-    {
-      error: "Trending analytics is not wired to a backend service in this deployment.",
-      code: "BACKEND_NOT_IMPLEMENTED",
-    },
-    { status: 501 },
-  );
+const GETHandler = async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+
+  try {
+    const data = await fetchBackend("/analytics/trending", {
+      params: {
+        limit: searchParams.get("limit") || "10",
+        date_range: searchParams.get("date_range") || "30d",
+      },
+    });
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "private, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
+  } catch (error) {
+    if (error instanceof BackendConfigurationError) {
+      return NextResponse.json(
+        createFeatureUnavailableResponse(
+          "Analytics",
+          "Analytics are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
+        ),
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
+  }
 };
 
 export const GET = withRouteTelemetry("analytics.trending", GETHandler, {
-  backendTarget: "unimplemented-analytics",
+  backendTarget: "python-backend",
 });
