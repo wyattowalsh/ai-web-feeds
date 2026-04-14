@@ -79,9 +79,6 @@ function ExplorerPageContent() {
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [tab, setTab] = useState<ExplorerTab>(getTabFromSearchParams(searchParams));
 
-  const selectedTags = getTagsFromSearchParams(searchParams);
-  const sortBy = searchParams.get("sort") || "name";
-  const sortOrder = searchParams.get("order") === "desc" ? "desc" : "asc";
   const [layout, setLayout] = useState<LayoutType>(getLayoutFromSearchParams(searchParams));
   const [graphControls, setGraphControls] = useState<GraphControls>(() =>
     getGraphControlsFromSearchParams(searchParams, getTabFromSearchParams(searchParams)),
@@ -110,9 +107,6 @@ function ExplorerPageContent() {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (tab !== "combined") params.set("tab", tab);
-    if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
-    if (sortBy !== "name") params.set("sort", sortBy);
-    if (sortOrder !== "asc") params.set("order", sortOrder);
     if (layout !== "force") params.set("layout", layout);
     writeGraphControlsToParams(params, graphControls, getDefaultGraphControls(tab));
 
@@ -124,7 +118,7 @@ function ExplorerPageContent() {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
     }
-  }, [graphControls, layout, search, selectedTags, sortBy, sortOrder, tab]);
+  }, [graphControls, layout, search, tab]);
 
   useEffect(() => {
     setLayout(getLayoutFromSearchParams(searchParams));
@@ -169,13 +163,7 @@ function ExplorerPageContent() {
           buildFeedsHref({
             feedId: selectedFeed.id,
             query: search,
-            topics:
-              selectedTags.length > 0
-                ? [
-                    ...selectedTags,
-                    ...normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
-                  ]
-                : normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
+            topics: normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
           }),
         );
       }
@@ -186,10 +174,7 @@ function ExplorerPageContent() {
       router.push(
         buildFeedsHref({
           query: search,
-          topics:
-            detailAction.nodeType === "topic"
-              ? [detailAction.nodeId, ...selectedTags]
-              : selectedTags,
+          topics: detailAction.nodeType === "topic" ? [detailAction.nodeId] : [],
         }),
       );
       return;
@@ -205,11 +190,8 @@ function ExplorerPageContent() {
           feedId: selectedFeed?.id ?? detailAction.nodeId,
           topics:
             detailAction.nodeType === "topic"
-              ? [detailAction.nodeId, ...selectedTags]
-              : [
-                  ...selectedTags,
-                  ...normalizeTopicValues(selectedFeed?.topics ?? selectedFeed?.tags),
-                ],
+              ? [detailAction.nodeId]
+              : normalizeTopicValues(selectedFeed?.topics ?? selectedFeed?.tags),
         }),
       );
     }
@@ -236,16 +218,10 @@ function ExplorerPageContent() {
         topic.description?.toLowerCase().includes(searchValue),
     );
 
-    result.sort((a, b) => {
-      const sortField: keyof TopicRecord = sortBy === "name" ? "label" : "id";
-      const aVal = String(a[sortField] ?? "");
-      const bVal = String(b[sortField] ?? "");
-      const comparison = aVal.localeCompare(bVal);
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    result.sort((a, b) => a.label.localeCompare(b.label));
 
     return result;
-  }, [topics, search, sortBy, sortOrder]);
+  }, [topics, search]);
 
   const filteredFeeds = useMemo(() => {
     if (!feeds || !Array.isArray(feeds) || feeds.length === 0) return [];
@@ -258,24 +234,13 @@ function ExplorerPageContent() {
 
       if (!matchesSearch) return false;
 
-      if (selectedTags.length > 0) {
-        const topicsArray = normalizeTopicValues(feed.topics ?? feed.tags);
-        return selectedTags.some((tag) => topicsArray.includes(tag));
-      }
-
       return true;
     });
 
-    result.sort((a, b) => {
-      const sortField: keyof CatalogFeed = sortBy === "url" ? "url" : "title";
-      const aVal = a[sortField] ?? "";
-      const bVal = b[sortField] ?? "";
-      const comparison = String(aVal).localeCompare(String(bVal));
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    result.sort((a, b) => String(a.title ?? a.url).localeCompare(String(b.title ?? b.url)));
 
     return result;
-  }, [feeds, search, selectedTags, sortBy, sortOrder]);
+  }, [feeds, search]);
 
   const visibleCount =
     tab === "topics"
@@ -350,7 +315,7 @@ function ExplorerPageContent() {
               </div>
               <div className="flex items-center gap-3">
                 <SearchIcon className="size-4 text-(--brand-strong)" />
-                Search and tag filters for narrowing scope
+                Search and feed-to-topic links for narrowing scope
               </div>
             </div>
           </div>
@@ -532,10 +497,6 @@ export default function ExplorerPage() {
 function getTabFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): ExplorerTab {
   const value = searchParams.get("tab");
   return value === "topics" || value === "feeds" || value === "combined" ? value : "combined";
-}
-
-function getTagsFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): string[] {
-  return searchParams.get("tags")?.split(",").filter(Boolean) || [];
 }
 
 function getLayoutFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): LayoutType {
