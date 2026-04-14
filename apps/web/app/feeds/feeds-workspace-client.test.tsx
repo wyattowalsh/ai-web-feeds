@@ -256,6 +256,61 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getAllByText("New").length).toBeGreaterThan(0);
   });
 
+  it("sanitizes preview html while preserving safe rich markup", () => {
+    const maliciousBrowse = {
+      ...initialBrowse,
+      items: [
+        {
+          ...initialBrowse.items[0],
+          content_html: [
+            '<p style="color:red" onclick="alert(1)">Safe preview <a href="/source" onclick="evil()">link</a></p>',
+            '<script>alert("bad")</script>',
+            '<iframe src="https://evil.example/embed"></iframe>',
+            '<form action="/submit"><button>Do not render form</button></form>',
+            '<img src="/cover.png" alt="Preview cover" onerror="evil()">',
+            "<table><tbody><tr><td>Agents</td></tr></tbody></table>",
+            "<pre><code>const ok = true;</code></pre>",
+          ].join(""),
+        },
+      ],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => makeResponse(maliciousBrowse)),
+    );
+
+    const { container } = render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={initialState}
+        initialBrowse={maliciousBrowse as never}
+      />,
+    );
+
+    const previewLink = screen.getByRole("link", { name: "link" });
+    expect(previewLink).toHaveAttribute("href", "https://example.com/source");
+    expect(previewLink).toHaveAttribute("target", "_blank");
+    expect(previewLink).toHaveAttribute("rel", "noreferrer noopener");
+
+    const previewImage = screen.getByRole("img", { name: "Preview cover" });
+    expect(previewImage).toHaveAttribute("src", "https://example.com/cover.png");
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.querySelector("table")).not.toBeNull();
+    expect(container.querySelector("pre code")).not.toBeNull();
+    expect(container).not.toHaveTextContent("Do not render form");
+  });
+
   it("shows a dedicated corpus unavailable state when the article load fails", async () => {
     const fetchMock = vi.fn(async () => makeResponse({}, false, 503));
     vi.stubGlobal("fetch", fetchMock);
@@ -282,12 +337,22 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getByText(/The article corpus has not been built yet/)).toBeInTheDocument();
   });
 
-  it("adds recovery links when the current reader slice returns no visible posts", () => {
+  it("adds recovery links when the current reader slice returns no visible posts", async () => {
     currentSearchParams = new URLSearchParams(
       "q=missing&source_type=blog&verified=true&feed=feed-1&reader_view=archived",
     );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
-    vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        makeResponse({
+          ...initialBrowse,
+          items: [],
+          total_matched: 0,
+          applied_query: "missing",
+        }),
+      ),
+    );
 
     render(
       <FeedsWorkspaceClient
@@ -318,7 +383,7 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByText("No posts match this slice")).toBeInTheDocument();
+    expect(await screen.findByText("No posts match this slice")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
       "/feeds?source_type=blog&verified=true&feed=feed-1",
@@ -326,7 +391,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/feeds");
     expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
       "href",
-      "/feeds?mode=catalog&source_type=blog&verified=true&feed=feed-1",
+      "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 

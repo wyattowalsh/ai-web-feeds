@@ -19,7 +19,8 @@ adds live feed refreshes only as an explicit overlay.
   change the source slice.
 - **Corpus-backed article list** reads normalized article rows from
   `data/articles.generated.json`.
-- **Preview pane** shows summary/content, metadata, and direct article actions.
+- **Preview pane** shows sanitized rich summary/content, metadata, and direct
+  article actions.
 - **Local state** keeps read, starred, saved, and archived status on-device.
 - **Reader preferences** store presentation controls such as compact vs card
   layout and summary visibility in browser storage.
@@ -32,18 +33,18 @@ adds live feed refreshes only as an explicit overlay.
 
 The reader is meant to be linkable and restorable directly from the URL.
 
-| Parameter | Purpose                                                                    |
-| --------- | -------------------------------------------------------------------------- |
-| `mode`         | `catalog` opens the source picker; omitted defaults to the reader workspace |
-| `feed`         | Limit the reader to one or more source IDs from the catalog; repeated params preserve pinned slices |
-| `topics`       | Filter the candidate feed set by one or more topic labels                             |
-| `source_type`  | Limit the candidate set by source format                                              |
-| `verified`     | Limit the candidate set by verification state                                         |
-| `q`            | Filter visible articles by title, feed title, summary, author, or category            |
-| `reader_view`  | Switch between `latest`, `unread`, `starred`, `saved`, and `archived`                 |
-| `sort` / `reader_sort` | Order the visible timeline by `latest`, `oldest`, or `source`               |
-| `cursor`       | Track pagination state for the corpus-backed article list                               |
-| `limit`        | Tune page size for `/api/articles` hydration and follow-up loads                        |
+| Parameter              | Purpose                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `mode`                 | `catalog` opens the source picker; omitted defaults to the reader workspace                         |
+| `feed`                 | Limit the reader to one or more source IDs from the catalog; repeated params preserve pinned slices |
+| `topics`               | Filter the candidate feed set by one or more topic labels                                           |
+| `source_type`          | Limit the candidate set by source format                                                            |
+| `verified`             | Limit the candidate set by verification state                                                       |
+| `q`                    | Filter visible articles by title, feed title, summary, author, or category                          |
+| `reader_view`          | Switch between `latest`, `unread`, `starred`, `saved`, and `archived`                               |
+| `sort` / `reader_sort` | Order the visible timeline by `latest`, `oldest`, or `source`                                       |
+| `cursor`               | Track pagination state for the corpus-backed article list                                           |
+| `limit`                | Tune page size for `/api/articles` hydration and follow-up loads                                    |
 
 ## Data flow
 
@@ -72,6 +73,19 @@ the user explicitly refreshes the current slice.
   reading actions
 - mobile collapses the same model into a stacked flow with filters and preview
   surfaced inline
+
+## Preview sanitization
+
+The preview pane preserves safe rich article markup, but it no longer renders
+feed-supplied HTML verbatim.
+
+- allowed markup includes structural text formatting, links, images, lists,
+  code blocks, and tables
+- links and images are resolved against the article URL before rendering
+- active embeds such as scripts, forms, iframes, and inline event handlers are
+  stripped before the preview is inserted into the DOM
+- unsafe URL schemes are dropped instead of being rendered as clickable or
+  loadable content
 
 ## Freshness overlay
 

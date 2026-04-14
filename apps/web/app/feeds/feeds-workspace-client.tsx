@@ -23,6 +23,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { getTopics } from "@/lib/feeds-filters";
@@ -300,6 +301,11 @@ function PreviewPane({
   state: ReaderArticleState;
   onToggleState: (partial: Partial<ReaderArticleState>) => void;
 }) {
+  const summaryMarkup = useMemo(
+    () => (article ? sanitizeArticlePreviewHtml(article.content_html, article.link) : null),
+    [article],
+  );
+
   if (!article) {
     return (
       <div className="surface-card space-y-4">
@@ -312,11 +318,6 @@ function PreviewPane({
       </div>
     );
   }
-
-  const summaryMarkup =
-    article.content_html && /<\/?[a-z][\s\S]*>/i.test(article.content_html)
-      ? article.content_html
-      : null;
 
   return (
     <div className="surface-card space-y-5">
