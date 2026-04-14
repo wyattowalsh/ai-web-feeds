@@ -44,7 +44,7 @@
 ## 📍 Essential Links
 
 - **Full Documentation**:
-  [llms-full.txt#core-package](https://aiwebfeeds.com/llms-full.txt#core-package)
+  [llms-full.txt#core-package](https://aiwebfeeds.vercel.app/llms-full.txt#core-package)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **Testing Guide**: [../../tests/AGENTS.md](../../tests/AGENTS.md)
 - **Contributing**: [../../CONTRIBUTING.md](../../CONTRIBUTING.md)
@@ -95,8 +95,8 @@ src/ai_web_feeds/
 - ✅ New modules: `load.py`, `validate.py`, `export.py`, `enrich.py`
 - ✅ 100% module coverage with 1,600+ lines of test code
 
-**See**: [llms-full.txt](https://aiwebfeeds.com/llms-full.txt) for detailed module
-documentation
+**See**: [llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt) for detailed
+module documentation
 
 ______________________________________________________________________
 
@@ -211,7 +211,7 @@ ______________________________________________________________________
 ## 📚 Reference
 
 **Full implementation details**:
-[llms-full.txt](https://aiwebfeeds.com/llms-full.txt#core-package)\
+[llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt#core-package)\
 **Testing patterns**: [../../tests/AGENTS.md](../../tests/AGENTS.md)\
 **Root workflow**: [../../AGENTS.md](../../AGENTS.md#standard-workflow)
 

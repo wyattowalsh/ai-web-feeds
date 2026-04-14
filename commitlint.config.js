@@ -1,7 +1,7 @@
 /**
  * Commitlint Configuration for AI Web Feeds
  * Enforces Conventional Commits specification
- * Docs: https://aiwebfeeds.com/docs/contributing/commits
+ * Docs: https://aiwebfeeds.vercel.app/docs/contributing/pre-commit-hooks
  */
 
 module.exports = {

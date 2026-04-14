@@ -7,7 +7,7 @@
 ## 📍 Essential Links
 
 - **Full Documentation**:
-  [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)
+  [llms-full.txt#testing](https://aiwebfeeds.vercel.app/llms-full.txt#testing)
 - **Root Instructions**: [../AGENTS.md](../AGENTS.md)
 - **Core Package**:
   [../packages/ai_web_feeds/AGENTS.md](../packages/ai_web_feeds/AGENTS.md)
@@ -63,8 +63,8 @@ tests/
         └── integration/
 ```
 
-**See**: [llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing) for
-complete structure
+**See**: [llms-full.txt#testing](https://aiwebfeeds.vercel.app/llms-full.txt#testing)
+for complete structure
 
 **Recent Updates (October 2025)**:
 
@@ -208,7 +208,7 @@ ______________________________________________________________________
 **pytest docs**: [docs.pytest.org](https://docs.pytest.org)\
 **Hypothesis docs**: [hypothesis.readthedocs.io](https://hypothesis.readthedocs.io)\
 **Full testing guide**:
-[llms-full.txt#testing](https://aiwebfeeds.com/llms-full.txt#testing)\
+[llms-full.txt#testing](https://aiwebfeeds.vercel.app/llms-full.txt#testing)\
 **Root workflow**: [../AGENTS.md](../AGENTS.md#standard-workflow)
 
 ______________________________________________________________________

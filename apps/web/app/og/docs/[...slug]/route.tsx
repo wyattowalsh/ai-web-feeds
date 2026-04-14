@@ -136,7 +136,7 @@ export async function GET(_req: Request, { params }: RouteContext<"/og/docs/[...
               display: "flex",
             }}
           >
-            ai-web-feeds.vercel.app
+            aiwebfeeds.vercel.app
           </div>
         </div>
       </div>

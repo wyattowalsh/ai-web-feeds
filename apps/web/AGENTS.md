@@ -6,12 +6,13 @@
 
 ## 📍 Essential Links
 
-- **Full Documentation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)
+- **Full Documentation**:
+  [llms-full.txt#web](https://aiwebfeeds.vercel.app/llms-full.txt#web)
 - **Web Reference**: \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **FumaDocs**: [fumadocs.dev](https://fumadocs.dev)
 
-______________________________________________________________________
+<hr />
 
 ## 🎯 Purpose
 
@@ -29,7 +30,7 @@ Next.js 15 documentation site providing:
 **Data Integration**: Reads `data/feeds.yaml`, `data/topics.yaml`,
 `data/feeds.enriched.yaml`
 
-______________________________________________________________________
+<hr />
 
 ## 🏗️ Architecture
 
@@ -61,10 +62,10 @@ apps/web/
     └── rss.ts                # Feed generation
 ```
 
-**See**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web) for complete
-structure
+**See**: [llms-full.txt#web](https://aiwebfeeds.vercel.app/llms-full.txt#web) for
+complete structure
 
-______________________________________________________________________
+<hr />
 
 ## 📐 Development Rules
 
@@ -176,7 +177,7 @@ import { Mermaid } from "@/components/mdx/mermaid";
 - **Concise**: Update in `app/llms.txt/route.ts`
 - Auto-generated from `content/docs/`
 
-______________________________________________________________________
+<hr />
 
 ## 🧪 Testing
 
@@ -196,7 +197,7 @@ pnpm lint:links
 
 **See**: [../../tests/AGENTS.md](../../tests/AGENTS.md) for testing patterns
 
-______________________________________________________________________
+<hr />
 
 ## 🔄 Common Tasks
 
@@ -225,7 +226,7 @@ ______________________________________________________________________
 - Auto-generated per page
 - Customize: Edit `app/docs/opengraph-image.tsx`
 
-______________________________________________________________________
+<hr />
 
 ## 🚨 Critical Patterns
 
@@ -247,20 +248,21 @@ ______________________________________________________________________
 ❌ Use `any` types\
 ❌ Commit without linting
 
-______________________________________________________________________
+<hr />
 
 ## 📚 Reference
 
 **FumaDocs guide**: [fumadocs.dev/docs](https://fumadocs.dev/docs)\
 **Next.js 15 docs**: [nextjs.org/docs](https://nextjs.org/docs)\
-**Full implementation**: [llms-full.txt#web](https://aiwebfeeds.com/llms-full.txt#web)\
+**Full implementation**:
+[llms-full.txt#web](https://aiwebfeeds.vercel.app/llms-full.txt#web)\
 **Root workflow**: [../../AGENTS.md](../../AGENTS.md#standard-workflow)
 
-______________________________________________________________________
+<hr />
 
 _Updated: October 15, 2025 · Version: 0.1.0_
 
-______________________________________________________________________
+<hr />
 
 ## 🆕 Recent Updates
 
@@ -286,7 +288,7 @@ New REST APIs:
 
 **Data Source**: `data/feeds.yaml`, `data/topics.yaml`, `data/feeds.enriched.yaml`
 
-______________________________________________________________________
+<hr />
 
 ## 🛠️ Development Guidelines
 
@@ -364,7 +366,7 @@ pnpm lint:links
 pnpm lint:links:bun  # Using Bun runtime
 ```
 
-______________________________________________________________________
+<hr />
 
 ## 📝 Content Management
 
@@ -372,7 +374,7 @@ ______________________________________________________________________
 
 1. **Create MDX file** in `content/docs/`:
 
-````mdx
+````txt
 ---
 title: Page Title
 description: SEO description for this page
@@ -472,7 +474,7 @@ export default defineConfig({
 });
 ```
 
-______________________________________________________________________
+<hr />
 
 ## ✨ Special Features
 
@@ -507,15 +509,15 @@ export async function GET() {
   const feed = new RSS({
     title: "AI Web Feeds",
     description: "RSS/Atom feed management toolkit",
-    site_url: "https://aiwebfeeds.com",
-    feed_url: "https://aiwebfeeds.com/rss.xml",
+    site_url: "https://aiwebfeeds.vercel.app",
+    feed_url: "https://aiwebfeeds.vercel.app/rss.xml",
   });
 
   for (const doc of docs) {
     feed.item({
       title: doc.title,
       description: doc.description,
-      url: `https://aiwebfeeds.com${doc.url}`,
+      url: `https://aiwebfeeds.vercel.app${doc.url}`,
       date: doc.date,
     });
   }
@@ -613,7 +615,7 @@ sequenceDiagram
 
 ````
 
----
+<hr />
 
 ## 🎯 Common Tasks
 
@@ -694,7 +696,7 @@ export async function POST(request: Request) {
 }
 ```
 
-______________________________________________________________________
+<hr />
 
 ## 🐛 Troubleshooting
 
@@ -742,7 +744,7 @@ pnpm dev --turbo
 next dev
 ```
 
-______________________________________________________________________
+<hr />
 
 ## 📚 Resources
 
@@ -753,6 +755,6 @@ ______________________________________________________________________
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [React 19 Docs](https://react.dev/)
 
-______________________________________________________________________
+<hr />
 
 _Last Updated: October 2025_

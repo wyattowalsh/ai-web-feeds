@@ -184,7 +184,7 @@ export async function GET() {
               marginTop: "12px",
             }}
           >
-            ai-web-feeds.vercel.app
+            aiwebfeeds.vercel.app
           </div>
         </div>
       </div>

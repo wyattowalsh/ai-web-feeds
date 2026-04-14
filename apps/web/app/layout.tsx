@@ -16,7 +16,7 @@ const displayFont = Fraunces({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

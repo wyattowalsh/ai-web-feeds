@@ -1,5 +1,6 @@
 """Unit tests for ai_web_feeds.digests module"""
 
+import random
 from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
@@ -29,7 +30,7 @@ def mock_settings():
     settings.phase3b.smtp_port = 25
     settings.phase3b.smtp_user = ""
     settings.phase3b.smtp_password = ""
-    settings.phase3b.smtp_from = "noreply@aiwebfeeds.com"
+    settings.phase3b.smtp_from = "noreply@example.com"
     settings.phase3b.digest_max_articles = 20
     return settings
 
@@ -347,7 +348,7 @@ class TestDigestManager:
         next_send = digest_manager._calculate_next_send(cron_expr, from_time)
 
         # Should be next Monday at 9:00 AM
-        assert next_send > from_time
+        assert next_send > digest_manager._ensure_utc(from_time)
         assert next_send.weekday() == 0  # Monday
 
     def test_calculate_next_send_hourly(self, digest_manager):
@@ -369,7 +370,6 @@ class TestDigestManager:
         """Test articles are ordered by pub_date (most recent first)"""
         # Shuffle articles
         shuffled = sample_articles.copy()
-        import random
 
         random.shuffle(shuffled)
 

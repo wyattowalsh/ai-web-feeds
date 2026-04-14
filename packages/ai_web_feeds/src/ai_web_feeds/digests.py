@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from html import escape
 from urllib.parse import urlparse
 
-from croniter import croniter
+from croniter import croniter  # type: ignore[import-untyped]
 from loguru import logger
 
 from ai_web_feeds.config import Settings
@@ -25,7 +25,7 @@ class DigestManager:
         self,
         db: DatabaseManager,
         settings: Settings,
-    ):
+    ) -> None:
         """Initialize digest manager.
 
         Args:
@@ -136,7 +136,7 @@ class DigestManager:
 
         logger.info(f"Sent digest {digest.id} with {len(articles)} articles to {digest.email}")
 
-    def _generate_html(self, digest: EmailDigest, articles: list[FeedEntry]) -> str:
+    def _generate_html(self, _digest: EmailDigest, articles: list[FeedEntry]) -> str:
         """Generate HTML email content.
 
         Args:
@@ -193,7 +193,8 @@ class DigestManager:
 
         html += """
             <p style="margin-top: 30px; color: #666; font-size: 12px;">
-                <a href="https://aiwebfeeds.com/settings/digests">Manage your digest preferences</a>
+                Update or pause digest delivery from the AI Web Feeds application where this
+                digest was configured.
             </p>
         </body>
         </html>
@@ -211,6 +212,7 @@ class DigestManager:
         Returns:
             Next scheduled send time
         """
-        cron = croniter(cron_expr, from_time)
+        normalized_from_time = self._ensure_utc(from_time)
+        cron = croniter(cron_expr, normalized_from_time)
         next_dt = cron.get_next(datetime)
         return self._ensure_utc(next_dt)

@@ -61,7 +61,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
   const pageUrl = `${baseUrl}${page.url}`;
   const imageUrl = `${baseUrl}${getPageImage(page).url}`;
 

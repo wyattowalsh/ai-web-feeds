@@ -48,17 +48,17 @@ yarn add package                  # NEVER use yarn
 
 ## 📍 Quick Navigation
 
-| Component        | Path                                               | Reference Docs                                                                                                  |
-| ---------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Core Package** | [`packages/ai_web_feeds/`](packages/ai_web_feeds/) | [`AGENTS.md`](packages/ai_web_feeds/AGENTS.md) · [Full Docs](https://aiwebfeeds.com/llms-full.txt#core-package) |
-| **CLI**          | [`apps/cli/`](apps/cli/)                           | [`AGENTS.md`](apps/cli/AGENTS.md) · [CLI Docs](https://aiwebfeeds.com/docs/cli)                                 |
-| **Web**          | [`apps/web/`](apps/web/)                           | [`AGENTS.md`](apps/web/AGENTS.md) · \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)          |
-| **Tests**        | [`tests/`](tests/)                                 | [`AGENTS.md`](tests/AGENTS.md) · [Testing Guide](https://aiwebfeeds.com/docs/contributing/testing)              |
+| Component        | Path                                               | Reference Docs                                                                                                         |
+| ---------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Core Package** | [`packages/ai_web_feeds/`](packages/ai_web_feeds/) | [`AGENTS.md`](packages/ai_web_feeds/AGENTS.md) · [Full Docs](https://aiwebfeeds.vercel.app/llms-full.txt#core-package) |
+| **CLI**          | [`apps/cli/`](apps/cli/)                           | [`AGENTS.md`](apps/cli/AGENTS.md) · [CLI Docs](https://aiwebfeeds.vercel.app/docs/development/cli)                     |
+| **Web**          | [`apps/web/`](apps/web/)                           | [`AGENTS.md`](apps/web/AGENTS.md) · \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)                 |
+| **Tests**        | [`tests/`](tests/)                                 | [`AGENTS.md`](tests/AGENTS.md) · [Testing Guide](https://aiwebfeeds.vercel.app/docs/guides/testing)                    |
 
 ## 🔗 Essential Resources
 
 - **Comprehensive Docs**:
-  [aiwebfeeds.com/llms-full.txt](https://aiwebfeeds.com/llms-full.txt)
+  [aiwebfeeds.vercel.app/llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt)
 - **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Repository**:
   [github.com/wyattowalsh/ai-web-feeds](https://github.com/wyattowalsh/ai-web-feeds)
@@ -103,8 +103,8 @@ ______________________________________________________________________
   workspace root (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `LICENSE`, `AGENTS.md`)
 - ✅ **DEVELOPMENT ARTIFACT EXCEPTION**: `specs/**/*.md` are allowed for technical
-  specifications, planning, and checklists. They are repository development
-  artifacts, not user-facing project documentation.
+  specifications, planning, and checklists. They are repository development artifacts,
+  not user-facing project documentation.
 - ✅ **REQUIRED WORKFLOW**:
   1. Create `.mdx` file in `apps/web/content/docs/` (e.g.,
      `apps/web/content/docs/development/database.mdx`)
@@ -177,7 +177,7 @@ ______________________________________________________________________
 ## 🔄 Standard Workflow
 
 1. **Read relevant docs**: Root → Component `AGENTS.md` →
-   [llms-full.txt](https://aiwebfeeds.com/llms-full.txt)
+   [llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt)
 1. **Create feature branch**: `git checkout -b feat/component-description`
 1. **Write tests first** (TDD preferred, see [Tests AGENTS.md](tests/AGENTS.md))
 1. **Implement + lint**: `uv run ruff check --fix .` or `pnpm lint --fix`
@@ -211,8 +211,8 @@ If you need to document anything:
 **Before any code change:**
 
 1. ✅ **Read component `AGENTS.md`** → Navigate via table above
-1. ✅ **Check [llms-full.txt](https://aiwebfeeds.com/llms-full.txt)** for comprehensive
-   context
+1. ✅ **Check [llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt)** for
+   comprehensive context
 1. ✅ **Update web docs ONLY** → ALL documentation goes to `apps/web/content/docs/*.mdx`
 1. ❌ **NEVER create `.md` files** → No `DATABASE.md`, `GUIDE.md`, `QUICKSTART.md`,
    `ARCHITECTURE.md`, `SUMMARY.md`, etc.

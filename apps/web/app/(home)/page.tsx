@@ -1,19 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  ArrowRight,
-  BookOpenText,
-  Download,
-  RadioTower,
-  Search,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, BookOpenText, Download, RadioTower, Search, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { DESIGN_ASSETS } from "@/lib/design-assets";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
 
 export const metadata: Metadata = {
   title: "AI Web Feeds - Reader-First AI Feeds",
@@ -47,8 +40,7 @@ const coreSteps = [
   {
     eyebrow: "Step 1",
     title: "Open Feeds",
-    description:
-      "Start in the reader-first workspace where the latest posts are already waiting.",
+    description: "Start in the reader-first workspace where the latest posts are already waiting.",
     href: "/feeds",
     cta: "Open Feeds",
     icon: RadioTower,
@@ -111,11 +103,12 @@ export default function HomePage() {
               </span>
               <div className="space-y-4">
                 <h1 className="hero-title max-w-4xl">
-                  Feeds is the main product. Everything else supports reading, filtering, and export.
+                  Feeds is the main product. Everything else supports reading, filtering, and
+                  export.
                 </h1>
                 <p className="hero-copy max-w-2xl">
-                  Start in `/feeds`, move into the catalog only when you need to refine sources,
-                  and keep downloads/docs as support surfaces around that workflow.
+                  Start in `/feeds`, move into the catalog only when you need to refine sources, and
+                  keep downloads/docs as support surfaces around that workflow.
                 </p>
               </div>
 
@@ -172,8 +165,8 @@ export default function HomePage() {
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Downloads</span> when the chosen
-                  set is ready to move elsewhere.
+                  <span className="font-semibold text-(--ink)">Downloads</span> when the chosen set
+                  is ready to move elsewhere.
                 </p>
               </div>
             </aside>
@@ -194,7 +187,9 @@ export default function HomePage() {
           <div className="surface-card-soft overflow-hidden border border-(--line) bg-linear-to-br from-sky-500/10 via-white to-cyan-500/10 p-4">
             <div
               className="relative overflow-hidden rounded-[1.5rem] border border-(--line) bg-white/65"
-              style={{ aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}` }}
+              style={{
+                aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}`,
+              }}
             >
               <Image
                 src={primarySurfacesAsset.publicPath}
@@ -246,7 +241,9 @@ export default function HomePage() {
             <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-linear-to-br from-white via-sky-500/5 to-cyan-500/10 p-3 shadow-sm">
               <div
                 className="relative overflow-hidden rounded-[1.25rem] border border-(--line) bg-white/75"
-                style={{ aspectRatio: `${supportSurfacesAsset.width} / ${supportSurfacesAsset.height}` }}
+                style={{
+                  aspectRatio: `${supportSurfacesAsset.width} / ${supportSurfacesAsset.height}`,
+                }}
               >
                 <Image
                   src={supportSurfacesAsset.publicPath}

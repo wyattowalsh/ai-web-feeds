@@ -40,8 +40,10 @@
 
 ## 📍 Essential Links
 
-- **Full Documentation**: [llms-full.txt#cli](https://aiwebfeeds.com/llms-full.txt#cli)
-- **CLI User Guide**: [aiwebfeeds.com/docs/cli](https://aiwebfeeds.com/docs/cli)
+- **Full Documentation**:
+  [llms-full.txt#cli](https://aiwebfeeds.vercel.app/llms-full.txt#cli)
+- **CLI User Guide**:
+  [aiwebfeeds.vercel.app/docs/development/cli](https://aiwebfeeds.vercel.app/docs/development/cli)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **Core Package**:
   [../../packages/ai_web_feeds/AGENTS.md](../../packages/ai_web_feeds/AGENTS.md)
@@ -86,8 +88,8 @@ apps/cli/ai_web_feeds/cli/
 
 **Entry point**: `pyproject.toml` → `ai-web-feeds` command (`aiwebfeeds` alias retained)
 
-**See**: [llms-full.txt#cli](https://aiwebfeeds.com/llms-full.txt#cli) for command
-reference
+**See**: [llms-full.txt#cli](https://aiwebfeeds.vercel.app/llms-full.txt#cli) for
+command reference
 
 ______________________________________________________________________
 
@@ -220,7 +222,7 @@ ______________________________________________________________________
 ## 📚 Reference
 
 **Command reference**:
-[llms-full.txt#cli-commands](https://aiwebfeeds.com/llms-full.txt#cli-commands)\
+[llms-full.txt#cli-commands](https://aiwebfeeds.vercel.app/llms-full.txt#cli-commands)\
 **Typer docs**: [typer.tiangolo.com](https://typer.tiangolo.com)\
 **Rich docs**: [rich.readthedocs.io](https://rich.readthedocs.io)\
 **Testing patterns**: [../../tests/AGENTS.md](../../tests/AGENTS.md#cli-testing)

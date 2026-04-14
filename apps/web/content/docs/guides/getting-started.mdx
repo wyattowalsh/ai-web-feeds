@@ -169,12 +169,15 @@ bash scripts/setup.sh
 
 If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
 
+```yaml
 # YouTube channel
+
 - id: "youtube-channel"
   site: "https://youtube.com/channel/UC123..."
   discover: true
 
 # GitHub repository
+
 - id: "github-repo"
   site: "https://github.com/owner/repo"
   discover: true
@@ -331,7 +334,7 @@ Now that you're set up, you can:
 
 ## Resources
 
-- [Feature Overview](/docs/features) - Comprehensive feature list
+- [Feature Overview](/docs/features/overview) - Comprehensive feature list
 - [CLI Reference](/docs/development/cli) - Command-line interface guide
 - [Python API](/docs/development/python-api) - Programmatic usage
 - [Analytics Guide](/docs/guides/analytics) - Advanced analytics

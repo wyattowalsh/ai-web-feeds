@@ -1,6 +1,6 @@
 {
   "title": "Documentation",
-  "pages": ["index", "test", "security", "taxonomy-visualization"],
+  "pages": ["index", "security", "taxonomy-visualization"],
   "---Features": {
     "type": "separator"
   },
@@ -69,15 +69,12 @@
       "database-architecture",
       "database-enhancements",
       "database-storage",
-      "refactoring-summary",
-      "final-status",
       "cli",
       "python-api",
       "python-autodoc",
       "testing",
       "workflows",
       "cli-workflows",
-      "pre-commit-fixes",
       "contributing"
     ]
   },
