@@ -29,7 +29,7 @@ def show(
     verified = sum(1 for f in feed_sources if f.verified)
 
     # By type
-    by_type = {}
+    by_type: dict[str, int] = {}
     for feed in feed_sources:
         if feed.source_type:
             by_type[feed.source_type.value] = by_type.get(feed.source_type.value, 0) + 1

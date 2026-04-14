@@ -1,7 +1,7 @@
 """ai_web_feeds.load -- Load feed data from YAML files"""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 from loguru import logger
@@ -38,7 +38,7 @@ def load_feeds(path: Path | str) -> dict[str, Any]:
     sources = data.get("sources", [])
     logger.info(f"Loaded {len(sources)} feed sources")
 
-    return data
+    return cast(dict[str, Any], data)
 
 
 def load_topics(path: Path | str) -> dict[str, Any]:
@@ -65,10 +65,13 @@ def load_topics(path: Path | str) -> dict[str, Any]:
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
+    if data is None:
+        data = {}
+
     topics = data.get("topics", [])
     logger.info(f"Loaded {len(topics)} topics")
 
-    return data
+    return cast(dict[str, Any], data)
 
 
 def save_feeds(data: dict[str, Any], path: Path | str) -> None:

@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 
 import typer
+import yaml  # type: ignore[import-untyped]
 from loguru import logger
 
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
@@ -152,6 +153,4 @@ def enrich_one(
     enriched = asyncio.run(enrich_feed_source(feed))
 
     # Pretty print the enriched data
-    import yaml
-
     typer.echo(yaml.dump(enriched, default_flow_style=False, sort_keys=False))

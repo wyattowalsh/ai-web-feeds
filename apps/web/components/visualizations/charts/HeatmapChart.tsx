@@ -12,7 +12,7 @@ import { ensureChartJsRegistered } from "./chartjs-registry";
 
 ensureChartJsRegistered();
 
-interface HeatmapDataPoint {
+export interface HeatmapDataPoint {
   x: string | number;
   y: string | number;
   v: number; // value (intensity)

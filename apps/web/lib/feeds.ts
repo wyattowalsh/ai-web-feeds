@@ -10,6 +10,7 @@ import { parse } from "yaml";
 export interface FeedSource {
   id?: string;
   feed?: string;
+  site?: string | null;
   url: string;
   title: string;
   source_type?: string;

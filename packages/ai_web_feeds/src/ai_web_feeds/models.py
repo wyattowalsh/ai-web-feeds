@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
@@ -399,6 +399,25 @@ class FeedValidationResult(SQLModel, table=True):
     # Primary key
     id: UUID = SQLField(default_factory=uuid4, primary_key=True)
 
+    @model_validator(mode="before")
+    @classmethod
+    def map_legacy_validation_fields(cls, data: Any) -> Any:
+        """Map deprecated field names used by older tests and callers."""
+        if not isinstance(data, dict):
+            return data
+
+        normalized = dict(data)
+        if "success" in normalized and "is_valid" not in normalized:
+            normalized["is_valid"] = normalized.pop("success")
+        if "status_code" in normalized and "http_status" not in normalized:
+            normalized["http_status"] = normalized.pop("status_code")
+        if "response_time" in normalized and "response_time_ms" not in normalized:
+            normalized["response_time_ms"] = normalized.pop("response_time")
+        if "error_message" in normalized and "warnings" not in normalized:
+            normalized["warnings"] = [normalized.pop("error_message")]
+
+        return normalized
+
     # Foreign key
     feed_source_id: str = SQLField(foreign_key="sources.id", index=True)
 
@@ -586,8 +605,8 @@ class OPMLOutline(SQLModel):
     text: str
     title: str | None = None
     type: str | None = None
-    xmlUrl: str | None = None
-    htmlUrl: str | None = None
+    xmlUrl: str | None = None  # noqa: N815
+    htmlUrl: str | None = None  # noqa: N815
     description: str | None = None
     category: str | None = None
     outlines: list["OPMLOutline"] = []
@@ -1054,7 +1073,7 @@ class Entity(SQLModel, table=True):
 
     __tablename__ = "entities"
 
-    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: str = SQLField(default_factory=lambda: str(uuid4()), primary_key=True)
     canonical_name: str = SQLField(unique=True, max_length=255, index=True)
     entity_type: str = SQLField(
         max_length=50, description="Entity type: person, organization, technique, dataset, concept"
@@ -1139,7 +1158,7 @@ class Subtopic(SQLModel, table=True):
 
     __tablename__ = "subtopics"
 
-    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: str = SQLField(default_factory=lambda: str(uuid4()), primary_key=True)
     parent_topic: str = SQLField(max_length=255, index=True)
     name: str = SQLField(max_length=255)
     keywords: str = SQLField(description="JSON array of representative keywords")

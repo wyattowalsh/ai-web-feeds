@@ -13,15 +13,18 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartConfiguration,
   ChartOptions,
   ChartData,
 } from "chart.js";
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
+type PieLikeChart = "pie" | "doughnut";
+
 interface PieChartProps {
-  data: ChartData<"pie">;
-  options?: ChartOptions<"pie">;
+  data: ChartData<PieLikeChart>;
+  options?: ChartOptions<PieLikeChart>;
   height?: number;
   doughnut?: boolean;
   className?: string;
@@ -35,7 +38,7 @@ export function PieChart({
   className = "",
 }: PieChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<ChartJS<"pie" | "doughnut"> | null>(null);
+  const chartRef = useRef<ChartJS<PieLikeChart> | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -47,7 +50,7 @@ export function PieChart({
       chartRef.current.destroy();
     }
 
-    const defaultOptions: ChartOptions<"pie"> = {
+    const defaultOptions: ChartOptions<PieLikeChart> = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -78,7 +81,7 @@ export function PieChart({
       },
     };
 
-    const mergedOptions: ChartOptions<"pie"> = {
+    const mergedOptions: ChartOptions<PieLikeChart> = {
       ...defaultOptions,
       ...options,
       plugins: {
@@ -87,11 +90,19 @@ export function PieChart({
       },
     };
 
-    chartRef.current = new ChartJS(ctx, {
-      type: doughnut ? "doughnut" : "pie",
-      data,
-      options: mergedOptions,
-    });
+    const chartConfig: ChartConfiguration<"doughnut"> | ChartConfiguration<"pie"> = doughnut
+      ? {
+          type: "doughnut",
+          data: data as ChartData<"doughnut">,
+          options: mergedOptions as ChartOptions<"doughnut">,
+        }
+      : {
+          type: "pie",
+          data: data as ChartData<"pie">,
+          options: mergedOptions as ChartOptions<"pie">,
+        };
+
+    chartRef.current = new ChartJS(ctx, chartConfig);
 
     return () => {
       if (chartRef.current) {

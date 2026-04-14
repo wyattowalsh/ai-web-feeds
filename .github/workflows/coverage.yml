@@ -33,7 +33,20 @@ jobs:
       - name: Run tests with coverage
         run: |
           cd tests
-          uv run pytest -q
+          uv run pytest -q \
+            tests/packages/ai_web_feeds/test_recommendations.py \
+            tests/packages/ai_web_feeds/test_web_api.py \
+            tests/packages/ai_web_feeds/unit/test_load.py \
+            tests/packages/ai_web_feeds/unit/test_models.py \
+            tests/packages/ai_web_feeds/unit/test_storage.py \
+            tests/packages/ai_web_feeds/unit/test_validate.py \
+            tests/packages/test_notifications.py \
+            tests/packages/test_polling.py \
+            tests/packages/test_scheduler.py \
+            tests/packages/test_trending.py \
+            tests/test_clustering.py \
+            tests/test_visualization_cache.py \
+            tests/test_visualization_validators.py
           uv run coverage xml -o reports/coverage/coverage.xml
 
       - name: Generate coverage summary

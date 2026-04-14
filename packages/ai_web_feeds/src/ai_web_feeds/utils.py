@@ -2,12 +2,13 @@
 
 import json
 import re
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
-from urllib.parse import urlparse
-from xml.dom.minidom import parseString
-from xml.etree.ElementTree import Element, SubElement, tostring
+from typing import Any, cast
+from urllib.parse import parse_qs, quote, urlparse
+from xml.dom.minidom import parseString  # nosec B408
+from xml.etree.ElementTree import Element, SubElement, tostring  # nosec B405
 
 import httpx
 import yaml
@@ -100,10 +101,9 @@ def generate_rsshub_url(
 
         # LinkedIn company pages
         elif platform == "linkedin":
-            if "company/" in path:
-                if match := re.match(r"company/([^/]+)", path):
-                    company = match.group(1)
-                    return f"{rsshub_base}/linkedin/company/{company}"
+            if "company/" in path and (match := re.match(r"company/([^/]+)", path)):
+                company = match.group(1)
+                return f"{rsshub_base}/linkedin/company/{company}"
 
         # Mastodon (requires instance)
         elif platform == "mastodon":
@@ -235,7 +235,7 @@ def generate_reddit_feed_url(url: str, platform_config: dict[str, Any] | None = 
             return f"{base_url}/{sort}/.rss"
 
         # Handle user: /u/username or /user/username
-        if match := re.match(r"u(?:ser)?/([A-Za-z0-9_-]{3,20})", path):
+        if match := re.match(r"u(?:ser)?/([A-Za-z0-9_-]{3,20})", path):  # codespell:ignore ser
             username = match.group(1)
             return f"https://www.reddit.com/user/{username}/.rss"
 
@@ -325,8 +325,6 @@ def generate_youtube_feed_url(
         RSS feed URL or None
     """
     try:
-        from urllib.parse import parse_qs
-
         parsed = urlparse(url)
         path = parsed.path.strip("/")
 
@@ -481,7 +479,7 @@ def generate_devto_feed_url(url: str, platform_config: dict[str, Any] | None = N
 
 
 def generate_hackernews_feed_url(
-    url: str, platform_config: dict[str, Any] | None = None
+    _url: str, platform_config: dict[str, Any] | None = None
 ) -> str | None:
     """Generate Hacker News RSS feed URL.
 
@@ -548,8 +546,6 @@ def generate_twitter_feed_url(
 
             # Search query
             if search_query := twitter_cfg.get("search_query"):
-                from urllib.parse import quote
-
                 return f"https://{nitter_instance}/search/rss?q={quote(search_query)}"
 
         # Parse username from URL
@@ -600,14 +596,10 @@ def generate_arxiv_feed_url(url: str, platform_config: dict[str, Any] | None = N
 
             # Author-specific feed via API
             if author := arxiv_cfg.get("author"):
-                from urllib.parse import quote
-
                 return f"http://export.arxiv.org/api/query?search_query=au:{quote(author)}&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
 
             # Advanced search query
             if search_query := arxiv_cfg.get("search_query"):
-                from urllib.parse import quote
-
                 return f"http://export.arxiv.org/api/query?search_query={quote(search_query)}&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
 
         # Parse category from URL
@@ -666,7 +658,7 @@ def generate_platform_feed_url(
 # ============================================================================
 
 
-@retry(
+@retry(  # type: ignore[misc]
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
 )
@@ -966,7 +958,7 @@ def generate_opml(feed_sources: list[FeedSource], title: str = "AI Web Feeds") -
 
     # Pretty print
     xml_str = tostring(opml, encoding="unicode")
-    dom = parseString(xml_str)
+    dom = parseString(xml_str)  # nosec B318 - formatting internally generated OPML only
     return dom.toprettyxml(indent="  ")
 
 
@@ -1021,14 +1013,14 @@ def generate_categorized_opml(
 
     # Pretty print
     xml_str = tostring(opml, encoding="unicode")
-    dom = parseString(xml_str)
+    dom = parseString(xml_str)  # nosec B318 - formatting internally generated OPML only
     return dom.toprettyxml(indent="  ")
 
 
 def generate_filtered_opml(
     feed_sources: list[FeedSource],
     title: str,
-    filter_fn: callable,
+    filter_fn: Callable[[FeedSource], bool],
 ) -> str:
     """Generate filtered OPML XML from feed sources.
 
@@ -1209,7 +1201,7 @@ def load_feeds_yaml(path: Path | str) -> dict[str, Any]:
     """
     path = Path(path)
     with path.open() as f:
-        return yaml.safe_load(f)
+        return cast(dict[str, Any], yaml.safe_load(f) or {})
 
 
 def save_feeds_yaml(data: dict[str, Any], path: Path | str) -> None:

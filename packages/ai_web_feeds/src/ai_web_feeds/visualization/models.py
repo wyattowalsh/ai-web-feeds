@@ -12,13 +12,11 @@ SQLAlchemy models for:
 
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import Field
 from sqlalchemy import JSON, Column, Index
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
-
 
 # ============================================================================
 # Enums
@@ -203,7 +201,7 @@ class Dashboard(SQLModel, table=True):
 
     def to_dict(self, include_widgets: bool = False) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
-        result = {
+        result: dict[str, Any] = {
             "id": self.id,
             "device_id": self.device_id,
             "name": self.name,
@@ -251,8 +249,8 @@ class DashboardWidget(SQLModel, table=True):
 
     # Position on dashboard grid
     position: dict[str, Any] = SQLField(
-        sa_column=Column(JSON),
-        nullable=False,
+        sa_column=Column(JSON, nullable=False),
+        default_factory=dict,
         description="{x, y, w, h} for React Grid Layout",
     )
 
@@ -309,8 +307,8 @@ class Forecast(SQLModel, table=True):
 
     # Predictions
     predictions: dict[str, Any] = SQLField(
-        sa_column=Column(JSON),
-        nullable=False,
+        sa_column=Column(JSON, nullable=False),
+        default_factory=dict,
         description="Array of {date, value, confidence_lower, confidence_upper}",
     )
 
@@ -318,13 +316,13 @@ class Forecast(SQLModel, table=True):
     accuracy_metrics: dict[str, Any] | None = SQLField(
         sa_column=Column(JSON),
         default=None,
-        description="{mape, mae, last_retrain_date, retrain_trigger_reason}",
+        description="Accuracy metrics and retraining metadata",
     )
 
     # Model parameters for reproducibility
     model_params: dict[str, Any] = SQLField(
-        sa_column=Column(JSON),
-        nullable=False,
+        sa_column=Column(JSON, nullable=False),
+        default_factory=dict,
         description="Model hyperparameters and settings",
     )
 

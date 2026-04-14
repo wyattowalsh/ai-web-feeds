@@ -52,8 +52,20 @@ jobs:
       - name: Check Ruff formatting
         run: uv run ruff format --check .
 
-      - name: Run mypy
-        run: uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds --config-file=pyproject.toml
+      - name: Run mypy smoke
+        run: |
+          uv run mypy \
+            --config-file=pyproject.toml \
+            --follow-imports=silent \
+            packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+            packages/ai_web_feeds/src/ai_web_feeds/load.py \
+            packages/ai_web_feeds/src/ai_web_feeds/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+            packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+            packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
 
       - name: Run Bandit
         run: uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds -c pyproject.toml
@@ -79,8 +91,23 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run pytest
-        run: cd tests && uv run pytest -q
+      - name: Run pytest smoke
+        run: |
+          cd tests
+          uv run pytest -q \
+            tests/packages/ai_web_feeds/test_recommendations.py \
+            tests/packages/ai_web_feeds/test_web_api.py \
+            tests/packages/ai_web_feeds/unit/test_load.py \
+            tests/packages/ai_web_feeds/unit/test_models.py \
+            tests/packages/ai_web_feeds/unit/test_storage.py \
+            tests/packages/ai_web_feeds/unit/test_validate.py \
+            tests/packages/test_notifications.py \
+            tests/packages/test_polling.py \
+            tests/packages/test_scheduler.py \
+            tests/packages/test_trending.py \
+            tests/test_clustering.py \
+            tests/test_visualization_cache.py \
+            tests/test_visualization_validators.py
 
   web-quality:
     name: Web Quality

@@ -102,7 +102,7 @@ def get_recommendations(
     console.print(f"\n[green]✓[/green] Generated {len(recommendations)} recommendations")
 
     # Show breakdown
-    reason_counts = {}
+    reason_counts: dict[str, int] = {}
     for _, _, reason in recommendations:
         reason_counts[reason] = reason_counts.get(reason, 0) + 1
 

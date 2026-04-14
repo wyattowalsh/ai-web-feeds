@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-import yaml
+import yaml  # type: ignore[import-untyped]
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.validate import calculate_health_score, validate_all_feeds
 from rich.console import Console
@@ -195,7 +195,7 @@ def validate_topic_references():
 @app.command("all")
 def validate_all(
     strict: bool = typer.Option(True, "--strict/--lenient", help="Strict validation mode"),
-):
+) -> None:
     """Run all validation checks."""
     console.print("🔍 Running all validations...\n")
 
@@ -206,21 +206,21 @@ def validate_all(
         console.print("1. Validating feeds.yaml schema...")
         validate_feeds(strict=strict)
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = e.code if isinstance(e.code, int) else 1
 
     # Validate topics schema
     try:
         console.print("\n2. Validating topics.yaml schema...")
         validate_topics()
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = e.code if isinstance(e.code, int) else 1
 
     # Validate references
     try:
         console.print("\n3. Validating topic references...")
         validate_topic_references()
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = e.code if isinstance(e.code, int) else 1
 
     if exit_code == 0:
         console.print("\n[green]✅ All validations passed![/green]")
@@ -310,7 +310,7 @@ def validate_http_feeds(
     # Error summary
     if failure_count > 0:
         console.print("\n[bold]Top Errors:[/bold]")
-        error_counts = {}
+        error_counts: dict[str, int] = {}
         for result in validation_results:
             if not result.success and result.error_message:
                 error = result.error_message.split(":")[0]  # Get error type

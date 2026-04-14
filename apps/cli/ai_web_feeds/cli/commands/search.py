@@ -55,7 +55,7 @@ def search_query(
     db = DatabaseManager(database_url)
 
     # Build filters
-    filters = {}
+    filters: dict[str, str | list[str] | bool] = {}
     if source_type:
         filters["source_type"] = source_type
     if topics:

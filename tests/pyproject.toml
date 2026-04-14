@@ -37,6 +37,7 @@ addopts = [
     "-ra",                                         # Show extra test summary info
     "--strict-markers",                            # Enable strict markers
     "--showlocals",                                # Show local variables in tracebacks
+    "--import-mode=importlib",                     # Avoid duplicate-basename test import clashes
     "--cov=ai_web_feeds",                         # Coverage for ai_web_feeds package
     "--cov-report=html:reports/coverage",         # HTML coverage report
     "--cov-report=term-missing",                   # Terminal coverage report
@@ -54,6 +55,7 @@ markers = [
     "integration: Integration tests (multiple components)",
     "e2e: End-to-end tests (full workflows)",
     "slow: Slow running tests (may take several seconds)",
+    "benchmark: Performance benchmark tests",
     "network: Tests requiring network access",
     "database: Tests requiring database",
 ]
