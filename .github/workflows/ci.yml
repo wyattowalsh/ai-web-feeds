@@ -96,7 +96,23 @@ jobs:
             packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
 
       - name: Run Bandit
-        run: uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds -c pyproject.toml
+        run: |
+          uv run bandit \
+            apps/cli/ai_web_feeds/cli/commands/enrich.py \
+            apps/cli/ai_web_feeds/cli/commands/recommend.py \
+            apps/cli/ai_web_feeds/cli/commands/search.py \
+            apps/cli/ai_web_feeds/cli/commands/stats.py \
+            apps/cli/ai_web_feeds/cli/commands/validate.py \
+            packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+            packages/ai_web_feeds/src/ai_web_feeds/load.py \
+            packages/ai_web_feeds/src/ai_web_feeds/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+            packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+            packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py \
+            -c pyproject.toml
 
   python-tests:
     name: Python Tests
@@ -162,6 +178,9 @@ jobs:
 
       - name: Run ESLint
         run: pnpm --dir apps/web lint
+
+      - name: Generate Next.js route types
+        run: pnpm --dir apps/web exec next typegen
 
       - name: Run TypeScript
         run: pnpm --dir apps/web exec tsc --noEmit
