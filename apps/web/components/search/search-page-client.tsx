@@ -477,7 +477,7 @@ export function SearchPageClient({
               </div>
               <p className="hero-copy max-w-2xl">
                 {forceScope === "articles"
-                  ? "Search recent posts from the current feed slice without leaving the unified workspace."
+                  ? "Search recent posts from the current filtered source list without leaving the main workspace."
                   : "Search sources when you want the right publication. Search articles when you want matching recent posts from that part of the catalog."}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">

@@ -9,13 +9,13 @@ import { DESIGN_ASSETS } from "@/lib/design-assets";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
 
 export const metadata: Metadata = {
-  title: "AI Web Feeds - Reader-First AI Feeds",
+  title: "AI Web Feeds - Curated AI and ML Feeds",
   description:
-    "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+    "Browse curated AI and machine learning feeds, read recent posts, explore the catalog, and export the full list in OPML or JSON.",
   openGraph: {
-    title: "AI Web Feeds - Reader-First AI Feeds",
+    title: "AI Web Feeds - Curated AI and ML Feeds",
     description:
-      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+      "Browse curated AI and machine learning feeds, read recent posts, explore the catalog, and export the full list in OPML or JSON.",
     url: baseUrl,
     type: "website",
     images: [
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - Reader-First AI Feeds",
+    title: "AI Web Feeds - Curated AI and ML Feeds",
     description:
-      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+      "Browse curated AI and machine learning feeds, read recent posts, explore the catalog, and export the full list in OPML or JSON.",
     images: [`${baseUrl}/og-image.png`],
   },
 };
@@ -40,27 +40,26 @@ const coreSteps = [
   {
     eyebrow: "Step 1",
     title: "Open Feeds",
-    description: "Start in the reader-first workspace where the latest posts are already waiting.",
+    description: "Read recent posts and search the article library from one place.",
     href: "/feeds",
     cta: "Open Feeds",
     icon: RadioTower,
   },
   {
     eyebrow: "Step 2",
-    title: "Narrow the source slice",
+    title: "Browse the catalog",
     description:
-      "Switch to the catalog view when you want to filter by topic, source type, or verification state.",
+      "Filter sources by topic, source type, and verification status when you want to narrow the list.",
     href: "/feeds?mode=catalog",
     cta: "Browse catalog",
     icon: Search,
   },
   {
     eyebrow: "Step 3",
-    title: "Export what you keep",
-    description:
-      "Move the chosen set into OPML or JSON exports once the reader queue is in good shape.",
+    title: "Export the list",
+    description: "Download the full catalog in OPML or JSON when you want to use it elsewhere.",
     href: "/downloads",
-    cta: "Go to Downloads",
+    cta: "Export feeds",
     icon: Download,
   },
 ] as const;
@@ -68,19 +67,19 @@ const coreSteps = [
 const supportRoutes = [
   {
     title: "Downloads",
-    description: "Export OPML and other portable outputs once you have the right set of feeds.",
+    description: "Grab OPML and JSON exports for feed readers, scripts, and backups.",
     href: "/downloads",
     icon: Download,
   },
   {
     title: "Docs",
-    description: "Reference the project docs when you need implementation details or API context.",
+    description: "Read setup guides, architecture notes, and workflow references.",
     href: "/docs",
     icon: BookOpenText,
   },
   {
-    title: "LLM Output",
-    description: "Use machine-friendly long-form docs when the consumer is another tool or agent.",
+    title: "LLM Docs",
+    description: "Use the plain-text docs when another tool or agent needs the project reference.",
     href: "/llms-full.txt",
     icon: Sparkles,
   },
@@ -99,16 +98,16 @@ export default function HomePage() {
             <div className="space-y-5">
               <span className="eyebrow">
                 <Sparkles className="size-3.5" />
-                AI web feed aggregator
+                Curated AI feeds
               </span>
               <div className="space-y-4">
                 <h1 className="hero-title max-w-4xl">
-                  Feeds is the main product. Everything else supports reading, filtering, and
-                  export.
+                  Follow AI and machine learning sources in one place.
                 </h1>
                 <p className="hero-copy max-w-2xl">
-                  Start in `/feeds`, move into the catalog only when you need to refine sources, and
-                  keep downloads/docs as support surfaces around that workflow.
+                  AI Web Feeds brings together a curated catalog of AI and ML sources, a searchable
+                  article library, and simple export tools so you can read and organize the feed
+                  list without juggling multiple apps.
                 </p>
               </div>
 
@@ -130,7 +129,7 @@ export default function HomePage() {
                   href="/downloads"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
-                  Export bundles
+                  Export feeds
                 </Link>
               </div>
             </div>
@@ -151,22 +150,22 @@ export default function HomePage() {
                   />
                 </div>
               </div>
-              <p className="metric-label">Core workflow</p>
+              <p className="metric-label">How it works</p>
               <div className="space-y-3 text-sm text-(--ink-muted)">
                 <p>
-                  <span className="font-semibold text-(--ink)">1.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Feeds</span> to narrow the source
-                  list and read the latest posts.
+                  <span className="font-semibold text-(--ink)">1.</span> Open{" "}
+                  <span className="font-semibold text-(--ink)">Feeds</span> to browse recent posts
+                  and search the article library.
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">2.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Catalog</span> inside the feeds
-                  workspace when you need a tighter source slice.
+                  <span className="font-semibold text-(--ink)">Catalog</span> when you want to
+                  narrow the list by topic, source type, or verification status.
                 </p>
                 <p>
-                  <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Downloads</span> when the chosen set
-                  is ready to move elsewhere.
+                  <span className="font-semibold text-(--ink)">3.</span> Open{" "}
+                  <span className="font-semibold text-(--ink)">Downloads</span> when you want the
+                  same list in OPML or JSON.
                 </p>
               </div>
             </aside>
@@ -175,12 +174,14 @@ export default function HomePage() {
 
         <section className="space-y-5">
           <div className="space-y-3">
-            <span className="eyebrow">Primary surfaces</span>
-            <h2 className="section-heading">The product is the workflow, not the sitemap.</h2>
+            <span className="eyebrow">Main pages</span>
+            <h2 className="section-heading">
+              Start in Feeds, then use Explorer and Downloads when you need them.
+            </h2>
             <p className="section-copy">
-              The product flow now stays inside one canonical route: choose sources, search recent
-              activity, then read the latest stream. Docs and exports still exist, but they support
-              the core flow instead of defining it.
+              Most people will spend their time in Feeds. Explorer helps you browse topics and
+              source relationships, while Downloads gives you portable exports for feed readers,
+              scripts, and backups.
             </p>
           </div>
 
@@ -232,11 +233,11 @@ export default function HomePage() {
 
         <section className="surface-card flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 lg:max-w-[38rem]">
-            <p className="metric-label">Support surfaces</p>
-            <h2 className="text-2xl">Keep exports, docs, and machine-facing outputs close by.</h2>
+            <p className="metric-label">More ways to use it</p>
+            <h2 className="text-2xl">Keep docs and exports close by.</h2>
             <p className="small-note max-w-2xl">
-              The supporting pages are still useful, but they should sit behind the feed workflow
-              instead of trying to define the product.
+              The docs explain how the project is structured and deployed. The plain-text LLM pages
+              are there when another tool needs the same reference without the full site chrome.
             </p>
             <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-linear-to-br from-white via-sky-500/5 to-cyan-500/10 p-3 shadow-sm">
               <div

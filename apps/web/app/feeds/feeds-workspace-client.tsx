@@ -697,7 +697,7 @@ function ReaderWorkspace({
             .filter(Boolean);
 
     if (feedIds.length === 0) {
-      setRefreshError("No feed slice is selected for refresh.");
+      setRefreshError("No feeds are selected for refresh.");
       return;
     }
 
@@ -780,8 +780,12 @@ function ReaderWorkspace({
   });
   const filterSummary =
     currentState.feedIds.length > 0
-      ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
-      : `${candidateFeeds.length} active feed${candidateFeeds.length === 1 ? "" : "s"} in slice`;
+      ? `${currentState.feedIds.length} selected feed${
+          currentState.feedIds.length === 1 ? "" : "s"
+        }`
+      : `${candidateFeeds.length} active feed${
+          candidateFeeds.length === 1 ? "" : "s"
+        } match the current filters`;
 
   if (corpusEmpty) {
     return (
@@ -790,12 +794,12 @@ function ReaderWorkspace({
           <div className="space-y-2">
             <p className="metric-label">Feeds workspace</p>
             <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-              Reader-first feeds workspace
+              Read and filter your feeds
             </h1>
             <p className="small-note max-w-3xl">
-              The article corpus has not been built yet. Catalog filtering still works, but the
-              reader workspace needs `data/articles.generated.json` before it can browse posts
-              across the feed set.
+              The article library has not been built yet. You can still browse the catalog, but
+              Feeds needs `data/articles.generated.json` before it can show posts from the current
+              source list.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -813,12 +817,12 @@ function ReaderWorkspace({
 
         <EmptyState
           icon={Newspaper}
-          title="Article corpus unavailable"
-          description="Run the corpus workflow to export the generated article artifact, then reload this page."
+          title="Article library unavailable"
+          description="Build the generated article library, then reload this page."
           tips={[
             "Use `uv run ai-web-feeds corpus refresh` to poll active feeds and write the artifact in one step.",
             "Use `uv run ai-web-feeds corpus export` if feed entries are already present in the runtime database.",
-            "Catalog mode remains available for source discovery while the article corpus is empty.",
+            "Catalog mode remains available while the article library is empty.",
           ]}
         />
       </div>
@@ -831,11 +835,11 @@ function ReaderWorkspace({
         <div className="space-y-2">
           <p className="metric-label">Feeds workspace</p>
           <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-            Browse posts across the full feed corpus
+            Read and filter your feeds
           </h1>
           <p className="small-note max-w-3xl">
-            Search the generated article corpus first, then use the catalog only when you need to
-            tighten the source slice. Reader state remains local to this browser.
+            Search the generated article library here, then open the catalog when you want to adjust
+            which sources are included. Reading state stays local to this browser.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -879,7 +883,7 @@ function ReaderWorkspace({
                 onChange={(event) => setQueryDraft(event.target.value)}
               />
               <Button type="submit" className="w-full">
-                Search corpus
+                Search posts
               </Button>
             </form>
           </div>
@@ -887,7 +891,7 @@ function ReaderWorkspace({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="size-4 text-(--ink-muted)" />
-              <p className="text-sm font-semibold text-(--ink)">Slice filters</p>
+              <p className="text-sm font-semibold text-(--ink)">Catalog filters</p>
             </div>
             <div className="space-y-3">
               <label className="space-y-1.5 text-sm">
@@ -1021,15 +1025,16 @@ function ReaderWorkspace({
           </div>
 
           <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-            <p className="metric-label">Current slice</p>
+            <p className="metric-label">Current results</p>
             <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
               <p>{filterSummary}</p>
               <p>
-                {browse.total_matched} corpus match{browse.total_matched === 1 ? "" : "es"} ·{" "}
+                {browse.total_matched} matching post{browse.total_matched === 1 ? "" : "s"} ·{" "}
                 {visibleArticles.length} visible on this page
               </p>
               <p>
-                Corpus: {browse.corpus.article_count} articles from {browse.corpus.feed_count} feeds
+                Article library: {browse.corpus.article_count} articles from{" "}
+                {browse.corpus.feed_count} feeds
               </p>
               <p>
                 Catalog: {stats.total} sources · {stats.topicCount} topics
@@ -1043,7 +1048,7 @@ function ReaderWorkspace({
             <div className="space-y-1">
               <p className="metric-label">Article list</p>
               <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">
-                {currentState.query ? `Results for “${currentState.query}”` : "Latest corpus posts"}
+                {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
               </h2>
             </div>
             {refreshError ? (
@@ -1065,8 +1070,8 @@ function ReaderWorkspace({
           ) : visibleArticles.length === 0 ? (
             <EmptyState
               icon={Newspaper}
-              title="No posts match this slice"
-              description="Clear article-specific filters, reset the workspace, or inspect the current source slice in catalog mode."
+              title="No posts match these filters"
+              description="Clear the post filters, reset everything, or open the catalog to inspect the current source list."
             >
               <div className="flex flex-wrap justify-center gap-3">
                 {canClearArticleFilters ? (
@@ -1074,7 +1079,7 @@ function ReaderWorkspace({
                     href={clearArticleFiltersHref}
                     className={cn(buttonVariants({ variant: "default" }))}
                   >
-                    Clear article filters
+                    Clear post filters
                   </Link>
                 ) : null}
                 {canResetWorkspace ? (
@@ -1082,7 +1087,7 @@ function ReaderWorkspace({
                     href={resetWorkspaceHref}
                     className={cn(buttonVariants({ variant: "outline" }))}
                   >
-                    Reset workspace
+                    Reset filters
                   </Link>
                 ) : null}
                 <Link

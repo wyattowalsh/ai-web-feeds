@@ -72,9 +72,7 @@ export function RecommendationsPageClient({
       if (!backendConfigured) {
         setLoading(false);
         setRecommendations([]);
-        setUnavailableMessage(
-          "Recommendations require the optional ai-web-feeds backend service.",
-        );
+        setUnavailableMessage("Recommendations require the optional ai-web-feeds backend service.");
         return;
       }
 
@@ -96,7 +94,8 @@ export function RecommendationsPageClient({
 
           if (response.status === 503 || payload?.code === "FEATURE_UNAVAILABLE") {
             setUnavailableMessage(
-              payload?.error || "Recommendations require the optional ai-web-feeds backend service.",
+              payload?.error ||
+                "Recommendations require the optional ai-web-feeds backend service.",
             );
             setRecommendations([]);
             return;
@@ -240,7 +239,7 @@ export function RecommendationsPageClient({
               tips={[
                 "Set BACKEND_URL to a running ai-web-feeds backend if you want personalized recommendations.",
                 "Catalog browsing in /feeds still works without the backend service.",
-                "The reader-first surface remains the primary local workflow even when recommendations are offline.",
+                "Feeds remains available even when recommendations are offline.",
               ]}
             >
               <div className="flex flex-wrap justify-center gap-3">
@@ -332,7 +331,7 @@ export function RecommendationsPageClient({
             title="No recommendations available"
             description="Try selecting different topics or come back after more catalog activity has been observed."
             tips={[
-              "Topic filters can get narrow quickly when the catalog slice is highly specific.",
+              "Topic filters can get narrow quickly when the current catalog filters are highly specific.",
               "Clearing filters lets the engine rebalance toward broader, higher-confidence matches.",
             ]}
           />

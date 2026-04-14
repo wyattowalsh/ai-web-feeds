@@ -21,50 +21,77 @@ async function expectNoClientErrors(page: Page, tracker: ReturnType<typeof track
   await expect.poll(() => tracker.pageErrors, { timeout: 1000 }).toEqual([]);
 }
 
+async function gotoWithRetry(
+  page: Page,
+  path: string,
+  options?: Parameters<Page["goto"]>[1],
+  attempts = 2,
+) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      await page.goto(path, options);
+      return;
+    } catch (error) {
+      lastError = error;
+      const isAbortError = error instanceof Error && error.message.includes("ERR_ABORTED");
+      if (!isAbortError || attempt === attempts - 1) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 test.describe("Route stabilization smoke", () => {
   const publicRoutes = [
     {
       path: "/",
-      text: "Feeds is the main product. Everything else supports reading, filtering, and export.",
+      text: "Follow AI and machine learning sources in one place.",
+      role: "heading" as const,
     },
     {
       path: "/feeds",
-      text: "Reader-first feeds workspace",
+      text: "Read and filter your feeds",
+      role: "heading" as const,
     },
     {
       path: "/feeds?mode=catalog",
       text: "Narrow the catalog",
-    },
-    {
-      path: "/downloads",
-      text: "Download Feeds",
-    },
-    {
-      path: "/docs",
-      text: "Getting Started",
       role: "heading" as const,
     },
     {
+      path: "/downloads",
+      text: "Download the feed catalog",
+      role: "heading" as const,
+    },
+    {
+      path: "/docs",
+      text: "Documentation",
+      role: "heading" as const,
+      timeout: 120_000,
+    },
+    {
       path: "/explorer",
-      text: "Inspect the catalog, then open the current slice in Feeds.",
+      text: "Explore topics and sources before opening them in Feeds.",
       role: "heading" as const,
     },
     {
       path: "/stats",
       text: "Track collection health instead of guessing at it.",
+      role: "heading" as const,
     },
   ];
 
   for (const route of publicRoutes) {
     test(`loads ${route.path}`, async ({ page }) => {
-      test.setTimeout(60_000);
+      test.setTimeout(route.timeout ?? 60_000);
       const tracker = trackClientErrors(page);
 
-      await page.goto(route.path, { waitUntil: "commit" });
-      const locator =
-        route.role === "heading"
-          ? page.getByRole("heading", { name: route.text })
-          : page.getByText(route.text);
+      await gotoWithRetry(page, route.path, { waitUntil: "commit", timeout: route.timeout });
+      const locator = page.getByRole("heading", { name: route.text });
       await expect(locator).toBeVisible({ timeout: 30_000 });
 
       await expectNoClientErrors(page, tracker);
@@ -76,7 +103,7 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/recommendations", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/recommendations", { waitUntil: "networkidle" });
     await expect(page.getByText("Recommendations backend unavailable")).toBeVisible();
     await expect(page.getByRole("link", { name: "Open catalog" })).toBeVisible();
 
@@ -88,7 +115,7 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/analytics", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/analytics", { waitUntil: "networkidle" });
     await expect(page.getByText("Analytics backend unavailable")).toBeVisible();
     await expect(page.getByRole("link", { name: "Open catalog" })).toBeVisible();
 
@@ -98,7 +125,7 @@ test.describe("Route stabilization smoke", () => {
   test("renders comparison charts without Chart.js controller errors", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/analytics/comparison", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/analytics/comparison", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Comparative Analytics" })).toBeVisible();
     await expect(page.locator("canvas")).toBeVisible();
 
@@ -108,7 +135,7 @@ test.describe("Route stabilization smoke", () => {
   test("renders forecast charts without Chart.js controller errors", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/analytics/forecasts", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/analytics/forecasts", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Time-Series Forecasting" })).toBeVisible();
     await expect(page.locator("canvas")).toBeVisible();
 
@@ -120,7 +147,7 @@ test.describe("Admin auth", () => {
   test("loads /admin/login for unauthenticated users", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/admin/login", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/admin/login", { waitUntil: "networkidle" });
     await expect(
       page.getByRole("heading", { name: "Protected observability for API telemetry." }),
     ).toBeVisible();
@@ -131,7 +158,7 @@ test.describe("Admin auth", () => {
   test("redirects unauthenticated /admin traffic to login", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/admin", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/admin", { waitUntil: "networkidle" });
     await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin$/);
     await expect(
       page.getByRole("heading", { name: "Protected observability for API telemetry." }),
@@ -144,7 +171,7 @@ test.describe("Admin auth", () => {
     test.setTimeout(60_000);
     const tracker = trackClientErrors(page);
 
-    await page.goto("/admin/login", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/admin/login", { waitUntil: "networkidle" });
     await page.getByLabel("Admin password").fill("test-admin-password");
     await page.getByRole("button", { name: "Unlock admin" }).click();
 

@@ -1,116 +1,56 @@
 ---
-title: Reader
-description: Reader-first AI feeds workspace backed by a generated article corpus with optional live refresh overlays
+title: Feeds
+description: How the /feeds workspace combines the generated article library with source filters and browser-local reading state.
 ---
 
-# Reader
+`/feeds` is the main workspace in AI Web Feeds. It combines a generated article library with the catalog filters from the curated source list.
 
-> **Status**: ✅ Available
-> **Surface**: `/feeds`
+## What You Can Do
 
-The reader is now the default surface for AI Web Feeds. It uses the generated
-article corpus as its base dataset, keeps local reading state on-device, and
-adds live feed refreshes only as an explicit overlay.
+- read recent posts from the generated article library
+- search titles, summaries, authors, and topics
+- filter the source list by topic, source type, feed ID, and verification status
+- switch between the reading view and the catalog view without leaving the route
+- keep read, saved, starred, and archived state in the browser
 
-## What it does
+## Two Modes on One Route
 
-- **Reader-first default** opens the article workspace immediately on `/feeds`.
-- **Catalog mode** remains available as `/feeds?mode=catalog` when you want to
-  change the source slice.
-- **Corpus-backed article list** reads normalized article rows from
-  `data/articles.generated.json`.
-- **Preview pane** shows sanitized rich summary/content, metadata, and direct
-  article actions.
-- **Local state** keeps read, starred, saved, and archived status on-device.
-- **Reader preferences** store presentation controls such as compact vs card
-  layout and summary visibility in browser storage.
-- **Query-stateful URLs** keep the current feed scope, filters, reader state,
-  and pagination cursor in the address bar.
-- **Refresh latest** fetches live posts for the current feed slice, dedupes
-  them against the corpus, and prepends only genuinely new items.
+- **`/feeds`** opens the reading view.
+- **`/feeds?mode=catalog`** opens the source catalog view.
 
-## URL parameters
+This keeps source selection and post browsing close together instead of splitting them across separate pages.
 
-The reader is meant to be linkable and restorable directly from the URL.
+## Filters and URL State
 
-| Parameter              | Purpose                                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `mode`                 | `catalog` opens the source picker; omitted defaults to the reader workspace                         |
-| `feed`                 | Limit the reader to one or more source IDs from the catalog; repeated params preserve pinned slices |
-| `topics`               | Filter the candidate feed set by one or more topic labels                                           |
-| `source_type`          | Limit the candidate set by source format                                                            |
-| `verified`             | Limit the candidate set by verification state                                                       |
-| `q`                    | Filter visible articles by title, feed title, summary, author, or category                          |
-| `reader_view`          | Switch between `latest`, `unread`, `starred`, `saved`, and `archived`                               |
-| `sort` / `reader_sort` | Order the visible timeline by `latest`, `oldest`, or `source`                                       |
-| `cursor`               | Track pagination state for the corpus-backed article list                                           |
-| `limit`                | Tune page size for `/api/articles` hydration and follow-up loads                                    |
+The current query and filters are stored in the URL. That means you can:
 
-## Data flow
+- reload the page without losing your current view
+- share a filtered view with someone else
+- jump back into the same set of sources later
 
-```mermaid
-flowchart LR
-    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/feeds"]
-    runtime["feed_entries in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
-    corpus --> browse["/api/articles"]
-    route --> ui["FeedsWorkspaceClient"]
-    browse --> ui
-    ui --> aggregate["/api/feeds/posts/aggregate (optional refresh)"]
-    aggregate --> fetch["Live feed fetch + cache"]
-    ui --> local["localStorage + IndexedDB"]
-```
+Common URL parameters include `q`, `feed`, `topics`, `source_type`, `verified`, `reader_view`, `sort`, `cursor`, and `limit`.
 
-The catalog decides which feeds are available. The generated article corpus
-provides the default article list. The live aggregation API is only used when
-the user explicitly refreshes the current slice.
+## Where the Data Comes From
 
-## Reader behavior
+- the catalog comes from `data/feeds.enriched.yaml` or the fallback source files
+- the article library comes from `data/articles.generated.json`
+- live refreshes use `/api/feeds/posts/aggregate` as an overlay on top of the generated article library
 
-- the left rail controls query, source type, topics, verification, layout, and
-  reader view
-- the center list shows corpus-backed article results for the current slice
-- the right preview pane shows the selected article summary/content and local
-  reading actions
-- mobile collapses the same model into a stacked flow with filters and preview
-  surfaced inline
+## Local Reading State
 
-## Preview sanitization
+Read, saved, starred, and archived state stays in browser storage. That keeps the main workspace usable without forcing end-user accounts into the basic reading flow.
 
-The preview pane preserves safe rich article markup, but it no longer renders
-feed-supplied HTML verbatim.
+## Refreshing Recent Posts
 
-- allowed markup includes structural text formatting, links, images, lists,
-  code blocks, and tables
-- links and images are resolved against the article URL before rendering
-- active embeds such as scripts, forms, iframes, and inline event handlers are
-  stripped before the preview is inserted into the DOM
-- unsafe URL schemes are dropped instead of being rendered as clickable or
-  loadable content
+The **Refresh latest** action fetches recent posts for the current source list and merges only genuinely new items into the page. It does not replace the generated article library.
 
-## Freshness overlay
+## When the Article Library Is Missing
 
-`Refresh latest` keeps the reader current without changing the authority model.
+If `data/articles.generated.json` is missing or empty, Feeds shows an explicit unavailable state instead of silently falling back to a partial live sample.
 
-- the base list still comes from the generated corpus
-- refresh requests use `/api/feeds/posts/aggregate`
-- live results are deduped by article identity before being merged
-- new live-only rows are marked with a freshness badge
-- refresh failures surface as non-blocking errors and preserve the base corpus list
-
-## Empty states
-
-If `data/articles.generated.json` is missing or empty, the reader shows a
-dedicated corpus-unavailable state with rebuild commands instead of silently
-sampling live feeds.
+Use one of these commands to rebuild it:
 
 ```bash
 uv run ai-web-feeds corpus refresh
 uv run ai-web-feeds corpus export
 ```
-
-## Related
-
-- [Search & Discovery](./search) for finding sources and recent posts inside the same workspace
-- [OPML Viewer](/docs/guides/opml-viewer) for export-oriented timeline previews
-- [Runtime authority](/docs/development/runtime-authority) for the split between
-  repository data, generated corpus artifacts, and browser-local state

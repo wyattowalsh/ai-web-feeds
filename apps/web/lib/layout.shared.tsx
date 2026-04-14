@@ -21,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
               AI Web Feeds
             </span>
             <span className="font-serif text-lg font-semibold text-(--ink)">
-              Reader-first AI feeds for humans and agents
+              Curated AI and ML feeds
             </span>
           </span>
         </span>

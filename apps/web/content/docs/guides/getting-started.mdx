@@ -1,342 +1,91 @@
 ---
 title: Getting Started
-description: Install ai-web-feeds, initialize the local data workflow, and launch the docs app with the repository-approved toolchain.
+description: Install the repo, run the web app, and generate the article library with the required uv and pnpm workflows.
 icon: Rocket
 ---
 
-import { Steps, Step } from "fumadocs-ui/components/steps";
-import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 
-This guide gets you from a fresh clone to a working ai-web-feeds environment using the repository-required tooling: `uv` for Python and `pnpm` for the web app.
+This guide takes you from a fresh clone to a working local setup.
 
 ## Prerequisites
 
-Before you begin, ensure you have:
-
-- Python 3.13 or higher
+- Python 3.13+
 - Node.js 20+
-- [uv](https://github.com/astral-sh/uv)
-- [pnpm](https://pnpm.io/)
+- [`uv`](https://docs.astral.sh/uv/)
+- [`pnpm`](https://pnpm.io/)
 - Git
 
-## Installation
-
 <Steps>
+  <Step>
 
-<Step>
-
-### Clone the Repository
+### Clone the repo
 
 ```bash
 git clone https://github.com/wyattowalsh/ai-web-feeds.git
 cd ai-web-feeds
 ```
 
-</Step>
+  </Step>
+  <Step>
 
-<Step>
-
-### Choose Setup Method
-
-<Tabs items={["Quick Setup (Recommended)", "Manual Setup"]}>
-
-<Tab value="Quick Setup (Recommended)">
-
-Use the repository setup script for the feed workflow, then install the docs app dependencies separately:
+### Install Python dependencies
 
 ```bash
 uv sync
-bash scripts/setup.sh
-
-cd apps/web
-pnpm install
-pnpm dev
 ```
 
-This will:
+  </Step>
+  <Step>
 
-- Sync the Python workspace with `uv`
-- Generate the local SQLite cache and OPML outputs
-- Install the Next.js docs dependencies
-- Start the docs app at `http://localhost:3000`
-
-</Tab>
-
-<Tab value="Manual Setup">
-
-If you want to initialize the project step by step:
+### Install the web app dependencies
 
 ```bash
-uv sync
-
 cd apps/web
 pnpm install
 cd ../..
-
-mkdir -p data
-uv run python - <<'PY'
-from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager('sqlite:///data/ai-web-feeds.db')
-db.create_db_and_tables()
-PY
-
-uv run ai-web-feeds enrich all \
-  --input data/feeds.yaml \
-  --output data/feeds.enriched.yaml \
-  --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/ai-web-feeds.db
 ```
 
-</Tab>
+  </Step>
+  <Step>
 
-</Tabs>
-
-</Step>
-
-</Steps>
-
-## Quick Start
-
-### 1. Validate the Catalog
-
-Run the built-in HTTP validation pass against the canonical feed list:
+### Build the article library
 
 ```bash
-uv run ai-web-feeds validate http
+uv run ai-web-feeds corpus refresh
 ```
 
-### 2. Regenerate Enriched Metadata
+This populates the runtime data and writes `data/articles.generated.json`, which powers the main Feeds experience.
 
-```bash
-uv run ai-web-feeds enrich all \
-  --input data/feeds.yaml \
-  --output data/feeds.enriched.yaml \
-  --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/ai-web-feeds.db
-```
+  </Step>
+  <Step>
 
-### 3. Generate Reader Exports
-
-```bash
-uv run ai-web-feeds opml all --output data/all.opml
-uv run ai-web-feeds opml categorized --output data/categorized.opml
-```
-
-### 4. Launch the Docs App
+### Start the web app
 
 ```bash
 cd apps/web
 pnpm dev
 ```
 
-### 5. Explore the Main Surfaces
+Open [http://localhost:3000](http://localhost:3000) and start in `/feeds`.
 
-Once the project is running, start in `/feeds` for the unified catalog, article
-search, and reader workflow. These docs pages are the best next stops after that:
+  </Step>
+</Steps>
 
+## Useful Next Commands
+
+```bash
+uv run ai-web-feeds validate http
+uv run ai-web-feeds enrich all \
+  --input data/feeds.yaml \
+  --output data/feeds.enriched.yaml \
+  --schema data/feeds.enriched.schema.json \
+  --database sqlite:///data/ai-web-feeds.db
+```
+
+## Where to Go Next
+
+- [Feeds](/docs/features/reader)
+- [Search and Discovery](/docs/features/search)
 - [Deployment](/docs/guides/deployment)
-- [OPML Viewer](/docs/guides/opml-viewer)
-- [Data Explorer](/docs/guides/data-explorer)
-- [Contributing](/docs/development/contributing)
-
-## Working With `data/feeds.yaml`
-
-The repository already includes a curated catalog in `data/feeds.yaml`. When you want to add or edit sources, update that file first and then rerun the enrichment and validation commands above.
-
-Example entry:
-
-```yaml
-sources:
-  - id: my-custom-feed
-    feed: https://example.com/feed.xml
-    title: My Custom Feed
-    source_type: blog
-    topics: [llm]
-    tags: [custom]
-```
-
-## Troubleshooting
-
-### Missing Tooling
-
-If `uv` or `pnpm` is missing, install them before continuing. The repository policy explicitly avoids bare `python`, `pip`, `npm`, and `yarn` workflows.
-
-### Reset the Local SQLite Cache
-
-```bash
-bash scripts/setup.sh
-```
-
-If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
-
-```yaml
-# YouTube channel
-
-- id: "youtube-channel"
-  site: "https://youtube.com/channel/UC123..."
-  discover: true
-
-# GitHub repository
-
-- id: "github-repo"
-  site: "https://github.com/owner/repo"
-  discover: true
-  platform_config:
-    github:
-      feed_type: "releases" # or "commits", "tags"
-```
-
-See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.
-
-### Monitoring Feed Health
-
-Set up regular health checks:
-
-```bash
-# Check all feeds
-ai-web-feeds fetch all --verified-only
-
-# Review performance
-ai-web-feeds analytics performance --days 7
-
-# Check specific feed health
-ai-web-feeds analytics health <feed-id>
-```
-
-### Exporting Data
-
-Export to different formats:
-
-```bash
-# OPML for feed readers
-ai-web-feeds opml generate --output feeds.opml
-
-# Categorized OPML
-ai-web-feeds opml categorize --output feeds-categorized.opml
-
-# JSON analytics report
-ai-web-feeds analytics report --output analytics.json
-```
-
-## Configuration
-
-### Database Configuration
-
-By default, SQLite is used. To use a different database:
-
-```bash
-ai-web-feeds fetch all --database "postgresql://user:pass@localhost/dbname"
-```
-
-Or set an environment variable:
-
-```bash
-export AI_WEB_FEEDS_DB="postgresql://user:pass@localhost/dbname"
-```
-
-### Fetch Configuration
-
-Create a config file (e.g., `.env`):
-
-```bash
-AI_WEB_FEEDS_TIMEOUT=30
-AI_WEB_FEEDS_USER_AGENT="MyApp/1.0"
-```
-
-## Troubleshooting
-
-<Callout type="info" title="Common Issues">
-
-**Feed Not Found Error**
-
-```bash
-# Verify feed exists in database
-ai-web-feeds stats show
-
-# Check feeds.yaml for typos
-cat data/feeds.yaml | grep "id:"
-```
-
-**Fetch Failures**
-
-```bash
-# Check error details
-ai-web-feeds analytics performance
-
-# Test single feed with verbose output
-ai-web-feeds fetch one <feed-id> --metadata
-```
-
-**Database Issues**
-
-```bash
-# Reinitialize database
-rm data/aiwebfeeds.db
-python3 -c "
-from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
-db.create_db_and_tables()
-"
-```
-
-</Callout>
-
-## Next Steps
-
-1. **Explore Analytics** - Try different analytics commands to understand your feed data
-2. **Set Up Automation** - Create cron jobs for regular fetching
-3. **Customize Feeds** - Add feeds relevant to your interests
-4. **Build Integrations** - Use the Python API to integrate with other tools
-5. **Contribute** - Share your curated feeds with the community
-
-## Example Session
-
-Here's a complete example workflow:
-
-```bash
-# 1. Install
-./setup-enhanced-features.sh
-
-# 2. Check what's in the database
-ai-web-feeds stats show
-
-# 3. Enrich existing feeds
-ai-web-feeds enrich all
-
-# 4. Fetch content
-ai-web-feeds fetch all --limit 10
-
-# 5. View analytics
-ai-web-feeds analytics overview
-ai-web-feeds analytics distributions
-ai-web-feeds analytics quality
-
-# 6. Check a specific feed
-ai-web-feeds analytics health huggingface-blog
-
-# 7. Generate reports
-ai-web-feeds analytics report --output report.json
-ai-web-feeds opml generate --output feeds.opml
-
-# 8. View trends
-ai-web-feeds analytics trends --days 30
-```
-
-## What's Next?
-
-Now that you're set up, you can:
-
-- Add more feeds to your collection
-- Set up automated fetching (cron jobs)
-- Build custom analytics scripts
-- Integrate with other tools
-- Contribute back to the project
-
-## Resources
-
-- [Feature Overview](/docs/features/overview) - Comprehensive feature list
-- [CLI Reference](/docs/development/cli) - Command-line interface guide
-- [Python API](/docs/development/python-api) - Programmatic usage
-- [Analytics Guide](/docs/guides/analytics) - Advanced analytics
-
-Happy feed aggregating! 🚀
+- [Testing](/docs/guides/testing)

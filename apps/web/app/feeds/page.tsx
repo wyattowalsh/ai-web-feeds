@@ -11,10 +11,12 @@ import {
 
 export const metadata: Metadata = {
   title: "Feeds Workspace - AIWebFeeds",
-  description: "Browse the article corpus and source catalog from one reader-first workspace.",
+  description:
+    "Read recent posts, search the article library, and switch to the source catalog when you want to refine the feed list.",
   openGraph: {
     title: "Feeds Workspace - AIWebFeeds",
-    description: "Browse the article corpus and source catalog from one unified workspace.",
+    description:
+      "Read recent posts, search the article library, and switch to the source catalog when you want to refine the feed list.",
   },
 };
 

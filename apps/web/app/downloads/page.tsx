@@ -7,12 +7,10 @@ import { AdvancedPreviewSection } from "./advanced-preview-section";
 
 export const metadata: Metadata = {
   title: "Downloads - AIWebFeeds",
-  description:
-    "Export OPML or JSON bundles after you choose the feed slice in /feeds.",
+  description: "Download the full AI Web Feeds catalog as OPML or JSON.",
   openGraph: {
     title: "Downloads - AIWebFeeds",
-    description:
-      "Export OPML or JSON bundles after you choose the feed slice in /feeds.",
+    description: "Download the full AI Web Feeds catalog as OPML or JSON.",
   },
 };
 
@@ -54,13 +52,12 @@ export default async function DownloadsPage() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="mb-3 inline-flex items-center rounded-full border bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Export surface
+              Catalog export
             </p>
-            <h1 className="mb-3 text-4xl font-bold tracking-tight">Download Feeds</h1>
+            <h1 className="mb-3 text-4xl font-bold tracking-tight">Download the feed catalog</h1>
             <p className="text-lg text-muted-foreground">
-              This page exists for export and preview, not primary discovery. Choose the slice in{" "}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm">/feeds</code>
-              first, then export that exact set here.
+              Download the full AI Web Feeds catalog in OPML or JSON. If you want to review the
+              sources first, open Feeds or Explorer and come back here when you are ready to export.
             </p>
           </div>
 
@@ -84,7 +81,7 @@ export default async function DownloadsPage() {
               >
                 /feeds
               </Link>{" "}
-              when you want to narrow to a smaller slice before exporting.
+              when you want to browse the sources before exporting.
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -133,17 +130,16 @@ export default async function DownloadsPage() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start">
           <div>
             <div className="mb-2 inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              Need a subset before exporting?
+              Want to review sources first?
             </div>
-            <h2 className="text-2xl font-semibold">Start in Feeds, export here</h2>
+            <h2 className="text-2xl font-semibold">Browse in Feeds, then download here</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              The Feeds workspace is the primary subset-selection surface. Use it to filter by
-              source type, topic, verification state, and search text. Come back here when you
-              want the export artifacts or the optional OPML preview.
+              Use Feeds to filter by topic, source type, verification state, and search text. Come
+              back here when you want export files or a quick OPML preview.
             </p>
             <div className="mt-4">
               <Link href="/feeds" className={`${buttonVariants({ variant: "outline" })} gap-2`}>
-                Open Feeds workspace
+                Open Feeds
               </Link>
             </div>
           </div>
@@ -184,7 +180,7 @@ export default async function DownloadsPage() {
               href="/feeds"
               className="text-blue-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
-              Build a filtered slice in Feeds workspace →
+              Browse Feeds before exporting →
             </Link>
             <Link
               href="/docs/guides/opml-viewer"

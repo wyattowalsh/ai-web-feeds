@@ -1,131 +1,60 @@
 ---
-title: Documentation Overview
-description: Landing page for AI Web Feeds documentation, feature guides, and workflow references.
+title: Documentation
+description: Learn how AI Web Feeds is organized, how to use the main pages, and how to work with the catalog, exports, CLI, and Python package.
 icon: BookOpen
 ---
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Welcome to the **ai-web-feeds** documentation. This site includes powerful features for both human readers and AI agents.
+AI Web Feeds is a curated catalog of AI and machine learning sources. The web app lets you browse feeds, read recent posts, explore the catalog, and export the list for other readers or tools.
 
-## 🚀 Quick Start
-
-Get up and running in minutes:
+## Start Here
 
 <Cards>
-  <Card title="PDF Export" description="Export documentation as high-quality PDFs" href="/docs/features/pdf-export" />
-  <Card title="AI Integration" description="LLM-friendly endpoints and content negotiation" href="/docs/features/ai-integration" />
-  <Card title="RSS Feeds" description="Subscribe to updates via RSS, Atom, or JSON" href="/docs/features/rss-feeds" />
-  <Card title="Link Validation" description="Ensure all documentation links are correct" href="/docs/features/link-validation" />
-  <Card title="SEO & Metadata" description="Rich metadata and Open Graph images" href="/docs/features/seo-metadata" />
-  <Card title="Mermaid Diagrams" description="Create beautiful diagrams with simple syntax" href="/docs/features/mermaid" />
-  <Card title="Math Equations" description="Render beautiful equations with KaTeX" href="/docs/features/math" />
-  <Card title="Quick Reference" description="Essential commands and endpoints at a glance" href="/docs/guides/quick-reference" />
+  <Card title="Getting Started" description="Set up the repo, install the required tools, and run the web app locally." href="/docs/guides/getting-started" />
+  <Card title="Feeds" description="Read recent posts, search the article library, and filter the source list." href="/docs/features/reader" />
+  <Card title="Search and Discovery" description="See how source search and post search work together in the app." href="/docs/features/search" />
+  <Card title="Downloads" description="Export the catalog as OPML or JSON." href="/downloads" />
+  <Card title="Stats" description="Check validation coverage, response times, and collection health." href="/stats" />
+  <Card title="Deployment" description="Choose between a web-only deployment and an optional backend-enabled deployment." href="/docs/guides/deployment" />
+  <Card title="CLI" description="Use the command-line workflows for validation, enrichment, exports, and runtime jobs." href="/docs/development/cli" />
+  <Card title="Python API" description="Import the package directly when you want to script against the catalog in Python." href="/docs/development/python-api" />
 </Cards>
 
-## ✨ Key Features
+## Main Pages
 
-### 📄 PDF Export
+- **`/feeds`** is the main reading surface. It combines the generated article library with catalog filters.
+- **`/explorer`** is a visual browser for topics and sources.
+- **`/downloads`** exports the catalog in feed-reader-friendly formats.
+- **`/stats`** summarizes validation and health information.
+- **`/docs`** explains how the project works and how to contribute.
 
-- **Automatic page discovery** - Export all documentation pages
-- **Clean output** - Navigation and UI elements hidden
-- **Interactive content** - Accordions and tabs expanded
-- **Batch processing** - Concurrent exports with rate limiting
+## How the Data Fits Together
 
-### 🤖 AI & LLM Integration
+- `data/feeds.yaml` is the authored source list.
+- `data/topics.yaml` is the topic taxonomy.
+- `data/feeds.enriched.yaml` is the generated catalog with richer metadata.
+- `data/ai-web-feeds.db` stores runtime data such as fetched entries and validation history.
+- `data/articles.generated.json` is the generated article library used by the standalone web app.
 
-- **Discovery endpoint** - `/llms.txt` for AI agent discovery
-- **Full documentation** - `/llms-full.txt` with structured format
-- **Markdown extensions** - `.mdx` and `.md` for any page
-- **Content negotiation** - Automatic markdown for AI agents
-- **Page actions** - Copy markdown and AI tool integration
-
-### 📡 RSS Feeds
-
-- **Multiple formats** - RSS 2.0, Atom 1.0, and JSON Feed
-- **Auto-discovery** - Feeds discoverable via metadata
-- **Sitewide & docs feeds** - Subscribe to all or just docs
-- **Hourly updates** - Fresh content with smart caching
-
-### 🔗 Link Validation
-
-- **Automatic scanning** - Validates all documentation links
-- **Anchor checking** - Verifies headings and sections exist
-- **Component links** - Checks links in MDX components
-- **CI/CD integration** - Fail builds on broken links
-
-### 🔍 SEO & Metadata
-
-- **Dynamic OG images** - Custom images for every page
-- **Rich metadata** - Complete SEO tags and structured data
-- **Social sharing** - Optimized for Twitter, LinkedIn, Slack
-- **AI crawlers** - Special rules for GPTBot, ClaudeBot, etc.
-
-### 📊 Mermaid Diagrams
-
-- **Multiple diagram types** - Flowcharts, sequences, classes, ER diagrams
-- **Theme-aware** - Automatically adapts to light/dark mode
-- **Interactive** - Clickable elements and tooltips
-- **Simple syntax** - Markdown-like diagram definition
-
-### 🧮 Math Equations
-
-- **KaTeX rendering** - Fast, beautiful mathematical notation
-- **Inline & block** - Support for both inline $x^2$ and display equations
-- **LaTeX syntax** - Familiar TeX/LaTeX commands
-- **Self-contained** - No external dependencies or fonts
-
-### 🎯 Built With
-
-- [Next.js 15](https://nextjs.org) - Application framework
-- [Fumadocs](https://fumadocs.dev) - Documentation framework
-- [Puppeteer](https://pptr.dev) - PDF generation
-- [MDX](https://mdxjs.com) - Enhanced markdown
-
-## 📚 Documentation Sections
-
-### Features
-
-Detailed guides for each major feature:
-
-- [PDF Export](/docs/features/pdf-export) - Complete PDF export guide
-- [AI Integration](/docs/features/ai-integration) - Comprehensive AI/LLM integration
-- [llms-full.txt Format](/docs/features/llms-full-format) - Structured format specification
-- [RSS Feeds](/docs/features/rss-feeds) - Subscribe to documentation updates
-- [Link Validation](/docs/features/link-validation) - Ensure all links are correct
-- [SEO & Metadata](/docs/features/seo-metadata) - Rich metadata and Open Graph images
-- [Mermaid Diagrams](/docs/features/mermaid) - Create beautiful diagrams with simple syntax
-- [Math Equations](/docs/features/math) - Render beautiful equations with KaTeX
-
-### Guides
-
-Practical how-to guides:
-
-- [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints
-- [Testing Guide](/docs/guides/testing) - Verify your setup
-
-## 🎨 Philosophy
-
-This documentation is designed to be:
-
-- **User-friendly** - Clear, concise, and well-organized
-- **Developer-friendly** - Code examples and technical details
-- **AI-friendly** - Structured formats and multiple access patterns
-- **Performance-optimized** - Static generation and smart caching
-
-## 🔗 Quick Links
+## Technical References
 
 <Cards>
-  <Card title="GitHub Repository" description="View source code and contribute" href="https://github.com/wyattowalsh/ai-web-feeds" />
-  <Card title="Fumadocs Guide" description="Learn more about Fumadocs" href="https://fumadocs.dev/docs" />
-  <Card title="Next.js Docs" description="Next.js documentation" href="https://nextjs.org/docs" />
-  <Card title="llms.txt Spec" description="Standard for AI-readable docs" href="https://llmstxt.org" />
+  <Card title="Product Overview" description="See the major capabilities and how they fit together." href="/docs/features/overview" />
+  <Card title="Architecture" description="Read the high-level structure of the monorepo and runtime surfaces." href="/docs/development/architecture" />
+  <Card title="Data Sources and Ownership" description="See which files and runtime stores are authoritative for each part of the system." href="/docs/development/runtime-authority" />
+  <Card title="Search Architecture" description="Understand how catalog search and article search are split." href="/docs/development/search-architecture" />
 </Cards>
 
-## 🤝 Contributing
+## Machine-Readable Docs
 
-We welcome contributions! See our [Contributing Guide](https://github.com/wyattowalsh/ai-web-feeds/blob/main/CONTRIBUTING.md) for details.
+AI Web Feeds also publishes plain-text documentation for tools and agents:
 
-## 📝 License
+- `/llms.txt` is the concise index
+- `/llms-full.txt` is the full machine-readable reference
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/wyattowalsh/ai-web-feeds/blob/main/LICENSE) file for details.
+## Related
+
+- [GitHub repository](https://github.com/wyattowalsh/ai-web-feeds)
+- [Platform Integrations](/docs/features/platform-integrations)
+- [Testing Guide](/docs/guides/testing)

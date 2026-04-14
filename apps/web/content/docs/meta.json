@@ -1,40 +1,24 @@
 {
   "title": "Documentation",
   "pages": ["index", "security", "taxonomy-visualization"],
-  "---Features": {
-    "type": "separator"
-  },
+  "---Features": { "type": "separator" },
   "features": {
     "title": "Features",
     "icon": "Sparkles",
     "pages": [
       "overview",
-      "real-time-monitoring",
-      "analytics",
-      "admin-observability",
       "reader",
       "search",
       "recommendations",
+      "analytics",
+      "admin-observability",
       "data-enrichment",
-      "pdf-export",
-      "ai-integration",
-      "llms-full-format",
       "quality-scoring",
-      "entity-extraction",
-      "sentiment-analysis",
-      "topic-modeling",
-      "rss-feeds",
       "platform-integrations",
-      "twitter-arxiv-integration",
-      "link-validation",
-      "seo-metadata",
-      "mermaid",
-      "math"
+      "llms-full-format"
     ]
   },
-  "---Guides": {
-    "type": "separator"
-  },
+  "---Guides": { "type": "separator" },
   "guides": {
     "title": "Guides",
     "icon": "BookOpen",
@@ -53,9 +37,7 @@
       "github-setup-summary"
     ]
   },
-  "---Development": {
-    "type": "separator"
-  },
+  "---Development": { "type": "separator" },
   "development": {
     "title": "Development",
     "icon": "Code",
@@ -78,9 +60,7 @@
       "contributing"
     ]
   },
-  "---Visualization": {
-    "type": "separator"
-  },
+  "---Visualization": { "type": "separator" },
   "visualization": {
     "title": "Visualization & Analytics",
     "icon": "ChartBar",

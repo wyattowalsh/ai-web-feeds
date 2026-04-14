@@ -1,186 +1,62 @@
 ---
-title: Search & Discovery
-description: Reader-first article browse plus catalog discovery inside the unified /feeds workspace
+title: Search and Discovery
+description: How source search, post search, and autocomplete work across the catalog and generated article library.
 ---
 
-# Search & Discovery
+AI Web Feeds uses two related search models inside the same product flow: source search for the catalog and post search for the generated article library.
 
-The Search & Discovery experience lives inside the unified `/feeds` workspace
-and now answers two different questions from one route:
+## How Search Is Split
 
-- **What should I read now?** Browse and search the generated article corpus.
-- **Which sources should shape that queue?** Switch to catalog mode and refine
-  the source slice.
+- **Source search** helps you find feeds in the curated catalog.
+- **Post search** helps you find recent articles in the generated article library.
+- **Autocomplete** draws from both so suggestions stay useful while you type.
 
-## Workspace model
+## Source Search
 
-`/feeds` is now the default reader-first route.
+Source search uses the checked-in catalog data. It is the right choice when you want to:
 
-- `/feeds` opens the article workspace
-- `/feeds?mode=catalog` opens the explicit source picker
-- legacy `mode=articles` and `mode=reader` URLs still normalize into the same
-  reader-first workspace state
+- find a publication or feed by name
+- narrow the catalog by topic or source type
+- inspect verification state before reading posts
 
-The workspace keeps its query, filters, pinned feeds, sort order, and local
-reader view in the URL so deep links stay shareable and restorable.
+## Post Search
 
-## Article browse and search
-
-Article browse and article search are backed by `data/articles.generated.json`,
-which is exported from `feed_entries` in the runtime database.
-
-That means the reader workspace can:
-
-- search titles, summaries, feed titles, authors, categories, and topics across
-  the exported corpus
-- filter by `feed`, `topics`, `source_type`, and `verified`
-- page through results with cursor-based pagination
-- sort by `latest`, `oldest`, or `source`
-
-The article list is served by `GET /api/articles`, while ranked article search
-uses `GET /api/search?scope=articles`.
-
-## Catalog search
-
-Catalog search remains backed by the checked-in feed catalog.
-
-Use catalog mode when you want to:
-
-- filter feeds by source type, topic, or verification state
-- pin one or more feed IDs into the article workspace
-- move from source discovery into the reader without leaving `/feeds`
-
-This keeps source discovery available even if the runtime corpus has not been
-generated yet.
+Post search uses `data/articles.generated.json`, which is exported from the runtime database. It searches titles, summaries, authors, topics, categories, and feed titles across the generated article library.
 
 ## Autocomplete
 
-Autocomplete now returns a shared suggestion set sourced from the catalog plus
-the article corpus:
+Autocomplete returns a shared suggestion set that can include:
 
-- matching feeds
-- matching articles
-- matching topics
+- feeds
+- articles
+- topics
 
-Because the same server-side adapter builds those suggestions, autocomplete and
-article search no longer drift across different data models.
+That helps the main search box stay useful whether you are starting from a publication name or a subject area.
 
-## Freshness overlay
+## Refreshing the Current Results
 
-The canonical reader/search dataset is the generated corpus. Live feed fetches
-still exist, but only as an explicit freshness overlay.
+Use **Refresh latest** when you want to check for new posts from the current source list. The generated article library stays the base dataset, and fresh posts are layered on top only when they are truly new.
 
-- `Refresh latest` calls `/api/feeds/posts/aggregate`
-- new live items are deduped against the current corpus-backed list
-- genuinely new items are prepended with a freshness badge
-- failed refreshes do not replace or erase the base corpus results
+## Zero-Result Recovery
 
-## Local reading state
+When no results match, the app offers direct recovery actions such as:
 
-Unread, saved, starred, and archived state stay in browser-local storage.
+- clearing the post filters
+- resetting the current filters
+- opening the catalog to review the current source list
 
-Those client-only states are layered on top of server-returned article results,
-which is why you can filter the visible list to `unread`, `saved`, `starred`,
-or `archived` without writing that state into the generated corpus artifact.
+## CLI and API
 
-## Analytics logging
-
-If a Python backend is configured, the web app can still log executed searches
-through `POST /api/search` using the anonymous identity bootstrap.
-
-If no backend is configured:
-
-- browse/search/autocomplete continue to work
-- only the analytics write is skipped
-
-## Configuration
+Catalog search is also available through the CLI and API routes:
 
 ```bash
-# Optional backend for search analytics logging
-BACKEND_URL=http://localhost:8000
-```
-
-## Usage
-
-### Web Interface
-
-Navigate to `/feeds`:
-
-1. Type a query in the workspace search bar
-2. Keep or adjust the shared source-type, topic, verified, and pinned-feed filters
-3. Press Enter to refresh the article list, or use autocomplete suggestions
-4. Switch to `mode=catalog` when you need to change the source slice
-5. Use `Refresh latest` when you want a non-destructive live overlay on top of the corpus
-
-**Keyboard Shortcuts**:
-
-- `Cmd/Ctrl+K`: Focus search bar
-- `Arrow keys`: Navigate autocomplete suggestions
-- `Enter`: Execute search
-
-### CLI
-
-```bash
-# Catalog search
 uv run ai-web-feeds search "transformer attention" --limit 20
-
-# Filter by source type and topic
-uv run ai-web-feeds search "pytorch" --source-type blog --topic deeplearning
-
-# Autocomplete against the catalog
 uv run ai-web-feeds search autocomplete openai --limit 5
 ```
 
-### API
+Relevant web routes:
 
-```typescript
-// Corpus-backed article browse
-const browse = await fetch("/api/articles?q=agents&sort=latest&limit=24");
-
-// Source search
-const response = await fetch("/api/search?q=transformer&scope=sources&limit=20");
-const results = await response.json();
-
-// Article search
-const articleResults = await fetch("/api/search?q=neural%20networks&scope=articles&limit=20");
-
-// Autocomplete
-const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
-```
-
-## Performance
-
-- **Autocomplete**: Shared catalog/corpus suggestions with cacheable GET responses
-- **Source Search**: Reads checked-in data without depending on a backend runtime
-- **Article Browse/Search**: Reads the generated corpus artifact instead of running live feed scans on demand
-
-## Zero Results Handling
-
-When no article or catalog results are found inside `/feeds`, the UI now
-offers direct recovery actions instead of leaving the user at a dead end.
-
-- reset to the full catalog when a feed slice is over-constrained
-- jump straight back into the article workspace when catalog filters get too narrow
-- clear article-specific filters while preserving the underlying source slice
-- open catalog mode with the current source constraints so you can inspect or widen them
-
-The UI still reinforces the broader guidance of:
-
-- returning to catalog mode for broader source discovery
-- fewer filters
-- a wider topic or source-type scope
-- rebuilding the generated corpus if the workspace reports that the artifact is unavailable
-
-## Success Criteria
-
-- ✅ Reader-first `/feeds` works without a required Python HTTP backend
-- ✅ Article browse and article search run across the generated corpus
-- ✅ Source results can jump directly into the article workspace within `/feeds`
-- ✅ Autocomplete suggestions are built from the same catalog/corpus model used by the reader
-
-## Related
-
-- [Analytics Dashboard](./analytics) - View search analytics and popular queries
-- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/feeds`
-- [Recommendations](./recommendations) - AI-powered feed suggestions
-- [Search architecture](/docs/development/search-architecture) - Runtime and local search split
+- `GET /api/articles`
+- `GET /api/search?scope=sources`
+- `GET /api/search?scope=articles`
+- `GET /api/search/autocomplete`

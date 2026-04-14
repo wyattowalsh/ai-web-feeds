@@ -1,108 +1,41 @@
 ---
-title: AI-Powered Recommendations
-description: Backend-backed feed recommendations with topic steering, interaction tracking, and a graceful unavailable fallback when personalization is offline.
+title: Recommendations
+description: Personalized source recommendations that become available when the optional backend is configured.
 ---
 
-# AI-Powered Recommendations
+The recommendations page is optional. It depends on the Python backend, so it is only fully available when `BACKEND_URL` points to a running `ai_web_feeds.web_api` service.
 
-> **Status**: Backend-backed
-> **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
+## What It Does
 
-The recommendations page at `/recommendations` is wired to real backend routes and no longer pretends to be fully available in backend-free local mode. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
+When the backend is available, `/recommendations` can:
 
-## At a Glance
+- load ranked source suggestions
+- explain why a source was suggested
+- let you refine recommendations with topic chips
+- record actions such as view, click, subscribe, and dismiss
 
-| Surface                     | Uses backend | Behavior when backend is unavailable              |
-| --------------------------- | ------------ | ------------------------------------------------- |
-| `/recommendations` page     | Yes          | Renders one unavailable panel with setup guidance |
-| `GET /api/recommendations`  | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
-| `POST /api/recommendations` | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
+## Backend Requirement
 
-## Current Experience
+Recommendations are not part of the standalone web-only profile.
 
-### Recommendation List
+If `BACKEND_URL` is missing or the backend is unavailable:
 
-When the backend is available, the page renders:
+- the page shows a clear unavailable state
+- the proxy routes return `503 FEATURE_UNAVAILABLE`
+- Feeds and the catalog continue to work normally
 
-- ranked feed recommendations
-- recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
-- topic chips for steering the current slice
-- feed actions for opening a result in `/feeds`, subscribing, or dismissing it
+## Request Flow
 
-### Personalization Input
-
-The web client creates a stable local `user_id` in `localStorage` and sends it with every recommendation request. Topic chips refine the current request without changing the page URL, so personalization can persist locally without requiring user accounts.
-
-### Interaction Tracking
-
-The UI records these interaction types:
-
-- `view`
-- `click`
-- `subscribe`
-- `dismiss`
-
-The backend stores that feedback, updates the user profile, and uses it to avoid repeating previously followed or already-interacted feeds in later recommendations.
-
-### Unavailable State
-
-If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
-
-- a setup message explaining that personalization is optional
-- a link to `/feeds?mode=catalog`
-- a link to the deployment guide
-
-That unavailable state is expected behavior in backend-free local development.
-
-## Proxy Contract
-
-The web layer uses two backend-backed routes:
+The web app uses two backend-backed routes:
 
 - `GET /api/recommendations`
 - `POST /api/recommendations`
 
-### Request Forwarding
+The browser keeps a stable local `user_id` so recommendations can stay consistent without requiring a full user account system.
 
-`GET /api/recommendations` forwards:
+## Local Verification
 
-- `user_id`
-- `topics`
-- `limit`
-
-`POST /api/recommendations` accepts:
-
-```json
-{
-  "user_id": "user_123",
-  "feed_id": "feed-abc",
-  "interaction_type": "subscribe",
-  "reason": "similar_topics"
-}
-```
-
-### Stored Interaction Signals
-
-| Field              | Purpose                                           |
-| ------------------ | ------------------------------------------------- |
-| `user_id`          | Stable local profile key used for personalization |
-| `feed_id`          | Recommended feed the user interacted with         |
-| `interaction_type` | One of `view`, `click`, `subscribe`, or `dismiss` |
-| `reason`           | The recommendation reason shown in the UI         |
-
-When the backend is unavailable, the proxy returns:
-
-```json
-{
-  "error": "Recommendations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
-  "code": "FEATURE_UNAVAILABLE"
-}
-```
-
-with HTTP `503`.
-
-## Local Smoke Test
-
-Start the backend HTTP surface:
+Start the backend:
 
 ```bash
 uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
@@ -114,9 +47,7 @@ Point the web app at it:
 BACKEND_URL=http://127.0.0.1:8001
 ```
 
-Once `BACKEND_URL` is set, the page switches from the unavailable state to live recommendations automatically.
-
-Quick verification:
+Then verify the proxy route:
 
 ```bash
 curl "http://127.0.0.1:3000/api/recommendations?user_id=test-user&topics=agents,llm&limit=10"
@@ -124,6 +55,6 @@ curl "http://127.0.0.1:3000/api/recommendations?user_id=test-user&topics=agents,
 
 ## Related
 
-- [Analytics Dashboard](./analytics) - Backend-backed metrics and exports
-- [Search & Discovery](./search) - Reader-first catalog browsing without the backend
-- [Deployment Guide](/docs/guides/deployment) - Running the optional backend service
+- [Feeds](/docs/features/reader)
+- [Analytics](/docs/features/analytics)
+- [Deployment Guide](/docs/guides/deployment)

@@ -61,11 +61,7 @@ function useExplorerData() {
   return { topics, feeds, loading, error };
 }
 
-function buildFeedsHref(options: {
-  feedId?: string;
-  query?: string;
-  topics?: string[];
-}): string {
+function buildFeedsHref(options: { feedId?: string; query?: string; topics?: string[] }): string {
   const params = new URLSearchParams();
   params.set("mode", "catalog");
 
@@ -135,7 +131,9 @@ function ExplorerPageContent() {
     writeGraphControlsToParams(params, graphControls, getDefaultGraphControls(tab));
 
     const nextQuery = params.toString();
-    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    const nextUrl = nextQuery
+      ? `${window.location.pathname}?${nextQuery}`
+      : window.location.pathname;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
@@ -191,7 +189,10 @@ function ExplorerPageContent() {
             query: search,
             topics:
               selectedTags.length > 0
-                ? [...selectedTags, ...normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags)]
+                ? [
+                    ...selectedTags,
+                    ...normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
+                  ]
                 : normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
           }),
         );
@@ -314,7 +315,7 @@ function ExplorerPageContent() {
           <div className="size-16 animate-pulse rounded-3xl bg-(--brand-soft)" />
           <div className="space-y-2">
             <h1 className="text-3xl">Loading explorer</h1>
-            <p className="small-note">Preparing the catalog graph and feed index.</p>
+            <p className="small-note">Preparing the topic map and source index.</p>
           </div>
         </div>
       </div>
@@ -347,29 +348,29 @@ function ExplorerPageContent() {
           <div className="space-y-5">
             <span className="eyebrow">
               <Waypoints className="size-3.5" />
-              Supporting catalog explorer
+              Catalog explorer
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Inspect the catalog, then open the current slice in Feeds.
+                Explore topics and sources before opening them in Feeds.
               </h1>
               <p className="hero-copy max-w-2xl">
-                Switch between graph and table views when you need structure, then deep-link the
-                current topic or feed slice into the reader-first workspace.
+                Use graph and table views to browse the catalog, then open the matching sources in
+                Feeds when you are ready to read posts.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">How to use this surface</p>
+            <p className="metric-label">How to use it</p>
             <p className="small-note">
-              Use graph view for structure and table view for precision. Search narrows the working
-              set, and detail actions now send the current slice into /feeds.
+              Use graph view for relationships and table view for exact metadata. Search and topic
+              filters narrow the current results, and detail actions can open the same set in Feeds.
             </p>
             <div className="grid gap-2 text-sm text-(--ink)">
               <div className="flex items-center gap-3">
                 <Waypoints className="size-4 text-(--brand-strong)" />
-                Graph layouts for structural exploration
+                Graph layouts for browsing relationships
               </div>
               <div className="flex items-center gap-3">
                 <TableProperties className="size-4 text-(--brand-strong)" />
@@ -377,7 +378,7 @@ function ExplorerPageContent() {
               </div>
               <div className="flex items-center gap-3">
                 <SearchIcon className="size-4 text-(--brand-strong)" />
-                Search and tag filters for narrowing scope
+                Search and topic filters for narrowing results
               </div>
             </div>
           </div>
@@ -388,7 +389,7 @@ function ExplorerPageContent() {
             <div className="space-y-3">
               <p className="metric-label">Topics</p>
               <p className="metric-value">{topics.length}</p>
-              <p className="small-note">Taxonomy nodes available for browsing</p>
+              <p className="small-note">Topic groups available for browsing</p>
             </div>
             <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
               <Layers3 className="size-5" />
@@ -399,7 +400,7 @@ function ExplorerPageContent() {
             <div className="space-y-3">
               <p className="metric-label">Feeds</p>
               <p className="metric-value">{feeds.length}</p>
-              <p className="small-note">Cataloged sources linked to topics</p>
+              <p className="small-note">Catalog sources linked to those topics</p>
             </div>
             <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
               <RadioTower className="size-5" />
@@ -410,7 +411,7 @@ function ExplorerPageContent() {
             <div className="space-y-3">
               <p className="metric-label">Unique tags</p>
               <p className="metric-value">{allTags.length}</p>
-              <p className="small-note">Feed topics available as quick filters</p>
+              <p className="small-note">Topic labels available as quick filters</p>
             </div>
             <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
               <SearchIcon className="size-5" />
@@ -437,7 +438,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "topics"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("topics")}
               aria-pressed={tab === "topics"}
@@ -456,7 +457,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "feeds"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("feeds")}
               aria-pressed={tab === "feeds"}
@@ -475,7 +476,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-between rounded-2xl border px-5 py-4 text-sm font-semibold transition duration-150 lg:flex-none lg:min-w-48",
                 tab === "combined"
                   ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               onClick={() => setTab("combined")}
               aria-pressed={tab === "combined"}
@@ -498,7 +499,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "graph"
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               aria-pressed={view === "graph"}
             >
@@ -512,7 +513,7 @@ function ExplorerPageContent() {
                 "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
                 view === "table"
                   ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
               )}
               aria-pressed={view === "table"}
             >
@@ -539,7 +540,9 @@ function ExplorerPageContent() {
                       type="text"
                       placeholder={`Search ${tab}...`}
                       value={search}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSearch(e.target.value)
+                      }
                       className="pl-11"
                     />
                   </div>
@@ -570,7 +573,9 @@ function ExplorerPageContent() {
                 <Button
                   type="button"
                   onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                  aria-label={`Toggle sort order, currently ${sortOrder === "asc" ? "ascending" : "descending"}`}
+                  aria-label={`Toggle sort order, currently ${
+                    sortOrder === "asc" ? "ascending" : "descending"
+                  }`}
                   className="lg:self-end"
                 >
                   {sortOrder === "asc" ? "Ascending" : "Descending"}
@@ -602,7 +607,7 @@ function ExplorerPageContent() {
                         "rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-150",
                         selectedTags.includes(tag)
                           ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)"
+                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
                       )}
                       aria-pressed={selectedTags.includes(tag)}
                     >
@@ -684,8 +689,8 @@ function ExplorerPageContent() {
             )}
           </div>
         )}
-        </section>
-      </div>
+      </section>
+    </div>
   );
 }
 
@@ -813,9 +818,7 @@ function TopicsTable({ topics }: { topics: TopicRecord[] }) {
         <div className="text-lg font-medium text-(--ink)">
           No topics found matching your search criteria
         </div>
-        <p className="small-note mt-2">
-          Try adjusting your search terms or filters
-        </p>
+        <p className="small-note mt-2">Try adjusting your search terms or filters</p>
       </div>
     );
   }
@@ -841,17 +844,10 @@ function TopicsTable({ topics }: { topics: TopicRecord[] }) {
         </thead>
         <tbody className="divide-y divide-(--line)">
           {topics.map((t, idx) => (
-            <tr
-              key={t.id || idx}
-              className="transition-colors hover:bg-(--surface-muted)"
-            >
-              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">
-                {t.id}
-              </td>
+            <tr key={t.id || idx} className="transition-colors hover:bg-(--surface-muted)">
+              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">{t.id}</td>
               <td className="px-6 py-4 font-semibold text-(--ink)">{t.label}</td>
-              <td className="px-6 py-4 text-sm text-(--ink-muted)">
-                {t.description}
-              </td>
+              <td className="px-6 py-4 text-sm text-(--ink-muted)">{t.description}</td>
               <td className="px-6 py-4">
                 {t.facet && (
                   <span className="rounded-full bg-(--brand-soft) px-3 py-1 text-xs font-medium text-(--brand-strong)">
@@ -879,9 +875,7 @@ function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
         <div className="text-lg font-medium text-(--ink)">
           No feeds found matching your search criteria
         </div>
-        <p className="small-note mt-2">
-          Try adjusting your search terms or tag filters
-        </p>
+        <p className="small-note mt-2">Try adjusting your search terms or tag filters</p>
       </div>
     );
   }
@@ -907,10 +901,7 @@ function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
             const topicsArray = normalizeTopicValues(f.topics ?? f.tags);
 
             return (
-              <tr
-                key={f.url || idx}
-                className="transition-colors hover:bg-(--surface-muted)"
-              >
+              <tr key={f.url || idx} className="transition-colors hover:bg-(--surface-muted)">
                 <td className="px-6 py-4 font-semibold text-(--ink)">
                   {f.title || "Untitled Feed"}
                 </td>

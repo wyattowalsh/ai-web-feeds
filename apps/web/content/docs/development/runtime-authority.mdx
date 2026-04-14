@@ -1,186 +1,63 @@
 ---
-title: Runtime Authority
-description: Source-of-truth rules for authored catalog data, runtime article storage, generated web corpus artifacts, browser state, and optional backend proxies
+title: Data Sources and Ownership
+description: Which files and runtime stores are authoritative for the catalog, generated article library, browser state, and optional backend features.
 ---
 
-import { Callout } from "fumadocs-ui/components/callout";
+This page explains which data source owns each part of the product. Not every file in the repository has the same authority.
 
-# Runtime Authority
+## Authority Tiers
 
-This page describes which asset is authoritative for each layer of the system.
-Not every file in the repository has the same status.
+| Tier                      | Canonical assets                                      | Used for                                                                               |
+| ------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Authored repository data  | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas   | Source and taxonomy edits made by contributors                                         |
+| Derived repository data   | `data/feeds.enriched.yaml`, exported JSON, OPML files | Generated outputs derived from the authored catalog                                    |
+| Runtime database          | `data/ai-web-feeds.db`                                | Fetched entries, validation history, analytics, recommendations, and operational state |
+| Generated article library | `data/articles.generated.json`                        | Standalone web browsing and post search                                                |
+| Web APIs and pages        | `/api/articles`, `/api/search`, `/feeds`              | Reading and searching recent posts plus browsing the source catalog                    |
+| Browser-local state       | `localStorage`, `IndexedDB`                           | Reading state, local preferences, and device-scoped client state                       |
+| Optional backend proxy    | `BACKEND_URL`                                         | Server-backed analytics and recommendations                                            |
 
-## Authority tiers
+## What Each Layer Owns
 
-| Tier | Canonical assets | Used for |
-| --- | --- | --- |
-| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas | contributor-edited catalog and taxonomy |
-| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML | checked-in outputs generated from authored inputs |
-| Runtime article store | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state |
-| Generated web corpus | `data/articles.generated.json` | self-contained article browse/search/read payload for the Next.js app |
-| Web APIs and workspace | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds` | corpus-backed reading/search plus catalog-backed source discovery |
-| Browser-local runtime | IndexedDB, localStorage, reader-local state | anonymous on-device reader preferences and article state |
-| External backend proxy | `BACKEND_URL`-backed Python service | optional analytics logging, saved searches, and backend-proxied runtime routes |
+### Authored repository data
 
-## Bounded app contexts
+Use the YAML catalog and topic files when you are changing the source list itself.
 
-The repository still ships one Next.js application, but implementation work is
-split across four bounded contexts:
+### Derived repository data
 
-| Context | Primary responsibility | Typical paths |
-| --- | --- | --- |
-| Docs shell | static docs, content rendering, and navigation | `app/docs`, `content/docs`, docs UI components |
-| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
-| Admin | operational dashboards, telemetry inspection, and admin session enforcement | `app/admin`, `components/admin`, `lib/admin-auth.ts` |
-| Backend proxy | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers |
-
-Treat these as bounded code ownership areas inside one deployment, not as
-separate deployables or packages.
-
-## What each layer owns
-
-### Authored repository truth
-
-- `data/feeds.yaml` is the minimal curated source registry.
-- `data/topics.yaml` is the topic taxonomy.
-- schemas in `data/*.schema.json` define the validation contract for those files.
-
-These files are the starting point for contributor changes and workflow intake.
-
-### Derived repository assets
-
-- `data/feeds.enriched.yaml` is derived from the authored feed catalog.
-- exported JSON and OPML files are downstream artifacts, not the canonical input.
-
-Treat these as generated or regenerated outputs whenever the authored catalog
-changes.
+Use enriched YAML and exported assets as outputs. They should be regenerated when the authored catalog changes.
 
 ### Runtime database
 
-The runtime SQLite store is where the application materializes operational data:
+Use the runtime database for operational behavior such as fetched entries, validation history, search state, and recommendation inputs.
 
-- feed/search indices
-- canonical `feed_entries` rows for polled articles
-- validation and monitoring history
-- recommendation inputs
-- user-scoped follows, preferences, notifications, and digests
+### Generated article library
 
-Operational file handling is intentionally scoped:
+Use `data/articles.generated.json` when you want to validate the standalone web experience. That file is the main post-browsing dataset for the web app.
 
-- `data/ai-web-feeds.db` is the canonical runtime filename.
-- `data/aiwebfeeds.db` remains a legacy compatibility fallback for older local
-  installs when the canonical file has not been materialized yet.
-- Extra scratch databases under `data/` are not authoritative repository assets
-  and should be kept out of the tracked data root.
+### Browser-local state
 
-Bootstrap policy is intentionally split by environment:
+Read, saved, starred, and archived state stays in the browser. That keeps the core reading flow available without forcing end-user accounts into the product.
 
-- `DatabaseManager.create_db_and_tables()` is the supported entrypoint.
-- File-backed databases upgrade through Alembic revisions in `packages/alembic/`.
-- `sqlite:///:memory:` uses `SQLModel.metadata.create_all()` for test-only
-  bootstrap parity.
+### Optional backend proxy
 
-Core runtime tables backing search, recommendations, analytics, and trending are:
+The backend remains optional. It is only needed for features that require live server-side state, such as analytics exports and personalized recommendations.
 
-- `sources`, `topics`, `validations`, `analytics`, `analytics_snapshots`, `topic_stats`
-- `feed_embeddings`, `search_queries`, `saved_searches`
-- `recommendation_interactions`, `user_profiles`, `user_feed_follows`
-- `feed_entries`, `trending_topics`, `notification_preferences`, `email_digests`
-
-Use the runtime database for behavior and article persistence; use the YAML
-catalog for authorship.
-
-### Generated web corpus
-
-`data/articles.generated.json` is the reader-first bridge between the runtime
-database and the standalone web app.
-
-- it is derived from `feed_entries`
-- it carries normalized article rows plus metadata such as `generated_at`,
-  `source_db`, `article_count`, `feed_count`, and `latest_published_at`
-- it is the default source for `/api/articles`, article search, autocomplete
-  article suggestions, and the `/feeds` reader workspace
-- it intentionally excludes browser-local reading state such as unread, saved,
-  starred, and archived flags
-
-The web app should treat a missing or empty corpus as an explicit runtime state,
-not as permission to silently fall back to bounded live sampling.
-
-### Browser-local runtime
-
-Anonymous reader features are intentionally device-scoped.
-
-- local reader state stays on the client
-- local preferences and article state do not require an end-user account
-- a server-issued anonymous binding cookie is used when server APIs must scope
-  user-specific mutations
-
-### Anonymous identity lifecycle
-
-The public app intentionally avoids end-user login for reader features. The
-identity flow is:
-
-1. The browser reads any previously stored device UUID from `localStorage`.
-2. The first server-scoped write or `/api/identity` bootstrap call establishes
-   the authoritative anonymous identity.
-3. The server returns that UUID in the response header and binds it to an
-   HttpOnly cookie.
-4. Browser helpers persist the echoed UUID locally, but the server-issued
-   binding remains the only trusted identity for authorization checks.
-5. Search-scoped analytics and saved-search mutations must await the shared
-   bootstrap promise before they send, so the first persisted write cannot race
-   the server-issued binding cookie.
-
-Client-provided UUIDs are convenience hints. The binding cookie is the
-authority.
-
-### External backend proxy
-
-Some web APIs proxy to a Python backend when `BACKEND_URL` is configured.
-That proxy is no longer required for the primary `/feeds` reading/search flow.
-It remains useful for runtime analytics logging and storage operations that are
-not served from repository data files or the generated corpus artifact.
-
-## Precedence rules
+## Practical Precedence Rules
 
 ```mermaid
 flowchart TD
-    feeds[data/feeds.yaml] --> derived[data/feeds.enriched.yaml]
-    feeds --> validator[data/validate_data_assets.py]
-    topics[data/topics.yaml] --> validator
-    derived --> runtime[(data/ai-web-feeds.db)]
-    runtime --> corpus[data/articles.generated.json]
-    corpus --> web[/api/articles + /api/search + /feeds]
-    derived --> web
-    web --> browser[device-scoped local state]
+    feeds[data/feeds.yaml] --> enriched[data/feeds.enriched.yaml]
+    topics[data/topics.yaml] --> enriched
+    runtime[(data/ai-web-feeds.db)] --> corpus[data/articles.generated.json]
+    enriched --> web[/api/search + catalog UI]
+    corpus --> web[/api/articles + /feeds]
+    web --> browser[localStorage + IndexedDB]
+    web --> backend[optional BACKEND_URL proxy]
 ```
 
-## Web loading behavior
+## Related
 
-The web app prefers repository catalog files in this order for source discovery:
-
-1. `data/feeds.enriched.yaml`
-2. `data/feeds.yaml`
-3. `data/feeds.json`
-
-The web app prefers `data/articles.generated.json` for article browse/search.
-
-- If the corpus exists, `/feeds`, `/api/articles`, article search, and
-  autocomplete article suggestions use it.
-- If the corpus is missing or empty, the reader-first workspace renders a
-  dedicated corpus-unavailable state.
-- Live fetches from `/api/feeds/posts/aggregate` remain a freshness overlay only.
-
-<Callout type="info" title="Practical rule">
-  Edit YAML when you are changing the catalog itself. Use the runtime database
-  when you are inspecting operational behavior or populating `feed_entries`. Use
-  the generated corpus when you are validating the reader/search experience that
-  ships in the standalone web app.
-</Callout>
-
-## Related documentation
-
-- [Search architecture](/docs/development/search-architecture)
-- [Reader](/docs/features/reader)
-- [Search & Discovery](/docs/features/search)
-- [Deployment Guide](/docs/guides/deployment)
+- [Architecture Overview](/docs/development/architecture)
+- [Search Architecture](/docs/development/search-architecture)
+- [Feeds](/docs/features/reader)

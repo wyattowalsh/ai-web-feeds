@@ -290,7 +290,7 @@ describe("ReaderPageClient", () => {
       }),
     );
     expect(
-      screen.getByText("Pinned to 2 feeds carried over from the current catalog slice."),
+      screen.getByText("Pinned to 2 feeds carried over from the current catalog filters."),
     ).toBeInTheDocument();
   });
 

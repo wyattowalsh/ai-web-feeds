@@ -1,122 +1,57 @@
 ---
-title: Overview
-description: AI Web Feeds development architecture and implementation
+title: Development Overview
+description: A practical guide to the monorepo layout, required toolchains, and the main development workflows.
 ---
 
-# Development Overview
+AI Web Feeds is a mixed Python and TypeScript monorepo. The Python side powers the package, CLI, and optional backend. The TypeScript side powers the Next.js web app and docs.
 
-AI Web Feeds is a comprehensive system for managing AI/ML feed sources with database persistence, enrichment, and OPML generation.
+## Repository Layout
 
-## What We Built
+- `packages/ai_web_feeds/` contains the Python package
+- `apps/cli/` contains the Typer-based CLI
+- `apps/web/` contains the Next.js app and the docs site
+- `tests/` contains the Python test suite
+- `data/` contains the catalog, schemas, OPML exports, and local runtime files
 
-A production-ready system with the following capabilities:
+## Required Tooling
 
-### 1. Database Layer (`aiwebfeeds.db`)
+The repo enforces a split toolchain:
 
-**Technology:** SQLModel + SQLAlchemy + Alembic
+- use `uv run ...` for Python commands
+- use `pnpm ...` for Node and web commands
 
-**Tables:**
+Do not use bare `python`, `pip`, `npm`, or `yarn` in this repository.
 
-- `feed_sources` - Core feed metadata
-- `feed_items` - Individual feed entries
-- `feed_fetch_logs` - Fetch attempt tracking
-- `topics` - Topic taxonomy
+## Common Workflows
 
-**Features:**
-
-- Full CRUD operations
-- Relationship management
-- Migration support via Alembic
-- JSON field support for flexible data
-
-### 2. Feed Enrichment Pipeline (`feeds.enriched.yaml`)
-
-**Capabilities:**
-
-- Automatic feed URL discovery from site URLs
-- Feed format detection (RSS/Atom/JSONFeed)
-- Metadata validation and enrichment
-- Quality scoring and curation tracking
-
-**Input:** `data/feeds.yaml` (human-curated)
-**Output:** `data/feeds.enriched.yaml` (fully enriched with automation data)
-
-### 3. Schema Management (`feeds.enriched.schema.json`)
-
-**Features:**
-
-- Auto-generated JSON Schema for enriched feeds
-- Comprehensive validation rules
-- Extends base `feeds.schema.json`
-- Supports all enrichment metadata
-
-### 4. OPML Generation
-
-**Formats:**
-
-- **all.opml** - Flat list of all feeds
-- **categorized.opml** - Organized by source type
-- **Custom filtered** - By topic, type, tag, verification status
-
-**Use Case:** Import into feed readers (Feedly, Inoreader, NetNewsWire, etc.)
-
-### 5. CLI Interface
-
-**Commands:**
+### Run the web app
 
 ```bash
-aiwebfeeds enrich all          # Enrich feeds
-aiwebfeeds opml all            # Generate all.opml
-aiwebfeeds opml categorized    # Generate categorized.opml
-aiwebfeeds opml filtered       # Generate custom filtered OPML
-aiwebfeeds stats show          # Display statistics
+cd apps/web
+pnpm install
+pnpm dev
 ```
 
-## Package Structure
+### Run Python checks
 
-```
-ai-web-feeds (workspace root)
-├── packages/ai_web_feeds/          # Core library
-│   └── src/ai_web_feeds/
-│       ├── models.py               # SQLModel tables + Pydantic models
-│       ├── storage.py              # Database manager
-│       ├── utils.py                # Enrichment, OPML, schema utils
-│       ├── config.py               # Configuration
-│       └── logger.py               # Logging setup
-│
-└── apps/cli/                       # CLI application
-    └── ai_web_feeds/cli/
-        ├── __init__.py             # Main CLI app
-        └── commands/
-            ├── enrich.py           # Enrichment commands
-            ├── opml.py             # OPML generation
-            ├── stats.py            # Statistics
-            ├── export.py           # Export (stub)
-            └── validate.py         # Validation (stub)
+```bash
+uv run ruff check .
+uv run pytest
 ```
 
-## Data Flow
+### Build the article library for the web app
 
+```bash
+uv run ai-web-feeds corpus refresh
 ```
-feeds.yaml (human-curated)
-    ↓
-    ├─→ Feed Discovery (if discover: true)
-    ├─→ Format Detection
-    ├─→ Metadata Validation
-    └─→ Enrichment
-         ↓
-         ├─→ feeds.enriched.yaml (YAML export)
-         ├─→ feeds.enriched.schema.json (JSON schema)
-         └─→ aiwebfeeds.db (SQLite database)
-              ↓
-              ├─→ all.opml (all feeds)
-              ├─→ categorized.opml (by type)
-              └─→ filtered.opml (custom filters)
-```
+
+## Documentation Rules
+
+User-facing documentation belongs in `apps/web/content/docs/*.mdx`. The docs site and the machine-readable `llms.txt` outputs are generated from that content.
 
 ## Next Steps
 
-- [Database Setup](/docs/development/database) - Learn about the database layer
-- [CLI Usage](/docs/development/cli) - Using the command-line interface
-- [Python API](/docs/development/python-api) - Using the Python API
-- [Contributing](/docs/development/contributing) - How to contribute
+- [Architecture](/docs/development/architecture)
+- [CLI](/docs/development/cli)
+- [Python API](/docs/development/python-api)
+- [Testing](/docs/development/testing)

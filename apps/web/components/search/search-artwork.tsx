@@ -20,20 +20,20 @@ export const SEARCH_ARTWORKS = {
   startHereOnboarding: {
     title: "Find sources, then scan fresh posts",
     caption:
-      "Start with source search, switch to article search once you have the right feed cluster.",
+      "Start with source search, then switch to post search once you have the right feeds in view.",
     accent: "from-sky-500/15 via-cyan-500/10 to-emerald-500/15",
     asset: DESIGN_ASSETS.feeds.startHereOnboarding,
   },
   modesComparison: {
-    title: "Two search modes, one catalog",
+    title: "Two search modes, one place",
     caption:
-      "Source search ranks the registry. Article search fans out into recent posts from the strongest matches.",
+      "Source search ranks the catalog. Article search pulls recent posts from the strongest matches.",
     accent: "from-amber-500/15 via-rose-500/10 to-sky-500/15",
     asset: DESIGN_ASSETS.feeds.modesComparison,
   },
   noResults: {
-    title: "No match in the current slice",
-    caption: "Broaden the query or remove filters to search a wider slice of the catalog.",
+    title: "No results in the current view",
+    caption: "Broaden the query or remove filters to search a wider set of results.",
     accent: "from-slate-500/15 via-zinc-500/10 to-sky-500/15",
     asset: DESIGN_ASSETS.feeds.noResults,
   },

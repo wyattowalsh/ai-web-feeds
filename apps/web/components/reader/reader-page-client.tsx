@@ -130,7 +130,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
       ),
     [paramState],
   );
-  const selectedFeedId = explicitFeedIds.length === 1 ? (explicitFeedIds[0] ?? "") : "";
+  const selectedFeedId = explicitFeedIds.length === 1 ? explicitFeedIds[0] ?? "" : "";
   const topicFilters = useMemo(() => readTopicFilters(paramState), [paramState]);
   const topic = topicFilters[0] || "";
   const query = normalizeSearchQuery(paramState.get("q")) || "";
@@ -238,7 +238,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
         return next;
       });
     },
-    "Next article"
+    "Next article",
   );
 
   useKeyboardShortcut(
@@ -254,7 +254,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
         return next;
       });
     },
-    "Previous article"
+    "Previous article",
   );
 
   useEffect(() => {
@@ -513,7 +513,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   {explicitFeedIds.length > 1 ? (
                     <p className="small-note mt-2">
                       Pinned to {explicitFeedIds.length} feeds carried over from the current catalog
-                      slice.
+                      filters.
                     </p>
                   ) : null}
                 </div>
@@ -667,13 +667,18 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                     Nothing matches the current reader scope
                   </h2>
                   <p className="small-note mt-2 max-w-md">
-                    Broaden your feed or topic selection, clear the text filter, or refresh the live fetch to pull a new article set.
+                    Broaden your feed or topic selection, clear the text filter, or refresh the live
+                    fetch to pull a new article set.
                   </p>
                   <div className="mt-6 flex gap-3">
-                    <Button type="button" variant="outline" onClick={() => {
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
                         setParamState(new URLSearchParams());
                         router.replace(pathname, { scroll: false });
-                    }}>
+                      }}
+                    >
                       Clear all filters
                     </Button>
                     <Link href={catalogHref} className={cn(buttonVariants({ variant: "default" }))}>
@@ -684,22 +689,27 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
               ) : null}
 
               <div className="sticky top-0 z-10 w-full mb-4 bg-(--bg) pt-2 pb-4">
-                 {filteredArticles.length > 0 && (
-                   <div className="w-full h-1.5 bg-(--surface-muted) rounded-full overflow-hidden mb-2 shadow-inner">
-                     <div
-                       className="h-full bg-(--brand) transition-all duration-300 ease-out rounded-full"
-                       style={{
-                         width: `${Math.max(0, Math.min(100, ((focusedIndex + 1) / filteredArticles.length) * 100))}%`
-                       }}
-                     />
-                   </div>
-                 )}
-                 <div className="flex justify-between items-center text-[11px] font-semibold uppercase tracking-wider text-(--ink-muted) px-1">
-                   <span>Reading Progress</span>
-                   {filteredArticles.length > 0 && (
-                     <span>{focusedIndex + 1} / {filteredArticles.length}</span>
-                   )}
-                 </div>
+                {filteredArticles.length > 0 && (
+                  <div className="w-full h-1.5 bg-(--surface-muted) rounded-full overflow-hidden mb-2 shadow-inner">
+                    <div
+                      className="h-full bg-(--brand) transition-all duration-300 ease-out rounded-full"
+                      style={{
+                        width: `${Math.max(
+                          0,
+                          Math.min(100, ((focusedIndex + 1) / filteredArticles.length) * 100),
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-[11px] font-semibold uppercase tracking-wider text-(--ink-muted) px-1">
+                  <span>Reading Progress</span>
+                  {filteredArticles.length > 0 && (
+                    <span>
+                      {focusedIndex + 1} / {filteredArticles.length}
+                    </span>
+                  )}
+                </div>
               </div>
               <div
                 className={cn(
@@ -768,10 +778,14 @@ function ReaderArticleCard({
     "mark_as_read",
     () => {
       if (isFocused) {
-        state.read ? markUnread() : markRead();
+        if (state.read) {
+          void markUnread();
+        } else {
+          void markRead();
+        }
       }
     },
-    "Mark as read"
+    "Mark as read",
   );
 
   useKeyboardShortcut(
@@ -781,7 +795,7 @@ function ReaderArticleCard({
         toggleStar();
       }
     },
-    "Star"
+    "Star",
   );
 
   useKeyboardShortcut(
@@ -791,7 +805,7 @@ function ReaderArticleCard({
         toggleArchive();
       }
     },
-    "Archive"
+    "Archive",
   );
 
   // Calculate reading time estimate
@@ -804,8 +818,11 @@ function ReaderArticleCard({
       onClick={onClick}
       className={cn(
         "group relative overflow-hidden surface-card space-y-5 transition-all duration-300 ring-offset-2 ring-offset-(--bg)",
-        isFocused ? "ring-2 ring-(--brand) shadow-md" : "ring-1 ring-transparent hover:ring-(--line) hover:shadow-sm",
-        state.read && "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100 bg-(--surface-muted)/30",
+        isFocused
+          ? "ring-2 ring-(--brand) shadow-md"
+          : "ring-1 ring-transparent hover:ring-(--line) hover:shadow-sm",
+        state.read &&
+          "opacity-75 saturate-50 hover:opacity-100 hover:saturate-100 bg-(--surface-muted)/30",
         state.starred && "border-yellow-400/50 shadow-sm shadow-yellow-400/10",
         state.bookmarked && "border-(--brand)/50 shadow-sm shadow-(--brand)/10",
       )}
@@ -833,8 +850,7 @@ function ReaderArticleCard({
             ) : null}
             {article.summary ? (
               <span className="text-(--ink-muted) flex items-center gap-1.5 opacity-70">
-                <span className="size-1 rounded-full bg-(--line)" />
-                ~{readingTime} min read
+                <span className="size-1 rounded-full bg-(--line)" />~{readingTime} min read
               </span>
             ) : null}
           </div>
@@ -864,22 +880,31 @@ function ReaderArticleCard({
             onClick={(e) => {
               e.stopPropagation();
               if (state.read) {
-                 markUnread();
+                markUnread();
               } else {
-                 markRead();
+                markRead();
               }
             }}
             className={cn(
               "rounded-full h-8 px-3 transition-colors",
-              state.read ? "bg-green-100/50 text-green-700 hover:bg-green-200/50 ring-1 ring-green-600/20" : "hover:bg-(--surface-muted)"
+              state.read
+                ? "bg-green-100/50 text-green-700 hover:bg-green-200/50 ring-1 ring-green-600/20"
+                : "hover:bg-(--surface-muted)",
             )}
             title={state.read ? "Mark as unread" : "Mark as read"}
           >
-            <CircleCheck className={cn("size-4", state.read ? "fill-green-600 text-white" : "text-(--ink-muted)")} />
+            <CircleCheck
+              className={cn(
+                "size-4",
+                state.read ? "fill-green-600 text-white" : "text-(--ink-muted)",
+              )}
+            />
             <span className="sr-only sm:not-sr-only sm:ml-2 text-xs font-medium">
               {state.read ? "Read" : "Mark read"}
             </span>
-            {isFocused ? <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[m]</span> : null}
+            {isFocused ? (
+              <span className="ml-1 text-[10px] font-mono text-(--ink-muted) opacity-60">[m]</span>
+            ) : null}
           </Button>
           <div className="flex items-center gap-1 bg-(--surface-muted)/50 rounded-full p-0.5">
             <Button
@@ -892,11 +917,18 @@ function ReaderArticleCard({
               }}
               className={cn(
                 "size-7 rounded-full transition-colors",
-                state.starred ? "bg-yellow-100/50 text-yellow-700 hover:bg-yellow-200/50 ring-1 ring-yellow-500/20" : "hover:bg-black/5 dark:hover:bg-white/10"
+                state.starred
+                  ? "bg-yellow-100/50 text-yellow-700 hover:bg-yellow-200/50 ring-1 ring-yellow-500/20"
+                  : "hover:bg-black/5 dark:hover:bg-white/10",
               )}
               title={state.starred ? "Unstar" : "Star"}
             >
-              <Star className={cn("size-3.5", state.starred ? "fill-yellow-500 text-yellow-500" : "text-(--ink-muted)")} />
+              <Star
+                className={cn(
+                  "size-3.5",
+                  state.starred ? "fill-yellow-500 text-yellow-500" : "text-(--ink-muted)",
+                )}
+              />
               <span className="sr-only">Star</span>
               {isFocused ? <span className="sr-only">[s]</span> : null}
             </Button>
@@ -910,14 +942,18 @@ function ReaderArticleCard({
               }}
               className={cn(
                 "size-7 rounded-full transition-colors",
-                state.bookmarked ? "bg-(--brand-soft) text-(--brand-strong) hover:bg-(--brand-soft)/80 ring-1 ring-(--brand)/20" : "hover:bg-black/5 dark:hover:bg-white/10"
+                state.bookmarked
+                  ? "bg-(--brand-soft) text-(--brand-strong) hover:bg-(--brand-soft)/80 ring-1 ring-(--brand)/20"
+                  : "hover:bg-black/5 dark:hover:bg-white/10",
               )}
               title={state.bookmarked ? "Remove bookmark" : "Bookmark"}
             >
               <Bookmark
                 className={cn(
                   "size-3.5",
-                  state.bookmarked ? "fill-(--brand-strong) text-(--brand-strong)" : "text-(--ink-muted)",
+                  state.bookmarked
+                    ? "fill-(--brand-strong) text-(--brand-strong)"
+                    : "text-(--ink-muted)",
                 )}
               />
               <span className="sr-only">Bookmark</span>
@@ -932,7 +968,9 @@ function ReaderArticleCard({
               }}
               className={cn(
                 "size-7 rounded-full transition-colors",
-                state.archived ? "bg-gray-200 text-gray-800 hover:bg-gray-300 ring-1 ring-gray-400/20 dark:bg-gray-800 dark:text-gray-200" : "hover:bg-black/5 dark:hover:bg-white/10"
+                state.archived
+                  ? "bg-gray-200 text-gray-800 hover:bg-gray-300 ring-1 ring-gray-400/20 dark:bg-gray-800 dark:text-gray-200"
+                  : "hover:bg-black/5 dark:hover:bg-white/10",
               )}
               title={state.archived ? "Unarchive" : "Archive"}
             >
@@ -953,13 +991,11 @@ function ReaderArticleCard({
         >
           {article.summary}
         </div>
-      ) : (
-        showSummary ? (
-          <div className="prose prose-sm sm:prose-base max-w-none text-(--ink-muted) italic opacity-75">
-            This article was published without a summary.
-          </div>
-        ) : null
-      )}
+      ) : showSummary ? (
+        <div className="prose prose-sm sm:prose-base max-w-none text-(--ink-muted) italic opacity-75">
+          This article was published without a summary.
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-4 mt-2 border-t border-(--line-soft)/50">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -982,8 +1018,13 @@ function ReaderArticleCard({
           href={article.link}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5 rounded-full px-4 font-semibold shadow-sm hover:shadow transition-all")}
-          onClick={(e) => { e.stopPropagation(); }}
+          className={cn(
+            buttonVariants({ variant: "default", size: "sm" }),
+            "gap-1.5 rounded-full px-4 font-semibold shadow-sm hover:shadow transition-all",
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
           Read full article
           <ExternalLink className="size-3.5" />

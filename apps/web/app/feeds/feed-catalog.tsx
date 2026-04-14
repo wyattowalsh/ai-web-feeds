@@ -626,7 +626,7 @@ export function FeedCatalog({
         <EmptyState
           icon={SearchIcon}
           title="No feeds match this filter set"
-          description="Reset to the full catalog, or pivot into the article workspace to discover posts beyond this feed slice."
+          description="Reset to the full catalog, or open the article view to discover posts beyond the current source list."
           tips={
             hasVerificationSignals
               ? [

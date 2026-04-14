@@ -156,7 +156,7 @@ describe("FeedsWorkspaceClient", () => {
     );
   });
 
-  it("renders the reader-first corpus workspace from the seeded browse snapshot", () => {
+  it("renders the feeds workspace from the seeded browse snapshot", () => {
     const fetchMock = vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -182,10 +182,8 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Browse posts across the full feed corpus" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Agent systems roundup")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Read and filter your feeds" })).toBeInTheDocument();
+    expect(screen.getAllByText("Agent systems roundup").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Fresh research notes").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Refresh latest/i })).toBeInTheDocument();
   });
@@ -311,7 +309,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(container).not.toHaveTextContent("Do not render form");
   });
 
-  it("shows a dedicated corpus unavailable state when the article load fails", async () => {
+  it("shows a dedicated article-library unavailable state when the article load fails", async () => {
     const fetchMock = vi.fn(async () => makeResponse({}, false, 503));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -333,11 +331,11 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(await screen.findByText("Article corpus unavailable")).toBeInTheDocument();
-    expect(screen.getByText(/The article corpus has not been built yet/)).toBeInTheDocument();
+    expect(await screen.findByText("Article library unavailable")).toBeInTheDocument();
+    expect(screen.getByText(/The article library has not been built yet/)).toBeInTheDocument();
   });
 
-  it("adds recovery links when the current reader slice returns no visible posts", async () => {
+  it("adds recovery links when the current filters return no visible posts", async () => {
     currentSearchParams = new URLSearchParams(
       "q=missing&source_type=blog&verified=true&feed=feed-1&reader_view=archived",
     );
@@ -383,12 +381,12 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(await screen.findByText("No posts match this slice")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
+    expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Clear post filters" })).toHaveAttribute(
       "href",
       "/feeds?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/feeds");
+    expect(screen.getByRole("link", { name: "Reset filters" })).toHaveAttribute("href", "/feeds");
     expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
       "href",
       "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",

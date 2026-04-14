@@ -8,6 +8,7 @@
     "start": "next start",
     "postinstall": "fumadocs-mdx",
     "lint": "eslint",
+    "lint:copy": "node ./scripts/check-copy-lexicon.mjs",
     "lint:links": "tsx ./scripts/lint-node.mjs",
     "lint:links:bun": "bun ./scripts/lint.ts",
     "generate:docs": "tsx scripts/generate-python-docs.mjs",
