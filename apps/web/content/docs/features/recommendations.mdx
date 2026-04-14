@@ -10,6 +10,14 @@ description: Backend-backed feed recommendations with topic steering, interactio
 
 The recommendations page at `/recommendations` is wired to real backend routes and no longer pretends to be fully available in backend-free local mode. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
 
+## At a Glance
+
+| Surface                     | Uses backend | Behavior when backend is unavailable              |
+| --------------------------- | ------------ | ------------------------------------------------- |
+| `/recommendations` page     | Yes          | Renders one unavailable panel with setup guidance |
+| `GET /api/recommendations`  | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
+| `POST /api/recommendations` | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
+
 ## Current Experience
 
 ### Recommendation List
@@ -23,7 +31,7 @@ When the backend is available, the page renders:
 
 ### Personalization Input
 
-The web client creates a stable local `user_id` in `localStorage` and sends it with every recommendation request. Topic chips refine the current request without changing the page URL.
+The web client creates a stable local `user_id` in `localStorage` and sends it with every recommendation request. Topic chips refine the current request without changing the page URL, so personalization can persist locally without requiring user accounts.
 
 ### Interaction Tracking
 
@@ -36,7 +44,7 @@ The UI records these interaction types:
 
 The backend stores that feedback, updates the user profile, and uses it to avoid repeating previously followed or already-interacted feeds in later recommendations.
 
-### Unavailable Fallback
+### Unavailable State
 
 If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
 
@@ -46,12 +54,14 @@ If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` sh
 
 That unavailable state is expected behavior in backend-free local development.
 
-## Backend Contract
+## Proxy Contract
 
 The web layer uses two backend-backed routes:
 
 - `GET /api/recommendations`
 - `POST /api/recommendations`
+
+### Request Forwarding
 
 `GET /api/recommendations` forwards:
 
@@ -70,6 +80,15 @@ The web layer uses two backend-backed routes:
 }
 ```
 
+### Stored Interaction Signals
+
+| Field              | Purpose                                           |
+| ------------------ | ------------------------------------------------- |
+| `user_id`          | Stable local profile key used for personalization |
+| `feed_id`          | Recommended feed the user interacted with         |
+| `interaction_type` | One of `view`, `click`, `subscribe`, or `dismiss` |
+| `reason`           | The recommendation reason shown in the UI         |
+
 When the backend is unavailable, the proxy returns:
 
 ```json
@@ -81,7 +100,7 @@ When the backend is unavailable, the proxy returns:
 
 with HTTP `503`.
 
-## Running With the Backend
+## Local Smoke Test
 
 Start the backend HTTP surface:
 
@@ -97,21 +116,10 @@ BACKEND_URL=http://127.0.0.1:8001
 
 Once `BACKEND_URL` is set, the page switches from the unavailable state to live recommendations automatically.
 
-## API Example
+Quick verification:
 
-```typescript
-const params = new URLSearchParams({
-  user_id: "user_123",
-  topics: "agents,llm",
-  limit: "10",
-});
-
-const response = await fetch(`/api/recommendations?${params.toString()}`);
-const payload = await response.json();
-
-if (response.ok) {
-  console.log(payload.recommendations);
-}
+```bash
+curl "http://127.0.0.1:3000/api/recommendations?user_id=test-user&topics=agents,llm&limit=10"
 ```
 
 ## Related

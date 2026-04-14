@@ -1,14 +1,23 @@
 ---
 title: Deployment Guide
-description: Production deployment guide for the reader-first feeds workspace with Python 3.13+, Next.js 15, SQLite, pnpm, and uv
+description: Deploy the reader-first web app with an optional analytics and recommendations backend using Python 3.13+, Next.js 15, SQLite, pnpm, and uv.
 ---
 
-# Deployment Guide - Reader-First Feeds Workspace
+# Deployment Guide
 
 > **For**: Production deployment of the standalone web app plus optional Python runtime workflows
 > **Stack**: Python 3.13+, Next.js 15, SQLite, pnpm, uv
 
 ---
+
+## Choose Your Deployment Profile
+
+| Profile       | Services                                                        | `BACKEND_URL` | `/analytics` and `/recommendations`         |
+| ------------- | --------------------------------------------------------------- | ------------- | ------------------------------------------- |
+| Web only      | `web` + optional `monitor`                                      | Not required  | Show intentional unavailable states         |
+| Web + backend | `web` + optional `monitor` + `uvicorn ai_web_feeds.web_api:app` | Required      | Load live analytics and recommendation data |
+
+Use the web-only profile unless you explicitly need live analytics exports and personalized recommendations.
 
 ## Prerequisites
 
@@ -74,8 +83,7 @@ You do not need email or SMTP variables for the simple admin telemetry setup.
 
 ## Docker Compose
 
-The repository ships a two-service compose setup that matches the codebase as it
-exists today:
+The repository ships a two-service compose setup that matches the codebase as it exists today:
 
 - `web`: the standalone Next.js application on port `3000`
 - `monitor`: the Python monitoring/WebSocket service on port `8000`
@@ -100,24 +108,20 @@ Notes:
 
 ---
 
-## Runtime Data Preparation
+## Shared Python Runtime Setup
 
-The standalone web app expects two things for the full reader/search experience:
+The standalone web app expects two things for the full reader and search experience:
 
 1. the checked-in source catalog under `data/`
 2. a generated article corpus at `data/articles.generated.json`
 
-You do **not** need a Python HTTP backend for `/feeds`, `/api/articles`, or
-GET-based search. You do need the Python runtime when you want to poll feeds and
-rebuild the corpus artifact.
+You do **not** need a Python HTTP backend for `/feeds`, `/api/articles`, or GET-based search. You do need the Python runtime when you want to poll feeds and rebuild the corpus artifact.
 
 ### 1. Install Dependencies
 
 ```bash
-# Install Python dependencies
 uv sync
 
-# Verify installation
 uv run python -c "import ai_web_feeds; print('✓ Backend installed')"
 ```
 
@@ -143,9 +147,7 @@ uv run ai-web-feeds corpus refresh
 uv run ai-web-feeds corpus export
 ```
 
-`corpus refresh` exits non-zero on partial failures, but still exports the
-artifact with truthful `partial_coverage` metadata so deployments can decide
-whether to accept or retry that snapshot.
+`corpus refresh` exits non-zero on partial failures, but still exports the artifact with truthful `partial_coverage` metadata so deployments can decide whether to accept or retry that snapshot.
 
 ### 4. Optional Runtime Search Setup
 
@@ -157,35 +159,11 @@ uv run ai-web-feeds search embeddings --provider local
 
 ## Backend Deployment
 
-Only required if you want live analytics and personalized recommendations. It is
-not required for the default reader, catalog, docs, downloads, or stats flows.
+Only required if you want live analytics and personalized recommendations. It is not required for the default reader, catalog, docs, downloads, or stats flows.
 
-### 1. Install Dependencies
+Start from the shared runtime setup above, then load initial data if this environment does not already have a prepared runtime database and generated corpus.
 
-```bash
-# Install Python dependencies
-uv sync
-
-# Verify installation
-uv run python -c "import ai_web_feeds; print('✓ Backend installed')"
-```
-
-### 2. Initialize Database
-
-```bash
-# Create database and tables
-uv run python -c "
-from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager()
-db.create_db_and_tables()
-print('✓ Database initialized')
-"
-
-# Optional: initialize runtime search tables (FTS5 + Trie)
-uv run ai-web-feeds search init
-```
-
-### 3. Load Initial Data
+### 1. Load Initial Data
 
 ```bash
 # Load feeds from YAML
@@ -198,7 +176,7 @@ uv run ai-web-feeds validate http --concurrency 10
 uv run ai-web-feeds corpus refresh
 ```
 
-### 4. Start the Backend HTTP Surface
+### 2. Start the Backend HTTP Surface
 
 ```bash
 uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
@@ -210,7 +188,7 @@ Then point the web app at it:
 BACKEND_URL=http://127.0.0.1:8001
 ```
 
-### 5. Verify Backend
+### 3. Verify Backend
 
 ```bash
 # Test the backend HTTP routes directly
@@ -363,17 +341,17 @@ AIWF_LOGGING__FILE_COMPRESSION="gz"
 
 ```bash
 # Refresh embeddings for new/updated feeds
-uv run aiwebfeeds search embeddings --provider local
+uv run ai-web-feeds search embeddings --provider local
 ```
 
 ### Analytics Snapshots
 
 ```bash
 # Create daily snapshot
-uv run aiwebfeeds analytics snapshot
+uv run ai-web-feeds analytics snapshot
 
 # Export analytics to CSV
-uv run aiwebfeeds analytics export --range 30d
+uv run ai-web-feeds analytics export --range 30d
 ```
 
 ---
@@ -488,14 +466,3 @@ vercel --prod
 - **Documentation**: [aiwebfeeds.com/docs](https://aiwebfeeds.com/docs)
 - **Issues**: [github.com/wyattowalsh/ai-web-feeds/issues](https://github.com/wyattowalsh/ai-web-feeds/issues)
 - **Discussions**: [github.com/wyattowalsh/ai-web-feeds/discussions](https://github.com/wyattowalsh/ai-web-feeds/discussions)
-
----
-
-**✅ Deployment Complete!**
-
-Your Phase 1 MVP is now live with:
-
-- Analytics Dashboard
-- Search & Discovery
-- AI-Powered Recommendations
-- 100% Free & Open Source Stack

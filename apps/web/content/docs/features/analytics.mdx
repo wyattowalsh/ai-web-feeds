@@ -8,7 +8,15 @@ description: Backend-backed feed analytics with graceful unavailable states, exp
 > **Status**: Backend-backed
 > **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
 
-The analytics surface at `/analytics` is now wired to real backend routes instead of placeholder APIs. When the optional backend is configured, the page loads summary metrics, trending topics, validation velocity, CSV export, and snapshots through the `/api/analytics/*` proxy layer. When the backend is not configured, the page shows a single deliberate unavailable panel instead of noisy card-level errors.
+The analytics surface at `/analytics` now uses the real backend routes instead of placeholder APIs. When the optional backend is configured, the page loads summary metrics, trending topics, validation velocity, CSV export, and snapshots through the `/api/analytics/*` proxy layer. When it is not configured, the page shows one deliberate unavailable state instead of noisy card-level fetch failures.
+
+## At a Glance
+
+| Surface                                            | Uses backend            | Behavior when backend is unavailable                 |
+| -------------------------------------------------- | ----------------------- | ---------------------------------------------------- |
+| `/analytics` overview                              | Yes                     | Renders one intentional unavailable panel            |
+| `/api/analytics/*` proxies                         | Yes                     | Returns `503 FEATURE_UNAVAILABLE`                    |
+| `/analytics/comparison` and `/analytics/forecasts` | Not for route rendering | Continue to render with the shared Chart.js registry |
 
 ## What Ships Today
 
@@ -31,33 +39,36 @@ The dashboard supports:
 
 ### Chart Stability
 
-The comparison and forecasting routes remain useful exploratory surfaces:
+The comparison and forecasting routes remain exploratory surfaces:
 
 - `/analytics/comparison`
 - `/analytics/forecasts`
 
 They now share the same Chart.js registration path as the rest of the app, which prevents the missing-controller runtime crashes that previously broke those pages in the browser.
 
-### Unavailable Fallback
+### Unavailable State
 
-If `BACKEND_URL` is unset or unreachable, `/analytics` intentionally renders an unavailable state with:
+If `BACKEND_URL` is unset or unreachable, `/analytics` intentionally renders one unavailable panel with:
 
 - setup guidance
 - a link back to `/feeds?mode=catalog`
 - a link to the deployment guide
 
-That fallback is now part of the product contract, not an implementation accident.
+That state is part of the product contract, not an implementation accident.
 
-## Backend Contract
+## Proxy Contract
 
-The web app expects the ai-web-feeds backend to expose:
+The web app expects the ai-web-feeds backend to expose the following routes:
 
-- `GET /analytics/summary`
-- `GET /analytics/trending`
-- `GET /analytics/velocity`
-- `GET /analytics/export`
-- `POST /analytics/snapshot`
-- `GET /analytics/snapshot`
+| Web proxy                 | Backend route                                            | Purpose                                            |
+| ------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| `/api/analytics/summary`  | `GET /analytics/summary`                                 | Summary KPIs for the selected date range and topic |
+| `/api/analytics/trending` | `GET /analytics/trending`                                | Trending topic slice                               |
+| `/api/analytics/velocity` | `GET /analytics/velocity`                                | Publication velocity data                          |
+| `/api/analytics/export`   | `GET /analytics/export`                                  | CSV export                                         |
+| `/api/analytics/snapshot` | `POST /analytics/snapshot` and `GET /analytics/snapshot` | Snapshot creation and latest snapshot retrieval    |
+
+## Backend-Off Response
 
 When the backend is unavailable, the web proxy returns:
 
@@ -70,7 +81,7 @@ When the backend is unavailable, the web proxy returns:
 
 with HTTP `503`.
 
-## Running With the Backend
+## Local Smoke Test
 
 Start the backend HTTP surface:
 
@@ -86,19 +97,10 @@ BACKEND_URL=http://127.0.0.1:8001
 
 With that in place, `/analytics` switches from the unavailable panel to live metrics automatically.
 
-## API Example
+Quick verification:
 
-```typescript
-const response = await fetch("/api/analytics/summary?date_range=30d&topic=llm");
-
-if (response.status === 503) {
-  const unavailable = await response.json();
-  console.log(unavailable.code); // FEATURE_UNAVAILABLE
-} else {
-  const data = await response.json();
-  console.log(data.total_feeds);
-  console.log(data.validation_success_rate);
-}
+```bash
+curl "http://127.0.0.1:3000/api/analytics/summary?date_range=30d&topic=llm"
 ```
 
 ## Related
