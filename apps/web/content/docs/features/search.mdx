@@ -1,81 +1,97 @@
 ---
 title: Search & Discovery
-description: Catalog filtering plus local recent-article search inside the unified /feeds workspace
+description: Reader-first article browse plus catalog discovery inside the unified /feeds workspace
 ---
 
 # Search & Discovery
 
-> **Status**: ✅ Fully Implemented
-> **Phase**: Phase 1 (MVP)
-> **Completion**: 100%
+The Search & Discovery experience lives inside the unified `/feeds` workspace
+and now answers two different questions from one route:
 
-The Search & Discovery experience now lives inside the unified `/feeds` workspace
-and helps users answer two different questions:
+- **What should I read now?** Browse and search the generated article corpus.
+- **Which sources should shape that queue?** Switch to catalog mode and refine
+  the source slice.
 
-- **Which source should I follow?** Use catalog mode to filter the checked-in source catalog.
-- **What has been published recently?** Switch to article mode to search recent pulled
-  articles from the most relevant feeds.
+## Workspace model
 
-## Features
+`/feeds` is now the default reader-first route.
 
-### Unified Feeds Workspace
+- `/feeds` opens the article workspace
+- `/feeds?mode=catalog` opens the explicit source picker
+- legacy `mode=articles` and `mode=reader` URLs still normalize into the same
+  reader-first workspace state
 
-The canonical product route is `/feeds`. Search is split across local workspace
-modes instead of separate top-level routes:
+The workspace keeps its query, filters, pinned feeds, sort order, and local
+reader view in the URL so deep links stay shareable and restorable.
 
-- `/feeds` for catalog filtering and source discovery
-- `/feeds?mode=articles` for recent-article search
-- `/feeds?mode=reader` for the merged reader stream
+## Article browse and search
 
-### Catalog Search
+Article browse and article search are backed by `data/articles.generated.json`,
+which is exported from `feed_entries` in the runtime database.
 
-Catalog mode reads the repository catalog directly and returns feeds that match:
+That means the reader workspace can:
 
-- Feed titles
-- Descriptions and notes
-- Topics
-- Source type and verification filters
+- search titles, summaries, feed titles, authors, categories, and topics across
+  the exported corpus
+- filter by `feed`, `topics`, `source_type`, and `verified`
+- page through results with cursor-based pagination
+- sort by `latest`, `oldest`, or `source`
 
-This is the default workspace mode and works without any external backend.
-When you jump from catalog mode into article search or reader mode, the workspace
-preserves the exact visible feed slice with repeated `feed=` params when a free-text
-filter would otherwise widen the scope.
+The article list is served by `GET /api/articles`, while ranked article search
+uses `GET /api/search?scope=articles`.
 
-### Recent Article Search
+## Catalog search
 
-Article search stays local-first as well, but it is intentionally bounded:
+Catalog search remains backed by the checked-in feed catalog.
 
-- The app first ranks candidate sources from the catalog
-- It fetches recent posts from the best-matching feeds
-- It searches within those pulled article titles, summaries, authors, and categories
+Use catalog mode when you want to:
 
-The response metadata reports how many sources were scanned so the UI can make the
-bounded behavior explicit.
+- filter feeds by source type, topic, or verification state
+- pin one or more feed IDs into the article workspace
+- move from source discovery into the reader without leaving `/feeds`
 
-### Autocomplete Suggestions
+This keeps source discovery available even if the runtime corpus has not been
+generated yet.
 
-Autocomplete returns:
+## Autocomplete
 
-- **Top matching feeds**
-- **Top matching topics**
+Autocomplete now returns a shared suggestion set sourced from the catalog plus
+the article corpus:
 
-It is powered by the shipped feed catalog, not by runtime search infrastructure.
+- matching feeds
+- matching articles
+- matching topics
 
-### Faceted Filtering
+Because the same server-side adapter builds those suggestions, autocomplete and
+article search no longer drift across different data models.
 
-Filter the catalog and article-search modes with shared controls:
+## Freshness overlay
 
-- **Source Type**
-- **Topics**
-- **Verified status**
+The canonical reader/search dataset is the generated corpus. Live feed fetches
+still exist, but only as an explicit freshness overlay.
 
-For source results, each match can link directly into reader mode under `/feeds`.
+- `Refresh latest` calls `/api/feeds/posts/aggregate`
+- new live items are deduped against the current corpus-backed list
+- genuinely new items are prepended with a freshness badge
+- failed refreshes do not replace or erase the base corpus results
 
-### Analytics Logging
+## Local reading state
 
-If a Python backend is configured, the web app logs executed searches using the
-anonymous user identity bootstrap. If no backend is configured, search still works and
-the analytics write is skipped.
+Unread, saved, starred, and archived state stay in browser-local storage.
+
+Those client-only states are layered on top of server-returned article results,
+which is why you can filter the visible list to `unread`, `saved`, `starred`,
+or `archived` without writing that state into the generated corpus artifact.
+
+## Analytics logging
+
+If a Python backend is configured, the web app can still log executed searches
+through `POST /api/search` using the anonymous identity bootstrap.
+
+If no backend is configured:
+
+- browse/search/autocomplete continue to work
+- only the analytics write is skipped
 
 ## Configuration
 
@@ -88,13 +104,13 @@ BACKEND_URL=http://localhost:8000
 
 ### Web Interface
 
-Navigate to `/feeds?mode=articles`:
+Navigate to `/feeds`:
 
-1. Type query in search bar
-2. Keep or adjust the shared source-type, topic, and verified filters
-3. Select an autocomplete suggestion or press Enter
-4. Open a matching source in reader mode when you want the live post stream
-5. Return to `/feeds` when you want to widen or change the catalog slice
+1. Type a query in the workspace search bar
+2. Keep or adjust the shared source-type, topic, verified, and pinned-feed filters
+3. Press Enter to refresh the article list, or use autocomplete suggestions
+4. Switch to `mode=catalog` when you need to change the source slice
+5. Use `Refresh latest` when you want a non-destructive live overlay on top of the corpus
 
 **Keyboard Shortcuts**:
 
@@ -106,18 +122,21 @@ Navigate to `/feeds?mode=articles`:
 
 ```bash
 # Catalog search
-uv run aiwebfeeds search "transformer attention" --limit 20
+uv run ai-web-feeds search "transformer attention" --limit 20
 
 # Filter by source type and topic
-uv run aiwebfeeds search "pytorch" --source-type blog --topic deeplearning
+uv run ai-web-feeds search "pytorch" --source-type blog --topic deeplearning
 
 # Autocomplete against the catalog
-uv run aiwebfeeds search autocomplete openai --limit 5
+uv run ai-web-feeds search autocomplete openai --limit 5
 ```
 
 ### API
 
 ```typescript
+// Corpus-backed article browse
+const browse = await fetch("/api/articles?q=agents&sort=latest&limit=24");
+
 // Source search
 const response = await fetch("/api/search?q=transformer&scope=sources&limit=20");
 const results = await response.json();
@@ -131,27 +150,29 @@ const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
 
 ## Performance
 
-- **Autocomplete**: Catalog-backed and lightweight enough for interactive typing
+- **Autocomplete**: Shared catalog/corpus suggestions with cacheable GET responses
 - **Source Search**: Reads checked-in data without depending on a backend runtime
-- **Article Search**: Bounded on purpose so the browser can stay responsive
+- **Article Browse/Search**: Reads the generated corpus artifact instead of running live feed scans on demand
 
 ## Zero Results Handling
 
-When no results are found, the UI steers the user toward:
+When no article results are found, the UI steers the user toward:
 
-- Returning to catalog mode for broader source discovery
-- Fewer filters
-- Wider topic or source-type scope before rerunning recent-article search
+- returning to catalog mode for broader source discovery
+- fewer filters
+- a wider topic or source-type scope
+- rebuilding the generated corpus if the workspace reports that the artifact is unavailable
 
 ## Success Criteria
 
-- ✅ Local source search returns feed matches without a backend dependency
-- ✅ Article search exposes bounded-scan metadata to explain its coverage
-- ✅ Source results can jump directly into reader mode within `/feeds`
+- ✅ Reader-first `/feeds` works without a required Python HTTP backend
+- ✅ Article browse and article search run across the generated corpus
+- ✅ Source results can jump directly into the article workspace within `/feeds`
+- ✅ Autocomplete suggestions are built from the same catalog/corpus model used by the reader
 
 ## Related
 
 - [Analytics Dashboard](./analytics) - View search analytics and popular queries
-- [Reader](./reader) - Open matching sources as a live merged timeline inside `/feeds`
+- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/feeds`
 - [Recommendations](./recommendations) - AI-powered feed suggestions
 - [Search architecture](/docs/development/search-architecture) - Runtime and local search split

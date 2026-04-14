@@ -1,11 +1,11 @@
 ---
 title: Deployment Guide
-description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next.js 15, SQLite, pnpm, and uv
+description: Production deployment guide for the reader-first feeds workspace with Python 3.13+, Next.js 15, SQLite, pnpm, and uv
 ---
 
-# Deployment Guide - Phase 1: Data Discovery & Analytics
+# Deployment Guide - Reader-First Feeds Workspace
 
-> **For**: Production deployment of Phase 1 MVP
+> **For**: Production deployment of the standalone web app plus optional Python runtime workflows
 > **Stack**: Python 3.13+, Next.js 15, SQLite, pnpm, uv
 
 ---
@@ -94,7 +94,65 @@ Notes:
 
 ---
 
+## Runtime Data Preparation
+
+The standalone web app expects two things for the full reader/search experience:
+
+1. the checked-in source catalog under `data/`
+2. a generated article corpus at `data/articles.generated.json`
+
+You do **not** need a Python HTTP backend for `/feeds`, `/api/articles`, or
+GET-based search. You do need the Python runtime when you want to poll feeds and
+rebuild the corpus artifact.
+
+### 1. Install Dependencies
+
+```bash
+# Install Python dependencies
+uv sync
+
+# Verify installation
+uv run python -c "import ai_web_feeds; print('✓ Backend installed')"
+```
+
+### 2. Initialize Database
+
+```bash
+# Create database and tables
+uv run python -c "
+from ai_web_feeds.storage import DatabaseManager
+db = DatabaseManager()
+db.create_db_and_tables()
+print('✓ Database initialized')
+"
+```
+
+### 3. Build the Generated Corpus
+
+```bash
+# Poll active feeds, persist feed_entries, and export data/articles.generated.json
+uv run ai-web-feeds corpus refresh
+
+# Or export from the current runtime DB without polling again
+uv run ai-web-feeds corpus export
+```
+
+`corpus refresh` exits non-zero on partial failures, but still exports the
+artifact with truthful `partial_coverage` metadata so deployments can decide
+whether to accept or retry that snapshot.
+
+### 4. Optional Runtime Search Setup
+
+```bash
+# Optional runtime search/index workflows for CLI and backend services
+uv run ai-web-feeds search init
+uv run ai-web-feeds search embeddings --provider local
+```
+
 ## Backend Deployment
+
+Only required if you need backend-proxied runtime routes such as analytics
+logging or saved searches. It is not required for the default reader/search UX.
 
 ### 1. Install Dependencies
 
@@ -116,30 +174,30 @@ db = DatabaseManager()
 print('✓ Database initialized')
 "
 
-# Initialize search tables (FTS5 + Trie)
-uv run aiwebfeeds search init
+# Optional: initialize runtime search tables (FTS5 + Trie)
+uv run ai-web-feeds search init
 ```
 
 ### 3. Load Initial Data
 
 ```bash
 # Load feeds from YAML
-uv run aiwebfeeds load --input data/feeds.yaml
+uv run ai-web-feeds load --input data/feeds.yaml
 
 # Validate feeds
-uv run aiwebfeeds validate http --concurrency 10
+uv run ai-web-feeds validate http --concurrency 10
 
-# Generate embeddings (optional, for semantic search)
-uv run aiwebfeeds search embeddings --provider local
+# Poll feeds and export the generated article corpus
+uv run ai-web-feeds corpus refresh
 ```
 
 ### 4. Verify Backend
 
 ```bash
 # Test CLI commands
-uv run aiwebfeeds analytics summary
-uv run aiwebfeeds search query "machine learning" --limit 5
-uv run aiwebfeeds recommend get --topics llm --limit 5
+uv run ai-web-feeds analytics summary
+uv run ai-web-feeds search query "machine learning" --limit 5
+uv run ai-web-feeds recommend get --topics llm --limit 5
 ```
 
 ---
@@ -156,7 +214,7 @@ pnpm install
 ### 2. Build for Production
 
 ```bash
-# Build static site
+# Build the standalone web app
 pnpm build
 
 # Verify build
@@ -201,6 +259,7 @@ netlify deploy --prod
 
 - [ ] Enable SQLite WAL mode (already configured)
 - [ ] Set `AIWF_ANALYTICS__STATIC_CACHE_TTL=3600` for caching
+- [ ] Refresh `data/articles.generated.json` as part of your deploy or data pipeline
 - [ ] Configure CDN for static assets
 - [ ] Enable Gzip/Brotli compression
 - [ ] Set up database backups
@@ -220,6 +279,7 @@ netlify deploy --prod
 - [ ] Run performance benchmarks: `uv run pytest -m benchmark`
 - [ ] Verify all CLI commands work
 - [ ] Test all web routes
+- [ ] Verify the generated article corpus exists before building the web app
 
 ---
 
@@ -238,7 +298,8 @@ netlify deploy --prod
 
 ### Search
 
-- **Current**: SQLite FTS5 (in-process)
+- **Current public web search**: generated article corpus + checked-in catalog
+- **Current runtime/CLI search**: SQLite FTS5 (in-process)
 - **Future**: Elasticsearch/Meilisearch for advanced search
 
 ### Embeddings
@@ -254,10 +315,10 @@ netlify deploy --prod
 
 ```bash
 # Backup SQLite database
-cp data/aiwebfeeds.db data/backups/aiwebfeeds-$(date +%Y%m%d).db
+cp data/ai-web-feeds.db data/backups/ai-web-feeds-$(date +%Y%m%d).db
 
 # Compress backup
-gzip data/backups/aiwebfeeds-$(date +%Y%m%d).db
+gzip data/backups/ai-web-feeds-$(date +%Y%m%d).db
 ```
 
 ### Log Rotation
