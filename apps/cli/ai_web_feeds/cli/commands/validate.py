@@ -8,11 +8,12 @@ from typing import Optional
 
 import typer
 import yaml
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
+from ai_web_feeds.validate import calculate_health_score, validate_all_feeds
 from rich.console import Console
 from rich.table import Table
 
 from ai_web_feeds import DatabaseManager
-from ai_web_feeds.validate import validate_all_feeds, calculate_health_score
 
 app = typer.Typer(help="Validate feed data against schemas")
 console = Console()
@@ -232,7 +233,7 @@ def validate_all(
 @app.command("http")
 def validate_http_feeds(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",
@@ -328,7 +329,7 @@ def validate_http_feeds(
 @app.command("report")
 def validation_report(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

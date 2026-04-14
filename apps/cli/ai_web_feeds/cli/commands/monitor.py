@@ -3,13 +3,12 @@
 import asyncio
 
 import typer
-from rich.console import Console
-from rich.table import Table
-
 from ai_web_feeds.config import DEFAULT_DATABASE_URL, Settings
 from ai_web_feeds.scheduler import SchedulerManager
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.websocket_server import WebSocketServer
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(help="Real-time feed monitoring commands")
 console = Console()
@@ -161,7 +160,7 @@ def follow_feed(
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -184,7 +183,7 @@ def unfollow_feed(
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -204,7 +203,7 @@ def list_follows(
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -231,14 +230,15 @@ def subscribe_digest(
     timezone: str = typer.Option("UTC", help="Timezone (e.g., 'America/New_York')"),
 ):
     """Subscribe to email digests."""
-    from ai_web_feeds.models import EmailDigest
     from datetime import datetime, timedelta
+
+    from ai_web_feeds.models import EmailDigest
 
     settings = Settings()
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     # Map schedule to cron expression
@@ -286,7 +286,7 @@ def unsubscribe_digest(
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -316,7 +316,7 @@ def list_digests(
     db = DatabaseManager(
         settings.database_url
         if hasattr(settings, "database_url")
-        else "sqlite:///data/aiwebfeeds.db"
+        else DEFAULT_DATABASE_URL
     )
 
     try:

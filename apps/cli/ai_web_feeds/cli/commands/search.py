@@ -3,11 +3,10 @@
 from typing import Optional
 
 import typer
-from rich.console import Console
-from rich.table import Table
-
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.storage import DatabaseManager
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(help="Search and discovery commands")
 console = Console()
@@ -126,7 +125,7 @@ def search_query(
 def search_autocomplete(
     prefix: str = typer.Argument(..., help="Search prefix"),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -165,7 +164,7 @@ def search_autocomplete(
 @app.command("init")
 def search_init(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -188,7 +187,7 @@ def search_init(
 @app.command("embeddings")
 def search_embeddings(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -226,7 +225,7 @@ def save_search_cmd(
     name: str = typer.Argument(..., help="Search name"),
     query: str = typer.Argument(..., help="Search query"),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -266,7 +265,7 @@ def save_search_cmd(
 @app.command("list-saved")
 def list_saved_searches(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",

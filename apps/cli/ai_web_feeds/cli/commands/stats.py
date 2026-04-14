@@ -1,7 +1,7 @@
 """ai_web_feeds.cli.commands.stats -- Display statistics about feeds"""
 
 import typer
-
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.storage import DatabaseManager
 
 app = typer.Typer(help="Display feed statistics")
@@ -10,7 +10,7 @@ app = typer.Typer(help="Display feed statistics")
 @app.command()
 def show(
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

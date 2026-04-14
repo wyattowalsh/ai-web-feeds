@@ -3,8 +3,7 @@
 from pathlib import Path
 
 import typer
-from loguru import logger
-
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.export import wrap_opml_with_root_folder
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.utils import (
@@ -13,6 +12,7 @@ from ai_web_feeds.utils import (
     generate_opml,
     save_opml,
 )
+from loguru import logger
 
 app = typer.Typer(help="Generate OPML files from feed sources")
 
@@ -26,7 +26,7 @@ def generate_all_opml(
         help="Output OPML file",
     ),
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",
@@ -58,7 +58,7 @@ def generate_categorized_opml_cmd(
         help="Output OPML file",
     ),
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",
@@ -89,7 +89,7 @@ def generate_filtered_opml_cmd(
     tag: str = typer.Option(None, "--tag", "-g", help="Filter by tag"),
     verified_only: bool = typer.Option(False, "--verified", "-v", help="Only verified feeds"),
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

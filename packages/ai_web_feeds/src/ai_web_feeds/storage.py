@@ -1,16 +1,18 @@
 """ai_web_feeds.storage -- Database and storage management"""
 
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from loguru import logger
-from sqlalchemy import and_, create_engine, desc
+from sqlalchemy import create_engine, desc
 from sqlmodel import Session, SQLModel, select
 
 from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
+    CurationStatus,
     EmailDigest,
     FeedAnalytics,
     FeedEnrichmentData,
@@ -33,7 +35,7 @@ from ai_web_feeds.models import (
 class DatabaseManager:
     """Manage SQLModel database connections and operations."""
 
-    def __init__(self, database_url: str = DEFAULT_DATABASE_URL):
+    def __init__(self, database_url: str = DEFAULT_DATABASE_URL) -> None:
         """Initialize database manager.
 
         Args:
@@ -909,6 +911,39 @@ class DatabaseManager:
     # ========================================================================
 
     # T015: Feed Entries
+    def _find_feed_entry(
+        self,
+        session: Session,
+        guid: str | None,
+        link: str | None = None,
+    ) -> FeedEntry | None:
+        """Find an existing feed entry by GUID first, then link fallback."""
+        if guid:
+            statement = select(FeedEntry).where(FeedEntry.guid == guid).limit(1)
+            existing = session.exec(statement).first()
+            if existing is not None:
+                return existing
+
+        if link:
+            statement = (
+                select(FeedEntry)
+                .where(FeedEntry.link == link)
+                .order_by(desc(FeedEntry.pub_date), desc(FeedEntry.created_at))
+                .limit(1)
+            )
+            return session.exec(statement).first()
+
+        return None
+
+    def get_feed_entry_by_identity(
+        self,
+        guid: str | None,
+        link: str | None = None,
+    ) -> FeedEntry | None:
+        """Return a feed entry using the deterministic GUID/link identity."""
+        with self.get_session() as session:
+            return self._find_feed_entry(session, guid, link)
+
     def add_feed_entry(self, entry: FeedEntry) -> FeedEntry:
         """Add new feed entry (article) from polling.
 
@@ -916,9 +951,13 @@ class DatabaseManager:
             entry: FeedEntry to add
 
         Returns:
-            Added FeedEntry with ID
+            Added FeedEntry with ID, or the existing deduplicated entry
         """
         with self.get_session() as session:
+            existing = self._find_feed_entry(session, entry.guid, entry.link)
+            if existing is not None:
+                return existing
+
             session.add(entry)
             session.commit()
             session.refresh(entry)
@@ -963,6 +1002,130 @@ class DatabaseManager:
                 .limit(limit)
             )
             return list(session.exec(statement).all())
+
+    def get_all_feed_entries(
+        self,
+        limit: int | None = None,
+        offset: int = 0,
+    ) -> list[FeedEntry]:
+        """Get all feed entries ordered for deterministic corpus export."""
+        with self.get_session() as session:
+            statement = select(FeedEntry).order_by(
+                desc(FeedEntry.pub_date),
+                desc(FeedEntry.created_at),
+                FeedEntry.guid,
+            )
+            if offset:
+                statement = statement.offset(offset)
+            if limit is not None:
+                statement = statement.limit(limit)
+            return list(session.exec(statement).all())
+
+    def build_articles_corpus_payload(
+        self,
+        partial_coverage: dict[str, Any] | None = None,
+        source_db: str | None = None,
+    ) -> dict[str, Any]:
+        """Build the generated article corpus payload from stored feed entries."""
+        feed_sources = {feed.id: feed for feed in self.get_all_feed_sources()}
+        feed_entries = self.get_all_feed_entries()
+
+        articles: list[dict[str, Any]] = []
+        seen_guids: set[str] = set()
+        seen_links: set[str] = set()
+        latest_published_at: datetime | None = None
+        feed_ids: set[str] = set()
+
+        for entry in feed_entries:
+            if entry.guid and entry.guid in seen_guids:
+                continue
+            if entry.link and entry.link in seen_links:
+                continue
+
+            if entry.guid:
+                seen_guids.add(entry.guid)
+            if entry.link:
+                seen_links.add(entry.link)
+
+            feed_source = feed_sources.get(entry.feed_id)
+            feed_title = entry.feed_id
+            topics: list[str] = []
+            source_type = None
+            verified = False
+            is_active = True
+
+            if feed_source is not None:
+                feed_title = feed_source.title
+                topics = list(feed_source.topics)
+                verified = bool(feed_source.verified)
+                if feed_source.source_type is not None:
+                    source_type = feed_source.source_type.value
+                is_active = feed_source.curation_status not in {
+                    CurationStatus.ARCHIVED,
+                    CurationStatus.INACTIVE,
+                }
+
+            published_at = entry.pub_date
+            if latest_published_at is None or published_at > latest_published_at:
+                latest_published_at = published_at
+
+            feed_ids.add(entry.feed_id)
+            articles.append(
+                {
+                    "id": entry.guid or entry.link,
+                    "feed_id": entry.feed_id,
+                    "feed_title": feed_title,
+                    "title": entry.title,
+                    "link": entry.link,
+                    "summary": entry.summary,
+                    "content_html": entry.content_html,
+                    "author": entry.author,
+                    "published_at": published_at.isoformat(),
+                    "categories": list(entry.categories),
+                    "topics": topics,
+                    "source_type": source_type,
+                    "verified": verified,
+                    "is_active": is_active,
+                }
+            )
+
+        metadata: dict[str, Any] = {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "source_db": source_db or self.database_url,
+            "article_count": len(articles),
+            "feed_count": len(feed_ids),
+            "latest_published_at": latest_published_at.isoformat() if latest_published_at else None,
+        }
+        if partial_coverage is not None:
+            metadata["partial_coverage"] = partial_coverage
+
+        return {
+            "metadata": metadata,
+            "articles": articles,
+        }
+
+    def export_articles_corpus(
+        self,
+        output_path: Path,
+        partial_coverage: dict[str, Any] | None = None,
+        source_db: str | None = None,
+    ) -> dict[str, Any]:
+        """Export the generated article corpus artifact to JSON."""
+        payload = self.build_articles_corpus_payload(
+            partial_coverage=partial_coverage,
+            source_db=source_db,
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        logger.info(
+            "Exported article corpus: {} articles -> {}",
+            payload["metadata"]["article_count"],
+            output_path,
+        )
+        return payload
 
     # T016: Poll Jobs
     def create_poll_job(self, job: FeedPollJob) -> FeedPollJob:

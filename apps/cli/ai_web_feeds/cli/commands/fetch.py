@@ -3,14 +3,14 @@
 import asyncio
 
 import typer
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
+from ai_web_feeds.fetcher import AdvancedFeedFetcher
+from ai_web_feeds.storage import DatabaseManager
 from loguru import logger
+from rich import box
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-from rich import box
-
-from ai_web_feeds.fetcher import AdvancedFeedFetcher
-from ai_web_feeds.storage import DatabaseManager
 
 app = typer.Typer(help="Fetch feeds with enhanced metadata extraction")
 console = Console()
@@ -20,7 +20,7 @@ console = Console()
 def fetch_one(
     feed_id: str = typer.Argument(..., help="Feed ID to fetch"),
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",
@@ -149,7 +149,7 @@ def fetch_one(
 @app.command("all")
 def fetch_all(
     db_path: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

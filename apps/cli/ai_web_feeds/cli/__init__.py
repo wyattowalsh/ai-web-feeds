@@ -6,22 +6,21 @@ Main workflow: load → validate → enrich → validate → export + store + lo
 from pathlib import Path
 
 import typer
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from loguru import logger
 from rich.console import Console
 
 from ai_web_feeds import (
     DatabaseManager,
-    ValidationResult,
     enrich_all_feeds,
     export_all_formats,
     load_feeds,
     save_feeds,
     validate_feeds,
 )
-from ai_web_feeds.config import DEFAULT_DATABASE_URL
 
 # Import command modules
-from ai_web_feeds.cli.commands import analytics, monitor, recommend, search
+from ai_web_feeds.cli.commands import analytics, corpus, monitor, recommend, search
 
 app = typer.Typer(
     name="ai-web-feeds",
@@ -31,6 +30,7 @@ app = typer.Typer(
 
 # Register command modules
 app.add_typer(analytics.app, name="analytics")
+app.add_typer(corpus.app, name="corpus")
 app.add_typer(search.app, name="search")
 app.add_typer(recommend.app, name="recommend")
 app.add_typer(monitor.app, name="monitor")

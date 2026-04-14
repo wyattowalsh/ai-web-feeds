@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, FeedPollJob, PollStatus
+from ai_web_feeds.models import FeedEntry, FeedPollJob, FeedSource, PollStatus
 from ai_web_feeds.polling import FeedPoller
 from ai_web_feeds.storage import DatabaseManager
 
@@ -26,6 +26,8 @@ def mock_db():
     )
     db.update_poll_job = MagicMock()
     db.add_feed_entry = MagicMock()
+    db.get_feed_entry_by_identity = MagicMock(return_value=None)
+    db.get_all_feed_sources = MagicMock(return_value=[])
     return db
 
 
@@ -193,13 +195,55 @@ class TestFeedPoller:
     @pytest.mark.asyncio
     async def test_is_new_entry_queries_existing_guid(self, poller, mock_db):
         """Test GUID lookup skips entries already present in storage."""
-        mock_session = MagicMock()
-        mock_session.exec.return_value.first.return_value = 1
-        mock_db.get_session.return_value.__enter__.return_value = mock_session
+        mock_db.get_feed_entry_by_identity.return_value = object()
 
-        assert await poller._is_new_entry("article-1") is False
+        assert await poller._is_new_entry("article-1", "https://example.com/article") is False
+        mock_db.get_feed_entry_by_identity.assert_called_once_with(
+            "article-1",
+            "https://example.com/article",
+        )
 
     @pytest.mark.asyncio
     async def test_is_new_entry_rejects_missing_guid(self, poller):
         """Test entries without a stable identifier are not treated as new."""
         assert await poller._is_new_entry(None) is False
+
+    @pytest.mark.asyncio
+    async def test_is_new_entry_falls_back_to_link_identity(self, poller, mock_db):
+        """Test link fallback is used when GUID is absent."""
+        mock_db.get_feed_entry_by_identity.return_value = object()
+
+        assert await poller._is_new_entry(None, "https://example.com/article") is False
+        mock_db.get_feed_entry_by_identity.assert_called_once_with(
+            None,
+            "https://example.com/article",
+        )
+
+    @pytest.mark.asyncio
+    async def test_refresh_corpus_returns_partial_coverage_summary(self, poller, mock_db):
+        """Corpus refresh summaries should report partial failures truthfully."""
+        feed_sources = [
+            FeedSource(id="feed-a", title="Feed A", feed="https://example.com/a.xml"),
+            FeedSource(id="feed-b", title="Feed B", feed="https://example.com/b.xml"),
+        ]
+        mock_db.get_all_feed_sources.return_value = feed_sources
+
+        success_job = FeedPollJob(
+            id=2,
+            feed_id="feed-a",
+            scheduled_at=datetime.now(UTC),
+            started_at=datetime.now(UTC),
+            status=PollStatus.SUCCESS,
+            articles_discovered=3,
+        )
+
+        with patch.object(poller, "poll_feed", side_effect=[success_job, Exception("boom")]):
+            summary = await poller.refresh_corpus()
+
+        assert summary["attempted_feeds"] == 2
+        assert summary["successful_feeds"] == 1
+        assert summary["failed_feeds"] == 1
+        assert summary["failed_feed_ids"] == ["feed-b"]
+        assert summary["status"] == "partial"
+        assert summary["partial_coverage"]["status"] == "partial"
+        assert summary["partial_coverage"]["coverage_ratio"] == 0.5
