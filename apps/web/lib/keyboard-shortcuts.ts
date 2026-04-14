@@ -5,34 +5,28 @@
  * Supports single keys, modifier combinations, and sequences.
  */
 
-import { useEffect, useCallback } from 'react';
-import { preferences } from './db';
+import { useEffect, useState } from "react";
+import { preferences } from "./db";
 
 export type ShortcutAction =
-  | 'next_article'
-  | 'previous_article'
-  | 'mark_as_read'
-  | 'star'
-  | 'archive'
-  | 'open_original'
-  | 'refresh'
-  | 'search'
-  | 'go_home'
-  | 'go_starred'
-  | 'go_unread'
-  | 'go_all'
-  | 'close_modal'
-  | 'show_shortcuts'
-  | 'toggle_sidebar'
-  | 'focus_search';
+  | "next_article"
+  | "previous_article"
+  | "mark_as_read"
+  | "star"
+  | "archive"
+  | "open_original"
+  | "refresh"
+  | "search"
+  | "go_home"
+  | "go_starred"
+  | "go_unread"
+  | "go_all"
+  | "close_modal"
+  | "show_shortcuts"
+  | "toggle_sidebar"
+  | "focus_search";
 
 export type ShortcutHandler = () => void;
-
-interface ShortcutRegistration {
-  action: ShortcutAction;
-  handler: ShortcutHandler;
-  description: string;
-}
 
 class KeyboardShortcutManager {
   private handlers = new Map<ShortcutAction, ShortcutHandler[]>();
@@ -42,8 +36,8 @@ class KeyboardShortcutManager {
   private enabled = true;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', this.handleKeyDown.bind(this));
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", this.handleKeyDown.bind(this));
       this.loadShortcuts();
     }
   }
@@ -60,7 +54,7 @@ class KeyboardShortcutManager {
         this.shortcuts.set(key, action as ShortcutAction);
       });
     } catch (error) {
-      console.error('Failed to load keyboard shortcuts:', error);
+      console.error("Failed to load keyboard shortcuts:", error);
       // Use defaults from schema
       this.loadDefaultShortcuts();
     }
@@ -71,22 +65,22 @@ class KeyboardShortcutManager {
    */
   private loadDefaultShortcuts(): void {
     const defaults = {
-      'j': 'next_article',
-      'k': 'previous_article',
-      'm': 'mark_as_read',
-      's': 'star',
-      'a': 'archive',
-      'v': 'open_original',
-      'r': 'refresh',
-      '/': 'search',
-      'g h': 'go_home',
-      'g s': 'go_starred',
-      'g u': 'go_unread',
-      'g a': 'go_all',
-      'escape': 'close_modal',
-      '?': 'show_shortcuts',
-      '[': 'toggle_sidebar',
-      'ctrl+k': 'focus_search',
+      j: "next_article",
+      k: "previous_article",
+      m: "mark_as_read",
+      s: "star",
+      a: "archive",
+      v: "open_original",
+      r: "refresh",
+      "/": "search",
+      "g h": "go_home",
+      "g s": "go_starred",
+      "g u": "go_unread",
+      "g a": "go_all",
+      escape: "close_modal",
+      "?": "show_shortcuts",
+      "[": "toggle_sidebar",
+      "ctrl+k": "focus_search",
     };
 
     Object.entries(defaults).forEach(([key, action]) => {
@@ -102,15 +96,11 @@ class KeyboardShortcutManager {
 
     // Ignore shortcuts when typing in inputs
     const target = event.target as HTMLElement;
-    if (
-      target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.isContentEditable
-    ) {
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
       // Allow ctrl+k to focus search from input
-      if (event.ctrlKey && event.key === 'k') {
+      if (event.ctrlKey && event.key === "k") {
         event.preventDefault();
-        this.triggerAction('focus_search');
+        this.triggerAction("focus_search");
       }
       return;
     }
@@ -119,7 +109,7 @@ class KeyboardShortcutManager {
 
     // Check for sequence shortcuts (e.g., "g h")
     if (this.sequenceBuffer.length > 0) {
-      const sequence = [...this.sequenceBuffer, key].join(' ');
+      const sequence = [...this.sequenceBuffer, key].join(" ");
 
       if (this.shortcuts.has(sequence)) {
         event.preventDefault();
@@ -129,8 +119,8 @@ class KeyboardShortcutManager {
       }
 
       // Check if sequence could continue
-      const potentialSequences = Array.from(this.shortcuts.keys()).filter(
-        (s) => s.startsWith(this.sequenceBuffer.join(' ') + ' ')
+      const potentialSequences = Array.from(this.shortcuts.keys()).filter((s) =>
+        s.startsWith(this.sequenceBuffer.join(" ") + " "),
       );
 
       if (potentialSequences.length === 0) {
@@ -146,8 +136,8 @@ class KeyboardShortcutManager {
     }
 
     // Check if this could start a sequence
-    const potentialSequences = Array.from(this.shortcuts.keys()).filter(
-      (s) => s.startsWith(key + ' ')
+    const potentialSequences = Array.from(this.shortcuts.keys()).filter((s) =>
+      s.startsWith(key + " "),
     );
 
     if (potentialSequences.length > 0) {
@@ -162,17 +152,17 @@ class KeyboardShortcutManager {
   private getKeyString(event: KeyboardEvent): string {
     const parts: string[] = [];
 
-    if (event.ctrlKey) parts.push('ctrl');
-    if (event.altKey) parts.push('alt');
-    if (event.shiftKey && event.key.length > 1) parts.push('shift');
-    if (event.metaKey) parts.push('meta');
+    if (event.ctrlKey) parts.push("ctrl");
+    if (event.altKey) parts.push("alt");
+    if (event.shiftKey && event.key.length > 1) parts.push("shift");
+    if (event.metaKey) parts.push("meta");
 
     const key = event.key.toLowerCase();
-    if (key !== 'control' && key !== 'alt' && key !== 'shift' && key !== 'meta') {
+    if (key !== "control" && key !== "alt" && key !== "shift" && key !== "meta") {
       parts.push(key);
     }
 
-    return parts.join('+');
+    return parts.join("+");
   }
 
   /**
@@ -298,8 +288,10 @@ export const shortcutManager = new KeyboardShortcutManager();
 export function useKeyboardShortcut(
   action: ShortcutAction,
   handler: ShortcutHandler,
-  description?: string
+  description?: string,
 ): void {
+  void description;
+
   useEffect(() => {
     const unregister = shortcutManager.register(action, handler);
     return unregister;
@@ -310,7 +302,7 @@ export function useKeyboardShortcut(
  * React hook to get shortcut key for action
  */
 export function useShortcutKey(action: ShortcutAction): string | undefined {
-  const [key, setKey] = React.useState<string | undefined>();
+  const [key, setKey] = useState<string | undefined>();
 
   useEffect(() => {
     setKey(shortcutManager.getKeyForAction(action));
@@ -323,22 +315,22 @@ export function useShortcutKey(action: ShortcutAction): string | undefined {
  * Shortcut descriptions for help modal
  */
 export const SHORTCUT_DESCRIPTIONS: Record<ShortcutAction, string> = {
-  next_article: 'Navigate to next article',
-  previous_article: 'Navigate to previous article',
-  mark_as_read: 'Mark article as read/unread',
-  star: 'Star/unstar article',
-  archive: 'Archive article',
-  open_original: 'Open original article in new tab',
-  refresh: 'Refresh feed',
-  search: 'Focus search',
-  go_home: 'Go to home',
-  go_starred: 'Go to starred articles',
-  go_unread: 'Go to unread articles',
-  go_all: 'Go to all articles',
-  close_modal: 'Close modal/dialog',
-  show_shortcuts: 'Show keyboard shortcuts',
-  toggle_sidebar: 'Toggle sidebar',
-  focus_search: 'Focus search (global)',
+  next_article: "Navigate to next article",
+  previous_article: "Navigate to previous article",
+  mark_as_read: "Mark article as read/unread",
+  star: "Star/unstar article",
+  archive: "Archive article",
+  open_original: "Open original article in new tab",
+  refresh: "Refresh feed",
+  search: "Focus search",
+  go_home: "Go to home",
+  go_starred: "Go to starred articles",
+  go_unread: "Go to unread articles",
+  go_all: "Go to all articles",
+  close_modal: "Close modal/dialog",
+  show_shortcuts: "Show keyboard shortcuts",
+  toggle_sidebar: "Toggle sidebar",
+  focus_search: "Focus search (global)",
 };
 
 /**
@@ -346,19 +338,14 @@ export const SHORTCUT_DESCRIPTIONS: Record<ShortcutAction, string> = {
  */
 export function formatKey(key: string): string {
   return key
-    .split('+')
+    .split("+")
     .map((part) => {
-      if (part === 'ctrl') return '⌃';
-      if (part === 'alt') return '⌥';
-      if (part === 'shift') return '⇧';
-      if (part === 'meta') return '⌘';
-      if (part === 'escape') return 'Esc';
+      if (part === "ctrl") return "⌃";
+      if (part === "alt") return "⌥";
+      if (part === "shift") return "⇧";
+      if (part === "meta") return "⌘";
+      if (part === "escape") return "Esc";
       return part.toUpperCase();
     })
-    .join('');
+    .join("");
 }
-
-/**
- * Export for React
- */
-import React from 'react';

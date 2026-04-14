@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useWebSocket } from "@/lib/use-websocket";
 import type { WebSocketNotification } from "@/lib/websocket";
 

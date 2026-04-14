@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic"; // Always run fresh
  * Validation stats API endpoint
  * Returns overall validation health metrics
  */
-const GETHandler = async (_request: Request) => {
+const GETHandler = async () => {
   try {
     const stats = await getValidationStats();
 

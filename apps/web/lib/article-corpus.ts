@@ -163,7 +163,9 @@ type ArticleCorpusCacheEntry = {
 let cachedArticleCorpus: ArticleCorpusCacheEntry | null = null;
 let inflightArticleCorpus: Promise<ArticleCorpus> | null = null;
 
-export async function loadArticleCorpus(options: { refresh?: boolean } = {}): Promise<ArticleCorpus> {
+export async function loadArticleCorpus(
+  options: { refresh?: boolean } = {},
+): Promise<ArticleCorpus> {
   const fileInfo = await stat(ARTICLE_CORPUS_PATH).catch(() => null);
   if (!fileInfo) {
     return createEmptyCorpus();
@@ -277,16 +279,14 @@ export async function searchArticlesInCorpus(
   };
 }
 
-export async function searchCatalogSources(
-  options: {
-    query: string;
-    limit: number;
-    feedIds?: string[];
-    sourceType?: string;
-    topics?: string[];
-    verified?: boolean;
-  },
-): Promise<SearchResponsePayload> {
+export async function searchCatalogSources(options: {
+  query: string;
+  limit: number;
+  feedIds?: string[];
+  sourceType?: string;
+  topics?: string[];
+  verified?: boolean;
+}): Promise<SearchResponsePayload> {
   const feeds = loadFeedCatalog().sources;
   const filteredFeeds = filterFeeds(feeds, options);
   const query = normalizeSearchQuery(options.query);
@@ -309,7 +309,7 @@ export async function searchCatalogSources(
         id: getFeedIdentifier(feed),
         title: feed.title?.trim() || feed.url,
         description: feed.description || null,
-        url: feed.site || feed.website_url || feed.url,
+        url: feed.website_url || feed.url,
         topics: feedTopics,
         source_type: feed.source_type || "feed",
         verified: feed.verified === true,
@@ -362,7 +362,7 @@ export async function buildAutocompleteSuggestions(
         type: "feed" as const,
         id: getFeedIdentifier(feed),
         title: feed.title?.trim() || feed.url,
-        url: feed.site || feed.website_url || feed.url,
+        url: feed.website_url || feed.url,
         source_type: feed.source_type || "feed",
         verified: feed.verified === true,
         is_active: feed.is_active !== false,
@@ -381,7 +381,11 @@ export async function buildAutocompleteSuggestions(
         scoreText(normalizedPrefix, article.summary, 4) +
         scoreText(normalizedPrefix, article.feed_title, 4) +
         scoreText(normalizedPrefix, article.author, 2) +
-        scoreList(normalizedPrefix, article.topics.length > 0 ? article.topics : article.categories, 4);
+        scoreList(
+          normalizedPrefix,
+          article.topics.length > 0 ? article.topics : article.categories,
+          4,
+        );
 
       return {
         type: "article" as const,
@@ -435,7 +439,9 @@ function buildTopicSuggestions(
   }
 
   for (const article of corpus.articles) {
-    for (const topic of normalizeStringList(article.topics.length > 0 ? article.topics : article.categories)) {
+    for (const topic of normalizeStringList(
+      article.topics.length > 0 ? article.topics : article.categories,
+    )) {
       if (!topic.includes(prefix)) {
         continue;
       }
@@ -469,8 +475,8 @@ function normalizeCorpusPayload(raw: unknown, fileMtimeMs: number): ArticleCorpu
 
   return {
     metadata: {
-      generated_at: metadata.generated_at,
-      source_db: metadata.source_db,
+      generated_at: metadata.generated_at ?? null,
+      source_db: metadata.source_db ?? CANONICAL_DATABASE_PATH,
       article_count: metadata.article_count ?? articles.length,
       feed_count: metadata.feed_count ?? uniqueFeedIds.size,
       latest_published_at: latestPublishedAt,
@@ -491,7 +497,9 @@ function extractCorpusMetadata(
   const metaRecord = meta as Record<string, unknown>;
 
   return {
-    generated_at: readString(metaRecord.generated_at ?? metaRecord.generatedAt) ?? timestampFromMtime(fileMtimeMs),
+    generated_at:
+      readString(metaRecord.generated_at ?? metaRecord.generatedAt) ??
+      timestampFromMtime(fileMtimeMs),
     source_db: readString(metaRecord.source_db ?? metaRecord.sourceDb) ?? CANONICAL_DATABASE_PATH,
     article_count: readNumber(metaRecord.article_count ?? metaRecord.articleCount),
     feed_count: readNumber(metaRecord.feed_count ?? metaRecord.feedCount),
@@ -570,7 +578,11 @@ function matchesArticle(
 
   const articleSourceType = normalizeText(article.source_type);
   const feedSourceType = normalizeText(feed?.source_type ?? undefined);
-  if (filters.sourceType && filters.sourceType !== articleSourceType && filters.sourceType !== feedSourceType) {
+  if (
+    filters.sourceType &&
+    filters.sourceType !== articleSourceType &&
+    filters.sourceType !== feedSourceType
+  ) {
     return false;
   }
 
@@ -643,7 +655,10 @@ function filterFeeds(
       return false;
     }
 
-    if (options.sourceType && normalizeText(feed.source_type) !== normalizeText(options.sourceType)) {
+    if (
+      options.sourceType &&
+      normalizeText(feed.source_type) !== normalizeText(options.sourceType)
+    ) {
       return false;
     }
 
@@ -689,15 +704,14 @@ function sortArticleCorpus(
       return sort === "oldest" ? leftPublished - rightPublished : rightPublished - leftPublished;
     }
 
-    if (sort === "source") {
-      return left.title.localeCompare(right.title);
-    }
-
     return left.title.localeCompare(right.title);
   });
 }
 
-function compareSearchResults(left: SearchResponsePayload["results"][number], right: SearchResponsePayload["results"][number]): number {
+function compareSearchResults(
+  left: SearchResponsePayload["results"][number],
+  right: SearchResponsePayload["results"][number],
+): number {
   if (left.match_score !== right.match_score) {
     return right.match_score - left.match_score;
   }
@@ -712,6 +726,7 @@ function compareSearchResults(left: SearchResponsePayload["results"][number], ri
     if (leftTime !== rightTime) {
       return rightTime - leftTime;
     }
+
     return left.title.localeCompare(right.title);
   }
 
@@ -747,14 +762,19 @@ function compareAutocompleteSuggestions(
     return left.label.localeCompare(right.label);
   }
 
-  return left.title.localeCompare(right.title);
+  const leftLabel = left.type === "topic" ? left.label : left.title;
+  const rightLabel = right.type === "topic" ? right.label : right.title;
+  return leftLabel.localeCompare(rightLabel);
 }
 
 function buildFeedLookup(feeds: FeedSource[]): Map<string, FeedSource> {
   return new Map(feeds.map((feed) => [getFeedIdentifier(feed), feed]));
 }
 
-function buildBoundedSearchMeta(candidateSources: number, scannedSources: number): SearchResponseMeta {
+function buildBoundedSearchMeta(
+  candidateSources: number,
+  scannedSources: number,
+): SearchResponseMeta {
   return {
     mode: "bounded",
     bounded: true,
@@ -814,7 +834,7 @@ function normalizeStringList(values: readonly string[] | string[] | null | undef
     return [];
   }
 
-  const source = Array.isArray(values) ? values : [values];
+  const source = Array.isArray(values) ? values : [];
   const seen = new Set<string>();
   const normalized: string[] = [];
 
@@ -908,7 +928,11 @@ function tokenize(value: string): string[] {
     .filter((token) => token.length > 0);
 }
 
-function scoreText(query: string | null | undefined, text: string | null | undefined, weight: number): number {
+function scoreText(
+  query: string | null | undefined,
+  text: string | null | undefined,
+  weight: number,
+): number {
   const normalizedQuery = normalizeSearchQuery(query);
   const haystack = normalizeText(text);
   if (!normalizedQuery || !haystack) {
@@ -934,7 +958,11 @@ function scoreText(query: string | null | undefined, text: string | null | undef
   return score;
 }
 
-function scoreList(query: string | null | undefined, values: readonly string[], weight: number): number {
+function scoreList(
+  query: string | null | undefined,
+  values: readonly string[],
+  weight: number,
+): number {
   return values.reduce((total, value) => total + scoreText(query, value, weight), 0);
 }
 

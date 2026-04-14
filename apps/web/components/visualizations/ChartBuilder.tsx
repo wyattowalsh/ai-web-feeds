@@ -18,7 +18,7 @@ import { BarChart, createBarChartData } from "./charts/BarChart";
 import { ScatterChart, createScatterChartData } from "./charts/ScatterChart";
 import { PieChart, createPieChartData } from "./charts/PieChart";
 import { AreaChart, createAreaChartData } from "./charts/AreaChart";
-import { HeatmapChart, createHeatmapData } from "./charts/HeatmapChart";
+import { HeatmapChart, createHeatmapData, type HeatmapChartProps } from "./charts/HeatmapChart";
 
 interface ChartBuilderProps {
   onSave?: (config: ChartConfiguration) => void;
@@ -364,12 +364,7 @@ function renderChart(
         />
       );
     case "heatmap":
-      return (
-        <HeatmapChart
-          {...(data as { data: unknown; xLabels: string[]; yLabels: string[] })}
-          height={400}
-        />
-      );
+      return <HeatmapChart {...(data as HeatmapChartProps)} height={400} />;
     default:
       return null;
   }

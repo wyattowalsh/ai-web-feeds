@@ -20,8 +20,8 @@ import {
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
 interface PieChartProps {
-  data: ChartData<"pie">;
-  options?: ChartOptions<"pie">;
+  data: ChartData<"pie" | "doughnut">;
+  options?: ChartOptions<"pie" | "doughnut">;
   height?: number;
   doughnut?: boolean;
   className?: string;
@@ -47,7 +47,7 @@ export function PieChart({
       chartRef.current.destroy();
     }
 
-    const defaultOptions: ChartOptions<"pie"> = {
+    const defaultOptions: ChartOptions<"pie" | "doughnut"> = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -78,7 +78,7 @@ export function PieChart({
       },
     };
 
-    const mergedOptions: ChartOptions<"pie"> = {
+    const mergedOptions: ChartOptions<"pie" | "doughnut"> = {
       ...defaultOptions,
       ...options,
       plugins: {
@@ -87,7 +87,7 @@ export function PieChart({
       },
     };
 
-    chartRef.current = new ChartJS(ctx, {
+    chartRef.current = new ChartJS<"pie" | "doughnut">(ctx, {
       type: doughnut ? "doughnut" : "pie",
       data,
       options: mergedOptions,

@@ -7,7 +7,7 @@ import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-static";
 
-const GETHandler = async (_request: Request) => {
+const GETHandler = async () => {
   try {
     const topicsPath = join(process.cwd(), "../../data/topics.yaml");
     const content = readFileSync(topicsPath, "utf-8");

@@ -135,7 +135,7 @@ Once the project is running, start in `/feeds` for the unified catalog, article
 search, and reader workflow. These docs pages are the best next stops after that:
 
 - [Deployment](/docs/guides/deployment)
-- [OPML Viewer](/docs/guides/opml-viewer)
+- [Workflow reference](/docs/guides/workflow-reference)
 - [Data Explorer](/docs/guides/data-explorer)
 - [Contributing](/docs/development/contributing)
 
@@ -170,18 +170,21 @@ bash scripts/setup.sh
 If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
 
 # YouTube channel
+
 - id: "youtube-channel"
   site: "https://youtube.com/channel/UC123..."
   discover: true
 
 # GitHub repository
+
 - id: "github-repo"
   site: "https://github.com/owner/repo"
   discover: true
   platform_config:
-    github:
-      feed_type: "releases" # or "commits", "tags"
-```
+  github:
+  feed_type: "releases" # or "commits", "tags"
+
+````
 
 See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.
 
@@ -198,7 +201,7 @@ ai-web-feeds analytics performance --days 7
 
 # Check specific feed health
 ai-web-feeds analytics health <feed-id>
-```
+````
 
 ### Exporting Data
 

@@ -25,7 +25,7 @@ test.describe("Route stabilization smoke", () => {
   const publicRoutes = [
     {
       path: "/",
-      text: "Feeds is the main product. Everything else supports reading, filtering, and export.",
+      text: "Start in `/feeds` to read recent posts, search the generated corpus, refine the source slice, and export it when you are done.",
     },
     {
       path: "/feeds",
@@ -36,17 +36,13 @@ test.describe("Route stabilization smoke", () => {
       text: "Narrow the catalog",
     },
     {
-      path: "/downloads",
-      text: "Download Feeds",
-    },
-    {
       path: "/docs",
       text: "Getting Started",
       role: "heading" as const,
     },
     {
       path: "/explorer",
-      text: "Inspect the catalog, then open the current slice in Feeds.",
+      text: "Explore topics and feeds as one connected map.",
       role: "heading" as const,
     },
     {

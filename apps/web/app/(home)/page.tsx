@@ -8,6 +8,7 @@ import {
   RadioTower,
   Search,
   Sparkles,
+  Waypoints,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -47,8 +48,7 @@ const coreSteps = [
   {
     eyebrow: "Step 1",
     title: "Open Feeds",
-    description:
-      "Start in the reader-first workspace where the latest posts are already waiting.",
+    description: "Start in the reader-first workspace where the latest posts are already waiting.",
     href: "/feeds",
     cta: "Open Feeds",
     icon: RadioTower,
@@ -64,31 +64,31 @@ const coreSteps = [
   },
   {
     eyebrow: "Step 3",
-    title: "Export what you keep",
+    title: "Export from Feeds",
     description:
-      "Move the chosen set into OPML or JSON exports once the reader queue is in good shape.",
-    href: "/downloads",
-    cta: "Go to Downloads",
+      "Download the current slice as OPML directly from the Feeds workspace when it is ready to move elsewhere.",
+    href: "/feeds",
+    cta: "Open export actions",
     icon: Download,
   },
 ] as const;
 
 const supportRoutes = [
   {
-    title: "Downloads",
-    description: "Export OPML and other portable outputs once you have the right set of feeds.",
-    href: "/downloads",
-    icon: Download,
+    title: "Taxonomy",
+    description: "Inspect topic relationships and feed coverage in the graph view.",
+    href: "/explorer",
+    icon: Waypoints,
   },
   {
     title: "Docs",
-    description: "Reference the project docs when you need implementation details or API context.",
+    description: "Read setup guides, architecture notes, and workflow references.",
     href: "/docs",
     icon: BookOpenText,
   },
   {
-    title: "LLM Output",
-    description: "Use machine-friendly long-form docs when the consumer is another tool or agent.",
+    title: "LLM Docs",
+    description: "Use the plain-text project reference when another tool or agent needs context.",
     href: "/llms-full.txt",
     icon: Sparkles,
   },
@@ -97,8 +97,6 @@ const supportRoutes = [
 export default function HomePage() {
   const heroAsset = DESIGN_ASSETS.home.heroWorkflow;
   const primarySurfacesAsset = DESIGN_ASSETS.home.primarySurfaces;
-  const supportSurfacesAsset = DESIGN_ASSETS.home.supportSurfaces;
-
   return (
     <main className="flex flex-1 flex-col">
       <div className="page-wrap page-stack">
@@ -111,11 +109,13 @@ export default function HomePage() {
               </span>
               <div className="space-y-4">
                 <h1 className="hero-title max-w-4xl">
-                  Feeds is the main product. Everything else supports reading, filtering, and export.
+                  Feeds is the main product. Everything else supports reading, filtering, and
+                  export.
                 </h1>
                 <p className="hero-copy max-w-2xl">
-                  Start in `/feeds`, move into the catalog only when you need to refine sources,
-                  and keep downloads/docs as support surfaces around that workflow.
+                  Start in `/feeds` to read recent posts, search the generated corpus, refine the
+                  source slice, and export it when you are done. The rest of the site supports that
+                  flow instead of competing with it.
                 </p>
               </div>
 
@@ -134,10 +134,10 @@ export default function HomePage() {
                   Browse catalog
                 </Link>
                 <Link
-                  href="/downloads"
+                  href="/feeds"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
-                  Export bundles
+                  Export from Feeds
                 </Link>
               </div>
             </div>
@@ -172,8 +172,8 @@ export default function HomePage() {
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Downloads</span> when the chosen
-                  set is ready to move elsewhere.
+                  <span className="font-semibold text-(--ink)">export actions in Feeds</span> when
+                  the chosen set is ready to move elsewhere.
                 </p>
               </div>
             </aside>
@@ -194,7 +194,9 @@ export default function HomePage() {
           <div className="surface-card-soft overflow-hidden border border-(--line) bg-linear-to-br from-sky-500/10 via-white to-cyan-500/10 p-4">
             <div
               className="relative overflow-hidden rounded-[1.5rem] border border-(--line) bg-white/65"
-              style={{ aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}` }}
+              style={{
+                aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}`,
+              }}
             >
               <Image
                 src={primarySurfacesAsset.publicPath}
@@ -211,7 +213,7 @@ export default function HomePage() {
               const Icon = step.icon;
               return (
                 <Link
-                  key={step.href}
+                  key={`${step.href}:${step.title}`}
                   href={step.href}
                   className="surface-card group flex h-full flex-col gap-5 transition duration-150 hover:-translate-y-1"
                 >
@@ -236,27 +238,13 @@ export default function HomePage() {
         </section>
 
         <section className="surface-card flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-4 lg:max-w-[38rem]">
+          <div className="space-y-4 lg:max-w-[32rem]">
             <p className="metric-label">Support surfaces</p>
-            <h2 className="text-2xl">Keep exports, docs, and machine-facing outputs close by.</h2>
+            <h2 className="text-2xl">Keep context close without splitting the workflow.</h2>
             <p className="small-note max-w-2xl">
-              The supporting pages are still useful, but they should sit behind the feed workflow
-              instead of trying to define the product.
+              Taxonomy inspection, documentation, and machine-readable reference still matter, but
+              they should stay secondary to the main reading and export flow in `/feeds`.
             </p>
-            <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-linear-to-br from-white via-sky-500/5 to-cyan-500/10 p-3 shadow-sm">
-              <div
-                className="relative overflow-hidden rounded-[1.25rem] border border-(--line) bg-white/75"
-                style={{ aspectRatio: `${supportSurfacesAsset.width} / ${supportSurfacesAsset.height}` }}
-              >
-                <Image
-                  src={supportSurfacesAsset.publicPath}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 38rem, 100vw"
-                  className="object-contain"
-                />
-              </div>
-            </div>
           </div>
 
           <div className="grid gap-3 sm:min-w-[24rem]">
@@ -264,7 +252,7 @@ export default function HomePage() {
               const Icon = route.icon;
               return (
                 <Link
-                  key={route.href}
+                  key={`${route.href}:${route.title}`}
                   href={route.href}
                   className="flex items-start gap-3 rounded-2xl border border-(--line) bg-(--surface) px-4 py-4 transition duration-150 hover:border-(--brand) hover:bg-(--brand-soft)"
                 >

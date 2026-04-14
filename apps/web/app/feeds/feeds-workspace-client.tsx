@@ -177,6 +177,24 @@ function writeArticleState(articleId: string, nextState: ReaderArticleState): vo
   window.localStorage.setItem(articleStateStorageKey(articleId), JSON.stringify(nextState));
 }
 
+function buildOpmlExportHref(state: {
+  sourceType: string | null;
+  topics: string[];
+  verified: boolean | null;
+  feedIds: string[];
+}): string {
+  const params = new URLSearchParams();
+  params.set("format", "filtered");
+  for (const feedId of state.feedIds) {
+    params.append("feed", feedId);
+  }
+  if (state.sourceType) params.set("type", state.sourceType);
+  if (state.topics.length > 0) params.set("topic", state.topics[0]);
+  if (state.verified !== null) params.set("verified", String(state.verified));
+
+  return `/api/exports/opml?${params.toString()}`;
+}
+
 function buildReaderHref(
   pathname: string,
   state: {
@@ -805,9 +823,12 @@ function ReaderWorkspace({
             >
               Open catalog
             </Link>
-            <Link href="/downloads" className={cn(buttonVariants({ variant: "ghost" }))}>
-              Downloads
-            </Link>
+            <a
+              href={buildOpmlExportHref(currentState)}
+              className={cn(buttonVariants({ variant: "ghost" }))}
+            >
+              Export OPML
+            </a>
           </div>
         </div>
 
@@ -849,9 +870,12 @@ function ReaderWorkspace({
           >
             Catalog
           </Link>
-          <Link href="/downloads" className={cn(buttonVariants({ variant: "ghost" }))}>
-            Downloads
-          </Link>
+          <a
+            href={buildOpmlExportHref(currentState)}
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
+            Export OPML
+          </a>
         </div>
       </div>
 

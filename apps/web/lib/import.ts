@@ -15,13 +15,9 @@ import {
   readingHistory,
   annotations,
   preferences,
-  type Article,
   type Feed,
   type Folder,
-  type ReadingHistoryEntry,
-  type Annotation,
-  type Preferences,
-} from './db';
+} from "./db";
 
 export interface ImportResult {
   success: boolean;
@@ -36,18 +32,15 @@ export interface ImportResult {
 }
 
 export interface ImportOptions {
-  mergeStrategy?: 'replace' | 'merge' | 'skip';
+  mergeStrategy?: "replace" | "merge" | "skip";
   validateData?: boolean;
 }
 
 /**
  * Import from JSON backup
  */
-export async function importJSON(
-  file: File,
-  options: ImportOptions = {}
-): Promise<ImportResult> {
-  const { mergeStrategy = 'merge', validateData = true } = options;
+export async function importJSON(file: File, options: ImportOptions = {}): Promise<ImportResult> {
+  const { mergeStrategy = "merge", validateData = true } = options;
   const errors: string[] = [];
 
   try {
@@ -60,7 +53,7 @@ export async function importJSON(
       return {
         success: false,
         counts: {},
-        errors: ['Invalid JSON format. File may be corrupted.'],
+        errors: ["Invalid JSON format. File may be corrupted."],
       };
     }
 
@@ -76,7 +69,7 @@ export async function importJSON(
     if (data.feeds && Array.isArray(data.feeds)) {
       for (const feed of data.feeds) {
         try {
-          if (mergeStrategy === 'replace' || !(await feeds.get(feed.id))) {
+          if (mergeStrategy === "replace" || !(await feeds.get(feed.id))) {
             await feeds.put(feed);
             counts.feeds++;
           }
@@ -90,7 +83,7 @@ export async function importJSON(
     if (data.folders && Array.isArray(data.folders)) {
       for (const folder of data.folders) {
         try {
-          if (mergeStrategy === 'replace' || !(await folders.get(folder.id))) {
+          if (mergeStrategy === "replace" || !(await folders.get(folder.id))) {
             await folders.put(folder);
             counts.folders++;
           }
@@ -104,7 +97,7 @@ export async function importJSON(
     if (data.articles && Array.isArray(data.articles)) {
       for (const article of data.articles) {
         try {
-          if (mergeStrategy === 'replace' || !(await articles.get(article.id))) {
+          if (mergeStrategy === "replace" || !(await articles.get(article.id))) {
             await articles.put(article);
             counts.articles++;
           }
@@ -118,7 +111,7 @@ export async function importJSON(
     if (data.readingHistory && Array.isArray(data.readingHistory)) {
       for (const entry of data.readingHistory) {
         try {
-          if (mergeStrategy === 'replace' || !(await readingHistory.get(entry.id))) {
+          if (mergeStrategy === "replace" || !(await readingHistory.get(entry.id))) {
             await readingHistory.put(entry);
             counts.readingHistory++;
           }
@@ -132,7 +125,7 @@ export async function importJSON(
     if (data.annotations && Array.isArray(data.annotations)) {
       for (const annotation of data.annotations) {
         try {
-          if (mergeStrategy === 'replace' || !(await annotations.get(annotation.id))) {
+          if (mergeStrategy === "replace" || !(await annotations.get(annotation.id))) {
             await annotations.put(annotation);
             counts.annotations++;
           }
@@ -143,7 +136,7 @@ export async function importJSON(
     }
 
     // Import preferences (always replace)
-    if (data.preferences && mergeStrategy === 'replace') {
+    if (data.preferences && mergeStrategy === "replace") {
       try {
         await preferences.put(data.preferences);
       } catch (error) {
@@ -176,33 +169,33 @@ export async function importOPML(file: File): Promise<ImportResult> {
   try {
     const text = await file.text();
     const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/xml');
+    const doc = parser.parseFromString(text, "text/xml");
 
     // Check for parsing errors
-    const parseError = doc.querySelector('parsererror');
+    const parseError = doc.querySelector("parsererror");
     if (parseError) {
       return {
         success: false,
         counts: {},
-        errors: ['Invalid OPML format. File may be corrupted.'],
+        errors: ["Invalid OPML format. File may be corrupted."],
       };
     }
 
     // Get all outline elements
-    const outlines = doc.querySelectorAll('outline');
+    const outlines = doc.querySelectorAll("outline");
 
     for (const outline of outlines) {
-      const type = outline.getAttribute('type');
+      const type = outline.getAttribute("type");
 
       // Feed outline (has xmlUrl)
-      if (type === 'rss' || type === 'feed' || outline.hasAttribute('xmlUrl')) {
+      if (type === "rss" || type === "feed" || outline.hasAttribute("xmlUrl")) {
         try {
           const feed: Feed = {
             id: generateId(),
-            url: outline.getAttribute('xmlUrl') || '',
-            title: outline.getAttribute('title') || outline.getAttribute('text') || 'Untitled Feed',
-            description: outline.getAttribute('description') || undefined,
-            link: outline.getAttribute('htmlUrl') || undefined,
+            url: outline.getAttribute("xmlUrl") || "",
+            title: outline.getAttribute("title") || outline.getAttribute("text") || "Untitled Feed",
+            description: outline.getAttribute("description") || undefined,
+            link: outline.getAttribute("htmlUrl") || undefined,
             lastSync: 0,
             syncInterval: 60, // 1 hour default
             enabled: true,
@@ -228,7 +221,8 @@ export async function importOPML(file: File): Promise<ImportResult> {
         try {
           const folder: Folder = {
             id: generateId(),
-            name: outline.getAttribute('title') || outline.getAttribute('text') || 'Untitled Folder',
+            name:
+              outline.getAttribute("title") || outline.getAttribute("text") || "Untitled Folder",
             position: folderCount,
             collapsed: false,
             createdAt: Date.now(),
@@ -244,13 +238,13 @@ export async function importOPML(file: File): Promise<ImportResult> {
             try {
               const feed: Feed = {
                 id: generateId(),
-                url: feedOutline.getAttribute('xmlUrl') || '',
+                url: feedOutline.getAttribute("xmlUrl") || "",
                 title:
-                  feedOutline.getAttribute('title') ||
-                  feedOutline.getAttribute('text') ||
-                  'Untitled Feed',
-                description: feedOutline.getAttribute('description') || undefined,
-                link: feedOutline.getAttribute('htmlUrl') || undefined,
+                  feedOutline.getAttribute("title") ||
+                  feedOutline.getAttribute("text") ||
+                  "Untitled Feed",
+                description: feedOutline.getAttribute("description") || undefined,
+                link: feedOutline.getAttribute("htmlUrl") || undefined,
                 folderId: folder.id,
                 lastSync: 0,
                 syncInterval: 60,
@@ -297,43 +291,40 @@ export async function importOPML(file: File): Promise<ImportResult> {
 /**
  * Read file and detect format
  */
-export async function detectFileFormat(file: File): Promise<'json' | 'opml' | 'unknown'> {
+export async function detectFileFormat(file: File): Promise<"json" | "opml" | "unknown"> {
   const name = file.name.toLowerCase();
 
-  if (name.endsWith('.json')) return 'json';
-  if (name.endsWith('.opml') || name.endsWith('.xml')) return 'opml';
+  if (name.endsWith(".json")) return "json";
+  if (name.endsWith(".opml") || name.endsWith(".xml")) return "opml";
 
   // Try to detect by content
   try {
     const sample = await file.slice(0, 1000).text();
-    if (sample.includes('<?xml') && sample.includes('<opml')) return 'opml';
-    if (sample.trim().startsWith('{')) return 'json';
+    if (sample.includes("<?xml") && sample.includes("<opml")) return "opml";
+    if (sample.trim().startsWith("{")) return "json";
   } catch {
     // Ignore errors
   }
 
-  return 'unknown';
+  return "unknown";
 }
 
 /**
  * Import file (auto-detect format)
  */
-export async function importFile(
-  file: File,
-  options: ImportOptions = {}
-): Promise<ImportResult> {
+export async function importFile(file: File, options: ImportOptions = {}): Promise<ImportResult> {
   const format = await detectFileFormat(file);
 
   switch (format) {
-    case 'json':
+    case "json":
       return importJSON(file, options);
-    case 'opml':
+    case "opml":
       return importOPML(file);
     default:
       return {
         success: false,
         counts: {},
-        errors: ['Unknown file format. Please use JSON or OPML files.'],
+        errors: ["Unknown file format. Please use JSON or OPML files."],
       };
   }
 }
@@ -346,15 +337,15 @@ export async function importFile(
  * Validate export data structure
  */
 function isValidExportData(data: unknown): boolean {
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== "object") {
     return false;
   }
 
   const record = data as Record<string, unknown>;
   return (
-    'version' in record &&
-    'exportedAt' in record &&
-    ('articles' in record || 'feeds' in record || 'folders' in record)
+    "version" in record &&
+    "exportedAt" in record &&
+    ("articles" in record || "feeds" in record || "folders" in record)
   );
 }
 
@@ -368,7 +359,7 @@ function generateId(): string {
 /**
  * React hook for file import
  */
-import { useState } from 'react';
+import { useState } from "react";
 
 export function useFileImport() {
   const [importing, setImporting] = useState(false);
