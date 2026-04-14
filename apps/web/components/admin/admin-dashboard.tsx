@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  startTransition,
-  useEffect,
-  useState,
-} from "react";
+import { startTransition, useEffect, useState } from "react";
 import { Activity, AlertTriangle, Clock3, RefreshCcw, Route, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -130,16 +126,25 @@ export function AdminDashboard() {
         <div className="space-y-1">
           <p className="metric-label">API observability</p>
           <p className="small-note">
-            Route-level telemetry is captured directly from App Router handlers and stored for protected admin review.
+            Route-level telemetry is captured directly from App Router handlers and stored for
+            protected admin review.
           </p>
         </div>
-        <Button variant="outline" onClick={() => startTransition(() => void refreshData())} disabled={isRefreshing}>
+        <Button
+          variant="outline"
+          onClick={() => startTransition(() => void refreshData())}
+          disabled={isRefreshing}
+        >
           <RefreshCcw className="size-4" />
           {isRefreshing ? "Refreshing" : "Refresh"}
         </Button>
       </div>
 
-      {error ? <p className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -152,7 +157,9 @@ export function AdminDashboard() {
         <MetricCard
           label="Error rate"
           value={summary ? `${(summary.errorRate * 100).toFixed(1)}%` : "--"}
-          detail={summary ? `${summary.errorCount} server-side failures observed` : "Loading error trend"}
+          detail={
+            summary ? `${summary.errorCount} server-side failures observed` : "Loading error trend"
+          }
           icon={<AlertTriangle className="size-5" />}
           surface="soft"
           iconClassName="bg-[color:color-mix(in_oklab,var(--warning-tone)_14%,var(--surface))] text-[color:var(--warning-tone)]"
@@ -167,7 +174,11 @@ export function AdminDashboard() {
         <MetricCard
           label="Routes"
           value={summary ? String(summary.routeCount) : "--"}
-          detail={summary?.lastIngestedAt ? `Last event ${formatRelativeTimestamp(summary.lastIngestedAt)}` : "No telemetry ingested yet"}
+          detail={
+            summary?.lastIngestedAt
+              ? `Last event ${formatRelativeTimestamp(summary.lastIngestedAt)}`
+              : "No telemetry ingested yet"
+          }
           icon={<Route className="size-5" />}
           surface="soft"
         />
@@ -183,11 +194,16 @@ export function AdminDashboard() {
           <div className="space-y-3">
             {summary?.routeBreakdown.length ? (
               summary.routeBreakdown.map((route) => (
-                <div key={route.routeKey} className="rounded-2xl border border-(--line) bg-(--surface) p-4">
+                <div
+                  key={route.routeKey}
+                  className="rounded-2xl border border-(--line) bg-(--surface) p-4"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-medium text-(--ink)">{route.routeKey}</p>
-                      <p className="small-note">Last seen {formatRelativeTimestamp(route.lastSeenAt)}</p>
+                      <p className="small-note">
+                        Last seen {formatRelativeTimestamp(route.lastSeenAt)}
+                      </p>
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-right text-sm">
                       <div>
@@ -200,7 +216,9 @@ export function AdminDashboard() {
                       </div>
                       <div>
                         <p className="metric-label">p95</p>
-                        <p className="font-semibold text-(--ink)">{route.p95DurationMs.toFixed(0)} ms</p>
+                        <p className="font-semibold text-(--ink)">
+                          {route.p95DurationMs.toFixed(0)} ms
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -220,8 +238,11 @@ export function AdminDashboard() {
 
           <div className="space-y-3">
             {summary?.auditEvents.length ? (
-              summary.auditEvents.map((event) => (
-                <div key={`${event.timestamp}-${event.action}`} className="rounded-2xl border border-(--line) bg-(--surface) p-4">
+              summary.auditEvents.map((event, index) => (
+                <div
+                  key={`${event.timestamp}-${event.action}-${event.detail ?? "none"}-${index}`}
+                  className="rounded-2xl border border-(--line) bg-(--surface) p-4"
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium text-(--ink)">{event.action}</p>
@@ -251,11 +272,16 @@ export function AdminDashboard() {
           <div className="space-y-3">
             {summary?.recentErrors.length ? (
               summary.recentErrors.map((event) => (
-                <div key={event.requestId} className="rounded-2xl border border-red-200 bg-red-50/70 p-4">
+                <div
+                  key={event.requestId}
+                  className="rounded-2xl border border-red-200 bg-red-50/70 p-4"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-medium text-red-900">{event.routeKey}</p>
-                      <p className="text-sm text-red-700">{event.errorMessage ?? `HTTP ${event.statusCode}`}</p>
+                      <p className="text-sm text-red-700">
+                        {event.errorMessage ?? `HTTP ${event.statusCode}`}
+                      </p>
                     </div>
                     <div className="text-right text-sm text-red-800">
                       <p>{event.durationMs.toFixed(0)} ms</p>
@@ -265,7 +291,9 @@ export function AdminDashboard() {
                 </div>
               ))
             ) : (
-              <p className="small-note">No 5xx responses have been recorded in the current window.</p>
+              <p className="small-note">
+                No 5xx responses have been recorded in the current window.
+              </p>
             )}
           </div>
         </section>
@@ -279,7 +307,10 @@ export function AdminDashboard() {
           <div className="space-y-3">
             {events?.events.length ? (
               events.events.map((event) => (
-                <div key={event.requestId} className="rounded-2xl border border-(--line) bg-(--surface) p-4">
+                <div
+                  key={event.requestId}
+                  className="rounded-2xl border border-(--line) bg-(--surface) p-4"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-medium text-(--ink)">{event.routeKey}</p>
@@ -295,7 +326,9 @@ export function AdminDashboard() {
                 </div>
               ))
             ) : (
-              <p className="small-note">Recent request telemetry will appear here once instrumented routes are hit.</p>
+              <p className="small-note">
+                Recent request telemetry will appear here once instrumented routes are hit.
+              </p>
             )}
           </div>
         </section>
@@ -304,7 +337,9 @@ export function AdminDashboard() {
       <div className="surface-card-soft flex items-start gap-3">
         <ShieldCheck className="mt-0.5 size-4 text-(--brand-strong)" />
         <p className="small-note">
-          Telemetry captures route key, status, latency, request identifiers, cache hints, and redacted failure context. Admin passwords remain server-only and are never written into telemetry records.
+          Telemetry captures route key, status, latency, request identifiers, cache hints, and
+          redacted failure context. Admin passwords remain server-only and are never written into
+          telemetry records.
         </p>
       </div>
     </div>

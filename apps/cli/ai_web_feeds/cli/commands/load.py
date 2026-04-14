@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import typer
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from loguru import logger
 from rich.console import Console
 from tqdm import tqdm
@@ -22,7 +23,7 @@ def from_yaml(
         help="Input YAML file",
     ),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",
@@ -128,7 +129,7 @@ def load_all(
         help="Input YAML file",
     ),
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database",
         "-d",
         help="Database URL",

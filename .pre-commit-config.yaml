@@ -198,7 +198,7 @@ repos:
     # Python tests
   - id: pytest
     name: pytest (packages)
-    entry: bash -c 'cd tests && uv run pytest -v --tb=short'
+    entry: bash -lc 'cd tests && uv run pytest -q'
     language: system
     pass_filenames: false
     always_run: false
@@ -207,17 +207,17 @@ repos:
     # Python coverage check
   - id: pytest-cov
     name: pytest coverage (≥90%)
-    entry: bash -c 'cd tests && uv run pytest --cov=ai_web_feeds --cov-report=term --cov-fail-under=90 -q'
+    entry: bash -lc 'cd tests && uv run pytest -q && uv run coverage report --fail-under=90'
     language: system
     pass_filenames: false
     always_run: false
     files: ^packages/ai_web_feeds/(src|tests)/.*\.py$
-    stages: [push]
+    stages: [pre-push]
 
     # TypeScript type checking
   - id: tsc
     name: tsc (apps/web)
-    entry: bash -c 'cd apps/web && pnpm tsc --noEmit'
+    entry: bash -lc 'pnpm --dir apps/web exec tsc --noEmit'
     language: system
     pass_filenames: false
     always_run: false
@@ -239,12 +239,12 @@ repos:
     # Next.js build check (only on push)
   - id: nextjs-build
     name: next build check
-    entry: bash -c 'cd apps/web && pnpm build'
+    entry: bash -lc 'CI=1 pnpm --dir apps/web build'
     language: system
     pass_filenames: false
     always_run: false
     files: ^apps/web/
-    stages: [push]
+    stages: [pre-push]
 
     # JSON Schema validation
   - id: validate-json-schemas

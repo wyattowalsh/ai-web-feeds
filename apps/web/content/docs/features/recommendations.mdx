@@ -1,173 +1,129 @@
 ---
 title: AI-Powered Recommendations
-description: Personalized feed suggestions with content-based filtering, cold start onboarding, and user feedback
+description: Backend-backed feed recommendations with topic steering, interaction tracking, and a graceful unavailable fallback when personalization is offline.
 ---
 
 # AI-Powered Recommendations
 
-> **Status**: ✅ Fully Implemented
-> **Phase**: Phase 1 (MVP)
-> **Completion**: 100%
+> **Status**: Backend-backed
+> **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
 
-AI-Powered Recommendations provide personalized feed suggestions based on user interests, content similarity, and popularity.
+The recommendations page at `/recommendations` is wired to real backend routes and no longer pretends to be fully available in backend-free local mode. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
 
-## Features
+## At a Glance
 
-### Personalized Suggestions
+| Surface                     | Uses backend | Behavior when backend is unavailable              |
+| --------------------------- | ------------ | ------------------------------------------------- |
+| `/recommendations` page     | Yes          | Renders one unavailable panel with setup guidance |
+| `GET /api/recommendations`  | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
+| `POST /api/recommendations` | Yes          | Returns `503 FEATURE_UNAVAILABLE`                 |
 
-Navigate to `/recommendations` to see 10-20 personalized feed suggestions with infinite scroll.
+## Current Experience
 
-### Cold Start Onboarding
+### Recommendation List
 
-New users take a 3-5 topic selection quiz:
+When the backend is available, the page renders:
 
-- **Question**: "What AI/ML areas interest you?"
-- **Options**: Select from topic taxonomy (LLM, Computer Vision, Reinforcement Learning, etc.)
-- **Result**: Immediate recommendations based on selected topics
+- ranked feed recommendations
+- recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
+- topic chips for steering the current slice
+- feed actions for opening a result in `/feeds`, subscribing, or dismissing it
 
-### Recommendation Algorithm (Phase 1)
+### Personalization Input
 
-**70-20-10 Split**:
+The web client creates a stable local `user_id` in `localStorage` and sends it with every recommendation request. Topic chips refine the current request without changing the page URL, so personalization can persist locally without requiring user accounts.
 
-- **70% Content-Based**: Topic overlap + embedding similarity with user interests
-- **20% Popularity-Based**: Most followed/verified feeds
-- **10% Serendipity**: Random high-quality feeds for discovery
+### Interaction Tracking
 
-**Configurable** via environment variables:
+The UI records these interaction types:
+
+- `view`
+- `click`
+- `subscribe`
+- `dismiss`
+
+The backend stores that feedback, updates the user profile, and uses it to avoid repeating previously followed or already-interacted feeds in later recommendations.
+
+### Unavailable State
+
+If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
+
+- a setup message explaining that personalization is optional
+- a link to `/feeds?mode=catalog`
+- a link to the deployment guide
+
+That unavailable state is expected behavior in backend-free local development.
+
+## Proxy Contract
+
+The web layer uses two backend-backed routes:
+
+- `GET /api/recommendations`
+- `POST /api/recommendations`
+
+### Request Forwarding
+
+`GET /api/recommendations` forwards:
+
+- `user_id`
+- `topics`
+- `limit`
+
+`POST /api/recommendations` accepts:
+
+```json
+{
+  "user_id": "user_123",
+  "feed_id": "feed-abc",
+  "interaction_type": "subscribe",
+  "reason": "similar_topics"
+}
+```
+
+### Stored Interaction Signals
+
+| Field              | Purpose                                           |
+| ------------------ | ------------------------------------------------- |
+| `user_id`          | Stable local profile key used for personalization |
+| `feed_id`          | Recommended feed the user interacted with         |
+| `interaction_type` | One of `view`, `click`, `subscribe`, or `dismiss` |
+| `reason`           | The recommendation reason shown in the UI         |
+
+When the backend is unavailable, the proxy returns:
+
+```json
+{
+  "error": "Recommendations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
+  "code": "FEATURE_UNAVAILABLE"
+}
+```
+
+with HTTP `503`.
+
+## Local Smoke Test
+
+Start the backend HTTP surface:
 
 ```bash
-AIWF_RECOMMENDATION__CONTENT_WEIGHT=0.7
-AIWF_RECOMMENDATION__POPULARITY_WEIGHT=0.2
-AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT=0.1
+uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
 ```
 
-### Recommendation Explanations
-
-Each recommendation includes context:
-
-- "Because you follow **X**" (clickable link)
-- "Popular in **Y**" (topic badge)
-- "Similar to **Z**" (feed comparison)
-
-### User Feedback
-
-**Interactions**:
-
-- **Like** (👍): Boost topic weight +0.2
-- **Dismiss** (✖): Reduce feed weight -0.5
-- **Block Topic** (🚫): Exclude topic entirely
-
-**Effect**: Recommendations update based on feedback to improve relevance.
-
-### Diversity Constraints (Flexible)
-
-- **Max 3 feeds per topic** (best effort)
-- **Min 2 topics represented** (unless user interests are highly focused)
-- **Suggestion**: "Explore similar topics" if recommendations too narrow
-
-### Periodic Refresh
-
-- **Weekly**: Embedding refresh for new feeds
-- **Nightly**: Topic popularity recalculation
-- **Phase 2**: Collaborative matrix update when user accounts exist
-
-### Trending Feeds Boost
-
-Feeds with sudden validation frequency spike (3× avg validations in 7 days) get +0.1 relevance boost.
-
-## Configuration
+Point the web app at it:
 
 ```bash
-# Recommendation algorithm weights
-AIWF_RECOMMENDATION__CONTENT_WEIGHT=0.7      # Topic + embedding similarity
-AIWF_RECOMMENDATION__POPULARITY_WEIGHT=0.2   # Verified + follower count
-AIWF_RECOMMENDATION__SERENDIPITY_WEIGHT=0.1  # Random high-quality
-
-# Embedding settings (for content-based filtering)
-AIWF_EMBEDDING__PROVIDER=local
-AIWF_EMBEDDING__HF_API_TOKEN=
-AIWF_EMBEDDING__LOCAL_MODEL=sentence-transformers/all-MiniLM-L6-v2
+BACKEND_URL=http://127.0.0.1:8001
 ```
 
-## Usage
+Once `BACKEND_URL` is set, the page switches from the unavailable state to live recommendations automatically.
 
-### Web Interface
-
-Navigate to `/recommendations`:
-
-1. **First Visit**: Complete topic quiz (3-5 selections)
-2. **Browse**: Scroll through personalized suggestions
-3. **Interact**: Like, dismiss, or block topics
-4. **Refresh**: Page auto-updates based on feedback
-
-**Privacy**: Opt-out of personalization → Recommendations fall back to popular feeds only.
-
-### CLI
+Quick verification:
 
 ```bash
-# Generate recommendations for a user profile
-uv run aiwebfeeds recommendations generate --user-id abc123 --count 20
-
-# Update user profile based on interactions
-uv run aiwebfeeds recommendations feedback --user-id abc123 --feed-id xyz789 --action like
-
-# Cold start recommendations from topics
-uv run aiwebfeeds recommendations coldstart --topics llm,agents,training --count 10
+curl "http://127.0.0.1:3000/api/recommendations?user_id=test-user&topics=agents,llm&limit=10"
 ```
-
-### API
-
-```typescript
-// Get personalized recommendations
-const response = await fetch("/api/recommendations?user_id=abc123&count=10");
-const recommendations = await response.json();
-
-// Submit feedback
-await fetch("/api/recommendations/feedback", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    user_id: "abc123",
-    feed_id: "xyz789",
-    interaction_type: "like",
-  }),
-});
-
-// Cold start quiz
-const coldStartResponse = await fetch("/api/recommendations/quiz", {
-  method: "POST",
-  body: JSON.stringify({ topics: ["llm", "agents", "training"] }),
-});
-```
-
-## Performance
-
-- **Generation Time**: &lt;1 second (precomputed matrices, NFR-005)
-- **Loading States**: Spinner + skeleton UI during generation (NFR-020)
-- **Scalability**: Supports 10,000+ users with O(log n) lookup (NFR-009)
-
-## Phase 2 Enhancements
-
-**Collaborative Filtering** (deferred until user accounts exist):
-
-- User-user similarity matrix
-- Item-item co-occurrence matrix
-- Hybrid content + collaborative model
-- Real-time personalization
-
-**Current Phase 1**: Content-based only (topic similarity + popularity).
-
-## Success Criteria
-
-- ✅ Recommendation generation completes within 1 second for 95% of requests
-- ✅ Cold start users receive recommendations with ≥50% topic match rate
-- ✅ Recommendation click-through rate ≥15%
-- ✅ Users who interact follow 2× more feeds than non-users
-- ✅ Precision@10 ≥60% (6+ relevant feeds in top 10)
-- ✅ 40% of new follows come from recommendations within 3 months
 
 ## Related
 
-- [Analytics Dashboard](./analytics) - View recommendation performance metrics
-- [Search & Discovery](./search) - Find specific feeds by query
-- [Data Model](/docs/development/data-model#recommendationinteraction) - RecommendationInteraction and UserProfile schemas
+- [Analytics Dashboard](./analytics) - Backend-backed metrics and exports
+- [Search & Discovery](./search) - Reader-first catalog browsing without the backend
+- [Deployment Guide](/docs/guides/deployment) - Running the optional backend service

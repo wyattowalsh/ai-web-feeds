@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   type ChartOptions,
+  type TooltipItem,
 } from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
 import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
@@ -108,7 +109,7 @@ export function TrendingTopicsChart({
       },
       tooltip: {
         callbacks: {
-          afterLabel: (context: any) => {
+          afterLabel: (context: TooltipItem<"bar">) => {
             const topic = topics[context.dataIndex];
             return [
               `Feed Count: ${topic.feed_count}`,
@@ -157,11 +158,16 @@ export function TrendingTopicsChart({
       footer={
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {topics.map((topic) => (
-            <div key={topic.topic} className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-3 text-center">
+            <div
+              key={topic.topic}
+              className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-3 text-center"
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-muted)]">
                 {topic.topic}
               </p>
-              <p className="mt-2 text-base font-semibold text-[color:var(--ink)]">{topic.feed_count} feeds</p>
+              <p className="mt-2 text-base font-semibold text-[color:var(--ink)]">
+                {topic.feed_count} feeds
+              </p>
               <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
                 {(topic.avg_health_score * 100).toFixed(0)}% health
               </p>

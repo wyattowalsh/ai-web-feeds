@@ -11,11 +11,10 @@ from typing import Any
 import feedparser
 import httpx
 from loguru import logger
-from sqlmodel import select
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, FeedPollJob, PollStatus
+from ai_web_feeds.models import CurationStatus, FeedEntry, FeedPollJob, FeedSource, PollStatus
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -31,7 +30,7 @@ class FeedPoller:
         self,
         db: DatabaseManager,
         settings: Settings,
-    ):
+    ) -> None:
         """Initialize feed poller.
 
         Args:
@@ -90,8 +89,8 @@ class FeedPoller:
 
             articles_count = 0
             for entry in parsed_feed.entries:
-                if await self._is_new_entry(entry.get("id") or entry.get("link")):
-                    feed_entry = self._parse_entry(entry, feed_id)
+                feed_entry = self._parse_entry(entry, feed_id)
+                if await self._is_new_entry(feed_entry.guid, feed_entry.link):
                     self.db.add_feed_entry(feed_entry)
                     articles_count += 1
 
@@ -115,21 +114,79 @@ class FeedPoller:
             logger.error(f"Feed poll failed: {feed_id} - {e}")
             raise
 
-    async def _is_new_entry(self, guid: str | None) -> bool:
-        """Check if entry GUID is new (not in database).
+    async def refresh_corpus(
+        self,
+        feed_sources: list[FeedSource] | None = None,
+    ) -> dict[str, Any]:
+        """Poll all active feeds and return a corpus refresh summary."""
+        if feed_sources is None:
+            feed_sources = [
+                feed
+                for feed in self.db.get_all_feed_sources()
+                if feed.curation_status not in {CurationStatus.ARCHIVED, CurationStatus.INACTIVE}
+            ]
+
+        feed_sources = sorted(feed_sources, key=lambda feed: feed.id)
+        summary: dict[str, Any] = {
+            "attempted_feeds": len(feed_sources),
+            "successful_feeds": 0,
+            "failed_feeds": 0,
+            "failed_feed_ids": [],
+            "articles_discovered": 0,
+            "status": "complete",
+            "partial_coverage": None,
+        }
+
+        for feed_source in feed_sources:
+            feed_url = feed_source.feed or feed_source.site
+            if not feed_url:
+                summary["failed_feeds"] += 1
+                summary["failed_feed_ids"].append(feed_source.id)
+                logger.warning(f"Skipping feed without URL: {feed_source.id}")
+                continue
+
+            try:
+                job = await self.poll_feed(feed_source.id, feed_url)
+            except Exception as exc:
+                summary["failed_feeds"] += 1
+                summary["failed_feed_ids"].append(feed_source.id)
+                logger.warning(f"Feed refresh failed: {feed_source.id} - {exc}")
+                continue
+
+            summary["successful_feeds"] += 1
+            summary["articles_discovered"] += job.articles_discovered
+
+        if summary["failed_feeds"] > 0:
+            summary["status"] = "partial"
+            summary["partial_coverage"] = {
+                "status": "partial",
+                "attempted_feeds": summary["attempted_feeds"],
+                "successful_feeds": summary["successful_feeds"],
+                "failed_feeds": summary["failed_feeds"],
+                "failed_feed_ids": summary["failed_feed_ids"],
+                "coverage_ratio": (
+                    round(summary["successful_feeds"] / summary["attempted_feeds"], 4)
+                    if summary["attempted_feeds"]
+                    else 1.0
+                ),
+            }
+
+        return summary
+
+    async def _is_new_entry(self, guid: str | None, link: str | None = None) -> bool:
+        """Check if entry identity is new (not in database).
 
         Args:
             guid: Article GUID
+            link: Fallback link identity
 
         Returns:
             True if new entry, False if exists
         """
-        if not guid:
+        if not guid and not link:
             return False
 
-        with self.db.get_session() as session:
-            statement = select(FeedEntry.id).where(FeedEntry.guid == guid).limit(1)
-            return session.exec(statement).first() is None
+        return self.db.get_feed_entry_by_identity(guid, link) is None
 
     def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> FeedEntry:
         """Parse feedparser entry into FeedEntry model.

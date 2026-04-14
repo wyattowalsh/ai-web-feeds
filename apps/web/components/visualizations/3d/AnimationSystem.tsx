@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { animated, useSpring } from "@react-spring/three";
@@ -17,8 +17,6 @@ interface AnimatedNodeProps {
   scale: number;
   targetScale: number;
   color: string;
-  targetColor: string;
-  animationDuration?: number;
   onAnimationComplete?: () => void;
 }
 
@@ -31,8 +29,6 @@ export function AnimatedNode({
   scale,
   targetScale,
   color,
-  targetColor,
-  animationDuration = 1000,
   onAnimationComplete,
 }: AnimatedNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -53,7 +49,7 @@ export function AnimatedNode({
   });
 
   return (
-    <animated.mesh ref={meshRef} position={pos as any} scale={scl}>
+    <animated.mesh ref={meshRef} position={pos} scale={scl}>
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial color={color} />
     </animated.mesh>
@@ -78,9 +74,9 @@ export function PulsingNode({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (meshRef.current) {
-      const scale = baseScale + Math.sin(clock.getElapsedTime() * pulseSpeed) * pulseAmplitude;
+      const scale = baseScale + Math.sin((performance.now() / 1000) * pulseSpeed) * pulseAmplitude;
       meshRef.current.scale.set(scale, scale, scale);
     }
   });
@@ -88,11 +84,7 @@ export function PulsingNode({
   return (
     <mesh ref={meshRef} position={position}>
       <sphereGeometry args={[1, 32, 32]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={0.3}
-      />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
     </mesh>
   );
 }
@@ -150,11 +142,7 @@ export function FadingNode({
   return (
     <animated.mesh ref={meshRef} position={position} scale={scale}>
       <sphereGeometry args={[1, 32, 32]} />
-      <animated.meshStandardMaterial
-        color={color}
-        transparent
-        opacity={opacity}
-      />
+      <animated.meshStandardMaterial color={color} transparent opacity={opacity} />
     </animated.mesh>
   );
 }
@@ -179,10 +167,7 @@ export function AnimatedLink({
     start[2] + (end[2] - start[2]) * animationProgress,
   ];
 
-  const points = [
-    new THREE.Vector3(...start),
-    new THREE.Vector3(...animatedEnd),
-  ];
+  const points = [new THREE.Vector3(...start), new THREE.Vector3(...animatedEnd)];
 
   const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 
@@ -198,29 +183,17 @@ export function AnimatedLink({
  * Camera animation controller.
  */
 export function CameraAnimator({
-  targetPosition,
-  targetLookAt,
   duration = 2000,
   onComplete,
 }: {
-  targetPosition: [number, number, number];
-  targetLookAt: [number, number, number];
   duration?: number;
   onComplete?: () => void;
 }) {
-  const { position } = useSpring({
-    position: targetPosition,
-    config: { duration },
-    onRest: onComplete,
-  });
-
-  const { lookAt } = useSpring({
-    lookAt: targetLookAt,
-    config: { duration },
-  });
-
   // This would be used with camera controls
   // Implementation depends on the camera setup
+
+  void duration;
+  void onComplete;
 
   return null;
 }
@@ -243,10 +216,9 @@ export function ParticleEffect({
 }) {
   const particlesRef = useRef<THREE.Points>(null);
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position
-        .array as Float32Array;
+      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
 
       for (let i = 0; i < count; i++) {
         const i3 = i * 3;
@@ -273,10 +245,7 @@ export function ParticleEffect({
   return (
     <points ref={particlesRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[particlePositions, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[particlePositions, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.1} color={color} transparent opacity={0.6} />
     </points>

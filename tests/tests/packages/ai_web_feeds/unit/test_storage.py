@@ -1,9 +1,11 @@
 """Unit tests for ai_web_feeds.storage module."""
 
-from datetime import datetime
+import json
+from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
-from ai_web_feeds.models import FeedSource, Topic
+from ai_web_feeds.models import FeedEntry, FeedSource, Topic
 from ai_web_feeds.storage import DatabaseManager
 from sqlalchemy import text
 
@@ -274,3 +276,121 @@ class TestDatabaseManagerEdgeCases:
                 )
                 session.add(duplicate)
                 session.commit()
+
+
+@pytest.mark.unit
+class TestFeedEntryCorpusOperations:
+    """Test feed entry dedupe and corpus export helpers."""
+
+    def test_add_feed_entry_dedupes_by_link_fallback(self, temp_db_path, sample_feed_source):
+        """Feed entry writes should skip duplicates by link when GUIDs differ."""
+        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        db.add_feed_source(sample_feed_source)
+
+        first_entry = FeedEntry(
+            feed_id=sample_feed_source.id,
+            guid="guid-1",
+            link="https://example.com/article",
+            title="First Title",
+            pub_date=datetime(2024, 1, 1, 12, 0, tzinfo=UTC),
+        )
+        duplicate_entry = FeedEntry(
+            feed_id=sample_feed_source.id,
+            guid="guid-2",
+            link="https://example.com/article",
+            title="Second Title",
+            pub_date=datetime(2024, 1, 2, 12, 0, tzinfo=UTC),
+        )
+
+        stored_first = db.add_feed_entry(first_entry)
+        stored_duplicate = db.add_feed_entry(duplicate_entry)
+
+        assert stored_first.guid == "guid-1"
+        assert stored_duplicate.guid == "guid-1"
+        assert len(db.get_all_feed_entries()) == 1
+
+    def test_build_articles_corpus_payload_includes_truthful_metadata(
+        self, temp_db_path, sample_feed_source
+    ):
+        """Corpus payloads should expose normalized metadata and source fields."""
+        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        sample_feed_source.verified = True
+        db.add_feed_source(sample_feed_source)
+
+        entry = FeedEntry(
+            feed_id=sample_feed_source.id,
+            guid="article-1",
+            link="https://example.com/article-1",
+            title="Corpus Article",
+            summary="Summary text",
+            content_html="<p>Content</p>",
+            pub_date=datetime(2024, 1, 3, 12, 0, tzinfo=UTC),
+            author="Test Author",
+            categories=["ai", "corpus"],
+        )
+        db.add_feed_entry(entry)
+
+        payload = db.build_articles_corpus_payload(
+            partial_coverage={
+                "status": "partial",
+                "attempted_feeds": 3,
+                "successful_feeds": 2,
+                "failed_feeds": 1,
+                "failed_feed_ids": ["feed-3"],
+                "coverage_ratio": 0.6667,
+            }
+        )
+
+        metadata = payload["metadata"]
+        article = payload["articles"][0]
+
+        assert metadata["source_db"] == f"sqlite:///{temp_db_path}"
+        assert metadata["article_count"] == 1
+        assert metadata["feed_count"] == 1
+        assert metadata["latest_published_at"] == entry.pub_date.isoformat()
+        assert metadata["partial_coverage"]["status"] == "partial"
+        assert article["id"] == "article-1"
+        assert article["feed_title"] == sample_feed_source.title
+        assert article["topics"] == sample_feed_source.topics
+        assert article["source_type"] == sample_feed_source.source_type.value
+        assert article["verified"] is True
+        assert article["is_active"] is True
+        assert article["published_at"] == entry.pub_date.isoformat()
+
+    def test_export_articles_corpus_dedupes_duplicate_links(self, temp_db_path, sample_feed_source):
+        """The exported corpus should collapse duplicate article identities."""
+        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        db.add_feed_source(sample_feed_source)
+
+        first_entry = FeedEntry(
+            feed_id=sample_feed_source.id,
+            guid="guid-1",
+            link="https://example.com/article",
+            title="First Title",
+            pub_date=datetime(2024, 1, 1, 12, 0, tzinfo=UTC),
+        )
+        duplicate_entry = FeedEntry(
+            feed_id=sample_feed_source.id,
+            guid="guid-2",
+            link="https://example.com/article",
+            title="Duplicate Title",
+            pub_date=datetime(2024, 1, 2, 12, 0, tzinfo=UTC),
+        )
+
+        with db.get_session() as session:
+            session.add(first_entry)
+            session.add(duplicate_entry)
+            session.commit()
+
+        output_path = Path(temp_db_path.parent) / "articles.generated.json"
+        payload = db.export_articles_corpus(output_path)
+
+        assert payload["metadata"]["article_count"] == 1
+        assert output_path.exists()
+
+        exported = json.loads(output_path.read_text(encoding="utf-8"))
+        assert exported["metadata"]["article_count"] == 1
+        assert exported["articles"][0]["id"] == "guid-2"

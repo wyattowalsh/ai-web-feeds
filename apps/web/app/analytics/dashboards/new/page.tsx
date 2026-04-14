@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Layouts } from "react-grid-layout";
 import { DashboardBuilder } from "@/components/visualizations/dashboards/DashboardBuilder";
 import { getDeviceId } from "@/lib/visualization/device-id";
 
@@ -14,7 +15,10 @@ export default function NewDashboardPage() {
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = async (widgets: any[], layouts: any) => {
+  const handleSave = async (_widgets: unknown[], _layouts: Layouts) => {
+    void _widgets;
+    void _layouts;
+
     if (!name.trim()) {
       alert("Please enter a dashboard name");
       return;
@@ -28,7 +32,7 @@ export default function NewDashboardPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      console.log("Saving dashboard:", { name, widgets, layouts, deviceId });
+      console.log("Saving dashboard:", { name, deviceId });
 
       router.push("/analytics/dashboards");
     } catch (error) {
@@ -75,9 +79,7 @@ export default function NewDashboardPage() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Saving Dashboard...
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Please wait
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Please wait</p>
               </div>
             </div>
           </div>

@@ -4,9 +4,6 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from rich.console import Console
-from rich.table import Table
-
 from ai_web_feeds.analytics import (
     calculate_summary_metrics,
     export_analytics_csv,
@@ -14,7 +11,10 @@ from ai_web_feeds.analytics import (
     get_publication_velocity,
     get_trending_topics,
 )
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.storage import DatabaseManager
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(help="Analytics dashboard commands")
 console = Console()
@@ -23,7 +23,7 @@ console = Console()
 @app.command("summary")
 def analytics_summary(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -83,7 +83,7 @@ def analytics_summary(
 @app.command("trending")
 def analytics_trending(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -138,7 +138,7 @@ def analytics_trending(
 @app.command("velocity")
 def analytics_velocity(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -195,7 +195,7 @@ def analytics_velocity(
 @app.command("snapshot")
 def analytics_snapshot(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",
@@ -218,7 +218,7 @@ def analytics_snapshot(
 @app.command("export")
 def analytics_export(
     database_url: str = typer.Option(
-        "sqlite:///data/aiwebfeeds.db",
+        DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
         help="Database URL",

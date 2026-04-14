@@ -8,7 +8,6 @@
 
 import { LineChart, createLineChartData } from "../charts/LineChart";
 import { BarChart, createBarChartData } from "../charts/BarChart";
-import type { ChartData } from "chart.js";
 
 export interface ComparisonDataset {
   id: string;
@@ -56,9 +55,7 @@ export function MultiSeriesComparison({
     return (
       <div>
         {title && (
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {title}
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
         )}
         <LineChart data={chartData} height={height} />
       </div>
@@ -68,9 +65,7 @@ export function MultiSeriesComparison({
     return (
       <div>
         {title && (
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {title}
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
         )}
         <BarChart data={chartData} height={height} />
       </div>
@@ -98,15 +93,11 @@ export function ComparisonCards({
           key={index}
           className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
         >
-          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            {item.label}
-          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{item.label}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {item.value.toLocaleString()}
             {item.unit && (
-              <span className="text-sm text-gray-500 dark:text-gray-500 ml-1">
-                {item.unit}
-              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-500 ml-1">{item.unit}</span>
             )}
           </div>
           {item.change !== undefined && (
@@ -204,10 +195,7 @@ export function TrendComparisonTable({
             const change = ((item.current - item.previous) / item.previous) * 100;
 
             return (
-              <tr
-                key={index}
-                className="border-b border-gray-200 dark:border-gray-700"
-              >
+              <tr key={index} className="border-b border-gray-200 dark:border-gray-700">
                 <td className="p-3 font-medium">{item.name}</td>
                 <td className="p-3 text-right">{item.current.toLocaleString()}</td>
                 <td className="p-3 text-right">{item.previous.toLocaleString()}</td>

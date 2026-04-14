@@ -1,51 +1,24 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { loadFeedCatalogMock, runLocalSearchMock } = vi.hoisted(() => ({
+const { browseArticleCorpusMock, getFeedStatsMock, loadFeedCatalogMock } = vi.hoisted(() => ({
+  browseArticleCorpusMock: vi.fn(),
+  getFeedStatsMock: vi.fn(),
   loadFeedCatalogMock: vi.fn(),
-  runLocalSearchMock: vi.fn(),
+}));
+
+vi.mock("@/lib/article-corpus", () => ({
+  browseArticleCorpus: browseArticleCorpusMock,
 }));
 
 vi.mock("@/lib/feeds", () => ({
   loadFeedCatalog: loadFeedCatalogMock,
-  getSourceTypes: vi.fn((feeds: Array<{ source_type?: string }>) =>
-    Array.from(new Set(feeds.map((feed) => feed.source_type).filter(Boolean))).sort(),
-  ),
-  getFeedStats: vi.fn(
-    (feeds: Array<{ source_type?: string; topics?: string[]; verified?: boolean }>) => ({
-      total: feeds.length,
-      sourceTypeCount: Array.from(new Set(feeds.map((feed) => feed.source_type).filter(Boolean)))
-        .length,
-      topicCount: Array.from(new Set(feeds.flatMap((feed) => feed.topics ?? []))).length,
-      verified: feeds.filter((feed) => feed.verified === true).length,
-      hasVerificationMetadata: feeds.some((feed) => typeof feed.verified === "boolean"),
-    }),
-  ),
-}));
-
-vi.mock("@/lib/search-local", () => ({
-  runLocalSearch: runLocalSearchMock,
-}));
-
-vi.mock("./feed-catalog", () => ({
-  FeedCatalog: (props: unknown) => <pre data-testid="feed-catalog">{JSON.stringify(props)}</pre>,
+  getFeedStats: getFeedStatsMock,
 }));
 
 vi.mock("./feeds-workspace-client", () => ({
   FeedsWorkspaceClient: (props: unknown) => (
     <pre data-testid="feeds-workspace-client">{JSON.stringify(props)}</pre>
-  ),
-}));
-
-vi.mock("@/components/search/search-page-client", () => ({
-  SearchPageClient: (props: unknown) => (
-    <pre data-testid="search-page-client">{JSON.stringify(props)}</pre>
-  ),
-}));
-
-vi.mock("@/components/reader/reader-page-client", () => ({
-  ReaderPageClient: (props: unknown) => (
-    <pre data-testid="reader-page-client">{JSON.stringify(props)}</pre>
   ),
 }));
 
@@ -86,145 +59,128 @@ const FEEDS = [
   },
 ] as const;
 
+const INITIAL_BROWSE = {
+  items: [
+    {
+      id: "article-1",
+      feed_id: "feed-1",
+      feed_title: "Agent Feed",
+      title: "Agent systems roundup",
+      link: "https://example.com/article-1",
+      summary: "Fresh research notes",
+      content_html: "<p>Fresh research notes</p>",
+      author: "Wyatt",
+      published_at: "2026-04-05T12:00:00.000Z",
+      categories: ["agents"],
+      topics: ["agents"],
+      source_type: "blog",
+      verified: true,
+      is_active: true,
+    },
+  ],
+  next_cursor: null,
+  total_matched: 1,
+  cursor: 0,
+  limit: 24,
+  applied_query: "agent systems",
+  applied_sort: "latest",
+  filters: {
+    feedIds: ["feed-1"],
+    sourceType: "blog",
+    topics: ["agents"],
+    verified: true,
+  },
+  corpus: {
+    generated_at: "2026-04-12T00:00:00.000Z",
+    source_db: "data/ai-web-feeds.db",
+    article_count: 1,
+    feed_count: 1,
+    latest_published_at: "2026-04-05T12:00:00.000Z",
+    is_empty: false,
+  },
+};
+
 describe("FeedsPage", () => {
   beforeEach(() => {
     vi.resetModules();
+    browseArticleCorpusMock.mockReset();
+    getFeedStatsMock.mockReset();
     loadFeedCatalogMock.mockReset();
-    runLocalSearchMock.mockReset();
     loadFeedCatalogMock.mockReturnValue({ sources: FEEDS });
-    vi.spyOn(console, "error").mockImplementation(() => {});
-  });
-
-  it("renders reader mode by default and skips article hydration work", async () => {
-    await renderPage({ q: "agents", source_type: "blog", verified: "true" });
-
-    expect(runLocalSearchMock).not.toHaveBeenCalled();
-    expect(getJsonProps("feeds-workspace-client")).toMatchObject({
-      mode: "reader",
-    });
-    expect(getJsonProps("reader-page-client")).toMatchObject({
-      feeds: [
-        expect.objectContaining({
-          id: "feed-1",
-          title: "Agent Feed",
-        }),
-        expect.objectContaining({
-          id: "feed-2",
-          title: "ML Digest",
-        }),
-      ],
+    getFeedStatsMock.mockReturnValue({
+      total: FEEDS.length,
+      sourceTypeCount: 2,
+      topicCount: 2,
+      verified: 1,
+      active: 2,
+      hasVerificationMetadata: true,
+      hasActivityMetadata: true,
     });
   });
 
-  it("hydrates article mode inside the unified /feeds workspace", async () => {
-    runLocalSearchMock.mockResolvedValue({
-      scope: "articles",
-      results: [
-        {
-          id: "article-1",
-          kind: "article",
-          title: "Agent planning roundup",
-          url: "https://example.com/article-1",
-          topics: ["agents"],
-          source_type: "blog",
-          verified: true,
-          is_active: true,
-          match_score: 21,
-          feed_id: "feed-1",
-          feed_title: "Agent Feed",
-        },
-      ],
-      meta: {
-        mode: "bounded",
-        bounded: true,
-        candidate_sources: 8,
-        scanned_sources: 6,
-        scan_limit: 18,
-        per_source_limit: 4,
-        truncated: true,
-      },
-    });
+  it("defaults to the reader workspace and seeds the corpus browse snapshot", async () => {
+    browseArticleCorpusMock.mockResolvedValue(INITIAL_BROWSE);
 
     await renderPage({
-      mode: "articles",
-      q: "  agent   planning ",
+      q: "  agent systems ",
+      feed: ["feed-1", "feed-1"],
       source_type: " blog ",
       topics: "agents,agents",
       verified: "true",
     });
 
-    expect(runLocalSearchMock).toHaveBeenCalledWith({
-      query: "agent planning",
-      scope: "articles",
-      limit: 20,
-      feedIds: [],
+    expect(browseArticleCorpusMock).toHaveBeenCalledWith({
+      q: "agent systems",
+      feedIds: ["feed-1"],
       sourceType: "blog",
       topics: ["agents"],
       verified: true,
+      sort: "latest",
+      cursor: 0,
+      limit: 24,
     });
-    expect(getJsonProps("feeds-workspace-client")).toMatchObject({
-      mode: "articles",
-    });
-    expect(getJsonProps("search-page-client")).toMatchObject({
-      basePath: "/feeds",
-      embedded: true,
-      forceScope: "articles",
-      routeMode: "articles",
-      readerBasePath: "/feeds",
-      readerMode: "reader",
-      initialQuery: "agent planning",
-    });
-  });
-
-  it("passes explicit feed slices into article mode hydration", async () => {
-    runLocalSearchMock.mockResolvedValue({
-      scope: "articles",
-      results: [],
-      meta: {
-        mode: "bounded",
-        bounded: true,
-        candidate_sources: 2,
-        scanned_sources: 2,
-        scan_limit: 18,
-        per_source_limit: 4,
-        truncated: false,
-      },
-    });
-
-    await renderPage({
-      mode: "articles",
-      q: "agent planning",
-      feed: ["feed-2", "feed-1", "feed-2"],
-    });
-
-    expect(runLocalSearchMock).toHaveBeenCalledWith({
-      query: "agent planning",
-      scope: "articles",
-      limit: 20,
-      feedIds: ["feed-2", "feed-1"],
-      sourceType: undefined,
-      topics: [],
-      verified: undefined,
-    });
-  });
-
-  it("routes reader mode through the unified /feeds surface", async () => {
-    await renderPage({ mode: "reader", source_type: "newsletter" });
-
     expect(getJsonProps("feeds-workspace-client")).toMatchObject({
       mode: "reader",
-    });
-    expect(getJsonProps("reader-page-client")).toMatchObject({
-      feeds: [
-        expect.objectContaining({
-          id: "feed-1",
-          title: "Agent Feed",
-        }),
-        expect.objectContaining({
-          id: "feed-2",
-          title: "ML Digest",
-        }),
-      ],
+      initialState: {
+        query: "agent systems",
+        feedIds: ["feed-1"],
+        sourceType: "blog",
+        topics: ["agents"],
+        verified: true,
+        sort: "latest",
+        readerView: "latest",
+        cursor: 0,
+        limit: 24,
+      },
+      initialBrowse: INITIAL_BROWSE,
     });
   });
+
+  it("keeps catalog mode as the explicit source picker and skips corpus hydration", async () => {
+    await renderPage({ mode: "catalog", q: "agents" });
+
+    expect(browseArticleCorpusMock).not.toHaveBeenCalled();
+    expect(getJsonProps("feeds-workspace-client")).toMatchObject({
+      mode: "catalog",
+      initialState: {
+        query: "agents",
+        readerView: "latest",
+      },
+      initialBrowse: null,
+    });
+  });
+
+  it.each(["articles", "reader"] as const)(
+    "normalizes legacy mode=%s into reader state",
+    async (mode) => {
+      browseArticleCorpusMock.mockResolvedValue(INITIAL_BROWSE);
+
+      await renderPage({ mode, q: "agents" });
+
+      expect(getJsonProps("feeds-workspace-client")).toMatchObject({
+        mode: "reader",
+      });
+      expect(browseArticleCorpusMock).toHaveBeenCalledTimes(1);
+    },
+  );
 });

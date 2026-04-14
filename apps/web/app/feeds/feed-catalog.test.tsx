@@ -90,21 +90,21 @@ describe("FeedCatalog", () => {
     );
 
     expect(directReaderUrl.pathname).toBe("/feeds");
-    expect(directReaderUrl.searchParams.get("mode")).toBe("reader");
+    expect(directReaderUrl.searchParams.get("mode")).toBeNull();
     expect(directReaderUrl.searchParams.get("feed")).toBe("feed-1");
     expect(directReaderUrl.searchParams.get("q")).toBe("agent");
     expect(directReaderUrl.searchParams.get("source_type")).toBe("blog");
     expect(directReaderUrl.searchParams.get("verified")).toBe("true");
 
     expect(matchingFeedsUrl.pathname).toBe("/feeds");
-    expect(matchingFeedsUrl.searchParams.get("mode")).toBe("reader");
+    expect(matchingFeedsUrl.searchParams.get("mode")).toBeNull();
     expect(matchingFeedsUrl.searchParams.get("feed")).toBe("feed-1");
     expect(matchingFeedsUrl.searchParams.get("q")).toBe("agent");
     expect(matchingFeedsUrl.searchParams.get("source_type")).toBe("blog");
     expect(matchingFeedsUrl.searchParams.get("verified")).toBe("true");
     expect(screen.getByRole("link", { name: "Search recent posts" })).toHaveAttribute(
       "href",
-      "/feeds?mode=articles&feed=feed-1&q=agent&source_type=blog&verified=true",
+      "/feeds?feed=feed-1&q=agent&source_type=blog&verified=true",
     );
     expect(screen.getByRole("link", { name: "Export OPML" })).toHaveAttribute(
       "href",
@@ -171,6 +171,32 @@ describe("FeedCatalog", () => {
     expect(replaceMock).toHaveBeenLastCalledWith(
       "/feeds?q=agents&source_type=blog&topics=agents&verified=true",
       { scroll: false },
+    );
+  });
+
+  it("turns zero-result catalog states into recovery links", () => {
+    currentSearchParams = new URLSearchParams("mode=catalog&q=nonexistent&source_type=blog");
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+
+    render(
+      <FeedCatalog
+        feeds={feeds}
+        sourceTypes={["blog", "newsletter"]}
+        initialQuery="nonexistent"
+        initialSourceType="blog"
+        initialTopic={null}
+        initialVerified={null}
+      />,
+    );
+
+    expect(screen.getByText("No feeds match this filter set")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Reset to full catalog" })).toHaveAttribute(
+      "href",
+      "/feeds?mode=catalog",
+    );
+    expect(screen.getByRole("link", { name: "Browse posts for this query" })).toHaveAttribute(
+      "href",
+      "/feeds?q=nonexistent",
     );
   });
 });

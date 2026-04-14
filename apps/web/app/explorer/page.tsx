@@ -17,7 +17,7 @@ import {
   type GraphDetailAction,
   type LayoutType,
 } from "@/components/graph-visualizer";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   type CombinedCatalogGraphData,
   normalizeTopicValues,
@@ -61,8 +61,35 @@ function useExplorerData() {
   return { topics, feeds, loading, error };
 }
 
+function buildFeedsHref(options: {
+  feedId?: string;
+  query?: string;
+  topics?: string[];
+}): string {
+  const params = new URLSearchParams();
+  params.set("mode", "catalog");
+
+  if (options.query?.trim()) {
+    params.set("q", options.query.trim());
+  }
+
+  const topics = Array.from(
+    new Set((options.topics ?? []).map((topic) => topic.trim()).filter(Boolean)),
+  );
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
+  }
+
+  if (options.feedId) {
+    params.set("feed", options.feedId);
+  }
+
+  return `/feeds?${params.toString()}`;
+}
+
 function ExplorerPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { topics, feeds, loading, error } = useExplorerData();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [tab, setTab] = useState<ExplorerTab>(getTabFromSearchParams(searchParams));
@@ -157,34 +184,51 @@ function ExplorerPageContent() {
       const selectedFeed = feeds.find(
         (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
       );
-      if (selectedFeed?.url) {
-        window.open(selectedFeed.url, "_blank", "noopener,noreferrer");
+      if (selectedFeed?.id) {
+        router.push(
+          buildFeedsHref({
+            feedId: selectedFeed.id,
+            query: search,
+            topics:
+              selectedTags.length > 0
+                ? [...selectedTags, ...normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags)]
+                : normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
+          }),
+        );
       }
       return;
     }
 
     if (detailAction.action === "open-topics") {
-      setTab("topics");
-      setView("graph");
-      setSearch(detailAction.nodeType === "topic" ? detailAction.nodeId : "");
-      setSelectedTags([]);
-      setHighlightedNode(detailAction.nodeId);
+      router.push(
+        buildFeedsHref({
+          query: search,
+          topics:
+            detailAction.nodeType === "topic"
+              ? [detailAction.nodeId, ...selectedTags]
+              : selectedTags,
+        }),
+      );
       return;
     }
 
     if (detailAction.action === "open-feeds") {
-      setTab("feeds");
-      setView("graph");
-      if (detailAction.nodeType === "topic") {
-        setSelectedTags([detailAction.nodeId]);
-        setSearch("");
-      } else {
-        const selectedFeed = feeds.find(
-          (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
-        );
-        setSearch(selectedFeed?.title || selectedFeed?.url || "");
-      }
-      setHighlightedNode(detailAction.nodeId);
+      const selectedFeed = feeds.find(
+        (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
+      );
+      router.push(
+        buildFeedsHref({
+          query: search,
+          feedId: selectedFeed?.id ?? detailAction.nodeId,
+          topics:
+            detailAction.nodeType === "topic"
+              ? [detailAction.nodeId, ...selectedTags]
+              : [
+                  ...selectedTags,
+                  ...normalizeTopicValues(selectedFeed?.topics ?? selectedFeed?.tags),
+                ],
+        }),
+      );
     }
   };
 
@@ -303,13 +347,15 @@ function ExplorerPageContent() {
           <div className="space-y-5">
             <span className="eyebrow">
               <Waypoints className="size-3.5" />
-              Interactive catalog explorer
+              Supporting catalog explorer
             </span>
             <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">Browse feeds and topics as a living index.</h1>
+              <h1 className="hero-title max-w-4xl">
+                Inspect the catalog, then open the current slice in Feeds.
+              </h1>
               <p className="hero-copy max-w-2xl">
-                Switch between graph and table views, move across topics and feeds, and use the
-                explorer as the fastest way to understand how the repository is structured.
+                Switch between graph and table views when you need structure, then deep-link the
+                current topic or feed slice into the reader-first workspace.
               </p>
             </div>
           </div>
@@ -318,8 +364,7 @@ function ExplorerPageContent() {
             <p className="metric-label">How to use this surface</p>
             <p className="small-note">
               Use graph view for structure and table view for precision. Search narrows the working
-              set, and tag filters let you isolate a slice of the feed catalog without leaving the
-              page.
+              set, and detail actions now send the current slice into /feeds.
             </p>
             <div className="grid gap-2 text-sm text-(--ink)">
               <div className="flex items-center gap-3">

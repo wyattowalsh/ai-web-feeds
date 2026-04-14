@@ -19,10 +19,30 @@ import { exportChart, type ExportFormat } from "@/lib/visualization/chart-export
 import { getDeviceId } from "@/lib/visualization/device-id";
 import {
   getVisualization,
-  updateVisualization,
   deleteVisualization,
   getVisualizationData,
+  type Visualization,
 } from "@/lib/visualization/api-client";
+
+interface VisualizationCustomization {
+  title?: string;
+  show_legend?: boolean;
+  legend_position?: "top" | "bottom" | "left" | "right";
+}
+
+interface VisualizationFilters {
+  date_range: {
+    start: string;
+    end: string;
+  };
+  date_preset?: string;
+  [key: string]: unknown;
+}
+
+type StoredVisualization = Omit<Visualization, "filters" | "customization"> & {
+  filters: VisualizationFilters;
+  customization: Record<string, unknown>;
+};
 
 export default function VisualizationDetailPage() {
   const router = useRouter();
@@ -30,8 +50,8 @@ export default function VisualizationDetailPage() {
   const visualizationId = params.id;
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const [visualization, setVisualization] = useState<any>(null);
-  const [chartData, setChartData] = useState<any>(null);
+  const [visualization, setVisualization] = useState<StoredVisualization | null>(null);
+  const [chartData, setChartData] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -40,33 +60,34 @@ export default function VisualizationDetailPage() {
 
   useEffect(() => {
     if (!visualizationId) return;
-    loadVisualization();
+    const loadVisualization = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const deviceId = getDeviceId();
+
+        // Fetch visualization config
+        const viz = await getVisualization(visualizationId, deviceId);
+        setVisualization(viz as StoredVisualization);
+
+        // Fetch visualization data
+        const data = await getVisualizationData(visualizationId, deviceId);
+        setChartData(data);
+      } catch (err) {
+        console.error("Failed to load visualization:", err);
+        setError(err instanceof Error ? err.message : "Failed to load visualization");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadVisualization();
   }, [visualizationId]);
-
-  const loadVisualization = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const deviceId = getDeviceId();
-
-      // Fetch visualization config
-      const viz = await getVisualization(visualizationId, deviceId);
-      setVisualization(viz);
-
-      // Fetch visualization data
-      const data = await getVisualizationData(visualizationId, deviceId);
-      setChartData(data);
-    } catch (err) {
-      console.error("Failed to load visualization:", err);
-      setError(err instanceof Error ? err.message : "Failed to load visualization");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleExport = async (format: ExportFormat, dpi: 72 | 150 | 300 = 300) => {
     if (!chartRef.current) return;
+    if (!visualization) return;
 
     setIsExporting(true);
 
@@ -93,7 +114,7 @@ export default function VisualizationDetailPage() {
           includeMetadata: true,
           title: visualization.name,
         },
-        deviceId
+        deviceId,
       );
     } catch (err) {
       console.error("Export failed:", err);
@@ -153,6 +174,10 @@ export default function VisualizationDetailPage() {
     );
   }
 
+  if (!visualization) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
@@ -169,8 +194,8 @@ export default function VisualizationDetailPage() {
               {visualization.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {visualization.chart_type} • {visualization.data_source} •{" "}
-              Created {new Date(visualization.created_at).toLocaleDateString()}
+              {visualization.chart_type} • {visualization.data_source} • Created{" "}
+              {new Date(visualization.created_at).toLocaleDateString()}
             </p>
           </div>
 
@@ -195,11 +220,7 @@ export default function VisualizationDetailPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
           <div ref={chartRef}>
             <ChartContainer isLoading={false} error={null}>
-              {renderChart(
-                visualization.chart_type,
-                chartData,
-                visualization.customization
-              )}
+              {renderChart(visualization.chart_type, chartData, visualization.customization)}
             </ChartContainer>
           </div>
         </div>
@@ -213,9 +234,7 @@ export default function VisualizationDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* PNG Export */}
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                PNG Image
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">PNG Image</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 High-quality raster image for presentations
               </p>
@@ -246,9 +265,7 @@ export default function VisualizationDetailPage() {
 
             {/* SVG Export */}
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                SVG Vector
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">SVG Vector</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Scalable vector graphics for editing
               </p>
@@ -263,9 +280,7 @@ export default function VisualizationDetailPage() {
 
             {/* HTML Export */}
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                HTML Page
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">HTML Page</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Standalone interactive page with metadata
               </p>
@@ -290,9 +305,7 @@ export default function VisualizationDetailPage() {
 
         {/* Metadata panel */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Metadata
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Metadata</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
@@ -321,9 +334,7 @@ export default function VisualizationDetailPage() {
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                Created
-              </p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created</p>
               <p className="text-gray-900 dark:text-gray-100 text-sm">
                 {new Date(visualization.created_at).toLocaleString()}
               </p>
@@ -355,7 +366,7 @@ export default function VisualizationDetailPage() {
                 Delete Visualization?
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to delete "{visualization.name}"? This action cannot
+                Are you sure you want to delete &quot;{visualization.name}&quot;? This action cannot
                 be undone.
               </p>
               <div className="flex gap-3">
@@ -385,7 +396,11 @@ export default function VisualizationDetailPage() {
 /**
  * Render chart based on type.
  */
-function renderChart(type: string, data: any, customization: any) {
+function renderChart(
+  type: string,
+  data: unknown,
+  customization: Record<string, unknown> & VisualizationCustomization
+) {
   if (!data) return null;
 
   const commonOptions = {
@@ -403,17 +418,41 @@ function renderChart(type: string, data: any, customization: any) {
 
   switch (type) {
     case "line":
-      return <LineChart data={data} options={commonOptions as any} height={500} />;
+      return (
+        <LineChart
+          data={data as Parameters<typeof LineChart>[0]["data"]}
+          options={commonOptions as Parameters<typeof LineChart>[0]["options"]}
+          height={500}
+        />
+      );
     case "bar":
-      return <BarChart data={data} options={commonOptions as any} height={500} />;
+      return (
+        <BarChart
+          data={data as Parameters<typeof BarChart>[0]["data"]}
+          options={commonOptions as Parameters<typeof BarChart>[0]["options"]}
+          height={500}
+        />
+      );
     case "scatter":
-      return <ScatterChart data={data} options={commonOptions as any} height={500} />;
+      return (
+        <ScatterChart
+          data={data as Parameters<typeof ScatterChart>[0]["data"]}
+          options={commonOptions as Parameters<typeof ScatterChart>[0]["options"]}
+          height={500}
+        />
+      );
     case "pie":
-      return <PieChart data={data} height={500} />;
+      return <PieChart data={data as Parameters<typeof PieChart>[0]["data"]} height={500} />;
     case "area":
-      return <AreaChart data={data} options={commonOptions as any} height={500} />;
+      return (
+        <AreaChart
+          data={data as Parameters<typeof AreaChart>[0]["data"]}
+          options={commonOptions as Parameters<typeof AreaChart>[0]["options"]}
+          height={500}
+        />
+      );
     case "heatmap":
-      return <HeatmapChart {...data} height={500} />;
+      return <HeatmapChart {...(data as Parameters<typeof HeatmapChart>[0])} height={500} />;
     default:
       return null;
   }

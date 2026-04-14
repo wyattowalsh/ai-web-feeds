@@ -1,6 +1,6 @@
 ---
 title: Runtime Authority
-description: Source-of-truth rules for authored data, derived assets, runtime databases, browser state, and backend proxies
+description: Source-of-truth rules for authored catalog data, runtime article storage, generated web corpus artifacts, browser state, and optional backend proxies
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
@@ -16,9 +16,11 @@ Not every file in the repository has the same status.
 | --- | --- | --- |
 | Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas | contributor-edited catalog and taxonomy |
 | Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML | checked-in outputs generated from authored inputs |
-| Runtime database | `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | search, analytics, follows, notifications, saved searches, validation history |
+| Runtime article store | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state |
+| Generated web corpus | `data/articles.generated.json` | self-contained article browse/search/read payload for the Next.js app |
+| Web APIs and workspace | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds` | corpus-backed reading/search plus catalog-backed source discovery |
 | Browser-local runtime | IndexedDB, localStorage, reader-local state | anonymous on-device reader preferences and article state |
-| External backend proxy | `BACKEND_URL`-backed Python service | web routes that proxy runtime search/storage operations |
+| External backend proxy | `BACKEND_URL`-backed Python service | optional analytics logging, saved searches, and backend-proxied runtime routes |
 
 ## Bounded app contexts
 
@@ -58,6 +60,7 @@ changes.
 The runtime SQLite store is where the application materializes operational data:
 
 - feed/search indices
+- canonical `feed_entries` rows for polled articles
 - validation and monitoring history
 - recommendation inputs
 - user-scoped follows, preferences, notifications, and digests
@@ -84,7 +87,24 @@ Core runtime tables backing search, recommendations, analytics, and trending are
 - `recommendation_interactions`, `user_profiles`, `user_feed_follows`
 - `feed_entries`, `trending_topics`, `notification_preferences`, `email_digests`
 
-Use the runtime database for behavior; use the YAML catalog for authorship.
+Use the runtime database for behavior and article persistence; use the YAML
+catalog for authorship.
+
+### Generated web corpus
+
+`data/articles.generated.json` is the reader-first bridge between the runtime
+database and the standalone web app.
+
+- it is derived from `feed_entries`
+- it carries normalized article rows plus metadata such as `generated_at`,
+  `source_db`, `article_count`, `feed_count`, and `latest_published_at`
+- it is the default source for `/api/articles`, article search, autocomplete
+  article suggestions, and the `/feeds` reader workspace
+- it intentionally excludes browser-local reading state such as unread, saved,
+  starred, and archived flags
+
+The web app should treat a missing or empty corpus as an explicit runtime state,
+not as permission to silently fall back to bounded live sampling.
 
 ### Browser-local runtime
 
@@ -117,8 +137,9 @@ authority.
 ### External backend proxy
 
 Some web APIs proxy to a Python backend when `BACKEND_URL` is configured.
-Examples include runtime search/storage paths that are not served straight from
-repository data files.
+That proxy is no longer required for the primary `/feeds` reading/search flow.
+It remains useful for runtime analytics logging and storage operations that are
+not served from repository data files or the generated corpus artifact.
 
 ## Precedence rules
 
@@ -128,30 +149,38 @@ flowchart TD
     feeds --> validator[data/validate_data_assets.py]
     topics[data/topics.yaml] --> validator
     derived --> runtime[(data/ai-web-feeds.db)]
-    runtime --> web[search / analytics / follows / notifications]
+    runtime --> corpus[data/articles.generated.json]
+    corpus --> web[/api/articles + /api/search + /feeds]
+    derived --> web
     web --> browser[device-scoped local state]
 ```
 
-## Web catalog loading behavior
+## Web loading behavior
 
-The web app prefers repository catalog files in this order:
+The web app prefers repository catalog files in this order for source discovery:
 
 1. `data/feeds.enriched.yaml`
 2. `data/feeds.yaml`
 3. `data/feeds.json`
 
-That means the public catalog can still render even when a backend service is
-not running, but runtime-only features still depend on the database or backend
-proxy layer.
+The web app prefers `data/articles.generated.json` for article browse/search.
+
+- If the corpus exists, `/feeds`, `/api/articles`, article search, and
+  autocomplete article suggestions use it.
+- If the corpus is missing or empty, the reader-first workspace renders a
+  dedicated corpus-unavailable state.
+- Live fetches from `/api/feeds/posts/aggregate` remain a freshness overlay only.
 
 <Callout type="info" title="Practical rule">
   Edit YAML when you are changing the catalog itself. Use the runtime database
-  when you are inspecting operational behavior such as search, analytics, saved
-  searches, follows, or monitoring state.
+  when you are inspecting operational behavior or populating `feed_entries`. Use
+  the generated corpus when you are validating the reader/search experience that
+  ships in the standalone web app.
 </Callout>
 
 ## Related documentation
 
-- [Data lifecycle](/docs/development/data-lifecycle)
 - [Search architecture](/docs/development/search-architecture)
-- [Workflow safety](/docs/development/workflow-safety)
+- [Reader](/docs/features/reader)
+- [Search & Discovery](/docs/features/search)
+- [Deployment Guide](/docs/guides/deployment)

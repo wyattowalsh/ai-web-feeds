@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from ai_web_feeds.models import (
@@ -25,9 +26,14 @@ from ai_web_feeds.recommendations import (
 @pytest.fixture
 def test_engine():
     """Create in-memory SQLite engine for testing."""
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     SQLModel.metadata.create_all(engine)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 @pytest.fixture
@@ -312,7 +318,7 @@ class TestUserInteractions:
         assert interaction.user_id == user_id
         assert interaction.feed_id == feed_id
         assert interaction.interaction_type == "click"
-        assert interaction.recommendation_reason == "popular"
+        assert interaction.context["reason"] == "popular"
 
     def test_track_interaction_creates_user_profile(self, test_session, sample_feeds):
         """Test interaction tracking creates user profile if needed."""
@@ -329,7 +335,7 @@ class TestUserInteractions:
         # User profile should be created
         user_profile = test_session.get(UserProfile, user_id)
         assert user_profile is not None
-        assert "feed1" in user_profile.viewed_feeds
+        assert user_profile.interaction_history["feed1"]["interaction_type"] == "view"
 
     def test_track_subscribe_interaction(self, test_session, sample_feeds):
         """Test tracking subscribe interactions."""
@@ -346,7 +352,7 @@ class TestUserInteractions:
 
         # User profile should track subscription
         user_profile = test_session.get(UserProfile, user_id)
-        assert feed_id in user_profile.subscribed_feeds
+        assert feed_id in user_profile.followed_feeds
 
 
 class TestPersonalizedRecommendations:
@@ -368,8 +374,12 @@ class TestPersonalizedRecommendations:
         # Create user profile with subscriptions
         user_profile = UserProfile(
             user_id=user_id,
-            subscribed_feeds=["feed1"],
-            viewed_feeds=["feed1", "feed2"],
+            followed_feeds=["feed1"],
+            preferred_topics=["llm", "research"],
+            interaction_history={
+                "feed1": {"interaction_type": "view"},
+                "feed2": {"interaction_type": "view"},
+            },
         )
         test_session.add(user_profile)
         test_session.commit()
@@ -381,7 +391,7 @@ class TestPersonalizedRecommendations:
 
         # Should exclude viewed feeds
         for feed, _, _ in recommendations:
-            assert feed.id not in user_profile.viewed_feeds
+            assert feed.id not in user_profile.interaction_history
 
     def test_get_user_recommendations_uses_subscribed_topics(self, test_session, sample_feeds):
         """Test recommendations use topics from subscribed feeds."""
@@ -390,8 +400,8 @@ class TestPersonalizedRecommendations:
         # Create user profile with subscription to feed1 (topics: llm, research)
         user_profile = UserProfile(
             user_id=user_id,
-            subscribed_feeds=["feed1"],
-            viewed_feeds=["feed1"],
+            followed_feeds=["feed1"],
+            interaction_history={"feed1": {"interaction_type": "view"}},
         )
         test_session.add(user_profile)
         test_session.commit()

@@ -35,7 +35,7 @@ export function PieChart({
   className = "",
 }: PieChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<ChartJS | null>(null);
+  const chartRef = useRef<ChartJS<"pie" | "doughnut"> | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -66,7 +66,10 @@ export function PieChart({
             label: (context) => {
               const label = context.label || "";
               const value = context.parsed;
-              const total = context.dataset.data.reduce((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0);
+              const total = context.dataset.data.reduce(
+                (sum: number, item) => sum + (typeof item === "number" ? item : 0),
+                0,
+              );
               const percentage = ((value / total) * 100).toFixed(1);
               return `${label}: ${value} (${percentage}%)`;
             },
@@ -75,7 +78,7 @@ export function PieChart({
       },
     };
 
-    const mergedOptions = {
+    const mergedOptions: ChartOptions<"pie"> = {
       ...defaultOptions,
       ...options,
       plugins: {
@@ -87,7 +90,7 @@ export function PieChart({
     chartRef.current = new ChartJS(ctx, {
       type: doughnut ? "doughnut" : "pie",
       data,
-      options: mergedOptions as any,
+      options: mergedOptions,
     });
 
     return () => {
@@ -121,7 +124,7 @@ const DEFAULT_COLORS = [
 export function createPieChartData(
   labels: string[],
   data: number[],
-  colors?: string[]
+  colors?: string[],
 ): ChartData<"pie"> {
   const backgroundColor = colors ?? DEFAULT_COLORS.slice(0, labels.length);
 
@@ -131,7 +134,9 @@ export function createPieChartData(
       {
         data,
         backgroundColor,
-        borderColor: backgroundColor.map((color) => color.replace("rgb", "rgba").replace(")", ", 1)")),
+        borderColor: backgroundColor.map((color) =>
+          color.replace("rgb", "rgba").replace(")", ", 1)"),
+        ),
         borderWidth: 2,
       },
     ],

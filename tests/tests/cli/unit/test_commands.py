@@ -70,6 +70,28 @@ class TestCLIExportCommand:
 
 
 @pytest.mark.unit
+class TestCLICorpusCommand:
+    """Test corpus CLI command."""
+
+    def test_corpus_command_exists(self):
+        """Test that corpus command can be imported."""
+        from ai_web_feeds.cli.commands import corpus
+
+        assert corpus is not None
+
+    def test_corpus_command_help(self):
+        """Test corpus command help output."""
+        from ai_web_feeds.cli.commands.corpus import app as corpus_app
+
+        runner = CliRunner()
+        result = runner.invoke(corpus_app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "refresh" in result.output
+        assert "export" in result.output
+
+
+@pytest.mark.unit
 class TestCLIEnrichCommand:
     """Test enrich CLI command."""
 
@@ -137,6 +159,7 @@ class TestCLIIntegration:
 
             assert result.exit_code == 0
             assert "Usage:" in result.output or result.output != ""
+            assert "corpus" in result.output
         except ImportError:
             pytest.skip("CLI not yet implemented")
 

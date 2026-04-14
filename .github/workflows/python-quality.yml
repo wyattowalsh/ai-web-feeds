@@ -1,246 +1,37 @@
-name: Python Code Quality
+name: Python Quality (Manual)
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/python-quality.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/python-quality.yml'
+  workflow_dispatch:
+  workflow_call:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
-  lint-and-format:
-    name: Lint & Format Check
+  python-quality:
+    name: Python Quality
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
+        uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
+        uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
+          version: latest
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run ruff linter (via uv scripts)
-        run: uv run ruff check . --output-format=github
-        id: ruff-check
-
-      - name: Check code formatting (via uv scripts)
-        run: uv run ruff format --check .
-        id: ruff-format
-
-      - name: Generate detailed ruff report
-        if: always()
+      - name: Run quality checks
         run: |
-          uv run ruff check . --output-format=json > ruff-report.json || true
-          uv run ruff check . --output-format=text > ruff-report.txt || true
-
-      - name: Upload ruff reports
-        if: always()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
-        with:
-          name: ruff-report-${{ github.run_id }}
-          path: |
-            ruff-report.json
-            ruff-report.txt
-          retention-days: 7
-
-      - name: Report if linting or formatting failed
-        if: ${{ failure() && (steps.ruff-check.outcome == 'failure' || steps.ruff-format.outcome == 'failure') }}
-        run: |
-          echo "::error::Linting or formatting checks failed."
-
-  type-check:
-    name: Type Check (MyPy)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run mypy type checking (via uv scripts)
-        run: |
-          uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests --junit-xml mypy-report.xml --html-report mypy-html
-        id: mypy-check
-
-      - name: Upload mypy reports
-        if: always()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
-        with:
-          name: mypy-report-${{ github.run_id }}
-          path: |
-            mypy-report.xml
-            mypy-html/
-          retention-days: 7
-
-  security-check:
-    name: Security Check (Bandit)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run bandit security check
-        run: |
-          json_exit=0
-          txt_exit=0
-          uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds tests -f json -o bandit-report.json || json_exit=$?
-          uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds tests -f txt -o bandit-report.txt || txt_exit=$?
-          if [ "$json_exit" -ne 0 ] || [ "$txt_exit" -ne 0 ]; then
-            exit 1
-          fi
-        id: bandit-check
-
-      - name: Upload bandit reports
-        if: always()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
-        with:
-          name: bandit-report-${{ github.run_id }}
-          path: |
-            bandit-report.json
-            bandit-report.txt
-          retention-days: 7
-
-      - name: Display bandit results
-        if: always()
-        run: |
-          echo "=== Bandit Security Scan Results ==="
-          cat bandit-report.txt || echo "No report generated"
-
-  test:
-    name: Tests (Python ${{ matrix.python-version }} on ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.13']
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run tests with CLI (coverage mode)
-        run: |
-          cd tests
-          uv run pytest -q tests/cli tests/packages/ai_web_feeds/unit --ignore=tests/packages/ai_web_feeds/unit/test_nlp_entity_extractor.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_sentiment_analyzer.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_topic_modeler.py
-          uv run coverage xml -o reports/coverage/coverage.xml
-
-      - name: Generate coverage summary
-        if: always()
-        run: |
-          cd tests
-          uv run coverage report --format=markdown > ../coverage-summary.md || true
-          uv run coverage report || true
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./tests/reports/coverage/coverage.xml
-          flags: unittests
-          name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
-          fail_ci_if_error: false
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
-        with:
-          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: |
-            tests/reports/
-            coverage-summary.md
-          retention-days: 7
-
-      - name: Check coverage threshold (90%)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cd tests
-          COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $4}' | sed 's/%//')
-          echo "Coverage: $COVERAGE%"
-          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
-            echo "::error::Coverage is below 90% threshold: $COVERAGE%"
-            exit 1
-          else
-            echo "::notice::Coverage meets 90% threshold: $COVERAGE%"
-          fi
-
-  quality-gate:
-    name: Quality Gate
-    runs-on: ubuntu-latest
-    needs: [lint-and-format, type-check, security-check, test]
-    if: always()
-
-    steps:
-      - name: Check job results
-        run: |
-          if [ "${{ needs.lint-and-format.result }}" != "success" ] || \
-             [ "${{ needs.type-check.result }}" != "success" ] || \
-             [ "${{ needs.security-check.result }}" != "success" ] || \
-             [ "${{ needs.test.result }}" != "success" ]; then
-            echo "::error::Quality gate detected failing checks."
-            exit 1
-          else
-            echo "✅ Quality gate passed!"
-          fi
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds --config-file=pyproject.toml
+          uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds -c pyproject.toml

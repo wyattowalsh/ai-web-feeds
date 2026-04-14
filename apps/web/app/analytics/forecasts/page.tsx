@@ -8,7 +8,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ForecastChart, ForecastMetrics } from "@/components/visualizations/forecasts/ForecastChart";
+import {
+  ForecastChart,
+  ForecastMetrics,
+} from "@/components/visualizations/forecasts/ForecastChart";
 import { getDeviceId } from "@/lib/visualization/device-id";
 
 interface Forecast {
@@ -34,7 +37,7 @@ export default function ForecastsPage() {
     setIsLoading(true);
 
     try {
-      const deviceId = getDeviceId();
+      getDeviceId();
 
       // Simulate API call with sample data
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -126,9 +129,7 @@ export default function ForecastsPage() {
               </h2>
 
               {forecasts.length === 0 ? (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  No forecasts yet
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">No forecasts yet</p>
               ) : (
                 <div className="space-y-2">
                   {forecasts.map((forecast) => (
@@ -185,17 +186,13 @@ export default function ForecastsPage() {
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Data Source
-                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data Source</p>
                       <p className="font-medium text-gray-900 dark:text-gray-100 capitalize">
                         {selectedForecast.data_source}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Horizon
-                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Horizon</p>
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         {selectedForecast.horizon_days} days
                       </p>
@@ -209,9 +206,7 @@ export default function ForecastsPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Created
-                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Created</p>
                       <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                         {new Date(selectedForecast.created_at).toLocaleDateString()}
                       </p>
@@ -235,15 +230,21 @@ export default function ForecastsPage() {
 
         {/* Info panel */}
         <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-            About Forecasting
-          </h3>
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">About Forecasting</h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• Uses <strong>Prophet</strong> by Meta for accurate time-series forecasting</li>
-            <li>• Automatically detects <strong>trends, seasonality, and holidays</strong></li>
-            <li>• Provides <strong>confidence intervals</strong> for uncertainty quantification</li>
+            <li>
+              • Uses <strong>Prophet</strong> by Meta for accurate time-series forecasting
+            </li>
+            <li>
+              • Automatically detects <strong>trends, seasonality, and holidays</strong>
+            </li>
+            <li>
+              • Provides <strong>confidence intervals</strong> for uncertainty quantification
+            </li>
             <li>• Evaluates model performance with MAE, RMSE, MAPE, and R² metrics</li>
-            <li>• Forecast up to <strong>365 days</strong> into the future</li>
+            <li>
+              • Forecast up to <strong>365 days</strong> into the future
+            </li>
           </ul>
         </div>
       </div>

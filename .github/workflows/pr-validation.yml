@@ -1,147 +1,39 @@
-name: PR Validation
+name: Data Submission Validation
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'data/feeds.yaml'
-      - 'data/feeds.schema.json'
-      - 'data/topics.yaml'
-      - '**.py'
-      - 'pyproject.toml'
+      - "data/feeds.yaml"
+      - "data/feeds.enriched.yaml"
+      - "data/topics.yaml"
+      - "data/*.schema.json"
+      - "data/validate_data_assets.py"
+
+permissions:
+  contents: read
 
 jobs:
   validate-data:
-    name: Validate Data Files
+    name: Validate Data Assets
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
+        uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
+          version: latest
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-extras
-          uv pip install jsonschema pyyaml
-
-      - name: Validate all data with CLI
-        run: |
-          uv run aiwebfeeds validate all --strict
-
-      - name: Comment validation results
-        if: always()
-        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
-        with:
-          script: |
-            const conclusion = '${{ job.status }}';
-            const message = conclusion === 'success'
-              ? '✅ **Data Validation Passed**\n\nAll feed data is valid according to schemas.'
-              : '❌ **Data Validation Failed**\n\nPlease check the validation errors above and fix the data files.';
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: message
-            });
-
-  lint-check:
-    name: Code Quality Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
-        with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run ruff linter
-        run: uv run ruff check . --output-format=github
-        id: ruff-check
-
-      - name: Check code formatting
-        run: uv run ruff format --check .
-        id: ruff-format
-
-      - name: Comment linting results
-        if: always() && (steps.ruff-check.outcome == 'failure' || steps.ruff-format.outcome == 'failure')
-        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
-        with:
-          script: |
-            const lintFailed = '${{ steps.ruff-check.outcome }}' === 'failure';
-            const formatFailed = '${{ steps.ruff-format.outcome }}' === 'failure';
-
-            let message = '⚠️ **Code Quality Issues Detected**\n\n';
-
-            if (lintFailed) {
-              message += '- Linting issues found. Run `uv run ruff check --fix .` to auto-fix.\n';
-            }
-
-            if (formatFailed) {
-              message += '- Formatting issues found. Run `uv run ruff format .` to format code.\n';
-            }
-
-            message += '\n💡 **Quick fix:** Run `uv run fix` to apply all fixes automatically.';
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: message
-            });
-
-  test-check:
-    name: Run Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run quick tests via CLI
-        run: uv run aiwebfeeds test quick
-
-      - name: Comment test results
-        if: failure()
-        uses: actions/github-script@60a0d83039b000713aaf4c38b122b5342f57cdfc
-        with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: '❌ **Tests Failed**\n\nPlease fix the failing tests before merging.\n\nRun `uv run aiwebfeeds test all` locally to see full test output.'
-            });
+      - name: Validate data assets
+        run: uv run python data/validate_data_assets.py

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { BookmarkPlus, Compass, ExternalLink, Sparkles, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
@@ -22,11 +24,33 @@ interface Recommendation {
   reason: string;
 }
 
-export function RecommendationsPageClient() {
+function buildFeedsHref(rec: Recommendation, selectedTopics: string[]): string {
+  const params = new URLSearchParams();
+  params.set("mode", "catalog");
+  params.set("feed", rec.feed.id);
+  if (selectedTopics.length > 0) {
+    params.set("topics", selectedTopics.join(","));
+  }
+  if (rec.feed.title) {
+    params.set("q", rec.feed.title);
+  }
+
+  return `/feeds?${params.toString()}`;
+}
+
+export function RecommendationsPageClient({
+  backendConfigured = true,
+}: {
+  backendConfigured?: boolean;
+}) {
+  const router = useRouter();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [userId, setUserId] = useState<string>("");
+  const [unavailableMessage, setUnavailableMessage] = useState<string | null>(
+    backendConfigured ? null : "Recommendations require the optional ai-web-feeds backend service.",
+  );
 
   const commonTopics = [
     "llm",
@@ -43,6 +67,58 @@ export function RecommendationsPageClient() {
     "research",
   ];
 
+  const loadRecommendations = useCallback(
+    async (user_id: string, topics: string[]) => {
+      if (!backendConfigured) {
+        setLoading(false);
+        setRecommendations([]);
+        setUnavailableMessage(
+          "Recommendations require the optional ai-web-feeds backend service.",
+        );
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set("user_id", user_id);
+        if (topics.length > 0) {
+          params.set("topics", topics.join(","));
+        }
+        params.set("limit", "20");
+
+        const response = await fetch(`/api/recommendations?${params.toString()}`);
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as {
+            error?: string;
+            code?: string;
+          } | null;
+
+          if (response.status === 503 || payload?.code === "FEATURE_UNAVAILABLE") {
+            setUnavailableMessage(
+              payload?.error || "Recommendations require the optional ai-web-feeds backend service.",
+            );
+            setRecommendations([]);
+            return;
+          }
+
+          throw new Error(payload?.error || "Failed to load recommendations");
+        }
+
+        const data = await response.json();
+        setUnavailableMessage(null);
+        setRecommendations(data.recommendations || []);
+      } catch (error) {
+        console.error("Load recommendations error:", error);
+        setUnavailableMessage(null);
+        setRecommendations([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [backendConfigured],
+  );
+
   useEffect(() => {
     let id = localStorage.getItem("recommendation_user_id");
     if (!id) {
@@ -51,31 +127,13 @@ export function RecommendationsPageClient() {
     }
     setUserId(id);
 
-    void loadRecommendations(id, []);
-  }, []);
-
-  const loadRecommendations = async (user_id: string, topics: string[]) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set("user_id", user_id);
-      if (topics.length > 0) {
-        params.set("topics", topics.join(","));
-      }
-      params.set("limit", "20");
-
-      const response = await fetch(`/api/recommendations?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to load recommendations");
-
-      const data = await response.json();
-      setRecommendations(data.recommendations || []);
-    } catch (error) {
-      console.error("Load recommendations error:", error);
-      setRecommendations([]);
-    } finally {
+    if (!backendConfigured) {
       setLoading(false);
+      return;
     }
-  };
+
+    void loadRecommendations(id, []);
+  }, [backendConfigured, loadRecommendations]);
 
   const handleTopicToggle = (topic: string) => {
     const newTopics = selectedTopics.includes(topic)
@@ -105,7 +163,7 @@ export function RecommendationsPageClient() {
 
   const handleFeedClick = (rec: Recommendation) => {
     void handleInteraction(rec.feed.id, "click", rec.reason);
-    window.open(rec.feed.url, "_blank", "noopener,noreferrer");
+    router.push(buildFeedsHref(rec, selectedTopics));
   };
 
   const handleSubscribe = (rec: Recommendation) => {
@@ -143,7 +201,9 @@ export function RecommendationsPageClient() {
               Personalized recommendations
             </span>
             <div className="space-y-4">
-              <h1 className="hero-title max-w-4xl">Discover feeds that fit how you already browse.</h1>
+              <h1 className="hero-title max-w-4xl">
+                Discover feeds that fit how you already browse.
+              </h1>
               <p className="hero-copy max-w-2xl">
                 The recommendation engine combines topic overlap, content similarity, and catalog
                 quality signals to surface relevant sources without flattening everything into a
@@ -172,66 +232,101 @@ export function RecommendationsPageClient() {
         </div>
 
         <div className="surface-card space-y-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="metric-label">Topic refinement</p>
-              <h2 className="text-2xl font-semibold text-(--ink)">Steer the recommendation mix</h2>
-            </div>
-            {selectedTopics.length > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setSelectedTopics([]);
-                  void loadRecommendations(userId, []);
-                }}
-              >
-                Clear all filters
-              </Button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {commonTopics.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                onClick={() => handleTopicToggle(topic)}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition duration-150",
-                  selectedTopics.includes(topic)
-                    ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                    : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-                )}
-              >
-                {topic.toUpperCase()}
-              </button>
-            ))}
-          </div>
-          {Object.keys(reasonCounts).length > 0 && (
-            <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-              <div className="mb-3 text-sm font-semibold text-(--ink)">Current mix</div>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(reasonCounts).map(([reason, count]) => {
-                  const info = reasonLabels[reason] || {
-                    label: reason,
-                    icon: "Other",
-                  };
-                  return (
-                    <span key={reason} className="rounded-full border border-(--line) bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink-muted)">
-                      {info.label}: {count}
-                    </span>
-                  );
-                })}
+          {unavailableMessage ? (
+            <EmptyState
+              icon={Compass}
+              title="Recommendations backend unavailable"
+              description={unavailableMessage}
+              tips={[
+                "Set BACKEND_URL to a running ai-web-feeds backend if you want personalized recommendations.",
+                "Catalog browsing in /feeds still works without the backend service.",
+                "The reader-first surface remains the primary local workflow even when recommendations are offline.",
+              ]}
+            >
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/feeds?mode=catalog"
+                  className={cn(buttonVariants({ variant: "secondary" }))}
+                >
+                  Open catalog
+                </Link>
+                <Link
+                  href="/docs/guides/deployment"
+                  className={cn(buttonVariants({ variant: "outline" }))}
+                >
+                  Deployment setup
+                </Link>
               </div>
-            </div>
-          )}
+            </EmptyState>
+          ) : null}
+
+          {!unavailableMessage ? (
+            <>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="metric-label">Topic refinement</p>
+                  <h2 className="text-2xl font-semibold text-(--ink)">
+                    Steer the recommendation mix
+                  </h2>
+                </div>
+                {selectedTopics.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedTopics([]);
+                      void loadRecommendations(userId, []);
+                    }}
+                  >
+                    Clear all filters
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {commonTopics.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => handleTopicToggle(topic)}
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm font-semibold transition duration-150",
+                      selectedTopics.includes(topic)
+                        ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
+                        : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
+                    )}
+                  >
+                    {topic.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              {Object.keys(reasonCounts).length > 0 && (
+                <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
+                  <div className="mb-3 text-sm font-semibold text-(--ink)">Current mix</div>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(reasonCounts).map(([reason, count]) => {
+                      const info = reasonLabels[reason] || {
+                        label: reason,
+                        icon: "Other",
+                      };
+                      return (
+                        <span
+                          key={reason}
+                          className="rounded-full border border-(--line) bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                        >
+                          {info.label}: {count}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
 
-        {loading && (
-          <ContentCardSkeleton count={5} />
-        )}
+        {loading && !unavailableMessage && <ContentCardSkeleton count={5} />}
 
-        {!loading && recommendations.length === 0 && (
+        {!loading && !unavailableMessage && recommendations.length === 0 && (
           <EmptyState
             icon={Compass}
             title="No recommendations available"
@@ -243,7 +338,7 @@ export function RecommendationsPageClient() {
           />
         )}
 
-        {!loading && recommendations.length > 0 && (
+        {!loading && !unavailableMessage && recommendations.length > 0 && (
           <div className="space-y-4">
             {recommendations.map((rec, idx) => {
               const reasonInfo = reasonLabels[rec.reason] || {
@@ -295,11 +390,19 @@ export function RecommendationsPageClient() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <Button type="button" onClick={() => handleFeedClick(rec)} variant="secondary">
+                      <Button
+                        type="button"
+                        onClick={() => handleFeedClick(rec)}
+                        variant="secondary"
+                      >
                         <ExternalLink className="size-4" />
-                        Visit Feed
+                        Open in Feeds
                       </Button>
-                      <Button type="button" onClick={() => handleSubscribe(rec)} variant="secondary">
+                      <Button
+                        type="button"
+                        onClick={() => handleSubscribe(rec)}
+                        variant="secondary"
+                      >
                         <BookmarkPlus className="size-4" />
                         Subscribe
                       </Button>

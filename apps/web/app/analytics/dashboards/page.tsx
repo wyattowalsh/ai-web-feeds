@@ -9,12 +9,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getDeviceId } from "@/lib/visualization/device-id";
 
 interface Dashboard {
   id: number;
   name: string;
-  layout_config: any;
+  layout_config: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   widget_count: number;
@@ -27,46 +26,44 @@ export default function DashboardsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadDashboards();
+    const loadDashboards = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Simulate API call with sample data
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        const sampleDashboards: Dashboard[] = [
+          {
+            id: 1,
+            name: "Executive Overview",
+            layout_config: {},
+            created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            widget_count: 6,
+          },
+          {
+            id: 2,
+            name: "Topic Analytics",
+            layout_config: {},
+            created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            widget_count: 4,
+          },
+        ];
+
+        setDashboards(sampleDashboards);
+      } catch (err) {
+        console.error("Failed to load dashboards:", err);
+        setError(err instanceof Error ? err.message : "Failed to load dashboards");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadDashboards();
   }, []);
-
-  const loadDashboards = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const deviceId = getDeviceId();
-
-      // Simulate API call with sample data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const sampleDashboards: Dashboard[] = [
-        {
-          id: 1,
-          name: "Executive Overview",
-          layout_config: {},
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          widget_count: 6,
-        },
-        {
-          id: 2,
-          name: "Topic Analytics",
-          layout_config: {},
-          created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          widget_count: 4,
-        },
-      ];
-
-      setDashboards(sampleDashboards);
-    } catch (err) {
-      console.error("Failed to load dashboards:", err);
-      setError(err instanceof Error ? err.message : "Failed to load dashboards");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -85,9 +82,7 @@ export default function DashboardsPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Dashboards
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboards</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Create custom dashboards with multiple visualizations
             </p>
@@ -102,9 +97,8 @@ export default function DashboardsPage() {
         </div>
 
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
-          <span className="font-semibold">Advanced / Custom:</span> Dashboards are an
-          experimental builder for custom layouts. Prefer the standard analytics
-          dashboard?{" "}
+          <span className="font-semibold">Advanced / Custom:</span> Dashboards are an experimental
+          builder for custom layouts. Prefer the standard analytics dashboard?{" "}
           <Link href="/analytics" className="font-medium underline hover:no-underline">
             Go to Analytics Overview
           </Link>
@@ -176,11 +170,21 @@ export default function DashboardsPage() {
             What are Dashboards?
           </h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• <strong>Organize visualizations</strong> into a single view</li>
-            <li>• <strong>Drag and drop</strong> widgets to customize layout</li>
-            <li>• <strong>Resize widgets</strong> to emphasize important metrics</li>
-            <li>• <strong>Share dashboards</strong> by exporting configuration</li>
-            <li>• <strong>Up to 20 widgets</strong> per dashboard</li>
+            <li>
+              • <strong>Organize visualizations</strong> into a single view
+            </li>
+            <li>
+              • <strong>Drag and drop</strong> widgets to customize layout
+            </li>
+            <li>
+              • <strong>Resize widgets</strong> to emphasize important metrics
+            </li>
+            <li>
+              • <strong>Share dashboards</strong> by exporting configuration
+            </li>
+            <li>
+              • <strong>Up to 20 widgets</strong> per dashboard
+            </li>
           </ul>
         </div>
       </div>

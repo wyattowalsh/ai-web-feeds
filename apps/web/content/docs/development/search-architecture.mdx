@@ -1,122 +1,130 @@
 ---
 title: Search Architecture
-description: FTS5, trie autocomplete, semantic embeddings, and how the web app splits repo-data search from runtime-backed search
+description: How the web app combines the checked-in catalog with the generated article corpus for reader-first browse, search, and autocomplete
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
 # Search Architecture
 
-Search is split across the Python runtime and the web app. The key distinction
-is whether a feature is backed by the **runtime database** or the **checked-in
-catalog files**.
+The current public search model is intentionally split between two local data
+sources:
 
-## Runtime search stack
+- the **checked-in source catalog** for feed discovery
+- the **generated article corpus** for article browse, article search, and
+  autocomplete article suggestions
 
-The Python runtime combines three mechanisms:
+The primary product route is `/feeds`, and the reader-first workspace should
+work without a required Python HTTP backend.
 
-| Layer | Implementation | Purpose |
+## Public search surfaces
+
+| Route | Backing data | Purpose |
 | --- | --- | --- |
-| Full-text | SQLite FTS5 virtual table + triggers | catalog search over stored sources |
-| Autocomplete | trie index built from titles and topics | fast prefix suggestions |
-| Semantic | embeddings + cosine similarity | meaning-based retrieval |
+| `/api/articles` | `data/articles.generated.json` | filtered article browse with cursor pagination |
+| `/api/search?scope=articles` | `data/articles.generated.json` | ranked article search across the exported corpus |
+| `/api/search?scope=sources` | checked-in catalog files | source discovery and filtering |
+| `/api/search/autocomplete` | shared catalog + article corpus index | feed, article, and topic suggestions |
+| `POST /api/search` | optional backend proxy | analytics logging only |
+
+All GET routes above are served from the Next.js app and set explicit cache
+headers. The POST logging path is the only search operation that still depends
+on `BACKEND_URL`.
 
 ## Search flow
 
 ```mermaid
 flowchart LR
-    sources[(SQLite sources table)] --> fts[FTS5 virtual table]
-    sources --> trie[Trie index]
-    sources --> embed[feed_embeddings]
-    fts --> query[search query]
-    trie --> auto[autocomplete]
-    embed --> semantic[semantic search]
-    query --> web[/api/search]
-    auto --> webauto[/api/search/autocomplete]
+    authored[data/feeds.yaml + data/topics.yaml] --> enriched[data/feeds.enriched.yaml]
+    runtime[(feed_entries in data/ai-web-feeds.db)] --> corpus[data/articles.generated.json]
+    enriched --> sourceIndex[source catalog index]
+    corpus --> articleIndex[article corpus index]
+    sourceIndex --> sourceSearch[/api/search?scope=sources]
+    articleIndex --> browse[/api/articles]
+    articleIndex --> articleSearch[/api/search?scope=articles]
+    sourceIndex --> auto[/api/search/autocomplete]
+    articleIndex --> auto
+    browse --> feeds[/feeds]
+    articleSearch --> feeds
+    sourceSearch --> feeds
+    auto --> feeds
 ```
 
-## Web route split
+## Shared article corpus behavior
 
-The canonical product route is `/feeds`, and article search is server-first for
-URLs like `/feeds?mode=articles&q=...`. The server shell normalizes the
-workspace query/filter state, fetches the initial result set, and hydrates the
-client with both the result payload and the request status.
+`apps/web/lib/article-corpus.ts` is the shared server-only adapter for:
 
-If that initial runtime-backed fetch fails, the client retries once using the
-same normalized URL state before it falls back to the empty-results view. This
-prevents transient SSR/backend failures from rendering a false "No results
-found" state on first load.
+- loading `data/articles.generated.json`
+- normalizing article filters (`feed`, `topics`, `source_type`, `verified`)
+- applying browse sort order (`latest`, `oldest`, `source`)
+- serving article search and autocomplete from the same normalized article rows
 
-### Runtime-backed routes
+That means article browse, article search, and article autocomplete suggestions
+now share one authoritative dataset instead of mixing bounded live fetches and
+catalog-only matching.
 
-These rely on the backend/runtime layer:
+## Source catalog behavior
 
-- `/api/search` for primary search queries and search logging
-- `/api/search/saved` for saved searches
+Source search still uses the repository catalog because feed discovery is an
+authored-data concern.
 
-They proxy to backend search/storage behavior instead of reading the YAML files
-directly.
+The web loader prefers these files in order:
 
-### Repo-data-backed route
+1. `data/feeds.enriched.yaml`
+2. `data/feeds.yaml`
+3. `data/feeds.json`
 
-`/api/search/autocomplete` currently reads the checked-in catalog via the web
-feed loader and performs lightweight prefix matching in-process. The route trims
-query whitespace, matches title words by prefix, and normalizes topic labels to
-the same lowercase form the runtime search stack expects.
+This keeps source discovery available even when the runtime database or corpus
+has not been refreshed yet.
 
-That means autocomplete and main search do **not** currently share the same
-backend implementation path.
-
-<Callout type="warn" title="Source-of-truth constraint">
-  Main search behavior depends on runtime state, while autocomplete can succeed
-  from repository data alone. When search results drift from autocomplete
-  suggestions, check whether the runtime database is stale before changing docs
-  or UI behavior.
+<Callout type="info" title="Operational distinction">
+  If source search looks correct but article browse/search is empty, check the
+  generated corpus path before changing catalog files. The reader workspace
+  depends on `data/articles.generated.json`, not on direct SQLite access.
 </Callout>
 
-Catalog filtering and source discovery remain repo-data-backed in `/feeds`
-itself, while recent-article search under `/feeds?mode=articles` uses the
-runtime-backed search flow described here.
+## Runtime search stack
+
+The Python runtime still supports its own search stack for CLI and backend-side
+operations:
+
+| Layer | Implementation | Purpose |
+| --- | --- | --- |
+| Full-text | SQLite FTS5 virtual table + triggers | source search over stored runtime data |
+| Autocomplete | trie index built from titles and topics | fast prefix suggestions |
+| Semantic | embeddings + cosine similarity | meaning-based retrieval |
+
+Those runtime capabilities are still useful for CLI workflows, but they are no
+longer a prerequisite for the public `/feeds` experience.
 
 ## Search operations checklist
 
 ```bash
+# Build the runtime article rows and export the generated web corpus
+uv run ai-web-feeds corpus refresh
+
+# Re-export from the current runtime DB without polling
+uv run ai-web-feeds corpus export
+
+# Optional runtime search/index workflows for CLI and backend usage
 uv run ai-web-feeds search init
 uv run ai-web-feeds search query "llm agents" --type full_text --limit 10
-uv run ai-web-feeds search query "retrieval augmented generation" --type semantic --limit 10
 uv run ai-web-feeds search autocomplete llm --limit 8
 uv run ai-web-feeds search embeddings --provider local
 ```
 
-## Embedding fallback rules
-
-The runtime supports two embedding providers:
-
-- `local`
-- `huggingface`
-
-Feed embedding refresh resolves the effective provider in this order:
-
-1. CLI override (`search embeddings --provider ...`)
-2. `AIWF_EMBEDDING__PROVIDER`
-3. local default
-
-If the effective provider is `huggingface`, the runtime requires
-`AIWF_EMBEDDING__HF_API_TOKEN`. Missing tokens, malformed API responses, or API request
-failures trigger a fallback to the local Sentence-Transformers path when fallback is
-allowed. Saved `feed_embeddings` rows record the provider/model that actually succeeded
-so downstream semantic search can regenerate query vectors with matching specs.
-
 ## Data dependencies
 
-- search tables are initialized from the runtime database
-- autocomplete in the web app can read from `feeds.enriched.yaml` or `feeds.yaml`
-- semantic search depends on embeddings stored in runtime tables
-- saved searches and search logs are runtime data scoped to the anonymous
+- source discovery depends on checked-in catalog files
+- article browse/search/autocomplete article suggestions depend on the generated
+  corpus artifact
+- the generated corpus depends on `feed_entries` in the runtime database
+- search logs and saved searches remain runtime data scoped to the anonymous
   device binding, not authored YAML
 
 ## Related documentation
 
 - [Runtime authority](/docs/development/runtime-authority)
-- [Data lifecycle](/docs/development/data-lifecycle)
-- [CLI usage](/docs/development/cli)
+- [Search & Discovery](/docs/features/search)
+- [Reader](/docs/features/reader)
+- [Deployment Guide](/docs/guides/deployment)

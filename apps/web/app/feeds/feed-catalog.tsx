@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, RadioTower, Search as SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import type { FeedSource } from "@/lib/feeds-filters";
 import {
   filterBySourceType,
-  filterByVerified,
   getTopics,
   filterByTopic,
+  filterByVerified,
 } from "@/lib/feeds-filters";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
@@ -23,6 +23,11 @@ interface FeedCatalogProps {
   initialSourceType: string | null;
   initialTopic: string | null;
   initialVerified: boolean | null;
+}
+
+function buildFeedsHref(params: URLSearchParams): string {
+  const query = params.toString();
+  return query ? `/feeds?${query}` : "/feeds";
 }
 
 function buildFilteredExportHref(feedIds: string[]): string | null {
@@ -53,7 +58,6 @@ function buildReaderHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "reader");
   const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
   if (shouldCarryExplicitFeedIds) {
     for (const feedId of feedIds) {
@@ -74,7 +78,7 @@ function buildReaderHref({
     params.set("topics", topic);
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildFeedsHref(params);
 }
 
 function buildScopedSearchHref({
@@ -91,7 +95,6 @@ function buildScopedSearchHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "articles");
   const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
   if (shouldCarryExplicitFeedIds) {
     for (const feedId of feedIds) {
@@ -112,12 +115,11 @@ function buildScopedSearchHref({
     params.set("verified", String(verified));
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildFeedsHref(params);
 }
 
 function buildFeedArticleSearchHref(feed: FeedSource): string {
   const params = new URLSearchParams();
-  params.set("mode", "articles");
   params.set("q", feed.title);
 
   if (feed.source_type) {
@@ -130,7 +132,7 @@ function buildFeedArticleSearchHref(feed: FeedSource): string {
     params.set("verified", "true");
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildFeedsHref(params);
 }
 
 function buildFeedReaderHref({
@@ -145,7 +147,6 @@ function buildFeedReaderHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "reader");
   params.set("feed", feedId);
 
   if (query) {
@@ -158,7 +159,7 @@ function buildFeedReaderHref({
     params.set("verified", String(verified));
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildFeedsHref(params);
 }
 
 function buildActiveFilterSummary({
@@ -323,6 +324,18 @@ export function FeedCatalog({
         verified: effectiveVerifiedFilter,
       }),
     [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
+  );
+  const resetCatalogHref = "/feeds?mode=catalog";
+  const browsePostsHref = useMemo(
+    () =>
+      buildReaderHref({
+        feedIds: [],
+        query: searchQuery,
+        sourceType: null,
+        topic: null,
+        verified: null,
+      }),
+    [searchQuery],
   );
   const activeFilterSummary = useMemo(
     () =>
@@ -613,11 +626,7 @@ export function FeedCatalog({
         <EmptyState
           icon={SearchIcon}
           title="No feeds match this filter set"
-          description={
-            hasVerificationSignals
-              ? "Try widening the source types, removing topic constraints, or turning off verified-only mode."
-              : "Try widening the source types, removing topic constraints, or using a broader search phrase."
-          }
+          description="Reset to the full catalog, or pivot into the article workspace to discover posts beyond this feed slice."
           tips={
             hasVerificationSignals
               ? [
@@ -626,7 +635,18 @@ export function FeedCatalog({
                 ]
               : ["Use a broader search phrase or clear the topic filter."]
           }
-        />
+        >
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href={resetCatalogHref} className={buttonVariants({ variant: "default" })}>
+              Reset to full catalog
+            </Link>
+            <Link href={browsePostsHref} className={buttonVariants({ variant: "outline" })}>
+              {normalizeSearchQuery(searchQuery)
+                ? "Browse posts for this query"
+                : "Browse article workspace"}
+            </Link>
+          </div>
+        </EmptyState>
       )}
     </div>
   );

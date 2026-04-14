@@ -62,6 +62,8 @@
     "pages": [
       "index",
       "architecture",
+      "runtime-authority",
+      "search-architecture",
       "implementation",
       "database",
       "database-architecture",

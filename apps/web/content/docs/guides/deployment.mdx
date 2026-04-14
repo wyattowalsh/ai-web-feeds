@@ -1,14 +1,23 @@
 ---
 title: Deployment Guide
-description: Production deployment guide for Phase 1 MVP with Python 3.13+, Next.js 15, SQLite, pnpm, and uv
+description: Deploy the reader-first web app with an optional analytics and recommendations backend using Python 3.13+, Next.js 15, SQLite, pnpm, and uv.
 ---
 
-# Deployment Guide - Phase 1: Data Discovery & Analytics
+# Deployment Guide
 
-> **For**: Production deployment of Phase 1 MVP
+> **For**: Production deployment of the standalone web app plus optional Python runtime workflows
 > **Stack**: Python 3.13+, Next.js 15, SQLite, pnpm, uv
 
 ---
+
+## Choose Your Deployment Profile
+
+| Profile       | Services                                                        | `BACKEND_URL` | `/analytics` and `/recommendations`         |
+| ------------- | --------------------------------------------------------------- | ------------- | ------------------------------------------- |
+| Web only      | `web` + optional `monitor`                                      | Not required  | Show intentional unavailable states         |
+| Web + backend | `web` + optional `monitor` + `uvicorn ai_web_feeds.web_api:app` | Required      | Load live analytics and recommendation data |
+
+Use the web-only profile unless you explicitly need live analytics exports and personalized recommendations.
 
 ## Prerequisites
 
@@ -59,17 +68,22 @@ Optional local overrides:
 ```bash
 AIWF_TELEMETRY_DIR=../../data/telemetry
 # AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
-# BACKEND_URL=http://localhost:8001
+# BACKEND_URL=http://127.0.0.1:8001
 ```
 
 You do not need email or SMTP variables for the simple admin telemetry setup.
+
+`BACKEND_URL` is optional. It is only required if you want live analytics and personalized recommendations. Without it:
+
+- `/feeds`, `/downloads`, `/docs`, `/explorer`, and `/stats` still work
+- `/analytics` shows an intentional unavailable panel
+- `/recommendations` shows an intentional unavailable panel
 
 ---
 
 ## Docker Compose
 
-The repository ships a two-service compose setup that matches the codebase as it
-exists today:
+The repository ships a two-service compose setup that matches the codebase as it exists today:
 
 - `web`: the standalone Next.js application on port `3000`
 - `monitor`: the Python monitoring/WebSocket service on port `8000`
@@ -84,8 +98,8 @@ Notes:
 
 - The compose stack no longer assumes a separate nginx container or a generic
   Python HTTP backend that the repository does not currently assemble.
-- `BACKEND_URL` remains optional. Set it only if you are running an external
-  Python HTTP backend for the proxied storage/search routes.
+- `BACKEND_URL` remains optional. Set it only if you are running the separate
+  ai-web-feeds backend HTTP surface for analytics and recommendations.
 - `NEXT_PUBLIC_WEBSOCKET_URL` is optional. Local development defaults to
   `http://localhost:8000`; deployed environments default to same-origin WebSocket
   connections unless you set this variable to an explicit monitor/WebSocket URL.
@@ -94,15 +108,20 @@ Notes:
 
 ---
 
-## Backend Deployment
+## Shared Python Runtime Setup
+
+The standalone web app expects two things for the full reader and search experience:
+
+1. the checked-in source catalog under `data/`
+2. a generated article corpus at `data/articles.generated.json`
+
+You do **not** need a Python HTTP backend for `/feeds`, `/api/articles`, or GET-based search. You do need the Python runtime when you want to poll feeds and rebuild the corpus artifact.
 
 ### 1. Install Dependencies
 
 ```bash
-# Install Python dependencies
 uv sync
 
-# Verify installation
 uv run python -c "import ai_web_feeds; print('✓ Backend installed')"
 ```
 
@@ -113,34 +132,78 @@ uv run python -c "import ai_web_feeds; print('✓ Backend installed')"
 uv run python -c "
 from ai_web_feeds.storage import DatabaseManager
 db = DatabaseManager()
+db.create_db_and_tables()
 print('✓ Database initialized')
 "
-
-# Initialize search tables (FTS5 + Trie)
-uv run aiwebfeeds search init
 ```
 
-### 3. Load Initial Data
+### 3. Build the Generated Corpus
+
+```bash
+# Poll active feeds, persist feed_entries, and export data/articles.generated.json
+uv run ai-web-feeds corpus refresh
+
+# Or export from the current runtime DB without polling again
+uv run ai-web-feeds corpus export
+```
+
+`corpus refresh` exits non-zero on partial failures, but still exports the artifact with truthful `partial_coverage` metadata so deployments can decide whether to accept or retry that snapshot.
+
+### 4. Optional Runtime Search Setup
+
+```bash
+# Optional runtime search/index workflows for CLI and backend services
+uv run ai-web-feeds search init
+uv run ai-web-feeds search embeddings --provider local
+```
+
+## Backend Deployment
+
+Only required if you want live analytics and personalized recommendations. It is not required for the default reader, catalog, docs, downloads, or stats flows.
+
+Start from the shared runtime setup above, then load initial data if this environment does not already have a prepared runtime database and generated corpus.
+
+### 1. Load Initial Data
 
 ```bash
 # Load feeds from YAML
-uv run aiwebfeeds load --input data/feeds.yaml
+uv run ai-web-feeds load --input data/feeds.yaml
 
 # Validate feeds
-uv run aiwebfeeds validate http --concurrency 10
+uv run ai-web-feeds validate http --concurrency 10
 
-# Generate embeddings (optional, for semantic search)
-uv run aiwebfeeds search embeddings --provider local
+# Poll feeds and export the generated article corpus
+uv run ai-web-feeds corpus refresh
 ```
 
-### 4. Verify Backend
+### 2. Start the Backend HTTP Surface
 
 ```bash
-# Test CLI commands
-uv run aiwebfeeds analytics summary
-uv run aiwebfeeds search query "machine learning" --limit 5
-uv run aiwebfeeds recommend get --topics llm --limit 5
+uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
 ```
+
+Then point the web app at it:
+
+```bash
+BACKEND_URL=http://127.0.0.1:8001
+```
+
+### 3. Verify Backend
+
+```bash
+# Test the backend HTTP routes directly
+curl http://127.0.0.1:8001/analytics/summary
+curl "http://127.0.0.1:8001/recommendations?user_id=test-user&topics=llm,agents&limit=5"
+```
+
+Once `BACKEND_URL` is set, the Next.js routes below switch from `503 FEATURE_UNAVAILABLE` to live backend proxies:
+
+- `/api/analytics/summary`
+- `/api/analytics/trending`
+- `/api/analytics/velocity`
+- `/api/analytics/export`
+- `/api/analytics/snapshot`
+- `/api/recommendations`
 
 ---
 
@@ -156,7 +219,7 @@ pnpm install
 ### 2. Build for Production
 
 ```bash
-# Build static site
+# Build the standalone web app
 pnpm build
 
 # Verify build
@@ -201,6 +264,7 @@ netlify deploy --prod
 
 - [ ] Enable SQLite WAL mode (already configured)
 - [ ] Set `AIWF_ANALYTICS__STATIC_CACHE_TTL=3600` for caching
+- [ ] Refresh `data/articles.generated.json` as part of your deploy or data pipeline
 - [ ] Configure CDN for static assets
 - [ ] Enable Gzip/Brotli compression
 - [ ] Set up database backups
@@ -220,6 +284,8 @@ netlify deploy --prod
 - [ ] Run performance benchmarks: `uv run pytest -m benchmark`
 - [ ] Verify all CLI commands work
 - [ ] Test all web routes
+- [ ] Verify the generated article corpus exists before building the web app
+- [ ] If `BACKEND_URL` is configured, verify `/analytics` and `/recommendations` load live data instead of unavailable states
 
 ---
 
@@ -238,7 +304,8 @@ netlify deploy --prod
 
 ### Search
 
-- **Current**: SQLite FTS5 (in-process)
+- **Current public web search**: generated article corpus + checked-in catalog
+- **Current runtime/CLI search**: SQLite FTS5 (in-process)
 - **Future**: Elasticsearch/Meilisearch for advanced search
 
 ### Embeddings
@@ -254,10 +321,10 @@ netlify deploy --prod
 
 ```bash
 # Backup SQLite database
-cp data/aiwebfeeds.db data/backups/aiwebfeeds-$(date +%Y%m%d).db
+cp data/ai-web-feeds.db data/backups/ai-web-feeds-$(date +%Y%m%d).db
 
 # Compress backup
-gzip data/backups/aiwebfeeds-$(date +%Y%m%d).db
+gzip data/backups/ai-web-feeds-$(date +%Y%m%d).db
 ```
 
 ### Log Rotation
@@ -274,17 +341,17 @@ AIWF_LOGGING__FILE_COMPRESSION="gz"
 
 ```bash
 # Refresh embeddings for new/updated feeds
-uv run aiwebfeeds search embeddings --provider local
+uv run ai-web-feeds search embeddings --provider local
 ```
 
 ### Analytics Snapshots
 
 ```bash
 # Create daily snapshot
-uv run aiwebfeeds analytics snapshot
+uv run ai-web-feeds analytics snapshot
 
 # Export analytics to CSV
-uv run aiwebfeeds analytics export --range 30d
+uv run ai-web-feeds analytics export --range 30d
 ```
 
 ---
@@ -399,14 +466,3 @@ vercel --prod
 - **Documentation**: [aiwebfeeds.com/docs](https://aiwebfeeds.com/docs)
 - **Issues**: [github.com/wyattowalsh/ai-web-feeds/issues](https://github.com/wyattowalsh/ai-web-feeds/issues)
 - **Discussions**: [github.com/wyattowalsh/ai-web-feeds/discussions](https://github.com/wyattowalsh/ai-web-feeds/discussions)
-
----
-
-**✅ Deployment Complete!**
-
-Your Phase 1 MVP is now live with:
-
-- Analytics Dashboard
-- Search & Discovery
-- AI-Powered Recommendations
-- 100% Free & Open Source Stack

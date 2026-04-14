@@ -5,7 +5,6 @@ import {
   ArrowRight,
   BookOpenText,
   Download,
-  Newspaper,
   RadioTower,
   Search,
   Sparkles,
@@ -17,13 +16,13 @@ import { DESIGN_ASSETS } from "@/lib/design-assets";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 
 export const metadata: Metadata = {
-  title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+  title: "AI Web Feeds - Reader-First AI Feeds",
   description:
-    "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+    "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
   openGraph: {
-    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    title: "AI Web Feeds - Reader-First AI Feeds",
     description:
-      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
     url: baseUrl,
     type: "website",
     images: [
@@ -37,9 +36,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    title: "AI Web Feeds - Reader-First AI Feeds",
     description:
-      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
     images: [`${baseUrl}/og-image.png`],
   },
 };
@@ -47,30 +46,30 @@ export const metadata: Metadata = {
 const coreSteps = [
   {
     eyebrow: "Step 1",
-    title: "Browse feeds",
+    title: "Open Feeds",
     description:
-      "Start from the curated source catalog and narrow by topic, source type, or verification state.",
+      "Start in the reader-first workspace where the latest posts are already waiting.",
     href: "/feeds",
-    cta: "Open catalog",
+    cta: "Open Feeds",
     icon: RadioTower,
   },
   {
     eyebrow: "Step 2",
-    title: "Search what is new",
+    title: "Narrow the source slice",
     description:
-      "Run local recent-article search from the same workspace after you narrow the current feed slice.",
-    href: "/feeds?mode=articles",
-    cta: "Search recent posts",
+      "Switch to the catalog view when you want to filter by topic, source type, or verification state.",
+    href: "/feeds?mode=catalog",
+    cta: "Browse catalog",
     icon: Search,
   },
   {
     eyebrow: "Step 3",
-    title: "Read and triage",
+    title: "Export what you keep",
     description:
-      "Open the live reader inside the unified workspace, keep local read-state, and widen into full-stream mode when needed.",
-    href: "/feeds?mode=reader",
-    cta: "Open reader mode",
-    icon: Newspaper,
+      "Move the chosen set into OPML or JSON exports once the reader queue is in good shape.",
+    href: "/downloads",
+    cta: "Go to Downloads",
+    icon: Download,
   },
 ] as const;
 
@@ -112,11 +111,11 @@ export default function HomePage() {
               </span>
               <div className="space-y-4">
                 <h1 className="hero-title max-w-4xl">
-                  Find strong AI sources, search recent posts, and keep a cleaner reading queue.
+                  Feeds is the main product. Everything else supports reading, filtering, and export.
                 </h1>
                 <p className="hero-copy max-w-2xl">
-                  The product should do three jobs well: help you pick feeds, inspect what is new,
-                  and export the set you want to keep using. Everything else should stay secondary.
+                  Start in `/feeds`, move into the catalog only when you need to refine sources,
+                  and keep downloads/docs as support surfaces around that workflow.
                 </p>
               </div>
 
@@ -125,20 +124,20 @@ export default function HomePage() {
                   href="/feeds"
                   className={cn(buttonVariants({ variant: "default", size: "lg" }))}
                 >
-                  Browse feeds
+                  Open Feeds
                   <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/feeds?mode=articles"
+                  href="/feeds?mode=catalog"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                 >
-                  Search recent posts
+                  Browse catalog
                 </Link>
                 <Link
-                  href="/feeds?mode=reader"
+                  href="/downloads"
                   className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
                 >
-                  Open reader
+                  Export bundles
                 </Link>
               </div>
             </div>
@@ -164,22 +163,17 @@ export default function HomePage() {
                 <p>
                   <span className="font-semibold text-(--ink)">1.</span> Use{" "}
                   <span className="font-semibold text-(--ink)">Feeds</span> to narrow the source
-                  list.
+                  list and read the latest posts.
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">2.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Articles</span> inside the feeds
-                  workspace when you need the right recent post.
+                  <span className="font-semibold text-(--ink)">Catalog</span> inside the feeds
+                  workspace when you need a tighter source slice.
                 </p>
                 <p>
                   <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Reader</span> inside that same
-                  workspace to skim, save, star, and archive what matters.
-                </p>
-                <p>
-                  <span className="font-semibold text-(--ink)">4.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Downloads</span> once you are ready
-                  to move the chosen feeds into another system.
+                  <span className="font-semibold text-(--ink)">Downloads</span> when the chosen
+                  set is ready to move elsewhere.
                 </p>
               </div>
             </aside>

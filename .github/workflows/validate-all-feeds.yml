@@ -44,7 +44,7 @@ jobs:
             uv run python data/validate_data_assets.py
           else
             uv run python data/validate_data_assets.py
-            uv run aiwebfeeds validate data/feeds.enriched.example.yaml --schema data/feeds.enriched.schema.json
+            uv run ai-web-feeds validate data/feeds.enriched.example.yaml --schema data/feeds.enriched.schema.json
           fi
 
       - name: Check for issues

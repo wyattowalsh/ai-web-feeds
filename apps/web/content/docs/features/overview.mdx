@@ -1,23 +1,34 @@
 ---
 title: Features Overview
-description: Complete overview of ai-web-feeds capabilities - feed management, fetching, analytics, and integrations
+description: Reader-first feeds workspace plus catalog, export, analytics, and integration capabilities
 icon: Sparkles
 ---
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-ai-web-feeds is a comprehensive system for managing, fetching, and analyzing AI/ML content feeds.
+ai-web-feeds is organized around one primary product surface: the reader-first
+Feeds workspace. Everything else in the product supports that core workflow by
+helping you curate sources, refresh the corpus, inspect results, and export the
+final set.
 
 ## Core Capabilities
 
 <Cards>
+  <Card title="Reader-First Feeds" description="Corpus-backed browsing, filtering, preview, and local reading state in /feeds" href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Unified article search, autocomplete, and explicit catalog mode for source discovery" href="/docs/features/search" />
   <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
   <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
   <Card title="Analytics" description="8 analytics views with health monitoring" href="#analytics" />
   <Card title="Platform Integration" description="Support for Reddit, GitHub, YouTube, and more" href="/docs/features/platform-integrations" />
-  <Card title="CLI Tools" description="Beautiful command-line interface with Rich output" href="/docs/development/cli" />
-  <Card title="Python API" description="Clean programmatic API for integration" href="/docs/development/python-api" />
+  <Card title="CLI Tools" description="Corpus refresh/export workflows plus command-line data operations" href="/docs/development/cli" />
 </Cards>
+
+## Primary Product Flow
+
+1. Open `/feeds` to browse the generated article corpus.
+2. Narrow the source slice from catalog mode when needed.
+3. Refresh the slice for live-only additions without replacing the base corpus.
+4. Export the curated feed set from Downloads when it is ready to move elsewhere.
 
 ## Feed Management
 

@@ -5,11 +5,12 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 DEFAULT_DATABASE_FILENAME = "ai-web-feeds.db"
 LEGACY_DATABASE_FILENAME = "aiwebfeeds.db"
 DEFAULT_DATABASE_URL = f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
 LEGACY_DATABASE_URL = f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
+DEFAULT_ARTICLE_CORPUS_FILENAME = "articles.generated.json"
+DEFAULT_ARTICLE_CORPUS_PATH = Path("data") / DEFAULT_ARTICLE_CORPUS_FILENAME
 
 
 def _sqlite_path_from_url(database_url: str) -> Path | None:

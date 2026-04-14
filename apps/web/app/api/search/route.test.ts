@@ -1,13 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fetchBackendMock, runLocalSearchMock } = vi.hoisted(() => ({
-  fetchBackendMock: vi.fn(),
-  runLocalSearchMock: vi.fn(),
-}));
+const { fetchBackendMock, searchArticlesInCorpusMock, searchCatalogSourcesMock } = vi.hoisted(
+  () => ({
+    fetchBackendMock: vi.fn(),
+    searchArticlesInCorpusMock: vi.fn(),
+    searchCatalogSourcesMock: vi.fn(),
+  }),
+);
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/telemetry-route", () => ({
   withRouteTelemetry: (_routeKey: string, handler: unknown) => handler,
+}));
+
+vi.mock("@/lib/article-corpus", () => ({
+  searchArticlesInCorpus: searchArticlesInCorpusMock,
+  searchCatalogSources: searchCatalogSourcesMock,
 }));
 
 vi.mock("@/lib/backend", async () => {
@@ -17,10 +25,6 @@ vi.mock("@/lib/backend", async () => {
     fetchBackend: fetchBackendMock,
   };
 });
-
-vi.mock("@/lib/search-local", () => ({
-  runLocalSearch: runLocalSearchMock,
-}));
 
 import { ANON_USER_BINDING_COOKIE } from "@/lib/user-auth";
 import { BackendConfigurationError, BackendError } from "@/lib/backend";
@@ -37,12 +41,13 @@ describe("/api/search route", () => {
   beforeEach(() => {
     vi.resetModules();
     fetchBackendMock.mockReset();
-    runLocalSearchMock.mockReset();
+    searchArticlesInCorpusMock.mockReset();
+    searchCatalogSourcesMock.mockReset();
   });
 
-  it("runs local source search for GET requests", async () => {
+  it("runs catalog source search for GET requests", async () => {
     const { GET } = await loadRouteModule();
-    runLocalSearchMock.mockResolvedValue({
+    searchCatalogSourcesMock.mockResolvedValue({
       scope: "sources",
       results: [
         {
@@ -74,15 +79,15 @@ describe("/api/search route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(runLocalSearchMock).toHaveBeenCalledWith({
+    expect(searchCatalogSourcesMock).toHaveBeenCalledWith({
       query: "agent systems",
-      scope: "sources",
       limit: 20,
-      feedIds: undefined,
+      feedIds: [],
       sourceType: undefined,
       topics: undefined,
       verified: true,
     });
+    expect(response.headers.get("cache-control")).toContain("s-maxage=120");
     await expect(response.json()).resolves.toEqual({
       results: [
         expect.objectContaining({
@@ -98,19 +103,35 @@ describe("/api/search route", () => {
     });
   });
 
-  it("passes normalized topic filters into local article search", async () => {
+  it("routes article searches through the corpus-backed index", async () => {
     const { GET } = await loadRouteModule();
-    runLocalSearchMock.mockResolvedValue({
+    searchArticlesInCorpusMock.mockResolvedValue({
       scope: "articles",
-      results: [],
+      results: [
+        {
+          kind: "article",
+          id: "feed-1:article-1",
+          title: "Agent planning roundup",
+          description: "Corpus-backed article",
+          url: "https://example.com/article-1",
+          topics: ["agents"],
+          source_type: "blog",
+          verified: true,
+          is_active: true,
+          match_score: 18,
+          feed_id: "feed-1",
+          feed_title: "Agent Feed",
+          published_at: "2026-04-05T12:00:00.000Z",
+        },
+      ],
       meta: {
         mode: "bounded",
         bounded: true,
         candidate_sources: 8,
-        scanned_sources: 8,
+        scanned_sources: 6,
         scan_limit: 18,
-        per_source_limit: 4,
-        truncated: false,
+        per_source_limit: null,
+        truncated: true,
       },
     });
 
@@ -121,20 +142,30 @@ describe("/api/search route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(runLocalSearchMock).toHaveBeenCalledWith({
-      query: "rag pipelines",
-      scope: "articles",
+    expect(searchArticlesInCorpusMock).toHaveBeenCalledWith({
+      q: "rag pipelines",
       limit: 20,
-      feedIds: undefined,
+      feedIds: [],
       sourceType: "podcast",
       topics: ["ml", "agents"],
       verified: undefined,
     });
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        scope: "articles",
+        results: [
+          expect.objectContaining({
+            id: "feed-1:article-1",
+            feed_id: "feed-1",
+          }),
+        ],
+      }),
+    );
   });
 
-  it("preserves explicit feed ids when the search request is scoped from catalog mode", async () => {
+  it("preserves explicit feed ids when the article scope is narrowed from catalog mode", async () => {
     const { GET } = await loadRouteModule();
-    runLocalSearchMock.mockResolvedValue({
+    searchArticlesInCorpusMock.mockResolvedValue({
       scope: "articles",
       results: [],
       meta: {
@@ -143,7 +174,7 @@ describe("/api/search route", () => {
         candidate_sources: 2,
         scanned_sources: 2,
         scan_limit: 18,
-        per_source_limit: 4,
+        per_source_limit: null,
         truncated: false,
       },
     });
@@ -155,9 +186,8 @@ describe("/api/search route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(runLocalSearchMock).toHaveBeenCalledWith({
-      query: "agents",
-      scope: "articles",
+    expect(searchArticlesInCorpusMock).toHaveBeenCalledWith({
+      q: "agents",
       limit: 20,
       feedIds: ["feed-2", "feed-1"],
       sourceType: undefined,
@@ -174,12 +204,13 @@ describe("/api/search route", () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Query parameter "q" is required',
     });
-    expect(runLocalSearchMock).not.toHaveBeenCalled();
+    expect(searchCatalogSourcesMock).not.toHaveBeenCalled();
+    expect(searchArticlesInCorpusMock).not.toHaveBeenCalled();
   });
 
   it("treats legacy semantic scope as article search", async () => {
     const { GET } = await loadRouteModule();
-    runLocalSearchMock.mockResolvedValue({
+    searchArticlesInCorpusMock.mockResolvedValue({
       scope: "articles",
       results: [],
       meta: {
@@ -188,7 +219,7 @@ describe("/api/search route", () => {
         candidate_sources: 0,
         scanned_sources: 0,
         scan_limit: 18,
-        per_source_limit: 4,
+        per_source_limit: null,
         truncated: false,
       },
     });
@@ -198,47 +229,9 @@ describe("/api/search route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(runLocalSearchMock).toHaveBeenCalledWith(
+    expect(searchArticlesInCorpusMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        query: "agents",
-        scope: "articles",
-      }),
-    );
-  });
-
-  it("includes bounded retrieval metadata for article search responses", async () => {
-    const { GET } = await loadRouteModule();
-    runLocalSearchMock.mockResolvedValue({
-      scope: "articles",
-      results: [],
-      meta: {
-        mode: "bounded",
-        bounded: true,
-        candidate_sources: 33,
-        scanned_sources: 18,
-        scan_limit: 18,
-        per_source_limit: 4,
-        truncated: true,
-      },
-    });
-
-    const response = await GET(
-      createRequest("http://localhost/api/search?q=agents&scope=articles"),
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual(
-      expect.objectContaining({
-        scope: "articles",
-        meta: {
-          mode: "bounded",
-          bounded: true,
-          candidate_sources: 33,
-          scanned_sources: 18,
-          scan_limit: 18,
-          per_source_limit: 4,
-          truncated: true,
-        },
+        q: "agents",
       }),
     );
   });

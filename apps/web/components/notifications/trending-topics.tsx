@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useWebSocket } from "@/lib/use-websocket";
 
 interface TrendingTopic {
@@ -21,41 +21,34 @@ interface TrendingTopicsProps {
   className?: string;
 }
 
+type TrendingTopicsResponse = {
+  trending?: Array<{
+    topic_id: string;
+    z_score: number;
+    article_count: number;
+    created_at: string;
+  }>;
+};
+
 export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProps) {
   const { trendingAlerts } = useWebSocket();
   const [topics, setTopics] = useState<TrendingTopic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchTrendingTopics();
-  }, [limit]);
-
-  useEffect(() => {
-    // Update local state with WebSocket alerts
-    if (trendingAlerts.length > 0) {
-      setTopics((prev) => {
-        const newTopics = [...trendingAlerts, ...prev];
-        // Deduplicate by topic_id
-        const unique = Array.from(new Map(newTopics.map((t) => [t.topic_id, t])).values());
-        return unique.slice(0, limit);
-      });
-    }
-  }, [trendingAlerts, limit]);
-
-  const fetchTrendingTopics = async () => {
+  const fetchTrendingTopics = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/trending?limit=${limit}`);
 
       if (!response.ok) throw new Error("Failed to fetch trending topics");
 
-      const data = await response.json();
+      const data = (await response.json()) as TrendingTopicsResponse;
       // Transform backend format to frontend format
-      const transformed = data.trending.map((t: any) => ({
-        topic_id: t.topic_id,
-        z_score: t.z_score,
-        article_count: t.article_count,
-        timestamp: new Date(t.created_at).getTime(),
+      const transformed = (data.trending ?? []).map((topic) => ({
+        topic_id: topic.topic_id,
+        z_score: topic.z_score,
+        article_count: topic.article_count,
+        timestamp: new Date(topic.created_at).getTime(),
       }));
       setTopics(transformed);
     } catch (err) {
@@ -63,7 +56,21 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit]);
+
+  useEffect(() => {
+    void fetchTrendingTopics();
+  }, [fetchTrendingTopics]);
+
+  useEffect(() => {
+    if (trendingAlerts.length > 0) {
+      setTopics((prev) => {
+        const newTopics = [...trendingAlerts, ...prev];
+        const unique = Array.from(new Map(newTopics.map((topic) => [topic.topic_id, topic])).values());
+        return unique.slice(0, limit);
+      });
+    }
+  }, [limit, trendingAlerts]);
 
   if (isLoading) {
     return (
