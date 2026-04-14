@@ -545,7 +545,7 @@ class DatabaseManager:
         with self.get_session() as session:
             # Get all enrichments in a single query to avoid N+1 problem
             enrichments = session.exec(select(FeedEnrichmentData)).all()
-            
+
             total_feeds = len(enrichments)
             health_scores = []
             quality_scores = []

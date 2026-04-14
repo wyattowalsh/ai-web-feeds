@@ -222,7 +222,9 @@ class Settings(BaseSettings):
     # Core settings
     database_url: str = Field(default_factory=default_database_url, description="Database URL")
     backend_url: str = Field("http://localhost:8000", description="Backend API URL")
-    jwt_secret_key: str = Field("", description="JWT secret key for authentication (AIWF_JWT_SECRET_KEY)")
+    jwt_secret_key: str = Field(
+        "", description="JWT secret key for authentication (AIWF_JWT_SECRET_KEY)"
+    )
     jwt_algorithm: str = Field("HS256", description="JWT signing algorithm")
 
     # Feature-specific settings

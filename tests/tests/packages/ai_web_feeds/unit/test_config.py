@@ -56,7 +56,10 @@ class TestSettings:
         (data_dir / LEGACY_DATABASE_FILENAME).write_bytes(b"")
         monkeypatch.chdir(tmp_path)
 
-        assert resolve_database_url(DEFAULT_DATABASE_URL) == f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
+        assert (
+            resolve_database_url(DEFAULT_DATABASE_URL)
+            == f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
+        )
 
     def test_resolve_database_url_falls_back_to_legacy_when_canonical_missing(
         self, tmp_path, monkeypatch
@@ -67,4 +70,7 @@ class TestSettings:
         (data_dir / LEGACY_DATABASE_FILENAME).write_bytes(b"")
         monkeypatch.chdir(tmp_path)
 
-        assert resolve_database_url(DEFAULT_DATABASE_URL) == f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
+        assert (
+            resolve_database_url(DEFAULT_DATABASE_URL)
+            == f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
+        )

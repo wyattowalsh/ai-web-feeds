@@ -42,9 +42,7 @@ def start_monitoring(
     # Initialize components
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
     db.create_db_and_tables()
 
@@ -106,9 +104,7 @@ def monitoring_status():
     # Initialize components
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
     scheduler = SchedulerManager(db, settings)
 
@@ -158,9 +154,7 @@ def follow_feed(
     """Follow a feed to receive notifications."""
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -181,9 +175,7 @@ def unfollow_feed(
     """Unfollow a feed to stop receiving notifications."""
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -201,9 +193,7 @@ def list_follows(
     """List feeds followed by a user."""
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -236,9 +226,7 @@ def subscribe_digest(
 
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     # Map schedule to cron expression
@@ -284,9 +272,7 @@ def unsubscribe_digest(
 
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
@@ -314,9 +300,7 @@ def list_digests(
     """List email digest subscriptions for a user."""
     settings = Settings()
     db = DatabaseManager(
-        settings.database_url
-        if hasattr(settings, "database_url")
-        else DEFAULT_DATABASE_URL
+        settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
