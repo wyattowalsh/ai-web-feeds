@@ -76,7 +76,7 @@ export function PulsingNode({
 
   useFrame(() => {
     if (meshRef.current) {
-      const scale = baseScale + Math.sin(performance.now() / 1000 * pulseSpeed) * pulseAmplitude;
+      const scale = baseScale + Math.sin((performance.now() / 1000) * pulseSpeed) * pulseAmplitude;
       meshRef.current.scale.set(scale, scale, scale);
     }
   });
@@ -84,11 +84,7 @@ export function PulsingNode({
   return (
     <mesh ref={meshRef} position={position}>
       <sphereGeometry args={[1, 32, 32]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={0.3}
-      />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
     </mesh>
   );
 }
@@ -146,11 +142,7 @@ export function FadingNode({
   return (
     <animated.mesh ref={meshRef} position={position} scale={scale}>
       <sphereGeometry args={[1, 32, 32]} />
-      <animated.meshStandardMaterial
-        color={color}
-        transparent
-        opacity={opacity}
-      />
+      <animated.meshStandardMaterial color={color} transparent opacity={opacity} />
     </animated.mesh>
   );
 }
@@ -175,10 +167,7 @@ export function AnimatedLink({
     start[2] + (end[2] - start[2]) * animationProgress,
   ];
 
-  const points = [
-    new THREE.Vector3(...start),
-    new THREE.Vector3(...animatedEnd),
-  ];
+  const points = [new THREE.Vector3(...start), new THREE.Vector3(...animatedEnd)];
 
   const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 
@@ -229,8 +218,7 @@ export function ParticleEffect({
 
   useFrame(() => {
     if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position
-        .array as Float32Array;
+      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
 
       for (let i = 0; i < count; i++) {
         const i3 = i * 3;
@@ -257,10 +245,7 @@ export function ParticleEffect({
   return (
     <points ref={particlesRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[particlePositions, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[particlePositions, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.1} color={color} transparent opacity={0.6} />
     </points>

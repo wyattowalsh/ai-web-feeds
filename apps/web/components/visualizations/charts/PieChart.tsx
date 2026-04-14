@@ -35,7 +35,7 @@ export function PieChart({
   className = "",
 }: PieChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<ChartJS | null>(null);
+  const chartRef = useRef<ChartJS<"pie" | "doughnut"> | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -124,7 +124,7 @@ const DEFAULT_COLORS = [
 export function createPieChartData(
   labels: string[],
   data: number[],
-  colors?: string[]
+  colors?: string[],
 ): ChartData<"pie"> {
   const backgroundColor = colors ?? DEFAULT_COLORS.slice(0, labels.length);
 
@@ -134,7 +134,9 @@ export function createPieChartData(
       {
         data,
         backgroundColor,
-        borderColor: backgroundColor.map((color) => color.replace("rgb", "rgba").replace(")", ", 1)")),
+        borderColor: backgroundColor.map((color) =>
+          color.replace("rgb", "rgba").replace(")", ", 1)"),
+        ),
         borderWidth: 2,
       },
     ],

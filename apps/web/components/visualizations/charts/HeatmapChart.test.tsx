@@ -164,11 +164,7 @@ describe("HeatmapChart", () => {
 
   it("returns zero matrix cell dimensions for empty axes and destroys charts on rerender/unmount", () => {
     const { rerender, unmount } = render(
-      <HeatmapChart
-        data={[{ x: "Mon", y: "AM", v: 1 }]}
-        xLabels={["Mon"]}
-        yLabels={["AM"]}
-      />,
+      <HeatmapChart data={[{ x: "Mon", y: "AM", v: 1 }]} xLabels={["Mon"]} yLabels={["AM"]} />,
     );
 
     const firstChart = chartInstances[0];
@@ -196,13 +192,7 @@ describe("HeatmapChart", () => {
   });
 
   it("builds heatmap data in row-major order and defaults missing cells to zero", () => {
-    expect(
-      createHeatmapData(
-        ["Mon", "Tue"],
-        ["AM", "PM"],
-        [[1, 2]],
-      ),
-    ).toEqual([
+    expect(createHeatmapData(["Mon", "Tue"], ["AM", "PM"], [[1, 2]])).toEqual([
       { x: "Mon", y: "AM", v: 1 },
       { x: "Tue", y: "AM", v: 2 },
       { x: "Mon", y: "PM", v: 0 },

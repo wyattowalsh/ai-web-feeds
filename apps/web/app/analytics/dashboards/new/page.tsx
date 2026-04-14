@@ -79,9 +79,7 @@ export default function NewDashboardPage() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Saving Dashboard...
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Please wait
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Please wait</p>
               </div>
             </div>
           </div>

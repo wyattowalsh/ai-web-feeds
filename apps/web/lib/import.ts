@@ -345,13 +345,16 @@ export async function importFile(
 /**
  * Validate export data structure
  */
-function isValidExportData(data: any): boolean {
+function isValidExportData(data: unknown): boolean {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
   return (
-    data &&
-    typeof data === 'object' &&
-    'version' in data &&
-    'exportedAt' in data &&
-    ('articles' in data || 'feeds' in data || 'folders' in data)
+    'version' in record &&
+    'exportedAt' in record &&
+    ('articles' in record || 'feeds' in record || 'folders' in record)
   );
 }
 

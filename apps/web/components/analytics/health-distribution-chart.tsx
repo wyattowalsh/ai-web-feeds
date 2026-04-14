@@ -91,7 +91,7 @@ export function HealthDistributionChart({
       tooltip: {
         callbacks: {
           label: (context: TooltipItem<"pie">) => {
-            const value = context.raw;
+            const value = typeof context.raw === "number" ? context.raw : Number(context.raw);
             const percentage = ((value / total) * 100).toFixed(1);
             return `${context.label}: ${value} (${percentage}%)`;
           },

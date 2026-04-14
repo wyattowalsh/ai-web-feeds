@@ -36,10 +36,7 @@ export function ForecastChart({
   showComponents = false,
 }: ForecastChartProps) {
   // Combine historical and forecast data
-  const allDates = [
-    ...historical.map((h) => h.date),
-    ...forecast.map((f) => f.date),
-  ];
+  const allDates = [...historical.map((h) => h.date), ...forecast.map((f) => f.date)];
 
   // Prepare datasets
   const datasets: ChartDataset<"line", Array<number | null>>[] = [
@@ -72,10 +69,7 @@ export function ForecastChart({
   if (showConfidenceBands) {
     datasets.push({
       label: "Upper Bound",
-      data: [
-        ...new Array(historical.length).fill(null),
-        ...forecast.map((f) => f.upper),
-      ],
+      data: [...new Array(historical.length).fill(null), ...forecast.map((f) => f.upper)],
       borderColor: "rgba(168, 85, 247, 0.3)",
       backgroundColor: "rgba(168, 85, 247, 0.1)",
       borderWidth: 1,
@@ -85,10 +79,7 @@ export function ForecastChart({
 
     datasets.push({
       label: "Lower Bound",
-      data: [
-        ...new Array(historical.length).fill(null),
-        ...forecast.map((f) => f.lower),
-      ],
+      data: [...new Array(historical.length).fill(null), ...forecast.map((f) => f.lower)],
       borderColor: "rgba(168, 85, 247, 0.3)",
       backgroundColor: "rgba(168, 85, 247, 0.1)",
       borderWidth: 1,
@@ -101,10 +92,7 @@ export function ForecastChart({
   if (showComponents && forecast[0]?.trend !== undefined) {
     datasets.push({
       label: "Trend",
-      data: [
-        ...new Array(historical.length).fill(null),
-        ...forecast.map((f) => f.trend),
-      ],
+      data: [...new Array(historical.length).fill(null), ...forecast.map((f) => f.trend)],
       borderColor: "rgb(34, 197, 94)",
       borderWidth: 2,
       borderDash: [2, 2],
@@ -177,9 +165,7 @@ export function ForecastChart({
         {showConfidenceBands && (
           <div className="flex items-center gap-2">
             <div className="w-4 h-3 bg-purple-200 dark:bg-purple-900" />
-            <span className="text-gray-700 dark:text-gray-300">
-              Confidence Interval
-            </span>
+            <span className="text-gray-700 dark:text-gray-300">Confidence Interval</span>
           </div>
         )}
         {showComponents && (

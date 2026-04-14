@@ -7,7 +7,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Layouts } from "react-grid-layout";
-import { DashboardBuilder, type DashboardWidget } from "@/components/visualizations/dashboards/DashboardBuilder";
+import {
+  DashboardBuilder,
+  type DashboardWidget,
+} from "@/components/visualizations/dashboards/DashboardBuilder";
 import { getDeviceId } from "@/lib/visualization/device-id";
 
 interface StoredDashboard {

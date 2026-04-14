@@ -38,7 +38,11 @@ type ChartPreviewData =
   | ChartData<"bar">
   | ChartData<"scatter">
   | ChartData<"pie">
-  | { data: unknown; xLabels: string[]; yLabels: string[] }
+  | {
+      data: Array<{ x: string | number; y: string | number; v: number }>;
+      xLabels: string[];
+      yLabels: string[];
+    }
   | null;
 
 export function ChartBuilder({ onSave }: ChartBuilderProps) {
@@ -150,7 +154,9 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
               </div>
               {s < 4 && (
                 <div
-                  className={`h-1 w-8 ${canProceed(s) ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"}`}
+                  className={`h-1 w-8 ${
+                    canProceed(s) ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"
+                  }`}
                 />
               )}
             </div>
@@ -250,9 +256,7 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
       {/* Real-time preview panel */}
       <div className="lg:sticky lg:top-8 h-fit">
         <div className="p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Preview
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Preview</h3>
 
           {!dataSource || !chartType || !dateRange ? (
             <div className="h-96 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
@@ -261,9 +265,7 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
                 <p className="text-gray-600 dark:text-gray-400">
                   Configure your chart to see a preview
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                  Step {step} of 4
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Step {step} of 4</p>
               </div>
             </div>
           ) : (
@@ -288,7 +290,7 @@ export function ChartBuilder({ onSave }: ChartBuilderProps) {
 function renderChart(
   type: ChartType,
   data: ChartPreviewData,
-  customization: ChartCustomization
+  customization: ChartCustomization,
 ): ReactElement | null {
   if (!data) return null;
 
@@ -335,15 +337,39 @@ function renderChart(
     case "line":
       return <LineChart data={data as ChartData<"line">} options={commonOptions} height={400} />;
     case "bar":
-      return <BarChart data={data as ChartData<"bar">} options={commonOptions as ChartOptions<"bar">} height={400} />;
+      return (
+        <BarChart
+          data={data as ChartData<"bar">}
+          options={commonOptions as ChartOptions<"bar">}
+          height={400}
+        />
+      );
     case "scatter":
-      return <ScatterChart data={data as ChartData<"scatter">} options={commonOptions as ChartOptions<"scatter">} height={400} />;
+      return (
+        <ScatterChart
+          data={data as ChartData<"scatter">}
+          options={commonOptions as ChartOptions<"scatter">}
+          height={400}
+        />
+      );
     case "pie":
       return <PieChart data={data as ChartData<"pie">} height={400} />;
     case "area":
-      return <AreaChart data={data as ChartData<"line">} options={commonOptions as ChartOptions<"line">} height={400} stacked={customization.stacked} />;
+      return (
+        <AreaChart
+          data={data as ChartData<"line">}
+          options={commonOptions as ChartOptions<"line">}
+          height={400}
+          stacked={customization.stacked}
+        />
+      );
     case "heatmap":
-      return <HeatmapChart {...(data as { data: unknown; xLabels: string[]; yLabels: string[] })} height={400} />;
+      return (
+        <HeatmapChart
+          {...(data as { data: unknown; xLabels: string[]; yLabels: string[] })}
+          height={400}
+        />
+      );
     default:
       return null;
   }
@@ -380,7 +406,7 @@ function generateSampleData(chartType: ChartType, dataSource: DataSource): Chart
         data: createHeatmapData(
           labels,
           ["Week 1", "Week 2", "Week 3"],
-          Array.from({ length: 3 }, () => Array.from({ length: 7 }, () => Math.random() * 100))
+          Array.from({ length: 3 }, () => Array.from({ length: 7 }, () => Math.random() * 100)),
         ),
         xLabels: labels,
         yLabels: ["Week 1", "Week 2", "Week 3"],
