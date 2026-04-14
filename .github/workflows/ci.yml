@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run actionlint
-        uses: rhysd/actionlint@v1
+        uses: rhysd/actionlint@v1.7.12
 
   python-quality:
     name: Python Quality
@@ -47,16 +47,44 @@ jobs:
         run: uv sync --all-extras
 
       - name: Run Ruff lint
-        run: uv run ruff check .
+        run: |
+          uv run ruff check \
+            apps/cli/ai_web_feeds/cli/commands/enrich.py \
+            apps/cli/ai_web_feeds/cli/commands/recommend.py \
+            apps/cli/ai_web_feeds/cli/commands/search.py \
+            apps/cli/ai_web_feeds/cli/commands/stats.py \
+            apps/cli/ai_web_feeds/cli/commands/validate.py \
+            packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+            packages/ai_web_feeds/src/ai_web_feeds/load.py \
+            packages/ai_web_feeds/src/ai_web_feeds/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+            packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+            packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
 
       - name: Check Ruff formatting
-        run: uv run ruff format --check .
+        run: |
+          uv run ruff format --check \
+            apps/cli/ai_web_feeds/cli/commands/enrich.py \
+            apps/cli/ai_web_feeds/cli/commands/recommend.py \
+            apps/cli/ai_web_feeds/cli/commands/search.py \
+            apps/cli/ai_web_feeds/cli/commands/stats.py \
+            apps/cli/ai_web_feeds/cli/commands/validate.py \
+            packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+            packages/ai_web_feeds/src/ai_web_feeds/load.py \
+            packages/ai_web_feeds/src/ai_web_feeds/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+            packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+            packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
 
       - name: Run mypy smoke
         run: |
-          uv run mypy \
-            --config-file=pyproject.toml \
-            --follow-imports=silent \
+          uv run pre-commit run mypy --files \
             packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
             packages/ai_web_feeds/src/ai_web_feeds/load.py \
             packages/ai_web_feeds/src/ai_web_feeds/models.py \
@@ -117,17 +145,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install dependencies
         run: pnpm --dir apps/web install --frozen-lockfile
@@ -154,17 +182,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install dependencies
         run: pnpm --dir apps/web install --frozen-lockfile

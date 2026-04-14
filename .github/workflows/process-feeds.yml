@@ -44,10 +44,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          cache: 'pip'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 
@@ -123,6 +122,7 @@ jobs:
         id: process
         run: |
           cd apps/cli
+          rm -f ../../data/ai-web-feeds.db
           SKIP_ENRICHMENT=${{ github.event.inputs.skip_enrichment || 'true' }}
           EXPORT_FORMATS=${{ github.event.inputs.export_formats || 'true' }}
 

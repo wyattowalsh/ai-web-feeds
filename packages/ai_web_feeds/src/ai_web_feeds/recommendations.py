@@ -12,9 +12,11 @@ Implements Phase 1 recommendation strategy:
 - 10% serendipity (random high-quality feeds)
 """
 
+from collections import Counter
 from datetime import UTC, datetime
 from functools import lru_cache
 from secrets import SystemRandom
+from typing import Any, cast
 
 import numpy as np
 from loguru import logger
@@ -64,7 +66,7 @@ def calculate_content_similarity(
 
     # Get embeddings for all feeds
     embeddings = session.exec(
-        select(FeedEmbedding).where(FeedEmbedding.feed_id.in_(feed_ids))
+        select(FeedEmbedding).where(cast(Any, FeedEmbedding.feed_id).in_(feed_ids))
     ).all()
 
     if not embeddings:
@@ -119,7 +121,7 @@ def get_similar_feeds_by_topic(
     # Get all feeds
     statement = (
         select(FeedSource)
-        .where(FeedSource.id.not_in(exclude_ids))
+        .where(cast(Any, FeedSource.id).not_in(exclude_ids))
         .where(FeedSource.curation_status != "inactive")
     )
     all_feeds = list(session.exec(statement).all())
@@ -174,7 +176,7 @@ def calculate_popularity_scores(
     """
     logger.debug(f"Calculating popularity scores for {len(feed_ids)} feeds")
 
-    feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(feed_ids))).all()
+    feeds = session.exec(select(FeedSource).where(cast(Any, FeedSource.id).in_(feed_ids))).all()
 
     scores = {}
 
@@ -224,8 +226,8 @@ def get_popular_feeds(
     # Get all active verified feeds
     statement = (
         select(FeedSource)
-        .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified.is_(True))
+        .where(cast(Any, FeedSource.id).not_in(exclude_ids))
+        .where(cast(Any, FeedSource.verified).is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
     feeds = list(session.exec(statement).all())
@@ -268,8 +270,8 @@ def get_serendipity_feeds(
     # Get all verified active feeds
     statement = (
         select(FeedSource)
-        .where(FeedSource.id.not_in(exclude_ids))
-        .where(FeedSource.verified.is_(True))
+        .where(cast(Any, FeedSource.id).not_in(exclude_ids))
+        .where(cast(Any, FeedSource.verified).is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
     feeds = list(session.exec(statement).all())
@@ -481,15 +483,15 @@ def get_user_recommendations(
 
         # Extract topics from followed feeds when no explicit topic preference exists
         if seed_feed_ids:
-            feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(seed_feed_ids))).all()
+            feeds = session.exec(
+                select(FeedSource).where(cast(Any, FeedSource.id).in_(seed_feed_ids))
+            ).all()
             all_topics = []
             for feed in feeds:
                 if feed.topics:
                     all_topics.extend(feed.topics)
             # Get most common topics
             if all_topics and not seed_topics:
-                from collections import Counter
-
                 topic_counts = Counter(all_topics)
                 seed_topics = [topic for topic, _ in topic_counts.most_common(5)]
 

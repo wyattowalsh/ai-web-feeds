@@ -97,7 +97,8 @@ def serialize_snapshot(snapshot: AnalyticsSnapshot) -> dict[str, Any]:
     }
 
 
-@router.get("/recommendations")
+# FastAPI's decorators are dynamically typed.
+@router.get("/recommendations")  # type: ignore[misc]
 def list_recommendations(
     user_id: str | None = Query(default=None),
     topics: str | None = Query(default=None),
@@ -130,11 +131,16 @@ def list_recommendations(
     }
 
 
-@router.post("/recommendations/interactions", status_code=201)
+# FastAPI's decorators are dynamically typed.
+@router.post(  # type: ignore[misc]
+    "/recommendations/interactions",
+    status_code=201,
+    response_model=None,
+)
 def create_recommendation_interaction(
     request: RecommendationInteractionRequest,
     session: DbSession,
-) -> dict[str, Any]:
+) -> dict[str, Any] | JSONResponse:
     """Persist recommendation interaction feedback."""
     if session.get(FeedSource, request.feed_id) is None:
         return error_response("Feed not found", 404, "FEED_NOT_FOUND")
@@ -149,7 +155,8 @@ def create_recommendation_interaction(
     return {"tracked": True}
 
 
-@router.get("/analytics/summary")
+# FastAPI's decorators are dynamically typed.
+@router.get("/analytics/summary")  # type: ignore[misc]
 def analytics_summary(
     date_range: str = Query(default="30d"),
     topic: str | None = Query(default=None),
@@ -164,7 +171,8 @@ def analytics_summary(
     }
 
 
-@router.get("/analytics/trending")
+# FastAPI's decorators are dynamically typed.
+@router.get("/analytics/trending")  # type: ignore[misc]
 def analytics_trending(
     limit: int = Query(default=10, ge=1, le=100),
     date_range: str = Query(default="30d"),
@@ -175,7 +183,8 @@ def analytics_trending(
     return get_trending_topics(session, limit=limit, date_range=date_range)
 
 
-@router.get("/analytics/velocity")
+# FastAPI's decorators are dynamically typed.
+@router.get("/analytics/velocity")  # type: ignore[misc]
 def analytics_velocity(
     granularity: Literal["daily", "weekly", "monthly"] = Query(default="daily"),
     date_range: str = Query(default="30d"),
@@ -186,7 +195,8 @@ def analytics_velocity(
     return get_publication_velocity(session, granularity=granularity, date_range=date_range)
 
 
-@router.get("/analytics/export")
+# FastAPI's decorators are dynamically typed.
+@router.get("/analytics/export")  # type: ignore[misc]
 def analytics_export(
     date_range: str = Query(default="30d"),
     *,
@@ -203,7 +213,8 @@ def analytics_export(
     )
 
 
-@router.post("/analytics/snapshot", status_code=201)
+# FastAPI's decorators are dynamically typed.
+@router.post("/analytics/snapshot", status_code=201)  # type: ignore[misc]
 def create_analytics_snapshot(
     session: DbSession,
 ) -> dict[str, Any]:
@@ -212,7 +223,8 @@ def create_analytics_snapshot(
     return serialize_snapshot(snapshot)
 
 
-@router.get("/analytics/snapshot", response_model=None)
+# FastAPI's decorators are dynamically typed.
+@router.get("/analytics/snapshot", response_model=None)  # type: ignore[misc]
 def get_latest_analytics_snapshot(
     session: DbSession,
 ) -> Response:
