@@ -6,13 +6,13 @@ import Link from "next/link";
 import { AdvancedPreviewSection } from "./advanced-preview-section";
 
 export const metadata: Metadata = {
-  title: "Download Feeds - AIWebFeeds",
+  title: "Downloads - AIWebFeeds",
   description:
-    "Export full-catalog OPML or JSON bundles from AI Web Feeds, and start in /feeds when you need a filtered subset.",
+    "Export OPML or JSON bundles after you choose the feed slice in /feeds.",
   openGraph: {
-    title: "Download Feeds - AIWebFeeds",
+    title: "Downloads - AIWebFeeds",
     description:
-      "Export full-catalog OPML or JSON bundles, then start in /feeds when you need a filtered subset.",
+      "Export OPML or JSON bundles after you choose the feed slice in /feeds.",
   },
 };
 
@@ -54,14 +54,13 @@ export default async function DownloadsPage() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="mb-3 inline-flex items-center rounded-full border bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Downloads & preview
+              Export surface
             </p>
             <h1 className="mb-3 text-4xl font-bold tracking-tight">Download Feeds</h1>
             <p className="text-lg text-muted-foreground">
-              This page is the export surface for full-catalog bundles and quick spot checks. If you
-              need a filtered subset, start in{" "}
+              This page exists for export and preview, not primary discovery. Choose the slice in{" "}
               <code className="rounded bg-muted px-1.5 py-0.5 text-sm">/feeds</code>
-              to define the slice first, then export that exact set.
+              first, then export that exact set here.
             </p>
           </div>
 
@@ -134,17 +133,17 @@ export default async function DownloadsPage() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start">
           <div>
             <div className="mb-2 inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              Need a subset instead of the whole catalog?
+              Need a subset before exporting?
             </div>
-            <h2 className="text-2xl font-semibold">Start in the feed catalog</h2>
+            <h2 className="text-2xl font-semibold">Start in Feeds, export here</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              The feed catalog is the primary subset-selection surface. Use it to filter by source
-              type, topic, verification state, and search text. Come back here when you want the
-              full-catalog exports or the optional OPML preview.
+              The Feeds workspace is the primary subset-selection surface. Use it to filter by
+              source type, topic, verification state, and search text. Come back here when you
+              want the export artifacts or the optional OPML preview.
             </p>
             <div className="mt-4">
               <Link href="/feeds" className={`${buttonVariants({ variant: "outline" })} gap-2`}>
-                Browse feeds first
+                Open Feeds workspace
               </Link>
             </div>
           </div>
@@ -185,7 +184,7 @@ export default async function DownloadsPage() {
               href="/feeds"
               className="text-blue-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
-              Build a filtered slice in the feed catalog →
+              Build a filtered slice in Feeds workspace →
             </Link>
             <Link
               href="/docs/guides/opml-viewer"

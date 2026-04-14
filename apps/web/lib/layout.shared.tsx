@@ -21,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
               AI Web Feeds
             </span>
             <span className="font-serif text-lg font-semibold text-(--ink)">
-              AI source feeds for humans and agents
+              Reader-first AI feeds for humans and agents
             </span>
           </span>
         </span>
@@ -32,6 +32,10 @@ export function baseOptions(): BaseLayoutProps {
       {
         text: "Feeds",
         url: "/feeds",
+      },
+      {
+        text: "Explorer",
+        url: "/explorer",
       },
       {
         text: "Downloads",

@@ -1,30 +1,21 @@
 import type { Metadata } from "next";
-import {
-  SearchPageClient,
-  type InitialSearchRequestState,
-} from "@/components/search/search-page-client";
-import { ReaderPageClient } from "@/components/reader/reader-page-client";
-import { loadFeedCatalog, getSourceTypes, getFeedStats } from "@/lib/feeds";
-import { runLocalSearch } from "@/lib/search-local";
-import {
-  DEFAULT_UNBOUNDED_SEARCH_META,
-  normalizeSearchQuery,
-  parseSearchStateFromParams,
-  parseVerifiedSearchFilter,
-  type SearchExecutionState,
-  type SearchResponseMeta,
-  type SearchResult,
-} from "@/lib/search";
-import { FeedCatalog } from "./feed-catalog";
 import { FeedsWorkspaceClient, type FeedsWorkspaceMode } from "./feeds-workspace-client";
+import { browseArticleCorpus } from "@/lib/article-corpus";
+import { getFeedStats, loadFeedCatalog } from "@/lib/feeds";
+import {
+  normalizeSearchQuery,
+  parseSearchFeedIdsParam,
+  parseSearchTopicsParam,
+  parseVerifiedSearchFilter,
+} from "@/lib/search";
 
 export const metadata: Metadata = {
   title: "Feeds Workspace - AIWebFeeds",
   description:
-    "Browse curated AI feeds, search recent posts, and read the merged timeline from one canonical workspace.",
+    "Browse the article corpus and source catalog from one reader-first workspace.",
   openGraph: {
     title: "Feeds Workspace - AIWebFeeds",
-    description: "Browse, search, and read AI feeds from one unified workspace.",
+    description: "Browse the article corpus and source catalog from one unified workspace.",
   },
 };
 
@@ -32,6 +23,51 @@ type FeedsPageSearchParams = Record<string, string | string[] | undefined>;
 
 type FeedsPageProps = {
   searchParams: Promise<FeedsPageSearchParams>;
+};
+
+export type FeedsWorkspaceInitialState = {
+  query: string;
+  feedIds: string[];
+  sourceType: string | null;
+  topics: string[];
+  verified: boolean | null;
+  sort: "latest" | "oldest" | "source";
+  readerView: "latest" | "unread" | "starred" | "saved" | "archived";
+  cursor: number;
+  limit: number;
+};
+
+export type FeedsWorkspaceInitialBrowse = {
+  items: Array<{
+    id: string;
+    feed_id: string;
+    feed_title: string;
+    title: string;
+    link: string;
+    summary: string | null;
+    content_html: string | null;
+    author: string | null;
+    published_at: string | null;
+    categories: string[];
+    topics: string[];
+    source_type: string;
+    verified: boolean;
+    is_active: boolean;
+  }>;
+  next_cursor: number | null;
+  total_matched: number;
+  cursor: number;
+  limit: number;
+  applied_query: string | null;
+  applied_sort: "latest" | "oldest" | "source";
+  corpus: {
+    generated_at: string | null;
+    source_db: string;
+    article_count: number;
+    feed_count: number;
+    latest_published_at: string | null;
+    is_empty: boolean;
+  };
 };
 
 function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams {
@@ -64,72 +100,80 @@ function toURLSearchParams(searchParams: FeedsPageSearchParams): URLSearchParams
 
 function parseMode(searchParams: URLSearchParams): FeedsWorkspaceMode {
   const rawMode = searchParams.get("mode")?.trim().toLowerCase();
-  if (rawMode === "articles" || rawMode === "reader") {
-    return rawMode;
-  }
-
-  return "catalog";
+  return rawMode === "catalog" ? "catalog" : "reader";
 }
 
-async function getInitialArticleSearchData(searchParams: URLSearchParams): Promise<{
-  initialQuery: string;
-  initialSearchState: SearchExecutionState;
-  initialResults: SearchResult[];
-  initialMeta: SearchResponseMeta;
-  initialSearchRequestState: InitialSearchRequestState;
-  shouldLogInitialSearch: boolean;
-}> {
-  const initialQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
-  const initialSearchState: SearchExecutionState = {
-    ...parseSearchStateFromParams(searchParams),
-    scope: "articles",
-    searchType: "articles",
-    search_type: "articles",
-  };
+function parseSort(searchParams: URLSearchParams): FeedsWorkspaceInitialState["sort"] {
+  const rawSort =
+    searchParams.get("sort")?.trim().toLowerCase() ??
+    searchParams.get("reader_sort")?.trim().toLowerCase() ??
+    "";
 
-  if (!initialQuery) {
-    return buildArticleSearchData(initialQuery, initialSearchState, "idle");
+  if (rawSort === "oldest" || rawSort === "source") {
+    return rawSort;
   }
 
-  try {
-    const payload = await runLocalSearch({
-      query: initialQuery,
-      scope: "articles",
-      limit: 20,
-      feedIds: initialSearchState.feed_ids,
-      sourceType: initialSearchState.source_type,
-      topics: initialSearchState.topics,
-      verified: initialSearchState.verified,
-    });
-
-    return buildArticleSearchData(initialQuery, initialSearchState, "success", {
-      initialResults: payload.results,
-      initialMeta: payload.meta,
-      shouldLogInitialSearch: true,
-    });
-  } catch (error) {
-    console.error("Initial article search hydration error:", error);
-    return buildArticleSearchData(initialQuery, initialSearchState, "failed");
-  }
+  return "latest";
 }
 
-function buildArticleSearchData(
-  initialQuery: string,
-  initialSearchState: SearchExecutionState,
-  initialSearchRequestState: InitialSearchRequestState,
-  overrides?: Partial<{
-    initialResults: SearchResult[];
-    initialMeta: SearchResponseMeta;
-    shouldLogInitialSearch: boolean;
-  }>,
-) {
+function parseReaderView(
+  searchParams: URLSearchParams,
+): FeedsWorkspaceInitialState["readerView"] {
+  const rawView = searchParams.get("reader_view")?.trim().toLowerCase() ?? "";
+  if (
+    rawView === "unread" ||
+    rawView === "starred" ||
+    rawView === "saved" ||
+    rawView === "archived"
+  ) {
+    return rawView;
+  }
+
+  return "latest";
+}
+
+function parseCursor(searchParams: URLSearchParams): number {
+  const rawCursor = searchParams.get("cursor");
+  if (!rawCursor) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(rawCursor, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+
+  return Math.trunc(parsed);
+}
+
+function parseLimit(searchParams: URLSearchParams): number {
+  const rawLimit = searchParams.get("limit");
+  if (!rawLimit) {
+    return 24;
+  }
+
+  const parsed = Number.parseInt(rawLimit, 10);
+  if (!Number.isFinite(parsed)) {
+    return 24;
+  }
+
+  return Math.max(1, Math.min(100, Math.trunc(parsed)));
+}
+
+function parseInitialState(searchParams: URLSearchParams): FeedsWorkspaceInitialState {
+  const normalizedSourceType = searchParams.get("source_type")?.trim();
+  const verified = parseVerifiedSearchFilter(searchParams.get("verified"));
+
   return {
-    initialQuery,
-    initialSearchState,
-    initialResults: overrides?.initialResults ?? [],
-    initialMeta: overrides?.initialMeta ?? DEFAULT_UNBOUNDED_SEARCH_META,
-    initialSearchRequestState,
-    shouldLogInitialSearch: overrides?.shouldLogInitialSearch ?? false,
+    query: normalizeSearchQuery(searchParams.get("q")) ?? "",
+    feedIds: parseSearchFeedIdsParam(searchParams.getAll("feed")),
+    sourceType: normalizedSourceType && normalizedSourceType.length > 0 ? normalizedSourceType : null,
+    topics: parseSearchTopicsParam(searchParams.getAll("topics").join(",")),
+    verified: verified ?? null,
+    sort: parseSort(searchParams),
+    readerView: parseReaderView(searchParams),
+    cursor: parseCursor(searchParams),
+    limit: parseLimit(searchParams),
   };
 }
 
@@ -137,67 +181,32 @@ export default async function FeedsPage({ searchParams }: FeedsPageProps) {
   const resolvedSearchParams = toURLSearchParams(await searchParams);
   const mode = parseMode(resolvedSearchParams);
   const feedsData = loadFeedCatalog();
-  const feeds = feedsData.sources;
-  const types = getSourceTypes(feeds);
-  const stats = getFeedStats(feeds);
-  const initialQuery = normalizeSearchQuery(resolvedSearchParams.get("q")) ?? "";
-  const initialSourceType = resolvedSearchParams.get("source_type")?.trim() || null;
-  const initialTopic =
-    resolvedSearchParams.get("topics")?.split(",")[0]?.trim() ||
-    resolvedSearchParams.get("topic")?.trim() ||
-    null;
-  const initialVerified = parseVerifiedSearchFilter(resolvedSearchParams.get("verified")) ?? null;
-  const articleSearchData =
-    mode === "articles"
-      ? await getInitialArticleSearchData(resolvedSearchParams)
-      : buildArticleSearchData(
-          "",
-          {
-            ...parseSearchStateFromParams(new URLSearchParams()),
-            scope: "articles",
-            searchType: "articles",
-            search_type: "articles",
-            feed_ids: [],
-          },
-          "idle",
-        );
-  const readerFeeds = feeds.map((feed) => ({
-    id: feed.id || feed.url,
-    title: feed.title,
-    sourceType: feed.source_type || "feed",
-    topics: feed.topics ?? [],
-    verified: feed.verified === true,
-    isActive: feed.is_active !== false,
-    url: feed.url,
-  }));
+  const stats = getFeedStats(feedsData.sources);
+  const initialState = parseInitialState(resolvedSearchParams);
+  const initialBrowse =
+    mode === "catalog"
+      ? null
+      : ((await browseArticleCorpus({
+          q: initialState.query,
+          feedIds: initialState.feedIds,
+          sourceType: initialState.sourceType ?? undefined,
+          topics: initialState.topics,
+          verified: initialState.verified ?? undefined,
+          sort: initialState.sort,
+          cursor: initialState.cursor,
+          limit: initialState.limit,
+        })) as FeedsWorkspaceInitialBrowse);
 
   return (
     <div className="page-wrap page-stack">
       <section className="surface-panel space-y-8">
-        <FeedsWorkspaceClient mode={mode} stats={stats} />
-        {mode === "articles" ? (
-          <SearchPageClient
-            {...articleSearchData}
-            basePath="/feeds"
-            browseFeedsHref="/feeds"
-            embedded
-            forceScope="articles"
-            readerBasePath="/feeds"
-            readerMode="reader"
-            routeMode="articles"
-          />
-        ) : mode === "reader" ? (
-          <ReaderPageClient feeds={readerFeeds} />
-        ) : (
-          <FeedCatalog
-            feeds={feeds}
-            sourceTypes={types}
-            initialQuery={initialQuery}
-            initialSourceType={initialSourceType}
-            initialTopic={initialTopic}
-            initialVerified={initialVerified}
-          />
-        )}
+        <FeedsWorkspaceClient
+          mode={mode}
+          feeds={feedsData.sources}
+          stats={stats}
+          initialState={initialState}
+          initialBrowse={initialBrowse}
+        />
       </section>
     </div>
   );

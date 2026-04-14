@@ -53,7 +53,6 @@ function buildReaderHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "reader");
   const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
   if (shouldCarryExplicitFeedIds) {
     for (const feedId of feedIds) {
@@ -91,7 +90,6 @@ function buildScopedSearchHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "articles");
   const shouldCarryExplicitFeedIds = query.length > 0 || feedIds.length === 1;
   if (shouldCarryExplicitFeedIds) {
     for (const feedId of feedIds) {
@@ -117,7 +115,6 @@ function buildScopedSearchHref({
 
 function buildFeedArticleSearchHref(feed: FeedSource): string {
   const params = new URLSearchParams();
-  params.set("mode", "articles");
   params.set("q", feed.title);
 
   if (feed.source_type) {
@@ -145,7 +142,6 @@ function buildFeedReaderHref({
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("mode", "reader");
   params.set("feed", feedId);
 
   if (query) {

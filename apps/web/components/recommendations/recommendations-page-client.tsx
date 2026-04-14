@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BookmarkPlus, Compass, ExternalLink, Sparkles, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,7 +23,22 @@ interface Recommendation {
   reason: string;
 }
 
+function buildFeedsHref(rec: Recommendation, selectedTopics: string[]): string {
+  const params = new URLSearchParams();
+  params.set("mode", "catalog");
+  params.set("feed", rec.feed.id);
+  if (selectedTopics.length > 0) {
+    params.set("topics", selectedTopics.join(","));
+  }
+  if (rec.feed.title) {
+    params.set("q", rec.feed.title);
+  }
+
+  return `/feeds?${params.toString()}`;
+}
+
 export function RecommendationsPageClient() {
+  const router = useRouter();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -105,7 +121,7 @@ export function RecommendationsPageClient() {
 
   const handleFeedClick = (rec: Recommendation) => {
     void handleInteraction(rec.feed.id, "click", rec.reason);
-    window.open(rec.feed.url, "_blank", "noopener,noreferrer");
+    router.push(buildFeedsHref(rec, selectedTopics));
   };
 
   const handleSubscribe = (rec: Recommendation) => {
@@ -297,7 +313,7 @@ export function RecommendationsPageClient() {
                     <div className="flex flex-wrap items-center gap-3">
                       <Button type="button" onClick={() => handleFeedClick(rec)} variant="secondary">
                         <ExternalLink className="size-4" />
-                        Visit Feed
+                        Open in Feeds
                       </Button>
                       <Button type="button" onClick={() => handleSubscribe(rec)} variant="secondary">
                         <BookmarkPlus className="size-4" />
