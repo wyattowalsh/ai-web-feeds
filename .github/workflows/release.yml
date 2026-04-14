@@ -118,16 +118,16 @@ jobs:
       - name: Generate release notes
         id: release-notes
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
           # Get commits since last tag
-          PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
+          PREV_TAG="$(git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)" 2>/dev/null || echo "")"
 
           if [ -z "$PREV_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
+            COMMITS="$(git log --pretty=format:"- %s (%h)" --reverse)"
           else
-            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse)
+            COMMITS="$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --reverse)"
           fi
 
           cat > release_notes.md << EOF

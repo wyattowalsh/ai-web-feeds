@@ -45,6 +45,7 @@ addopts = [
     "--html=reports/test_report.html",            # HTML report
     "--self-contained-html",                       # Self-contained HTML
     "--timeout=300",                               # Timeout for tests
+    "--ignore=tests/e2e",                          # Browser E2E belongs to web Playwright
 ]
 
 # Markers
@@ -84,6 +85,7 @@ norecursedirs = [
     "*.egg-info",
     "__pycache__",
     ".pytest_cache",
+    "tests/e2e",
 ]
 
 [tool.coverage.run]

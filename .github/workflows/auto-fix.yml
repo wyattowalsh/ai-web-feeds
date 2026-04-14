@@ -43,12 +43,14 @@ jobs:
         id: verify-changed-files
         run: |
           if git diff --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
           else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-            git diff --name-only >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo "has_changes=true"
+              echo "changed_files<<EOF"
+              git diff --name-only
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit changes
