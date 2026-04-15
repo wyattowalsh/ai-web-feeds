@@ -69,6 +69,8 @@ describe("FeedCatalog", () => {
       />,
     );
 
+    expect(screen.getByRole("heading", { name: "Browse sources" })).toBeInTheDocument();
+
     expect(
       screen.getByText((_, element) => element?.textContent === "Showing 1 of 2 feeds"),
     ).toBeInTheDocument();

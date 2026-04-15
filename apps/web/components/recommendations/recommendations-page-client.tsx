@@ -9,6 +9,7 @@ import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
 import { buildReaderRouteHref } from "@/lib/reader-routes";
+import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 interface Recommendation {
   feed: {
@@ -239,13 +240,13 @@ export function RecommendationsPageClient({
               description={unavailableMessage}
               tips={[
                 "Set BACKEND_URL to a running ai-web-feeds backend if you want personalized recommendations.",
-                "Catalog browsing in /feeds still works without the backend service.",
+                "Source browsing still works at /?mode=catalog without the backend service.",
                 "The reader-first surface remains the primary local workflow even when recommendations are offline.",
               ]}
             >
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/feeds?mode=catalog"
+                  href={CANONICAL_CATALOG_PATH}
                   className={cn(buttonVariants({ variant: "secondary" }))}
                 >
                   Open catalog

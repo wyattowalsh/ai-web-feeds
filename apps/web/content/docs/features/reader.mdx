@@ -1,21 +1,21 @@
 ---
 title: Reader
-description: Reader-first AI feeds workspace backed by a generated article corpus with optional live refresh overlays
+description: Canonical homepage reader backed by a generated article corpus with /?mode=catalog source refinement and optional live refresh overlays
 ---
 
 # Reader
 
 > **Status**: ✅ Available
-> **Surface**: `/feeds`
+> **Surface**: `/` > **Catalog submode**: `/?mode=catalog` > **Compatibility route**: `/feeds`
 
-The reader is now the default surface for AI Web Feeds. It uses the generated
+The reader is the canonical homepage surface for AI Web Feeds. It uses the generated
 article corpus as its base dataset, keeps local reading state on-device, and
 adds live feed refreshes only as an explicit overlay.
 
 ## What it does
 
-- **Reader-first default** opens the article workspace immediately on `/feeds`.
-- **Catalog mode** remains available as `/feeds?mode=catalog` when you want to
+- **Reader-first default** opens the article workspace on `/`.
+- **Catalog mode** lives at `/?mode=catalog` when you want to
   change the source slice.
 - **Corpus-backed article list** reads normalized article rows from
   `data/articles.generated.json`.
@@ -28,6 +28,8 @@ adds live feed refreshes only as an explicit overlay.
   and pagination cursor in the address bar.
 - **Refresh latest** fetches live posts for the current feed slice, dedupes
   them against the corpus, and prepends only genuinely new items.
+
+`/feeds` still renders the same workspace for compatibility, but new docs and links should point to `/` unless backward compatibility is the point.
 
 ## URL parameters
 
@@ -50,7 +52,7 @@ The reader is meant to be linkable and restorable directly from the URL.
 
 ```mermaid
 flowchart LR
-    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/feeds"]
+    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/"]
     runtime["feed_entries in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
     corpus --> browse["/api/articles"]
     route --> ui["FeedsWorkspaceClient"]
@@ -62,7 +64,8 @@ flowchart LR
 
 The catalog decides which feeds are available. The generated article corpus
 provides the default article list. The live aggregation API is only used when
-the user explicitly refreshes the current slice.
+the user explicitly refreshes the current slice. The canonical reader lives at
+`/`; `/feeds` is the compatibility surface.
 
 ## Reader behavior
 

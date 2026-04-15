@@ -715,7 +715,7 @@ function ReaderWorkspace({
             .filter(Boolean);
 
     if (feedIds.length === 0) {
-      setRefreshError("No feed slice is selected for refresh.");
+      setRefreshError("Choose at least one source to refresh.");
       return;
     }
 
@@ -799,21 +799,21 @@ function ReaderWorkspace({
   const filterSummary =
     currentState.feedIds.length > 0
       ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
-      : `${candidateFeeds.length} active feed${candidateFeeds.length === 1 ? "" : "s"} in slice`;
+      : `${candidateFeeds.length} active source${
+          candidateFeeds.length === 1 ? "" : "s"
+        } matching these filters`;
 
   if (corpusEmpty) {
     return (
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <p className="metric-label">Feeds workspace</p>
+            <p className="metric-label">AI Web Feeds</p>
             <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-              Reader-first feeds workspace
+              Browse AI writing across the open web
             </h1>
             <p className="small-note max-w-3xl">
-              The article corpus has not been built yet. Catalog filtering still works, but the
-              reader workspace needs `data/articles.generated.json` before it can browse posts
-              across the feed set.
+              Latest posts are not available yet. You can still browse sources while articles load.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -821,7 +821,7 @@ function ReaderWorkspace({
               href={buildReaderHref(currentState, { mode: "catalog" })}
               className={cn(buttonVariants({ variant: "outline" }))}
             >
-              Open catalog
+              Browse sources
             </Link>
             <a
               href={buildOpmlExportHref(currentState)}
@@ -834,12 +834,12 @@ function ReaderWorkspace({
 
         <EmptyState
           icon={Newspaper}
-          title="Article corpus unavailable"
-          description="Run the corpus workflow to export the generated article artifact, then reload this page."
+          title="Posts unavailable right now"
+          description="Latest posts are not ready yet. Reload soon, or browse sources instead."
           tips={[
             "Use `uv run ai-web-feeds corpus refresh` to poll active feeds and write the artifact in one step.",
             "Use `uv run ai-web-feeds corpus export` if feed entries are already present in the runtime database.",
-            "Catalog mode remains available for source discovery while the article corpus is empty.",
+            "Source browsing remains available while the article corpus is empty.",
           ]}
         />
       </div>
@@ -850,13 +850,13 @@ function ReaderWorkspace({
     <div className="space-y-6">
       <div className="surface-card flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <p className="metric-label">Feeds workspace</p>
+          <p className="metric-label">AI Web Feeds</p>
           <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-            Browse posts across the full feed corpus
+            Latest AI posts from across the open web
           </h1>
           <p className="small-note max-w-3xl">
-            Search the generated article corpus first, then use the catalog only when you need to
-            tighten the source slice. Reader state remains local to this browser.
+            Search across your posts, then narrow to specific sources or topics when you want to
+            focus. Your read, saved, and starred items stay in this browser.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -868,7 +868,7 @@ function ReaderWorkspace({
             href={buildReaderHref(currentState, { mode: "catalog" })}
             className={cn(buttonVariants({ variant: "secondary" }))}
           >
-            Catalog
+            Sources
           </Link>
           <a
             href={buildOpmlExportHref(currentState)}
@@ -903,7 +903,7 @@ function ReaderWorkspace({
                 onChange={(event) => setQueryDraft(event.target.value)}
               />
               <Button type="submit" className="w-full">
-                Search corpus
+                Search posts
               </Button>
             </form>
           </div>
@@ -911,7 +911,7 @@ function ReaderWorkspace({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="size-4 text-(--ink-muted)" />
-              <p className="text-sm font-semibold text-(--ink)">Slice filters</p>
+              <p className="text-sm font-semibold text-(--ink)">Filters</p>
             </div>
             <div className="space-y-3">
               <label className="space-y-1.5 text-sm">
@@ -1045,7 +1045,7 @@ function ReaderWorkspace({
           </div>
 
           <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-            <p className="metric-label">Current slice</p>
+            <p className="metric-label">Current filters</p>
             <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
               <p>{filterSummary}</p>
               <p>
@@ -1053,10 +1053,10 @@ function ReaderWorkspace({
                 {visibleArticles.length} visible on this page
               </p>
               <p>
-                Corpus: {browse.corpus.article_count} articles from {browse.corpus.feed_count} feeds
+                Articles: {browse.corpus.article_count} from {browse.corpus.feed_count} sources
               </p>
               <p>
-                Catalog: {stats.total} sources · {stats.topicCount} topics
+                Sources: {stats.total} · {stats.topicCount} topics
               </p>
             </div>
           </div>
@@ -1067,7 +1067,7 @@ function ReaderWorkspace({
             <div className="space-y-1">
               <p className="metric-label">Article list</p>
               <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">
-                {currentState.query ? `Results for “${currentState.query}”` : "Latest corpus posts"}
+                {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
               </h2>
             </div>
             {refreshError ? (
@@ -1089,8 +1089,8 @@ function ReaderWorkspace({
           ) : visibleArticles.length === 0 ? (
             <EmptyState
               icon={Newspaper}
-              title="No posts match this slice"
-              description="Clear article-specific filters, reset the workspace, or inspect the current source slice in catalog mode."
+              title="No posts match these filters"
+              description="Clear filters, reset the page, or browse sources instead."
             >
               <div className="flex flex-wrap justify-center gap-3">
                 {canClearArticleFilters ? (
@@ -1106,14 +1106,14 @@ function ReaderWorkspace({
                     href={resetWorkspaceHref}
                     className={cn(buttonVariants({ variant: "outline" }))}
                   >
-                    Reset workspace
+                    Reset all filters
                   </Link>
                 ) : null}
                 <Link
                   href={catalogRecoveryHref}
                   className={cn(buttonVariants({ variant: "secondary" }))}
                 >
-                  Open catalog
+                  Browse sources
                 </Link>
               </div>
             </EmptyState>

@@ -6,15 +6,15 @@ icon: Sparkles
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-ai-web-feeds is organized around one primary product surface: the reader-first
-Feeds workspace. Everything else in the product supports that core workflow by
-helping you curate sources, refresh the corpus, inspect results, and export the
-final set.
+ai-web-feeds is organized around one primary product surface: the canonical
+reader at `/`. `/?mode=catalog` is the source-refinement view inside the same
+workspace, `/feeds` is kept for compatibility, and `/explorer` is the secondary
+taxonomy map.
 
 ## Core Capabilities
 
 <Cards>
-  <Card title="Reader-First Feeds" description="Corpus-backed browsing, filtering, preview, and local reading state in /feeds" href="/docs/features/reader" />
+  <Card title="Reader-First Feeds" description="Corpus-backed browsing, filtering, preview, and local reading state on /." href="/docs/features/reader" />
   <Card title="Search & Discovery" description="Unified article search, autocomplete, and explicit catalog mode for source discovery" href="/docs/features/search" />
   <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
   <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
@@ -25,10 +25,10 @@ final set.
 
 ## Primary Product Flow
 
-1. Open `/feeds` to browse the generated article corpus.
-2. Narrow the source slice from catalog mode when needed.
-3. Refresh the slice for live-only additions without replacing the base corpus.
-4. Export the curated feed set directly from `/feeds` when it is ready to move elsewhere.
+1. Open `/` to browse the generated article corpus.
+2. Switch to `/?mode=catalog` when you need to narrow or expand the source slice.
+3. Return to the reader on `/` with that slice preserved in the URL.
+4. Treat `/feeds` as a compatibility path for older links and `/explorer` as a secondary taxonomy map.
 
 ## Feed Management
 

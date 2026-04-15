@@ -298,7 +298,7 @@ function ExplorerPageContent() {
               </h1>
               <p className="hero-copy max-w-2xl">
                 Use this route to inspect the AI topic taxonomy and see how cataloged feeds connect
-                to it. Open `/feeds` when you want to read recent posts or export a slice.
+                to it. Open `/` when you want to read recent posts or export a slice.
               </p>
             </div>
           </div>
@@ -307,7 +307,7 @@ function ExplorerPageContent() {
             <p className="metric-label">How to use this surface</p>
             <p className="small-note">
               Search narrows the current working set, layout controls help with readability, and
-              node actions send the current slice into `/feeds`.
+              node actions send the current slice into `/`.
             </p>
             <div className="grid gap-2 text-sm text-(--ink)">
               <div className="flex items-center gap-3">

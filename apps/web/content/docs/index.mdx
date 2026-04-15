@@ -1,131 +1,64 @@
 ---
-title: Getting Started
-description: ai-web-feeds documentation - your comprehensive guide to PDF export and AI/LLM integration
+title: Documentation
+description: Use AI Web Feeds as a reader first, refine sources when needed, and treat docs as reference for the rest.
 icon: BookOpen
 ---
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Welcome to the **ai-web-feeds** documentation. This site includes powerful features for both human readers and AI agents.
+Welcome to the **ai-web-feeds** documentation. The web app now has one canonical entry flow: open `/` for the reader, switch to `/?mode=catalog` to refine sources, keep `/feeds` only for compatibility with older links, and use `/explorer` as a secondary taxonomy map.
 
-## 🚀 Quick Start
+## Start Here
 
-Get up and running in minutes:
+- **Read now:** [`/`](/)
+- **Refine sources:** [`/?mode=catalog`](/?mode=catalog)
+- **Compatibility path:** `/feeds`
+- **Taxonomy map:** [`/explorer`](/explorer)
+
+## Core Routes
 
 <Cards>
-  <Card title="PDF Export" description="Export documentation as high-quality PDFs" href="/docs/features/pdf-export" />
-  <Card title="AI Integration" description="LLM-friendly endpoints and content negotiation" href="/docs/features/ai-integration" />
-  <Card title="RSS Feeds" description="Subscribe to updates via RSS, Atom, or JSON" href="/docs/features/rss-feeds" />
-  <Card title="Link Validation" description="Ensure all documentation links are correct" href="/docs/features/link-validation" />
-  <Card title="SEO & Metadata" description="Rich metadata and Open Graph images" href="/docs/features/seo-metadata" />
-  <Card title="Mermaid Diagrams" description="Create beautiful diagrams with simple syntax" href="/docs/features/mermaid" />
-  <Card title="Math Equations" description="Render beautiful equations with KaTeX" href="/docs/features/math" />
-  <Card title="Quick Reference" description="Essential commands and endpoints at a glance" href="/docs/guides/quick-reference" />
+  <Card title="Reader" description="Open / for the canonical article stream across all tracked sources." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Use /?mode=catalog to refine the source slice without leaving the reader workflow." href="/docs/features/search" />
+  <Card title="Getting Started" description="Set up the repo, build the article corpus, and learn the main route flow." href="/docs/guides/getting-started" />
+  <Card title="Data Explorer" description="Use /explorer as the secondary taxonomy map for structure and relationships." href="/docs/guides/data-explorer" />
 </Cards>
 
-## ✨ Key Features
+## Product Model
 
-### 📄 PDF Export
+1. Open `/` to browse recent AI articles across all tracked sources.
+2. Search the stream first, then narrow to specific feeds, topics, or source types only when you want to focus.
+3. Switch to `/?mode=catalog` when you need to inspect or refine the source list directly.
+4. Use `/explorer` to inspect topic and feed structure, not as the main reading route.
 
-- **Automatic page discovery** - Export all documentation pages
-- **Clean output** - Navigation and UI elements hidden
-- **Interactive content** - Accordions and tabs expanded
-- **Batch processing** - Concurrent exports with rate limiting
+## Main Documentation Paths
 
-### 🤖 AI & LLM Integration
+### Product
 
-- **Discovery endpoint** - `/llms.txt` for AI agent discovery
-- **Full documentation** - `/llms-full.txt` with structured format
-- **Markdown extensions** - `.mdx` and `.md` for any page
-- **Content negotiation** - Automatic markdown for AI agents
-- **Page actions** - Copy markdown and AI tool integration
-
-### 📡 RSS Feeds
-
-- **Multiple formats** - RSS 2.0, Atom 1.0, and JSON Feed
-- **Auto-discovery** - Feeds discoverable via metadata
-- **Sitewide & docs feeds** - Subscribe to all or just docs
-- **Hourly updates** - Fresh content with smart caching
-
-### 🔗 Link Validation
-
-- **Automatic scanning** - Validates all documentation links
-- **Anchor checking** - Verifies headings and sections exist
-- **Component links** - Checks links in MDX components
-- **CI/CD integration** - Fail builds on broken links
-
-### 🔍 SEO & Metadata
-
-- **Dynamic OG images** - Custom images for every page
-- **Rich metadata** - Complete SEO tags and structured data
-- **Social sharing** - Optimized for Twitter, LinkedIn, Slack
-- **AI crawlers** - Special rules for GPTBot, ClaudeBot, etc.
-
-### 📊 Mermaid Diagrams
-
-- **Multiple diagram types** - Flowcharts, sequences, classes, ER diagrams
-- **Theme-aware** - Automatically adapts to light/dark mode
-- **Interactive** - Clickable elements and tooltips
-- **Simple syntax** - Markdown-like diagram definition
-
-### 🧮 Math Equations
-
-- **KaTeX rendering** - Fast, beautiful mathematical notation
-- **Inline & block** - Support for both inline $x^2$ and display equations
-- **LaTeX syntax** - Familiar TeX/LaTeX commands
-- **Self-contained** - No external dependencies or fonts
-
-### 🎯 Built With
-
-- [Next.js 15](https://nextjs.org) - Application framework
-- [Fumadocs](https://fumadocs.dev) - Documentation framework
-- [Puppeteer](https://pptr.dev) - PDF generation
-- [MDX](https://mdxjs.com) - Enhanced markdown
-
-## 📚 Documentation Sections
-
-### Features
-
-Detailed guides for each major feature:
-
-- [PDF Export](/docs/features/pdf-export) - Complete PDF export guide
-- [AI Integration](/docs/features/ai-integration) - Comprehensive AI/LLM integration
-- [llms-full.txt Format](/docs/features/llms-full-format) - Structured format specification
-- [RSS Feeds](/docs/features/rss-feeds) - Subscribe to documentation updates
-- [Link Validation](/docs/features/link-validation) - Ensure all links are correct
-- [SEO & Metadata](/docs/features/seo-metadata) - Rich metadata and Open Graph images
-- [Mermaid Diagrams](/docs/features/mermaid) - Create beautiful diagrams with simple syntax
-- [Math Equations](/docs/features/math) - Render beautiful equations with KaTeX
+- [Features Overview](/docs/features/overview)
+- [Reader](/docs/features/reader)
+- [Search & Discovery](/docs/features/search)
+- [Analytics](/docs/features/analytics)
+- [Recommendations](/docs/features/recommendations)
 
 ### Guides
 
-Practical how-to guides:
+- [Getting Started](/docs/guides/getting-started)
+- [Workflow Reference](/docs/guides/workflow-reference)
+- [Data Explorer](/docs/guides/data-explorer)
+- [Deployment](/docs/guides/deployment)
 
-- [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints
-- [Testing Guide](/docs/guides/testing) - Verify your setup
+### Development
 
-## 🎨 Philosophy
+- [Architecture](/docs/development/architecture)
+- [Runtime Authority](/docs/development/runtime-authority)
+- [Search Architecture](/docs/development/search-architecture)
+- [Contributing](/docs/development/contributing)
 
-This documentation is designed to be:
-
-- **User-friendly** - Clear, concise, and well-organized
-- **Developer-friendly** - Code examples and technical details
-- **AI-friendly** - Structured formats and multiple access patterns
-- **Performance-optimized** - Static generation and smart caching
-
-## 🔗 Quick Links
+## Reference Surfaces
 
 <Cards>
-  <Card title="GitHub Repository" description="View source code and contribute" href="https://github.com/wyattowalsh/ai-web-feeds" />
-  <Card title="Fumadocs Guide" description="Learn more about Fumadocs" href="https://fumadocs.dev/docs" />
-  <Card title="Next.js Docs" description="Next.js documentation" href="https://nextjs.org/docs" />
-  <Card title="llms.txt Spec" description="Standard for AI-readable docs" href="https://llmstxt.org" />
+  <Card title="GitHub Repository" description="View source code, issues, and contribution workflow." href="https://github.com/wyattowalsh/ai-web-feeds" />
+  <Card title="LLM Reference" description="Use /llms-full.txt for machine-readable project context." href="/llms-full.txt" />
+  <Card title="Quick Reference" description="Find the main commands, routes, and setup shortcuts." href="/docs/guides/quick-reference" />
 </Cards>
-
-## 🤝 Contributing
-
-We welcome contributions! See our [Contributing Guide](https://github.com/wyattowalsh/ai-web-feeds/blob/main/CONTRIBUTING.md) for details.
-
-## 📝 License
-
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/wyattowalsh/ai-web-feeds/blob/main/LICENSE) file for details.

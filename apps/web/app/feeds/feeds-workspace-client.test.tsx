@@ -182,7 +182,7 @@ describe("FeedsWorkspaceClient", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Browse posts across the full feed corpus" }),
+      screen.getByRole("heading", { name: "Latest AI posts from across the open web" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Agent systems roundup")).toBeInTheDocument();
     expect(screen.getAllByText("Fresh research notes").length).toBeGreaterThan(0);
@@ -332,8 +332,8 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(await screen.findByText("Article corpus unavailable")).toBeInTheDocument();
-    expect(screen.getByText(/The article corpus has not been built yet/)).toBeInTheDocument();
+    expect(await screen.findByText("Posts unavailable right now")).toBeInTheDocument();
+    expect(screen.getByText(/Latest posts are not available yet/)).toBeInTheDocument();
   });
 
   it("adds recovery links when the current reader slice returns no visible posts", async () => {
@@ -382,13 +382,13 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(await screen.findByText("No posts match this slice")).toBeInTheDocument();
+    expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
       "/?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
       "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
@@ -417,7 +417,7 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Narrow the catalog" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Browse sources" })).toBeInTheDocument();
     expect(screen.getByText("Agent Feed")).toBeInTheDocument();
     expect(screen.getByText("ML Digest")).toBeInTheDocument();
   });

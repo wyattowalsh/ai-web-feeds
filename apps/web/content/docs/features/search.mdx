@@ -1,12 +1,13 @@
 ---
 title: Search & Discovery
-description: Reader-first article browse plus catalog discovery inside the unified /feeds workspace
+description: Reader-first article browse plus catalog discovery inside the canonical / workspace with /?mode=catalog for source refinement
 ---
 
 # Search & Discovery
 
-The Search & Discovery experience lives inside the unified `/feeds` workspace
-and now answers two different questions from one route:
+The Search & Discovery experience lives inside the canonical reader route `/`
+and its explicit catalog submode `/?mode=catalog`. It answers two different
+questions from one workspace:
 
 - **What should I read now?** Browse and search the generated article corpus.
 - **Which sources should shape that queue?** Switch to catalog mode and refine
@@ -14,10 +15,11 @@ and now answers two different questions from one route:
 
 ## Workspace model
 
-`/feeds` is now the default reader-first route.
+`/` is now the default reader-first route.
 
-- `/feeds` opens the article workspace
-- `/feeds?mode=catalog` opens the explicit source picker
+- `/` opens the article workspace
+- `/?mode=catalog` opens the explicit source picker
+- `/feeds` remains available as a compatibility route into the same workspace state
 - legacy `mode=articles` and `mode=reader` URLs still normalize into the same
   reader-first workspace state
 
@@ -48,7 +50,7 @@ Use catalog mode when you want to:
 
 - filter feeds by source type, topic, or verification state
 - pin one or more feed IDs into the article workspace
-- move from source discovery into the reader without leaving `/feeds`
+- move from source discovery into the reader without leaving the canonical workspace
 
 This keeps source discovery available even if the runtime corpus has not been
 generated yet.
@@ -104,12 +106,12 @@ BACKEND_URL=http://localhost:8000
 
 ### Web Interface
 
-Navigate to `/feeds`:
+Navigate to `/`:
 
 1. Type a query in the workspace search bar
 2. Keep or adjust the shared source-type, topic, verified, and pinned-feed filters
 3. Press Enter to refresh the article list, or use autocomplete suggestions
-4. Switch to `mode=catalog` when you need to change the source slice
+4. Switch to `/?mode=catalog` when you need to change the source slice
 5. Use `Refresh latest` when you want a non-destructive live overlay on top of the corpus
 
 **Keyboard Shortcuts**:
@@ -156,7 +158,7 @@ const suggestions = await fetch("/api/search/autocomplete?prefix=mach");
 
 ## Zero Results Handling
 
-When no article or catalog results are found inside `/feeds`, the UI now
+When no article or catalog results are found inside the canonical reader workspace, the UI now
 offers direct recovery actions instead of leaving the user at a dead end.
 
 - reset to the full catalog when a feed slice is over-constrained
@@ -173,14 +175,15 @@ The UI still reinforces the broader guidance of:
 
 ## Success Criteria
 
-- ✅ Reader-first `/feeds` works without a required Python HTTP backend
+- ✅ Reader-first `/` works without a required Python HTTP backend
 - ✅ Article browse and article search run across the generated corpus
-- ✅ Source results can jump directly into the article workspace within `/feeds`
+- ✅ Source results can jump directly into the article workspace inside the canonical route model
+- ✅ `/feeds` remains available as a compatibility entry point
 - ✅ Autocomplete suggestions are built from the same catalog/corpus model used by the reader
 
 ## Related
 
 - [Analytics Dashboard](./analytics) - View search analytics and popular queries
-- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/feeds`
+- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/`
 - [Recommendations](./recommendations) - AI-powered feed suggestions
 - [Search architecture](/docs/development/search-architecture) - Runtime and local search split

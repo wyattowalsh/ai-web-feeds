@@ -356,7 +356,7 @@ export function FeedCatalog({
       <div className="surface-card space-y-6 xl:sticky xl:top-24 xl:z-10">
         <div>
           <p className="metric-label">Filters</p>
-          <h2 className="mt-2 text-title-medium font-semibold text-(--ink)">Narrow the catalog</h2>
+          <h2 className="mt-2 text-title-medium font-semibold text-(--ink)">Browse sources</h2>
         </div>
 
         <div>

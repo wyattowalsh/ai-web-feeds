@@ -25,19 +25,22 @@ test.describe("Route stabilization smoke", () => {
   const publicRoutes = [
     {
       path: "/",
-      text: "Start in `/feeds` to read recent posts, search the generated corpus, refine the source slice, and export it when you are done.",
+      text: "Latest AI posts from across the open web",
+      role: "heading" as const,
     },
     {
       path: "/feeds",
-      text: "Reader-first feeds workspace",
+      text: "Latest AI posts from across the open web",
+      role: "heading" as const,
     },
     {
       path: "/feeds?mode=catalog",
-      text: "Narrow the catalog",
+      text: "Browse sources",
+      role: "heading" as const,
     },
     {
       path: "/docs",
-      text: "Getting Started",
+      text: "Documentation",
       role: "heading" as const,
     },
     {
