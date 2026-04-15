@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+import { buildReaderRouteHref } from "@/lib/reader-routes";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 import { useReaderTimeline } from "@/lib/use-reader-timeline";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
@@ -96,8 +97,7 @@ function buildFeedsWorkspaceHref(
     }
   }
 
-  const nextQuery = nextParams.toString();
-  return nextQuery ? `/feeds?${nextQuery}` : "/feeds";
+  return buildReaderRouteHref(nextParams);
 }
 
 export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
@@ -326,8 +326,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
     }
 
     setParamState(params);
-    const nextQuery = params.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    router.replace(buildFeedsWorkspaceHref(params), { scroll: false });
   };
 
   return (

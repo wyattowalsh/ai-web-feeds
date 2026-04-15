@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, RadioTower, Search as SearchIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,11 @@ import {
   filterByTopic,
   filterByVerified,
 } from "@/lib/feeds-filters";
+import {
+  buildReaderRouteHref,
+  CANONICAL_CATALOG_PATH,
+  CANONICAL_READER_PATH,
+} from "@/lib/reader-routes";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
 interface FeedCatalogProps {
@@ -23,11 +28,6 @@ interface FeedCatalogProps {
   initialSourceType: string | null;
   initialTopic: string | null;
   initialVerified: boolean | null;
-}
-
-function buildFeedsHref(params: URLSearchParams): string {
-  const query = params.toString();
-  return query ? `/feeds?${query}` : "/feeds";
 }
 
 function buildFilteredExportHref(feedIds: string[]): string | null {
@@ -78,7 +78,7 @@ function buildReaderHref({
     params.set("topics", topic);
   }
 
-  return buildFeedsHref(params);
+  return buildReaderRouteHref(params);
 }
 
 function buildScopedSearchHref({
@@ -115,7 +115,7 @@ function buildScopedSearchHref({
     params.set("verified", String(verified));
   }
 
-  return buildFeedsHref(params);
+  return buildReaderRouteHref(params);
 }
 
 function buildFeedArticleSearchHref(feed: FeedSource): string {
@@ -132,7 +132,7 @@ function buildFeedArticleSearchHref(feed: FeedSource): string {
     params.set("verified", "true");
   }
 
-  return buildFeedsHref(params);
+  return buildReaderRouteHref(params);
 }
 
 function buildFeedReaderHref({
@@ -159,7 +159,7 @@ function buildFeedReaderHref({
     params.set("verified", String(verified));
   }
 
-  return buildFeedsHref(params);
+  return buildReaderRouteHref(params);
 }
 
 function buildActiveFilterSummary({
@@ -201,7 +201,6 @@ export function FeedCatalog({
   initialTopic,
   initialVerified,
 }: FeedCatalogProps) {
-  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -240,8 +239,10 @@ export function FeedCatalog({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("verified");
     const nextQuery = params.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [hasVerificationSignals, pathname, router, searchParams]);
+    router.replace(nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH, {
+      scroll: false,
+    });
+  }, [hasVerificationSignals, router, searchParams]);
 
   const setParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -256,7 +257,9 @@ export function FeedCatalog({
     }
 
     const nextQuery = params.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    router.replace(nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH, {
+      scroll: false,
+    });
   };
 
   // Get all topics from feeds
@@ -325,7 +328,7 @@ export function FeedCatalog({
       }),
     [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
   );
-  const resetCatalogHref = "/feeds?mode=catalog";
+  const resetCatalogHref = CANONICAL_CATALOG_PATH;
   const browsePostsHref = useMemo(
     () =>
       buildReaderHref({

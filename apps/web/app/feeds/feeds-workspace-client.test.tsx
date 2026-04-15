@@ -12,7 +12,6 @@ const { replaceMock, useSearchParamsMock, useArticleStateMock, useReaderPreferen
 let currentSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/feeds",
   useRouter: () => ({ replace: replaceMock }),
   useSearchParams: () => useSearchParamsMock(),
 }));
@@ -386,12 +385,12 @@ describe("FeedsWorkspaceClient", () => {
     expect(await screen.findByText("No posts match this slice")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1",
+      "/?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/feeds");
+    expect(screen.getByRole("link", { name: "Reset workspace" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 

@@ -205,18 +205,18 @@ describe("ReaderPageClient", () => {
     expect(screen.getByRole("heading", { name: "Reader stream" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Catalog" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24",
+      "/?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24",
     );
     expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24&mode=articles",
+      "/?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=source&stream=all&cursor=24&mode=articles",
     );
 
     fireEvent.change(screen.getByLabelText("Sort"), {
       target: { value: "oldest" },
     });
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=oldest&stream=all&cursor=24",
+      "/?source_type=blog&topics=agents&verified=true&q=roundup&reader_view=bookmarked&reader_sort=oldest&stream=all&cursor=24",
       { scroll: false },
     );
   });
@@ -227,19 +227,19 @@ describe("ReaderPageClient", () => {
     fireEvent.change(screen.getByLabelText("Feed"), {
       target: { value: "feed-2" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/?feed=feed-2", { scroll: false });
 
     fireEvent.change(screen.getByLabelText("Filter visible articles"), {
       target: { value: "newsletter" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter", {
+    expect(replaceMock).toHaveBeenLastCalledWith("/?feed=feed-2&q=newsletter", {
       scroll: false,
     });
 
     fireEvent.change(screen.getByLabelText("Sort"), {
       target: { value: "source" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/reader?feed=feed-2&q=newsletter&sort=source", {
+    expect(replaceMock).toHaveBeenLastCalledWith("/?feed=feed-2&q=newsletter&sort=source", {
       scroll: false,
     });
 
@@ -247,7 +247,7 @@ describe("ReaderPageClient", () => {
       target: { value: "all" },
     });
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/reader?feed=feed-2&q=newsletter&sort=source&stream=all",
+      "/?feed=feed-2&q=newsletter&sort=source&stream=all",
       { scroll: false },
     );
   });
@@ -264,11 +264,11 @@ describe("ReaderPageClient", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Catalog" })).toHaveAttribute(
       "href",
-      "/feeds?feed=feed-1&source_type=blog&q=roundup",
+      "/?feed=feed-1&source_type=blog&q=roundup",
     );
     expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute(
       "href",
-      "/feeds?feed=feed-1&source_type=blog&q=roundup&mode=articles",
+      "/?feed=feed-1&source_type=blog&q=roundup&mode=articles",
     );
   });
 

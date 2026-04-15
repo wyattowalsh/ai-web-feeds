@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Archive,
   ArrowUpRight,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
-import type { FeedsWorkspaceInitialBrowse, FeedsWorkspaceInitialState } from "./page";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -27,9 +26,13 @@ import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { getTopics } from "@/lib/feeds-filters";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
+import {
+  type FeedsWorkspaceInitialBrowse,
+  type FeedsWorkspaceInitialState,
+  type FeedsWorkspaceMode,
+} from "@/lib/reader-route";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
-
-export type FeedsWorkspaceMode = "catalog" | "reader";
 
 type FeedStats = {
   total: number;
@@ -196,7 +199,6 @@ function buildOpmlExportHref(state: {
 }
 
 function buildReaderHref(
-  pathname: string,
   state: {
     query: string;
     sourceType: string | null;
@@ -255,7 +257,7 @@ function buildReaderHref(
   }
 
   const nextQuery = params.toString();
-  return nextQuery ? `${pathname}?${nextQuery}` : pathname;
+  return nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH;
 }
 
 function matchesFeedSlice(
@@ -450,13 +452,11 @@ function ReaderWorkspace({
   initialBrowse: FeedsWorkspaceInitialBrowse;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { preferences, update } = useReaderPreferences();
   const initialParamsString = useMemo(
     () =>
       buildReaderHref(
-        pathname,
         {
           query: initialState.query,
           sourceType: initialState.sourceType,
@@ -469,7 +469,7 @@ function ReaderWorkspace({
         },
         {},
       ),
-    [initialState, pathname],
+    [initialState],
   );
 
   const [queryDraft, setQueryDraft] = useState(initialState.query);
@@ -687,7 +687,7 @@ function ReaderWorkspace({
     : DEFAULT_ARTICLE_STATE;
 
   const updateUrl = (overrides: Record<string, string | string[] | null | undefined>) => {
-    const nextHref = buildReaderHref(pathname, currentState, overrides);
+    const nextHref = buildReaderHref(currentState, overrides);
     router.replace(nextHref, { scroll: false });
   };
 
@@ -782,13 +782,13 @@ function ReaderWorkspace({
     currentState.feedIds.length > 0 ||
     currentState.verified !== null ||
     currentState.sort !== "latest";
-  const clearArticleFiltersHref = buildReaderHref(pathname, currentState, {
+  const clearArticleFiltersHref = buildReaderHref(currentState, {
     q: null,
     reader_view: null,
     cursor: null,
   });
-  const resetWorkspaceHref = pathname;
-  const catalogRecoveryHref = buildReaderHref(pathname, currentState, {
+  const resetWorkspaceHref = CANONICAL_READER_PATH;
+  const catalogRecoveryHref = buildReaderHref(currentState, {
     mode: "catalog",
     q: null,
     reader_view: null,
@@ -818,7 +818,7 @@ function ReaderWorkspace({
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href={buildReaderHref(pathname, currentState, { mode: "catalog" })}
+              href={buildReaderHref(currentState, { mode: "catalog" })}
               className={cn(buttonVariants({ variant: "outline" }))}
             >
               Open catalog
@@ -865,7 +865,7 @@ function ReaderWorkspace({
             {refreshing ? "Refreshing..." : "Refresh latest"}
           </Button>
           <Link
-            href={buildReaderHref(pathname, currentState, { mode: "catalog" })}
+            href={buildReaderHref(currentState, { mode: "catalog" })}
             className={cn(buttonVariants({ variant: "secondary" }))}
           >
             Catalog
@@ -1062,7 +1062,7 @@ function ReaderWorkspace({
           </div>
         </aside>
 
-        <section className="surface-card space-y-5">
+        <section id="article-list" className="surface-card space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="metric-label">Article list</p>

@@ -11,6 +11,7 @@ import { AnalyticsFilters } from "@/components/analytics/analytics-filters";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
+import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 type AnalyticsPageClientProps = {
   backendConfigured?: boolean;
@@ -179,7 +180,7 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
           >
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/feeds?mode=catalog"
+                href={CANONICAL_CATALOG_PATH}
                 className={cn(buttonVariants({ variant: "secondary" }))}
               >
                 Open catalog

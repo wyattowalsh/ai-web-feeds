@@ -18,6 +18,7 @@ import {
 } from "@/lib/catalog-types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { buildReaderRouteHref } from "@/lib/reader-routes";
 
 type ExplorerTab = "topics" | "feeds" | "combined";
 
@@ -69,7 +70,7 @@ function buildFeedsHref(options: { feedId?: string; query?: string; topics?: str
     params.set("feed", options.feedId);
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildReaderRouteHref(params);
 }
 
 function ExplorerPageContent() {

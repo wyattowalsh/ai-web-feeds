@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
+import { buildReaderRouteHref } from "@/lib/reader-routes";
 
 interface Recommendation {
   feed: {
@@ -35,7 +36,7 @@ function buildFeedsHref(rec: Recommendation, selectedTopics: string[]): string {
     params.set("q", rec.feed.title);
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildReaderRouteHref(params);
 }
 
 export function RecommendationsPageClient({
@@ -72,9 +73,7 @@ export function RecommendationsPageClient({
       if (!backendConfigured) {
         setLoading(false);
         setRecommendations([]);
-        setUnavailableMessage(
-          "Recommendations require the optional ai-web-feeds backend service.",
-        );
+        setUnavailableMessage("Recommendations require the optional ai-web-feeds backend service.");
         return;
       }
 
@@ -96,7 +95,8 @@ export function RecommendationsPageClient({
 
           if (response.status === 503 || payload?.code === "FEATURE_UNAVAILABLE") {
             setUnavailableMessage(
-              payload?.error || "Recommendations require the optional ai-web-feeds backend service.",
+              payload?.error ||
+                "Recommendations require the optional ai-web-feeds backend service.",
             );
             setRecommendations([]);
             return;

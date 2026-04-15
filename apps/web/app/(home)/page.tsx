@@ -1,29 +1,17 @@
-import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  ArrowRight,
-  BookOpenText,
-  Download,
-  RadioTower,
-  Search,
-  Sparkles,
-  Waypoints,
-} from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
-import { DESIGN_ASSETS } from "@/lib/design-assets";
+import { FeedsWorkspaceClient } from "@/app/feeds/feeds-workspace-client";
+import { loadReaderRouteData, type ReaderPageSearchParams } from "@/lib/reader-route";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 
 export const metadata: Metadata = {
-  title: "AI Web Feeds - Reader-First AI Feeds",
+  title: "AI Web Feeds - Browse AI articles across the open web",
   description:
-    "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
   openGraph: {
-    title: "AI Web Feeds - Reader-First AI Feeds",
+    title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
     url: baseUrl,
     type: "website",
     images: [
@@ -37,238 +25,32 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - Reader-First AI Feeds",
+    title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Start in the reader-first Feeds workspace, narrow source slices, and export clean feed bundles when you are done.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
     images: [`${baseUrl}/og-image.png`],
   },
 };
 
-const coreSteps = [
-  {
-    eyebrow: "Step 1",
-    title: "Open Feeds",
-    description: "Start in the reader-first workspace where the latest posts are already waiting.",
-    href: "/feeds",
-    cta: "Open Feeds",
-    icon: RadioTower,
-  },
-  {
-    eyebrow: "Step 2",
-    title: "Narrow the source slice",
-    description:
-      "Switch to the catalog view when you want to filter by topic, source type, or verification state.",
-    href: "/feeds?mode=catalog",
-    cta: "Browse catalog",
-    icon: Search,
-  },
-  {
-    eyebrow: "Step 3",
-    title: "Export from Feeds",
-    description:
-      "Download the current slice as OPML directly from the Feeds workspace when it is ready to move elsewhere.",
-    href: "/feeds",
-    cta: "Open export actions",
-    icon: Download,
-  },
-] as const;
+type HomePageProps = {
+  searchParams: Promise<ReaderPageSearchParams>;
+};
 
-const supportRoutes = [
-  {
-    title: "Taxonomy",
-    description: "Inspect topic relationships and feed coverage in the graph view.",
-    href: "/explorer",
-    icon: Waypoints,
-  },
-  {
-    title: "Docs",
-    description: "Read setup guides, architecture notes, and workflow references.",
-    href: "/docs",
-    icon: BookOpenText,
-  },
-  {
-    title: "LLM Docs",
-    description: "Use the plain-text project reference when another tool or agent needs context.",
-    href: "/llms-full.txt",
-    icon: Sparkles,
-  },
-] as const;
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const { mode, feeds, stats, initialState, initialBrowse } =
+    await loadReaderRouteData(searchParams);
 
-export default function HomePage() {
-  const heroAsset = DESIGN_ASSETS.home.heroWorkflow;
-  const primarySurfacesAsset = DESIGN_ASSETS.home.primarySurfaces;
   return (
-    <main className="flex flex-1 flex-col">
-      <div className="page-wrap page-stack">
-        <section className="surface-panel space-y-8">
-          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-            <div className="space-y-5">
-              <span className="eyebrow">
-                <Sparkles className="size-3.5" />
-                AI web feed aggregator
-              </span>
-              <div className="space-y-4">
-                <h1 className="hero-title max-w-4xl">
-                  Feeds is the main product. Everything else supports reading, filtering, and
-                  export.
-                </h1>
-                <p className="hero-copy max-w-2xl">
-                  Start in `/feeds` to read recent posts, search the generated corpus, refine the
-                  source slice, and export it when you are done. The rest of the site supports that
-                  flow instead of competing with it.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/feeds"
-                  className={cn(buttonVariants({ variant: "default", size: "lg" }))}
-                >
-                  Open Feeds
-                  <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  href="/feeds?mode=catalog"
-                  className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-                >
-                  Browse catalog
-                </Link>
-                <Link
-                  href="/feeds"
-                  className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
-                >
-                  Export from Feeds
-                </Link>
-              </div>
-            </div>
-
-            <aside className="surface-card-soft space-y-4">
-              <div className="overflow-hidden rounded-[1.75rem] border border-(--line) bg-(--surface) p-3 shadow-sm">
-                <div
-                  className="relative overflow-hidden rounded-[1.25rem] border border-(--line) bg-white/60"
-                  style={{ aspectRatio: `${heroAsset.width} / ${heroAsset.height}` }}
-                >
-                  <Image
-                    src={heroAsset.publicPath}
-                    alt=""
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 30rem, 100vw"
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-              <p className="metric-label">Core workflow</p>
-              <div className="space-y-3 text-sm text-(--ink-muted)">
-                <p>
-                  <span className="font-semibold text-(--ink)">1.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Feeds</span> to narrow the source
-                  list and read the latest posts.
-                </p>
-                <p>
-                  <span className="font-semibold text-(--ink)">2.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">Catalog</span> inside the feeds
-                  workspace when you need a tighter source slice.
-                </p>
-                <p>
-                  <span className="font-semibold text-(--ink)">3.</span> Use{" "}
-                  <span className="font-semibold text-(--ink)">export actions in Feeds</span> when
-                  the chosen set is ready to move elsewhere.
-                </p>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section className="space-y-5">
-          <div className="space-y-3">
-            <span className="eyebrow">Primary surfaces</span>
-            <h2 className="section-heading">The product is the workflow, not the sitemap.</h2>
-            <p className="section-copy">
-              The product flow now stays inside one canonical route: choose sources, search recent
-              activity, then read the latest stream. Docs and exports still exist, but they support
-              the core flow instead of defining it.
-            </p>
-          </div>
-
-          <div className="surface-card-soft overflow-hidden border border-(--line) bg-linear-to-br from-sky-500/10 via-white to-cyan-500/10 p-4">
-            <div
-              className="relative overflow-hidden rounded-[1.5rem] border border-(--line) bg-white/65"
-              style={{
-                aspectRatio: `${primarySurfacesAsset.width} / ${primarySurfacesAsset.height}`,
-              }}
-            >
-              <Image
-                src={primarySurfacesAsset.publicPath}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 72rem, 100vw"
-                className="object-contain"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {coreSteps.map((step) => {
-              const Icon = step.icon;
-              return (
-                <Link
-                  key={`${step.href}:${step.title}`}
-                  href={step.href}
-                  className="surface-card group flex h-full flex-col gap-5 transition duration-150 hover:-translate-y-1"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-3">
-                      <span className="eyebrow">{step.eyebrow}</span>
-                      <h3 className="text-2xl">{step.title}</h3>
-                    </div>
-                    <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong) transition duration-150 group-hover:bg-(--brand) group-hover:text-(--fd-primary-foreground)">
-                      <Icon className="size-5" />
-                    </span>
-                  </div>
-                  <p className="small-note flex-1">{step.description}</p>
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-(--brand-strong)">
-                    {step.cta}
-                    <ArrowRight className="size-4" />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="surface-card flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-4 lg:max-w-[32rem]">
-            <p className="metric-label">Support surfaces</p>
-            <h2 className="text-2xl">Keep context close without splitting the workflow.</h2>
-            <p className="small-note max-w-2xl">
-              Taxonomy inspection, documentation, and machine-readable reference still matter, but
-              they should stay secondary to the main reading and export flow in `/feeds`.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:min-w-[24rem]">
-            {supportRoutes.map((route) => {
-              const Icon = route.icon;
-              return (
-                <Link
-                  key={`${route.href}:${route.title}`}
-                  href={route.href}
-                  className="flex items-start gap-3 rounded-2xl border border-(--line) bg-(--surface) px-4 py-4 transition duration-150 hover:border-(--brand) hover:bg-(--brand-soft)"
-                >
-                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
-                    <Icon className="size-4.5" />
-                  </span>
-                  <span className="space-y-1">
-                    <span className="block text-sm font-semibold text-(--ink)">{route.title}</span>
-                    <span className="small-note block">{route.description}</span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      </div>
-    </main>
+    <div className="page-wrap page-stack">
+      <section className="surface-panel space-y-8">
+        <FeedsWorkspaceClient
+          mode={mode}
+          feeds={feeds}
+          stats={stats}
+          initialState={initialState}
+          initialBrowse={initialBrowse}
+        />
+      </section>
+    </div>
   );
 }
