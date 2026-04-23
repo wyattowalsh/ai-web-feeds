@@ -19,8 +19,8 @@ adds live feed refreshes only as an explicit overlay.
   change the source slice.
 - **Corpus-backed article list** reads normalized article rows from
   `data/articles.generated.json`.
-- **Preview pane** shows sanitized rich summary/content, metadata, and direct
-  article actions.
+- **Preview pane** opens only after an explicit article selection and closes back
+  to a true list-only state.
 - **Local state** keeps read, starred, saved, and archived status on-device.
 - **Reader preferences** store presentation controls such as compact vs card
   layout and summary visibility in browser storage.
@@ -69,13 +69,15 @@ the user explicitly refreshes the current slice. The canonical reader lives at
 
 ## Reader behavior
 
-- the left rail controls query, source type, topics, verification, layout, and
-  reader view
-- the center list shows corpus-backed article results for the current slice
-- the right preview pane shows the selected article summary/content and local
-  reading actions
-- mobile collapses the same model into a stacked flow with filters and preview
-  surfaced inline
+- the left rail holds search, topic/source filters, verification, view, sort,
+  and explicit apply/reset actions
+- the center list stays focused on the corpus-backed article stream
+- the preview starts closed on first render and opens only when the reader asks
+  for details
+- the desktop preview is a non-modal right panel, so the list and filter rail
+  remain clickable while it is open
+- mobile keeps the article list first, moves controls into a disclosure, and
+  shows the selected preview inline under the chosen article card
 
 ## Preview sanitization
 
@@ -103,13 +105,9 @@ feed-supplied HTML verbatim.
 ## Empty states
 
 If `data/articles.generated.json` is missing or empty, the reader shows a
-dedicated corpus-unavailable state with rebuild commands instead of silently
-sampling live feeds.
-
-```bash
-uv run ai-web-feeds corpus refresh
-uv run ai-web-feeds corpus export
-```
+dedicated product-facing snapshot-unavailable state instead of silently
+sampling live feeds or showing operator-oriented CLI guidance in the main
+surface.
 
 ## Related
 

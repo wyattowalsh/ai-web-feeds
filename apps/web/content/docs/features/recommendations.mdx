@@ -8,7 +8,7 @@ description: Backend-backed feed recommendations with topic steering, interactio
 > **Status**: Backend-backed
 > **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
 
-The recommendations page at `/recommendations` is wired to real backend routes and no longer pretends to be fully available in backend-free local mode. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
+The recommendations page at `/recommendations` is wired to real backend routes, but it remains a secondary surface behind the reader and source catalog. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
 
 ## At a Glance
 
@@ -27,7 +27,7 @@ When the backend is available, the page renders:
 - ranked feed recommendations
 - recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
 - topic chips for steering the current slice
-- feed actions for opening a result in `/feeds`, subscribing, or dismissing it
+- feed actions for opening a result in `/?mode=catalog`, subscribing, or dismissing it
 
 ### Personalization Input
 
@@ -49,10 +49,10 @@ The backend stores that feedback, updates the user profile, and uses it to avoid
 If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
 
 - a setup message explaining that personalization is optional
-- a link to `/feeds?mode=catalog`
+- a link to `/?mode=catalog`
 - a link to the deployment guide
 
-That unavailable state is expected behavior in backend-free local development.
+That unavailable state is expected behavior in backend-free local development and should not compete with the reader-first path.
 
 ## Proxy Contract
 

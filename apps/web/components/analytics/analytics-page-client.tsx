@@ -122,18 +122,17 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Feed health, validation cadence, and topic momentum.
+                Secondary analytics for validation and topic momentum.
               </h1>
               <p className="hero-copy max-w-2xl">
-                This view is now structured like a real dashboard surface instead of a placeholder
-                page: cleaner filters, clearer metrics, and chart wrappers that make the analytics
-                feel deliberate and easier to scan.
+                The reader and catalog stay primary. This route is for deployments that also have
+                the optional backend service available.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">What you can inspect here</p>
+            <p className="metric-label">When this route is active</p>
             <div className="grid gap-3 text-sm text-(--ink)">
               <div className="flex items-start gap-3">
                 <RefreshCcw className="mt-0.5 size-4 text-(--brand-strong)" />
@@ -173,9 +172,8 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
             title="Analytics backend unavailable"
             description={backendMessage || unavailableCopy}
             tips={[
-              "Set BACKEND_URL to a running ai-web-feeds backend if you want live analytics.",
-              "The local reader and catalog workflows continue to work without the backend service.",
-              "Advanced analytics pages stay reachable, but this overview intentionally pauses until backend metrics are available.",
+              "The reader and catalog stay primary without the optional backend service.",
+              "Enable live analytics only when this secondary route is needed.",
             ]}
           >
             <div className="flex flex-wrap justify-center gap-3">
