@@ -4,7 +4,8 @@
   "private": true,
   "packageManager": "pnpm@9.12.3",
   "scripts": {
-    "build": "next build",
+    "build": "pnpm build:workers && next build",
+    "build:workers": "tsx scripts/build-workers.ts",
     "dev": "next dev --turbo",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
