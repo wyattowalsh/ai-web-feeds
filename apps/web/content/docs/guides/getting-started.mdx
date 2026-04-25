@@ -141,9 +141,17 @@ If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and ru
 
 ````
 
-See the [Platform Integrations](/docs/features/platform-integrations) guide for more details.
+| Route        | Status | What to expect                                                                                        |
+| ------------ | ------ | ----------------------------------------------------------------------------------------------------- |
+| `/feeds`     | Live   | Primary catalog and subset-selection surface for source-type, topic, verification, and text filtering |
+| `/search`    | Live   | Local-first source and article search with URL-driven filters                                         |
+| `/reader`    | Live   | Built-in reader over recent posts, including saved/starred local views                                |
+| `/explorer`  | Live   | Graph + table catalog browser for topics and feeds                                                    |
+| `/downloads` | Live   | Full-catalog OPML/JSON downloads plus the optional OPML preview and merged timeline                   |
+| `/analytics` | Live   | Local analytics for source counts, topic momentum, freshest sources, and velocity                     |
+| `/docs`      | Live   | Fumadocs site, including `/llms.txt`, `/llms-full.txt`, and markdown routes                           |
 
-### Monitoring Feed Health
+## Recommended Next Steps
 
 Set up regular health checks:
 
@@ -289,9 +297,7 @@ Now that you're set up, you can:
 
 ## Resources
 
-- [Feature Overview](/docs/features) - Comprehensive feature list
-- [CLI Reference](/docs/development/cli) - Command-line interface guide
-- [Python API](/docs/development/python-api) - Programmatic usage
-- [Analytics Guide](/docs/guides/analytics) - Advanced analytics
-
-Happy feed aggregating! 🚀
+- [Feature Overview](/docs/features/overview)
+- [CLI Usage](/docs/development/cli)
+- [Python API](/docs/development/python-api)
+- [Workflow Quick Reference](/docs/guides/workflow-reference)

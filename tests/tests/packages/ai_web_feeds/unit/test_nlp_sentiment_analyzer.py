@@ -129,6 +129,18 @@ class TestSentimentAnalyzer:
 
         assert result is None
 
+    def test_analyze_short_body_ignores_long_title(self, analyzer):
+        """Minimum-length gating should be based on body text, not padded titles."""
+        article = {
+            "id": 99,
+            "title": "A" * 300,
+            "content": "Short body.",
+        }
+
+        result = analyzer.analyze_sentiment(article)
+
+        assert result is None
+
     def test_sentiment_score_range(self, analyzer, positive_article):
         """Test sentiment score is within valid range"""
         analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.95}]
@@ -182,6 +194,20 @@ class TestSentimentAnalyzer:
         call_args = analyzer.pipeline.call_args[0][0]
         assert len(call_args) <= 2000  # Max 2000 chars
 
+    def test_offline_initialization_uses_local_files_only(self, monkeypatch):
+        """Offline mode should request local-only transformer loading."""
+        monkeypatch.setenv("AIWF_OFFLINE", "1")
+
+        with patch("ai_web_feeds.nlp.sentiment_analyzer.pipeline") as mock_pipeline:
+            mock_pipe = MagicMock()
+            mock_pipeline.return_value = mock_pipe
+
+            analyzer = SentimentAnalyzer()
+
+        assert analyzer.pipeline is mock_pipe
+        kwargs = mock_pipeline.call_args.kwargs
+        assert kwargs["model_kwargs"]["local_files_only"] is True
+
     def test_model_name_in_result(self, analyzer, positive_article):
         """Test model name is included in result"""
         analyzer.pipeline.return_value = [{"label": "POSITIVE", "score": 0.85}]
@@ -200,6 +226,14 @@ class TestSentimentAnalyzer:
         assert "confidence" in result
         assert 0.0 <= result["confidence"] <= 1.0
         assert result["confidence"] == 0.88
+
+    def test_invalid_pipeline_payload_returns_none(self, analyzer, positive_article):
+        """Malformed pipeline payloads should fail safely."""
+        analyzer.pipeline.return_value = [{"label": "POSITIVE"}]
+
+        result = analyzer.analyze_sentiment(positive_article)
+
+        assert result is None
 
 
 class TestSentimentEdgeCases:

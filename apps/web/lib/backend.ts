@@ -4,6 +4,8 @@
  * Shared utilities for calling the Python backend, handling URLs, and standardizing error responses.
  */
 
+import { getRequiredBackendUrl } from "@/lib/env";
+
 export class BackendError extends Error {
   constructor(
     public status: number,
@@ -30,7 +32,6 @@ export function getBackendUrl(): string {
   if (!url) {
     throw new BackendConfigurationError("BACKEND_URL environment variable not configured");
   }
-  return url;
 }
 
 export function buildBackendUrl(

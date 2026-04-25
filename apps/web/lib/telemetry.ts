@@ -1,6 +1,12 @@
+import "server-only";
 import { createHash } from "node:crypto";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
-import { dirname, isAbsolute, resolve } from "node:path";
+import { dirname } from "node:path";
+import { getTelemetryDirectory, getTelemetrySalt } from "@/lib/server-env";
+
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
+  throw new Error("lib/telemetry.ts is server-only");
+}
 
 export type ApiTelemetryEvent = {
   requestId: string;
@@ -56,18 +62,24 @@ export type TelemetrySummary = {
   auditEvents: AdminAuditEvent[];
 };
 
-const DEFAULT_TELEMETRY_DIR = "../../data/telemetry";
+export type TelemetryStore = {
+  recordApiTelemetry(event: ApiTelemetryEvent): Promise<void>;
+  recordAdminAudit(event: AdminAuditEvent): Promise<void>;
+  listApiTelemetryEvents(options?: {
+    limit?: number;
+    routeKey?: string;
+    status?: "error" | "success";
+    windowHours?: number;
+  }): Promise<ApiTelemetryEvent[]>;
+  listAdminAuditEvents(limit?: number): Promise<AdminAuditEvent[]>;
+  getApiTelemetrySummary(windowHours?: number): Promise<TelemetrySummary>;
+};
+
 const API_EVENTS_FILE = "api-events.ndjson";
 const ADMIN_AUDIT_FILE = "admin-audit.ndjson";
 
 function resolveTelemetryDir(): string {
-  const configured = process.env.AIWF_TELEMETRY_DIR?.trim();
-
-  if (!configured) {
-    return resolve(process.cwd(), DEFAULT_TELEMETRY_DIR);
-  }
-
-  return isAbsolute(configured) ? configured : resolve(process.cwd(), configured);
+  return getTelemetryDirectory();
 }
 
 function getApiEventsFile(): string {

@@ -20,9 +20,10 @@ from typing import Any, cast
 from loguru import logger
 from sqlmodel import Session, select
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import get_settings
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
+    CurationStatus,
     FeedSource,
     FeedValidationResult,
     TopicStats,
@@ -50,6 +51,7 @@ def calculate_summary_metrics(
         session: Database session
         date_range: Time range: "7d", "30d", "90d"
         topic: Optional topic filter
+        date_range_days: Legacy compatibility day-count input
 
     Returns:
         Dictionary with summary metrics:

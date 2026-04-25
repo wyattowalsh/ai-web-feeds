@@ -1,22 +1,34 @@
-"""NLP commands for Phase 5: Advanced AI/NLP Features."""
+"""NLP commands for advanced AI/NLP maintenance workflows."""
 
+from __future__ import annotations
+
+from importlib import import_module
 from typing import Optional
 
 import typer
 from loguru import logger
-from rich.console import Console
 from rich.table import Table
+from sqlmodel import func, select
 
-# Import NLP components
-from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
-from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
-from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
-from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
-from ai_web_feeds.nlp.scheduler import NLPScheduler
+from ai_web_feeds.cli.support import ExitCode, console
+from ai_web_feeds.config import get_settings, resolve_runtime_database_url
+from ai_web_feeds.models import ArticleQualityScore, FeedEntry
+from ai_web_feeds.storage import DatabaseManager
 
-app = typer.Typer(help="Advanced AI/NLP features (Phase 5)")
-console = Console()
+app = typer.Typer(help="NLP maintenance and batch job commands", no_args_is_help=True)
+
+
+def _require_symbol(module_path: str, symbol_name: str):
+    """Import a runtime-heavy NLP symbol only when a command executes."""
+    try:
+        module = import_module(module_path)
+        return getattr(module, symbol_name)
+    except ImportError as exc:
+        console.print(
+            "[red]Required NLP dependencies are not available.[/red] "
+            f"Unable to import {symbol_name} from {module_path}: {exc}"
+        )
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
 
 
 @app.command("quality")
@@ -31,15 +43,16 @@ def run_quality_scoring(
     """Run quality scoring batch job on unprocessed articles.
 
     Examples:
-        aiwebfeeds nlp quality
-        aiwebfeeds nlp quality --batch-size 50
-        aiwebfeeds nlp quality --force
+        ai-web-feeds nlp quality
+        ai-web-feeds nlp quality --batch-size 50
+        ai-web-feeds nlp quality --force
     """
     console.print("[bold blue]Quality Scoring Batch Job[/bold blue]")
     console.print()
 
     try:
-        settings = Settings()
+        settings = get_settings()
+        QualityBatchJob = _require_symbol("ai_web_feeds.nlp.jobs.quality_job", "QualityBatchJob")
         job = QualityBatchJob(settings)
 
         console.print(
@@ -68,7 +81,7 @@ def run_quality_scoring(
     except Exception as e:
         console.print(f"[red]✗ Quality scoring failed: {e}[/red]")
         logger.error(f"Quality scoring error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e
 
 
 @app.command("entities")
@@ -81,15 +94,16 @@ def run_entity_extraction(
     """Run entity extraction batch job using spaCy NER (Phase 5B).
 
     Examples:
-        aiwebfeeds nlp entities
-        aiwebfeeds nlp entities --batch-size 25
-        aiwebfeeds nlp entities --force
+        ai-web-feeds nlp entities
+        ai-web-feeds nlp entities --batch-size 25
+        ai-web-feeds nlp entities --force
     """
     console.print("[bold blue]Entity Extraction Batch Job[/bold blue]")
     console.print()
 
     try:
-        settings = Settings()
+        settings = get_settings()
+        EntityBatchJob = _require_symbol("ai_web_feeds.nlp.jobs.entity_job", "EntityBatchJob")
         job = EntityBatchJob(settings)
 
         console.print(
@@ -118,7 +132,7 @@ def run_entity_extraction(
     except Exception as e:
         console.print(f"[red]✗ Entity extraction failed: {e}[/red]")
         logger.error(f"Entity extraction error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e
 
 
 @app.command("sentiment")
@@ -131,15 +145,18 @@ def run_sentiment_analysis(
     """Run sentiment analysis batch job using DistilBERT (Phase 5C).
 
     Examples:
-        aiwebfeeds nlp sentiment
-        aiwebfeeds nlp sentiment --batch-size 50
-        aiwebfeeds nlp sentiment --force
+        ai-web-feeds nlp sentiment
+        ai-web-feeds nlp sentiment --batch-size 50
+        ai-web-feeds nlp sentiment --force
     """
     console.print("[bold blue]Sentiment Analysis Batch Job[/bold blue]")
     console.print()
 
     try:
-        settings = Settings()
+        settings = get_settings()
+        SentimentBatchJob = _require_symbol(
+            "ai_web_feeds.nlp.jobs.sentiment_job", "SentimentBatchJob"
+        )
         job = SentimentBatchJob(settings)
 
         console.print(
@@ -170,7 +187,7 @@ def run_sentiment_analysis(
     except Exception as e:
         console.print(f"[red]✗ Sentiment analysis failed: {e}[/red]")
         logger.error(f"Sentiment analysis error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e
 
 
 @app.command("topics")
@@ -186,15 +203,16 @@ def run_topic_modeling(
     Discovers subtopics within parent topics and tracks evolution.
 
     Examples:
-        aiwebfeeds nlp topics
-        aiwebfeeds nlp topics --topic "Machine Learning"
-        aiwebfeeds nlp topics --force --min-articles 20
+        ai-web-feeds nlp topics
+        ai-web-feeds nlp topics --topic "Machine Learning"
+        ai-web-feeds nlp topics --force --min-articles 20
     """
     console.print("[bold blue]Topic Modeling Batch Job[/bold blue]")
     console.print()
 
     try:
-        settings = Settings()
+        settings = get_settings()
+        TopicModelingJob = _require_symbol("ai_web_feeds.nlp.jobs.topic_job", "TopicModelingJob")
         job = TopicModelingJob(settings)
 
         console.print(
@@ -224,7 +242,7 @@ def run_topic_modeling(
     except Exception as e:
         console.print(f"[red]✗ Topic modeling failed: {e}[/red]")
         logger.error(f"Topic modeling error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e
 
 
 @app.command("scheduler")
@@ -240,18 +258,19 @@ def manage_scheduler(
     - Topic modeling: monthly (default)
 
     Examples:
-        aiwebfeeds nlp scheduler start
-        aiwebfeeds nlp scheduler stop
-        aiwebfeeds nlp scheduler status
+        ai-web-feeds nlp scheduler start
+        ai-web-feeds nlp scheduler stop
+        ai-web-feeds nlp scheduler status
     """
     if action not in ["start", "stop", "status"]:
         console.print(f"[red]Invalid action: {action}. Use: start, stop, status[/red]")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
 
     console.print(f"[bold blue]NLP Scheduler: {action}[/bold blue]")
 
     try:
-        settings = Settings()
+        settings = get_settings()
+        NLPScheduler = _require_symbol("ai_web_feeds.nlp.scheduler", "NLPScheduler")
         scheduler = NLPScheduler(settings)
 
         if action == "start":
@@ -276,11 +295,18 @@ def manage_scheduler(
     except Exception as e:
         console.print(f"[red]✗ Scheduler {action} failed: {e}[/red]")
         logger.error(f"Scheduler error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e
 
 
 @app.command("stats")
-def show_nlp_stats() -> None:
+def show_nlp_stats(
+    database_url: str | None = typer.Option(
+        None,
+        "--database",
+        "-d",
+        help="Database URL (defaults to AIWF_DATABASE_URL)",
+    ),
+) -> None:
     """Show NLP processing statistics.
 
     Displays:
@@ -291,20 +317,15 @@ def show_nlp_stats() -> None:
     - Topic modeling status
 
     Examples:
-        aiwebfeeds nlp stats
+        ai-web-feeds nlp stats
     """
     console.print("[bold blue]NLP Processing Statistics[/bold blue]")
     console.print()
 
     try:
-        from sqlmodel import Session, func, select
-        from ai_web_feeds.database import get_engine
-        from ai_web_feeds.models import ArticleQualityScore, FeedEntry
-
-        settings = Settings()
-        engine = get_engine(settings)
-
-        with Session(engine) as session:
+        resolved_database_url = resolve_runtime_database_url(database_url)
+        db = DatabaseManager(resolved_database_url)
+        with db.get_session() as session:
             # Total articles
             total = session.exec(select(func.count(FeedEntry.id))).one()
 
@@ -346,7 +367,7 @@ def show_nlp_stats() -> None:
             "Quality Scoring",
             f"{quality_processed}/{total}",
             coverage(quality_processed, total),
-            f"{avg_quality:.1f}" if avg_quality else "N/A",
+            f"{avg_quality:.1f}" if avg_quality is not None else "N/A",
         )
         table.add_row(
             "Entity Extraction",
@@ -372,4 +393,4 @@ def show_nlp_stats() -> None:
     except Exception as e:
         console.print(f"[red]✗ Failed to fetch NLP stats: {e}[/red]")
         logger.error(f"NLP stats error: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from e

@@ -1,6 +1,6 @@
 ---
 title: llms-full.txt Format
-description: Detailed specification of the enhanced llms-full.txt structured format
+description: Current section-aware llms-full.txt structure, page metadata fields, and parsing expectations for the live docs corpus
 icon: FileCode
 ---
 
@@ -14,7 +14,7 @@ The `/llms-full.txt` endpoint provides a comprehensive, structured format optimi
 The enhanced format includes:
 
 - **Metadata header** with generation info
-- **Table of contents** for navigation
+- **Section-aware table of contents** for navigation
 - **Structured page sections** with clear separators
 - **Individual metadata** for each page
 - **AI-friendly formatting** for easy parsing
@@ -109,11 +109,17 @@ NAVIGATION
 --------------------------------------------------------------------------------
 Table of Contents:
 
-  1. Getting Started - /docs
-  2. PDF Export - /docs/features/pdf-export
-  3. AI Integration - /docs/features/ai-integration
-  4. Testing Guide - /docs/guides/testing
-  5. Quick Reference - /docs/guides/quick-reference
+  [Documentation]
+    1. Getting Started - /docs
+    2. Security Policy - /docs/security
+
+  [Features]
+    3. PDF Export - /docs/features/pdf-export
+    4. AI & LLM Integration - /docs/features/ai-integration
+
+  [Guides]
+    5. Getting Started - /docs/guides/getting-started
+    6. Quick Reference - /docs/guides/quick-reference
 
 ================================================================================
 DOCUMENTATION CONTENT
@@ -130,16 +136,23 @@ PAGE 1 OF 5
 ================================================================================
 
 TITLE: Getting Started
-URL: https://yourdomain.com/docs
-MARKDOWN: https://yourdomain.com/docs.mdx
-DESCRIPTION: Quick start guide for AI Web Feeds
-PATH: /
+URL: https://yourdomain.com/docs/guides/getting-started
+MARKDOWN: https://yourdomain.com/docs/guides/getting-started.mdx
+DESCRIPTION: Install ai-web-feeds, initialize the local data workflow, and launch the docs app with the repository-approved toolchain.
+SECTION: Guides
+SECTION_KEY: guides
+PATH: /docs/guides/getting-started
 
 --------------------------------------------------------------------------------
 CONTENT
 --------------------------------------------------------------------------------
 
 # Getting Started
+
+URL: /docs/guides/getting-started
+MARKDOWN: /docs/guides/getting-started.mdx
+SECTION: Guides
+SUMMARY: Install ai-web-feeds, initialize the local data workflow, and launch the docs app with the repository-approved toolchain.
 
 [Full markdown content of the page...]
 
@@ -150,13 +163,15 @@ END OF PAGE 1
 
 ### Page Metadata Fields
 
-| Field         | Description       | Example                           |
-| ------------- | ----------------- | --------------------------------- |
-| `TITLE`       | Page title        | `Getting Started`                 |
-| `URL`         | Full page URL     | `https://yourdomain.com/docs`     |
-| `MARKDOWN`    | Markdown endpoint | `https://yourdomain.com/docs.mdx` |
-| `DESCRIPTION` | Page description  | `Quick start guide...`            |
-| `PATH`        | Relative path     | `/`                               |
+| Field         | Description                 | Example                                                  |
+| ------------- | --------------------------- | -------------------------------------------------------- |
+| `TITLE`       | Page title                  | `Getting Started`                                        |
+| `URL`         | Full page URL               | `https://yourdomain.com/docs/guides/getting-started`     |
+| `MARKDOWN`    | Canonical markdown endpoint | `https://yourdomain.com/docs/guides/getting-started.mdx` |
+| `DESCRIPTION` | Frontmatter summary         | `Install ai-web-feeds...`                                |
+| `SECTION`     | Navigation section title    | `Guides`                                                 |
+| `SECTION_KEY` | Section slug key            | `guides`                                                 |
+| `PATH`        | Public docs path            | `/docs/guides/getting-started`                           |
 
 ## Footer Section
 
@@ -171,7 +186,7 @@ Total pages processed: 5
 Generated: 2025-10-14T12:00:00.000Z
 Format: Plain text with markdown content
 
-For individual pages, append .mdx to any documentation URL.
+For individual pages, append .mdx or .md to any documentation URL.
 For the discovery file, visit /llms.txt
 
 ================================================================================
@@ -191,14 +206,15 @@ For the discovery file, visit /llms.txt
 - **Generation timestamp** - Know when docs were created
 - **Total page count** - Plan context window usage
 - **Base URL** - Resolve relative links
-- **Per-page metadata** - Title, URL, description, path
+- **Per-page metadata** - Title, URL, description, section, and path
 
 ### Multiple Access Patterns
 
 - **Complete documentation** - Single request for all content
-- **Table of contents** - Quick overview of structure
+- **Section-aware table of contents** - Quick overview of structure
 - **Individual pages** - URLs for targeted access
 - **Markdown endpoints** - Source content links
+- **Duplicate-title disambiguation** - Section metadata distinguishes similarly named pages
 
 ### Parser-Friendly
 
@@ -506,5 +522,6 @@ curl -I https://yourdomain.com/llms-full.txt | grep "X-"
 ## Related Documentation
 
 - [AI Integration](/docs/features/ai-integration) - Complete AI/LLM guide
+- [Docs Maintenance Checklist](/docs/contributing/docs-maintenance) - Route and metadata checks after docs changes
 - [Testing Guide](/docs/guides/testing) - Verify your setup
 - [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints

@@ -12,8 +12,11 @@ on:
         type: string
 
 permissions:
-  contents: write
-  pull-requests: read
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   quality-checks:
@@ -22,15 +25,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -48,20 +51,23 @@ jobs:
     name: Build & Publish
     needs: quality-checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for PyPI trusted publishing via GitHub OIDC.
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
         with:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318458e6f4ee6ba0924cf52375e
         with:
           python-version: '3.13'
 
@@ -72,45 +78,55 @@ jobs:
           cd ../../apps/cli
           uv build
 
+      - name: Note tag requirement for publishing
+        if: github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "::notice::workflow_dispatch validates and builds release artifacts only."
+          echo "::notice::PyPI publishing and GitHub release creation still require a v*.*.* tag ref."
+
+      # Trusted publishing relies on GitHub OIDC and repository-side PyPI trust
+      # configuration. These steps only run for tag refs.
       - name: Publish to PyPI (ai_web_feeds)
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          cd packages/ai_web_feeds
-          uv publish
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+        with:
+          packages-dir: packages/ai_web_feeds/dist
 
       - name: Publish to PyPI (ai_web_feeds_cli)
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          cd apps/cli
-          uv publish
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+        with:
+          packages-dir: apps/cli/dist
 
+      # Keep the exact built distributions even if publish fails so maintainers can
+      # inspect or retry with the same payload.
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35165aba89db6baf
         with:
           name: dist-packages
           path: |
             packages/ai_web_feeds/dist/*
             apps/cli/dist/*
           retention-days: 30
+          if-no-files-found: error
 
   create-release:
     name: Create GitHub Release
     needs: build-and-publish
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
         with:
           fetch-depth: 0
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: dist-packages
           path: dist/
@@ -138,18 +154,15 @@ jobs:
           ## Installation
 
           \`\`\`bash
-          # Core library
-          pip install ai-web-feeds==$VERSION
-
-          # CLI
-          pip install ai-web-feeds-cli==$VERSION
+          uv add ai-web-feeds==$VERSION
+          uv add ai-web-feeds-cli==$VERSION
           \`\`\`
 
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${VERSION}
           EOF
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.release-notes.outputs.version }}

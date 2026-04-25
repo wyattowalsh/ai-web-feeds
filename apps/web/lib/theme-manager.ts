@@ -56,7 +56,6 @@ export interface ThemeConfig {
   readingWidth: ReadingWidth;
   layout: LayoutMode;
   showImages: boolean;
-  customColors?: Partial<ThemeColors>;
 }
 
 class ThemeManager {
@@ -116,6 +115,8 @@ class ThemeManager {
     // Update document class
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(effectiveTheme);
+    document.documentElement.setAttribute("data-theme-mode", this.currentTheme);
+    document.documentElement.setAttribute("data-theme", effectiveTheme);
 
     // Update meta theme-color
     const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -123,15 +124,12 @@ class ThemeManager {
       metaTheme.setAttribute("content", effectiveTheme === "dark" ? "#1a1a1a" : "#ffffff");
     }
 
-    // Apply CSS variables
-    this.applyCSSVariables(effectiveTheme);
-
     // Notify listeners
     this.listeners.forEach((listener) => listener(effectiveTheme));
   }
 
   /**
-   * Apply CSS variables
+   * Resolve theme-color from the palette authority in global.css.
    */
   private applyCSSVariables(theme: "light" | "dark"): void {
     const root = document.documentElement;

@@ -1,240 +1,190 @@
 ---
 title: CLI Usage
-description: Command-line interface for managing feeds
+description: Current ai-web-feeds command surface, command groups, and common workflows
 ---
+
+import { Callout } from "fumadocs-ui/components/callout";
 
 # CLI Usage
 
-The `aiwebfeeds` CLI provides commands for enrichment, OPML generation, and statistics.
+`ai-web-feeds` is the primary command-line entrypoint for the repository. The
+legacy `aiwebfeeds` binary still exists as a compatibility alias, but the live
+repo defaults to the hyphenated command name in scripts, docs, and examples.
 
-## Installation
+<Callout type="info" title="Invocation pattern">
+  Run the CLI from the repository root with <code>uv run ai-web-feeds ...</code> so the workspace packages resolve consistently.
+</Callout>
+
+## Install and smoke test
 
 ```bash
-# From project root
 uv sync
-uv pip install -e apps/cli
+uv run ai-web-feeds --help
+uv run ai-web-feeds process --help
 ```
 
-## Quick Start
+## Top-level command surface
+
+| Command     | Purpose                                                                | Representative subcommands                                                                                                |
+| ----------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `process`   | End-to-end catalog pipeline                                            | root command with `--skip-validation`, `--skip-enrichment`, `--export/--no-export`                                        |
+| `load`      | Load catalog data into the runtime database                            | `from-yaml`, `all`                                                                                                        |
+| `validate`  | Validate catalog documents, topic references, URLs, and health reports | `feeds`, `topics`, `references`, `all`, `http`, `report`                                                                  |
+| `enrich`    | Enrich feed metadata and write derived assets                          | `all`, `one`                                                                                                              |
+| `export`    | Export YAML catalogs to JSON and OPML                                  | `json`, `opml`, `all`, `csv`                                                                                              |
+| `opml`      | Generate reader-oriented OPML files from stored feed sources           | `all`, `categorized`, `filtered`                                                                                          |
+| `stats`     | Show high-level database statistics                                    | `show`                                                                                                                    |
+| `test`      | Run repository pytest suites through a CLI wrapper                     | `all`, `unit`, `integration`, `e2e`, `coverage`, `quick`, `file`, `debug`, `markers`                                      |
+| `analytics` | Query runtime analytics snapshots and CSV exports                      | `summary`, `trending`, `velocity`, `snapshot`, `export`                                                                   |
+| `search`    | Initialize FTS/trie search, query feeds, and manage saved searches     | `query`, `autocomplete`, `init`, `embeddings`, `save`, `list-saved`                                                       |
+| `recommend` | Generate recommendations and track recommendation events               | `get`, `track`, `weights`                                                                                                 |
+| `monitor`   | Run the monitoring service and manage follows/digests                  | `start`, `stop`, `status`, `follow`, `unfollow`, `list-follows`, `subscribe-digest`, `unsubscribe-digest`, `list-digests` |
+| `visualize` | Render topic taxonomy artifacts directly from `data/topics.yaml`       | `mermaid`, `json`, `stats`                                                                                                |
+| `nlp`       | NLP maintenance commands with runtime-loaded heavy dependencies        | `quality`, `entities`, `sentiment`, `topics`, `scheduler`, `stats`                                                        |
+
+## Core pipeline examples
+
+### Curated catalog pipeline
 
 ```bash
-# 1. Enrich feeds from feeds.yaml
-uv run aiwebfeeds enrich all
-
-# 2. Generate OPML files
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
-
-# 3. View statistics
-uv run aiwebfeeds stats show
-
-# 4. Generate filtered OPML
-uv run aiwebfeeds opml filtered data/nlp-feeds.opml --topic nlp --verified
+uv run ai-web-feeds load from-yaml --input data/feeds.yaml --clear
+uv run ai-web-feeds validate all
+uv run ai-web-feeds enrich all \
+  --input data/feeds.yaml \
+  --output data/feeds.enriched.yaml \
+  --schema data/feeds.enriched.schema.json
+uv run ai-web-feeds export all --input data/feeds.enriched.yaml --output-dir data
+uv run ai-web-feeds opml all --output data/all.opml
+uv run ai-web-feeds opml categorized --output data/categorized.opml
 ```
 
-## Commands
-
-### `enrich` - Enrich Feed Data
-
-Enrich feeds with metadata, discover feed URLs, validate formats, and save to database.
+### Runtime search and recommendations
 
 ```bash
-# Enrich all feeds
-uv run aiwebfeeds enrich all
+uv run ai-web-feeds search init
+uv run ai-web-feeds search query "llm agents" --type full_text --limit 10
+uv run ai-web-feeds search autocomplete llm --limit 8
+uv run ai-web-feeds recommend get --topics llm,agents --limit 10
+```
 
-# Custom paths
-uv run aiwebfeeds enrich all \
+### Test wrappers
+
+```bash
+uv run ai-web-feeds test all --coverage
+uv run ai-web-feeds test unit --fast
+uv run ai-web-feeds test file tests/tests/packages/ai_web_feeds/test_search.py -k semantic
+uv run ai-web-feeds test markers
+```
+
+## Command details
+
+### `process`
+
+Use the root `process` command when you want one command to orchestrate load,
+validation, enrichment, export, and persistence.
+
+```bash
+uv run ai-web-feeds process \
   --input data/feeds.yaml \
   --output data/feeds.enriched.yaml \
   --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/aiwebfeeds.db
-
-# Preview enrichment for one feed
-uv run aiwebfeeds enrich one <feed-id>
+  --database sqlite:///data/ai-web-feeds.db
 ```
 
-**What it does:**
+### `validate`
 
-- Discovers feed URLs from site URLs (if `discover: true`)
-- Detects feed format (RSS, Atom, JSONFeed)
-- Validates feed accessibility
-- Saves to:
-  - `feeds.enriched.yaml` - Enriched YAML with all metadata
-  - `feeds.enriched.schema.json` - JSON schema for validation
-  - `aiwebfeeds.db` - SQLite database
-
-### `opml` - Generate OPML Files
-
-Generate OPML files for feed readers.
+The current validation surface is subcommand-based.
 
 ```bash
-# All feeds (flat list)
-uv run aiwebfeeds opml all --output data/all.opml
-
-# Categorized by source type
-uv run aiwebfeeds opml categorized --output data/categorized.opml
-
-# Filtered OPML
-uv run aiwebfeeds opml filtered <output-file> [OPTIONS]
+uv run ai-web-feeds validate feeds --input data/feeds.yaml --strict
+uv run ai-web-feeds validate topics --input data/topics.yaml --strict
+uv run ai-web-feeds validate references --strict
+uv run ai-web-feeds validate all --strict
+uv run ai-web-feeds validate url "https://example.com/feed.xml" --timeout 30
+uv run ai-web-feeds validate report --recent 20
 ```
 
-**Filter Options:**
+### `export`
 
-- `--topic, -t` - Filter by topic (e.g., nlp, mlops)
-- `--type, -T` - Filter by source type (e.g., blog, podcast)
-- `--tag, -g` - Filter by tag (e.g., official, community)
-- `--verified, -v` - Only include verified feeds
-
-**Examples:**
+`export` works from authored YAML documents, while `opml` works from the runtime
+database.
 
 ```bash
-# NLP-related feeds only
-uv run aiwebfeeds opml filtered data/nlp.opml --topic nlp
-
-# Official blogs
-uv run aiwebfeeds opml filtered data/official-blogs.opml \
-  --type blog \
-  --tag official
-
-# Verified ML podcasts
-uv run aiwebfeeds opml filtered data/ml-podcasts.opml \
-  --topic ml \
-  --type podcast \
-  --verified
+uv run ai-web-feeds export json --input data/feeds.yaml --output data/feeds.json
+uv run ai-web-feeds export opml --input data/feeds.yaml --output data/feeds.opml
+uv run ai-web-feeds export all --input data/feeds.yaml --output-dir data --prefix feeds
 ```
 
-### `stats` - View Statistics
+### `analytics`
 
-Display feed statistics and summaries.
+The live CLI exposes summary, trending, velocity, snapshot, and CSV export
+commands.
 
 ```bash
-uv run aiwebfeeds stats show
+uv run ai-web-feeds analytics summary --date-range 30d
+uv run ai-web-feeds analytics trending --limit 10 --date-range 30d
+uv run ai-web-feeds analytics velocity --granularity weekly --date-range 90d
+uv run ai-web-feeds analytics snapshot
+uv run ai-web-feeds analytics export --output reports/analytics.csv --date-range 30d
 ```
 
-**Example output:**
+### `visualize`
 
-```
-📊 Feed Statistics
-══════════════════════════════════════════════════
-Total Feeds: 150
-Verified: 120 (80.0%)
-
- By Source Type:
-  blog            :  45
-  preprint        :  30
-  podcast         :  20
-  organization    :  15
-  newsletter      :  12
-  video           :  10
-  aggregator      :   8
-  journal         :   5
-  docs            :   3
-  forum           :   2
-══════════════════════════════════════════════════
-```
-
-### `export` - Export Data
-
-Export feed data in various formats (coming soon).
+`visualize` works directly from the authored topic taxonomy and does not depend
+on a separate optional taxonomy package.
 
 ```bash
-uv run aiwebfeeds export json    # Export as JSON
-uv run aiwebfeeds export csv     # Export as CSV
+uv run ai-web-feeds visualize stats --input data/topics.yaml
+uv run ai-web-feeds visualize mermaid --input data/topics.yaml --output taxonomy.mermaid
+uv run ai-web-feeds visualize json --input data/topics.yaml --output taxonomy.json
 ```
 
-### `validate` - Validate Data
+### `nlp`
 
-Validate feed data against schemas (coming soon).
+The `nlp` command group is always registered in CLI help. Runtime-heavy model
+dependencies are imported when a concrete NLP subcommand executes.
 
 ```bash
-uv run aiwebfeeds validate       # Validate feeds.yaml
+uv run ai-web-feeds nlp stats --database sqlite:///data/ai-web-feeds.db
+uv run ai-web-feeds nlp quality --batch-size 50
+uv run ai-web-feeds nlp scheduler status
 ```
 
-## Workflows
+### `monitor`
 
-### Initial Setup
+The `monitor` group uses the unified runtime database resolution and exposes
+`--database` for status, follow, and digest management commands.
 
 ```bash
-# 1. Create or edit data/feeds.yaml with your feed sources
-# 2. Enrich the feeds
-uv run aiwebfeeds enrich all
-
-# 3. Generate OPML files for your feed reader
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
-
-# 4. Check the results
-uv run aiwebfeeds stats show
+uv run ai-web-feeds monitor status --database sqlite:///data/ai-web-feeds.db
+uv run ai-web-feeds monitor follow user-1 test-feed --database sqlite:///data/ai-web-feeds.db
+uv run ai-web-feeds monitor list-digests user-1 --database sqlite:///data/ai-web-feeds.db
 ```
 
-### Adding New Feeds
+`monitor stop` remains a placeholder command and currently returns a
+not-implemented exit code rather than stopping an external process.
+
+## Runtime defaults
+
+- The CLI resolves its database from `AIWF_DATABASE_URL`.
+- The canonical SQLite filename is `data/ai-web-feeds.db`.
+- A legacy `data/aiwebfeeds.db` file is still accepted for backwards
+  compatibility.
 
 ```bash
-# 1. Add feed entries to data/feeds.yaml
-# 2. Re-enrich
-uv run aiwebfeeds enrich all
-
-# 3. Regenerate OPML files
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
+export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
+uv run ai-web-feeds stats show --format json
 ```
 
-### Creating Custom Feed Collections
+## Choosing between the CLI and direct Python calls
 
-```bash
-# Create topic-specific OPML files
-uv run aiwebfeeds opml filtered data/nlp.opml --topic nlp
-uv run aiwebfeeds opml filtered data/mlops.opml --topic mlops
-uv run aiwebfeeds opml filtered data/research.opml --topic research
+Use the CLI when you want reproducible repo workflows, structured command
+output, or automation-friendly commands. Use the Python API when you want to
+compose catalog operations inside your own scripts or notebooks.
 
-# Create type-specific collections
-uv run aiwebfeeds opml filtered data/podcasts.opml --type podcast
-uv run aiwebfeeds opml filtered data/blogs.opml --type blog
+## Related documentation
 
-# Verified feeds only
-uv run aiwebfeeds opml filtered data/verified.opml --verified
-
-# Combine filters for precise collections
-uv run aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
-  --topic nlp \
-  --type blog \
-  --verified
-```
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# Database location
-export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
-
-# Logging
-export AIWF_LOGGING__LEVEL=INFO
-export AIWF_LOGGING__FILE=True
-export AIWF_LOGGING__FILE_PATH=logs/aiwebfeeds.log
-```
-
-### Default File Locations
-
-- Input: `data/feeds.yaml`
-- Output: `data/feeds.enriched.yaml`
-- Schema: `data/feeds.enriched.schema.json`
-- Database: `data/aiwebfeeds.db`
-- OPML: `data/*.opml`
-
-Override with command options (`--input`, `--output`, `--database`, etc.)
-
-## Help
-
-Get help for any command:
-
-```bash
-# General help
-uv run aiwebfeeds --help
-
-# Command-specific help
-uv run aiwebfeeds enrich --help
-uv run aiwebfeeds opml --help
-uv run aiwebfeeds opml filtered --help
-```
+- [Python API](/docs/development/python-api)
+- [Runtime authority](/docs/development/runtime-authority)
+- [Search architecture](/docs/development/search-architecture)
+- [Workflow safety](/docs/development/workflow-safety)

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getSiteBaseUrl } from "@/lib/env";
 import { source } from "@/lib/source";
 
 export default function sitemap(): MetadataRoute.Sitemap {

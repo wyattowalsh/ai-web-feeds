@@ -1,0 +1,77 @@
+---
+title: Docs Maintenance Checklist
+description: Checklist for keeping docs pages, meta.json, and LLM-friendly outputs aligned with the live routes and content tree
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+
+# Docs Maintenance Checklist
+
+Use this checklist whenever you change docs pages, navigation, or anything that affects `/llms.txt`, `/llms-full.txt`, or the markdown route variants.
+
+## Core checklist
+
+<Steps>
+  <Step>
+    Update the page content and frontmatter together.
+
+    - Keep `title` and `description` current.
+    - Prefer descriptions that still make sense when shown out of context in LLM output.
+    - If a route moved, update every example path in the page.
+
+  </Step>
+  <Step>
+    Keep `apps/web/content/docs/meta.json` aligned with the visible docs tree.
+
+    - Add new pages to the correct section.
+    - Remove stale entries when pages move or disappear.
+    - Check for duplicate titles that need stronger descriptions or section context.
+
+  </Step>
+  <Step>
+    Spot-check the LLM-friendly surfaces.
+
+    - `/llms.txt`
+    - `/llms-full.txt`
+    - `/docs/<page>.mdx`
+    - `/docs/<page>.md`
+    - `Accept: text/markdown` on the normal docs URL
+
+  </Step>
+  <Step>
+    Run the docs validation commands.
+
+    ```bash
+    pnpm --dir apps/web build
+    pnpm --dir apps/web lint:links
+    ```
+
+  </Step>
+</Steps>
+
+## Route spot-check matrix
+
+| What changed                   | Minimum spot-check                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Page content only              | Open the page and confirm the updated frontmatter summary reads well in `/llms.txt` or `/llms-full.txt` |
+| Page moved or renamed          | Check the docs URL, `.mdx`, `.md`, and content negotiation path                                         |
+| Navigation/meta change         | Check docs sidebar order plus `/llms.txt` and `/llms-full.txt` section grouping                         |
+| Downloads/explorer/reader docs | Verify the user-facing route still matches the real app surface                                         |
+| LLM route implementation       | Check `/llms.txt`, `/llms-full.txt`, `.mdx`, `.md`, and one negotiated request                          |
+
+## Current repo expectations
+
+- User-facing docs belong in `apps/web/content/docs/*.mdx`.
+- `.mdx` is the canonical explicit markdown route shape for docs pages.
+- `.md` is currently an alias that returns the same markdown payload.
+- `/llms-full.txt` should preserve section context so duplicate titles are still understandable.
+
+<Callout type="info">If you update docs that describe `/reader`, `/explorer`, or `/downloads`, verify the route in the live app first. The docs should describe what exists now, not the intended end state.</Callout>
+
+## Related documentation
+
+- [AI & LLM Integration](/docs/features/ai-integration)
+- [llms-full.txt Format](/docs/features/llms-full-format)
+- [Development Workflow](/docs/contributing/development-workflow)
+- [Contributing](/docs/development/contributing)

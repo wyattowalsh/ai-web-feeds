@@ -11,6 +11,11 @@ Reusable repository-owned custom agents live in this directory.
 
 ## Agents
 
+### `catalog-steward`
+
+Use this agent when a workflow needs to reason from deterministic catalog or feed
+submission artifacts without becoming a mutation authority.
+
 ### `feed-curator`
 
 Use this agent when reviewing or normalizing feed submission issues. It is scoped to

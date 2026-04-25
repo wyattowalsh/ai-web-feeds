@@ -44,12 +44,15 @@ export async function openDB(): Promise<IDBDatabase> {
 
     request.onsuccess = () => {
       dbInstance = request.result;
+      dbInstance.onversionchange = () => {
+        closeDB();
+      };
       resolve(dbInstance);
     };
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      createDatabase(db);
+      createDatabase(db, request.transaction);
     };
   });
 }
@@ -342,10 +345,14 @@ export const preferences = {
     const prefs = await get<Preferences>(STORES.PREFERENCES, "user_prefs");
     return prefs || DEFAULT_PREFERENCES;
   },
-  put: (prefs: Preferences) => put(STORES.PREFERENCES, prefs),
+  put: (prefs: Preferences) => put(STORES.PREFERENCES, normalizePreferences(prefs)),
   async update(updates: Partial<Preferences>): Promise<void> {
     const current = await preferences.get();
-    await put(STORES.PREFERENCES, { ...current, ...updates, updatedAt: Date.now() });
+    const nextUpdatedAt =
+      typeof updates.updatedAt === "number" && Number.isFinite(updates.updatedAt)
+        ? updates.updatedAt
+        : Date.now();
+    await put(STORES.PREFERENCES, { ...current, ...updates, updatedAt: nextUpdatedAt });
   },
 };
 
@@ -366,12 +373,7 @@ export const syncQueue = {
  */
 export async function initializeDB(): Promise<void> {
   await openDB();
-
-  // Ensure default preferences exist
-  const prefs = await preferences.get();
-  if (!prefs.id) {
-    await preferences.put(DEFAULT_PREFERENCES);
-  }
+  await preferences.get();
 }
 
 /**

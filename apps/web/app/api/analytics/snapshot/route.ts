@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAnalyticsSnapshot } from "@/lib/analytics-local";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import {
   BackendConfigurationError,

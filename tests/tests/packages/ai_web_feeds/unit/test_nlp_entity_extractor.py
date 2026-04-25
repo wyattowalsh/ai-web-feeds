@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.entity_extractor import EntityExtractor
+from ai_web_feeds.nlp.entity_extractor import EntityExtractor, ExtractedEntity
 
 
 class TestEntityExtractor:
@@ -77,6 +77,7 @@ class TestEntityExtractor:
         assert len(entities) == 2
         assert entities[0]["text"] == "Ashish Vaswani"
         assert entities[0]["type"] == "person"
+        assert "Vaswani" in entities[0]["context"]
         assert entities[1]["text"] == "Google Brain"
         assert entities[1]["type"] == "organization"
 
@@ -230,6 +231,25 @@ class TestEntityExtractor:
         """Test type inference for organization (not 2-3 words)"""
         result = extractor._infer_type("OpenAI")
         assert result == "organization"
+
+    def test_extracted_entity_legacy_aliases(self):
+        """Legacy callers should still see alias fields on extracted entities."""
+        entity = ExtractedEntity(
+            text="Ashish Vaswani",
+            label="PERSON",
+            start=10,
+            end=25,
+            confidence=0.95,
+            context="...Ashish Vaswani introduced Transformers...",
+        )
+
+        payload = entity.model_dump()
+
+        assert payload["type"] == "person"
+        assert payload["entity_type"] == "person"
+        assert payload["start_char"] == 10
+        assert payload["end_char"] == 25
+        assert payload["context"].startswith("...Ashish")
 
 
 class TestEntityNormalization:

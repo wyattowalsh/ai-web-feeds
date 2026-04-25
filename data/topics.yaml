@@ -360,6 +360,18 @@ topics:
   mappings:
     huggingface: task/code-generation
 
+- id: devtools
+  label: Developer Tools
+  facet: devtools
+  facet_group: operational
+  parents: [ai-for-code]
+  aliases: [dev-tools]
+  relations:
+    related_to: [workflows, open-source, product]
+  examples: [ide-extensions, cli-toolkits, sdk]
+  rank_hint: 0.72
+  tags: [embed:title, summary, content]
+
 - id: simulation
   label: Simulation
   facet: methodology
@@ -449,6 +461,18 @@ topics:
   rank_hint: 0.74
   tags: [no-embed]
   notes: Abstract normative node; excluded from centroiding.
+
+- id: fairness
+  label: Fairness & Bias
+  facet: ethics
+  facet_group: governance
+  parents: [ethics]
+  relations:
+    depends_on: [evaluation]
+    related_to: [trust-audit, regulation]
+  examples: [bias-audit, disparate-impact, mitigation]
+  rank_hint: 0.68
+  tags: [embed:title, summary]
 
 - id: privacy
   label: Privacy
@@ -965,6 +989,17 @@ topics:
     feeds:
     - {kind: arxiv, ref: cs.LG}
     - {kind: rsshub, ref: /arxiv/category/cs.LG}
+
+- id: conferences
+  label: Conferences & Events
+  facet: research
+  facet_group: contextual
+  parents: [research]
+  relations:
+    related_to: [videos, community]
+  examples: [neurips, icml, workshops]
+  rank_hint: 0.58
+  tags: [embed:title, summary]
 
 - id: industry
   label: Industry

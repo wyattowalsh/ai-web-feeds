@@ -25,5 +25,5 @@ contact_links:
     about: Propose and discuss new features with the community
 
   - name: 🆘 Troubleshooting Guide
-    url: https://aiwebfeeds.com/docs/guides/troubleshooting
-    about: Common issues and their solutions
+    url: https://aiwebfeeds.com/docs/guides/github-infrastructure#troubleshooting
+    about: Workflow and automation troubleshooting guidance

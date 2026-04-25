@@ -389,6 +389,31 @@ function ExplorerPageContent() {
           </div>
         </div>
 
+        {tab === "feeds" && (
+          <div className="surface-card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="metric-label">Portable slice</p>
+              <h2 className="text-xl font-semibold">Export the visible feed subset</h2>
+              <p className="small-note">
+                The current explorer filters resolve to canonical feed ids so the OPML download
+                matches the feed slice on screen.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => {
+                const href = buildFilteredOpmlHref(visibleExportFeedIds);
+                if (href) {
+                  window.location.assign(href);
+                }
+              }}
+              disabled={visibleExportFeedIds.length === 0}
+            >
+              Export filtered OPML
+            </Button>
+          </div>
+        )}
+
         <div className="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-start">
           <div className="surface-card flex flex-col gap-3 lg:flex-row lg:items-center">
             <button
@@ -577,6 +602,21 @@ function setParamIfChanged(params: URLSearchParams, key: string, value: number, 
   if (value !== fallback) {
     params.set(key, String(value));
   }
+}
+
+function buildFilteredOpmlHref(feedIds: string[]): string | null {
+  if (feedIds.length === 0) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  params.set("format", "filtered");
+
+  for (const feedId of feedIds) {
+    params.append("feed", feedId);
+  }
+
+  return `/api/exports/opml?${params.toString()}`;
 }
 
 function areGraphControlsEqual(left: GraphControls, right: GraphControls): boolean {

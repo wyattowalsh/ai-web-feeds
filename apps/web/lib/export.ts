@@ -221,7 +221,7 @@ export async function exportHTML(): Promise<Blob> {
 
   // Add articles
   allArticles
-    .sort((a, b) => b.pubDate - a.pubDate)
+    .sort((a, b) => (b.pubDate ?? 0) - (a.pubDate ?? 0))
     .forEach((article) => {
       const badges = [];
       if (article.read) badges.push('<span class="badge badge-read">✓ Read</span>');

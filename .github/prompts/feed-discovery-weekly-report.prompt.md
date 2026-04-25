@@ -1,13 +1,12 @@
-______________________________________________________________________
-
-## mode: agent
+---
+name: feed-discovery-weekly-report
+description: Produce a maintainer-facing weekly discovery report from deterministic catalog snapshots and validated repository context.
+---
 
 # AI Web Feeds Weekly Discovery Report Prompt
 
 Use this prompt when generating a scheduled or manually-triggered weekly discovery
 report for the repository.
-
-______________________________________________________________________
 
 ## Objective
 
@@ -16,13 +15,11 @@ expand `data/feeds.yaml` next without mutating repository data directly.
 
 This prompt is for report-only discovery, not automatic feed acceptance.
 
-______________________________________________________________________
-
 ## Required Repository Inputs
 
 Read these before producing a report:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `reports/github/catalog/feed-processing-summary.json` when available
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -32,11 +29,11 @@ Read these before producing a report:
 - `.github/workflows/validate-feed-submission.yml`
 - `.github/workflows/add-approved-feed.yml`
 
-______________________________________________________________________
-
 ## Operating Constraints
 
 1. Start with repository-internal gap analysis.
+1. Treat deterministic summary artifacts as the preferred evidence source when they are
+   present. If a snapshot is missing or stale, say so explicitly instead of guessing.
 1. Assume external discovery is unavailable unless an approved search provider is
    explicitly configured in the workflow.
 1. Cap external discovery leads at 5.
@@ -98,8 +95,6 @@ If no discovery leads are appropriate, say `External discovery is not configured
 ### Maintainer Next Step
 
 - One concrete follow-up, ideally a human-reviewed PR into `data/feeds.yaml`
-
-______________________________________________________________________
 
 ## Quality Bar
 

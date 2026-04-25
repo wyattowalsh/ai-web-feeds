@@ -1,5 +1,8 @@
 """Unit tests for ai_web_feeds.config module."""
 
+from pathlib import Path
+
+import ai_web_feeds.config as config_module
 import pytest
 from ai_web_feeds.config import (
     DEFAULT_DATABASE_FILENAME,
@@ -14,37 +17,53 @@ from ai_web_feeds.config import (
 class TestSettings:
     """Test Settings configuration class."""
 
-    def test_default_settings(self):
-        """Test default settings values."""
-        settings = Settings()
-        assert settings is not None
+    def test_default_settings_use_repository_rooted_paths(self, monkeypatch, tmp_path):
+        """Default paths should resolve from the repository root instead of cwd."""
+        monkeypatch.setattr(config_module, "repository_root", lambda: tmp_path)
 
-    def test_settings_from_env(self, monkeypatch):
-        """Test loading settings from environment variables."""
-        monkeypatch.setenv("AIWF_LOGGING__LEVEL", "DEBUG")
+        settings = Settings()
+
+        assert settings.data_dir == tmp_path / "data"
+        assert settings.database_url == _sqlite_url(tmp_path / "data" / "ai-web-feeds.db")
+        assert settings.logging.file_path == str(tmp_path / "logs" / "ai-web-feeds.log")
+
+    def test_settings_from_env(self, monkeypatch, tmp_path):
+        """Environment variables should override nested settings fields."""
+        monkeypatch.setattr(config_module, "repository_root", lambda: tmp_path)
+        monkeypatch.setenv("AIWF_LOGGING__LEVEL", "debug")
         monkeypatch.setenv("AIWF_LOGGING__FILE", "True")
+        monkeypatch.setenv("AIWF_LOGGING__FILE_PATH", "logs/custom.log")
 
         settings = Settings()
+
         assert settings.logging.level == "DEBUG"
         assert settings.logging.file is True
+        assert settings.logging.file_path == str(tmp_path / "logs" / "custom.log")
 
-    def test_settings_validation(self):
-        """Test settings validation."""
-        settings = Settings()
-        # Should not raise validation errors
-        assert settings.logging is not None
-        assert settings.logging.level is not None
+    def test_invalid_log_level_raises_clear_error(self, monkeypatch, tmp_path):
+        """Invalid log levels should mention the canonical AIWF env var."""
+        monkeypatch.setattr(config_module, "repository_root", lambda: tmp_path)
+        monkeypatch.setenv("AIWF_LOGGING__LEVEL", "verbose")
 
-    @pytest.mark.parametrize("log_level", ["DEBUG", "INFO", "WARNING", "ERROR"])
-    def test_log_level_options(self, log_level, monkeypatch):
-        """Test different log level options."""
+        with pytest.raises(ValidationError, match="AIWF_LOGGING__LEVEL"):
+            Settings()
+
+    @pytest.mark.parametrize("log_level", ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
+    def test_log_level_options(self, log_level, monkeypatch, tmp_path):
+        """Supported log levels should normalize and validate successfully."""
+        monkeypatch.setattr(config_module, "repository_root", lambda: tmp_path)
         monkeypatch.setenv("AIWF_LOGGING__LEVEL", log_level)
+
         settings = Settings()
+
         assert settings.logging.level == log_level
 
-    def test_settings_immutability(self):
-        """Test that settings are immutable after creation."""
+    def test_settings_immutability(self, monkeypatch, tmp_path):
+        """Settings models should still reject unknown fields after instantiation."""
+        monkeypatch.setattr(config_module, "repository_root", lambda: tmp_path)
+
         settings = Settings()
+
         with pytest.raises(Exception):
             settings.some_new_field = "value"
 

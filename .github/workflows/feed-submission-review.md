@@ -20,13 +20,16 @@ ______________________________________________________________________
 # Feed Submission Review
 
 Review issue #${{ github.event.issue.number }} only when it is part of the feed
-submission flow. Use the sanitized issue context below instead of raw user input.
+submission flow. Use deterministic validator artifacts and sanitized issue context
+instead of raw user input.
 
 Current sanitized issue context: "${{ needs.activation.outputs.text }}"
 
 ## Scope
 
 - This workflow is triage-only.
+- This workflow is source-only and additive. It must not become the canonical mutation
+  path for catalog changes in this pass.
 - Do not create a pull request.
 - Do not request repository edits.
 - Do not approve a feed automatically.
@@ -35,6 +38,14 @@ Current sanitized issue context: "${{ needs.activation.outputs.text }}"
 
 Use these repository files as the source of truth:
 
+- `reports/github/feed-submissions/issue-${{ github.event.issue.number }}/normalized-source.json`
+  when available
+- `reports/github/feed-submissions/issue-${{ github.event.issue.number }}/validation-summary.md`
+  when available
+- `reports/github/feed-submissions/issue-${{ github.event.issue.number }}/snapshot-manifest.json`
+  when available
+- `reports/github/feed-submissions/issue-${{ github.event.issue.number }}/feed-submission-validation-summary.json`
+  when available
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -54,6 +65,10 @@ Use these repository files as the source of truth:
 ## Response Requirements
 
 - Keep the comment concise and operational.
+- Start with `Snapshot Status` and name `fresh-snapshot`, `stale-snapshot`, or
+  `missing-artifact`.
+- Start `Verdict` with one of `validated`, `validation-failed`, `needs-info`,
+  `duplicate`, or `noop`.
 - Include a normalized summary of the feed submission.
 - Separate missing-information problems from duplicate concerns.
 - Recommend labels only from `.github/labels.yml`.

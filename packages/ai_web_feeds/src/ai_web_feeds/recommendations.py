@@ -22,8 +22,9 @@ import numpy as np
 from loguru import logger
 from sqlmodel import Session, select
 
-from ai_web_feeds.config import Settings
+from ai_web_feeds.config import get_settings
 from ai_web_feeds.models import (
+    CurationStatus,
     FeedEmbedding,
     FeedSource,
     RecommendationInteraction,
@@ -136,7 +137,6 @@ def get_similar_feeds_by_topic(
             continue
 
         # Calculate Jaccard similarity with topics
-        topic_set = set(topics)
         feed_topic_set = set(feed.topics)
         intersection = len(topic_set & feed_topic_set)
         union = len(topic_set | feed_topic_set)
@@ -230,6 +230,8 @@ def get_popular_feeds(
         .where(cast(Any, FeedSource.verified).is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
+    if exclude_ids:
+        statement = statement.where(FeedSource.id.not_in(exclude_ids))
     feeds = list(session.exec(statement).all())
 
     if not feeds:
@@ -274,6 +276,8 @@ def get_serendipity_feeds(
         .where(cast(Any, FeedSource.verified).is_(True))
         .where(FeedSource.curation_status != "inactive")
     )
+    if exclude_ids:
+        statement = statement.where(FeedSource.id.not_in(exclude_ids))
     feeds = list(session.exec(statement).all())
 
     if not feeds:
@@ -350,7 +354,10 @@ def generate_recommendations(
         if seed_topics:
             # Topic-based similarity
             content_recs = get_similar_feeds_by_topic(
-                session, seed_topics, exclude_ids, content_count
+                session,
+                seed_topics,
+                list(exclude_ids),
+                content_count,
             )
             for feed in content_recs:
                 recommendations.append((feed, content_weight, "similar_topics"))
@@ -360,21 +367,21 @@ def generate_recommendations(
             seed_feed = session.get(FeedSource, seed_feed_ids[0])
             if seed_feed and seed_feed.topics:
                 content_recs = get_similar_feeds_by_topic(
-                    session, seed_feed.topics, exclude_ids, content_count
+                    session, seed_feed.topics, list(exclude_ids), content_count
                 )
                 for feed in content_recs:
                     recommendations.append((feed, content_weight, "similar_content"))
 
     # 2. Popularity-based recommendations
     if popularity_count > 0:
-        current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
+        current_exclude = list(exclude_ids | {rec[0].id for rec in recommendations})
         popularity_recs = get_popular_feeds(session, current_exclude, popularity_count)
         for feed in popularity_recs:
             recommendations.append((feed, popularity_weight, "popular"))
 
     # 3. Serendipity recommendations
     if serendipity_count > 0:
-        current_exclude = exclude_ids + [rec[0].id for rec in recommendations]
+        current_exclude = list(exclude_ids | {rec[0].id for rec in recommendations})
         serendipity_recs = get_serendipity_feeds(session, current_exclude, serendipity_count)
         for feed in serendipity_recs:
             recommendations.append((feed, serendipity_weight, "discover"))
@@ -415,9 +422,6 @@ def track_recommendation_interaction(
     )
 
     session.add(interaction)
-    session.commit()
-
-    logger.debug(f"Tracked {interaction_type} interaction: user={user_id}, feed={feed_id}")
 
     # Update user profile
     user_profile = session.get(UserProfile, user_id)
@@ -448,6 +452,7 @@ def track_recommendation_interaction(
 
     user_profile.updated_at = datetime.now(UTC)
     session.commit()
+    logger.debug(f"Tracked {interaction_type} interaction: user={user_id}, feed={feed_id}")
 
 
 def get_user_recommendations(

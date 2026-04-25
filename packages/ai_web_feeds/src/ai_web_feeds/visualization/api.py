@@ -181,14 +181,17 @@ async def create_visualization(
     """
     await check_rate_limit(device_id)
 
-    visualization = await visualization_service.create_visualization(
-        device_id=device_id,
-        name=request.name,
-        chart_type=request.chart_type,
-        data_source=request.data_source,
-        filters=request.filters,
-        customization=request.customization,
-    )
+    try:
+        visualization = await visualization_service.create_visualization(
+            device_id=device_id,
+            name=request.name,
+            chart_type=request.chart_type,
+            data_source=request.data_source,
+            filters=request.filters,
+            customization=request.customization,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Created visualization {visualization['id']} for device {device_id[:8]}")
     return visualization
@@ -249,13 +252,16 @@ async def update_visualization(
     """
     await check_rate_limit(device_id)
 
-    visualization = await visualization_service.update_visualization(
-        visualization_id=visualization_id,
-        device_id=device_id,
-        name=request.name,
-        filters=request.filters,
-        customization=request.customization,
-    )
+    try:
+        visualization = await visualization_service.update_visualization(
+            visualization_id=visualization_id,
+            device_id=device_id,
+            name=request.name,
+            filters=request.filters,
+            customization=request.customization,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     if not visualization:
         raise HTTPException(
@@ -373,13 +379,16 @@ async def create_dashboard(
     """Create a new dashboard."""
     await check_rate_limit(device_id)
 
-    dashboard = await dashboard_service.create_dashboard(
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        template_id=request.template_id,
-        layout=request.layout,
-    )
+    try:
+        dashboard = await dashboard_service.create_dashboard(
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            template_id=request.template_id,
+            layout=request.layout,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Created dashboard {dashboard['id']} for device {device_id[:8]}")
     return dashboard
@@ -418,14 +427,17 @@ async def update_dashboard(
     """Update a dashboard."""
     await check_rate_limit(device_id)
 
-    dashboard = await dashboard_service.update_dashboard(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        layout=request.layout,
-        expected_version=request.version,
-    )
+    try:
+        dashboard = await dashboard_service.update_dashboard(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            layout=request.layout,
+            expected_version=request.version,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     if not dashboard:
         raise HTTPException(
@@ -468,17 +480,20 @@ async def add_widget(
     """Add a widget to dashboard."""
     await check_rate_limit(device_id)
 
-    widget = await dashboard_service.add_widget(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        widget_type=request.widget_type,
-        data_source=request.data_source,
-        filters=request.filters,
-        refresh_interval_seconds=request.refresh_interval_seconds,
-        position=request.position,
-        config=request.config,
-        visualization_id=request.visualization_id,
-    )
+    try:
+        widget = await dashboard_service.add_widget(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            widget_type=request.widget_type,
+            data_source=request.data_source,
+            filters=request.filters,
+            refresh_interval_seconds=request.refresh_interval_seconds,
+            position=request.position,
+            config=request.config,
+            visualization_id=request.visualization_id,
+        )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Added widget {widget['id']} to dashboard {dashboard_id}")
     return widget

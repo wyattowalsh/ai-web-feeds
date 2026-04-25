@@ -1,7 +1,7 @@
 name: 🔗 Update Existing Feed
 description: Report an issue or suggest an update to an existing feed
 title: "[Feed Update]: "
-labels: ["feed-update", "needs-review"]
+labels: ["feed-update", "status/needs-review"]
 assignees: []
 body:
   - type: markdown

@@ -21,21 +21,22 @@ ai-web-feeds = { workspace = true }
 
 [tool.pytest.ini_options]
 # Test discovery patterns
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 
 # Test paths
-testpaths = ["."]
+testpaths = ["tests"]
 
 # Minimum Python version
 minversion = "8.0"
 
 # Command line options
 addopts = [
-    "-v",                                          # Verbose output
     "-ra",                                         # Show extra test summary info
+    "-vv",                                         # Verbose output
     "--strict-markers",                            # Enable strict markers
+    "--strict-config",                             # Fail on unknown config
     "--showlocals",                                # Show local variables in tracebacks
     "--import-mode=importlib",                     # Avoid duplicate-basename test import clashes
     "--cov=ai_web_feeds",                         # Coverage for ai_web_feeds package
@@ -59,6 +60,11 @@ markers = [
     "benchmark: Performance benchmark tests",
     "network: Tests requiring network access",
     "database: Tests requiring database",
+    "e2e: End-to-end tests (full workflows)",
+    "integration: Integration tests (multiple components)",
+    "network: Tests requiring network access",
+    "slow: Slow running tests (may take several seconds)",
+    "unit: Unit tests (fast, no external dependencies)",
 ]
 
 # Logging
@@ -165,7 +171,10 @@ ignore = ["ANN101", "ANN102", "ANN401", "PLC0415", "PLR0912", "PLR0913", "PLR091
     "NPY002",    # numpy legacy (test compatibility)
     "PTH123",    # open() usage (test files)
     "RET504",    # unnecessary assignment (test clarity)
+    "PLC0415",   # local imports are common in isolated test setup
+    "RUF043",    # regex meta patterns in assertions are intentional
+    "N806",      # capitalized local fixtures/mocks can aid readability
     "S110",      # try-except-pass (test patterns)
 ]
 # conftest.py: pytest configuration patterns
-"conftest.py" = ["ANN001", "ANN201"]
+"conftest.py" = ["ANN001", "ANN201", "PLC0415"]

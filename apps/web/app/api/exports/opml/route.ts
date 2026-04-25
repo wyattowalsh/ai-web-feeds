@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -13,10 +14,6 @@ import { withRouteTelemetry } from "@/lib/telemetry-route";
 export const dynamic = "force-dynamic";
 const OPML_ROOT_FOLDER = "aiwebfeeds";
 
-/**
- * OPML export API endpoint
- * Returns OPML files for feed reader import
- */
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") || "all"; // all, categorized, filtered
@@ -29,9 +26,15 @@ const GETHandler = async (request: Request) => {
     .filter((feedId) => feedId.length > 0);
 
   try {
-    const dataDir = join(process.cwd(), "../../data");
-    let opmlPath: string;
-    let filename: string;
+    if (format === "filtered") {
+      const feedIds = Array.from(
+        new Set(
+          searchParams
+            .getAll("feed")
+            .map((feedId) => feedId.trim())
+            .filter((feedId) => feedId.length > 0),
+        ),
+      );
 
     // Determine which OPML file to serve
     if (format === "categorized") {
@@ -78,6 +81,49 @@ const GETHandler = async (request: Request) => {
     return NextResponse.json({ error: "Failed to generate OPML file" }, { status: 500 });
   }
 };
+
+function renderFilteredOpml(
+  feeds: Array<{
+    title: string;
+    feed?: string;
+    url: string;
+    site?: string;
+    website_url?: string;
+    description?: string;
+  }>,
+): string {
+  const outlines = feeds
+    .map((feed) => {
+      const title = escapeXml(feed.title || feed.url);
+      const xmlUrl = escapeXml(feed.feed || feed.url);
+      const htmlUrl = escapeXml(feed.site || feed.website_url || feed.url);
+      const description = feed.description ? ` description="${escapeXml(feed.description)}"` : "";
+
+      return `    <outline type="rss" text="${title}" title="${title}" xmlUrl="${xmlUrl}" htmlUrl="${htmlUrl}"${description} />`;
+    })
+    .join("\n");
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<opml version="2.0">',
+    "  <head>",
+    "    <title>AI Web Feeds Filtered Export</title>",
+    `    <dateCreated>${new Date().toUTCString()}</dateCreated>`,
+    "  </head>",
+    "  <body>",
+    outlines,
+    "  </body>",
+    "</opml>",
+  ].join("\n");
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
 
 export const GET = withRouteTelemetry("exports.opml", GETHandler);
 

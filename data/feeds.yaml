@@ -9,20 +9,26 @@ document_meta:
 
 sources:
   # Direct feed URLs
-- url: http://export.arxiv.org/rss/cs.LG
+- url: https://export.arxiv.org/rss/cs.LG
   topics: [research, papers, ml]
+  title: arXiv cs.LG
   notes: Official arXiv RSS for Machine Learning
 - url: https://openai.com/blog/rss/
   topics: [industry, product, llm]
+  title: OpenAI Blog
 - url: https://www.pinecone.io/learn/feed.xml
   topics: [retrieval, vector, embeddings, mlops]
+  title: Pinecone Learn
 - url: https://www.latent.space/feed
   topics: [podcasts, industry, product]
+  title: Latent Space
 - url: https://importai.substack.com/feed
   topics: [newsletters, industry, research]
+  title: Import AI
   # Platform URLs - auto-enriched via platform detection
 - url: https://huggingface.co/blog
   topics: [open-source, mlops, nlp]
+  title: Hugging Face Blog
   notes: Site URL; auto-discovers RSS feed
 - url: https://www.anthropic.com/news
   topics: [industry, safety, llm]
@@ -30,9 +36,11 @@ sources:
   notes: Custom title provided; feed auto-discovered
 - url: https://openxla.org/blog
   topics: [compilers, optimization, open-source]
+  title: OpenXLA Blog
   # Reddit - auto-generates RSS URL
 - url: https://www.reddit.com/r/MachineLearning
   topics: [ml, community, research]
+  title: r/MachineLearning
   notes: Reddit subreddit; auto-generates .rss URL
   # Medium - auto-generates feed URL
 - url: https://towardsdatascience.com
@@ -47,10 +55,12 @@ sources:
   # GitHub - auto-generates release feed
 - url: https://github.com/pytorch/pytorch
   topics: [open-source, ml, product]
+  title: PyTorch Releases
   notes: PyTorch repo; auto-generates releases.atom
   # Dev.to - auto-generates feed URL
 - url: https://dev.to/t/machinelearning
   topics: [blogs, education, ml]
+  title: DEV Community Machine Learning
   notes: Dev.to tag; auto-generates feed URL
   # Twitter/X - uses RSSHub fallback via Nitter
 - url: https://x.com/karpathy
@@ -186,7 +196,7 @@ sources:
   topics: [research, ai, robotics]
   title: MIT CSAIL — News
   notes: Academic lab news and research explainers; feed autodiscovery.
-- url: http://www.fast.ai
+- url: https://www.fast.ai
   topics: [education, ml, blogs]
   title: fast.ai — Blog
   notes: Hands-on deep learning essays; known feed endpoint historically at /atom.xml.
@@ -356,6 +366,7 @@ sources:
   notes: Agentic frameworks, planning, multi-tool pipelines.
 - url: https://www.jmlr.org/jmlr.xml
   topics: [research, papers, ml]
+  title: Journal of Machine Learning Research
   notes: Official Journal of Machine Learning Research RSS.
 - url: https://proceedings.mlr.press
   topics: [research, papers, ml]
@@ -441,15 +452,15 @@ sources:
   topics: [research, optimization, training, ai-infra-stacks]
   title: Hazy Research — Blog
   notes: Systems-for-ML, optimizers, and infra; frequent deep technical posts.
-- url: http://export.arxiv.org/rss/cs.CV
+- url: https://export.arxiv.org/rss/cs.CV
   topics: [research, papers, cv]
   title: arXiv — cs.CV RSS
   notes: Official category feed (Computer Vision & Pattern Recognition).
-- url: http://export.arxiv.org/rss/cs.CL
+- url: https://export.arxiv.org/rss/cs.CL
   topics: [research, papers, nlp]
   title: arXiv — cs.CL RSS
   notes: Official category feed (Computation and Language).
-- url: http://export.arxiv.org/rss/cs.IR
+- url: https://export.arxiv.org/rss/cs.IR
   topics: [research, papers, retrieval]
   title: arXiv — cs.IR RSS
   notes: Official category feed (Information Retrieval).
@@ -675,6 +686,7 @@ sources:
   notes: Harms & safety tech; platform feed auto-discovery.
 - url: https://www.modular.com/blog
   topics: [compilers, optimization, accelerators, ai-infra-stacks, blogs]
+  title: Modular Blog
   notes: Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.
 - url: https://www.aiverifyfoundation.sg/latest
   topics: [governance, safety, trust-audit, evaluation]
@@ -786,7 +798,7 @@ sources:
   notes: Desktop local-LLM tooling; releases and tips.
 - url: https://blog.perplexity.ai/
   topics: [product, retrieval, rag, llmops, blogs]
-  title: Perplexity — Hub
+  title: Perplexity Blog
   notes: Search+LLM product engineering, features, and research collabs.
 - url: https://blog.openrouter.ai/
   topics: [product, serving, llmops, agents, blogs]
@@ -898,9 +910,11 @@ sources:
   notes: FAIR/GenAI research talks and product tech.
 - url: https://www.reddit.com/r/LocalLLaMA
   topics: [small-models, on-device, community, ml]
+  title: r/LocalLLaMA
   notes: Community for running/optimizing local LLMs.
 - url: https://www.reddit.com/r/StableDiffusion
   topics: [diffusion, cv, community, multimodal]
+  title: r/StableDiffusion
   notes: Image diffusion techniques, models, and workflows.
 - url: https://github.com/ollama/ollama
   topics: [on-device, inference, serving, open-source]
@@ -1017,74 +1031,34 @@ sources:
 
   # Quantum Computing Feeds (Added 2025-11-02)
 - url: https://quantumcomputingreport.com/feed/
-  topics: [quantum_computing, industry, hardware, research]
-  tags: [news, analysis, quantum-companies]
+  topics: [ai-for-science, industry, hardware, research]
   title: Quantum Computing Report
-  description: Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage.
-  authority_signals: [domain_reputation, industry_leader, content_depth, consistency]
-  confidence: 0.95
-  verified_date: '2025-11-02'
-  notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016. Comprehensive quantum company database.
+  notes: Industry news and analysis covering quantum computing companies, research developments, and market trends. RSS 2.0 with ~10 recent entries; established publication since 2016.
 - url: https://thequantuminsider.com/feed
-  topics: [quantum_computing, industry, business, research]
-  tags: [news, startups, quantum-companies, investment]
+  topics: [ai-for-science, industry, product, research]
   title: The Quantum Insider
-  description: Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs.
-  authority_signals: [domain_reputation, industry_leader, content_depth, network_position]
-  confidence: 0.92
-  verified_date: '2025-11-02'
-  notes: 'RSS 2.0 format. Excellent for quantum computing business and market news. Last build: 2025-10-29.'
+  notes: Leading provider of market intelligence on the quantum technology industry. RSS 2.0; useful for company, investment, and policy coverage.
 - url: https://news.mit.edu/topic/mitquantum-computing-rss.xml
-  topics: [quantum_computing, research, academic, physics]
-  tags: [university, research, quantum-theory, quantum-hardware]
+  topics: [ai-for-science, research, education, hardware]
   title: MIT News — Quantum Computing
-  description: MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking.
-  authority_signals: [academic_authority, research_credentials, citations, content_depth]
-  confidence: 0.95
-  verified_date: '2025-11-02'
-  notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum computing. Strong industry collaborations.
+  notes: MIT News coverage of quantum computing research, including algorithms, information theory, superconducting qubits, and networking.
 - url: https://research.ibm.com/blog
-  topics: [quantum_computing, industry, research, hardware]
-  tags: [superconducting-qubits, quantum-algorithms, qiskit, quantum-software]
+  topics: [ai-for-science, industry, research, hardware]
   title: IBM Research Blog — Quantum Computing
-  description: IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML.
-  authority_signals: [industry_leader, research_credentials, content_depth, network_position]
-  confidence: 0.93
-  verified_date: '2025-11-02'
-  notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years quantum R&D, 127+ qubit systems, Qiskit framework.
+  notes: IBM Research quantum-computing posts covering hardware, Qiskit, and algorithms. Platform URL; RSS autodiscovery expected.
 - url: https://quantumai.google/
-  topics: [quantum_computing, research, industry, hardware]
-  tags: [quantum-processors, error-correction, quantum-algorithms]
+  topics: [ai-for-science, research, industry, hardware]
   title: Google Quantum AI
-  description: Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications.
-  authority_signals: [industry_leader, research_credentials, citations, content_depth]
-  confidence: 0.95
-  verified_date: '2025-11-02'
-  notes: Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow chip breakthrough in error correction (2024).
+  notes: Google Quantum AI updates on processors, error correction, and algorithms. Platform URL; RSS autodiscovery expected.
 - url: https://azure.microsoft.com/en-us/blog/quantum/
-  topics: [quantum_computing, industry, cloud, software]
-  tags: [quantum-cloud, quantum-algorithms, quantum-chemistry]
+  topics: [ai-for-science, industry, serving, product]
   title: Microsoft Azure Quantum Blog
-  description: Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science.
-  authority_signals: [industry_leader, platform_provider, network_position, content_depth]
-  confidence: 0.88
-  verified_date: '2025-11-02'
-  notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti.
+  notes: Azure Quantum posts on cloud services, algorithms, partnerships, and chemistry/materials applications.
 - url: https://ionq.com/blog
-  topics: [quantum_computing, industry, hardware, trapped-ions]
-  tags: [trapped-ion, quantum-hardware, quantum-cloud]
+  topics: [ai-for-science, industry, hardware, serving]
   title: IonQ Blog
-  description: IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications.
-  authority_signals: [industry_leader, domain_reputation, network_position, consistency]
-  confidence: 0.87
-  verified_date: '2025-11-02'
-  notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google.'
+  notes: IonQ updates on trapped-ion hardware, partnerships, and applications. Publicly traded; cloud access across major providers.
 - url: https://rigetti.com/blog
-  topics: [quantum_computing, industry, hardware, superconducting]
-  tags: [superconducting-qubits, quantum-cloud, quantum-processors]
+  topics: [ai-for-science, industry, hardware, research]
   title: Rigetti Computing Blog
-  description: Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms.
-  authority_signals: [industry_leader, domain_reputation, content_depth, consistency]
-  confidence: 0.85
-  verified_date: '2025-11-02'
-  notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing. Ankaa and Novera quantum processors.
+  notes: Rigetti posts on superconducting processors and quantum-classical hybrid approaches; RSS autodiscovery expected.

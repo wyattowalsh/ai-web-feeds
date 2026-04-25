@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime
 
+from datetime import UTC, datetime, timezone
+
 import pytest
 from ai_web_feeds.models import Topic
 from ai_web_feeds.visualization.models import (

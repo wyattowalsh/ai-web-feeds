@@ -1,0 +1,67 @@
+---
+title: "Why Curated Feeds Beat Web Scraping for AI Pipelines"
+description: "A practical comparison of RSS/Atom feeds versus web scraping for AI content ingestion — and why feeds win on reliability, latency, and content quality."
+date: "2025-02-10"
+author: "AI Web Feeds Team"
+tags: ["engineering", "rss", "web-scraping", "llm-pipelines", "rag"]
+excerpt: "Feeds are boring in the best way: consistent, low-latency, and designed to be consumed by machines. Here's why that matters for AI pipelines."
+---
+
+When you're building a pipeline that ingests live web content for an AI system, you face a choice early on: do you scrape the web, or do you subscribe to feeds?
+
+The answer matters more than it seems.
+
+## What you're actually comparing
+
+Scraping and feed consumption are solving the same problem — get text from the web into your pipeline — but they differ dramatically in the contract they establish with the source.
+
+A **web scraper** sends an HTTP request to an HTML document, parses a DOM that was designed for human eyes, extracts the text (hopefully), and hopes that the site's markup hasn't changed since you wrote the extractor. It works until it doesn't.
+
+A **feed consumer** sends an HTTP request to an XML or JSON document that the publisher _explicitly designed for machine consumption_. The structure is standardised (RSS 2.0, Atom 1.0, JSON Feed 1.1). The content is intentionally packaged. The publisher is signalling: this endpoint is for software.
+
+## The failure modes are completely different
+
+Scrapers fail silently in ways that corrupt your pipeline. A layout change produces an empty string instead of an article body. A soft paywall returns a truncated excerpt that looks complete. A cookie consent modal renders before the content loads in a headless browser, and you get the modal's text instead.
+
+Feeds fail loudly. A malformed XML document throws a parse error. An unreachable endpoint returns a clear HTTP status code. The structure either conforms to the spec or it doesn't — there's no middle ground that looks like success.
+
+For AI systems where garbage-in means garbage-out in subtler ways than traditional software, loud failure is a feature.
+
+## Feed content is cleaner
+
+RSS and Atom entries typically carry the article's `<title>`, `<summary>` or `<description>`, `<published>` timestamp, author metadata, and either a full `<content>` body or a link to it. This is structured data that maps cleanly to the metadata fields your vector store or RAG system wants.
+
+Compare that to a scraped HTML page, which requires you to:
+
+1. Identify the article container (varies per site)
+2. Remove nav, footer, sidebar, ads, related-content widgets
+3. Normalise encoding and Unicode
+4. Handle lazy-loaded images and embeds
+5. Deal with paywalls, bot detection, and rate limits
+
+Each step is a point of failure and a source of noise.
+
+## Feeds have explicit update semantics
+
+Because feeds are designed for polling, they carry update timestamps that are authoritative from the publisher's perspective. The `<updated>` or `pubDate` field is a real signal about content freshness, not an inference from HTTP headers or a scraped "Posted on" date that might use six different date formats.
+
+For time-sensitive retrieval — keeping a RAG system current with recent research, news, or documentation changes — this matters. You can reliably identify what's new since your last fetch without re-fetching and re-processing every document.
+
+## The case for curation on top of feeds
+
+Raw feed discovery is still messy. Not every feed is well-maintained. Some have incorrect dates, missing content, or unreliable hosting. Many technically valid feeds publish at a quality or frequency that doesn't justify the consumption overhead.
+
+This is where curation adds value. AI Web Feeds maintains quality scores, validates feeds against their schemas, tracks update frequencies, and tags entries with a rich topic taxonomy. You're not just subscribing to feeds — you're subscribing to a maintained, scored, structured catalog of feeds.
+
+That's the difference between a pile of OPML files and a proper data dependency.
+
+## When scraping is still the right call
+
+Feeds don't exist for every source. Some high-value sites have removed their RSS endpoints. For those, scraping is the only option.
+
+The pragmatic answer is: use feeds where they exist, scrape where they don't, and maintain a clear distinction between the two in your pipeline so the failure modes don't intermix.
+
+AI Web Feeds is the feeds half of that equation. Well-maintained, schema-validated, and built for programmatic consumption from day one.
+
+→ [Browse the feed catalog](/explorer)
+→ [API documentation](/docs/guides/getting-started)

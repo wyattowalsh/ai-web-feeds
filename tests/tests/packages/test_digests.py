@@ -55,7 +55,6 @@ def sample_digest():
         last_sent_at=now - timedelta(days=1),
         next_send_at=now - timedelta(minutes=5),  # Due now
         article_count=0,
-        is_active=True,
         created_at=now,
     )
 
@@ -109,6 +108,7 @@ class TestDigestManager:
         self, digest_manager, mock_db, sample_digest, sample_articles
     ):
         """Test successful digest sending"""
+        original_next_send = sample_digest.next_send_at
         mock_db.get_due_digests.return_value = [sample_digest]
         mock_db.get_user_follows.return_value = ["feed-1"]
         mock_db.get_feed_entries.return_value = sample_articles
@@ -120,14 +120,18 @@ class TestDigestManager:
             sent_count = await digest_manager.send_due_digests()
 
         assert sent_count == 1
-        assert mock_db.update_email_digest.called
+        assert mock_db.update_email_digest.call_count == 2
         assert mock_server.send_message.called
+        assert sample_digest.next_send_at > original_next_send
+        assert sample_digest.last_sent_at is not None
+        assert sample_digest.article_count == len(sample_articles)
 
     @pytest.mark.asyncio
     async def test_send_due_digests_failure(
         self, digest_manager, mock_db, sample_digest, sample_articles
     ):
         """Test digest sending with SMTP error"""
+        original_next_send = sample_digest.next_send_at
         mock_db.get_due_digests.return_value = [sample_digest]
         mock_db.get_user_follows.return_value = ["feed-1"]
         mock_db.get_feed_entries.return_value = (
@@ -140,6 +144,47 @@ class TestDigestManager:
 
         # Should return 0 since digest sending failed
         assert sent_count == 0
+        assert mock_db.update_email_digest.call_count == 2
+        assert sample_digest.next_send_at == original_next_send
+
+    @pytest.mark.asyncio
+    async def test_send_due_digests_empty_digest_advances_schedule(
+        self, digest_manager, mock_db, sample_digest
+    ):
+        """Empty digest cycles should advance the schedule without sending mail."""
+        original_next_send = sample_digest.next_send_at
+        original_last_sent = sample_digest.last_sent_at
+        mock_db.get_due_digests.return_value = [sample_digest]
+        mock_db.get_user_follows.return_value = ["feed-1"]
+        mock_db.get_feed_entries.return_value = []
+
+        sent_count = await digest_manager.send_due_digests()
+
+        assert sent_count == 0
+        assert mock_db.update_email_digest.call_count == 1
+        assert sample_digest.next_send_at > original_next_send
+        assert sample_digest.last_sent_at == original_last_sent
+
+    @pytest.mark.asyncio
+    async def test_send_due_digests_keeps_advanced_schedule_when_finalize_fails(
+        self, digest_manager, mock_db, sample_digest, sample_articles
+    ):
+        """A post-send persistence failure should not requeue the digest immediately."""
+        original_next_send = sample_digest.next_send_at
+        mock_db.get_due_digests.return_value = [sample_digest]
+        mock_db.get_user_follows.return_value = ["feed-1"]
+        mock_db.get_feed_entries.return_value = sample_articles
+        mock_db.update_email_digest.side_effect = [sample_digest, Exception("db write failed")]
+
+        with patch("smtplib.SMTP") as mock_smtp:
+            mock_server = MagicMock()
+            mock_smtp.return_value.__enter__.return_value = mock_server
+
+            sent_count = await digest_manager.send_due_digests()
+
+        assert sent_count == 1
+        assert mock_server.send_message.called
+        assert sample_digest.next_send_at > original_next_send
 
     @pytest.mark.asyncio
     async def test_send_digest_no_articles(self, digest_manager, mock_db, sample_digest):
@@ -170,8 +215,8 @@ class TestDigestManager:
         # Verify SMTP was called
         assert mock_server.send_message.called
 
-        # Verify digest was updated with article count
-        assert sample_digest.article_count == len(sample_articles)
+        # send_due_digests persists the article count after delivery.
+        assert sample_digest.article_count == 0
 
     @pytest.mark.asyncio
     async def test_send_digest_multiple_feeds(
@@ -196,8 +241,8 @@ class TestDigestManager:
 
             await digest_manager._send_digest(sample_digest)
 
-        # Should have sent all articles
-        assert sample_digest.article_count == len(sample_articles)
+        # send_due_digests persists the article count after delivery.
+        assert sample_digest.article_count == 0
 
     @pytest.mark.asyncio
     async def test_send_digest_max_articles_limit(self, digest_manager, mock_db, sample_digest):
@@ -225,8 +270,8 @@ class TestDigestManager:
 
             await digest_manager._send_digest(sample_digest)
 
-        # Should be capped at max_articles
-        assert sample_digest.article_count == digest_manager.max_articles
+        # send_due_digests persists the article count after delivery.
+        assert sample_digest.article_count == 0
 
     @pytest.mark.asyncio
     async def test_send_digest_smtp_auth(
@@ -328,11 +373,17 @@ class TestDigestManager:
 
     def test_calculate_next_send_daily(self, digest_manager):
         """Test next send calculation for daily digest"""
-        # Daily at 9:00 AM
-        cron_expr = "0 9 * * *"
-        from_time = datetime(2024, 1, 15, 8, 0)  # 8:00 AM
+        digest = EmailDigest(
+            user_id="user-123",
+            email="user@example.com",
+            schedule_type="daily",
+            schedule_cron="0 9 * * *",
+            timezone="UTC",
+            next_send_at=datetime(2024, 1, 15, 8, 0, tzinfo=UTC),
+        )
+        from_time = datetime(2024, 1, 15, 8, 0, tzinfo=UTC)  # 8:00 AM
 
-        next_send = digest_manager._calculate_next_send(cron_expr, from_time)
+        next_send = digest_manager._calculate_next_send(digest, from_time)
 
         # Should be 9:00 AM same day
         assert next_send.hour == 9
@@ -341,11 +392,17 @@ class TestDigestManager:
 
     def test_calculate_next_send_weekly(self, digest_manager):
         """Test next send calculation for weekly digest"""
-        # Monday at 9:00 AM
-        cron_expr = "0 9 * * 1"
-        from_time = datetime(2024, 1, 15, 10, 0)  # Monday 10:00 AM
+        digest = EmailDigest(
+            user_id="user-123",
+            email="user@example.com",
+            schedule_type="weekly",
+            schedule_cron="0 9 * * 1",
+            timezone="UTC",
+            next_send_at=datetime(2024, 1, 15, 10, 0, tzinfo=UTC),
+        )
+        from_time = datetime(2024, 1, 15, 10, 0, tzinfo=UTC)  # Monday 10:00 AM
 
-        next_send = digest_manager._calculate_next_send(cron_expr, from_time)
+        next_send = digest_manager._calculate_next_send(digest, from_time)
 
         # Should be next Monday at 9:00 AM
         assert next_send > digest_manager._ensure_utc(from_time)
@@ -353,15 +410,39 @@ class TestDigestManager:
 
     def test_calculate_next_send_hourly(self, digest_manager):
         """Test next send calculation for hourly digest"""
-        # Every hour at minute 0
-        cron_expr = "0 * * * *"
-        from_time = datetime(2024, 1, 15, 14, 30)
+        digest = EmailDigest(
+            user_id="user-123",
+            email="user@example.com",
+            schedule_type="custom",
+            schedule_cron="0 * * * *",
+            timezone="UTC",
+            next_send_at=datetime(2024, 1, 15, 14, 30, tzinfo=UTC),
+        )
+        from_time = datetime(2024, 1, 15, 14, 30, tzinfo=UTC)
 
-        next_send = digest_manager._calculate_next_send(cron_expr, from_time)
+        next_send = digest_manager._calculate_next_send(digest, from_time)
 
         # Should be 15:00 (next hour)
         assert next_send.hour == 15
         assert next_send.minute == 0
+
+    def test_calculate_next_send_respects_timezone(self, digest_manager):
+        """Daily schedules should be computed in the subscriber timezone."""
+        digest = EmailDigest(
+            user_id="user-123",
+            email="user@example.com",
+            schedule_type="daily",
+            schedule_cron="0 9 * * *",
+            timezone="America/New_York",
+            next_send_at=datetime(2024, 1, 15, 13, 30, tzinfo=UTC),
+        )
+
+        next_send = digest_manager._calculate_next_send(
+            digest,
+            datetime(2024, 1, 15, 13, 30, tzinfo=UTC),
+        )
+
+        assert next_send == datetime(2024, 1, 15, 14, 0, tzinfo=UTC)
 
     @pytest.mark.asyncio
     async def test_send_digest_article_ordering(

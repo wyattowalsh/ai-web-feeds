@@ -51,6 +51,7 @@ For the password-protected admin observability flow, this is the minimum local s
 ```bash
 AIWF_ADMIN_PASSWORD=change-me
 AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
 ```
 
 Optional local overrides:
@@ -94,7 +95,7 @@ Notes:
   `http://localhost:8000`; deployed environments default to same-origin WebSocket
   connections unless you set this variable to an explicit monitor/WebSocket URL.
 - The monitor service uses the default SQLite database at
-  `sqlite:///data/ai-web-feeds.db` unless you override `DATABASE_URL`.
+  `sqlite:///data/ai-web-feeds.db` unless you override `AIWF_DATABASE_URL`.
 
 ---
 

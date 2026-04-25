@@ -24,15 +24,17 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 interface TrendingTopic {
   topic: string;
   feed_count: number;
-  validation_frequency: number;
-  avg_health_score: number;
+  recent_post_count: number;
+  share: number;
 }
 
 export function TrendingTopicsChart({
   dateRange = "30d",
+  topic,
   limit = 10,
 }: {
   dateRange?: string;
+  topic?: string;
   limit?: number;
 }) {
   const [topics, setTopics] = useState<TrendingTopic[]>([]);
@@ -47,9 +49,15 @@ export function TrendingTopicsChart({
       setError(null);
 
       try {
-        const response = await fetch(
-          `/api/analytics/trending?limit=${limit}&date_range=${dateRange}`,
-        );
+        const params = new URLSearchParams({
+          limit: String(limit),
+          date_range: dateRange,
+        });
+        if (topic) {
+          params.set("topic", topic);
+        }
+
+        const response = await fetch(`/api/analytics/trending?${params.toString()}`);
         if (!response.ok) throw new Error("Failed to fetch trending topics");
 
         const data = await response.json();
@@ -61,8 +69,8 @@ export function TrendingTopicsChart({
       }
     };
 
-    fetchTopics();
-  }, [dateRange, limit]);
+    void fetchTopics();
+  }, [dateRange, limit, topic]);
 
   if (loading) {
     return <ChartSkeleton className="h-[32rem]" />;
@@ -73,7 +81,7 @@ export function TrendingTopicsChart({
       <ChartShell
         eyebrow="Topic momentum"
         title="Trending topics"
-        description="Weighted validation activity is used here as a proxy for current attention and movement inside the catalog."
+        description="Recent post volume is used here to show which topics are most active in the current catalog slice."
       >
         <div className="rounded-2xl border border-[color:var(--warning-tone)]/40 bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-5 text-[color:var(--ink)]">
           <p className="text-lg font-semibold">No trending topics available</p>
@@ -87,8 +95,8 @@ export function TrendingTopicsChart({
     labels: topics.map((t) => t.topic.toUpperCase()),
     datasets: [
       {
-        label: "Validation Frequency",
-        data: topics.map((t) => t.validation_frequency),
+        label: "Recent Post Count",
+        data: topics.map((t) => t.recent_post_count),
         backgroundColor: chartTheme.accentSoft,
         borderColor: chartTheme.accent,
         borderWidth: 1,
@@ -113,7 +121,7 @@ export function TrendingTopicsChart({
             const topic = topics[context.dataIndex];
             return [
               `Feed Count: ${topic.feed_count}`,
-              `Avg Health: ${(topic.avg_health_score * 100).toFixed(1)}%`,
+              `Share of recent posts: ${(topic.share * 100).toFixed(1)}%`,
             ];
           },
         },
@@ -130,7 +138,7 @@ export function TrendingTopicsChart({
         },
         title: {
           display: true,
-          text: "Validation Frequency",
+          text: "Recent Post Count",
           color: chartTheme.textMuted,
         },
       },
@@ -154,7 +162,7 @@ export function TrendingTopicsChart({
     <ChartShell
       eyebrow="Topic momentum"
       title="Trending topics"
-      description="Weighted validation frequency helps surface the parts of the catalog drawing the most recent operational attention."
+      description="Recent post counts grouped by topic show where publication energy is concentrated in the shipped catalog."
       footer={
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {topics.map((topic) => (
@@ -169,7 +177,7 @@ export function TrendingTopicsChart({
                 {topic.feed_count} feeds
               </p>
               <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {(topic.avg_health_score * 100).toFixed(0)}% health
+                {topic.recent_post_count} posts • {(topic.share * 100).toFixed(0)}% share
               </p>
             </div>
           ))}

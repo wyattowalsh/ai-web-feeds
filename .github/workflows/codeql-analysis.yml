@@ -2,10 +2,39 @@ name: CodeQL Analysis
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'apps/web/content/docs/**'
+      - 'data/**/*.db'
+      - 'data/**/*.json'
+      - 'data/**/*.opml'
+      - 'data/**/*.schema.json'
+      - 'data/**/*.yaml'
+      - 'data/**/*.yml'
+      - 'data/telemetry/**'
+      - '**/*.md'
+      - '**/*.mdx'
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'apps/web/content/docs/**'
+      - 'data/**/*.db'
+      - 'data/**/*.json'
+      - 'data/**/*.opml'
+      - 'data/**/*.schema.json'
+      - 'data/**/*.yaml'
+      - 'data/**/*.yml'
+      - 'data/telemetry/**'
+      - '**/*.md'
+      - '**/*.mdx'
   schedule:
     - cron: '0 6 * * 1'  # Run every Monday at 6am UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   analyze:
@@ -19,22 +48,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # CodeQL's "javascript" extractor covers the Next.js TypeScript app in apps/web.
         language: [ 'javascript', 'python' ]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@5c8a8a642e79153f5d047b10ec1cba1d1cc65699
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@5c8a8a642e79153f5d047b10ec1cba1d1cc65699
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@5c8a8a642e79153f5d047b10ec1cba1d1cc65699
         with:
           category: "/language:${{matrix.language}}"

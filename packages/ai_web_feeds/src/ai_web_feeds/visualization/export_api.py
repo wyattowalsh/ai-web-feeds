@@ -10,30 +10,62 @@ Implements Phase 8 (US6): T089-T098
 """
 
 from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
+from datetime import UTC, datetime
 from io import StringIO
 from typing import Any
 
+import numpy as np
 import pandas as pd
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from ai_web_feeds.visualization.auth import get_current_device_id
+from ai_web_feeds.visualization.models import ExportFormat
 from ai_web_feeds.visualization.rate_limiter import check_rate_limit
 from ai_web_feeds.visualization.validators import validate_query_limit, validate_table_name
 
 router = APIRouter(prefix="/api/v1/export", tags=["export"])
+DATA_EXPORT_FORMATS = (
+    ExportFormat.JSON,
+    ExportFormat.CSV,
+    ExportFormat.PARQUET,
+)
 
 
-class ExportFormat(str, Enum):
-    """Export format options."""
+def _validation_http_exception(error: ValidationError) -> HTTPException:
+    """Convert validation failures into normalized 400 responses."""
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=validation_error_detail(error),
+    )
 
-    JSON = "json"
-    CSV = "csv"
-    PARQUET = "parquet"
+
+def _validate_data_export_format(format: ExportFormat) -> ExportFormat:
+    """Restrict table exports to structured data formats only."""
+    if format not in DATA_EXPORT_FORMATS:
+        raise ValidationError(
+            "Data export format must be csv, json, or parquet",
+            code="invalid_export_format",
+            field="format",
+            details={
+                "allowed_values": [allowed.value for allowed in DATA_EXPORT_FORMATS],
+            },
+        )
+    return format
+
+
+def _validate_stream_export_format(format: ExportFormat) -> ExportFormat:
+    """Restrict streaming exports to formats implemented by the stream generator."""
+    if format not in {ExportFormat.JSON, ExportFormat.CSV}:
+        raise ValidationError(
+            "Stream export format must be csv or json",
+            code="invalid_export_format",
+            field="format",
+            details={"allowed_values": ["csv", "json"]},
+        )
+    return format
 
 
 @dataclass
@@ -91,7 +123,7 @@ async def export_data(
     limit: int = Query(1000, le=10000),
     cursor: str | None = Query(None),
     sort_by: str | None = Query(None),
-    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     device_id: str = Depends(get_current_device_id),
     session: Session = Depends(lambda: None),  # Would be injected in production
 ) -> Response:
@@ -111,11 +143,14 @@ async def export_data(
     """
     await check_rate_limit(device_id)
 
-    # Validate inputs
-    table = validate_table_name(table)
-    limit = validate_query_limit(limit, max_limit=10000)
+    try:
+        table = validate_table_name(table)
+        limit = validate_query_limit(limit, max_limit=10000)
+        format = _validate_data_export_format(format)
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
-    logger.info(f"Device {device_id[:8]} exporting {table} as {format}")
+    logger.info(f"Device {device_id[:8]} exporting {table} as {format.value}")
 
     # Generate sample data for demonstration
     # In production, this would query the actual database
@@ -174,7 +209,11 @@ async def stream_export(
     """
     await check_rate_limit(device_id)
 
-    table = validate_table_name(table)
+    try:
+        table = validate_table_name(table)
+        format = _validate_stream_export_format(format)
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Device {device_id[:8]} streaming {table} export")
 
@@ -197,7 +236,7 @@ async def stream_export(
         generate_stream(),
         media_type="application/octet-stream",
         headers={
-            "Content-Disposition": f'attachment; filename="{table}_stream.{format}"',
+            "Content-Disposition": f'attachment; filename="{table}_stream.{format.value}"',
         },
     )
 
@@ -220,12 +259,19 @@ async def bulk_export(
     """
     await check_rate_limit(device_id)
 
-    # Validate all tables
-    validated_tables = [validate_table_name(table) for table in tables]
+    try:
+        format = _validate_data_export_format(format)
+        validated_tables = [validate_table_name(table) for table in tables]
 
-    if len(validated_tables) > 10:
-        msg = "Maximum 10 tables per bulk export"
-        raise ValueError(msg)
+        if len(validated_tables) > 10:
+            raise ValidationError(
+                "Maximum 10 tables per bulk export",
+                code="invalid_bulk_export",
+                field="tables",
+                details={"max_tables": 10, "requested": len(validated_tables)},
+            )
+    except ValidationError as error:
+        raise _validation_http_exception(error) from error
 
     logger.info(f"Device {device_id[:8]} bulk exporting {len(validated_tables)} tables")
 
@@ -235,11 +281,11 @@ async def bulk_export(
     }
 
     return {
-        "export_id": f"bulk-{datetime.now().timestamp()}",
+        "export_id": f"bulk-{datetime.now(UTC).timestamp()}",
         "tables": validated_tables,
-        "format": format,
+        "format": format.value,
         "download_urls": export_urls,
-        "created_at": datetime.now().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
 
 

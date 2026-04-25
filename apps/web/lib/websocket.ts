@@ -5,7 +5,8 @@
  */
 
 import { io, Socket } from "socket.io-client";
-import { getUserId } from "./user-identity";
+import { getWebSocketServerUrl } from "@/lib/env";
+import { ensureAnonymousUserId, fetchWithAnonymousIdentity } from "./user-identity";
 
 /**
  * Notification message from WebSocket
@@ -71,6 +72,7 @@ export class WebSocketClient {
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 5;
   private state = createInitialWebSocketState();
+  private connectionPromise: Promise<void> | null = null;
 
   constructor(serverUrl: string) {
     this.serverUrl = serverUrl;
@@ -78,7 +80,7 @@ export class WebSocketClient {
 
   subscribe(listener: WebSocketSubscriber): () => void {
     this.subscribers.add(listener);
-    this.connect();
+    this.connect(false);
 
     return () => {
       this.subscribers.delete(listener);
@@ -96,27 +98,14 @@ export class WebSocketClient {
   /**
    * Connect to WebSocket server and authenticate
    */
-  connect(): void {
-    if (this.socket?.connected || this.socket?.active) {
+  connect(force = true): void {
+    if (this.socket?.connected || this.socket?.active || this.connectionPromise) {
       return;
     }
 
-    if (this.socket) {
-      const staleSocket = this.socket;
-      this.socket = null;
-      staleSocket.disconnect();
-    }
-
-    const socket = io(this.serverUrl, {
-      transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-    }) as SocketWithLifecycle;
-
-    this.socket = socket;
-    this.registerSocketHandlers(socket);
+    this.connectionPromise = this.connectWithIdentity(force).finally(() => {
+      this.connectionPromise = null;
+    });
   }
 
   /**
@@ -136,26 +125,7 @@ export class WebSocketClient {
    * Mark notification as read
    */
   markRead(notificationId: number): void {
-    const socket = this.socket;
-    if (!socket?.connected) {
-      return;
-    }
-
-    socket.emit("mark_read", { notification_id: notificationId });
-
-    this.updateState((state) => {
-      let didUpdate = false;
-      const notifications = state.notifications.map((notification) => {
-        if (notification.id !== notificationId || notification.read_at) {
-          return notification;
-        }
-
-        didUpdate = true;
-        return { ...notification, read_at: new Date().toISOString() };
-      });
-
-      return didUpdate ? { ...state, notifications } : state;
-    });
+    void this.syncNotificationState(notificationId, "mark_read");
   }
 
   /**
@@ -186,7 +156,46 @@ export class WebSocketClient {
     return this.state.isConnected;
   }
 
-  private registerSocketHandlers(socket: SocketWithLifecycle): void {
+  private async connectWithIdentity(force: boolean): Promise<void> {
+    if (!force && this.subscribers.size === 0) {
+      return;
+    }
+
+    try {
+      const userId = await ensureAnonymousUserId();
+      if (
+        (!force && this.subscribers.size === 0) ||
+        this.socket?.connected ||
+        this.socket?.active
+      ) {
+        return;
+      }
+
+      if (this.socket) {
+        const staleSocket = this.socket;
+        this.socket = null;
+        staleSocket.disconnect();
+      }
+
+      const socket = io(this.serverUrl, {
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionAttempts: this.maxReconnectAttempts,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      }) as SocketWithLifecycle;
+
+      this.socket = socket;
+      this.registerSocketHandlers(socket, userId);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to establish anonymous identity";
+      console.error("WebSocket identity bootstrap failed:", errorMessage);
+      this.updateState((state) => ({ ...state, error: errorMessage }));
+    }
+  }
+
+  private registerSocketHandlers(socket: SocketWithLifecycle, userId: string): void {
     socket.on("connect", () => {
       if (this.socket !== socket) {
         return;
@@ -195,7 +204,6 @@ export class WebSocketClient {
       console.log("WebSocket connected");
       this.reconnectAttempts = 0;
 
-      const userId = getUserId();
       socket.emit("authenticate", { user_id: userId });
 
       this.updateState((state) => ({ ...state, isConnected: true, error: null }));
@@ -214,7 +222,7 @@ export class WebSocketClient {
       this.updateState((state) => (state.isConnected ? { ...state, isConnected: false } : state));
 
       if (shouldReconnect) {
-        this.connect();
+        this.connect(false);
       }
     });
 
@@ -280,6 +288,54 @@ export class WebSocketClient {
     });
   }
 
+  private async syncNotificationState(
+    notificationId: number,
+    action: "mark_read" | "dismiss",
+  ): Promise<void> {
+    try {
+      const response = await fetchWithAnonymousIdentity(`/api/notifications/${notificationId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? `Failed to ${action.replace("_", " ")} notification`);
+      }
+
+      this.updateState((state) => {
+        if (action === "dismiss") {
+          const notifications = state.notifications.filter(
+            (notification) => notification.id !== notificationId,
+          );
+          return notifications.length === state.notifications.length
+            ? state
+            : { ...state, notifications };
+        }
+
+        let didUpdate = false;
+        const notifications = state.notifications.map((notification) => {
+          if (notification.id !== notificationId || notification.read_at) {
+            return notification;
+          }
+
+          didUpdate = true;
+          return { ...notification, read_at: new Date().toISOString() };
+        });
+
+        return didUpdate ? { ...state, notifications } : state;
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update notification state";
+      console.error("WebSocket notification sync error:", errorMessage);
+      this.updateState((state) => ({ ...state, error: errorMessage }));
+    }
+  }
+
   private updateState(updater: (state: WebSocketState) => WebSocketState): void {
     const nextState = updater(this.state);
 
@@ -301,31 +357,12 @@ export class WebSocketClient {
 // Singleton instance for app-wide use
 let globalWebSocket: WebSocketClient | null = null;
 
-function resolveWebSocketServerUrl(): string {
-  const configuredUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL?.trim();
-  if (configuredUrl) {
-    return configuredUrl;
-  }
-
-  if (typeof window === "undefined") {
-    return "http://localhost:8000";
-  }
-
-  const isLocalHost =
-    window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  if (isLocalHost) {
-    return "http://localhost:8000";
-  }
-
-  return window.location.origin;
-}
-
 /**
  * Get global WebSocket client instance
  */
 export function getWebSocketClient(): WebSocketClient {
   if (!globalWebSocket) {
-    const serverUrl = resolveWebSocketServerUrl();
+    const serverUrl = getWebSocketServerUrl();
     globalWebSocket = new WebSocketClient(serverUrl);
   }
   return globalWebSocket;

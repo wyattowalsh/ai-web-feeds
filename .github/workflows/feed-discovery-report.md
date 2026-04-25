@@ -22,6 +22,8 @@ Generate at most one maintainer-facing discovery report issue for this run.
 ## Scope
 
 - This workflow is report-only.
+- This workflow is source-only and additive. It must not become the canonical mutation
+  path for catalog changes in this pass.
 - Do not create a pull request.
 - Do not request direct repository mutation.
 - Do not recommend or apply labels that trigger feed submission or approval automation.
@@ -31,7 +33,7 @@ Generate at most one maintainer-facing discovery report issue for this run.
 
 Use these files as the source of truth before making any recommendation:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `reports/github/catalog/feed-processing-summary.json` when available
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -63,6 +65,8 @@ Use these files as the source of truth before making any recommendation:
 
 If you create an issue, use this structure:
 
+1. `Report Status`: one of `candidates-found`, `gap-report-only`, or `noop`
+1. `Snapshot Status`: one of `fresh-snapshot`, `stale-snapshot`, or `missing-artifact`
 1. `Weekly Summary`: what changed or what remains under-covered
 1. `Priority Gaps`: up to 3 topic or source-type gaps worth pursuing next
 1. `Candidate Leads`: up to 5 domain-level leads, or state clearly that external

@@ -444,8 +444,7 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
   <Card title="Card 2" description="Description" href="/link" />
 </Cards>
 
-<Tabs items={["npm", "pnpm", "yarn"]}>
-  <Tab value="npm">```bash npm install package ```</Tab>
+<Tabs items={["pnpm"]}>
   <Tab value="pnpm">```bash pnpm add package ```</Tab>
 </Tabs>
 ````

@@ -1,6 +1,6 @@
 """ai_web_feeds.models -- AIWebFeeds data models with SQLModel support"""
 
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
@@ -13,8 +13,9 @@ from sqlmodel import Relationship, SQLModel
 
 # Helper function for UTC-aware datetime defaults
 def _utc_now() -> datetime:
-    """Return current UTC time with timezone awareness."""
-    return datetime.now(UTC)
+    """Return current UTC time normalized for database storage."""
+    return utc_now()
+
 
 
 # ============================================================================
@@ -482,6 +483,44 @@ class FeedValidationResult(SQLModel, table=True):
     # Timestamps
     created_at: datetime = SQLField(default_factory=_utc_now)
 
+    @classmethod
+    def _normalize_legacy_field_aliases(cls, data: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(data)
+        if "success" in normalized and "is_valid" not in normalized:
+            normalized["is_valid"] = normalized.pop("success")
+        if "status_code" in normalized and "http_status" not in normalized:
+            normalized["http_status"] = normalized.pop("status_code")
+        if "response_time" in normalized and "response_time_ms" not in normalized:
+            normalized["response_time_ms"] = normalized.pop("response_time")
+        return normalized
+
+    def __init__(self, **data: Any):
+        super().__init__(**self._normalize_legacy_field_aliases(data))
+
+    @model_validator(mode="before")
+    @classmethod
+    def apply_legacy_field_aliases(cls, data: Any) -> Any:
+        """Accept legacy validation field names during model construction."""
+        if not isinstance(data, dict):
+            return data
+
+        return cls._normalize_legacy_field_aliases(data)
+
+    @property
+    def success(self) -> bool:
+        """Compatibility alias for the legacy validation-result API."""
+        return self.is_valid
+
+    @property
+    def status_code(self) -> int | None:
+        """Compatibility alias for the legacy validation-result API."""
+        return self.http_status
+
+    @property
+    def response_time(self) -> float | None:
+        """Compatibility alias for the legacy validation-result API."""
+        return self.response_time_ms
+
 
 class FeedAnalytics(SQLModel, table=True):
     """Analytics and metrics for feed sources.
@@ -680,6 +719,54 @@ class AnalyticsSnapshot(SQLModel, table=True):
     )
     created_at: datetime = SQLField(default_factory=_utc_now)
 
+    @classmethod
+    def _normalize_legacy_snapshot_payload(cls, data: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(data)
+        metrics = normalized.pop("metrics", None) or {}
+        if metrics:
+            normalized.setdefault("total_feeds", metrics.get("total_feeds", 0))
+            normalized.setdefault("active_feeds", metrics.get("active_feeds", 0))
+            normalized.setdefault(
+                "validation_success_rate",
+                metrics.get("validation_success_rate", metrics.get("success_rate", 0.0)),
+            )
+            normalized.setdefault(
+                "avg_response_time",
+                metrics.get("avg_response_time", metrics.get("avg_response_time_ms", 0.0)),
+            )
+
+        trending_topics = normalized.get("trending_topics")
+        if (
+            isinstance(trending_topics, list)
+            and trending_topics
+            and isinstance(trending_topics[0], str)
+        ):
+            normalized["trending_topics"] = [{"topic": topic} for topic in trending_topics]
+        return normalized
+
+    def __init__(self, **data: Any):
+        super().__init__(**self._normalize_legacy_snapshot_payload(data))
+
+    @model_validator(mode="before")
+    @classmethod
+    def apply_legacy_snapshot_payload(cls, data: Any) -> Any:
+        """Accept the older `metrics` payload shape used by legacy tests/helpers."""
+        if not isinstance(data, dict):
+            return data
+
+        return cls._normalize_legacy_snapshot_payload(data)
+
+    @property
+    def metrics(self) -> dict[str, float | int]:
+        """Compatibility view of the snapshot's core metrics."""
+        return {
+            "total_feeds": self.total_feeds,
+            "active_feeds": self.active_feeds,
+            "validation_success_rate": self.validation_success_rate,
+            "success_rate": self.validation_success_rate,
+            "avg_response_time": self.avg_response_time,
+        }
+
 
 class TopicStats(SQLModel, table=True):
     """Topic-level analytics for trending and Most Active Topics.
@@ -736,7 +823,7 @@ class SavedSearch(SQLModel, table=True):
     __tablename__ = "saved_searches"
 
     id: UUID = SQLField(default_factory=uuid4, primary_key=True)
-    user_id: str = SQLField(index=True, description="User ID (localStorage key)")
+    user_id: str = SQLField(index=True, description="Anonymous device-scoped user ID")
     search_name: str = SQLField(description="User-provided name for saved search")
     query_text: str = SQLField(description="Search query text")
     filters: dict[str, Any] = SQLField(
@@ -1014,7 +1101,6 @@ class EmailDigest(SQLModel, table=True):
     """
 
     __tablename__ = "email_digests"
-
     id: int | None = SQLField(default=None, primary_key=True)
     user_id: str = SQLField(index=True, description="User ID (localStorage UUID)")
     email: str = SQLField(max_length=255)

@@ -1,9 +1,10 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { Newspaper, RadioTower, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+import type { SearchScope } from "@/lib/search";
 
 interface SearchFiltersProps {
   scope: "sources" | "articles";
@@ -17,6 +18,31 @@ interface SearchFiltersProps {
   onVerifiedChange: (verified: boolean | undefined) => void;
 }
 
+const SOURCE_TYPES = [
+  { value: "", label: "All source types" },
+  { value: "blog", label: "Blog" },
+  { value: "newsletter", label: "Newsletter" },
+  { value: "podcast", label: "Podcast" },
+  { value: "video", label: "Video" },
+  { value: "github", label: "GitHub" },
+  { value: "arxiv", label: "ArXiv" },
+  { value: "reddit", label: "Reddit" },
+  { value: "youtube", label: "YouTube" },
+];
+
+const COMMON_TOPICS = [
+  "llm",
+  "agents",
+  "research",
+  "mlops",
+  "retrieval",
+  "inference",
+  "evaluation",
+  "open-source",
+  "safety",
+  "governance",
+];
+
 export function SearchFilters({
   scope,
   onScopeChange,
@@ -28,36 +54,13 @@ export function SearchFilters({
   verified,
   onVerifiedChange,
 }: SearchFiltersProps) {
-  const sourceTypes = [
-    { value: "", label: "All Sources" },
-    { value: "blog", label: "Blog" },
-    { value: "newsletter", label: "Newsletter" },
-    { value: "podcast", label: "Podcast" },
-    { value: "video", label: "Video" },
-    { value: "journal", label: "Journal" },
-    { value: "preprint", label: "Preprint" },
-  ];
-
-  const commonTopics = [
-    "llm",
-    "agents",
-    "training",
-    "inference",
-    "genai",
-    "ml",
-    "cv",
-    "nlp",
-    "rl",
-    "data",
-    "safety",
-  ];
-
   const handleTopicToggle = (topic: string) => {
     if (topics.includes(topic)) {
-      onTopicsChange(topics.filter((t) => t !== topic));
-    } else {
-      onTopicsChange([...topics, topic]);
+      onTopicsChange(topics.filter((value) => value !== topic));
+      return;
     }
+
+    onTopicsChange([...topics, topic]);
   };
 
   return (
@@ -69,7 +72,7 @@ export function SearchFilters({
           </span>
           <div>
             <p className="metric-label">Filters</p>
-            <h3 className="text-lg font-semibold text-(--ink)">Tune the search strategy</h3>
+            <h3 className="text-lg font-semibold text-(--ink)">Choose what to search</h3>
           </div>
         </div>
         {showScopeToggle ? (
@@ -97,14 +100,14 @@ export function SearchFilters({
       </div>
 
       <div>
-        <label className="field-label">Source Type</label>
+        <label className="field-label">Source type</label>
         <Select
           value={sourceType || ""}
-          onChange={(e) => onSourceTypeChange(e.target.value || undefined)}
+          onChange={(event) => onSourceTypeChange(event.target.value || undefined)}
         >
-          {sourceTypes.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
+          {SOURCE_TYPES.map((source) => (
+            <option key={source.value} value={source.value}>
+              {source.label}
             </option>
           ))}
         </Select>
@@ -113,7 +116,7 @@ export function SearchFilters({
       <div>
         <label className="field-label">Topics</label>
         <div className="flex flex-wrap gap-2">
-          {commonTopics.map((topic) => (
+          {COMMON_TOPICS.map((topic) => (
             <button
               key={topic}
               type="button"
@@ -135,14 +138,14 @@ export function SearchFilters({
             onClick={() => onTopicsChange([])}
             className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-(--brand-strong)"
           >
-            Clear all topics
+            Clear topics
           </button>
         )}
       </div>
 
       <div>
-        <label className="field-label">Verification Status</label>
-        <div className="flex gap-2">
+        <label className="field-label">Verification</label>
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             onClick={() => onVerifiedChange(undefined)}
@@ -155,7 +158,7 @@ export function SearchFilters({
             onClick={() => onVerifiedChange(true)}
             variant={verified === true ? "default" : "secondary"}
           >
-            ✓ Verified
+            Verified
           </Button>
           <Button
             type="button"

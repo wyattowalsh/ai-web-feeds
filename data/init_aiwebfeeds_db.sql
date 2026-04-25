@@ -1,7 +1,9 @@
 -- AIWebFeeds Database Initialization Script
--- SQLite Database Schema for aiwebfeeds.db
+-- SQLite Database Schema for ai-web-feeds.db
 -- Generated: 2025-11-02
 -- Compatible with: SQLModel, SQLAlchemy 2.0+
+-- Legacy compatibility note: aiwebfeeds.db remains a fallback alias when the
+-- canonical ai-web-feeds.db file is not present.
 --
 -- This script creates all tables for:
 -- - Phase 001: Core project (sources, items, fetch logs, topics)

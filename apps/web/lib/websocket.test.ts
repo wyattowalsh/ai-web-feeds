@@ -14,14 +14,25 @@ type SocketMock = {
 let currentSocket: SocketMock;
 
 const ioMock = vi.fn(() => currentSocket);
-const getUserIdMock = vi.fn(() => "user-123");
+const ensureAnonymousUserIdMock = vi.fn(async () => "11111111-1111-4111-8111-111111111111");
+const fetchWithAnonymousIdentityMock = vi.fn(
+  async () =>
+    new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "x-aiwf-anonymous-user-id": "11111111-1111-4111-8111-111111111111",
+      },
+    }),
+);
 
 vi.mock("socket.io-client", () => ({
   io: ioMock,
 }));
 
 vi.mock("./user-identity", () => ({
-  getUserId: getUserIdMock,
+  ensureAnonymousUserId: ensureAnonymousUserIdMock,
+  fetchWithAnonymousIdentity: fetchWithAnonymousIdentityMock,
 }));
 
 function createSocketMock(): SocketMock {
@@ -59,7 +70,8 @@ describe("websocket", () => {
   beforeEach(() => {
     currentSocket = createSocketMock();
     ioMock.mockClear();
-    getUserIdMock.mockClear();
+    ensureAnonymousUserIdMock.mockClear();
+    fetchWithAnonymousIdentityMock.mockClear();
     vi.clearAllMocks();
     vi.resetModules();
   });
@@ -79,6 +91,9 @@ describe("websocket", () => {
     const subscriber = vi.fn();
     const unsubscribe = client.subscribe(subscriber);
 
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
     expect(ioMock).toHaveBeenCalledWith(
       "https://ws.example.com",
       expect.objectContaining({
@@ -94,9 +109,9 @@ describe("websocket", () => {
     currentSocket.connected = true;
     currentSocket.handlers.connect();
 
-    expect(getUserIdMock).toHaveBeenCalledTimes(1);
+    expect(ensureAnonymousUserIdMock).toHaveBeenCalledTimes(1);
     expect(currentSocket.emit).toHaveBeenCalledWith("authenticate", {
-      user_id: "user-123",
+      user_id: "11111111-1111-4111-8111-111111111111",
     });
     expect(client.isConnected()).toBe(true);
     expect(client.getSnapshot()).toMatchObject({ isConnected: true, error: null });
@@ -123,14 +138,28 @@ describe("websocket", () => {
     expect(client.getSnapshot().error).toBe("socket blew up");
 
     client.markRead(2);
-    expect(currentSocket.emit).toHaveBeenCalledWith("mark_read", { notification_id: 2 });
+    await vi.waitFor(() => {
+      expect(fetchWithAnonymousIdentityMock).toHaveBeenCalledWith(
+        "/api/notifications/2",
+        expect.objectContaining({
+          method: "PATCH",
+        }),
+      );
+    });
     expect(client.getSnapshot().notifications[0]).toMatchObject({
       id: 2,
       read_at: expect.any(String),
     });
 
     client.dismiss(1);
-    expect(currentSocket.emit).toHaveBeenCalledWith("dismiss", { notification_id: 1 });
+    await vi.waitFor(() => {
+      expect(fetchWithAnonymousIdentityMock).toHaveBeenCalledWith(
+        "/api/notifications/1",
+        expect.objectContaining({
+          method: "PATCH",
+        }),
+      );
+    });
     expect(client.getSnapshot().notifications).toHaveLength(1);
     expect(client.getSnapshot().notifications[0]?.id).toBe(2);
 
@@ -165,7 +194,9 @@ describe("websocket", () => {
     const unsubscribeFirst = client.subscribe(firstSubscriber);
     const unsubscribeSecond = client.subscribe(secondSubscriber);
 
-    expect(ioMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
 
     currentSocket.active = true;
     currentSocket.connected = true;
@@ -190,6 +221,9 @@ describe("websocket", () => {
     const client = new WebSocketClient("https://ws.example.com");
     client.subscribe(vi.fn());
 
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
     currentSocket.active = true;
     currentSocket.connected = true;
     currentSocket.handlers.connect();
@@ -201,7 +235,9 @@ describe("websocket", () => {
     staleSocket.connected = false;
     staleSocket.handlers.disconnect("io server disconnect");
 
-    expect(ioMock).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(2);
+    });
 
     currentSocket.active = true;
     currentSocket.connected = true;
@@ -223,6 +259,9 @@ describe("websocket", () => {
     const client = new WebSocketClient("https://ws.example.com");
     const unsubscribeFirst = client.subscribe(vi.fn());
 
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
     currentSocket.active = true;
     currentSocket.connected = true;
     currentSocket.handlers.connect();
@@ -235,7 +274,9 @@ describe("websocket", () => {
     currentSocket = createSocketMock();
     const unsubscribeSecond = client.subscribe(vi.fn());
 
-    expect(ioMock).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(2);
+    });
 
     unsubscribeFirst();
     unsubscribeSecond();
@@ -250,12 +291,15 @@ describe("websocket", () => {
     errorSpy.mockRestore();
   });
 
-  it("does not mutate notification state while disconnected", async () => {
+  it("updates notification state through HTTP routes even while disconnected", async () => {
     const { WebSocketClient } = await import("./websocket");
 
     const client = new WebSocketClient("https://ws.example.com");
     client.subscribe(vi.fn());
 
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
     currentSocket.active = true;
     currentSocket.connected = true;
     currentSocket.handlers.connect();
@@ -270,9 +314,15 @@ describe("websocket", () => {
     client.markRead(1);
     client.dismiss(1);
 
-    expect(currentSocket.emit).not.toHaveBeenCalledWith("mark_read", { notification_id: 1 });
-    expect(currentSocket.emit).not.toHaveBeenCalledWith("dismiss", { notification_id: 1 });
-    expect(client.getSnapshot().notifications).toEqual([notification]);
+    await vi.waitFor(() => {
+      expect(fetchWithAnonymousIdentityMock).toHaveBeenCalledWith(
+        "/api/notifications/1",
+        expect.objectContaining({
+          method: "PATCH",
+        }),
+      );
+    });
+    expect(client.getSnapshot().notifications).toEqual([]);
   });
 
   it("reuses the singleton client within a module load", async () => {
@@ -285,6 +335,9 @@ describe("websocket", () => {
     expect(first).toBe(second);
 
     first.connect();
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
 
     expect(ioMock).toHaveBeenCalledWith(
       "https://configured.example.com",
@@ -306,6 +359,9 @@ describe("websocket", () => {
     const localhostModule = await import("./websocket");
     const localhostClient = localhostModule.getWebSocketClient();
     localhostClient.connect();
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
 
     expect(ioMock).toHaveBeenCalledWith(
       "http://localhost:8000",
@@ -327,6 +383,9 @@ describe("websocket", () => {
     const remoteModule = await import("./websocket");
     const remoteClient = remoteModule.getWebSocketClient();
     remoteClient.connect();
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(2);
+    });
 
     expect(ioMock).toHaveBeenCalledWith(
       "https://aiwebfeeds.com",
@@ -343,6 +402,9 @@ describe("websocket", () => {
     const { getWebSocketClient } = await import("./websocket");
     const client = getWebSocketClient();
     client.connect();
+    await vi.waitFor(() => {
+      expect(ioMock).toHaveBeenCalledTimes(1);
+    });
 
     expect(ioMock).toHaveBeenCalledWith(
       "http://localhost:8000",

@@ -1,7 +1,7 @@
 """Add visualization tables for Phase 006.
 
 Revision ID: 006_visualization
-Revises: (previous migration ID - to be filled)
+Revises: 146892327439
 Create Date: 2025-11-02
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic
 revision = "006_visualization"
-down_revision = None  # Update with previous migration ID
+down_revision = "146892327439"
 branch_labels = None
 depends_on = None
 

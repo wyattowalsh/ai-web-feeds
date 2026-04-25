@@ -5,6 +5,7 @@ import { getMDXComponents } from "@/mdx-components";
 import type { Metadata } from "next";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import { BookOpenText } from "lucide-react";
+import { getSiteBaseUrl } from "@/lib/env";
 import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
 
 type DocsPageProps = {

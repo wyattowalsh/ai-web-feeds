@@ -64,7 +64,7 @@ describe("/api/search route", () => {
         },
       ],
       meta: {
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
         candidate_sources: 42,
         scanned_sources: 42,
@@ -97,7 +97,7 @@ describe("/api/search route", () => {
       ],
       scope: "sources",
       meta: expect.objectContaining({
-        mode: "unbounded",
+        mode: "local",
         bounded: false,
       }),
     });
@@ -125,7 +125,7 @@ describe("/api/search route", () => {
         },
       ],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 8,
         scanned_sources: 6,
@@ -214,7 +214,7 @@ describe("/api/search route", () => {
       scope: "articles",
       results: [],
       meta: {
-        mode: "bounded",
+        mode: "local",
         bounded: true,
         candidate_sources: 0,
         scanned_sources: 0,

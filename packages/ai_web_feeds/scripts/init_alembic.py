@@ -33,10 +33,10 @@ def init_alembic() -> None:
     if result.returncode == 0:
         print(f"✓ Initialized Alembic: {alembic_dir}")
         print("\nNext steps:")
-        print("1. Edit alembic.ini to configure your database URL")
+        print("1. Export AIWF_DATABASE_URL if you need a non-default database path")
         print("2. Edit alembic/env.py to import your SQLModel models")
-        print("3. Run: alembic revision --autogenerate -m 'Initial migration'")
-        print("4. Run: alembic upgrade head")
+        print("3. Run: uv run alembic revision --autogenerate -m 'Initial migration'")
+        print("4. Run: uv run alembic upgrade head")
     else:
         print(f"✗ Failed to initialize Alembic: {result.stderr}")
         sys.exit(1)
