@@ -9,33 +9,38 @@
       "trending_topics": [
         {
           "topic": "llm",
-          "feed_count": 287,
-          "validation_frequency": 0.947,
-          "avg_health_score": 0.91
+          "article_count": 342,
+          "z_score": 3.8,
+          "rank": 1,
+          "growth_rate": 0.42
         },
         {
           "topic": "agents",
-          "feed_count": 142,
-          "validation_frequency": 0.892,
-          "avg_health_score": 0.88
+          "article_count": 198,
+          "z_score": 2.9,
+          "rank": 2,
+          "growth_rate": 0.38
         },
         {
           "topic": "inference",
-          "feed_count": 198,
-          "validation_frequency": 0.934,
-          "avg_health_score": 0.9
+          "article_count": 156,
+          "z_score": 2.6,
+          "rank": 3,
+          "growth_rate": 0.24
         },
         {
           "topic": "evaluation",
-          "feed_count": 176,
-          "validation_frequency": 0.918,
-          "avg_health_score": 0.89
+          "article_count": 134,
+          "z_score": 2.4,
+          "rank": 4,
+          "growth_rate": 0.31
         },
         {
           "topic": "safety",
-          "feed_count": 98,
-          "validation_frequency": 0.885,
-          "avg_health_score": 0.86
+          "article_count": 112,
+          "z_score": 2.1,
+          "rank": 5,
+          "growth_rate": 0.19
         }
       ],
       "health_distribution": {
@@ -53,33 +58,38 @@
       "trending_topics": [
         {
           "topic": "llm",
-          "feed_count": 281,
-          "validation_frequency": 0.938,
-          "avg_health_score": 0.9
+          "article_count": 287,
+          "z_score": 3.2,
+          "rank": 1,
+          "growth_rate": 0.35
         },
         {
           "topic": "multimodal",
-          "feed_count": 129,
-          "validation_frequency": 0.889,
-          "avg_health_score": 0.87
+          "article_count": 176,
+          "z_score": 2.7,
+          "rank": 2,
+          "growth_rate": 0.41
         },
         {
           "topic": "agents",
-          "feed_count": 139,
-          "validation_frequency": 0.881,
-          "avg_health_score": 0.87
+          "article_count": 165,
+          "z_score": 2.5,
+          "rank": 3,
+          "growth_rate": 0.28
         },
         {
           "topic": "retrieval",
-          "feed_count": 150,
-          "validation_frequency": 0.874,
-          "avg_health_score": 0.86
+          "article_count": 143,
+          "z_score": 2.3,
+          "rank": 4,
+          "growth_rate": 0.22
         },
         {
           "topic": "training",
-          "feed_count": 184,
-          "validation_frequency": 0.901,
-          "avg_health_score": 0.89
+          "article_count": 128,
+          "z_score": 2.1,
+          "rank": 5,
+          "growth_rate": 0.15
         }
       ],
       "health_distribution": {
@@ -97,33 +107,38 @@
       "trending_topics": [
         {
           "topic": "llm",
-          "feed_count": 274,
-          "validation_frequency": 0.931,
-          "avg_health_score": 0.9
+          "article_count": 264,
+          "z_score": 3.1,
+          "rank": 1,
+          "growth_rate": 0.32
         },
         {
           "topic": "evaluation",
-          "feed_count": 171,
-          "validation_frequency": 0.907,
-          "avg_health_score": 0.88
+          "article_count": 189,
+          "z_score": 2.8,
+          "rank": 2,
+          "growth_rate": 0.44
         },
         {
           "topic": "agents",
-          "feed_count": 136,
-          "validation_frequency": 0.876,
-          "avg_health_score": 0.87
+          "article_count": 158,
+          "z_score": 2.4,
+          "rank": 3,
+          "growth_rate": 0.26
         },
         {
           "topic": "optimization",
-          "feed_count": 162,
-          "validation_frequency": 0.898,
-          "avg_health_score": 0.88
+          "article_count": 147,
+          "z_score": 2.3,
+          "rank": 4,
+          "growth_rate": 0.29
         },
         {
           "topic": "open-source",
-          "feed_count": 233,
-          "validation_frequency": 0.915,
-          "avg_health_score": 0.87
+          "article_count": 121,
+          "z_score": 2.0,
+          "rank": 5,
+          "growth_rate": 0.18
         }
       ],
       "health_distribution": {
@@ -143,7 +158,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "b9d8e4f3-0e7c-45a2-84b3-8d9e2f6a0b4c",
+      "id": "b9d8e4f3-0e7c-5g2f-c4b3-8d9e2f6g0b4c",
       "topic": "agents",
       "feed_count": 142,
       "validation_frequency": 0.892,
@@ -151,7 +166,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "c0e9f5a4-1f8d-46b3-95c4-9e0f3a7b1c5d",
+      "id": "c0e9f5g4-1f8d-6h3g-d5c4-9e0f3g7h1c5d",
       "topic": "inference",
       "feed_count": 198,
       "validation_frequency": 0.934,
@@ -159,7 +174,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "d1f0a6b5-2a9e-47c4-a6d5-0f1a4b8c2d6e",
+      "id": "d1f0g6h5-2g9e-7i4h-e6d5-0f1g4h8i2d6e",
       "topic": "evaluation",
       "feed_count": 176,
       "validation_frequency": 0.918,
@@ -167,7 +182,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "e2a1b7c6-3b0f-48d5-b7e6-1a2b5c9d3e7f",
+      "id": "e2g1h7i6-3h0f-8j5i-f7e6-1g2h5i9j3e7f",
       "topic": "retrieval",
       "feed_count": 154,
       "validation_frequency": 0.905,
@@ -175,7 +190,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "f3b2c8d7-4c1a-49e6-88f7-2b3c6d0e4f8a",
+      "id": "f3h2i8j7-4i1g-9k6j-g8f7-2h3i6j0k4f8g",
       "topic": "training",
       "feed_count": 189,
       "validation_frequency": 0.928,
@@ -183,7 +198,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "a4c3d9e8-5d2b-4af7-99a8-3c4d7e1f5a9b",
+      "id": "g4i3j9k8-5j2h-0l7k-h9g8-3i4j7k1l5g9h",
       "topic": "optimization",
       "feed_count": 167,
       "validation_frequency": 0.912,
@@ -191,7 +206,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "b5d4e0f9-6e3c-4b08-aab9-4d5e8f2a6b0c",
+      "id": "h5j4k0l9-6k3i-1m8l-i0h9-4j5k8l2m6h0i",
       "topic": "safety",
       "feed_count": 98,
       "validation_frequency": 0.885,
@@ -199,7 +214,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "c6e5f1a0-7f4d-4c19-bbca-5e6f9a3b7c1d",
+      "id": "i6k5l1m0-7l4j-2n9m-j1i0-5k6l9m3n7i1j",
       "topic": "multimodal",
       "feed_count": 134,
       "validation_frequency": 0.901,
@@ -207,7 +222,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "d7f6a2b1-8a5e-4d2a-8cdb-6f7a0b4c8d2e",
+      "id": "j7l6m2n1-8m5k-3o0n-k2j1-6l7m0n4o8j2k",
       "topic": "open-source",
       "feed_count": 245,
       "validation_frequency": 0.921,
@@ -215,7 +230,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "e8a7b3c2-9b6f-4e3b-9dec-7a8b1c5d9e3f",
+      "id": "k8m7n3o2-9n6l-4p1o-l3k2-7m8n1o5p9k3l",
       "topic": "research",
       "feed_count": 312,
       "validation_frequency": 0.938,
@@ -223,7 +238,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "f9b8c4d3-0c7a-4f4c-aefd-8b9c2d6e0f4a",
+      "id": "l9n8o4p3-0o7m-5q2p-m4l3-8n9o2p6q0l4m",
       "topic": "industry",
       "feed_count": 278,
       "validation_frequency": 0.925,
@@ -231,7 +246,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "a0c9d5e4-1d8b-405d-b0ae-9c0d3e7f1a5b",
+      "id": "m0o9p5q4-1p8n-6r3q-n5m4-9o0p3q7r1m5n",
       "topic": "product",
       "feed_count": 198,
       "validation_frequency": 0.914,
@@ -239,7 +254,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "b1d0e6f5-2e9c-416e-81bf-0d1e4f8a2b6c",
+      "id": "n1p0q6r5-2q9o-7s4r-o6n5-0p1q4r8s2n6o",
       "topic": "mlops",
       "feed_count": 187,
       "validation_frequency": 0.908,
@@ -247,7 +262,7 @@
       "snapshot_date": "2025-11-01"
     },
     {
-      "id": "c2e1f7a6-3f0d-427f-92c0-1e2f5a9b3c7d",
+      "id": "o2q1r7s6-3r0p-8t5s-p7o6-1q2r5s9t3o7p",
       "topic": "serving",
       "feed_count": 143,
       "validation_frequency": 0.897,
@@ -259,11 +274,11 @@
     "generated_at": "2025-11-02T10:30:00Z",
     "format_version": "1.0",
     "description": "Sample analytics data for testing AIWebFeeds dashboard functionality",
-      "notes": [
-        "Analytics snapshots show daily aggregated metrics",
-        "Topic stats track per-topic validation frequency and health",
-        "Trending topics mirror the current dashboard consumer shape",
-        "Health distribution categorizes feeds by quality scores"
-      ]
-    }
+    "notes": [
+      "Analytics snapshots show daily aggregated metrics",
+      "Topic stats track per-topic validation frequency and health",
+      "Trending topics include Z-score calculations for statistical significance",
+      "Health distribution categorizes feeds by quality scores"
+    ]
   }
+}

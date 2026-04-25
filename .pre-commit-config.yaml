@@ -29,7 +29,7 @@ repos:
   rev: v1.20.1
   hooks:
   - id: mypy
-    name: mypy (packages, advisory)
+    name: mypy (packages)
     files: ^packages/
     exclude: ^tests/
     additional_dependencies:
@@ -43,9 +43,8 @@ repos:
     - pydantic>=2.0
     - pydantic-settings>=2.11.0
     args: [--config-file=pyproject.toml, --strict]
-    stages: [manual]
   - id: mypy
-    name: mypy (apps/cli, advisory)
+    name: mypy (apps/cli)
     files: ^apps/cli/
     exclude: ^tests/
     additional_dependencies:
@@ -54,7 +53,6 @@ repos:
     - sqlmodel
     - types-PyYAML
     args: [--config-file=apps/cli/pyproject.toml, --ignore-missing-imports]
-    stages: [manual]
 
   # ============================================================================
   # Python - Security checks
@@ -63,11 +61,9 @@ repos:
   rev: 1.9.4
   hooks:
   - id: bandit
-    name: bandit (advisory)
     args: [-c, pyproject.toml]
     additional_dependencies: ['bandit[toml]']
     exclude: ^tests/
-    stages: [manual]
 
   # ============================================================================
   # General file checks
@@ -134,7 +130,7 @@ repos:
     - mdformat-gfm
     - mdformat-black
     args: [--wrap, '88']
-    exclude: ^(CHANGELOG\.md|apps/web/|\.github/(agents|prompts|workflows)/)
+    exclude: ^(CHANGELOG\.md|apps/web/content/)$
 
   # ============================================================================
   # Spell checking
@@ -186,10 +182,8 @@ repos:
   rev: v1.5.0
   hooks:
   - id: detect-secrets
-    name: detect-secrets (advisory)
     args: [--baseline, .secrets.baseline]
     exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
-    stages: [manual]
 
   # ============================================================================
   # Conventional Commits
@@ -260,16 +254,6 @@ repos:
   - id: tsc
     name: tsc (apps/web)
     entry: bash -lc 'pnpm --dir apps/web exec tsc --noEmit'
-    language: system
-    pass_filenames: false
-    always_run: false
-    files: ^apps/web/.*\.[jt]sx?$
-    stages: [manual]
-
-    # TypeScript/JavaScript linting
-  - id: eslint
-    name: eslint (apps/web)
-    entry: bash -c 'pnpm --dir apps/web exec eslint .'
     language: system
     pass_filenames: false
     always_run: false

@@ -13,20 +13,9 @@ AI Web Feeds uses SQLModel (SQLAlchemy + Pydantic) for database operations with 
 - **[Database Quick Start](/docs/guides/database-quick-start)** - Get started in minutes
 - **[Database Enhancements](/docs/development/database-enhancements)** - Recent improvements and features
 
-## Canonical Runtime Storage Contract
-
-`DatabaseManager.create_db_and_tables()` is the supported bootstrap entrypoint.
-
-- File-backed runtime databases apply Alembic revisions from `packages/alembic/`.
-- `sqlite:///:memory:` remains a test-only fast path that uses
-  `SQLModel.metadata.create_all()`.
-- `data/ai-web-feeds.db` is the canonical SQLite filename.
-- `data/aiwebfeeds.db` is a legacy fallback that is only used when the canonical
-  file is absent.
-
 ## Database Schema
 
-### `sources` Table
+### `feed_sources` Table
 
 Core feed metadata and configuration:
 
@@ -39,7 +28,7 @@ Core feed metadata and configuration:
 - **Discovery:** `discover_enabled`, `discover_config`
 - **Relations:** `relations`, `mappings` (JSON fields)
 
-### `items` Table
+### `feed_items` Table
 
 Individual feed entries:
 
@@ -48,7 +37,7 @@ Individual feed entries:
 - **Timestamps:** `published`, `updated`, `created_at`, `updated_at`
 - **Metadata:** `guid`, `categories`, `tags`, `enclosures`, `extra_data`
 
-### `fetch_logs` Table
+### `feed_fetch_logs` Table
 
 Fetch attempt tracking:
 
@@ -74,12 +63,9 @@ Topic definitions:
 from ai_web_feeds.storage import DatabaseManager
 
 # Initialize database
-db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
 db.create_db_and_tables()
 ```
-
-For application bootstrap, prefer `create_db_and_tables()` over ad-hoc SQL or
-manual table creation so file-backed environments stay aligned with Alembic.
 
 ### Add Feed Sources
 
@@ -134,20 +120,21 @@ uv run python packages/ai_web_feeds/scripts/init_alembic.py
 ### Create Migration
 
 ```bash
-uv run alembic -c packages/alembic.ini revision --autogenerate -m "Initial schema"
+cd packages/ai_web_feeds
+alembic revision --autogenerate -m "Initial schema"
 ```
 
 ### Apply Migrations
 
 ```bash
 # Upgrade to latest
-uv run alembic -c packages/alembic.ini upgrade head
+alembic upgrade head
 
 # Downgrade one version
-uv run alembic -c packages/alembic.ini downgrade -1
+alembic downgrade -1
 
 # Show current version
-uv run alembic -c packages/alembic.ini current
+alembic current
 ```
 
 ## Configuration
@@ -156,7 +143,7 @@ uv run alembic -c packages/alembic.ini current
 
 ```bash
 # Database URL
-export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
+export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
 
 # For PostgreSQL
 export AIWF_DATABASE_URL=postgresql://user:pass@localhost/aiwebfeeds
@@ -174,7 +161,7 @@ db = DatabaseManager("postgresql://localhost/aiwebfeeds")
 # Enable SQL echo for debugging
 from sqlalchemy import create_engine
 engine = create_engine(
-    "sqlite:///data/ai-web-feeds.db",
+    "sqlite:///data/aiwebfeeds.db",
     echo=True  # Print all SQL statements
 )
 ```

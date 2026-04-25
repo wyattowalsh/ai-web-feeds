@@ -1,6 +1,0 @@
-{
-  "issue": {
-    "number": 202,
-    "body": "### Feed URL\nhttps://example.com/feed.xml\n\n### Website URL\n_No response_\n\n### Feed Title\nExample Feed\n\n### Topics\n- [x] Machine Learning (ml)\n- [x] Large Language Models (llm)\n\n### Additional Notes\nMaintainer note for validation.\n"
-  }
-}

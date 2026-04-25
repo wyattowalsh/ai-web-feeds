@@ -174,9 +174,7 @@ class TestTrendingDetector:
         # Mock session
         mock_session = MagicMock()
         mock_session.exec = MagicMock(return_value=MagicMock(all=lambda: [1, 2, 3, 4, 5]))
-        mock_session.get = MagicMock(
-            side_effect=lambda model, entry_id: sample_entries[entry_id - 1]
-        )
+        mock_session.get = MagicMock(side_effect=lambda model, id: sample_entries[id - 1])
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 

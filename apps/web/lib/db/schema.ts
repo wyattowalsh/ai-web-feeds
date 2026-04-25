@@ -35,7 +35,7 @@ export interface Article {
   content: string;
   summary?: string;
   author?: string;
-  pubDate: number | null; // Unix timestamp when provided by the source feed
+  pubDate: number; // Unix timestamp
   categories: string[];
   enclosures: Enclosure[];
   read: boolean;
@@ -166,7 +166,7 @@ export interface SyncQueueItem {
 }
 
 /**
- * Database store schema definitions
+ * Create IndexedDB database with all stores
  */
 export function createDatabase(db: IDBDatabase): void {
   // Articles store
@@ -235,26 +235,6 @@ export function createDatabase(db: IDBDatabase): void {
 /**
  * Default preferences
  */
-export const DEFAULT_KEYBOARD_SHORTCUTS: Record<string, string> = {
-  j: "next_article",
-  k: "previous_article",
-  m: "mark_as_read",
-  s: "star",
-  a: "archive",
-  v: "open_original",
-  r: "refresh",
-  "/": "search",
-  "g h": "go_home",
-  "g s": "go_starred",
-  "g u": "go_unread",
-  "g a": "go_all",
-  escape: "close_modal",
-  "?": "show_shortcuts",
-  "[": "toggle_sidebar",
-  "ctrl+k": "focus_search",
-  "meta+k": "focus_search",
-};
-
 export const DEFAULT_PREFERENCES: Preferences = {
   id: "user_prefs",
   theme: "system",
@@ -282,170 +262,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
   syncOnStartup: true,
   updatedAt: Date.now(),
 };
-
-const REQUIRED_PREFERENCE_KEYS: ReadonlyArray<keyof Preferences> = [
-  "id",
-  "theme",
-  "fontSize",
-  "fontFamily",
-  "readingWidth",
-  "layout",
-  "showImages",
-  "showSummaries",
-  "markAsReadOnScroll",
-  "keyboardShortcuts",
-  "offlineMode",
-  "syncOnStartup",
-  "updatedAt",
-];
-
-export function normalizePreferences(prefs?: Partial<Preferences> | null): Preferences {
-  const record = isRecord(prefs) ? prefs : {};
-
-  return {
-    id: DEFAULT_PREFERENCES.id,
-    theme: VALID_THEME_MODES.has(record.theme as Preferences["theme"])
-      ? (record.theme as Preferences["theme"])
-      : DEFAULT_PREFERENCES.theme,
-    fontSize:
-      typeof record.fontSize === "number" && Number.isFinite(record.fontSize) && record.fontSize > 0
-        ? record.fontSize
-        : DEFAULT_PREFERENCES.fontSize,
-    fontFamily:
-      typeof record.fontFamily === "string" && record.fontFamily.trim().length > 0
-        ? record.fontFamily.trim()
-        : DEFAULT_PREFERENCES.fontFamily,
-    readingWidth: VALID_READING_WIDTHS.has(record.readingWidth as Preferences["readingWidth"])
-      ? (record.readingWidth as Preferences["readingWidth"])
-      : DEFAULT_PREFERENCES.readingWidth,
-    layout: VALID_LAYOUTS.has(record.layout as Preferences["layout"])
-      ? (record.layout as Preferences["layout"])
-      : DEFAULT_PREFERENCES.layout,
-    showImages:
-      typeof record.showImages === "boolean" ? record.showImages : DEFAULT_PREFERENCES.showImages,
-    showSummaries:
-      typeof record.showSummaries === "boolean"
-        ? record.showSummaries
-        : DEFAULT_PREFERENCES.showSummaries,
-    markAsReadOnScroll:
-      typeof record.markAsReadOnScroll === "boolean"
-        ? record.markAsReadOnScroll
-        : DEFAULT_PREFERENCES.markAsReadOnScroll,
-    keyboardShortcuts: normalizeShortcutBindings(record.keyboardShortcuts),
-    offlineMode:
-      typeof record.offlineMode === "boolean"
-        ? record.offlineMode
-        : DEFAULT_PREFERENCES.offlineMode,
-    syncOnStartup:
-      typeof record.syncOnStartup === "boolean"
-        ? record.syncOnStartup
-        : DEFAULT_PREFERENCES.syncOnStartup,
-    updatedAt:
-      typeof record.updatedAt === "number" && Number.isFinite(record.updatedAt)
-        ? record.updatedAt
-        : DEFAULT_PREFERENCES.updatedAt,
-  };
-}
-
-export function preferencesNeedMigration(prefs?: Partial<Preferences> | null): boolean {
-  if (!isRecord(prefs) || prefs.id !== DEFAULT_PREFERENCES.id) {
-    return true;
-  }
-
-  if (!VALID_THEME_MODES.has(prefs.theme as Preferences["theme"])) {
-    return true;
-  }
-
-  if (
-    typeof prefs.fontSize !== "number" ||
-    !Number.isFinite(prefs.fontSize) ||
-    prefs.fontSize <= 0
-  ) {
-    return true;
-  }
-
-  if (typeof prefs.fontFamily !== "string" || prefs.fontFamily.trim().length === 0) {
-    return true;
-  }
-
-  if (!VALID_READING_WIDTHS.has(prefs.readingWidth as Preferences["readingWidth"])) {
-    return true;
-  }
-
-  if (!VALID_LAYOUTS.has(prefs.layout as Preferences["layout"])) {
-    return true;
-  }
-
-  if (
-    typeof prefs.showImages !== "boolean" ||
-    typeof prefs.showSummaries !== "boolean" ||
-    typeof prefs.markAsReadOnScroll !== "boolean" ||
-    typeof prefs.offlineMode !== "boolean" ||
-    typeof prefs.syncOnStartup !== "boolean" ||
-    typeof prefs.updatedAt !== "number" ||
-    !Number.isFinite(prefs.updatedAt)
-  ) {
-    return true;
-  }
-
-  if (hasInvalidShortcutBindings(prefs.keyboardShortcuts)) {
-    return true;
-  }
-
-  return REQUIRED_PREFERENCE_KEYS.some((key) => prefs[key] === undefined);
-}
-
-function getOrCreateStore(
-  db: IDBDatabase,
-  transaction: IDBTransaction | null,
-  storeName: StoreName,
-  definition: StoreDefinition,
-): IDBObjectStore {
-  if (!db.objectStoreNames.contains(storeName)) {
-    return db.createObjectStore(storeName, { keyPath: definition.keyPath });
-  }
-
-  if (!transaction) {
-    throw new Error(`Upgrade transaction is required to migrate existing store "${storeName}"`);
-  }
-
-  return transaction.objectStore(storeName);
-}
-
-function ensureIndexes(store: IDBObjectStore, indexes: StoreDefinition["indexes"] = {}): void {
-  for (const [indexName, definition] of Object.entries(indexes)) {
-    if (!store.indexNames.contains(indexName)) {
-      store.createIndex(indexName, definition.keyPath, definition.options);
-    }
-  }
-}
-
-function seedPreferencesStore(store: IDBObjectStore): void {
-  const request = store.get(DEFAULT_PREFERENCES.id);
-
-  request.onsuccess = () => {
-    const current = request.result as Partial<Preferences> | undefined;
-    if (preferencesNeedMigration(current)) {
-      store.put(normalizePreferences(current));
-    }
-  };
-}
-
-/**
- * Create IndexedDB database with all stores
- */
-export function createDatabase(db: IDBDatabase, transaction: IDBTransaction | null): void {
-  for (const [storeName, definition] of Object.entries(STORE_DEFINITIONS) as Array<
-    [StoreName, StoreDefinition]
-  >) {
-    const store = getOrCreateStore(db, transaction, storeName, definition);
-    ensureIndexes(store, definition.indexes);
-  }
-
-  if (transaction) {
-    seedPreferencesStore(transaction.objectStore(STORES.PREFERENCES));
-  }
-}
 
 /**
  * Storage quota information

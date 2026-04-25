@@ -49,8 +49,6 @@ class WebSocketServer:
         # Create aiohttp app
         self.app = web.Application()
         self.sio.attach(self.app)
-        self.runner: web.AppRunner | None = None
-        self.site: web.TCPSite | None = None
 
         # Register event handlers
         self.sio.on("connect", self.on_connect)
@@ -68,16 +66,6 @@ class WebSocketServer:
         site = web.TCPSite(runner, self.host, self.port)
         await site.start()
         logger.info(f"WebSocket server listening on {self.host}:{self.port}")
-
-    async def stop(self) -> None:
-        """Stop the WebSocket server."""
-        if self.runner is None:
-            return
-
-        await self.runner.cleanup()
-        self.site = None
-        self.runner = None
-        logger.info("WebSocket server stopped")
 
     async def on_connect(self, sid: str, environ: dict[str, Any]) -> None:
         """Handle client connection.

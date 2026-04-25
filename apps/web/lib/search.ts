@@ -56,7 +56,7 @@ export type ArticleSearchResult = BaseSearchResult & {
 export type SearchResult = SourceSearchResult | ArticleSearchResult;
 
 export type SearchResponseMeta = {
-  mode: "local";
+  mode: "unbounded" | "bounded";
   bounded: boolean;
   candidate_sources: number;
   scanned_sources: number;
@@ -76,7 +76,7 @@ export const MIN_SEARCH_THRESHOLD = 0.5;
 export const MAX_SEARCH_THRESHOLD = 1;
 export const DEFAULT_SEARCH_SCOPE: SearchScope = "sources";
 export const DEFAULT_UNBOUNDED_SEARCH_META: SearchResponseMeta = {
-  mode: "local",
+  mode: "unbounded",
   bounded: false,
   candidate_sources: 0,
   scanned_sources: 0,

@@ -9,12 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
-import {
-  applyUserIdentityBinding,
-  isValidUserId,
-  resolveUserIdentity,
-  validateTrustedUserOwnership,
-} from "@/lib/user-auth";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
 
 const PATCHHandler = async (
   request: NextRequest,
@@ -33,12 +28,7 @@ const PATCHHandler = async (
       user_id?: string;
     };
     const requestedUserId = body.user_id ?? request.nextUrl.searchParams.get("user_id");
-    if (requestedUserId && !isValidUserId(requestedUserId)) {
-      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-    }
-
-    const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
-    const { identity } = resolvedIdentity;
+    const identity = getUserIdentity(request, requestedUserId);
     const { action } = body;
 
     if (requestedUserId && identity.source === "anonymous") {
@@ -70,13 +60,11 @@ const PATCHHandler = async (
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       notification_id: notificationId,
       action,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
     return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }

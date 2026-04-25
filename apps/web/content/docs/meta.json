@@ -52,12 +52,9 @@
       "database-enhancements",
       "database-storage",
       "cli",
-      "environment",
-      "naming",
       "python-api",
       "python-autodoc",
       "testing",
-      "workflow-safety",
       "workflows",
       "cli-workflows",
       "contributing"
@@ -67,6 +64,6 @@
   "visualization": {
     "title": "Visualization & Analytics",
     "icon": "ChartBar",
-    "pages": ["getting-started", "api-reference", "compatibility-policy"]
+    "pages": ["getting-started"]
   }
 }

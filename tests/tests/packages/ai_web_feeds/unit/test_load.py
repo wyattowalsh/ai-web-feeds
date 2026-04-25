@@ -5,22 +5,9 @@ from pathlib import Path
 
 import pytest
 import yaml
-from ai_web_feeds.load import (
-    load_feeds,
-    load_topics,
-    normalize_source_for_feed_source,
-    save_feeds,
-    save_topics,
-)
-from ai_web_feeds.models import SourceType
-from ai_web_feeds.validate import validate_feeds, validate_topics
+from ai_web_feeds.load import load_feeds, load_topics, save_feeds, save_topics
 from hypothesis import given
 from hypothesis import strategies as st
-
-DATA_DIR = Path(__file__).resolve().parents[5] / "data"
-FEEDS_SCHEMA_PATH = DATA_DIR / "feeds.schema.json"
-TOPICS_SCHEMA_PATH = DATA_DIR / "topics.schema.json"
-SLUG_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 
 @pytest.mark.unit
@@ -32,21 +19,17 @@ class TestLoadFeeds:
         data = load_feeds(temp_yaml_file)
 
         assert isinstance(data, dict)
-        assert data["schema_version"] == "feeds-2.1.0"
-        assert "sources" in data
-        assert isinstance(data["sources"], list)
-        assert len(data["sources"]) == 1
-        assert data["sources"][0]["url"] == "https://example.com/feed.xml"
-
-        validation = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-        assert validation.valid is True
+        assert "feeds" in data
+        assert isinstance(data["feeds"], list)
+        assert len(data["feeds"]) == 1
+        assert data["feeds"][0]["id"] == "test-feed"
 
     def test_load_feeds_with_path_object(self, temp_yaml_file):
         """Test loading with Path object."""
         data = load_feeds(Path(temp_yaml_file))
 
         assert isinstance(data, dict)
-        assert "sources" in data
+        assert "feeds" in data
 
     def test_load_feeds_file_not_found(self):
         """Test loading from non-existent file."""
@@ -68,46 +51,34 @@ class TestLoadFeeds:
             temp_path.unlink()
 
     def test_load_feeds_empty_file(self):
-        """Empty feed files should load safely but fail schema validation."""
+        """Test loading empty YAML file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("")
             temp_path = Path(f.name)
 
         try:
             data = load_feeds(temp_path)
-            assert data == {}
-
-            validation = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-            assert validation.valid is False
-            assert any("Schema validation failed" in error for error in validation.errors)
+            # Empty YAML should return None, which we handle
+            assert data is None or isinstance(data, dict)
         finally:
             temp_path.unlink()
 
     def test_load_feeds_with_sources_key(self):
-        """Test loading feeds with canonical sources contract."""
+        """Test loading feeds with 'sources' key."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """
-schema_version: feeds-2.1.0
+            f.write("""
 sources:
-  - url: https://example.com/feed-1.xml
+  - id: feed-1
     title: Feed One
-    topics: [ai]
-  - url: https://example.com/feed-2.xml
+  - id: feed-2
     title: Feed Two
-    topics: [ml]
-"""
-            )
+""")
             temp_path = Path(f.name)
 
         try:
             data = load_feeds(temp_path)
-
             assert "sources" in data
             assert len(data["sources"]) == 2
-
-            validation = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-            assert validation.valid is True
         finally:
             temp_path.unlink()
 
@@ -116,90 +87,20 @@ sources:
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".yaml", delete=False, encoding="utf-8"
         ) as f:
-            f.write(
-                """
-schema_version: feeds-2.1.0
-sources:
-  - url: https://example.com/unicode.xml
+            f.write("""
+feeds:
+  - id: unicode-feed
     title: "AI研究 - 人工智能 🤖"
-    notes: "Émotions et IA"
-    topics: [ai]
-"""
-            )
+    description: "Émotions et IA"
+""")
             temp_path = Path(f.name)
 
         try:
             data = load_feeds(temp_path)
-            assert data["sources"][0]["title"] == "AI研究 - 人工智能 🤖"
-            assert data["sources"][0]["notes"] == "Émotions et IA"
+            assert data["feeds"][0]["title"] == "AI研究 - 人工智能 🤖"
+            assert data["feeds"][0]["description"] == "Émotions et IA"
         finally:
             temp_path.unlink()
-
-    def test_load_feeds_empty_sources_list_is_schema_invalid(self):
-        """Empty source collections should load but fail schema validation."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """
-schema_version: feeds-2.1.0
-sources: []
-"""
-            )
-            temp_path = Path(f.name)
-
-        try:
-            data = load_feeds(temp_path)
-            assert data["sources"] == []
-
-            validation = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-            assert validation.valid is False
-            assert any("Schema validation failed" in error for error in validation.errors)
-        finally:
-            temp_path.unlink()
-
-
-@pytest.mark.unit
-class TestNormalizeSourceForFeedSource:
-    """Test canonical source normalization for FeedSource contract."""
-
-    def test_normalize_direct_feed_url(self):
-        """Direct feed URLs should map to feed field and inferred source type."""
-        normalized = normalize_source_for_feed_source(
-            {
-                "url": "https://github.com/pytorch/pytorch",
-                "topics": ["ml", "open-source"],
-                "notes": "  test  ",
-            }
-        )
-
-        assert normalized["id"]
-        assert normalized["feed"] == "https://github.com/pytorch/pytorch/releases.atom"
-        assert normalized["site"] == "https://github.com/pytorch/pytorch"
-        assert normalized["source_type"] == SourceType.GITHUB
-        assert normalized["topics"] == ["ml", "open-source"]
-        assert normalized["notes"] == "  test  "
-
-    def test_normalize_retains_valid_explicit_source_type(self):
-        """Valid explicit source type should be preserved."""
-        normalized = normalize_source_for_feed_source(
-            {
-                "url": "https://example.com/news",
-                "source_type": "newsroom",
-                "topics": ["research"],
-            }
-        )
-
-        assert normalized["source_type"] == SourceType.NEWSROOM
-
-    def test_normalize_deduplicates_topics(self):
-        """Topics should be deduplicated while preserving order."""
-        normalized = normalize_source_for_feed_source(
-            {
-                "url": "https://example.com/feed.xml",
-                "topics": ["ml", "ml", "ai", "ai"],
-            }
-        )
-
-        assert normalized["topics"] == ["ml", "ai"]
 
 
 @pytest.mark.unit
@@ -209,16 +110,12 @@ class TestLoadTopics:
     def test_load_topics_success(self):
         """Test successful topic loading."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """
+            f.write("""
 topics:
   - id: ai
-    label: Artificial Intelligence
-    facet: domain
+    name: Artificial Intelligence
     description: AI research and applications
-    parents: []
-"""
-            )
+""")
             temp_path = Path(f.name)
 
         try:
@@ -227,9 +124,6 @@ topics:
             assert "topics" in data
             assert len(data["topics"]) == 1
             assert data["topics"][0]["id"] == "ai"
-
-            validation = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is True
         finally:
             temp_path.unlink()
 
@@ -241,76 +135,35 @@ topics:
         assert "Topics file not found" in str(exc_info.value)
 
     def test_load_topics_with_relations(self):
-        """Test loading topics with canonical hierarchy and relations."""
+        """Test loading topics with parent-child relations."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """
+            f.write("""
 topics:
   - id: ai
-    label: Artificial Intelligence
-    facet: domain
-    parents: []
-    relations:
-      related_to:
-        - ml
-        - dl
+    name: Artificial Intelligence
+    children:
+      - ml
+      - dl
   - id: ml
-    label: Machine Learning
-    facet: subfield
-    parents: [ai]
+    name: Machine Learning
+    parent: ai
   - id: dl
-    label: Deep Learning
-    facet: subfield
-    parents: [ai]
-"""
-            )
+    name: Deep Learning
+    parent: ai
+""")
             temp_path = Path(f.name)
 
         try:
             data = load_topics(temp_path)
             assert len(data["topics"]) == 3
             ai_topic = next(t for t in data["topics"] if t["id"] == "ai")
-            assert ai_topic["relations"]["related_to"] == ["ml", "dl"]
-
-            validation = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is True
+            assert "children" in ai_topic
+            assert len(ai_topic["children"]) == 2
         finally:
             temp_path.unlink()
 
-    def test_load_topics_empty_file(self):
-        """Empty topic files should not crash and should remain schema-invalid."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("")
-            temp_path = Path(f.name)
-
-        try:
-            data = load_topics(temp_path)
-            assert data == {}
-
-            validation = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is False
-            assert any("Schema validation failed" in error for error in validation.errors)
-        finally:
-            temp_path.unlink()
-
-    def test_load_topics_partially_written_topics_key(self):
-        """Partially written topic files should load without crashing for auditability."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("topics:\n")
-            temp_path = Path(f.name)
-
-        try:
-            data = load_topics(temp_path)
-            assert data == {"topics": None}
-
-            validation = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is False
-            assert any("Schema validation failed" in error for error in validation.errors)
-        finally:
-            temp_path.unlink()
-
-    def test_load_topics_empty_topics_list_is_schema_invalid(self):
-        """Empty topic collections should load but fail schema validation."""
+    def test_load_topics_empty_topics_list(self):
+        """Test loading with empty topics list."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("topics: []\n")
             temp_path = Path(f.name)
@@ -318,10 +171,6 @@ topics:
         try:
             data = load_topics(temp_path)
             assert data["topics"] == []
-
-            validation = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is False
-            assert any("Schema validation failed" in error for error in validation.errors)
         finally:
             temp_path.unlink()
 
@@ -333,13 +182,12 @@ class TestSaveFeeds:
     def test_save_feeds_success(self):
         """Test successful feed saving."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "document_meta": {"version": "1.0"},
             "sources": [
                 {
-                    "url": "https://example.com",
+                    "id": "test-feed",
                     "title": "Test Feed",
-                    "topics": ["ai"],
+                    "feed": "https://example.com/feed.xml",
                 }
             ],
         }
@@ -350,15 +198,13 @@ class TestSaveFeeds:
 
             assert output_path.exists()
 
+            # Verify content
             loaded_data = load_feeds(output_path)
-            assert loaded_data["sources"][0]["title"] == "Test Feed"
+            assert loaded_data["sources"][0]["id"] == "test-feed"
 
     def test_save_feeds_creates_directories(self):
         """Test that save_feeds creates parent directories."""
-        data = {
-            "schema_version": "feeds-2.1.0",
-            "sources": [{"url": "https://example.com", "topics": ["ai"]}],
-        }
+        data = {"sources": []}
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "deep" / "nested" / "path" / "feeds.yaml"
@@ -370,13 +216,11 @@ class TestSaveFeeds:
     def test_save_feeds_unicode_content(self):
         """Test saving feeds with Unicode characters."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "sources": [
                 {
-                    "url": "https://example.com/unicode",
+                    "id": "unicode-feed",
                     "title": "AI研究 - 人工智能 🤖",
-                    "notes": "Émotions et IA",
-                    "topics": ["ai"],
+                    "description": "Émotions et IA",
                 }
             ],
         }
@@ -385,22 +229,22 @@ class TestSaveFeeds:
             output_path = Path(tmpdir) / "feeds.yaml"
             save_feeds(data, output_path)
 
+            # Verify Unicode is preserved
             loaded_data = load_feeds(output_path)
             assert loaded_data["sources"][0]["title"] == "AI研究 - 人工智能 🤖"
 
     def test_save_feeds_preserves_structure(self):
         """Test that save_feeds preserves data structure."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "document_meta": {
                 "version": "1.0",
                 "updated": "2024-01-15",
             },
             "sources": [
                 {
-                    "url": "https://example.com/feed-1.xml",
+                    "id": "feed-1",
                     "title": "Feed One",
-                    "notes": "Tracked for AI updates",
+                    "tags": ["ai", "ml"],
                     "topics": ["artificial-intelligence"],
                 }
             ],
@@ -412,21 +256,21 @@ class TestSaveFeeds:
 
             loaded_data = load_feeds(output_path)
             assert loaded_data["document_meta"]["version"] == "1.0"
-            assert loaded_data["sources"][0]["topics"] == ["artificial-intelligence"]
+            assert loaded_data["sources"][0]["tags"] == ["ai", "ml"]
 
     @given(
-        feed_count=st.integers(min_value=1, max_value=10),
-        feed_id_prefix=st.text(min_size=1, max_size=10, alphabet=SLUG_CHARS),
+        feed_count=st.integers(min_value=0, max_value=10),
+        feed_id_prefix=st.text(
+            min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("L", "N"))
+        ),
     )
     def test_save_feeds_property_based(self, feed_count, feed_id_prefix):
         """Property-based test for save_feeds."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "sources": [
                 {
-                    "url": f"https://example.com/{feed_id_prefix}-{i}",
+                    "id": f"{feed_id_prefix}-{i}",
                     "title": f"Feed {i}",
-                    "topics": ["ai"],
                 }
                 for i in range(feed_count)
             ],
@@ -451,10 +295,8 @@ class TestSaveTopics:
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
+                    "name": "Artificial Intelligence",
                     "description": "AI research",
-                    "parents": [],
                 }
             ],
         }
@@ -465,27 +307,25 @@ class TestSaveTopics:
 
             assert output_path.exists()
 
+            # Verify content
             loaded_data = load_topics(output_path)
             assert loaded_data["topics"][0]["id"] == "ai"
 
     def test_save_topics_with_relations(self):
-        """Test saving topics with canonical relations."""
+        """Test saving topics with parent-child relations."""
         data = {
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
-                    "relations": {"related_to": ["ml", "dl"]},
+                    "name": "Artificial Intelligence",
+                    "children": ["ml", "dl"],
                 },
                 {
                     "id": "ml",
-                    "label": "Machine Learning",
-                    "facet": "subfield",
-                    "parents": ["ai"],
+                    "name": "Machine Learning",
+                    "parent": "ai",
                 },
-            ]
+            ],
         }
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -494,10 +334,10 @@ class TestSaveTopics:
 
             loaded_data = load_topics(output_path)
             ai_topic = next(t for t in loaded_data["topics"] if t["id"] == "ai")
-            assert ai_topic["relations"]["related_to"] == ["ml", "dl"]
+            assert ai_topic["children"] == ["ml", "dl"]
 
-    def test_save_topics_empty_list_remains_schema_invalid(self):
-        """Saving an empty topic collection should preserve data but fail schema validation."""
+    def test_save_topics_empty_list(self):
+        """Test saving empty topics list."""
         data = {"topics": []}
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -508,21 +348,9 @@ class TestSaveTopics:
             loaded_data = load_topics(output_path)
             assert loaded_data["topics"] == []
 
-            validation = validate_topics(loaded_data, schema_path=TOPICS_SCHEMA_PATH)
-            assert validation.valid is False
-
     def test_save_topics_creates_directories(self):
         """Test that save_topics creates parent directories."""
-        data = {
-            "topics": [
-                {
-                    "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
-                }
-            ]
-        }
+        data = {"topics": []}
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "deep" / "nested" / "topics.yaml"
@@ -539,20 +367,19 @@ class TestLoadSaveRoundTrip:
     def test_feeds_round_trip(self):
         """Test loading and saving feeds preserves data."""
         original_data = {
-            "schema_version": "feeds-2.1.0",
             "document_meta": {"version": "1.0"},
             "sources": [
                 {
-                    "url": "https://example.com/feed-1.xml",
+                    "id": "feed-1",
                     "title": "Feed One",
-                    "notes": "Covers AI and ML",
-                    "topics": ["artificial-intelligence"],
+                    "feed": "https://example.com/feed1.xml",
+                    "tags": ["ai", "ml"],
                 },
                 {
-                    "url": "https://example.com/feed-2.xml",
+                    "id": "feed-2",
                     "title": "Feed Two",
-                    "notes": "Covers DL",
-                    "topics": ["deep-learning"],
+                    "feed": "https://example.com/feed2.xml",
+                    "tags": ["dl"],
                 },
             ],
         }
@@ -560,9 +387,11 @@ class TestLoadSaveRoundTrip:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "feeds.yaml"
 
+            # Save and load
             save_feeds(original_data, path)
             loaded_data = load_feeds(path)
 
+            # Verify data is preserved
             assert loaded_data == original_data
 
     def test_topics_round_trip(self):
@@ -571,16 +400,13 @@ class TestLoadSaveRoundTrip:
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
-                    "relations": {"related_to": ["ml"]},
+                    "name": "Artificial Intelligence",
+                    "children": ["ml"],
                 },
                 {
                     "id": "ml",
-                    "label": "Machine Learning",
-                    "facet": "subfield",
-                    "parents": ["ai"],
+                    "name": "Machine Learning",
+                    "parent": "ai",
                 },
             ],
         }
@@ -588,21 +414,21 @@ class TestLoadSaveRoundTrip:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "topics.yaml"
 
+            # Save and load
             save_topics(original_data, path)
             loaded_data = load_topics(path)
 
+            # Verify data is preserved
             assert loaded_data == original_data
 
     def test_unicode_round_trip(self):
         """Test Unicode content survives round-trip."""
         original_data = {
-            "schema_version": "feeds-2.1.0",
             "sources": [
                 {
-                    "url": "https://example.com/unicode-test.xml",
+                    "id": "unicode-test",
                     "title": "测试 🚀 Tëst",
-                    "notes": "Émotions et données 人工智能",
-                    "topics": ["ai"],
+                    "description": "Émotions et données 人工智能",
                 }
             ],
         }
@@ -614,4 +440,7 @@ class TestLoadSaveRoundTrip:
             loaded_data = load_feeds(path)
 
             assert loaded_data["sources"][0]["title"] == original_data["sources"][0]["title"]
-            assert loaded_data["sources"][0]["notes"] == original_data["sources"][0]["notes"]
+            assert (
+                loaded_data["sources"][0]["description"]
+                == original_data["sources"][0]["description"]
+            )

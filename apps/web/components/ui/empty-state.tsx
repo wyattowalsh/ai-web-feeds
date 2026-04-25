@@ -8,7 +8,6 @@ interface EmptyStateProps {
   description: string;
   media?: ReactNode;
   tips?: string[];
-  media?: ReactNode;
   className?: string;
   children?: ReactNode;
 }
@@ -19,7 +18,6 @@ export function EmptyState({
   description,
   media,
   tips,
-  media,
   className,
   children,
 }: EmptyStateProps) {

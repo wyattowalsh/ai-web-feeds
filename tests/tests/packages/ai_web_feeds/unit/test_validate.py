@@ -2,31 +2,19 @@
 
 import json
 import tempfile
-from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-import yaml
-from ai_web_feeds.load import load_feeds
-from ai_web_feeds.models import CurationStatus, FeedSource, FeedValidationResult
 from ai_web_feeds.validate import (
     ValidationError,
     ValidationResult,
-    calculate_health_score,
-    mark_inactive_feeds,
-    validate_feed,
     validate_feed_url,
     validate_feeds,
     validate_topics,
 )
 from hypothesis import given
 from hypothesis import strategies as st
-
-DATA_DIR = Path(__file__).resolve().parents[5] / "data"
-FEEDS_SCHEMA_PATH = DATA_DIR / "feeds.schema.json"
-TOPICS_SCHEMA_PATH = DATA_DIR / "topics.schema.json"
-SLUG_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 
 @pytest.mark.unit
@@ -93,76 +81,72 @@ class TestValidateFeeds:
     def test_validate_feeds_success(self):
         """Test successful feed validation."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
+                    "title": "Test Feed",
                 }
-            ],
+            ]
         }
 
-        result = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
+        result = validate_feeds(data)
         assert result.valid is True
         assert len(result.errors) == 0
 
-    def test_validate_feeds_missing_url(self):
-        """Test validation fails when no URL-like field is provided."""
+    def test_validate_feeds_missing_id(self):
+        """Test validation fails for missing ID."""
         data = {
             "sources": [
                 {
                     "title": "Test Feed",
-                    "topics": ["ai"],
                 }
             ]
         }
 
         result = validate_feeds(data)
         assert result.valid is False
-        assert any("requires a URL" in e for e in result.errors)
+        assert any("missing required field: id" in e for e in result.errors)
 
-    def test_validate_feeds_missing_topics(self):
-        """Test validation fails for missing topics."""
+    def test_validate_feeds_missing_title(self):
+        """Test validation fails for missing title."""
         data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
+                    "id": "test-feed",
                 }
             ]
         }
 
         result = validate_feeds(data)
         assert result.valid is False
-        assert any("missing required field: topics" in e for e in result.errors)
+        assert any("missing required field: title" in e for e in result.errors)
 
     def test_validate_feeds_duplicate_ids(self):
-        """Test validation fails for duplicate canonical IDs."""
+        """Test validation fails for duplicate IDs."""
         data = {
             "sources": [
-                {"url": "https://example.com/feed.xml", "topics": ["ai"]},
-                {"url": "https://example.com/feed.xml", "topics": ["ml"]},
+                {"id": "duplicate-feed", "title": "Feed 1"},
+                {"id": "duplicate-feed", "title": "Feed 2"},
             ]
         }
 
         result = validate_feeds(data)
         assert result.valid is False
-        assert any("Duplicate canonical IDs" in e for e in result.errors)
+        assert any("Duplicate IDs" in e for e in result.errors)
 
     def test_validate_feeds_empty_sources(self):
-        """Empty source collections should fail the canonical schema."""
-        data = {"schema_version": "feeds-2.1.0", "sources": []}
+        """Test validation with empty sources list."""
+        data = {"sources": []}
 
-        result = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-        assert result.valid is False
-        assert any("Schema validation failed" in e for e in result.errors)
+        result = validate_feeds(data)
+        assert result.valid is True
 
     def test_validate_feeds_no_sources_key(self):
-        """Missing canonical sources key should fail the schema contract."""
-        data = {"schema_version": "feeds-2.1.0"}
+        """Test validation with missing sources key."""
+        data = {}
 
-        result = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
-        assert result.valid is False
-        assert any("Schema validation failed" in e for e in result.errors)
+        result = validate_feeds(data)
+        assert result.valid is True  # No sources is valid
 
     def test_validate_feeds_with_valid_schema(self):
         """Test validation with JSON schema."""
@@ -174,10 +158,10 @@ class TestValidateFeeds:
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["url", "topics"],
+                        "required": ["id", "title"],
                         "properties": {
-                            "url": {"type": "string"},
-                            "topics": {"type": "array"},
+                            "id": {"type": "string"},
+                            "title": {"type": "string"},
                         },
                     },
                 }
@@ -187,8 +171,8 @@ class TestValidateFeeds:
         data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
+                    "title": "Test Feed",
                 }
             ]
         }
@@ -213,7 +197,7 @@ class TestValidateFeeds:
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["url", "topics"],
+                        "required": ["id", "title"],
                     },
                 }
             },
@@ -246,9 +230,9 @@ class TestValidateFeeds:
         """Test accumulation of multiple validation errors."""
         data = {
             "sources": [
-                {},  # Missing URL and topics
-                {"url": "https://example.com/feed.xml"},  # Missing topics
-                {"title": "Feed 2", "topics": ["ai"]},  # Missing URL
+                {},  # Missing both id and title
+                {"id": "feed-1"},  # Missing title
+                {"title": "Feed 2"},  # Missing id
             ]
         }
 
@@ -257,23 +241,26 @@ class TestValidateFeeds:
         assert len(result.errors) >= 3
 
     @given(
-        feed_count=st.integers(min_value=1, max_value=5),
-        feed_id_prefix=st.text(min_size=1, max_size=10, alphabet=SLUG_CHARS),
+        feed_count=st.integers(min_value=0, max_value=5),
+        feed_id_prefix=st.text(
+            min_size=1,
+            max_size=10,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
     )
     def test_validate_feeds_property_based(self, feed_count, feed_id_prefix):
         """Property-based test for feed validation."""
         data = {
-            "schema_version": "feeds-2.1.0",
             "sources": [
                 {
-                    "url": f"https://example.com/{feed_id_prefix}-{i}.xml",
-                    "topics": ["ai"],
+                    "id": f"{feed_id_prefix}-{i}",
+                    "title": f"Feed {i}",
                 }
                 for i in range(feed_count)
-            ],
+            ]
         }
 
-        result = validate_feeds(data, schema_path=FEEDS_SCHEMA_PATH)
+        result = validate_feeds(data)
         assert result.valid is True
 
 
@@ -287,14 +274,12 @@ class TestValidateTopics:
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
+                    "name": "Artificial Intelligence",
                 }
             ]
         }
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
+        result = validate_topics(data)
         assert result.valid is True
         assert len(result.errors) == 0
 
@@ -302,8 +287,8 @@ class TestValidateTopics:
         """Test validation fails for duplicate topic IDs."""
         data = {
             "topics": [
-                {"id": "ai", "label": "AI", "facet": "domain", "parents": []},
-                {"id": "ai", "label": "Artificial Intelligence", "facet": "domain", "parents": []},
+                {"id": "ai", "name": "AI"},
+                {"id": "ai", "name": "Artificial Intelligence"},
             ]
         }
 
@@ -312,36 +297,57 @@ class TestValidateTopics:
         assert any("Duplicate topic IDs" in e for e in result.errors)
 
     def test_validate_topics_empty_topics(self):
-        """Empty topic collections should fail the canonical schema."""
+        """Test validation with empty topics list."""
         data = {"topics": []}
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-        assert result.valid is False
-        assert any("Schema validation failed" in e for e in result.errors)
+        result = validate_topics(data)
+        assert result.valid is True
 
     def test_validate_topics_no_topics_key(self):
-        """Missing topics key should fail the canonical schema."""
+        """Test validation with missing topics key."""
         data = {}
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-        assert result.valid is False
-        assert any("Schema validation failed" in e for e in result.errors)
+        result = validate_topics(data)
+        assert result.valid is True
 
     def test_validate_topics_with_valid_schema(self):
-        """Test topic validation against the repository canonical schema."""
+        """Test topic validation with JSON schema."""
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "name"],
+                        "properties": {
+                            "id": {"type": "string"},
+                            "name": {"type": "string"},
+                        },
+                    },
+                }
+            },
+        }
+
         data = {
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
+                    "name": "Artificial Intelligence",
                 }
             ]
         }
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-        assert result.valid is True
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(schema, f)
+            schema_path = Path(f.name)
+
+        try:
+            result = validate_topics(data, schema_path=schema_path)
+            assert result.valid is True
+        finally:
+            schema_path.unlink()
 
     def test_validate_topics_with_relations(self):
         """Test validation of topics with parent-child relations."""
@@ -349,32 +355,32 @@ class TestValidateTopics:
             "topics": [
                 {
                     "id": "ai",
-                    "label": "Artificial Intelligence",
-                    "facet": "domain",
-                    "parents": [],
-                    "relations": {"related_to": ["ml", "dl"]},
+                    "name": "Artificial Intelligence",
+                    "children": ["ml", "dl"],
                 },
                 {
                     "id": "ml",
-                    "label": "Machine Learning",
-                    "facet": "subfield",
-                    "parents": ["ai"],
+                    "name": "Machine Learning",
+                    "parent": "ai",
                 },
                 {
                     "id": "dl",
-                    "label": "Deep Learning",
-                    "facet": "subfield",
-                    "parents": ["ai"],
+                    "name": "Deep Learning",
+                    "parent": "ai",
                 },
             ]
         }
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
+        result = validate_topics(data)
         assert result.valid is True
 
     @given(
-        topic_count=st.integers(min_value=1, max_value=5),
-        topic_id_prefix=st.text(min_size=1, max_size=10, alphabet=SLUG_CHARS),
+        topic_count=st.integers(min_value=0, max_value=5),
+        topic_id_prefix=st.text(
+            min_size=1,
+            max_size=10,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
     )
     def test_validate_topics_property_based(self, topic_count, topic_id_prefix):
         """Property-based test for topic validation."""
@@ -382,16 +388,16 @@ class TestValidateTopics:
             "topics": [
                 {
                     "id": f"{topic_id_prefix}-{i}",
-                    "label": f"Topic {i}",
-                    "facet": "domain",
-                    "parents": [],
+                    "name": f"Topic {i}",
                 }
                 for i in range(topic_count)
             ]
         }
 
-        result = validate_topics(data, schema_path=TOPICS_SCHEMA_PATH)
-        assert result.valid is True
+        result = validate_topics(data)
+        # Should be valid if no duplicates
+        if topic_count <= 1:
+            assert result.valid is True
 
 
 @pytest.mark.unit
@@ -485,70 +491,6 @@ class TestValidateFeedUrl:
 
 
 @pytest.mark.unit
-@pytest.mark.asyncio
-class TestValidateFeedModelContract:
-    """Ensure validate_feed maps to current FeedValidationResult contract."""
-
-    @patch("ai_web_feeds.validate.validate_feed_url", new_callable=AsyncMock)
-    async def test_validate_feed_maps_runtime_fields(self, mock_validate_feed_url):
-        """validate_feed should populate current model fields (is_valid/http_status/item_count)."""
-        now = datetime.utcnow()
-        mock_validate_feed_url.return_value = {
-            "url": "https://example.com/feed.xml",
-            "success": True,
-            "status_code": 200,
-            "response_time_ms": 123.4,
-            "error_message": None,
-            "feed_format": "rss",
-            "entry_count": 4,
-            "validated_at": now,
-        }
-        source = FeedSource(id="feed-1", title="Feed 1", feed="https://example.com/feed.xml")
-
-        result = await validate_feed(source)
-
-        assert result.is_valid is True
-        assert result.is_accessible is True
-        assert result.http_status == 200
-        assert result.item_count == 4
-        assert result.validation_report["success"] is True
-
-    def test_mark_inactive_feeds_uses_curation_status(self):
-        """Inactive marking should update curation_status, not removed is_active field."""
-        source = FeedSource(
-            id="feed-2",
-            title="Feed 2",
-            feed="https://example.com/feed2.xml",
-            curation_status=CurationStatus.VERIFIED,
-        )
-        old_result = FeedValidationResult(
-            feed_source_id=source.id,
-            is_valid=False,
-            validated_at=datetime.utcnow() - timedelta(days=45),
-        )
-
-        marked = mark_inactive_feeds(
-            [source],
-            validation_history={source.id: [old_result]},
-            inactive_threshold_days=30,
-        )
-
-        assert marked == [source.id]
-        assert source.curation_status == CurationStatus.INACTIVE
-
-    def test_calculate_health_score_uses_is_valid(self):
-        """Health score should use is_valid field from current validation contract."""
-        results = [
-            FeedValidationResult(feed_source_id="a", is_valid=True, response_time_ms=500),
-            FeedValidationResult(feed_source_id="a", is_valid=False, response_time_ms=500),
-        ]
-
-        score = calculate_health_score(results)
-        assert 0.0 <= score <= 1.0
-        assert score < 1.0
-
-
-@pytest.mark.unit
 class TestValidationIntegration:
     """Integration tests for validation module."""
 
@@ -558,11 +500,14 @@ class TestValidationIntegration:
         feed_data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
+                    "title": "Test Feed",
+                    "feed": "https://example.com/feed.xml",
                 }
             ]
         }
+
+        import yaml
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(feed_data, f)
@@ -570,6 +515,8 @@ class TestValidationIntegration:
 
         try:
             # Load and validate
+            from ai_web_feeds.load import load_feeds
+
             data = load_feeds(temp_path)
             result = validate_feeds(data)
 
@@ -579,8 +526,8 @@ class TestValidationIntegration:
 
     def test_validation_result_in_conditional(self):
         """Test using ValidationResult in conditional statements."""
-        valid_data = {"sources": [{"url": "https://example.com/feed.xml", "topics": ["ai"]}]}
-        invalid_data = {"sources": [{"title": "Missing URL", "topics": ["ai"]}]}
+        valid_data = {"sources": [{"id": "test", "title": "Test"}]}
+        invalid_data = {"sources": [{"title": "Missing ID"}]}
 
         valid_result = validate_feeds(valid_data)
         invalid_result = validate_feeds(invalid_data)

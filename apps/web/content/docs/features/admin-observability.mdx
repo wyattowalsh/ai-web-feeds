@@ -30,7 +30,6 @@ The web application now includes a protected admin panel at `/admin` for reviewi
 ```bash
 AIWF_ADMIN_PASSWORD=change-me
 AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
-# Optional: AIWF_ANON_BINDING_SECRET=replace-with-a-separate-binding-secret
 ```
 
 ## Optional Environment Variables
@@ -40,7 +39,7 @@ AIWF_TELEMETRY_DIR=../../data/telemetry
 # AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
 ```
 
-You do not need SMTP, email digest, or notification configuration to use the admin panel. For the simple observability setup, the shared password and session secret are enough. `AIWF_ANON_BINDING_SECRET` remains optional and only signs anonymous browser bindings; it is not end-user authentication.
+You do not need SMTP, email digest, or notification configuration to use the admin panel. For the simple observability setup, the shared password and session secret are enough.
 
 Generate a session secret locally with either command:
 

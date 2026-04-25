@@ -1,5 +1,5 @@
 import { withAdminRouteGuard } from "@/lib/admin-auth";
-import { telemetryStore } from "@/lib/telemetry";
+import { getApiTelemetrySummary, recordAdminAudit } from "@/lib/telemetry";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ const GETHandler = withAdminRouteGuard(async (request: Request) => {
   );
   const summary = await getApiTelemetrySummary(windowHours);
 
-  await telemetryStore.recordAdminAudit({
+  await recordAdminAudit({
     timestamp: new Date().toISOString(),
     action: "admin.telemetry.summary.read",
     outcome: "success",

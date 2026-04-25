@@ -20,8 +20,6 @@ from ai_web_feeds.visualization.models import (
 from ai_web_feeds.visualization.validators import (
     DashboardValidator,
     ValidationError,
-    normalize_dashboard_widget_payload,
-    normalize_filter_payload,
 )
 
 
@@ -281,10 +279,6 @@ class DashboardService:
         Raises:
             ValidationError: If validation fails
         """
-        filters = normalize_filter_payload(filters)
-        normalized_widget = normalize_dashboard_widget_payload({"position": position})
-        position = normalized_widget.get("position", position)
-
         # Validate position
         self.validator.validate_widget_position(position)
 

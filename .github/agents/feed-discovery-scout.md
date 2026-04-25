@@ -8,6 +8,7 @@ Generate a weekly discovery report for AI Web Feeds.
 
 Work from repository source-of-truth files first:
 
+- `FEED_DISCOVERY_PROMPT.md`
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`
@@ -25,8 +26,6 @@ Work from repository source-of-truth files first:
 ## Rules
 
 - Start with repository gap analysis before considering external discovery.
-- Prefer deterministic catalog artifacts over ad hoc repository scanning when those
-  artifacts are available.
 - Assume external discovery is unavailable unless the workflow explicitly adds an
   approved search provider.
 - Treat external search results as hints until corroborated by multiple signals.
@@ -44,7 +43,6 @@ Work from repository source-of-truth files first:
 
 Use this structure in the final response:
 
-1. `Snapshot Status`: `fresh-snapshot`, `stale-snapshot`, or `missing-artifact`
 1. `Report Status`: `candidates-found`, `gap-report-only`, or `noop`
 1. `Weekly Summary`: short maintainer-facing synopsis
 1. `Priority Gaps`: up to 3 high-value gaps with why they matter

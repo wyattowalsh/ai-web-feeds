@@ -3,13 +3,12 @@ import type { MDXComponents } from "mdx/types";
 import { Accordion } from "fumadocs-ui/components/accordion";
 import { Tab } from "fumadocs-ui/components/tabs";
 import { Mermaid } from "@/components/mdx/mermaid";
-import { isPdfExportEnabled } from "@/lib/env";
 import * as Python from "fumadocs-python/components";
 import * as LucideIcons from "lucide-react";
 import type { ComponentProps, ComponentType, ReactNode } from "react";
 
 // Enable printing mode via environment variable
-const isPrinting = isPdfExportEnabled();
+const isPrinting = process.env.NEXT_PUBLIC_PDF_EXPORT === "true";
 
 /**
  * Custom Accordion component for printing that displays content without collapsing

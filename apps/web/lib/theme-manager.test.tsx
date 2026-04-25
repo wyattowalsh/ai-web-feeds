@@ -210,9 +210,8 @@ describe("theme-manager", () => {
     expect(document.documentElement).toHaveClass("light");
 
     const css = themeModule.themeManager.exportThemeCSS();
-    expect(css).toContain("color-scheme: light;");
-    expect(css).toContain("--reading-width: 800px;");
-    expect(css).not.toContain("--color-background-secondary");
+    expect(css).toContain("--color-background-secondary: #fffdfa;");
+    expect(css).toContain("--color-link-text: #4a5fd4;");
   });
 
   it("updates font, layout, and image preferences", async () => {

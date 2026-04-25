@@ -16,12 +16,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import CurationStatus, FeedEntry, FeedPollJob, FeedSource, PollStatus
 from ai_web_feeds.storage import DatabaseManager
-from ai_web_feeds.timestamps import normalize_utc_datetime, utc_now
 
 
 def _utc_now() -> datetime:
-    """Return the current UTC timestamp normalized for storage."""
-    return utc_now()
+    """Return the current UTC timestamp as a timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class FeedPoller:
@@ -186,8 +185,6 @@ class FeedPoller:
         """
         if not guid and not link:
             return False
-        if existing_guids is not None:
-            return guid not in existing_guids
 
         return self.db.get_feed_entry_by_identity(guid, link) is None
 
@@ -225,7 +222,7 @@ class FeedPoller:
             Parsed datetime or current time if parsing fails
         """
         if not date_str:
-            return datetime.now(UTC)
+            return _utc_now()
 
         try:
             parsed = parsedate_to_datetime(date_str)
@@ -233,9 +230,8 @@ class FeedPoller:
             try:
                 parsed = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
             except ValueError:
-                return datetime.now(UTC)
+                return _utc_now()
 
-        normalized = normalize_utc_datetime(parsed)
-        if normalized is None:
-            return datetime.now(UTC)
-        return normalized.replace(tzinfo=UTC)
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC)

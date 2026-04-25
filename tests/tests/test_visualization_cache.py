@@ -41,24 +41,6 @@ class TestCacheKeyGeneration:
 
         assert key1 == key2
 
-    def test_generate_query_cache_key_normalizes_legacy_aliases(self):
-        """Real query cache keys should normalize equivalent alias payloads."""
-        key1 = generate_query_cache_key(
-            "topic_metrics",
-            {"topic_ids": [2, 1], "date_range": {"start": "2024-01-01", "end": "2024-01-31"}},
-            {"start": "2024-01-01", "end": "2024-01-31"},
-            "device-123",
-        )
-        key2 = generate_query_cache_key(
-            "topic_metrics",
-            {"topicIds": [1, 2], "dateRange": {"startDate": "2024-01-01", "endDate": "2024-01-31"}},
-            {"startDate": "2024-01-01", "endDate": "2024-01-31"},
-            "device-123",
-        )
-
-        assert key1 == key2
-        assert key1.startswith("v1:query:topic_metrics:")
-
 
 class TestCacheLayerLRU:
     """Test CacheLayer behavior with the in-memory fallback."""

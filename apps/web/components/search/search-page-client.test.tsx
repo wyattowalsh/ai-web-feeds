@@ -109,7 +109,7 @@ function renderSearchPageClient({
   } as const,
   initialResults = [] as SearchResult[],
   initialMeta = {
-    mode: "local",
+    mode: "unbounded",
     bounded: false,
     candidate_sources: 0,
     scanned_sources: 0,
@@ -211,7 +211,7 @@ describe("SearchPageClient", () => {
       ],
       initialSearchRequestState: "success",
       initialMeta: {
-        mode: "local",
+        mode: "unbounded",
         bounded: false,
         candidate_sources: 1,
         scanned_sources: 1,
@@ -265,7 +265,7 @@ describe("SearchPageClient", () => {
             },
           ],
           meta: {
-            mode: "local",
+            mode: "unbounded",
             bounded: false,
             candidate_sources: 1,
             scanned_sources: 1,
@@ -295,7 +295,7 @@ describe("SearchPageClient", () => {
         jsonResponse({
           results: [],
           meta: {
-            mode: "local",
+            mode: "bounded",
             bounded: true,
             candidate_sources: 33,
             scanned_sources: 18,
@@ -321,7 +321,7 @@ describe("SearchPageClient", () => {
       },
       initialResults: [],
       initialMeta: {
-        mode: "local",
+        mode: "unbounded",
         bounded: false,
         candidate_sources: 0,
         scanned_sources: 0,

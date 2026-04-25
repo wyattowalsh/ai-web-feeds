@@ -11,10 +11,7 @@ This module provides search functions including:
 Uses SQLite FTS5 for full-text search and NumPy for vector similarity.
 """
 
-import re
-from collections.abc import Iterable
 from typing import Any
-from uuid import UUID
 
 import numpy as np
 from loguru import logger
@@ -22,142 +19,24 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
-from ai_web_feeds.config import get_settings
-from ai_web_feeds.embeddings import (
-    generate_embeddings_with_metadata,
-    normalize_embedding_provider,
-)
-from ai_web_feeds.embeddings import (
-    get_local_model as _get_local_model,
-)
+from ai_web_feeds.config import Settings
 from ai_web_feeds.models import (
-    CurationStatus,
     FeedEmbedding,
     FeedSource,
     SavedSearch,
     SearchQuery,
-    SourceType,
 )
 
-MIN_INDEXED_WORD_LENGTH = 2
-FTS_FILTER_BUFFER_MULTIPLIER = 2
-MIN_AUTOCOMPLETE_PREFIX_LENGTH = 2
-POPULARITY_BOOST_THRESHOLD = 0.7
-ZERO_NORM_THRESHOLD = 1e-8
-DEFAULT_SEMANTIC_THRESHOLD = 0.7
-MIN_SEMANTIC_THRESHOLD = 0.5
-MAX_SEMANTIC_THRESHOLD = 1.0
-_WHITESPACE_RE = re.compile(r"\s+")
-
-_search_cache: dict[str, Any] = {
-    "trie_index": None,
-}
+# Shared settings instance
+_settings: Settings | None = None
 
 
-def _coerce_source_type_filter(value: SourceType | str | None) -> SourceType | None:
-    """Normalize source-type filter inputs to the enum used by the ORM."""
-    if value is None or isinstance(value, SourceType):
-        return value
-    try:
-        return SourceType(value)
-    except ValueError:
-        logger.warning(f"Ignoring unsupported source_type filter: {value}")
-        return None
-
-
-def normalize_search_query(value: str | None) -> str:
-    """Collapse internal whitespace and trim user-entered search text."""
-    if not value:
-        return ""
-
-    return _WHITESPACE_RE.sub(" ", value).strip()
-
-
-def normalize_search_topics(topics: Iterable[str] | None) -> list[str]:
-    """Trim, lowercase, and de-duplicate topic filters while preserving order."""
-    normalized_topics: list[str] = []
-    seen: set[str] = set()
-
-    for topic in topics or []:
-        normalized_topic = normalize_search_query(topic).lower()
-        if not normalized_topic or normalized_topic in seen:
-            continue
-        seen.add(normalized_topic)
-        normalized_topics.append(normalized_topic)
-
-    return normalized_topics
-
-
-def normalize_search_filters(
-    filters: dict[str, Any] | None,
-    *,
-    search_type: str | None = None,
-) -> dict[str, Any]:
-    """Normalize persisted and runtime search filters across entry points."""
-    if not filters:
-        return {}
-
-    normalized: dict[str, Any] = {}
-
-    if "search_type" in filters:
-        normalized["search_type"] = (
-            "semantic" if str(filters["search_type"]).strip().lower() == "semantic" else "full_text"
-        )
-    elif search_type is not None:
-        normalized["search_type"] = "semantic" if search_type == "semantic" else "full_text"
-
-    source_type = _coerce_source_type_filter(filters.get("source_type"))
-    if source_type is not None:
-        normalized["source_type"] = source_type.value
-
-    raw_topics = filters.get("topics")
-    if isinstance(raw_topics, str):
-        normalized_topics = normalize_search_topics(raw_topics.split(","))
-    elif isinstance(raw_topics, Iterable):
-        normalized_topics = normalize_search_topics(
-            topic for topic in raw_topics if isinstance(topic, str)
-        )
-    else:
-        normalized_topics = []
-    if normalized_topics:
-        normalized["topics"] = normalized_topics
-
-    verified = filters.get("verified")
-    if isinstance(verified, bool):
-        normalized["verified"] = verified
-    elif isinstance(verified, str):
-        verified_value = verified.strip().lower()
-        if verified_value == "true":
-            normalized["verified"] = True
-        elif verified_value == "false":
-            normalized["verified"] = False
-
-    active = filters.get("active")
-    if isinstance(active, bool):
-        normalized["active"] = active
-    elif isinstance(active, str):
-        active_value = active.strip().lower()
-        if active_value == "true":
-            normalized["active"] = True
-        elif active_value == "false":
-            normalized["active"] = False
-
-    threshold_value = filters.get("threshold")
-    if threshold_value is not None:
-        try:
-            normalized["threshold"] = max(
-                MIN_SEMANTIC_THRESHOLD,
-                min(float(threshold_value), MAX_SEMANTIC_THRESHOLD),
-            )
-        except (TypeError, ValueError):
-            normalized["threshold"] = DEFAULT_SEMANTIC_THRESHOLD
-
-    return normalized
-
-
-def get_local_model(model_name: str | None = None) -> Any:
-    """Lazily load the shared embedding model."""
-    return _get_local_model(model_name)
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 # ============================================================================
@@ -168,7 +47,7 @@ def get_local_model(model_name: str | None = None) -> Any:
 class TrieNode:
     """Trie node for autocomplete suggestions."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.children: dict[str, TrieNode] = {}
         self.is_end_of_word = False
         self.feed_ids: list[str] = []
@@ -178,10 +57,10 @@ class TrieNode:
 class TrieIndex:
     """Trie index for fast autocomplete suggestions."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.root = TrieNode()
 
-    def insert(self, word: str, feed_id: str) -> None:
+    def insert(self, word: str, feed_id: str):
         """Insert word into Trie with associated feed ID."""
         node = self.root
         word_lower = word.lower()
@@ -223,18 +102,17 @@ class TrieIndex:
         results.sort(key=lambda x: x[2], reverse=True)
         return results[:limit]
 
-    def _collect_words(
-        self,
-        node: TrieNode,
-        current_word: str,
-        results: list[tuple[str, list[str], int]],
-    ) -> None:
+    def _collect_words(self, node: TrieNode, current_word: str, results: list):
         """Recursively collect all words from node."""
         if node.is_end_of_word:
             results.append((current_word, node.feed_ids, node.frequency))
 
         for char, child_node in node.children.items():
             self._collect_words(child_node, current_word + char, results)
+
+
+# Global Trie index (cached in memory)
+_trie_index: TrieIndex | None = None
 
 
 def build_trie_index(session: Session) -> TrieIndex:
@@ -246,6 +124,8 @@ def build_trie_index(session: Session) -> TrieIndex:
     Returns:
         Populated TrieIndex
     """
+    global _trie_index
+
     logger.info("Building Trie index for autocomplete")
 
     trie = TrieIndex()
@@ -256,26 +136,26 @@ def build_trie_index(session: Session) -> TrieIndex:
     for feed in feeds:
         # Index feed title words
         if feed.title:
-            words = normalize_search_query(feed.title).lower().split()
+            words = feed.title.lower().split()
             for word in words:
-                if len(word) >= MIN_INDEXED_WORD_LENGTH:
+                if len(word) >= 2:  # Only index words >= 2 chars
                     trie.insert(word, feed.id)
 
         # Index topics
-        for topic in normalize_search_topics(feed.topics or []):
+        for topic in feed.topics:
             trie.insert(topic, feed.id)
 
-    _search_cache["trie_index"] = trie
+    _trie_index = trie
     logger.info(f"Trie index built with {len(feeds)} feeds")
     return trie
 
 
 def get_trie_index(session: Session) -> TrieIndex:
     """Get cached Trie index or build if not exists."""
-    cached_trie = _search_cache["trie_index"]
-    if cached_trie is None:
-        cached_trie = build_trie_index(session)
-    return cached_trie
+    global _trie_index
+    if _trie_index is None:
+        _trie_index = build_trie_index(session)
+    return _trie_index
 
 
 # ============================================================================
@@ -283,7 +163,7 @@ def get_trie_index(session: Session) -> TrieIndex:
 # ============================================================================
 
 
-def create_fts_table(session: Session) -> None:
+def create_fts_table(session: Session):
     """Create FTS5 virtual table for full-text search.
 
     Creates feeds_fts table with title, description, and topics columns.
@@ -378,17 +258,13 @@ def full_text_search(
         List of matching FeedSource objects
     """
     settings = get_settings()
-    query = normalize_search_query(query)
-    if not query:
-        return []
     logger.info(f"Full-text search: query='{query}', limit={limit}")
-    filters = normalize_search_filters(filters, search_type="full_text")
 
     # Validate and clamp limit
     limit = max(1, min(limit, settings.search.full_text_limit))
 
     # Use LIMIT with buffer for filtering
-    fts_limit = limit * FTS_FILTER_BUFFER_MULTIPLIER
+    fts_limit = limit * 2
 
     # Search FTS5 table using parameterized query with text()
     statement = text(
@@ -415,7 +291,7 @@ def full_text_search(
         logger.debug("No FTS5 results found")
         return []
 
-    # Get feed IDs preserving FTS rank order
+    # Get feed IDs
     feed_ids = [row[0] for row in fts_results]
     feed_positions = {feed_id: index for index, feed_id in enumerate(feed_ids)}
 
@@ -424,9 +300,7 @@ def full_text_search(
 
     if filters:
         if filters.get("source_type"):
-            source_type = _coerce_source_type_filter(filters["source_type"])
-            if source_type is not None:
-                statement = statement.where(FeedSource.source_type == source_type)
+            statement = statement.where(FeedSource.source_type == filters["source_type"])
         if filters.get("topics"):
             # Filter by topics (JSON array contains)
             for topic in filters["topics"]:
@@ -434,29 +308,21 @@ def full_text_search(
         if filters.get("verified") is not None:
             statement = statement.where(FeedSource.verified == filters["verified"])
         if filters.get("active") is not None:
-            if filters["active"]:
-                statement = statement.where(FeedSource.curation_status != CurationStatus.INACTIVE)
-            else:
-                statement = statement.where(FeedSource.curation_status == CurationStatus.INACTIVE)
+            active_status = "inactive" if not filters["active"] else "verified"
+            statement = statement.where(FeedSource.curation_status != active_status)
 
     feeds = list(session.exec(statement).all())
-    feed_map = {feed.id: feed for feed in feeds if hasattr(feed, "id")}
 
     # Apply boost factors
-    ordered_feeds: list[FeedSource] = []
-    for feed_id in feed_ids:
-        feed = feed_map.get(feed_id)
-        if feed is None:
-            continue
+    for feed in feeds:
         boost = 1.0
         if feed.verified:
             boost *= 1.2
-        if feed.curation_status != CurationStatus.INACTIVE:
+        if feed.curation_status != "inactive":
             boost *= 1.1
-        if feed.popularity_score and feed.popularity_score > POPULARITY_BOOST_THRESHOLD:
+        if feed.popularity_score and feed.popularity_score > 0.7:
             boost *= 1.05
         feed._search_score = boost  # Store for sorting
-        ordered_feeds.append(feed)
 
     # Sort by boosted score while preserving the underlying FTS rank order as
     # the tie-breaker so search results remain deterministic.
@@ -467,8 +333,8 @@ def full_text_search(
         )
     )
 
-    logger.debug(f"Full-text search returned {len(ordered_feeds)} results")
-    return ordered_feeds[:limit]
+    logger.debug(f"Full-text search returned {len(feeds)} results")
+    return feeds[:limit]
 
 
 # ============================================================================
@@ -476,12 +342,7 @@ def full_text_search(
 # ============================================================================
 
 
-def generate_query_embedding(
-    query_text: str,
-    *,
-    provider: str | None = None,
-    model_name: str | None = None,
-) -> np.ndarray:
+def generate_query_embedding(query_text: str) -> np.ndarray:
     """Generate embedding for search query using cached model.
 
     Uses the shared cached Sentence-Transformers model from embeddings module.
@@ -492,31 +353,22 @@ def generate_query_embedding(
     Returns:
         384-dim embedding vector
     """
-    resolved_provider = normalize_embedding_provider(provider)
-    if resolved_provider == "local":
-        try:
-            model = get_local_model(model_name)
-            embedding = model.encode([query_text])[0]
-            return embedding.astype(np.float32)
-        except ImportError:
-            logger.error("sentence-transformers not installed")
-            raise
+    # Import here to avoid circular dependency
+    try:
+        from ai_web_feeds.embeddings import get_local_model
 
-    result = generate_embeddings_with_metadata(
-        [query_text],
-        provider=resolved_provider,
-        show_progress=False,
-        allow_fallback=False,
-        hf_model=model_name if resolved_provider == "huggingface" else None,
-        local_model=model_name if resolved_provider == "local" else None,
-    )
-    return result.embeddings[0]
+        model = get_local_model()
+        embedding = model.encode([query_text])[0]
+        return embedding.astype(np.float32)
+    except ImportError:
+        logger.error("sentence-transformers not installed")
+        raise
 
 
 def semantic_search(
     session: Session,
     query: str,
-    threshold: float = DEFAULT_SEMANTIC_THRESHOLD,
+    threshold: float = 0.7,
     limit: int = 20,
     filters: dict[str, Any] | None = None,
 ) -> list[tuple[FeedSource, float]]:
@@ -533,73 +385,44 @@ def semantic_search(
         List of (FeedSource, similarity_score) tuples
     """
     settings = get_settings()
-    query = normalize_search_query(query)
-    if not query:
-        return []
     logger.info(f"Semantic search: query='{query}', threshold={threshold}")
-    filters = normalize_search_filters(filters, search_type="semantic")
 
     # Validate and clamp limit
     limit = max(1, min(limit, settings.search.full_text_limit))
-    threshold = max(MIN_SEMANTIC_THRESHOLD, min(threshold, MAX_SEMANTIC_THRESHOLD))
+    threshold = max(0.0, min(threshold, 1.0))
+
+    # Generate query embedding
+    query_embedding = generate_query_embedding(query)
+
+    # Guard against zero-norm query embedding
+    query_norm = np.linalg.norm(query_embedding)
+    if query_norm < 1e-8:
+        logger.warning("Query embedding has zero norm, returning no results")
+        return []
 
     # Get all feed embeddings
-    embeddings = session.exec(
-        select(
-            FeedEmbedding.feed_id,
-            FeedEmbedding.embedding,
-            FeedEmbedding.embedding_provider,
-            FeedEmbedding.embedding_model,
-        )
-    ).all()
+    embeddings = session.exec(select(FeedEmbedding)).all()
 
     if not embeddings:
         logger.warning("No feed embeddings found")
         return []
 
-    query_embeddings: dict[tuple[str, str], tuple[np.ndarray, float]] = {}
-    skipped_specs: set[tuple[str, str]] = set()
-
     # Calculate cosine similarities with zero-norm guards
     similarities = []
-    for feed_id, embedding_bytes, provider, model_name in embeddings:
-        spec = ((provider or "local").strip().lower(), (model_name or "").strip())
-        if spec in skipped_specs:
-            continue
-        if spec not in query_embeddings:
-            try:
-                query_embedding = _generate_query_embedding_for_spec(query, spec)
-            except Exception as exc:
-                logger.warning(
-                    f"Skipping semantic-search spec {spec[0]} ({spec[1] or 'default'}): {exc}"
-                )
-                skipped_specs.add(spec)
-                continue
-
-            query_norm = np.linalg.norm(query_embedding)
-            if query_norm < ZERO_NORM_THRESHOLD:
-                logger.warning(
-                    f"Query embedding for {spec[0]} ({spec[1] or 'default'}) had zero norm"
-                )
-                skipped_specs.add(spec)
-                continue
-
-            query_embeddings[spec] = (query_embedding, query_norm)
-
-        query_embedding, query_norm = query_embeddings[spec]
-        feed_vector = np.frombuffer(embedding_bytes, dtype=np.float32)
+    for emb in embeddings:
+        feed_vector = np.frombuffer(emb.embedding, dtype=np.float32)
 
         # Guard against zero-norm feed embedding
         feed_norm = np.linalg.norm(feed_vector)
-        if feed_norm < ZERO_NORM_THRESHOLD:
-            logger.debug(f"Feed {feed_id} has zero-norm embedding, skipping")
+        if feed_norm < 1e-8:
+            logger.debug(f"Feed {emb.feed_id} has zero-norm embedding, skipping")
             continue
 
         # Compute cosine similarity safely
         similarity = np.dot(query_embedding, feed_vector) / (query_norm * feed_norm)
 
         if similarity >= threshold:
-            similarities.append((feed_id, float(similarity)))
+            similarities.append((emb.feed_id, float(similarity)))
 
     # Sort by similarity
     similarities.sort(key=lambda x: x[1], reverse=True)
@@ -610,19 +433,12 @@ def semantic_search(
 
     if filters:
         if filters.get("source_type"):
-            source_type = _coerce_source_type_filter(filters["source_type"])
-            if source_type is not None:
-                statement = statement.where(FeedSource.source_type == source_type)
+            statement = statement.where(FeedSource.source_type == filters["source_type"])
         if filters.get("topics"):
             for topic in filters["topics"]:
                 statement = statement.where(FeedSource.topics.contains([topic]))
         if filters.get("verified") is not None:
             statement = statement.where(FeedSource.verified == filters["verified"])
-        if filters.get("active") is not None:
-            if filters["active"]:
-                statement = statement.where(FeedSource.curation_status != CurationStatus.INACTIVE)
-            else:
-                statement = statement.where(FeedSource.curation_status == CurationStatus.INACTIVE)
 
     feeds = list(session.exec(statement).all())
 
@@ -637,23 +453,6 @@ def semantic_search(
 
     logger.debug(f"Semantic search returned {len(results)} results")
     return results[:limit]
-
-
-def _generate_query_embedding_for_spec(
-    query: str,
-    spec: tuple[str, str],
-) -> np.ndarray:
-    """Dispatch query embedding generation while tolerating simple test doubles."""
-    try:
-        return generate_query_embedding(
-            query,
-            provider=spec[0],
-            model_name=spec[1] or None,
-        )
-    except TypeError as exc:
-        if "unexpected keyword argument" not in str(exc):
-            raise
-        return generate_query_embedding(query)
 
 
 # ============================================================================
@@ -682,7 +481,7 @@ def autocomplete(
 
     logger.debug(f"Autocomplete: prefix='{prefix}', limit={limit}")
 
-    if len(prefix) < MIN_AUTOCOMPLETE_PREFIX_LENGTH:
+    if len(prefix) < 2:
         return {"feeds": [], "topics": []}
 
     trie = get_trie_index(session)
@@ -724,7 +523,7 @@ def autocomplete(
         if is_topic:
             topic_suggestions.append(
                 {
-                    "label": word,
+                    "label": word.upper(),
                     "type": "topic",
                     "feed_count": len(feed_ids),
                 }
@@ -750,32 +549,30 @@ def log_search_query(
     filters: dict[str, Any],
     result_count: int,
     clicked_results: list[str] | None = None,
-) -> None:
+):
     """Log search query for analytics.
 
     Args:
         session: Database session
-        user_id: User ID (optional, from anonymous device binding)
+        user_id: User ID (optional, from localStorage)
         query_text: Search query
         search_type: 'full_text' or 'semantic'
         filters: Applied filters
         result_count: Number of results returned
         clicked_results: Feed IDs clicked by user
     """
-    normalized_query = normalize_search_query(query_text)
-    normalized_filters = normalize_search_filters(filters, search_type=search_type)
     search_query = SearchQuery(
         user_id=user_id,
-        query_text=normalized_query,
+        query_text=query_text,
         search_type=search_type,
-        filters_applied=normalized_filters,
+        filters_applied=filters,
         result_count=result_count,
         clicked_results=clicked_results or [],
     )
 
     session.add(search_query)
     session.commit()
-    logger.debug(f"Logged search query: {normalized_query}")
+    logger.debug(f"Logged search query: {query_text}")
 
 
 def save_search(
@@ -789,7 +586,7 @@ def save_search(
 
     Args:
         session: Database session
-        user_id: User ID (anonymous device binding)
+        user_id: User ID (localStorage key)
         search_name: User-provided name
         query_text: Search query
         filters: Saved filters
@@ -797,21 +594,18 @@ def save_search(
     Returns:
         Saved SavedSearch object
     """
-    normalized_filters = normalize_search_filters(filters)
-    normalized_search_name = normalize_search_query(search_name)
-    normalized_query = normalize_search_query(query_text)
     saved_search = SavedSearch(
-        user_id=user_id.strip(),
-        search_name=normalized_search_name or search_name.strip(),
-        query_text=normalized_query,
-        filters=normalized_filters,
+        user_id=user_id,
+        search_name=search_name,
+        query_text=query_text,
+        filters=filters,
     )
 
     session.add(saved_search)
     session.commit()
     session.refresh(saved_search)
 
-    logger.info(f"Saved search: {saved_search.search_name} for user {saved_search.user_id}")
+    logger.info(f"Saved search: {search_name} for user {user_id}")
     return saved_search
 
 
@@ -833,27 +627,15 @@ def get_saved_searches(session: Session, user_id: str) -> list[SavedSearch]:
     return list(session.exec(statement).all())
 
 
-def delete_saved_search(session: Session, user_id: str, search_id: str) -> None:
-    """Delete a saved search owned by a specific user.
+def delete_saved_search(session: Session, search_id: str):
+    """Delete a saved search.
 
     Args:
         session: Database session
-        user_id: Anonymous device-scoped user ID
         search_id: SavedSearch UUID
     """
-    try:
-        search_uuid = UUID(str(search_id).strip())
-    except (TypeError, ValueError):
-        logger.warning(f"Ignoring saved-search delete for invalid id: {search_id}")
-        return
-
-    saved_search = session.exec(
-        select(SavedSearch).where(
-            SavedSearch.id == search_uuid,
-            SavedSearch.user_id == user_id.strip(),
-        )
-    ).first()
+    saved_search = session.get(SavedSearch, search_id)
     if saved_search:
         session.delete(saved_search)
         session.commit()
-        logger.info(f"Deleted saved search: {search_id} for user {user_id.strip()}")
+        logger.info(f"Deleted saved search: {search_id}")

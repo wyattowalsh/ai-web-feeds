@@ -1,7 +1,7 @@
 name: 📝 Documentation Update
 description: Suggest improvements to documentation
 title: "[Docs]: "
-labels: ["component/docs", "status/needs-review"]
+labels: ["documentation"]
 assignees: []
 body:
   - type: markdown

@@ -33,19 +33,16 @@ ChartJS.register(
 interface VelocityData {
   granularity: string;
   data_points: Array<{ date: string; count: number }>;
-  avg_posts_per_source: number;
-  most_active_source: { feed_id: string; title: string; recent_post_count: number } | null;
-  least_active_source: { feed_id: string; title: string; recent_post_count: number } | null;
-  total_recent_posts: number;
+  avg_per_feed: number;
+  most_active_feed: { id: string; title: string; count: number } | null;
+  least_active_feed: { id: string; title: string; count: number } | null;
 }
 
 export function VelocityChart({
   dateRange = "30d",
-  topic,
   granularity = "daily",
 }: {
   dateRange?: string;
-  topic?: string;
   granularity?: "daily" | "weekly" | "monthly";
 }) {
   const [velocity, setVelocity] = useState<VelocityData | null>(null);
@@ -58,15 +55,9 @@ export function VelocityChart({
       setLoading(true);
 
       try {
-        const params = new URLSearchParams({
-          granularity,
-          date_range: dateRange,
-        });
-        if (topic) {
-          params.set("topic", topic);
-        }
-
-        const response = await fetch(`/api/analytics/velocity?${params.toString()}`);
+        const response = await fetch(
+          `/api/analytics/velocity?granularity=${granularity}&date_range=${dateRange}`,
+        );
         if (!response.ok) throw new Error("Failed to fetch velocity data");
 
         const data = await response.json();
@@ -78,8 +69,8 @@ export function VelocityChart({
       }
     };
 
-    void fetchVelocity();
-  }, [dateRange, granularity, topic]);
+    fetchVelocity();
+  }, [dateRange, granularity]);
 
   if (loading || !velocity) {
     return <ChartSkeleton className="h-[34rem]" />;
@@ -89,7 +80,7 @@ export function VelocityChart({
     labels: velocity.data_points.map((dp) => dp.date),
     datasets: [
       {
-        label: "Recent Posts",
+        label: "Validation Count",
         data: velocity.data_points.map((dp) => dp.count),
         fill: true,
         backgroundColor: chartTheme.successSoft,
@@ -128,7 +119,7 @@ export function VelocityChart({
         },
         title: {
           display: true,
-          text: "Recent Posts",
+          text: "Validation Count",
           color: chartTheme.textMuted,
         },
       },
@@ -154,37 +145,37 @@ export function VelocityChart({
     <ChartShell
       eyebrow="Velocity"
       title="Publication velocity"
-      description="Recent post timestamps from the catalog slice are bucketed over time to show publishing rhythm."
+      description="Validation counts are used as a practical proxy for ongoing publication activity across the catalog."
       footer={
         <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
           <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-4">
             <p className="metric-label">Average per feed</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--brand-strong)]">
-              {velocity.avg_posts_per_source.toFixed(1)}
+              {velocity.avg_per_feed.toFixed(1)}
             </p>
           </div>
 
-          {velocity.most_active_source ? (
+          {velocity.most_active_feed ? (
             <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
               <p className="metric-label">Most active</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
-                {velocity.most_active_source.title}
+                {velocity.most_active_feed.title}
               </p>
               <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {velocity.most_active_source.recent_post_count} recent posts
+                {velocity.most_active_feed.count} validations
               </p>
             </div>
           ) : null}
 
-          {velocity.least_active_source ? (
+          {velocity.least_active_feed ? (
             <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
               <p className="metric-label">Least active</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
-                {velocity.least_active_source.title}
+                {velocity.least_active_feed.title}
               </p>
               <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {velocity.least_active_source.recent_post_count} recent post
-                {velocity.least_active_source.recent_post_count !== 1 ? "s" : ""}
+                {velocity.least_active_feed.count} validation
+                {velocity.least_active_feed.count !== 1 ? "s" : ""}
               </p>
             </div>
           ) : null}

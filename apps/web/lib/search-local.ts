@@ -205,7 +205,7 @@ async function searchArticles(
 
 function buildUnboundedMeta(candidateSources: number): SearchResponseMeta {
   return {
-    mode: "local",
+    mode: "unbounded",
     bounded: false,
     candidate_sources: candidateSources,
     scanned_sources: candidateSources,
@@ -275,7 +275,7 @@ function diversifyArticleResults(results: SearchResult[], limit: number): Search
 
 function buildBoundedMeta(candidateSources: number, scannedSources: number): SearchResponseMeta {
   return {
-    mode: "local",
+    mode: "bounded",
     bounded: true,
     candidate_sources: candidateSources,
     scanned_sources: scannedSources,

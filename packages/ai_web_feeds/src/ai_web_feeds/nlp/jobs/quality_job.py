@@ -7,7 +7,6 @@ from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import ArticleQualityScore, FeedEntry
-from ai_web_feeds.nlp.content import build_article_payload
 from ai_web_feeds.nlp.quality_scorer import QualityScorer
 from ai_web_feeds.storage import DatabaseManager
 
@@ -83,7 +82,18 @@ class QualityBatchJob:
                 stats["processed"] += 1
 
                 try:
-                    article_dict = build_article_payload(article)
+                    # Convert SQLModel to dict for scorer
+                    article_dict = {
+                        "id": article.id,
+                        "title": article.title,
+                        "content": article.content or article.summary or "",
+                        "summary": article.summary,
+                        "author": getattr(article, "author", None),
+                        "author_detail": None,  # TODO: Extract from feed metadata
+                        "url": article.link,
+                        "feed_id": article.feed_id,
+                        "share_count": 0,  # TODO: Add social sharing metrics
+                    }
 
                     # Score article
                     score_result = self.scorer.score_article(article_dict)

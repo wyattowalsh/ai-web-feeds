@@ -5,7 +5,19 @@ from pathlib import Path
 
 from loguru import logger
 
-from ai_web_feeds.config import get_settings
+from ai_web_feeds.config import Settings
+
+# Shared settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create shared settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
 
 settings = get_settings()
 

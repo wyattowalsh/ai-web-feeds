@@ -7,7 +7,6 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.content import extract_article_body
 
 
 class QualityScoreComponents(BaseModel):
@@ -105,7 +104,10 @@ class QualityScorer:
 
     def _get_content(self, article: dict) -> str:
         """Extract text content from article."""
-        return extract_article_body(article)
+        content = article.get("content", "") or article.get("summary", "") or ""
+        if isinstance(content, list):
+            content = " ".join(item.get("value", "") for item in content if isinstance(item, dict))
+        return content
 
     def _score_depth(self, content: str, word_count: int) -> int:
         """Score content depth based on length, structure, and complexity.

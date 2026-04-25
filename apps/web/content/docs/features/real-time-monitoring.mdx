@@ -228,10 +228,6 @@ Customizable email summaries:
 - **Weekly**: Every Monday at 9:00 AM
 - **Custom**: Cron expression (e.g., `0 9 * * *`)
 
-Daily and weekly schedules use built-in defaults when `schedule_cron` is omitted.
-Custom schedules must provide a valid cron expression, and all schedules validate
-the supplied IANA timezone before the subscription is saved.
-
 **Configuration**:
 
 ```bash
@@ -249,26 +245,15 @@ AIWF_DIGEST_MAX_ARTICLES=20
 **API Usage**:
 
 ```typescript
-// The server establishes an anonymous device binding on first use.
-// Subscribe to a daily digest (schedule_cron is optional for daily/weekly)
+// Subscribe to daily digest
 await fetch("/api/digests", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
+    user_id: "user-uuid",
     email: "user@example.com",
     schedule_type: "daily",
-    timezone: "America/New_York",
-  }),
-});
-
-// Custom digests must provide an explicit cron expression
-await fetch("/api/digests", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    email: "user@example.com",
-    schedule_type: "custom",
-    schedule_cron: "0 17 * * 5",
+    schedule_cron: "0 9 * * *",
     timezone: "America/New_York",
   }),
 });
@@ -276,7 +261,7 @@ await fetch("/api/digests", {
 
 ### Feed Follows
 
-User-feed relationships stay anonymous and device-scoped:
+User-feed relationships for notification targeting:
 
 ```typescript
 // Follow a feed
@@ -284,12 +269,13 @@ await fetch("/api/follows", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
+    user_id: "user-uuid",
     feed_id: "ai-news",
   }),
 });
 
-// Get followed feeds for the current browser/device
-const response = await fetch("/api/follows");
+// Get followed feeds
+const response = await fetch(`/api/follows?user_id=${userId}`);
 const { follows } = await response.json();
 ```
 
@@ -301,11 +287,11 @@ const { follows } = await response.json();
 
 **GET /api/notifications**
 
-List notifications for the current anonymous device binding.
+List user notifications.
 
 ```typescript
 // Query params
-?unread_only=true&limit=50
+?user_id=<uuid>&unread_only=true&limit=50
 
 // Response
 {
@@ -322,7 +308,8 @@ Mark notification as read or dismissed.
 ```typescript
 // Body
 {
-  "action": "mark_read" | "dismiss"
+  "action": "mark_read" | "dismiss",
+  "user_id": "<uuid>" // or pass user_id in the query string
 }
 ```
 
@@ -330,10 +317,10 @@ Mark notification as read or dismissed.
 
 **GET /api/follows**
 
-List followed feeds for the current anonymous device binding.
+List followed feeds.
 
 ```typescript
-// no user_id required for public browser flows
+?user_id=<uuid>
 ```
 
 **POST /api/follows**
@@ -342,6 +329,7 @@ Follow a feed.
 
 ```typescript
 {
+  "user_id": "...",
   "feed_id": "..."
 }
 ```
@@ -351,7 +339,7 @@ Follow a feed.
 Unfollow a feed.
 
 ```typescript
-?feed_id=<id>
+?user_id=<uuid>&feed_id=<id>
 ```
 
 #### Trending
@@ -388,6 +376,7 @@ Set notification preferences.
 
 ```typescript
 {
+  "user_id": "...",
   "feed_id": "..." | null,  // null for global
   "delivery_method": "websocket" | "email" | "in_app",
   "frequency": "instant" | "hourly" | "daily" | "weekly" | "off",
@@ -404,9 +393,7 @@ Get digest subscriptions.
 
 **POST /api/digests**
 
-Create or update the active digest subscription for the current device-bound user.
-`schedule_cron` is optional for `daily` and `weekly`, required for `custom`, and
-validated together with the IANA timezone before the request reaches the backend.
+Create digest subscription.
 
 **DELETE /api/digests**
 
@@ -423,9 +410,8 @@ import { io } from "socket.io-client";
 // NEXT_PUBLIC_WEBSOCKET_URL=https://monitor.example.com
 const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL ?? window.location.origin);
 
-// Authenticate with the server-issued anonymous device id
-const identity = await fetch("/api/identity").then((response) => response.json());
-socket.emit("authenticate", { user_id: identity.user_id });
+// Authenticate
+socket.emit("authenticate", { user_id: "user-uuid" });
 ```
 
 **Events**:
@@ -533,8 +519,7 @@ Slide-in notification panel.
 
 ### FollowButton
 
-Toggle feed follow status. The component bootstraps anonymous device identity and
-uses the server-issued binding cookie automatically.
+Toggle feed follow status.
 
 ```tsx
 <FollowButton
@@ -694,15 +679,14 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 
 ### User Identity
 
-- Public flows stay anonymous and device-scoped
-- The server issues an HttpOnly binding cookie and anonymous UUID header on first use
-- Browser localStorage is a convenience cache, not the trust boundary
-- No end-user authentication is required or introduced in Phase 3B
+- Anonymous identification via localStorage UUID
+- No authentication required (Phase 3B MVP)
+- Migration path to user accounts planned (Phase 3A)
 
 ### WebSocket
 
 - CORS validation on connection
-- Socket authentication is limited to the server-issued anonymous device id
+- User ID authentication required
 - Room-based message targeting
 
 ### API

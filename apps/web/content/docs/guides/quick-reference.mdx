@@ -12,28 +12,14 @@ Quick reference for common tasks, commands, and endpoints.
 
 ### AI & LLM
 
-| URL                                | Purpose                                  | For         |
-| ---------------------------------- | ---------------------------------------- | ----------- |
-| `/llms.txt`                        | Discovery file grouped by docs section   | AI agents   |
-| `/llms-full.txt`                   | All docs with section + path metadata    | RAG systems |
-| `/docs/guides/getting-started.mdx` | Canonical markdown form of one docs page | AI tools    |
-| `/docs/guides/getting-started.md`  | Alias for the same markdown payload      | AI tools    |
-| `/docs.mdx`                        | Root docs page as markdown               | AI tools    |
+| URL              | Purpose                     | For         |
+| ---------------- | --------------------------- | ----------- |
+| `/llms.txt`      | Discovery file              | AI agents   |
+| `/llms-full.txt` | All docs, structured format | RAG systems |
+| `/docs/page.mdx` | Page as markdown            | AI tools    |
+| `/docs/page.md`  | Page as markdown (alt)      | AI tools    |
 
-<Callout type="info">Prefer `.mdx` in examples and tooling. `.md` is currently an alias route, while content negotiation also rewrites to the `.mdx` handler.</Callout>
-
-### Downloads & Export
-
-| URL                                                     | Purpose                                                    |
-| ------------------------------------------------------- | ---------------------------------------------------------- |
-| `/feeds`                                                | Primary catalog and subset-selection surface before export |
-| `/downloads`                                            | Full-catalog download surface plus optional OPML preview   |
-| `/api/exports/opml?format=all`                          | Flat OPML export                                           |
-| `/api/exports/opml?format=categorized`                  | Foldered OPML export                                       |
-| `/api/exports/opml?format=filtered&feed=<id>&feed=<id>` | Filtered OPML export for an explicit feed-id slice         |
-| `/api/feeds`                                            | JSON feed catalog used by the downloads page and explorer  |
-| `/api/feeds/posts?feedId=<id>&limit=6`                  | Recent-post preview for one matched feed                   |
-| `/api/feeds/posts/aggregate`                            | Merged timeline across visible previewable feeds           |
+<Callout type="info">`/llms-full.txt` has enhanced structure with metadata, TOC, and clear separators. See [Format Documentation](/docs/features/llms-full-format).</Callout>
 
 ### RSS Feeds
 
@@ -76,7 +62,7 @@ PORT=3001 pnpm dev
 pnpm export-pdf
 
 # Export specific pages
-pnpm export-pdf:specific /docs /docs/guides/getting-started
+pnpm export-pdf:specific /docs /docs/getting-started
 
 # Build and export (production)
 pnpm export-pdf:build
@@ -113,14 +99,11 @@ curl http://localhost:3000/llms.txt
 # Full documentation
 curl http://localhost:3000/llms-full.txt
 
-# Root docs page as markdown
+# Specific page as markdown
 curl http://localhost:3000/docs.mdx
 
-# Nested docs page as markdown
-curl http://localhost:3000/docs/guides/getting-started.mdx
-
 # Test content negotiation
-curl -H "Accept: text/markdown" http://localhost:3000/docs/guides/getting-started
+curl -H "Accept: text/markdown" http://localhost:3000/docs
 ```
 
 ### Inspect Headers
@@ -147,11 +130,6 @@ curl http://localhost:3000/llms-full.txt | \
 # Count pages
 curl http://localhost:3000/llms-full.txt | \
   grep -c "^PAGE [0-9]"
-
-# Download reader import bundles
-curl -OJ "http://localhost:3000/api/exports/opml?format=all"
-curl -OJ "http://localhost:3000/api/exports/opml?format=categorized"
-curl -OJ "http://localhost:3000/api/exports/opml?format=filtered&feed=openai-blog&feed=anthropic-news"
 ```
 
 ## Components
@@ -263,29 +241,13 @@ await page.pdf({
 Edit `app/llms.txt/route.ts`:
 
 ```typescript
-import { getDocSectionInfo } from "@/lib/source";
-
-const groupedPages = pages.reduce((groups, page) => {
-  const section = getDocSectionInfo(page.slugs);
-  const existing = groups.get(section.key) ?? { section, pages: [] };
-  existing.pages.push(page);
-  groups.set(section.key, existing);
-  return groups;
-}, new Map());
-
 const content = `# Your Custom Title
 
 > Your custom description
 
 ## Documentation Pages
 
-${Array.from(groupedPages.values())
-  .map(
-    ({ section, pages }) => `### ${section.title}
-
-${pages.map((page) => `- [${section.title} / ${page.data.title}](${origin}${page.url}.mdx): ${page.data.description ?? ""}`).join("\n")}`,
-  )
-  .join("\n\n")}
+${pages.map((page) => `- [${page.data.title}](${origin}${page.url}.mdx): ${page.data.description ?? ""}`).join("\n")}
 `;
 ```
 
@@ -295,9 +257,8 @@ ${pages.map((page) => `- [${section.title} / ${page.data.title}](${origin}${page
 
 1. Create file in `content/docs/`
 2. Add frontmatter with title and description
-3. Add the page to `content/docs/meta.json`
-4. Write MDX content
-5. Spot-check `/llms.txt` or `/llms-full.txt` if the page should be discoverable by AI tooling
+3. Write MDX content
+4. Page automatically appears in navigation
 
 ### Export PDFs
 
@@ -323,11 +284,11 @@ ${pages.map((page) => `- [${section.title} / ${page.data.title}](${origin}${page
 
 ### Caching Strategy
 
-| Resource         | Cache-Control                |
-| ---------------- | ---------------------------- |
-| `/llms.txt`      | `s-maxage=86400` (24h)       |
-| `/llms-full.txt` | `max-age=0, must-revalidate` |
-| `*.mdx` routes   | `immutable` (forever)        |
+| Resource         | Cache-Control                  |
+| ---------------- | ------------------------------ |
+| `/llms.txt`      | `s-maxage=86400` (24h)         |
+| `/llms-full.txt` | `revalidate=false` (permanent) |
+| `*.mdx` routes   | `immutable` (forever)          |
 
 ### Build Optimization
 
@@ -382,12 +343,9 @@ cat next.config.mjs | grep -A 10 "rewrites"
 
 ### Full Guides
 
-- [Getting Started](/docs/guides/getting-started) - Local setup and first-run workflow
-- [Documentation Home](/docs) - Docs landing page and LLM entry points
+- [Getting Started](/docs) - Overview and introduction
 - [PDF Export](/docs/features/pdf-export) - Complete PDF export guide
 - [AI Integration](/docs/features/ai-integration) - AI/LLM integration guide
-- [OPML Viewer](/docs/guides/opml-viewer) - Downloads page and preview workflow
-- [Data Explorer](/docs/guides/data-explorer) - Graph + table catalog exploration
 - [llms-full.txt Format](/docs/features/llms-full-format) - Format specification
 - [Testing Guide](/docs/guides/testing) - Comprehensive testing
 
@@ -400,5 +358,7 @@ cat next.config.mjs | grep -A 10 "rewrites"
 
 ## Status
 
-- `/search`, `/reader`, `/explorer`, `/downloads`, and `/analytics` are live in the default deployment.
-- `BACKEND_URL` is optional and only needed for backend-backed personalized routes such as recommendations, follows, digests, and saved searches.
+✅ All features implemented and tested
+✅ Following Fumadocs official guidelines
+✅ Performance optimized with caching
+✅ Production ready

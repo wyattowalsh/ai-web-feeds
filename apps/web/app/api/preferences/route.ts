@@ -7,27 +7,25 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import {
-  applyUserIdentityBinding,
-  isValidUserId,
-  resolveUserIdentity,
-  validateTrustedUserOwnership,
-} from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  if (requestedUserId && !isValidUserId(requestedUserId)) {
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
-  const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
-  const { identity } = resolvedIdentity;
-
-  if (requestedUserId && !validateTrustedUserOwnership(requestedUserId, identity)) {
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
     return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
@@ -38,16 +36,12 @@ const GETHandler = async (request: NextRequest) => {
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       user_id: identity.user_id,
       preferences: data,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
 };
 
@@ -61,12 +55,7 @@ const POSTHandler = async (request: NextRequest) => {
       quiet_hours_start?: string | null;
       quiet_hours_end?: string | null;
     };
-    if (body.user_id && !isValidUserId(body.user_id)) {
-      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-    }
-
-    const resolvedIdentity = resolveUserIdentity(request, body.user_id ?? null);
-    const { identity } = resolvedIdentity;
+    const identity = getUserIdentity(request, body.user_id ?? null);
     const { feed_id, delivery_method, frequency, quiet_hours_start, quiet_hours_end } = body;
 
     if (body.user_id && identity.source === "anonymous") {
@@ -113,16 +102,12 @@ const POSTHandler = async (request: NextRequest) => {
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       preference: data,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
 };
 

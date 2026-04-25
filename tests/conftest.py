@@ -20,6 +20,20 @@ from sqlalchemy import create_engine
 from sqlmodel import Session, SQLModel
 
 # ============================================================================
+# Pytest Configuration
+# ============================================================================
+
+
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line("markers", "unit: Unit tests")
+    config.addinivalue_line("markers", "integration: Integration tests")
+    config.addinivalue_line("markers", "e2e: End-to-end tests")
+    config.addinivalue_line("markers", "slow: Slow running tests")
+    config.addinivalue_line("markers", "network: Tests requiring network access")
+
+
+# ============================================================================
 # Database Fixtures
 # ============================================================================
 
@@ -239,14 +253,19 @@ def temp_yaml_file() -> Generator[Path]:
     """Create a temporary YAML file."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(
-            """schema_version: feeds-2.1.0
-sources:
-  - url: https://example.com/feed.xml
+            """feeds:
+  - id: test-feed
+    feed: https://example.com/feed.xml
+    site: https://example.com
     title: Test Feed
-    notes: Test fixture
+    source_type: blog
+    mediums:
+      - text
+    tags:
+      - test
     topics:
       - testing
- """
+"""
         )
         temp_path = Path(f.name)
     yield temp_path
@@ -345,22 +364,25 @@ def sample_atom_feed() -> str:
 def sample_feeds_data() -> dict:
     """Return sample feeds data structure."""
     return {
-        "schema_version": "feeds-2.1.0",
         "document_meta": {
             "version": "1.0",
             "title": "Test Feeds Collection",
         },
         "sources": [
             {
-                "url": "https://ai-research.example.com",
+                "id": "feed-1",
                 "title": "AI Research Blog",
-                "notes": "Covers AI research updates",
+                "feed": "https://ai-research.example.com/feed.xml",
+                "site": "https://ai-research.example.com",
+                "tags": ["ai", "research"],
                 "topics": ["artificial-intelligence"],
             },
             {
-                "url": "https://ml-news.example.com",
+                "id": "feed-2",
                 "title": "ML Newsletter",
-                "notes": "Weekly ML round-up",
+                "feed": "https://ml-news.example.com/rss",
+                "site": "https://ml-news.example.com",
+                "tags": ["ml", "weekly"],
                 "topics": ["machine-learning"],
             },
         ],
@@ -374,25 +396,21 @@ def sample_topics_data() -> dict:
         "topics": [
             {
                 "id": "artificial-intelligence",
-                "label": "Artificial Intelligence",
-                "facet": "domain",
+                "name": "Artificial Intelligence",
                 "description": "AI research and applications",
-                "parents": [],
-                "relations": {"related_to": ["machine-learning", "deep-learning"]},
+                "children": ["machine-learning", "deep-learning"],
             },
             {
                 "id": "machine-learning",
-                "label": "Machine Learning",
-                "facet": "subfield",
+                "name": "Machine Learning",
                 "description": "ML algorithms and techniques",
-                "parents": ["artificial-intelligence"],
+                "parent": "artificial-intelligence",
             },
             {
                 "id": "deep-learning",
-                "label": "Deep Learning",
-                "facet": "subfield",
+                "name": "Deep Learning",
                 "description": "Neural networks and DL",
-                "parents": ["artificial-intelligence"],
+                "parent": "artificial-intelligence",
             },
         ],
     }

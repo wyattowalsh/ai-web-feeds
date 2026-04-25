@@ -21,129 +21,9 @@ try:
     from redis.exceptions import RedisError
 
     REDIS_AVAILABLE = True
-    RedisClient = redis.Redis
 except ImportError:
     REDIS_AVAILABLE = False
-    RedisClient = Any
     logger.warning("redis-py not installed, using LRU cache fallback")
-
-
-DEFAULT_TTL = 300
-CACHE_VERSION = "v1"
-TOPIC_GRAPH_TTL = DEFAULT_TTL
-
-
-def generate_cache_key(endpoint: str, params: dict[str, Any]) -> str:
-    """Generate the legacy cache-key format used by older tests/helpers."""
-    payload = json.dumps(
-        normalize_cache_payload(params),
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    return f"aiwebfeeds:cache:{endpoint}:{digest}"
-
-
-def generate_query_cache_key(
-    query_type: str,
-    filters: dict[str, Any],
-    date_range: dict[str, str],
-    device_id: str,
-    *,
-    cache_version: str = CACHE_VERSION,
-) -> str:
-    """Generate the versioned cache key used by live query consumers."""
-    key_data = {
-        "query_type": query_type,
-        "filters": normalize_cache_payload(filters),
-        "date_range": normalize_cache_payload(date_range),
-        "device_id": device_id,
-    }
-
-    json_str = json.dumps(key_data, sort_keys=True, separators=(",", ":"))
-    hash_digest = hashlib.sha256(json_str.encode("utf-8")).hexdigest()
-    return f"{cache_version}:query:{query_type}:{hash_digest}"
-
-
-class CacheService:
-    """Compatibility cache service with Redis and in-memory fallback."""
-
-    def __init__(self, redis_url: str | None = None):
-        self.redis = None
-        self._lru_cache: OrderedDict[str, tuple[Any, float | None]] = OrderedDict()
-        self._lru_max_size = 100
-
-        if REDIS_AVAILABLE and redis_url:
-            try:
-                if isinstance(redis.Redis, type) and hasattr(redis.Redis, "from_url"):
-                    self.redis = redis.Redis.from_url(redis_url)
-                else:
-                    self.redis = redis.Redis()
-            except Exception as exc:
-                logger.warning(f"Legacy cache service falling back to LRU: {exc}")
-                self.redis = None
-
-    def get(self, key: str) -> Any | None:
-        """Get a cached value by its fully materialized key."""
-        if self.redis is not None:
-            try:
-                value = self.redis.get(key)
-                if value is None:
-                    return None
-                if isinstance(value, bytes):
-                    value = value.decode("utf-8")
-                return json.loads(value)
-            except Exception:
-                pass
-
-        entry = self._lru_cache.get(key)
-        if entry is None:
-            return None
-
-        value, expires_at = entry
-        if expires_at is not None and expires_at <= time():
-            self._lru_cache.pop(key, None)
-            return None
-
-        self._lru_cache.move_to_end(key)
-        return value
-
-    def set(self, key: str, value: Any, ttl: int = DEFAULT_TTL) -> None:
-        """Set a cached value by its fully materialized key."""
-        serialized = json.dumps(value)
-        if self.redis is not None:
-            try:
-                self.redis.set(key, serialized, ex=ttl)
-                return
-            except Exception:
-                pass
-
-        expires_at = time() + ttl if ttl > 0 else None
-        self._lru_cache[key] = (value, expires_at)
-        self._lru_cache.move_to_end(key)
-        if len(self._lru_cache) > self._lru_max_size:
-            self._lru_cache.popitem(last=False)
-
-    def delete(self, key: str) -> None:
-        """Delete a cache entry."""
-        if self.redis is not None:
-            try:
-                self.redis.delete(key)
-            except Exception:
-                pass
-        self._lru_cache.pop(key, None)
-
-    def invalidate_pattern(self, pattern: str) -> None:
-        """Invalidate cache entries matching a pattern."""
-        if self.redis is not None:
-            try:
-                for key in self.redis.scan_iter(match=pattern):
-                    self.redis.delete(key)
-            except Exception:
-                pass
-
-        for key in [cache_key for cache_key in self._lru_cache if fnmatch(cache_key, pattern)]:
-            del self._lru_cache[key]
 
 
 class CacheLayer:
@@ -156,7 +36,7 @@ class CacheLayer:
     - Cache versioning for schema changes
     """
 
-    CACHE_VERSION = CACHE_VERSION
+    CACHE_VERSION = "v1"
     DEFAULT_TTL = 300  # 5 minutes in seconds
     LRU_MAX_SIZE = 100  # Maximum in-memory cache entries
 
@@ -207,7 +87,7 @@ class CacheLayer:
     ) -> str:
         """Generate consistent cache key using SHA-256 hash.
 
-        Format: {version}:query:{query_type}:{hash}
+        Format: {version}:query:{hash}
 
         Args:
             query_type: Type of query (e.g., "topic_metrics", "feed_health")
@@ -218,13 +98,21 @@ class CacheLayer:
         Returns:
             Versioned cache key string
         """
-        return generate_query_cache_key(
-            query_type,
-            filters,
-            date_range,
-            device_id,
-            cache_version=self.CACHE_VERSION,
-        )
+        # Create deterministic string from parameters
+        key_data = {
+            "query_type": query_type,
+            "filters": filters,
+            "date_range": date_range,
+            "device_id": device_id,
+        }
+
+        # Sort keys for consistency
+        json_str = json.dumps(key_data, sort_keys=True)
+
+        # Generate SHA-256 hash
+        hash_digest = hashlib.sha256(json_str.encode()).hexdigest()
+
+        return f"{self.CACHE_VERSION}:query:{hash_digest}"
 
     def get(
         self,
@@ -317,7 +205,7 @@ class CacheLayer:
                 logger.warning(f"Redis set error: {e}, falling back to LRU")
 
         # Fallback to LRU cache
-        self._lru_set(cache_key, data, ttl=ttl)
+        self._lru_set(cache_key, data)
         logger.debug(f"Cached to LRU: {cache_key[:16]}...")
         return True
 
@@ -340,13 +228,14 @@ class CacheLayer:
         if self.redis_enabled and self.redis_client:
             try:
                 if pattern:
-                    redis_pattern = f"{self.CACHE_VERSION}:{pattern}"
+                    # Pattern-based invalidation
+                    keys = self.redis_client.keys(f"{self.CACHE_VERSION}:{pattern}")
                 elif query_type:
-                    redis_pattern = f"{self.CACHE_VERSION}:query:{query_type}:*"
+                    # Type-specific invalidation (requires scanning)
+                    keys = self.redis_client.keys(f"{self.CACHE_VERSION}:query:*")
                 else:
-                    redis_pattern = f"{self.CACHE_VERSION}:query:*"
-
-                keys = self.redis_client.keys(redis_pattern)
+                    # Invalidate all queries
+                    keys = self.redis_client.keys(f"{self.CACHE_VERSION}:query:*")
 
                 if keys:
                     redis_keys = list(cast(list[str], keys))
@@ -355,15 +244,9 @@ class CacheLayer:
             except RedisError as e:
                 logger.error(f"Redis invalidation error: {e}")
 
-        if pattern:
-            lru_pattern = f"{self.CACHE_VERSION}:{pattern}"
-        elif query_type:
-            lru_pattern = f"{self.CACHE_VERSION}:query:{query_type}:*"
-        else:
-            lru_pattern = f"{self.CACHE_VERSION}:query:*"
-
-        count += self._lru_invalidate(lru_pattern)
-        logger.info("Cleared matching LRU cache entries")
+        # Clear LRU cache (no partial clearing available)
+        self._lru_clear()
+        logger.info("Cleared LRU cache")
 
         return count
 
@@ -410,6 +293,7 @@ class CacheLayer:
         self._lru_storage[key] = data
         self._lru_storage.move_to_end(key)
 
+        # Enforce size limit
         if len(self._lru_storage) > self.LRU_MAX_SIZE:
             self._lru_storage.popitem(last=False)
 

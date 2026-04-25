@@ -5,7 +5,7 @@ on:
 
 jobs:
   add-feed:
-    if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'validated')
+    if: github.event.label.name == 'approved'
     runs-on: ubuntu-latest
 
     permissions:
@@ -15,159 +15,152 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@e9d0d9a1a81cd4e8ceef21e0eb11f15b4be0e5f0
-        with:
-          version: "latest"
-
       - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.11'
 
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: |
+          pip install pyyaml jsonschema
 
-      - name: Load validated source snapshot
+      - name: Parse and add feed
         id: add_feed
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const crypto = require('crypto');
-            const marker = '<!-- ai-web-feeds:validated-source ';
-            const issueParams = {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
+            const yaml = require('js-yaml');
+
+            // Parse issue body
+            const issueBody = context.payload.issue.body;
+
+            function extractField(label) {
+              const regex = new RegExp(`### ${label}\\s*\\n\\s*(.+?)(?=\\n###|$)`, 's');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            }
+
+            // Build feed entry
+            const feedData = {
+              id: extractField('Feed ID'),
+              title: extractField('Feed Title'),
+              source_type: extractField('Source Type').toLowerCase(),
+              topics: extractField('Topics')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.match(/\(([^)]+)\)/)?.[1])
+                .filter(Boolean),
+              mediums: extractField('Content Mediums')
+                .split('\n')
+                .filter(line => line.includes('- [x]'))
+                .map(line => line.replace('- [x]', '').trim().toLowerCase())
+                .filter(Boolean),
+              meta: {
+                updated: new Date().toISOString().split('T')[0],
+                contributor: context.actor
+              }
             };
 
-            const blockApproval = async (message) => {
-              for (const label of ['validated', 'approved', 'status/needs-review']) {
+            // Add feed or site URL
+            const feedUrl = extractField('Feed URL');
+            const siteUrl = extractField('Website URL');
+            if (feedUrl) {
+              feedData.feed = feedUrl;
+            } else if (siteUrl) {
+              feedData.site = siteUrl;
+            }
+
+            // Add optional fields
+            const language = extractField('Language');
+            if (language) {
+              feedData.meta.language = language;
+            }
+
+            const platform = extractField('Platform (if applicable)');
+            if (platform && platform !== 'None') {
+              const platformDetails = extractField('Platform Details');
+              if (platformDetails) {
                 try {
-                  await github.rest.issues.removeLabel({ ...issueParams, name: label });
-                } catch (error) {
-                  if (error.status !== 404) {
-                    throw error;
-                  }
+                  feedData.platform_config = {
+                    platform: platform.toLowerCase(),
+                    [platform.toLowerCase()]: JSON.parse(platformDetails)
+                  };
+                } catch (e) {
+                  core.warning(`Failed to parse platform details: ${e.message}`);
                 }
               }
+            }
 
-              await github.rest.issues.addLabels({
-                ...issueParams,
-                labels: ['validation-failed', 'status/needs-info'],
-              });
+            const tags = extractField('Tags');
+            if (tags) {
+              feedData.tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+            }
 
+            const notes = extractField('Additional Notes');
+            if (notes && notes !== '_No response_') {
+              feedData.notes = notes;
+            }
+
+            const autoDiscover = extractField('Enable Auto-Discovery?');
+            if (autoDiscover === 'Yes (recommended)') {
+              feedData.discover = true;
+            }
+
+            // Load existing feeds.yaml
+            const feedsContent = fs.readFileSync('data/feeds.yaml', 'utf8');
+            const feedsData = yaml.load(feedsContent);
+
+            // Check for duplicates
+            const exists = feedsData.sources.some(s => s.id === feedData.id);
+            if (exists) {
               await github.rest.issues.createComment({
-                ...issueParams,
-                body: `❌ **Approval blocked**\n\n${message}\n\nRe-run validation and re-apply \`approved\` after a fresh validated snapshot is available.`,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `❌ **Error**: A feed with ID \`${feedData.id}\` already exists in the registry.`
               });
+              throw new Error('Duplicate feed ID');
+            }
 
-              throw new Error(message);
-            };
+            // Add new feed
+            feedsData.sources.push(feedData);
 
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              ...issueParams,
-              per_page: 100,
+            // Update document_meta
+            if (!feedsData.document_meta) {
+              feedsData.document_meta = {};
+            }
+            feedsData.document_meta.updated = new Date().toISOString().split('T')[0];
+
+            // Write back to file
+            const updatedYaml = yaml.dump(feedsData, {
+              indent: 2,
+              lineWidth: -1,
+              noRefs: true
             });
-            const snapshotComment = [...comments].reverse().find(
-              (comment) => comment.body?.includes(marker) && comment.user?.login?.endsWith('[bot]'),
-            );
+            fs.writeFileSync('data/feeds.yaml', updatedYaml);
 
-            if (!snapshotComment) {
-              await blockApproval('No validated source snapshot was found on this issue.');
-              return;
-            }
-
-            const matched = snapshotComment.body.match(/<!-- ai-web-feeds:validated-source ([A-Za-z0-9+/=]+) -->/);
-            if (!matched) {
-              await blockApproval('The validated source snapshot comment is malformed.');
-              return;
-            }
-
-            let snapshot;
-            try {
-              snapshot = JSON.parse(Buffer.from(matched[1], 'base64').toString('utf8'));
-            } catch (error) {
-              await blockApproval(`Could not decode the validated source snapshot: ${error.message}`);
-              return;
-            }
-
-            const currentBodyHash = crypto
-              .createHash('sha256')
-              .update(context.payload.issue?.body || '')
-              .digest('hex');
-
-            if (snapshot.body_sha256 !== currentBodyHash) {
-              await blockApproval('The issue body changed after validation, so the approved payload is stale.');
-              return;
-            }
-
-            if (!snapshot.source || typeof snapshot.source !== 'object' || !snapshot.source.url) {
-              await blockApproval('The validated source snapshot is missing the canonical source payload.');
-              return;
-            }
-
-            fs.writeFileSync('parsed_feed.json', JSON.stringify(snapshot.source, null, 2));
-            const summary = [
-              '### Validated Submission',
-              `- Issue: #${context.issue.number}`,
-              `- URL: ${snapshot.source.url}`,
-              `- Topics: ${(snapshot.source.topics || []).join(', ')}`,
-              `- Title: ${snapshot.source.title || '(auto-enriched)'}`,
-            ].join('\n');
-            fs.writeFileSync('parsed_feed_summary.md', `${summary}\n`);
-            core.setOutput('feed_url', snapshot.source.url);
-
-      - name: Append source to feeds.yaml
-        run: |
-          uv run python - <<'PY'
-          import json
-          from datetime import UTC, datetime
-          from pathlib import Path
-
-          import yaml
-
-          feeds_path = Path("data/feeds.yaml")
-          parsed = json.loads(Path("parsed_feed.json").read_text(encoding="utf-8"))
-          doc = yaml.safe_load(feeds_path.read_text(encoding="utf-8")) or {}
-          sources = doc.setdefault("sources", [])
-
-          candidate = parsed["url"].rstrip("/")
-          for source in sources:
-              existing = source.get("url")
-              if isinstance(existing, str) and existing.rstrip("/") == candidate:
-                  raise SystemExit(f"Duplicate source URL: {candidate}")
-
-          sources.append(parsed)
-          doc.setdefault("document_meta", {})["updated"] = datetime.now(UTC).date().isoformat()
-          feeds_path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
-          print(f"Appended source {candidate}")
-          PY
-
-      - name: Validate canonical data assets
-        run: uv run python data/validate_data_assets.py
+            return { feedId: feedData.id };
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: add approved feed from issue #${{ github.event.issue.number }}"
+          commit-message: "feat: add feed ${{ steps.add_feed.outputs.result }}"
           branch: "feed-submission-${{ github.event.issue.number }}"
-          title: "Add feed from issue #${{ github.event.issue.number }}"
+          title: "Add feed: ${{ steps.add_feed.outputs.result }}"
           body: |
             ## Feed Submission
 
             This PR adds a new feed to the registry from issue #${{ github.event.issue.number }}.
 
             ### Feed Details
-            - URL: `${{ steps.add_feed.outputs.feed_url }}`
 
-            Parsed and validated through canonical schema + data validation path.
+            Please review the changes to `data/feeds.yaml`.
 
             ---
 
@@ -177,12 +170,12 @@ jobs:
             automated
 
       - name: Comment on issue
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        uses: actions/github-script@v7
         with:
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '✅ **Feed queued for merge**\n\nA pull request has been created from the previously validated source snapshot in `data/feeds.yaml`. Maintainers will perform final review before merge.'
+              body: '✅ **Feed Added!**\n\nA pull request has been created to add this feed to the registry. The issue will be closed when the PR is merged.'
             });

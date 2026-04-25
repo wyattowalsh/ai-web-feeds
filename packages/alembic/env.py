@@ -34,21 +34,6 @@ target_metadata = SQLModel.metadata
 # ... etc.
 
 
-def _resolve_configured_database_url() -> str:
-    """Resolve the effective Alembic database URL from shared config defaults."""
-    configured_url = config.get_main_option("sqlalchemy.url", "").strip()
-    if not configured_url or configured_url == "__AIWF_DEFAULT_DATABASE_URL__":
-        resolved_url = default_database_url()
-    else:
-        resolved_url = resolve_database_url(configured_url)
-
-    config.set_main_option("sqlalchemy.url", resolved_url)
-    return resolved_url
-
-
-DATABASE_URL = _resolve_configured_database_url()
-
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -61,7 +46,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = DATABASE_URL
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,

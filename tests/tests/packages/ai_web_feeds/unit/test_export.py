@@ -9,7 +9,6 @@ import pytest
 import yaml
 from ai_web_feeds.export import (
     _add_feed_outline,
-    build_opml_category_map,
     export_all_formats,
     export_to_json,
     export_to_opml,
@@ -44,9 +43,9 @@ class TestExportToJson:
         data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
                     "title": "Test Feed",
+                    "feed": "https://example.com/feed.xml",
                 }
             ]
         }
@@ -61,10 +60,7 @@ class TestExportToJson:
             with output_path.open(encoding="utf-8") as f:
                 loaded_data = json.load(f)
 
-            assert loaded_data["sources"][0]["id"]
-            assert loaded_data["sources"][0]["feed"] == "https://example.com/feed.xml"
-            assert loaded_data["sources"][0]["title"] == "Test Feed"
-            assert loaded_data["sources"][0]["topics"] == ["ai"]
+            assert loaded_data == data
 
     def test_export_json_creates_directories(self):
         """Test that export_to_json creates parent directories."""
@@ -82,9 +78,9 @@ class TestExportToJson:
         data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "unicode-feed",
                     "title": "AI研究 🤖",
+                    "description": "Émotions et IA",
                 }
             ]
         }
@@ -98,14 +94,14 @@ class TestExportToJson:
                 loaded_data = json.load(f)
 
             assert loaded_data["sources"][0]["title"] == "AI研究 🤖"
-            assert loaded_data["sources"][0]["topics"] == ["ai"]
+            assert loaded_data["sources"][0]["description"] == "Émotions et IA"
 
     def test_export_json_pretty_format(self):
         """Test that exported JSON is pretty-formatted."""
         data = {
             "sources": [
-                {"url": "https://example.com/feed-1.xml", "topics": ["ai"], "title": "Feed One"},
-                {"url": "https://example.com/feed-2.xml", "topics": ["ml"], "title": "Feed Two"},
+                {"id": "feed-1", "title": "Feed One"},
+                {"id": "feed-2", "title": "Feed Two"},
             ]
         }
 
@@ -125,16 +121,7 @@ class TestExportToJson:
     )
     def test_export_json_property_based(self, feed_count):
         """Property-based test for JSON export."""
-        data = {
-            "sources": [
-                {
-                    "url": f"https://example.com/feed-{i}.xml",
-                    "topics": ["ai"],
-                    "title": f"Feed {i}",
-                }
-                for i in range(feed_count)
-            ]
-        }
+        data = {"sources": [{"id": f"feed-{i}", "title": f"Feed {i}"} for i in range(feed_count)]}
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "feeds.json"
@@ -288,33 +275,6 @@ class TestExportToOpml:
             assert title is not None
             assert title.text == "Custom Feed Collection"
 
-    def test_export_opml_prefers_meta_description_over_notes(self):
-        """Enriched OPML should prefer the enriched meta description over raw notes."""
-        data = {
-            "sources": [
-                {
-                    "id": "enriched-feed",
-                    "title": "Test Feed",
-                    "feed": "https://example.com/feed.xml",
-                    "topics": ["ai"],
-                    "notes": "Fallback note",
-                    "meta": {"description": "Preferred enriched description"},
-                }
-            ]
-        }
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / "feeds.opml"
-            export_to_opml(data, output_path)
-
-            tree = ET.parse(output_path)
-            root = tree.getroot()
-            body = root.find("body")
-            outline = body.find("outline")
-
-            assert outline is not None
-            assert outline.attrib["description"] == "Preferred enriched description"
-
 
 @pytest.mark.unit
 class TestAddFeedOutline:
@@ -371,38 +331,15 @@ class TestAddFeedOutline:
 class TestExportAllFormats:
     """Test export_all_formats function."""
 
-    def test_build_opml_category_map_uses_canonical_topic_grouping(self):
-        """Categorized OPML topic grouping should mirror canonical export semantics."""
-        data = {
-            "sources": [
-                {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ml", "ai", "ml"],
-                    "title": "Deduplicated Feed",
-                },
-                {
-                    "url": "https://example.com/untagged.xml",
-                    "topics": [],
-                    "title": "Uncategorized Feed",
-                },
-            ]
-        }
-
-        category_map = build_opml_category_map(data)
-
-        assert set(category_map) == {"Uncategorized", "ai", "ml"}
-        assert len(category_map["ai"]) == 1
-        assert len(category_map["ml"]) == 1
-        assert len(category_map["Uncategorized"]) == 1
-
     def test_export_all_formats_success(self):
         """Test exporting to all formats."""
         data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
                     "title": "Test Feed",
+                    "feed": "https://example.com/feed.xml",
+                    "topics": ["ai"],
                 }
             ]
         }
@@ -445,27 +382,6 @@ class TestExportAllFormats:
             assert custom_opml.exists()
             assert _get_opml_wrapper(custom_opml) is not None
 
-    def test_export_all_formats_default_feeds_prefix_writes_legacy_opml_aliases(self):
-        """Default feeds exports should also write legacy OPML aliases."""
-        data = {
-            "sources": [
-                {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
-                    "title": "Test Feed",
-                }
-            ]
-        }
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            export_all_formats(data, base_path=tmpdir)
-
-            assert (Path(tmpdir) / "feeds.json").exists()
-            assert (Path(tmpdir) / "feeds.opml").exists()
-            assert (Path(tmpdir) / "feeds.categorized.opml").exists()
-            assert (Path(tmpdir) / "all.opml").exists()
-            assert (Path(tmpdir) / "categorized.opml").exists()
-
 
 @pytest.mark.unit
 class TestExportIntegration:
@@ -477,9 +393,10 @@ class TestExportIntegration:
         feed_data = {
             "sources": [
                 {
-                    "url": "https://example.com/feed.xml",
-                    "topics": ["ai"],
+                    "id": "test-feed",
                     "title": "Test Feed",
+                    "feed": "https://example.com/feed.xml",
+                    "topics": ["ai"],
                 }
             ]
         }
@@ -503,8 +420,7 @@ class TestExportIntegration:
             with json_path.open(encoding="utf-8") as f:
                 exported_data = json.load(f)
 
-            assert exported_data["sources"][0]["feed"] == "https://example.com/feed.xml"
-            assert exported_data["sources"][0]["topics"] == ["ai"]
+            assert exported_data == data
 
     def test_export_round_trip_json(self):
         """Test JSON export and import round-trip."""

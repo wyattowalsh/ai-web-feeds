@@ -3,7 +3,7 @@
 This module implements Z-score trending detection for real-time topic monitoring.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 from loguru import logger
@@ -12,7 +12,6 @@ from sqlmodel import select
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import FeedEntry, TrendingTopic
 from ai_web_feeds.storage import DatabaseManager
-from ai_web_feeds.timestamps import normalize_utc_datetime, utc_now
 
 
 class TrendingDetector:
@@ -49,7 +48,7 @@ class TrendingDetector:
         Returns:
             List of TrendingTopic objects ordered by rank
         """
-        now = utc_now()
+        now = datetime.now(UTC)
         period_start = now - timedelta(hours=1)
         baseline_start = now - timedelta(days=self.baseline_days)
 
@@ -121,9 +120,6 @@ class TrendingDetector:
         Returns:
             Dict mapping topic_id -> article_count
         """
-        start = normalize_utc_datetime(start) or start
-        end = normalize_utc_datetime(end) or end
-
         # TODO: This requires topic extraction from articles
         # For Phase 3B MVP, we'll use article categories as proxy for topics
         with self.db.get_session() as session:
@@ -136,7 +132,7 @@ class TrendingDetector:
             # Count by category (proxy for topic)
             topic_counts: dict[str, int] = {}
             for entry in entries:
-                for category in entry.categories or []:
+                for category in entry.categories:
                     topic_counts[category] = topic_counts.get(category, 0) + 1
 
             return topic_counts
@@ -196,33 +192,25 @@ class TrendingDetector:
         Returns:
             List of article IDs
         """
-        start = normalize_utc_datetime(start) or start
-        end = normalize_utc_datetime(end) or end
-
         with self.db.get_session() as session:
+            # Find articles with this category (proxy for topic)
             statement = (
-                select(FeedEntry)
+                select(FeedEntry.id)
                 .where(
                     FeedEntry.discovered_at >= start,
                     FeedEntry.discovered_at < end,
                 )
                 .order_by(FeedEntry.pub_date.desc())
+                .limit(limit)
             )
             entries = session.exec(statement).all()
 
-            article_ids: list[int] = []
-            for row in entries:
-                entry = row
-                if isinstance(row, int):
-                    entry = session.get(FeedEntry, row)
-                elif isinstance(row, tuple):
-                    entry = session.get(FeedEntry, row[0])
-
-                if entry is None:
-                    continue
-
-                if topic_id in (entry.categories or []):
-                    article_ids.append(entry.id)
+            # Filter by category
+            article_ids = []
+            for entry_id in entries:
+                entry = session.get(FeedEntry, entry_id)
+                if entry and topic_id in entry.categories:
+                    article_ids.append(entry_id)
                     if len(article_ids) >= limit:
                         break
 

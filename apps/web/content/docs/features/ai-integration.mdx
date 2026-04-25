@@ -1,13 +1,13 @@
 ---
 title: AI & LLM Integration
-description: Current LLM discovery, section-aware full-text export, and markdown route behavior for the live docs app
+description: Comprehensive AI and LLM integration for your Fumadocs documentation site
 icon: Bot
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
-This app exposes the current Fumadocs docs tree through discovery and markdown-friendly routes so AI agents can enumerate pages, fetch one page at a time, or ingest the whole corpus with section context intact.
+Complete AI and LLM integration following the official [Fumadocs guide](https://fumadocs.dev/docs/ui/llms), making your documentation easily consumable by AI agents and large language models.
 
 ## Overview
 
@@ -41,14 +41,8 @@ curl https://yourdomain.com/llms.txt
 
 ## Documentation Pages
 
-### Documentation
-
-- [Documentation / Getting Started](https://yourdomain.com/docs.mdx): Overview of the docs site, LLM routes, and core feature guides
-
-### Guides
-
-- [Guides / Getting Started](https://yourdomain.com/docs/guides/getting-started.mdx): Install ai-web-feeds, initialize the local data workflow, and launch the docs app with the repository-approved toolchain.
-- [Guides / OPML Viewer](https://yourdomain.com/docs/guides/opml-viewer.mdx): Browse OPML feed groups, preview recent posts from matched feeds, and compare one merged timeline in the docs app.
+- [Getting Started](https://yourdomain.com/docs.mdx): Quick start guide
+- [PDF Export](https://yourdomain.com/docs/features/pdf-export.mdx): Export docs as PDF
 ...
 ```
 
@@ -66,21 +60,19 @@ curl https://yourdomain.com/llms-full.txt
 
 - Structured format with clear separators
 - Metadata header (date, page count, base URL)
-- Section-aware table of contents
+- Table of contents
 - Individual page sections with metadata
 - Optimized for AI parsing
 
 #### Markdown Extensions
 
-Access markdown output for any docs route by appending `.mdx` or `.md`:
+Access markdown source of any documentation page by appending `.mdx` or `.md`:
 
 <Tabs items={[".mdx Extension", ".md Extension", "Content Negotiation"]}>
-  <Tab value=".mdx Extension">```bash curl https://yourdomain.com/docs/guides/getting-started.mdx ``` Canonical explicit markdown route for a nested docs page.</Tab>
-  <Tab value=".md Extension">```bash curl https://yourdomain.com/docs/guides/getting-started.md ``` Alias route that currently returns the same `text/markdown` payload as `.mdx`.</Tab>
-  <Tab value="Content Negotiation">```bash curl -H "Accept: text/markdown" https://yourdomain.com/docs/guides/getting-started ``` Middleware rewrites the docs URL to the `.mdx` route automatically.</Tab>
+  <Tab value=".mdx Extension">```bash curl https://yourdomain.com/docs/getting-started.mdx ``` Returns the markdown source of the page.</Tab>
+  <Tab value=".md Extension">```bash curl https://yourdomain.com/docs/getting-started.md ``` Alternative markdown extension (same as .mdx).</Tab>
+  <Tab value="Content Negotiation">```bash curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started ``` Automatically serves markdown when AI agent requests it.</Tab>
 </Tabs>
-
-<Callout type="info">Use `.mdx` as the canonical path shape in tooling and docs. The `.md` route is a convenience alias, not a different renderer.</Callout>
 
 ### Content Negotiation
 
@@ -197,10 +189,10 @@ async rewrites() {
 ### For AI Agents
 
 <Tabs items={["Discovery", "Full Docs", "Specific Page", "Negotiation"]}>
-  <Tab value="Discovery">```bash # Discover all documentation curl https://yourdomain.com/llms.txt ``` Returns grouped page links with section-aware labels and frontmatter descriptions.</Tab>
-  <Tab value="Full Docs">```bash # Get complete documentation curl https://yourdomain.com/llms-full.txt ``` Returns the full corpus with section metadata, paths, and page-level summaries.</Tab>
-  <Tab value="Specific Page">```bash # Get one nested page as markdown curl https://yourdomain.com/docs/guides/getting-started.mdx ``` Returns markdown content with URL, section, and summary metadata.</Tab>
-  <Tab value="Negotiation">```bash # Use content negotiation curl -H "Accept: text/markdown" https://yourdomain.com/docs/guides/getting-started ``` Automatically receives the `.mdx` representation.</Tab>
+  <Tab value="Discovery">```bash # Discover all documentation curl https://yourdomain.com/llms.txt ``` Returns a list of all available pages with descriptions.</Tab>
+  <Tab value="Full Docs">```bash # Get complete documentation curl https://yourdomain.com/llms-full.txt ``` Returns all pages in a structured format.</Tab>
+  <Tab value="Specific Page">```bash # Get specific page as markdown curl https://yourdomain.com/docs/getting-started.mdx ``` Returns markdown source of the page.</Tab>
+  <Tab value="Negotiation">```bash # Use content negotiation curl -H "Accept: text/markdown" https://yourdomain.com/docs/getting-started ``` Automatically receives markdown content.</Tab>
 </Tabs>
 
 ### For Users
@@ -227,7 +219,7 @@ async rewrites() {
 ```typescript
 import { getLLMText, source } from "@/lib/source";
 
-const page = source.getPage(["guides", "getting-started"]);
+const page = source.getPage(["getting-started"]);
 const markdown = await getLLMText(page);
 ```
 
@@ -255,13 +247,13 @@ githubUrl={`https://github.com/wyattowalsh/ai-web-feeds/blob/main/apps/web/conte
 
 All endpoints are optimized for performance:
 
-| Endpoint         | Caching Strategy       | Generation |
-| ---------------- | ---------------------- | ---------- |
-| `/llms.txt`      | `s-maxage=86400` (24h) | Dynamic    |
-| `/llms-full.txt` | `must-revalidate`      | Dynamic    |
-| `*.mdx` routes   | `immutable`            | Static     |
-| Middleware       | Minimal overhead       | Runtime    |
-| Copy button      | Client-side cache      | Client     |
+| Endpoint         | Caching Strategy               | Generation |
+| ---------------- | ------------------------------ | ---------- |
+| `/llms.txt`      | `s-maxage=86400` (24h)         | Dynamic    |
+| `/llms-full.txt` | `revalidate=false` (permanent) | Dynamic    |
+| `*.mdx` routes   | `immutable`                    | Static     |
+| Middleware       | Minimal overhead               | Runtime    |
+| Copy button      | Client-side cache              | Client     |
 
 <Callout type="success">Static generation ensures fast response times and minimal server load.</Callout>
 
@@ -292,7 +284,6 @@ All endpoints are optimized for performance:
 ## Related Documentation
 
 - [llms-full.txt Format](/docs/features/llms-full-format) - Detailed format specification
-- [Docs Maintenance Checklist](/docs/contributing/docs-maintenance) - Keep docs routes, summaries, and LLM outputs aligned
 - [Testing Guide](/docs/guides/testing) - Verify your integration
 - [Quick Reference](/docs/guides/quick-reference) - Commands and endpoints
 

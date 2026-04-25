@@ -1,24 +1,8 @@
 import { NextResponse } from "next/server";
 import { buildAutocompleteSuggestions } from "@/lib/article-corpus";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { clampNumber } from "@/lib/backend";
-import { loadFeeds } from "@/lib/feeds";
-import { normalizeSearchQuery, normalizeSearchTopics } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
-
-interface AutocompleteFeedSuggestion {
-  id: string;
-  title: string;
-  type: "feed";
-  url: string;
-}
-
-interface AutocompleteTopicSuggestion {
-  label: string;
-  type: "topic";
-  feed_count: number;
-}
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);

@@ -134,7 +134,7 @@ async function getFiles() {
     };
   });
 
-  return errors;
+  return Promise.all(promises);
 }
 
 /**
@@ -164,7 +164,7 @@ async function checkLinks() {
   });
 
   // Get all files and validate
-  const errors = await validatePageFiles(pages, {
+  const errors = await validateFiles(await getFiles(), {
     scanned,
     markdown: {
       components: {

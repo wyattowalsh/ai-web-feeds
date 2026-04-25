@@ -3,7 +3,6 @@ import "katex/dist/katex.css";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { Fraunces, Manrope } from "next/font/google";
 import type { Metadata } from "next";
-import { getSiteBaseUrl } from "@/lib/env";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -32,12 +31,11 @@ export const metadata: Metadata = {
     "RSS feeds",
     "Atom feeds",
     "web feeds",
-    "AI reader",
-    "OPML export",
-    "feed analytics",
     "AI agents",
     "LLM",
     "large language models",
+    "documentation",
+    "PDF export",
     "machine learning",
   ],
   authors: [

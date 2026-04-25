@@ -9,22 +9,27 @@ Get up and running with the AI Web Feeds database system quickly.
 
 ## First-Time Setup
 
-### 1. Bootstrap the Runtime Schema
+### 1. Initialize Alembic (One-Time)
 
 ```bash
-uv run alembic -c packages/alembic.ini upgrade head
+cd packages/ai_web_feeds
+uv run alembic init alembic
 ```
 
-For application code, the equivalent Python entrypoint is
-`DatabaseManager.create_db_and_tables()`.
+### 2. Create Initial Migration
 
-### 2. Load Data from YAML Files
+```bash
+uv run alembic revision --autogenerate -m "initial_schema"
+uv run alembic upgrade head
+```
+
+### 3. Load Data from YAML Files
 
 ```python
 from ai_web_feeds.data_sync import DataSyncOrchestrator
 from ai_web_feeds import DatabaseManager
 
-db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
 sync = DataSyncOrchestrator(db)
 
 # Load feeds.yaml and topics.yaml into database
@@ -40,7 +45,7 @@ print(f"Loaded {results['feeds_loaded']} feeds and {results['topics_loaded']} to
 from ai_web_feeds import DatabaseManager
 from ai_web_feeds.analytics import FeedAnalytics
 
-db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
 
 with db.get_session() as session:
     analytics = FeedAnalytics(session)
@@ -141,7 +146,7 @@ from ai_web_feeds import DatabaseManager
 from ai_web_feeds.analytics import FeedAnalytics
 
 # Initialize
-db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
+db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
 db.create_db_and_tables()
 
 # Run analytics
@@ -241,7 +246,7 @@ print(f"Exported to: {output_path}")
 ```python
 from ai_web_feeds import DatabaseManager
 
-db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
+db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
 
 with db.get_session() as session:
     from ai_web_feeds.models import FeedSource
@@ -269,10 +274,10 @@ uv run alembic history
 
 ```bash
 # SQLite backup
-cp data/ai-web-feeds.db data/ai-web-feeds.db.backup
+cp data/aiwebfeeds.db data/aiwebfeeds.db.backup
 
 # Or use SQLite backup command
-sqlite3 data/ai-web-feeds.db ".backup data/ai-web-feeds.db.backup"
+sqlite3 data/aiwebfeeds.db ".backup data/aiwebfeeds.db.backup"
 ```
 
 ## Migration Strategy

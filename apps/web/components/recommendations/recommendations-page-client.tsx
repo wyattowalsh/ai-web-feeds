@@ -126,6 +126,7 @@ export function RecommendationsPageClient({
       id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       localStorage.setItem("recommendation_user_id", id);
     }
+    setUserId(id);
 
     if (!backendConfigured) {
       setLoading(false);
@@ -141,23 +142,21 @@ export function RecommendationsPageClient({
       : [...selectedTopics, topic];
 
     setSelectedTopics(newTopics);
-    void loadRecommendations(newTopics);
+    void loadRecommendations(userId, newTopics);
   };
 
   const handleInteraction = async (feedId: string, interactionType: string, reason: string) => {
     try {
-      const resolvedUserId = userIdRef.current || undefined;
-      const response = await fetchWithAnonymousIdentity("/api/recommendations", {
+      await fetch("/api/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          user_id: userId,
           feed_id: feedId,
           interaction_type: interactionType,
           reason,
-          ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
         }),
       });
-      syncUserId(syncAnonymousUserIdFromResponse(response));
     } catch (error) {
       console.error("Track interaction error:", error);
     }
@@ -168,26 +167,9 @@ export function RecommendationsPageClient({
     router.push(buildCatalogHref(rec, selectedTopics));
   };
 
-  const handleSubscribe = async (rec: Recommendation) => {
-    setFollowState((prev) => ({ ...prev, [rec.feed.id]: "following" }));
-    try {
-      const resolvedUserId = userIdRef.current || undefined;
-      const response = await fetchWithAnonymousIdentity("/api/follows", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          feed_id: rec.feed.id,
-          ...(resolvedUserId ? { user_id: resolvedUserId } : {}),
-        }),
-      });
-      if (!response.ok) throw new Error("Follow request failed");
-      syncUserId(syncAnonymousUserIdFromResponse(response));
-      setFollowState((prev) => ({ ...prev, [rec.feed.id]: "followed" }));
-      void handleInteraction(rec.feed.id, "subscribe", rec.reason);
-    } catch (error) {
-      console.error("Subscribe error:", error);
-      setFollowState((prev) => ({ ...prev, [rec.feed.id]: "error" }));
-    }
+  const handleSubscribe = (rec: Recommendation) => {
+    void handleInteraction(rec.feed.id, "subscribe", rec.reason);
+    alert(`Subscribed to ${rec.feed.title}!`);
   };
 
   const handleDismiss = (rec: Recommendation) => {

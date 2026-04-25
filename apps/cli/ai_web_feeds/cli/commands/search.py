@@ -8,17 +8,18 @@ from ai_web_feeds.storage import DatabaseManager
 from rich.console import Console
 from rich.table import Table
 
-app = typer.Typer(help="Search and discovery commands", no_args_is_help=True)
+app = typer.Typer(help="Search and discovery commands")
+console = Console()
 
 
 @app.command("query")
 def search_query(
     query: str = typer.Argument(..., help="Search query"),
-    database_url: str | None = typer.Option(
-        None,
-        "--database",
+    database_url: str = typer.Option(
+        DEFAULT_DATABASE_URL,
+        "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     search_type: str = typer.Option(
         "full_text",
@@ -49,7 +50,6 @@ def search_query(
     ),
 ) -> None:
     """Search for feeds with full-text or semantic search."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Search Query:[/bold cyan] {query}\n")
 
     db = DatabaseManager(database_url)
@@ -128,7 +128,7 @@ def search_autocomplete(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     limit: int = typer.Option(
         8,
@@ -138,7 +138,6 @@ def search_autocomplete(
     ),
 ) -> None:
     """Get autocomplete suggestions."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Autocomplete:[/bold cyan] {prefix}\n")
 
     db = DatabaseManager(database_url)
@@ -168,11 +167,10 @@ def search_init(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
 ) -> None:
     """Initialize search tables (FTS5 + Trie index)."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Initializing Search Tables[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -192,7 +190,7 @@ def search_embeddings(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     provider: Optional[str] = typer.Option(
         None,
@@ -202,18 +200,14 @@ def search_embeddings(
     ),
 ) -> None:
     """Generate embeddings for all feeds."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Generating Feed Embeddings[/bold cyan]\n")
 
-    resolved_provider = None
     if provider:
-        resolved_provider = provider.strip().lower()
-        if resolved_provider not in SUPPORTED_EMBEDDING_PROVIDERS:
-            supported = ", ".join(sorted(SUPPORTED_EMBEDDING_PROVIDERS))
-            raise typer.BadParameter(
-                f"Unsupported provider '{provider}'. Supported providers: {supported}"
-            )
-        console.print(f"Using provider: [bold]{resolved_provider}[/bold]")
+        # Temporarily override config
+        from ai_web_feeds.config import settings
+
+        settings.embedding.provider = provider
+        console.print(f"Using provider: [bold]{provider}[/bold]")
 
     db = DatabaseManager(database_url)
 
@@ -221,11 +215,7 @@ def search_embeddings(
         with db.get_session() as session:
             from ai_web_feeds.embeddings import refresh_all_embeddings
 
-            refresh_all_embeddings(
-                session,
-                show_progress=True,
-                provider=resolved_provider,
-            )
+            refresh_all_embeddings(session, show_progress=True)
 
     console.print("\n[green]✓[/green] Embeddings generated successfully")
 
@@ -238,7 +228,7 @@ def save_search_cmd(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     user_id: str = typer.Option(
         "cli_user",
@@ -253,7 +243,6 @@ def save_search_cmd(
     ),
 ) -> None:
     """Save a search for one-click replay."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Saving Search:[/bold cyan] {name}\n")
 
     db = DatabaseManager(database_url)
@@ -279,7 +268,7 @@ def list_saved_searches(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     user_id: str = typer.Option(
         "cli_user",
@@ -289,7 +278,6 @@ def list_saved_searches(
     ),
 ) -> None:
     """List all saved searches for a user."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Saved Searches for:[/bold cyan] {user_id}\n")
 
     db = DatabaseManager(database_url)
@@ -315,7 +303,7 @@ def list_saved_searches(
             search.search_name,
             search.query_text,
             filters_str[:30],
-            search.last_used_at.strftime("%Y-%m-%d %H:%M") if search.last_used_at else "Never",
+            search.last_used_at.strftime("%Y-%m-%d %H:%M"),
         )
 
     console.print(table)

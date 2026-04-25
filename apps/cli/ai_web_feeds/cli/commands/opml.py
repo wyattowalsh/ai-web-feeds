@@ -1,4 +1,4 @@
-"""Generate OPML files from stored feed sources."""
+"""ai_web_feeds.cli.commands.opml -- Generate OPML files"""
 
 from pathlib import Path
 
@@ -15,13 +15,12 @@ from ai_web_feeds.utils import (
 from loguru import logger
 
 app = typer.Typer(help="Generate OPML files from feed sources")
-cli = app
 
 
 @app.command("all")
 def generate_all_opml(
     output_path: Path = typer.Option(
-        default_data_path("all.opml"),
+        Path("data/all.opml"),
         "--output",
         "-o",
         help="Output OPML file",
@@ -30,23 +29,16 @@ def generate_all_opml(
         DEFAULT_DATABASE_URL,
         "--database",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
 ):
     """Generate OPML file with all feeds."""
-    db_path = resolve_runtime_database_url(db_path)
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()
 
     if not feed_sources:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="No feed sources were found in the database",
-                details={"database": db_path},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        typer.echo("✗ No feed sources found in database", err=True)
+        raise typer.Exit(1)
 
     logger.info(f"Generating OPML for {len(feed_sources)} feeds")
     opml_xml = wrap_opml_with_root_folder(
@@ -54,19 +46,13 @@ def generate_all_opml(
     )
 
     save_opml(opml_xml, output_path)
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Generated flat OPML export",
-            details={"output": str(output_path), "feeds": len(feed_sources)},
-        )
-    )
+    typer.echo(f"✓ Generated OPML with {len(feed_sources)} feeds: {output_path}")
 
 
 @app.command("categorized")
 def generate_categorized_opml_cmd(
     output_path: Path = typer.Option(
-        default_data_path("categorized.opml"),
+        Path("data/categorized.opml"),
         "--output",
         "-o",
         help="Output OPML file",
@@ -75,23 +61,16 @@ def generate_categorized_opml_cmd(
         DEFAULT_DATABASE_URL,
         "--database",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
 ):
     """Generate categorized OPML file (by source type)."""
-    db_path = resolve_runtime_database_url(db_path)
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()
 
     if not feed_sources:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="No feed sources were found in the database",
-                details={"database": db_path},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        typer.echo("✗ No feed sources found in database", err=True)
+        raise typer.Exit(1)
 
     logger.info(f"Generating categorized OPML for {len(feed_sources)} feeds")
     opml_xml = wrap_opml_with_root_folder(
@@ -99,13 +78,7 @@ def generate_categorized_opml_cmd(
     )
 
     save_opml(opml_xml, output_path)
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Generated categorized OPML export",
-            details={"output": str(output_path), "feeds": len(feed_sources)},
-        )
-    )
+    typer.echo(f"✓ Generated categorized OPML with {len(feed_sources)} feeds: {output_path}")
 
 
 @app.command("filtered")
@@ -119,23 +92,16 @@ def generate_filtered_opml_cmd(
         DEFAULT_DATABASE_URL,
         "--database",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
 ):
     """Generate filtered OPML file based on criteria."""
-    db_path = resolve_runtime_database_url(db_path)
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()
 
     if not feed_sources:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="No feed sources were found in the database",
-                details={"database": db_path},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        typer.echo("✗ No feed sources found in database", err=True)
+        raise typer.Exit(1)
 
     # Build filter function
     def filter_fn(feed):
@@ -170,17 +136,4 @@ def generate_filtered_opml_cmd(
 
     # Count filtered feeds
     filtered_count = len([f for f in feed_sources if filter_fn(f)])
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Generated filtered OPML export",
-            details={
-                "output": str(output_path),
-                "feeds": filtered_count,
-                "topic": topic,
-                "source_type": source_type,
-                "tag": tag,
-                "verified_only": verified_only,
-            },
-        )
-    )
+    typer.echo(f"✓ Generated filtered OPML with {filtered_count} feeds: {output_path}")

@@ -13,16 +13,6 @@ export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
-  const requestedUserId = searchParams.get("user_id");
-  if (requestedUserId && !isValidUserId(requestedUserId)) {
-    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-  }
-  const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
-  const { identity } = resolvedIdentity;
-
-  if (requestedUserId && !validateTrustedUserOwnership(requestedUserId, identity)) {
-    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
-  }
 
   const seed_topics = searchParams.get("topics")?.split(",").filter(Boolean) || undefined;
   const userId = searchParams.get("user_id")?.trim() || undefined;
@@ -38,13 +28,11 @@ const GETHandler = async (request: Request) => {
       },
     });
 
-    const response = NextResponse.json(data, {
+    return NextResponse.json(data, {
       headers: {
         "Cache-Control": "private, s-maxage=300, stale-while-revalidate=600",
       },
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
     if (error instanceof BackendConfigurationError) {
       return NextResponse.json(
@@ -63,14 +51,6 @@ const GETHandler = async (request: Request) => {
 };
 
 const POSTHandler = async (request: Request) => {
-  let body: {
-    user_id?: string;
-    feed_id?: string;
-    interaction_type?: string;
-    reason?: string;
-  } | null = null;
-  let resolvedIdentity = resolveUserIdentity(request);
-
   try {
     const body = await request.json();
     const userId = typeof body?.user_id === "string" ? body.user_id.trim() : "";
@@ -104,9 +84,7 @@ const POSTHandler = async (request: Request) => {
       },
     });
 
-    const response = NextResponse.json(data);
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
+    return NextResponse.json(data);
   } catch (error) {
     if (error instanceof BackendConfigurationError) {
       return NextResponse.json(

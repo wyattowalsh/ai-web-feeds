@@ -1,7 +1,5 @@
 """CLI commands for analytics dashboard."""
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Optional
 
@@ -18,7 +16,8 @@ from ai_web_feeds.storage import DatabaseManager
 from rich.console import Console
 from rich.table import Table
 
-app = typer.Typer(help="Analytics dashboard commands", no_args_is_help=True)
+app = typer.Typer(help="Analytics dashboard commands")
+console = Console()
 
 
 @app.command("summary")
@@ -27,7 +26,7 @@ def analytics_summary(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     date_range: str = typer.Option(
         "30d",
@@ -43,7 +42,6 @@ def analytics_summary(
     ),
 ) -> None:
     """Display analytics summary metrics."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Analytics Summary[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -88,7 +86,7 @@ def analytics_trending(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     limit: int = typer.Option(
         10,
@@ -104,7 +102,6 @@ def analytics_trending(
     ),
 ) -> None:
     """Display Most Active Topics."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Most Active Topics[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -113,9 +110,9 @@ def analytics_trending(
 
         if not topics:
             console.print(
-                "[yellow]No topic stats found. Run 'ai-web-feeds analytics snapshot' first.[/yellow]"
+                "[yellow]No topic stats found. Run 'aiwebfeeds analytics snapshot' first.[/yellow]"
             )
-            return
+            raise typer.Exit(1)
 
         table = Table(show_header=True)
         table.add_column("Rank", style="dim")
@@ -144,7 +141,7 @@ def analytics_velocity(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     granularity: str = typer.Option(
         "daily",
@@ -160,7 +157,6 @@ def analytics_velocity(
     ),
 ) -> None:
     """Display publication velocity metrics."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print(f"[bold cyan]Publication Velocity ({granularity})[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -202,11 +198,10 @@ def analytics_snapshot(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
 ) -> None:
     """Generate daily analytics snapshot."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Generating Analytics Snapshot[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -226,7 +221,7 @@ def analytics_export(
         DEFAULT_DATABASE_URL,
         "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     output: Path = typer.Option(
         "analytics_export.csv",
@@ -242,7 +237,6 @@ def analytics_export(
     ),
 ) -> None:
     """Export analytics to CSV."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]Exporting Analytics to CSV[/bold cyan]\n")
 
     db = DatabaseManager(database_url)

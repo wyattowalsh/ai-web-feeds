@@ -1,74 +1,28 @@
-"""Export feed data in various formats."""
+"""ai_web_feeds.cli.commands.export -- Export data in various formats"""
 
-from __future__ import annotations
-
-import json
 from pathlib import Path
 
 import typer
 from loguru import logger
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ai_web_feeds import export_all_formats, export_to_opml, load_feeds
-from ai_web_feeds.config import default_data_dir, default_data_path
-from ai_web_feeds.cli.support import CommandResult, ExitCode, get_sources, render_result
+from ai_web_feeds import export_all_formats, export_to_json, export_to_opml, load_feeds
 
-app = typer.Typer(
-    help="Export feed documents as JSON and OPML",
-    invoke_without_command=True,
-    no_args_is_help=True,
-    context_settings={"allow_extra_args": True},
-)
-cli = app
-
-
-@app.callback()
-def callback(
-    ctx: typer.Context,
-    output_dir: Path = typer.Option(
-        default_data_dir(),
-        "--output-dir",
-        "-o",
-        help="Output directory for exported files",
-    ),
-    prefix: str | None = typer.Option(
-        None,
-        "--prefix",
-        "-p",
-        help="Output filename prefix (defaults to the input filename)",
-    ),
-) -> None:
-    """Support ``ai-web-feeds export <file>`` as a compatibility alias."""
-    if ctx.invoked_subcommand is not None:
-        return
-
-    if not ctx.args:
-        return
-    if len(ctx.args) > 1:
-        raise typer.BadParameter(
-            "Expected a single input feeds YAML file when using the export compatibility alias."
-        )
-
-    export_all_command(input_path=Path(ctx.args[0]), output_dir=output_dir, prefix=prefix)
-
-
-def _load_document(input_path: Path) -> dict:
-    loaded = load_feeds(input_path)
-    return {
-        **loaded,
-        "sources": get_sources(loaded),
-    }
+app = typer.Typer(help="Export feed data in various formats")
+console = Console()
 
 
 @app.command("json")
 def export_json(
-    input_path: Path = typer.Option(
-        default_data_path("feeds.yaml"),
+    input_file: Path = typer.Option(
+        Path("data/feeds.yaml"),
         "--input",
         "-i",
         help="Input YAML file",
     ),
-    output_path: Path = typer.Option(
-        default_data_path("feeds.json"),
+    output_file: Path = typer.Option(
+        Path("data/feeds.json"),
         "--output",
         "-o",
         help="Output JSON file",
@@ -81,60 +35,39 @@ def export_json(
 ) -> None:
     """Export feed data as JSON."""
     try:
-        feeds_data = _load_document(input_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with output_path.open("w", encoding="utf-8") as handle:
-            json.dump(
-                feeds_data,
-                handle,
-                ensure_ascii=False,
-                indent=2 if pretty else None,
-                separators=None if pretty else (",", ":"),
-            )
-    except FileNotFoundError as exc:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="Feed document not found",
-                details={"input": str(input_path), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
-    except Exception as exc:
-        logger.exception("JSON export failed")
-        render_result(
-            CommandResult(
-                status="error",
-                summary="JSON export failed",
-                details={"output": str(output_path), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task(description="Loading feeds...", total=None)
+            feeds_data = load_feeds(input_file)
 
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Exported feed document as JSON",
-            details={
-                "input": str(input_path),
-                "output": str(output_path),
-                "sources": len(get_sources(feeds_data)),
-                "pretty": pretty,
-            },
-        )
-    )
+            progress.add_task(description="Exporting to JSON...", total=None)
+            export_to_json(feeds_data, output_file)
+
+        count = len(feeds_data.get("sources", []))
+        console.print(f"[green]✓[/green] Exported {count} feeds to {output_file}")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]✗[/red] File not found: {e}")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"[red]✗[/red] Export failed: {e}")
+        logger.exception("JSON export failed")
+        raise typer.Exit(code=1)
 
 
 @app.command("opml")
 def export_opml(
-    input_path: Path = typer.Option(
-        default_data_path("feeds.yaml"),
+    input_file: Path = typer.Option(
+        Path("data/feeds.yaml"),
         "--input",
         "-i",
         help="Input YAML file",
     ),
-    output_path: Path = typer.Option(
-        default_data_path("feeds.opml"),
+    output_file: Path = typer.Option(
+        Path("data/feeds.opml"),
         "--output",
         "-o",
         help="Output OPML file",
@@ -143,122 +76,83 @@ def export_opml(
         False,
         "--categorized",
         "-c",
-        help="Group feeds by topic",
+        help="Group feeds by source type",
     ),
 ) -> None:
     """Export feed data as OPML."""
     try:
-        feeds_data = _load_document(input_path)
-        export_to_opml(feeds_data, output_path, categorized=categorized)
-    except FileNotFoundError as exc:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="Feed document not found",
-                details={"input": str(input_path), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
-    except Exception as exc:
-        logger.exception("OPML export failed")
-        render_result(
-            CommandResult(
-                status="error",
-                summary="OPML export failed",
-                details={"output": str(output_path), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task(description="Loading feeds...", total=None)
+            feeds_data = load_feeds(input_file)
 
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Exported feed document as OPML",
-            details={
-                "input": str(input_path),
-                "output": str(output_path),
-                "categorized": categorized,
-                "sources": len(get_sources(feeds_data)),
-            },
-        )
-    )
+            progress.add_task(description="Generating OPML...", total=None)
+            export_to_opml(feeds_data, output_file, categorized=categorized)
+
+        count = len(feeds_data.get("sources", []))
+        opml_type = "categorized" if categorized else "flat"
+        console.print(f"[green]✓[/green] Exported {count} feeds to {output_file} ({opml_type})")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]✗[/red] File not found: {e}")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"[red]✗[/red] Export failed: {e}")
+        logger.exception("OPML export failed")
+        raise typer.Exit(code=1)
 
 
 @app.command("all")
-def export_all_command(
-    input_path: Path = typer.Option(
-        default_data_path("feeds.yaml"),
+def export_all(
+    input_file: Path = typer.Option(
+        Path("data/feeds.yaml"),
         "--input",
         "-i",
         help="Input YAML file",
     ),
     output_dir: Path = typer.Option(
-        default_data_dir(),
+        Path("data"),
         "--output-dir",
         "-o",
         help="Output directory for all formats",
     ),
-    prefix: str | None = typer.Option(
-        None,
-        "--prefix",
-        "-p",
-        help="Output filename prefix (defaults to the input filename)",
-    ),
 ) -> None:
-    """Export feed data as JSON plus flat and categorized OPML."""
+    """Export feed data in all formats (JSON, OPML, categorized OPML)."""
     try:
-        feeds_data = _load_document(input_path)
-        resolved_prefix = prefix or input_path.stem
-        export_all_formats(feeds_data, output_dir, resolved_prefix)
-    except FileNotFoundError as exc:
-        render_result(
-            CommandResult(
-                status="error",
-                summary="Feed document not found",
-                details={"input": str(input_path), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
-    except Exception as exc:
-        logger.exception("Export all failed")
-        render_result(
-            CommandResult(
-                status="error",
-                summary="Export failed",
-                details={"output_dir": str(output_dir), "error": str(exc)},
-            )
-        )
-        raise typer.Exit(code=int(ExitCode.RUNTIME_ERROR)) from exc
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task(description="Loading feeds...", total=None)
+            feeds_data = load_feeds(input_file)
 
-    render_result(
-        CommandResult(
-            status="success",
-            summary="Exported feed document in all supported formats",
-            details={
-                "input": str(input_path),
-                "output_dir": str(output_dir),
-                "prefix": resolved_prefix,
-                "sources": len(get_sources(feeds_data)),
-                "artifacts": [
-                    str(output_dir / f"{resolved_prefix}.json"),
-                    str(output_dir / f"{resolved_prefix}.opml"),
-                    str(output_dir / f"{resolved_prefix}.categorized.opml"),
-                ],
-            },
-        )
-    )
+            progress.add_task(description="Exporting all formats...", total=None)
+            export_all_formats(feeds_data, output_dir)
+
+        count = len(feeds_data.get("sources", []))
+        console.print(f"[green]✓[/green] Exported {count} feeds to:")
+        console.print(f"  • {output_dir}/feeds.json")
+        console.print(f"  • {output_dir}/all.opml")
+        console.print(f"  • {output_dir}/categorized.opml")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]✗[/red] File not found: {e}")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"[red]✗[/red] Export failed: {e}")
+        logger.exception("Export all failed")
+        raise typer.Exit(code=1)
 
 
 @app.command("csv")
-def export_csv() -> None:
-    """Report that CSV export is not implemented."""
-    render_result(
-        CommandResult(
-            status="warning",
-            summary="CSV export is not implemented",
-            details={
-                "hint": "Use `ai-web-feeds export json` and transform the JSON with jq or Python.",
-            },
-        )
+def export_csv():
+    """Export feed data as CSV (not yet implemented)."""
+    console.print("[yellow]![/yellow] CSV export not yet implemented")
+    console.print(
+        "  Use JSON export and convert with: jq -r '.sources[] | [.id,.url,.title] | @csv'"
     )
-    raise typer.Exit(code=int(ExitCode.NOT_IMPLEMENTED))
+    raise typer.Exit(code=2)

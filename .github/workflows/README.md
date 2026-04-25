@@ -8,7 +8,6 @@ they utilize the CLI.
 - [Quality Workflows](#quality-workflows)
 - [Validation Workflows](#validation-workflows)
 - [Automation Workflows](#automation-workflows)
-- [Release, Security, and Dependency Automation](#-release-security-and-dependency-automation)
 - [CLI Integration](#cli-integration)
 - [Quality Standards](#quality-standards)
 
@@ -37,25 +36,24 @@ ______________________________________________________________________
    - CLI: `uv run lint`
    - Standard: Ruff linting rules (ANN, D, E, F, etc.)
 
-1. **enforce-type-checking**: Publishes MyPy findings without blocking merges
+1. **enforce-type-checking**: Validates type hints
 
    - CLI: `uv run typecheck`
-   - Standard: MyPy strict mode, advisory while legacy debt is reduced
+   - Standard: MyPy strict mode
 
 1. **enforce-testing**: Verifies test coverage ≥90%
 
    - CLI: `uv run aiwebfeeds test coverage --html`
    - Standard: 90% minimum coverage
 
-1. **enforce-data-validation**: Validates canonical data assets and generated
-   derivatives
+1. **enforce-data-validation**: Validates data files
 
-   - Script: `uv run python data/validate_data_assets.py`
-   - Standard: JSON Schema compliance plus canonical export freshness
+   - CLI: `uv run aiwebfeeds validate all --strict`
+   - Standard: JSON Schema compliance
 
-1. **quality-gate**: Final gate requiring hard checks to pass
+1. **quality-gate**: Final gate requiring all checks to pass
 
-   - Blocks merge if formatting, linting, tests, or data validation fail
+   - Blocks merge if any check fails
    - Posts comprehensive status to PR
 
 **Output**:
@@ -82,11 +80,10 @@ ______________________________________________________________________
    - CLI: `uv run ruff check .` + `uv run ruff format --check .`
    - Outputs: GitHub annotations, JSON/text reports
 
-1. **type-check**: MyPy type validation report
+1. **type-check**: MyPy type validation
 
    - CLI: `uv run mypy`
    - Outputs: JUnit XML, HTML reports
-   - Advisory while strict typing backlog is burned down
 
 1. **security-check**: Bandit security scanning
 
@@ -99,38 +96,32 @@ ______________________________________________________________________
    - Coverage uploaded to Codecov
    - Enforces 90% threshold
 
-1. **quality-gate**: Aggregates hard-gate results
+1. **quality-gate**: Aggregates all results
 
-   - Fails if lint/format, security, or tests fail
+   - Fails if any job fails
 
 ______________________________________________________________________
 
 ### `coverage.yml` (Enhanced)
 
-**Purpose**: Detailed coverage reporting, comments, and badge tracking.
+**Purpose**: Detailed coverage reporting and tracking.
 
 **Triggers**:
 
 - Pushes to `main`
 - Pull requests to `main`
-- Manual workflow dispatch
-- Runs when Python files, `pyproject.toml`, `uv.lock`, or the workflow itself change
 
 **CLI Commands**:
 
-- `cd tests && uv run pytest -q tests/cli tests/packages/ai_web_feeds/unit --ignore=tests/packages/ai_web_feeds/unit/test_nlp_entity_extractor.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_sentiment_analyzer.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_topic_modeler.py`
-- `cd tests && uv run coverage xml -o reports/coverage/coverage.xml`
-- `cd tests && uv run coverage report --format=markdown`
+- `uv run aiwebfeeds test coverage --html`
 
 **Features**:
 
 - Generates HTML coverage reports
 - Posts coverage comments on PRs
 - Uploads to Codecov
-- Creates coverage badges when `GIST_SECRET` and `COVERAGE_GIST_ID` are configured
-- Reports the 90% minimum threshold status
-- Complements `python-quality.yml` and `quality-enforcement.yml`, which remain the merge
-  gates
+- Creates coverage badges (optional)
+- Enforces 90% minimum threshold
 
 ______________________________________________________________________
 
@@ -178,7 +169,7 @@ ______________________________________________________________________
 **CLI Commands**:
 
 - `uv run aiwebfeeds validate all --strict` (or `--lenient`)
-- `uv run aiwebfeeds stats show --format json`
+- `uv run aiwebfeeds stats --output json`
 
 **Workflow Inputs**:
 
@@ -259,45 +250,6 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 🔐 Release, Security, and Dependency Automation
-
-### Release automation
-
-- **`release-drafter.yml`** keeps a draft release updated from `main` pushes plus
-  selected PR label changes, and `.github/release-drafter.yml` now tracks the current
-  docs and dependency paths (`apps/web/content/docs/**/*`, `uv.lock`, and the web
-  manifests).
-- **`release.yml`** publishes only from `v*.*.*` tags and uses GitHub OIDC trusted
-  publishing for PyPI. Manual `workflow_dispatch` runs still execute the build path, but
-  the publish and GitHub release steps remain tag-only.
-- Release build artifacts upload even after a publish failure so maintainers can inspect
-  the exact distributions from the attempted release job before retrying.
-- Docker publishes in `ci.yml` consume digest-pinned base images from `Dockerfile`,
-  which keeps image builds tied to immutable upstream inputs until attestation support
-  is added.
-
-### Security automation
-
-- **`codeql-analysis.yml`** scans Python plus the web app's JavaScript/TypeScript on
-  `main`/`develop`, runs weekly, and supports manual dispatch. Documentation and
-  non-code data assets are ignored to reduce noise.
-- **`dependency-review.yml`** runs only when tracked Python or web dependency
-  manifests/lockfiles change across the workspace. It blocks moderate-or-higher
-  advisories and GPL-3.0/AGPL-3.0 additions, and posts a PR summary when permissions
-  allow.
-- **`python-quality.yml`** still runs Bandit, while `ci.yml` continues Trivy filesystem
-  scans for broader supply-chain and container coverage.
-
-### Dependency automation
-
-- **`dependency-updates.yml`** runs weekly or manually, serializes runs with
-  workflow-level concurrency, and limits bot PR contents to `uv.lock` or
-  `.pre-commit-config.yaml`.
-- Bot PR creation prefers `GH_AW_CI_TRIGGER_TOKEN` when present, then falls back to
-  `GITHUB_TOKEN`, and emits warnings when repository policy blocks write access.
-
-______________________________________________________________________
-
 ## 🔧 CLI Integration
 
 All enhanced workflows utilize the `aiwebfeeds` CLI for consistency.
@@ -316,12 +268,11 @@ uv run aiwebfeeds test quick            # Fast unit tests
 ### Validation Commands
 
 ```bash
-uv run aiwebfeeds validate feeds --input data/feeds.yaml --schema data/feeds.schema.json
-uv run aiwebfeeds validate topics --input data/topics.yaml --schema data/topics.schema.json
-uv run aiwebfeeds validate references
+uv run aiwebfeeds validate feeds        # Validate feeds.yaml
+uv run aiwebfeeds validate topics       # Validate topics.yaml
+uv run aiwebfeeds validate references   # Validate topic refs
 uv run aiwebfeeds validate all          # All validations
 uv run aiwebfeeds validate all --strict # Strict mode
-uv run aiwebfeeds validate url "https://example.com/feed.xml"
 ```
 
 ### Quality Commands (via uv scripts)
@@ -340,7 +291,7 @@ uv run fix                              # Auto-fix all
 
 ```bash
 uv run aiwebfeeds stats                 # Display stats
-uv run aiwebfeeds stats show --format json
+uv run aiwebfeeds stats --output json   # JSON output
 ```
 
 ______________________________________________________________________
@@ -376,12 +327,11 @@ ______________________________________________________________________
 ### Before Committing
 
 ```bash
-# Run core quality checks
-uv run ruff check . --output-format=github
-uv run ruff format --check .
-uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds tests
-uv run python data/validate_data_assets.py
-cd tests && uv run pytest -q tests/cli tests/packages/ai_web_feeds/unit --ignore=tests/packages/ai_web_feeds/unit/test_nlp_entity_extractor.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_sentiment_analyzer.py --ignore=tests/packages/ai_web_feeds/unit/test_nlp_topic_modeler.py
+# Run all quality checks
+uv run check
+
+# Auto-fix issues
+uv run fix
 
 # Run tests
 uv run aiwebfeeds test all
@@ -395,7 +345,7 @@ uv run aiwebfeeds validate all
 Install pre-commit hooks to run checks automatically:
 
 ```bash
-uv tool install pre-commit
+uv pip install pre-commit
 pre-commit install
 ```
 
@@ -480,4 +430,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-*Last Updated: April 2026*
+*Last Updated: October 2025*

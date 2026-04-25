@@ -1,32 +1,27 @@
 name: 🔄 Workflow/CI Issue
-description: Report a problem with GitHub Actions workflows or automation behavior
+description: Report an issue with GitHub Actions workflows or CI/CD
 title: "[Workflow]: "
-labels: ["component/ci-cd", "status/needs-review"]
+labels: ["workflow", "ci-cd", "needs-triage"]
 assignees: []
 body:
   - type: markdown
     attributes:
       value: |
-        ## Workflow or CI Issue
+        ## Workflow/CI Issue
 
-        Report issues with GitHub Actions workflows, CI/CD pipelines, or repository automation.
+        Report issues with GitHub Actions workflows, CI/CD pipelines, or automated processes.
 
-        ### Quick debugging checklist
+        ### 🔍 Quick Debugging
 
-        1. Check the [workflow logs](https://github.com/wyattowalsh/ai-web-feeds/actions).
-        2. Re-run the failed job if the failure looks transient.
-        3. Re-run the exact command locally when possible:
+        **Before reporting**:
+        1. Check the [workflow logs](https://github.com/wyattowalsh/ai-web-feeds/actions) for details
+        2. Try re-running the failed job
+        3. Test the CLI command locally that's failing in CI:
            ```bash
-           uv run python data/validate_data_assets.py
-           uv run ai-web-feeds process --input data/feeds.yaml --output data/feeds.enriched.yaml
-           cd apps/web && pnpm lint
+           # Example: If validate workflow fails
+           uv run aiwebfeeds validate --all --strict
            ```
-        4. Review the docs:
-           - [Workflow Docs](https://aiwebfeeds.com/docs/development/workflows)
-           - [GitHub Infrastructure](https://aiwebfeeds.com/docs/guides/github-infrastructure)
-           - [Workflow Troubleshooting](https://aiwebfeeds.com/docs/guides/github-infrastructure#troubleshooting)
-
-        Repository automation is intentionally narrow: issue-driven feed intake should validate first, use maintainer-controlled approval, and mutate the repo only through reviewable pull requests.
+        4. Review [workflow documentation](https://aiwebfeeds.com/docs/development/workflows)
 
   - type: dropdown
     id: workflow_file
@@ -34,15 +29,17 @@ body:
       label: Workflow File
       description: Which workflow is affected?
       options:
-        - "validate-feed-submission.yml"
-        - "add-approved-feed.yml"
-        - "process-feeds.yml"
-        - "validate-all-feeds.yml"
-        - "ci.yml"
+        - "quality-enforcement.yml"
         - "python-quality.yml"
+        - "coverage.yml"
+        - "validate-all-feeds.yml"
+        - "validate-feed-submission.yml"
         - "pr-validation.yml"
         - "auto-fix.yml"
+        - "codeql-analysis.yml"
+        - "dependency-review.yml"
         - "release.yml"
+        - "label-manager.yml"
         - "Other"
     validations:
       required: true
@@ -51,7 +48,7 @@ body:
     id: workflow_run_url
     attributes:
       label: Workflow Run URL
-      description: Link to the relevant workflow run.
+      description: Link to the failed workflow run
       placeholder: "https://github.com/wyattowalsh/ai-web-feeds/actions/runs/123456789"
     validations:
       required: true
@@ -60,13 +57,18 @@ body:
     id: failure_type
     attributes:
       label: Failure Type
+      description: What type of failure occurred?
       options:
         - "Workflow fails to start"
-        - "Step fails"
-        - "Validation output is incorrect"
-        - "Automation wrote the wrong thing"
-        - "Permission or token issue"
-        - "Artifact issue"
+        - "Step times out"
+        - "CLI command fails"
+        - "Dependency installation fails"
+        - "Test failures"
+        - "Linting/formatting failures"
+        - "Validation failures"
+        - "Permission/authentication issues"
+        - "Artifact upload/download issues"
+        - "Matrix build failures"
         - "Other"
     validations:
       required: true
@@ -75,20 +77,42 @@ body:
     id: failing_step
     attributes:
       label: Failing Step
-      description: Paste the step name and the most relevant log lines.
+      description: |
+        Which step is failing? Paste the step name and relevant log output.
+
+        **Include**:
+        - Step name
+        - Exit code
+        - Error message
+        - Last 20-30 lines of output
+      placeholder: |
+        Step: Validate feeds
+        Exit code: 1
+
+        Error:
+        Run uv run aiwebfeeds validate --all --strict
+        [2025-01-15 10:30:00] ERROR: Validation failed
+        ...
       render: shell
     validations:
       required: true
 
   - type: textarea
-    id: command_or_script
+    id: cli_command
     attributes:
-      label: Command or Script Being Run
-      description: Copy the exact command or script from the logs or workflow file.
+      label: CLI Command Being Run
+      description: |
+        What CLI command is failing in the workflow?
+
+        Copy from the workflow logs or the YAML file.
       placeholder: |
-        uv run python .github/scripts/feed_submission_to_source.py --event-path ...
-        uv run python data/validate_data_assets.py
-        uv run ai-web-feeds process --input data/feeds.yaml --output data/feeds.enriched.yaml
+        uv run aiwebfeeds validate --all --strict
+
+        # Or
+        uv run ruff check .
+
+        # Or
+        cd apps/web && pnpm lint
       render: bash
     validations:
       required: false
@@ -97,7 +121,18 @@ body:
     id: local_test
     attributes:
       label: Local Test Results
-      description: If you ran the command locally, what happened?
+      description: |
+        Did you try running the same command locally? What happened?
+
+        ```bash
+        # Run the exact command from the workflow
+        uv run aiwebfeeds validate --all --strict
+        ```
+      placeholder: |
+        ✅ Works locally / ❌ Fails locally
+
+        Output:
+        ...
       render: shell
     validations:
       required: false
@@ -106,14 +141,16 @@ body:
     id: trigger
     attributes:
       label: Workflow Trigger
+      description: How was the workflow triggered?
       options:
-        - "Issue opened or edited"
-        - "Label added"
         - "Pull request"
         - "Push to main"
+        - "Push to develop"
         - "Scheduled run"
         - "Manual workflow_dispatch"
-        - "Other"
+        - "Release tag"
+        - "Issue comment"
+        - "Label added"
     validations:
       required: true
 
@@ -121,7 +158,21 @@ body:
     id: context
     attributes:
       label: Workflow Context
-      description: Include branch, PR, issue number, commit SHA, or recent changes that matter.
+      description: |
+        Provide relevant context about the workflow run.
+
+        **Helpful information**:
+        - PR number (if applicable)
+        - Branch name
+        - Commit SHA
+        - Recent changes that might have caused this
+        - Whether this is a new failure or regression
+      placeholder: |
+        PR: #123
+        Branch: feature/new-feature
+        Commit: abc123def456
+
+        This started failing after merging #120
       render: markdown
     validations:
       required: false
@@ -130,19 +181,39 @@ body:
     id: impact
     attributes:
       label: Impact
-      description: What impact does this issue have?
+      description: What is the impact of this issue?
       options:
-        - label: "Blocking issue intake or approval"
-        - label: "Blocking PR merges"
+        - label: "Blocking PRs from being merged"
         - label: "Blocking releases"
-        - label: "Causing incorrect automation output"
-        - label: "Intermittent or flaky"
+        - label: "Causing false positive failures"
+        - label: "Intermittent/flaky failures"
+        - label: "Slowing down CI/CD pipeline"
+        - label: "Affecting other workflows"
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Failure Frequency
+      description: How often does this fail?
+      options:
+        - "Always (100%)"
+        - "Frequently (>50%)"
+        - "Sometimes (25-50%)"
+        - "Rarely (<25%)"
+        - "First occurrence"
+    validations:
+      required: true
 
   - type: textarea
     id: expected_behavior
     attributes:
       label: Expected Behavior
-      description: What should the workflow do instead?
+      description: What should happen in the workflow?
+      placeholder: |
+        The workflow should:
+        1. Install dependencies
+        2. Run validation
+        3. Pass if all feeds are valid
     validations:
       required: true
 
@@ -150,15 +221,36 @@ body:
     id: actual_behavior
     attributes:
       label: Actual Behavior
-      description: What did the workflow do instead?
+      description: What actually happens?
+      placeholder: |
+        The workflow:
+        1. Installs dependencies ✅
+        2. Runs validation ✅
+        3. Fails with exit code 1 ❌
     validations:
       required: true
 
   - type: textarea
     id: proposed_fix
     attributes:
-      label: Proposed Fix (optional)
-      description: Suggest a safer or more correct workflow behavior if you have one.
+      label: Proposed Fix (Optional)
+      description: |
+        Do you have ideas on how to fix this?
+
+        Could include:
+        - Workflow YAML changes
+        - CLI command modifications
+        - Dependency updates
+        - Configuration changes
+      placeholder: |
+        Suggested fix:
+
+        ```yaml
+        # Add timeout to prevent hanging
+        - name: Validate feeds
+          run: uv run aiwebfeeds validate --all --timeout 60
+          timeout-minutes: 5
+        ```
       render: markdown
     validations:
       required: false
@@ -167,18 +259,29 @@ body:
     id: debugging_steps
     attributes:
       label: Debugging Steps Attempted
+      description: What have you tried?
       options:
         - label: "Re-ran the workflow"
-        - label: "Checked workflow logs"
-        - label: "Tested the command locally"
-        - label: "Reviewed recent changes to the workflow file"
-        - label: "Checked docs and related issues"
+        - label: "Checked workflow logs for errors"
+        - label: "Tested CLI command locally"
+        - label: "Tested with `act` (local GitHub Actions)"
+        - label: "Checked for recent changes to workflow file"
+        - label: "Reviewed related PRs/issues"
+        - label: "Checked GitHub Actions status page"
+        - label: "Verified secrets/tokens are set"
 
   - type: textarea
     id: additional_info
     attributes:
       label: Additional Information
-      description: Add any screenshots, related issues, or notes here.
+      description: |
+        Any other relevant information.
+
+        **Helpful additions**:
+        - Screenshots of workflow logs
+        - Links to similar issues
+        - Environment differences between CI and local
+        - Suggestions for improving the workflow
     validations:
       required: false
 
@@ -187,12 +290,49 @@ body:
       value: |
         ---
 
-        ### Helpful commands
+        ### 🛠️ Workflow Debugging Resources
 
+        **Test workflows locally**:
         ```bash
-        gh run list --workflow=validate-feed-submission.yml
-        gh run view <run-id> --log
-        uv run python data/validate_data_assets.py
+        # Install act
+        brew install act
+
+        # Run specific workflow
+        act pull_request -W .github/workflows/quality-enforcement.yml
+
+        # Run with secrets
+        act -s .secrets
         ```
 
-        Thanks for helping keep repository automation safe and reviewable. 🚀
+        **View workflow logs**:
+        ```bash
+        # Using GitHub CLI
+        gh run list --workflow=quality-enforcement.yml
+        gh run view <run-id> --log
+        gh run watch <run-id>
+        ```
+
+        **Common fixes**:
+
+        1. **Timeout issues**: Add `timeout-minutes` to step
+        2. **Permission issues**: Check `permissions:` in workflow
+        3. **Cache issues**: Clear cache in Actions settings
+        4. **Flaky tests**: Add retries or increase timeout
+        5. **CLI failures**: Test exact command locally first
+
+        ### 📚 Documentation
+
+        - [Workflow Documentation](https://aiwebfeeds.com/docs/development/workflows)
+        - [CLI Integration Guide](https://aiwebfeeds.com/docs/development/cli-workflows)
+        - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+
+        ### 🤝 Contributing a Fix
+
+        If you'd like to fix this workflow issue:
+
+        1. Fork the repo
+        2. Modify the workflow file
+        3. Test with `act` if possible
+        4. Submit a PR with your fix
+
+        Thank you for helping improve our CI/CD! 🚀

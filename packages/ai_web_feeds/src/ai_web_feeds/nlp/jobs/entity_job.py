@@ -9,7 +9,6 @@ from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import Entity, EntityMention, FeedEntry
-from ai_web_feeds.nlp.content import build_article_payload
 from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 from ai_web_feeds.storage import DatabaseManager
 
@@ -90,7 +89,13 @@ class EntityBatchJob:
                 stats["processed"] += 1
 
                 try:
-                    article_dict = build_article_payload(article)
+                    # Convert SQLModel to dict
+                    article_dict = {
+                        "id": article.id,
+                        "title": article.title,
+                        "content": article.content or article.summary or "",
+                        "summary": article.summary,
+                    }
 
                     # Extract entities
                     entities = self.extractor.extract_entities(article_dict)

@@ -3,23 +3,8 @@
 These tests verify the entire user journey across the application.
 """
 
-from typing import Any
-
 import pytest
-
-try:
-    from playwright.sync_api import Page, expect
-
-    PLAYWRIGHT_AVAILABLE = True
-except ModuleNotFoundError:
-    Page = Any  # type: ignore[assignment]
-    expect = Any  # type: ignore[assignment]
-    PLAYWRIGHT_AVAILABLE = False
-
-pytestmark = pytest.mark.skipif(
-    not PLAYWRIGHT_AVAILABLE,
-    reason="playwright.sync_api is not installed",
-)
+from playwright.sync_api import Page, expect
 
 
 @pytest.fixture(scope="session")
@@ -186,3 +171,9 @@ class TestNavigationWorkflow:
         # Test navigation on mobile
         page.goto("/feeds?mode=articles")
         expect(page.locator('input[placeholder*="Search"]')).to_be_visible()
+
+
+# Configuration for pytest-playwright
+def pytest_configure(config):
+    """Configure pytest markers."""
+    config.addinivalue_line("markers", "e2e: mark test as end-to-end test")

@@ -3,8 +3,6 @@ title: Data Explorer
 description: Secondary taxonomy map for browsing AI Web Feeds topics and feed relationships
 ---
 
-import { Tabs, Tab } from "fumadocs-ui/components/tabs";
-
 # Data Explorer
 
 The Data Explorer at `/explorer` is an advanced map surface for browsing the AI Web Feeds taxonomy and feed relationships. Use `/` for the canonical reader, switch to `/?mode=catalog` for source refinement, and open `/explorer` when you need structural context rather than a reading-first workflow.
@@ -20,25 +18,15 @@ The Data Explorer at `/explorer` is an advanced map surface for browsing the AI 
 
 ### Tabbed Interface
 
-- ✅ **Topics** tab for taxonomy browsing
-- ✅ **Feeds** tab for feed-by-feed inspection
-- ✅ **Combined** tab for the topic + feed network
-- ✅ **Graph View** for structure and relationships
-- ✅ **Table View** for precise field-by-field scanning
-- Shared URL state for search, sort, layout, filters, and graph controls
+- ✅ **Topics View**: Browse and search all available topics
+- ✅ **Feeds View**: Explore the complete catalog of RSS/Atom feeds
+- Switch seamlessly between views
 
-<Tabs items={["Combined graph", "Topics table", "Feeds table", "URL state"]}>
-  <Tab value="Combined graph">The combined network is graph-only on purpose. If you switch to table view while `tab=combined`, the page shows a notice and sends you back to graph mode for the actual network exploration.</Tab>
-  <Tab value="Topics table">Use the topics tab when you want to sort by topic name or ID, scan descriptions, and jump back into the graph from a smaller filtered set.</Tab>
-  <Tab value="Feeds table">Use the feeds tab for feed titles, URLs, notes, and topic-tag filtering. This is the best mode when you need exact metadata instead of topology.</Tab>
-  <Tab value="URL state">Search, tab, view, selected tags, sort order, layout, and graph controls are mirrored into the query string. Shared links reopen the explorer in roughly the same state.</Tab>
-</Tabs>
-
-### Search and filtering
+### Advanced Search
 
 - **Full-text search** across titles, URLs, descriptions, and IDs
 - **Real-time filtering** as you type
-- Search works across Topics, Feeds, and Combined graph views
+- Search works across both Topics and Feeds tabs
 - Instant results with optimized performance
 
 ### Topics Browser
@@ -46,7 +34,7 @@ The Data Explorer at `/explorer` is an advanced map surface for browsing the AI 
 - View all available topics with their IDs, names, and descriptions
 - Sort by name or ID in ascending/descending order
 - Quick search to find specific topics
-- Graph detail actions can jump into the feeds graph for a selected topic
+- Hierarchical topic display
 
 ### Feeds Browser
 
@@ -55,7 +43,6 @@ The Data Explorer at `/explorer` is an advanced map surface for browsing the AI 
 - Sort by title or URL
 - Direct links to feed URLs
 - Visual tag badges for easy identification
-- Graph detail actions can open the source URL or pivot back to related topics
 
 ### Tag Filtering
 
@@ -63,7 +50,7 @@ The Data Explorer at `/explorer` is an advanced map surface for browsing the AI 
 - **Multi-select filtering** - click multiple tags to narrow results
 - **Active tag highlighting** shows selected filters
 - Clear all filters with one click
-- Tag chips surface the first 30 available tags with a cue when more exist
+- Smart tag counting and sorting
 
 ### Sorting Options
 
@@ -85,7 +72,6 @@ The Data Explorer at `/explorer` is an advanced map surface for browsing the AI 
 
 1. **Via Browser**: Navigate to [/explorer](/explorer)
 2. **Via Navigation**: Click "Explorer" in the site header
-3. **Via shared URL**: Reopen a saved explorer query with its filters and graph controls intact
 
 ### Searching
 
@@ -133,7 +119,7 @@ The explorer uses the following API endpoints:
 - **Source**: `feeds.enriched.yaml` (fallback to `feeds.yaml`)
 - **Returns**: JSON array of all feeds
 
-Both endpoints currently include:
+Both endpoints include:
 
 - Static generation for performance
 - Cache headers (3600s max-age, 86400s stale-while-revalidate)
@@ -149,12 +135,6 @@ curl http://localhost:3000/api/topics
 # Fetch feeds
 curl http://localhost:3000/api/feeds
 ```
-
-## Current limitations
-
-- The combined network does **not** have a table representation; it is graph-only.
-- Feed tag filtering is only available on the feeds tab.
-- Explorer data comes from the catalog APIs, so it reflects the curated catalog, not the future `/reader` lane.
 
 ## Implementation Details
 
@@ -275,4 +255,3 @@ Potential improvements:
 - [Feed Schema](/docs/guides/feed-schema)
 - [Database Quick Start](/docs/guides/database-quick-start)
 - [Python API](/docs/development/python-api)
-- [OPML Viewer](/docs/guides/opml-viewer)

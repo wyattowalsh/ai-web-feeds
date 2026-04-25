@@ -1,17 +1,11 @@
-import "server-only";
 import { randomUUID } from "node:crypto";
 import { after, NextResponse } from "next/server";
 import {
-  extractClientIp,
   hashClientIp,
   recordApiTelemetry,
   redactErrorMessage,
   type ApiTelemetryEvent,
 } from "@/lib/telemetry";
-
-if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
-  throw new Error("lib/telemetry-route.ts is server-only");
-}
 
 type RouteHandlerContext = { params: Promise<Record<string, string>> };
 
@@ -74,11 +68,12 @@ function readUrl(request: Request): URL {
 }
 
 function readClientIp(request: Request): string | null {
-  try {
-    return extractClientIp(request);
-  } catch {
-    return null;
+  const forwardedFor = readHeader(request, "x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() ?? null;
   }
+
+  return readHeader(request, "x-real-ip") ?? readHeader(request, "cf-connecting-ip");
 }
 
 function hasAdminSessionCookie(request: Request): boolean {

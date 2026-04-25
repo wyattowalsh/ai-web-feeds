@@ -23,9 +23,6 @@ The documentation workflow:
 ### 1. Install Dependencies
 
 ```bash
-# Ensure the repo-pinned pnpm version is active
-corepack enable && corepack prepare pnpm@9 --activate
-
 # Install Node.js dependencies
 cd apps/web
 pnpm install
@@ -35,11 +32,16 @@ cd ../..
 uv sync --dev
 ```
 
-### 2. Use the repo-local fumadocs-python CLI
+### 2. Install fumadocs-python CLI
 
 ```bash
-cd apps/web
-uv tool run --from ./node_modules/fumadocs-python fumapy-generate ai_web_feeds
+pip install fumadocs-python
+```
+
+Or using uv:
+
+```bash
+uv pip install fumadocs-python
 ```
 
 ## Generating Documentation
@@ -50,7 +52,7 @@ From the workspace root:
 
 ```bash
 # Generate documentation JSON for ai_web_feeds package
-uv tool run --from ./apps/web/node_modules/fumadocs-python fumapy-generate ai_web_feeds
+fumapy-generate ai_web_feeds
 
 # This creates ai_web_feeds.json in the current directory
 ```
@@ -202,7 +204,7 @@ Add to workspace `Makefile`:
 .PHONY: docs-api
 docs-api:
 	@echo "Generating Python API docs..."
-	uv tool run --from ./apps/web/node_modules/fumadocs-python fumapy-generate ai_web_feeds
+	fumapy-generate ai_web_feeds
 	mv ai_web_feeds.json apps/web/
 	cd apps/web && pnpm generate:docs
 	@echo "✅ API docs generated!"
@@ -262,7 +264,7 @@ Customize styles in your Tailwind config or override CSS variables.
 **Solution**:
 
 ```bash
-uv tool run --from ./apps/web/node_modules/fumadocs-python fumapy-generate ai_web_feeds
+fumapy-generate ai_web_feeds
 mv ai_web_feeds.json apps/web/
 ```
 
@@ -294,7 +296,7 @@ pnpm install
 **Check**:
 
 1. Are your Python files properly documented?
-2. Is the package available in the uv environment? (`uv sync --dev`)
+2. Is the package installed? (`pip install -e packages/ai_web_feeds`)
 3. Are docstrings using standard format?
 
 ## Best Practices

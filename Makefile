@@ -14,7 +14,7 @@
 #
 # Installation:
 #   - uv:   curl -LsSf https://astral.sh/uv/install.sh | sh
-#   - pnpm: corepack enable && corepack prepare pnpm@9.12.3 --activate
+#   - pnpm: npm install -g pnpm (one-time only, then never use npm again)
 #
 # ============================================================================
 
@@ -44,7 +44,7 @@ check-pnpm: ## Verify pnpm is installed
 	@command -v pnpm >/dev/null 2>&1 || { \
 		echo '$(RED)ERROR: pnpm is not installed!$(NC)'; \
 		echo '$(YELLOW)This project REQUIRES pnpm for Node.js package management.$(NC)'; \
-		echo '$(YELLOW)Install it with: corepack enable && corepack prepare pnpm@9.12.3 --activate$(NC)'; \
+		echo '$(YELLOW)Install it with: npm install -g pnpm$(NC)'; \
 		echo '$(RED)NEVER use npm install or yarn$(NC)'; \
 		exit 1; \
 	}
@@ -163,7 +163,7 @@ docs-serve: check-pnpm ## Serve documentation locally (requires Next.js setup)
 docs-api: check-uv ## Generate Python API documentation
 	@echo "$(BLUE)Generating Python API docs via uv...$(NC)"
 	@echo "$(YELLOW)Step 1: Generating JSON from Python package...$(NC)"
-	uv tool run --from ./apps/web/node_modules/fumadocs-python fumapy-generate ai_web_feeds
+	fumapy-generate ai_web_feeds
 	@echo "$(YELLOW)Step 2: Moving JSON to web app...$(NC)"
 	mv ai_web_feeds.json apps/web/
 	@echo "$(YELLOW)Step 3: Converting to MDX with pnpm...$(NC)"

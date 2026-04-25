@@ -1,12 +1,7 @@
-import "server-only";
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
-
-if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
-  throw new Error("lib/admin-auth.ts is server-only");
-}
 
 export const ADMIN_SESSION_COOKIE = "aiwf_admin_session";
 

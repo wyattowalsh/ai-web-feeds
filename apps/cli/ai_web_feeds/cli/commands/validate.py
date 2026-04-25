@@ -1,9 +1,8 @@
-"""Validate feed documents, topic data, and feed URLs."""
-
-from __future__ import annotations
+"""ai_web_feeds.cli.commands.validate -- Validate feed data"""
 
 import asyncio
 import json
+import sys
 from pathlib import Path
 from typing import Any, Optional, cast
 
@@ -16,18 +15,19 @@ from rich.table import Table
 
 from ai_web_feeds import DatabaseManager
 
-app = typer.Typer(
-    help="Validate feed documents, topic data, and feed URLs",
-    invoke_without_command=True,
-    no_args_is_help=True,
-    context_settings={"allow_extra_args": True},
-)
-cli = app
+app = typer.Typer(help="Validate feed data against schemas")
+console = Console()
 
 
 def get_data_dir() -> Path:
-    """Return the repository data directory."""
-    return default_data_dir()
+    """Get the data directory path."""
+    # Navigate from CLI location to workspace root
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        data_dir = parent / "data"
+        if data_dir.exists():
+            return data_dir
+    raise RuntimeError("Could not find data directory")
 
 
 @app.command("feeds")
@@ -107,37 +107,16 @@ def validate_topics(
         sys.exit(1)
 
     data_dir = get_data_dir()
-    resolved_input = input_path or data_dir / "topics.yaml"
-    default_schema = data_dir / "topics.schema.json"
-    resolved_schema = schema_path or (default_schema if default_schema.exists() else None)
-    return resolved_input, resolved_schema
+    topics_path = topics_file or data_dir / "topics.yaml"
+    schema_path = schema_file or data_dir / "topics.schema.json"
 
+    if not topics_path.exists():
+        console.print(f"[red]Error: {topics_path} not found[/red]")
+        sys.exit(1)
 
-def _run_feed_document_validation(
-    *,
-    input_path: Path | None,
-    schema_path: Path | None,
-    strict: bool,
-) -> tuple[CommandResult, bool]:
-    resolved_input, resolved_schema = _resolve_feeds_input(input_path, schema_path)
-    if not resolved_input.exists():
-        return (
-            CommandResult(
-                status="error",
-                summary="Feed document not found",
-                details={"input": str(resolved_input)},
-            ),
-            False,
-        )
-    if resolved_schema is not None and not resolved_schema.exists():
-        return (
-            CommandResult(
-                status="error",
-                summary="Feed schema not found",
-                details={"schema": str(resolved_schema)},
-            ),
-            False,
-        )
+    if not schema_path.exists():
+        console.print(f"[red]Error: {schema_path} not found[/red]")
+        sys.exit(1)
 
     console.print(f"📋 Validating {topics_path.name} against {schema_path.name}")
 
@@ -150,35 +129,14 @@ def _run_feed_document_validation(
 
     # Validate schema
     try:
-        feeds_data = normalize_feed_document(load_feeds(resolved_input))
-        validation = core_validate_feeds(feeds_data, resolved_schema)
-    except Exception as exc:
-        return (
-            CommandResult(
-                status="error",
-                summary="Feed validation failed unexpectedly",
-                details={"input": str(resolved_input), "error": str(exc)},
-            ),
-            False,
-        )
+        jsonschema.validate(instance=topics_data, schema=schema_data)
+        console.print("[green]✅ Schema validation passed![/green]")
+    except jsonschema.ValidationError as e:
+        console.print("[red]❌ Schema validation failed![/red]")
+        console.print(f"[red]Error: {e.message}[/red]")
+        sys.exit(1)
 
-    is_ok = validation.valid or not strict
-    return (
-        CommandResult(
-            status="success" if validation.valid else ("warning" if is_ok else "error"),
-            summary="Feed document validation passed"
-            if validation.valid
-            else "Feed document validation reported issues",
-            details={
-                "input": str(resolved_input),
-                "schema": str(resolved_schema) if resolved_schema else None,
-                "source_count": len(get_sources(feeds_data)),
-                "strict": strict,
-                "errors": validation.errors,
-            },
-        ),
-        is_ok,
-    )
+    console.print("[green]✅ All validations passed![/green]")
 
 
 @app.command("references")
@@ -187,20 +145,12 @@ def validate_topic_references() -> None:
     data_dir = get_data_dir()
     feeds_path = data_dir / "feeds.yaml"
     topics_path = data_dir / "topics.yaml"
-    if not feeds_path.exists() or not topics_path.exists():
-        return (
-            CommandResult(
-                status="error",
-                summary="Required data files were not found",
-                details={"feeds": str(feeds_path), "topics": str(topics_path)},
-            ),
-            False,
-        )
 
-    with topics_path.open(encoding="utf-8") as handle:
-        topics_data = yaml.safe_load(handle) or {}
-    with feeds_path.open(encoding="utf-8") as handle:
-        feeds_data = normalize_feed_document(yaml.safe_load(handle) or {})
+    if not feeds_path.exists() or not topics_path.exists():
+        console.print("[red]Error: Required files not found[/red]")
+        sys.exit(1)
+
+    console.print("🔗 Validating topic references...")
 
     # Load data
     with topics_path.open() as f:
@@ -213,215 +163,33 @@ def validate_topic_references() -> None:
     valid_topics = set()
     for category in topics_data.get("categories", []):
         for topic in category.get("topics", []):
-            topic_id = topic.get("id")
-            if topic_id:
-                valid_topics.add(topic_id)
+            valid_topics.add(topic["id"])
 
+    console.print(f"📚 Found {len(valid_topics)} valid topics")
+
+    # Check each feed's topics
     errors = []
-    for source in get_sources(feeds_data):
-        source_id = source.get("id", "unknown")
-        for topic in source.get("topics", []):
+    for source in feeds_data.get("sources", []):
+        feed_id = source.get("id", "unknown")
+        feed_topics = source.get("topics", [])
+
+        for topic in feed_topics:
             if topic not in valid_topics:
-                errors.append({"feed_id": source_id, "topic": topic})
+                errors.append((feed_id, topic))
 
-    is_ok = not errors or not strict
-    return (
-        CommandResult(
-            status="success" if not errors else ("warning" if is_ok else "error"),
-            summary="Topic references are valid"
-            if not errors
-            else "Invalid topic references found",
-            details={
-                "feeds": str(feeds_path),
-                "topics": str(topics_path),
-                "invalid_references": errors,
-                "strict": strict,
-            },
-        ),
-        is_ok,
-    )
+    if errors:
+        console.print(f"\n[red]❌ Found {len(errors)} invalid topic references:[/red]")
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Feed ID")
+        table.add_column("Invalid Topic")
 
+        for feed_id, topic in errors:
+            table.add_row(feed_id, topic)
 
-def _run_url_validation(feed_url: str, *, timeout: float) -> tuple[CommandResult, bool]:
-    try:
-        result = asyncio.run(validate_feed_url(feed_url, timeout=timeout))
-    except Exception as exc:
-        return (
-            CommandResult(
-                status="error",
-                summary="Feed URL validation failed",
-                details={"url": feed_url, "error": str(exc), "timeout": timeout},
-            ),
-            False,
-        )
-
-    is_ok = bool(result.get("success"))
-    return (
-        CommandResult(
-            status="success" if is_ok else "error",
-            summary="Feed URL validation passed" if is_ok else "Feed URL validation failed",
-            details={
-                "url": feed_url,
-                "timeout": timeout,
-                "status_code": result.get("status_code"),
-                "response_time_ms": result.get("response_time_ms"),
-                "feed_format": result.get("feed_format"),
-                "entry_count": result.get("entry_count"),
-                "error_message": result.get("error_message"),
-            },
-        ),
-        is_ok,
-    )
-
-
-@app.callback(invoke_without_command=True)
-def callback(
-    ctx: typer.Context,
-    schema_path: Path | None = typer.Option(
-        None,
-        "--schema",
-        "-s",
-        help="Path to a JSON schema file",
-    ),
-    run_all: bool = typer.Option(
-        False,
-        "--all",
-        help="Run all validation checks",
-    ),
-    strict: bool = typer.Option(
-        True,
-        "--strict/--lenient",
-        help="Fail on validation problems",
-    ),
-    format: ResultFormat = typer.Option(
-        ResultFormat.TEXT,
-        "--format",
-        "-f",
-        help="Summary output format",
-        case_sensitive=False,
-    ),
-) -> None:
-    """Support compatibility forms such as ``validate <file>`` and ``validate --all``."""
-    if ctx.invoked_subcommand is not None:
-        return
-    if run_all:
-        if ctx.args:
-            raise typer.BadParameter(
-                "The validation suite does not accept an input file when --all is set."
-            )
-        validate_all_command(strict=strict, format=format)
-        return
-    if not ctx.args:
-        return
-    if len(ctx.args) > 1:
-        raise typer.BadParameter(
-            "Expected a single input feeds YAML file when using the validate compatibility alias."
-        )
-
-    validate_feeds_command(
-        input_path=Path(ctx.args[0]),
-        schema_path=schema_path,
-        strict=strict,
-        format=format,
-    )
-
-
-@app.command("feeds")
-def validate_feeds_command(
-    input_path: Path | None = typer.Option(
-        None,
-        "--input",
-        "-i",
-        help="Path to feeds.yaml",
-    ),
-    schema_path: Path | None = typer.Option(
-        None,
-        "--schema",
-        "-s",
-        help="Path to the feed schema file",
-    ),
-    strict: bool = typer.Option(
-        True,
-        "--strict/--lenient",
-        help="Fail on validation problems",
-    ),
-    format: ResultFormat = typer.Option(
-        ResultFormat.TEXT,
-        "--format",
-        "-f",
-        help="Summary output format",
-        case_sensitive=False,
-    ),
-) -> None:
-    """Validate a feed document against the feed schema."""
-    result, ok = _run_feed_document_validation(
-        input_path=input_path,
-        schema_path=schema_path,
-        strict=strict,
-    )
-    render_result(result, format=format)
-    if not ok:
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
-
-
-@app.command("topics")
-def validate_topics_command(
-    input_path: Path | None = typer.Option(
-        None,
-        "--input",
-        "-i",
-        help="Path to topics.yaml",
-    ),
-    schema_path: Path | None = typer.Option(
-        None,
-        "--schema",
-        "-s",
-        help="Path to the topic schema file",
-    ),
-    strict: bool = typer.Option(
-        True,
-        "--strict/--lenient",
-        help="Fail on validation problems",
-    ),
-    format: ResultFormat = typer.Option(
-        ResultFormat.TEXT,
-        "--format",
-        "-f",
-        help="Summary output format",
-        case_sensitive=False,
-    ),
-) -> None:
-    """Validate a topic document against the topic schema."""
-    result, ok = _run_topic_document_validation(
-        input_path=input_path,
-        schema_path=schema_path,
-        strict=strict,
-    )
-    render_result(result, format=format)
-    if not ok:
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
-
-
-@app.command("references")
-def validate_topic_references_command(
-    strict: bool = typer.Option(
-        True,
-        "--strict/--lenient",
-        help="Fail on invalid topic references",
-    ),
-    format: ResultFormat = typer.Option(
-        ResultFormat.TEXT,
-        "--format",
-        "-f",
-        help="Summary output format",
-        case_sensitive=False,
-    ),
-) -> None:
-    """Validate that all feed topics exist in ``topics.yaml``."""
-    result, ok = _run_topic_reference_validation(strict=strict)
-    render_result(result, format=format)
-    if not ok:
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        console.print(table)
+        sys.exit(1)
+    else:
+        console.print("[green]✅ All topic references are valid![/green]")
 
 
 @app.command("all")
@@ -457,37 +225,9 @@ def validate_all(
     if exit_code == 0:
         console.print("\n[green]✅ All validations passed![/green]")
     else:
-        console.print("[bold]Validation suite[/bold]")
-        for name, result, _ in checks:
-            render_result(result, title=name)
-            console.print()
+        console.print("\n[red]❌ Some validations failed![/red]")
 
-    if not ok:
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
-
-
-@app.command("url")
-def validate_url_command(
-    feed_url: str = typer.Argument(..., help="Feed URL to validate"),
-    timeout: float = typer.Option(
-        30.0,
-        "--timeout",
-        "-t",
-        help="HTTP timeout in seconds",
-    ),
-    format: ResultFormat = typer.Option(
-        ResultFormat.TEXT,
-        "--format",
-        "-f",
-        help="Summary output format",
-        case_sensitive=False,
-    ),
-) -> None:
-    """Validate a raw feed URL without requiring a database entry."""
-    result, ok = _run_url_validation(feed_url, timeout=timeout)
-    render_result(result, format=format)
-    if not ok:
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+    sys.exit(exit_code)
 
 
 @app.command("http")
@@ -496,7 +236,7 @@ def validate_http_feeds(
         DEFAULT_DATABASE_URL,
         "--database",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     concurrency: int = typer.Option(
         10,
@@ -504,10 +244,11 @@ def validate_http_feeds(
         "-c",
         help="Maximum concurrent HTTP requests",
     ),
-    feed_id: str | None = typer.Option(
+    feed_id: Optional[str] = typer.Option(
         None,
         "--feed-id",
-        help="Validate a specific stored feed ID",
+        "-f",
+        help="Validate specific feed by ID (otherwise validates all)",
     ),
 ) -> None:
     """Validate feed URLs with HTTP accessibility checks."""
@@ -515,21 +256,22 @@ def validate_http_feeds(
 
     # Initialize database
     db = DatabaseManager(database_url)
+
+    # Get feeds to validate
     if feed_id:
+        console.print(f"[dim]Validating single feed: {feed_id}[/dim]")
         feed_source = db.get_feed_source(feed_id)
-        if feed_source is None:
-            render_result(
-                CommandResult(
-                    status="error",
-                    summary=f"Stored feed '{feed_id}' was not found",
-                    details={"database": database_url},
-                ),
-                format=format,
-            )
-            raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        if not feed_source:
+            console.print(f"[red]✗[/red] Feed not found: {feed_id}")
+            sys.exit(1)
         feed_sources = [feed_source]
     else:
+        console.print("[dim]Loading all feed sources...[/dim]")
         feed_sources = db.get_all_feed_sources()
+        if not feed_sources:
+            console.print("[yellow]⚠[/yellow] No feed sources found in database")
+            sys.exit(0)
+        console.print(f"[green]✓[/green] Found {len(feed_sources)} feeds\n")
 
     # Run async validation
     async def run_validation() -> list[Any]:
@@ -538,22 +280,22 @@ def validate_http_feeds(
             concurrency_limit=concurrency,
             show_progress=True,
         )
-        return
 
-    validation_results = asyncio.run(
-        validate_all_feeds(feed_sources, concurrency_limit=concurrency, show_progress=True)
-    )
+    console.print(f"[bold]Validating feeds (max {concurrency} concurrent)...[/bold]")
+    validation_results = asyncio.run(run_validation())
+
+    # Store results in database
+    console.print("\n[dim]Storing validation results...[/dim]")
     for result in validation_results:
         db.add_validation_result(result)
 
-    success_count = sum(1 for result in validation_results if result.success)
+    # Generate report
+    console.print("\n[bold]Validation Report[/bold]")
+    console.print("═" * 60)
+
+    success_count = sum(1 for r in validation_results if r.success)
     failure_count = len(validation_results) - success_count
-    response_times = [
-        result.response_time_ms
-        for result in validation_results
-        if result.response_time_ms is not None
-    ]
-    avg_response = round(sum(response_times) / len(response_times), 1) if response_times else None
+    success_rate = (success_count / len(validation_results)) * 100 if validation_results else 0
 
     console.print(f"Total Feeds:     {len(validation_results)}")
     console.print(f"[green]Successful:      {success_count} ({success_rate:.1f}%)[/green]")
@@ -590,13 +332,13 @@ def validation_report(
         DEFAULT_DATABASE_URL,
         "--database",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     recent: int = typer.Option(
         10,
         "--recent",
         "-n",
-        help="Number of recent validations to analyse per feed",
+        help="Number of recent validations to analyze per feed",
     ),
 ) -> None:
     """Generate comprehensive validation health report."""
@@ -604,63 +346,67 @@ def validation_report(
 
     # Initialize database
     db = DatabaseManager(database_url)
+
+    # Get all feeds with validation history
     feed_sources = db.get_all_feed_sources()
 
     if not feed_sources:
-        render_result(
-            CommandResult(
-                status="warning",
-                summary="No stored feeds were found",
-                details={"database": database_url},
-            )
-        )
-        return
+        console.print("[yellow]⚠[/yellow] No feed sources found")
+        sys.exit(0)
 
+    console.print(f"[dim]Analyzing {len(feed_sources)} feeds...[/dim]\n")
+
+    # Build health report
     health_data = []
     for feed in feed_sources:
         history = db.get_validation_history(feed.id, limit=recent)
-        if not history:
-            continue
-        success_count = sum(1 for result in history if result.success)
-        success_rate = (success_count / len(history)) * 100
-        health_data.append(
-            {
-                "id": feed.id,
-                "title": feed.title[:40],
-                "health": calculate_health_score(history, max_results=recent),
-                "success_rate": success_rate,
-                "validations": len(history),
-                "verified": feed.verified,
-            }
-        )
+        if history:
+            health_score = calculate_health_score(history, max_results=recent)
+            success_count = sum(1 for r in history if r.success)
+            success_rate = (success_count / len(history)) * 100
+
+            health_data.append(
+                {
+                    "id": feed.id,
+                    "title": feed.title[:40],
+                    "health": health_score,
+                    "success_rate": success_rate,
+                    "validations": len(history),
+                    "verified": feed.verified,
+                }
+            )
 
     if not health_data:
-        render_result(
-            CommandResult(
-                status="warning",
-                summary="No validation history was found",
-                details={"database": database_url},
-            )
-        )
-        return
+        console.print("[yellow]⚠[/yellow] No validation history found")
+        sys.exit(0)
 
-    health_data.sort(key=lambda item: item["health"], reverse=True)
+    # Sort by health score
+    health_data.sort(key=lambda x: x["health"], reverse=True)
+
+    # Display table
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Feed ID", style="cyan")
-    table.add_column("Title")
+    table.add_column("Feed ID", style="cyan", width=20)
+    table.add_column("Title", style="white", width=40)
     table.add_column("Health", justify="right")
     table.add_column("Success Rate", justify="right")
     table.add_column("Checks", justify="right")
     table.add_column("Verified", justify="center")
 
-    for item in health_data[:20]:
+    for data in health_data[:20]:  # Top 20
+        health_color = (
+            "green" if data["health"] >= 0.8 else "yellow" if data["health"] >= 0.5 else "red"
+        )
+        health_str = f"[{health_color}]{data['health']:.2f}[/{health_color}]"
+        success_str = f"{data['success_rate']:.0f}%"
+        verified_str = "✓" if data["verified"] else "✗"
+
         table.add_row(
-            item["id"],
-            item["title"],
-            f"{item['health']:.2f}",
-            f"{item['success_rate']:.0f}%",
-            str(item["validations"]),
-            "✓" if item["verified"] else "✗",
+            data["id"],
+            data["title"],
+            health_str,
+            success_str,
+            str(data["validations"]),
+            verified_str,
         )
 
     console.print(table)

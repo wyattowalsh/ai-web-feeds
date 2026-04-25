@@ -1,27 +1,10 @@
-import { getDocSectionInfo, getLLMText, source } from "@/lib/source";
+import { getLLMText, source } from "@/lib/source";
 
 export const revalidate = false;
 
 export async function GET(request: Request) {
   const { origin } = new URL(request.url);
   const pages = source.getPages();
-  const groupedPages = Array.from(
-    pages.reduce((groups, page) => {
-      const section = getDocSectionInfo(page.slugs);
-      const existing = groups.get(section.key);
-
-      if (existing) {
-        existing.pages.push(page);
-        return groups;
-      }
-
-      groups.set(section.key, {
-        section,
-        pages: [page],
-      });
-      return groups;
-    }, new Map<string, { section: ReturnType<typeof getDocSectionInfo>; pages: Array<(typeof pages)[number]> }>()),
-  );
 
   // Get current date in ISO format
   const generatedDate = new Date().toISOString();
@@ -60,16 +43,7 @@ export async function GET(request: Request) {
     "-".repeat(80),
     "Table of Contents:",
     "",
-    ...groupedPages.flatMap(({ section, pages: sectionPages }) => [
-      `  [${section.title}]`,
-      ...sectionPages.map(
-        (page) =>
-          `    ${pages.findIndex((candidate) => candidate.url === page.url) + 1}. ${
-            page.data.title
-          } - ${page.url}`,
-      ),
-      "",
-    ]),
+    ...pages.map((page, idx) => `  ${idx + 1}. ${page.data.title} - ${page.url}`),
     "",
     "=".repeat(80),
     "DOCUMENTATION CONTENT",
@@ -81,7 +55,6 @@ export async function GET(request: Request) {
   const processedPages = await Promise.all(
     pages.map(async (page, index) => {
       const content = await getLLMText(page);
-      const section = getDocSectionInfo(page.slugs);
 
       const lines = [
         "",
@@ -93,9 +66,7 @@ export async function GET(request: Request) {
         `URL: ${origin}${page.url}`,
         `MARKDOWN: ${origin}${page.url}.mdx`,
         ...(page.data.description ? [`DESCRIPTION: ${page.data.description}`] : []),
-        `SECTION: ${section.title}`,
-        `SECTION_KEY: ${section.key}`,
-        `PATH: ${page.url}`,
+        `PATH: ${page.slugs.length > 0 ? "/" + page.slugs.join("/") : "/"}`,
         "",
         "-".repeat(80),
         "CONTENT",
@@ -124,7 +95,7 @@ export async function GET(request: Request) {
     `Generated: ${generatedDate}`,
     `Format: Plain text with markdown content`,
     "",
-    "For individual pages, append .mdx or .md to any documentation URL.",
+    "For individual pages, append .mdx to any documentation URL.",
     "For the discovery file, visit /llms.txt",
     "",
     "=".repeat(80),

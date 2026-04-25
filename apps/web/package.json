@@ -2,7 +2,6 @@
   "name": "web",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@9.12.3",
   "scripts": {
     "build": "pnpm build:workers && next build",
     "build:workers": "tsx scripts/build-workers.ts",
@@ -18,8 +17,6 @@
     "export-pdf:specific": "tsx scripts/export-pdf-specific.ts",
     "export-pdf:build": "NEXT_PUBLIC_PDF_EXPORT=true pnpm build && pnpm start & sleep 5 && pnpm export-pdf && kill $!",
     "test": "playwright test",
-    "test:e2e": "playwright test",
-    "test:e2e:full": "PLAYWRIGHT_FULL_MATRIX=1 playwright test",
     "test:unit": "vitest run",
     "test:vitest": "vitest",
     "test:ui": "playwright test --ui",
@@ -86,7 +83,6 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vitest": "^4.1.2",
-    "zod": "^4.3.6"
+    "vitest": "^4.1.2"
   }
 }

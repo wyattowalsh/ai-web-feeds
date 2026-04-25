@@ -20,9 +20,6 @@ from ai_web_feeds.visualization.models import (
 from ai_web_feeds.visualization.validators import (
     CustomizationValidator,
     ValidationError,
-    normalize_customization_payload,
-    normalize_date_range_payload,
-    normalize_filter_payload,
 )
 
 
@@ -93,9 +90,6 @@ class VisualizationService:
         Raises:
             ValidationError: If validation fails
         """
-        filters = normalize_filter_payload(filters)
-        customization = normalize_customization_payload(customization)
-
         # Validate customization
         if "title" in customization:
             customization["title"] = self.customization_validator.validate_title(
@@ -107,14 +101,9 @@ class VisualizationService:
                 customization["colors"]
             )
 
-        if "title_font_size" in customization:
-            customization["title_font_size"] = self.customization_validator.validate_font_size(
-                customization["title_font_size"]
-            )
-
-        if "opacity" in customization:
-            customization["opacity"] = self.customization_validator.validate_opacity(
-                customization["opacity"]
+        if "font_size" in customization:
+            customization["font_size"] = self.customization_validator.validate_font_size(
+                customization["font_size"]
             )
 
         try:
@@ -215,10 +204,9 @@ class VisualizationService:
                     visualization.name = name
 
                 if filters is not None:
-                    visualization.filters = normalize_filter_payload(filters)
+                    visualization.filters = filters
 
                 if customization is not None:
-                    customization = normalize_customization_payload(customization)
                     # Validate customization
                     if "title" in customization:
                         customization["title"] = self.customization_validator.validate_title(
@@ -228,18 +216,6 @@ class VisualizationService:
                     if "colors" in customization:
                         customization["colors"] = self.customization_validator.validate_colors(
                             customization["colors"]
-                        )
-
-                    if "title_font_size" in customization:
-                        customization["title_font_size"] = (
-                            self.customization_validator.validate_font_size(
-                                customization["title_font_size"]
-                            )
-                        )
-
-                    if "opacity" in customization:
-                        customization["opacity"] = self.customization_validator.validate_opacity(
-                            customization["opacity"]
                         )
 
                     visualization.customization = customization
@@ -310,11 +286,8 @@ class VisualizationService:
             Data with metadata
         """
         data_source = visualization["data_source"]
-        filters = normalize_filter_payload(visualization.get("filters", {}))
+        filters = visualization["filters"]
         device_id = visualization["device_id"]
-        effective_date_range = normalize_date_range_payload(date_range)
-        if not effective_date_range:
-            effective_date_range = normalize_date_range_payload(filters.get("date_range"))
 
         try:
             # Query based on data source
@@ -322,7 +295,7 @@ class VisualizationService:
                 topic_ids = filters.get("topic_ids")
                 records = self.data_service.query_topic_metrics(
                     topic_ids=topic_ids,
-                    date_range=effective_date_range or None,
+                    date_range=date_range,
                     device_id=device_id,
                     limit=limit,
                 )
@@ -330,7 +303,7 @@ class VisualizationService:
                 feed_ids = filters.get("feed_ids")
                 records = self.data_service.query_feed_health(
                     feed_ids=feed_ids,
-                    date_range=effective_date_range or None,
+                    date_range=date_range,
                     device_id=device_id,
                     limit=limit,
                 )
@@ -343,14 +316,7 @@ class VisualizationService:
                 "count": len(records),
                 "data_source": data_source,
                 "filters": filters,
-                "date_range": effective_date_range,
-            }
-        except ValidationError as e:
-            logger.error(f"Validation error fetching visualization data: {e}")
-            return {
-                "records": [],
-                "count": 0,
-                "error": e.to_dict(),
+                "date_range": date_range,
             }
         except Exception as e:
             logger.error(f"Error fetching visualization data: {e}")

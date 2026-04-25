@@ -1,6 +1,6 @@
 ---
 title: PDF Export
-description: Export the current docs routes as PDF files with the repository's Puppeteer-based batch scripts
+description: Export your Fumadocs documentation pages as high-quality PDF files
 icon: FileDown
 ---
 
@@ -35,7 +35,7 @@ Wait for the server to be ready at `http://localhost:3000`
 
 <Tabs items={["All Pages", "Specific Pages", "Production"]}>
   <Tab value="All Pages">```bash pnpm export-pdf ``` Exports all documentation pages to the `pdfs/` directory.</Tab>
-  <Tab value="Specific Pages">```bash pnpm export-pdf:specific /docs /docs/guides/getting-started ``` Export only the specified pages.</Tab>
+  <Tab value="Specific Pages">```bash pnpm export-pdf:specific /docs /docs/getting-started ``` Export only the specified pages.</Tab>
   <Tab value="Production">```bash pnpm export-pdf:build ``` Automated build and export (recommended for final PDFs).</Tab>
 </Tabs>
 
@@ -46,7 +46,7 @@ PDFs are saved to the `pdfs/` directory:
 ```
 pdfs/
 ├── index.pdf
-├── docs-guides-getting-started.pdf
+├── docs-getting-started.pdf
 └── docs-features-pdf-export.pdf
 ```
 

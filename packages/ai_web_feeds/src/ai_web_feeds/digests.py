@@ -14,7 +14,6 @@ from croniter import croniter  # type: ignore[import-untyped]
 from loguru import logger
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.digest_schedule import calculate_next_send_at, ensure_utc
 from ai_web_feeds.models import EmailDigest, FeedEntry
 from ai_web_feeds.storage import DatabaseManager
 
@@ -43,6 +42,13 @@ class DigestManager:
         self.max_articles = settings.phase3b.digest_max_articles
 
     @staticmethod
+    def _ensure_utc(value: datetime) -> datetime:
+        """Normalize datetime values to UTC while tolerating legacy naive rows."""
+        if value.tzinfo is None:
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
+
+    @staticmethod
     def _sanitize_link(link: str | None) -> str | None:
         """Return a safe http(s) link or None when the URL is not safe to render."""
         if not link:
@@ -59,76 +65,40 @@ class DigestManager:
         Returns:
             Number of digests sent
         """
-        now = ensure_utc(datetime.now(UTC))
+        now = self._ensure_utc(datetime.now(UTC))
         due_digests = self.db.get_due_digests(now)
 
         sent_count = 0
         for digest in due_digests:
-            original_next_send_at = digest.next_send_at
             try:
-                digest.next_send_at = self._calculate_next_send(digest, now)
-                self.db.update_email_digest(digest)
-            except Exception as e:
-                logger.error(f"Failed to reserve digest {digest.id} for delivery: {e}")
-                continue
-
-            try:
-                article_count = await self._send_digest(digest)
-            except Exception as e:
-                try:
-                    digest.next_send_at = original_next_send_at
-                    self.db.update_email_digest(digest)
-                except Exception as rollback_error:  # pragma: no cover - defensive branch
-                    logger.critical(
-                        "Failed to restore digest {} after delivery error: {}",
-                        digest.id,
-                        rollback_error,
-                    )
-                logger.error(f"Failed to send digest {digest.id}: {e}")
-                continue
-
-            if article_count == 0:
-                logger.info(
-                    "Advanced digest {} without sending because no new articles were available",
-                    digest.id,
-                )
-                continue
-
-            digest.last_sent_at = now
-            digest.article_count += article_count
-            try:
-                self.db.update_email_digest(digest)
-            except Exception as persist_error:
-                logger.critical(
-                    "Digest {} was emailed but final delivery state could not be persisted: {}",
-                    digest.id,
-                    persist_error,
-                )
+                await self._send_digest(digest)
                 sent_count += 1
-                continue
 
-            sent_count += 1
+                # Update digest schedule
+                digest.last_sent_at = now
+                digest.next_send_at = self._calculate_next_send(digest.schedule_cron, now)
+                self.db.update_email_digest(digest)
+
+            except Exception as e:
+                logger.error(f"Failed to send digest {digest.id}: {e}")
 
         logger.info(f"Sent {sent_count}/{len(due_digests)} email digests")
         return sent_count
 
-    async def _send_digest(self, digest: EmailDigest) -> int:
+    async def _send_digest(self, digest: EmailDigest) -> None:
         """Send individual email digest.
 
         Args:
             digest: EmailDigest instance
-
-        Returns:
-            Number of delivered articles.
         """
         # Get user's followed feeds
         user_feeds = self.db.get_user_follows(digest.user_id)
 
         # Get recent articles from followed feeds
         since = (
-            ensure_utc(digest.last_sent_at)
+            self._ensure_utc(digest.last_sent_at)
             if digest.last_sent_at
-            else ensure_utc(datetime.now(UTC) - timedelta(days=1))
+            else self._ensure_utc(datetime.now(UTC) - timedelta(days=1))
         )
         articles = []
         for feed_id in user_feeds:
@@ -141,7 +111,7 @@ class DigestManager:
 
         if not articles:
             logger.debug(f"No articles for digest {digest.id}, skipping")
-            return 0
+            return
 
         # Generate email HTML
         html_content = self._generate_html(digest, articles)
@@ -149,7 +119,7 @@ class DigestManager:
         # Send email
         msg = MIMEMultipart("alternative")
         msg["Subject"] = (
-            f"AI Web Feeds Digest - {ensure_utc(datetime.now(UTC)).strftime('%Y-%m-%d')}"
+            f"AI Web Feeds Digest - {self._ensure_utc(datetime.now(UTC)).strftime('%Y-%m-%d')}"
         )
         msg["From"] = self.smtp_from
         msg["To"] = digest.email
@@ -161,8 +131,10 @@ class DigestManager:
                 server.login(self.smtp_user, self.smtp_password)
             server.send_message(msg)
 
+        # Update stats
+        digest.article_count += len(articles)
+
         logger.info(f"Sent digest {digest.id} with {len(articles)} articles to {digest.email}")
-        return len(articles)
 
     def _generate_html(self, _digest: EmailDigest, articles: list[FeedEntry]) -> str:
         """Generate HTML email content.
@@ -198,7 +170,7 @@ class DigestManager:
             safe_title = escape(article.title)
             safe_summary = escape(article.summary or "")
             safe_author = escape(article.author or "Unknown")
-            safe_pub_date = ensure_utc(article.pub_date).strftime("%Y-%m-%d %H:%M")
+            safe_pub_date = self._ensure_utc(article.pub_date).strftime("%Y-%m-%d %H:%M")
             safe_link = self._sanitize_link(article.link)
             title_html = (
                 f'<a href="{escape(safe_link, quote=True)}">{safe_title}</a>'
@@ -230,11 +202,11 @@ class DigestManager:
 
         return html
 
-    def _calculate_next_send(self, digest: EmailDigest, from_time: datetime) -> datetime:
+    def _calculate_next_send(self, cron_expr: str, from_time: datetime) -> datetime:
         """Calculate next send time from cron expression.
 
         Args:
-            digest: Digest subscription
+            cron_expr: Cron expression (e.g., "0 9 * * *")
             from_time: Reference time
 
         Returns:

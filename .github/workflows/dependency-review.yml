@@ -1,32 +1,18 @@
 name: Dependency Review
-
-on:
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - '**/pyproject.toml'
-      - '**/uv.lock'
-      - 'apps/web/package.json'
-      - 'apps/web/pnpm-lock.yaml'
-      - '.github/workflows/dependency-review.yml'
+on: [pull_request]
 
 permissions:
   contents: read
-  pull-requests: write
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@e16496da15ae13d37b4bd94bd25447904da7fc5a
+        uses: actions/checkout@v4
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48
+        uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0

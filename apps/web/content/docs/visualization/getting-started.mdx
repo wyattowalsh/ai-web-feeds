@@ -1,17 +1,13 @@
 ---
 title: Visualization & Analytics
-description: >
-  Current visualization, dashboard, forecast, cache, and export capabilities
-  for the Phase 006 backend
+description: Interactive data visualization, 3D topic clustering, custom dashboards, and predictive analytics
 ---
 
-import { Callout } from "fumadocs-ui/components/callout";
+# Advanced Visualization & Analytics
 
-# Visualization & Analytics
+AIWebFeeds Phase 006 adds powerful visualization and analytics capabilities for exploring feed data interactively.
 
-The visualization backend is currently exposed through the versioned `/api/v1`
-surface and a set of device-scoped SQLModel entities in
-`ai_web_feeds.visualization`.
+## Features
 
 ### Interactive Data Visualization
 
@@ -103,22 +99,22 @@ PostgreSQL/SQLite
 **Backend Dependencies:**
 
 ```bash
-uv sync --extra dev
+cd packages/ai_web_feeds
+python -m pip install fastapi sqlalchemy pandas prophet redis-py bcrypt pyjwt
 ```
 
 **Frontend Dependencies:**
 
 ```bash
 cd apps/web
-pnpm install
-pnpm dev
+pnpm add three @react-three/fiber @react-three/drei react-grid-layout chart.js react-chartjs-2
 ```
 
-### Optional database migrations
+### Database Migration
 
 ```bash
 cd packages
-uv run alembic upgrade head
+alembic upgrade head
 ```
 
 This creates 7 new tables:
@@ -131,7 +127,7 @@ This creates 7 new tables:
 - `export_jobs` - Async export queue
 - `api_usage` - API usage tracking
 
-Visualization and export endpoints accept either:
+### Configuration
 
 **Environment Variables:**
 
@@ -139,29 +135,24 @@ Visualization and export endpoints accept either:
 # Redis cache (optional)
 REDIS_URL=redis://localhost:6379/0
 
-The backend resolves the active `device_id` from the authenticated token or API
-key. It does **not** accept a raw `device_id` query parameter on the runtime
-export endpoints.
+# Database
+DATABASE_URL=postgresql://user:pass@localhost/aiwebfeeds
 
-## Cache behavior
-
-The live query consumers in `DataService` currently use the versioned cache key
-format:
-
-```text
-v1:query:{query_type}:{sha256(normalized_payload)}
+# API settings
+MAX_CONCURRENT_EXPORTS=10
+FORECAST_TIMEOUT=30
 ```
 
-Key details:
+## Device-Based Persistence
 
-- Filters and date ranges are normalized before hashing
-- Canonical and legacy alias payloads map to the same cache entry
-- Query TTL is **300 seconds** for visualization queries, including topic graph data
-- Invalidation is query-type based (`topic_metrics`, `feed_health`, `topic_graph`)
+Visualizations use **browser-based device identification** instead of user accounts:
 
-## Validation behavior
+- **Device ID**: UUID v4 generated on first visit
+- **Storage**: localStorage with versioning (`v1:uuid:timestamp`)
+- **Scope**: Device-specific (no cross-device sync)
+- **Export/Import**: Manual transfer via JSON export
 
-Validation failures now normalize into a stable detail shape for API consumers:
+### Device ID Management
 
 ```typescript
 import { getDeviceId, exportDeviceData, importDeviceData } from "@/lib/visualization/device-id";
@@ -176,25 +167,28 @@ const exportedData = exportDeviceData();
 importDeviceData(exportedData);
 ```
 
-In-process Python callers still get the same `str(error)` message for backwards
-compatibility.
+## Cache Layer
 
-## Export endpoints available today
+5-minute cache with Redis primary and LRU fallback:
 
-The current backend export router lives under `/api/v1/export`:
+- **Cache Key**: SHA-256 hash of (query_type + filters + date_range + device_id)
+- **TTL**: 300 seconds (5 minutes) for queries, 3600 seconds (1 hour) for topic graph
+- **Invalidation**: Automatic on TTL expiry, manual on data writes
+- **Fallback**: In-memory LRU cache (100 entries) when Redis unavailable
 
 **Cache Statistics:**
 
 ```python
 from ai_web_feeds.visualization.cache import get_cache
 
-The runtime contract does **not** currently expose async export jobs,
-`/export/formats`, or `/export/jobs/*` endpoints.
+cache = get_cache()
+stats = cache.get_stats()
+# Returns: {cache_type, hits, misses, hit_rate, total_requests}
+```
 
-## Compatibility highlights
+## API Authentication
 
-The canonical wire format is snake_case, but the backend still accepts and, for
-key models, emits selected legacy aliases such as:
+Dual authentication system:
 
 ### JWT Tokens (Web App)
 

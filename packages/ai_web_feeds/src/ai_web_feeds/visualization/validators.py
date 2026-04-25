@@ -34,201 +34,9 @@ MAX_CUSTOMIZATION_TITLE_LENGTH = 100
 
 
 class ValidationError(Exception):
-    """Validation error with stable compatibility metadata."""
+    """Validation error with detailed message."""
 
-    def __init__(
-        self,
-        message: str,
-        *,
-        code: str = "validation_error",
-        field: str | None = None,
-        details: dict[str, Any] | None = None,
-    ):
-        super().__init__(message)
-        self.message = message
-        self.code = code
-        self.field = field
-        self.details = details or {}
-
-    @classmethod
-    def from_pydantic_error(
-        cls,
-        error: dict[str, Any],
-        *,
-        code: str = "validation_error",
-    ) -> "ValidationError":
-        """Build a normalized validation error from a Pydantic error payload."""
-        raw_location = [str(part) for part in error.get("loc", ()) if part != "__root__"]
-        field = ".".join(raw_location) or None
-
-        details: dict[str, Any] = {}
-        error_type = error.get("type")
-        if isinstance(error_type, str) and error_type:
-            details["type"] = error_type
-
-        return cls(
-            str(error.get("msg", "Validation error")),
-            code=code,
-            field=field,
-            details=details or None,
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize the error to an API-friendly detail payload."""
-        payload: dict[str, Any] = {
-            "code": self.code,
-            "message": self.message,
-        }
-        if self.field is not None:
-            payload["field"] = self.field
-        if self.details:
-            payload["details"] = self.details
-        return payload
-
-
-def validation_error_detail(
-    error: ValidationError | str,
-    *,
-    code: str = "validation_error",
-) -> dict[str, Any]:
-    """Return a normalized error detail payload for API responses."""
-    if isinstance(error, ValidationError):
-        return error.to_dict()
-    return ValidationError(str(error), code=code).to_dict()
-
-
-_DATE_RANGE_ALIASES = {
-    "startDate": "start",
-    "start_date": "start",
-    "endDate": "end",
-    "end_date": "end",
-}
-_FILTER_ALIASES = {
-    "topicIds": "topic_ids",
-    "feedIds": "feed_ids",
-    "datePreset": "date_preset",
-    "dateRange": "date_range",
-}
-_CUSTOMIZATION_ALIASES = {
-    "showLegend": "show_legend",
-    "legendPosition": "legend_position",
-    "titleFontSize": "title_font_size",
-    "xAxisLabel": "x_axis_label",
-    "yAxisLabel": "y_axis_label",
-    "gridLines": "grid_lines",
-    "showTooltips": "show_tooltips",
-}
-_FORECAST_ALIASES = {
-    "horizon_days": "forecast_horizon_days",
-    "metrics": "accuracy_metrics",
-}
-_FORECAST_PREDICTION_ALIASES = {
-    "confidence_lower": "lower",
-    "confidenceLower": "lower",
-    "confidence_upper": "upper",
-    "confidenceUpper": "upper",
-}
-
-
-def _normalize_mapping_aliases(
-    payload: dict[str, Any],
-    aliases: dict[str, str],
-) -> dict[str, Any]:
-    normalized = dict(payload)
-    for legacy_key, canonical_key in aliases.items():
-        if legacy_key in normalized and canonical_key not in normalized:
-            normalized[canonical_key] = normalized.pop(legacy_key)
-    return normalized
-
-
-def normalize_cache_payload(payload: Any) -> Any:
-    """Canonicalize compatible cache inputs before key generation."""
-    if isinstance(payload, dict):
-        normalized = _normalize_mapping_aliases(dict(payload), _FILTER_ALIASES)
-        normalized = _normalize_mapping_aliases(normalized, _DATE_RANGE_ALIASES)
-        normalized = _normalize_mapping_aliases(normalized, _CUSTOMIZATION_ALIASES)
-
-        return {key: normalize_cache_payload(value) for key, value in normalized.items()}
-
-    if isinstance(payload, list):
-        normalized_items = [normalize_cache_payload(item) for item in payload]
-        if all(not isinstance(item, dict | list) for item in normalized_items):
-            try:
-                return sorted(normalized_items)
-            except TypeError:
-                return normalized_items
-        return normalized_items
-
-    return payload
-
-
-def normalize_date_range_payload(date_range: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize legacy date-range aliases to the canonical API shape."""
-    if not isinstance(date_range, dict):
-        return {}
-    return normalize_cache_payload(date_range)
-
-
-def normalize_filter_payload(filters: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize visualization filter aliases used by web and legacy clients."""
-    if not isinstance(filters, dict):
-        return {}
-    return normalize_cache_payload(filters)
-
-
-def normalize_customization_payload(customization: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize chart customization aliases to snake_case keys."""
-    if not isinstance(customization, dict):
-        return {}
-    return normalize_cache_payload(customization)
-
-
-def normalize_dashboard_widget_payload(widget: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize legacy dashboard widget coordinates to a position object."""
-    if not isinstance(widget, dict):
-        return {}
-
-    normalized = dict(widget)
-    position = normalized.get("position")
-    if isinstance(position, dict):
-        normalized["position"] = {
-            "x": position.get("x", position.get("position_x", 0)),
-            "y": position.get("y", position.get("position_y", 0)),
-            "w": position.get("w", position.get("width", 12)),
-            "h": position.get("h", position.get("height", 4)),
-        }
-        return normalized
-
-    if any(key in normalized for key in ("position_x", "position_y", "width", "height")):
-        normalized["position"] = {
-            "x": normalized.pop("position_x", 0),
-            "y": normalized.pop("position_y", 0),
-            "w": normalized.pop("width", 12),
-            "h": normalized.pop("height", 4),
-        }
-
-    return normalized
-
-
-def normalize_forecast_payload(payload: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize forecast request/response aliases to canonical field names."""
-    if not isinstance(payload, dict):
-        return {}
-
-    normalized = _normalize_mapping_aliases(payload, _FORECAST_ALIASES)
-    if isinstance(normalized.get("accuracy_metrics"), dict):
-        normalized["accuracy_metrics"] = normalize_cache_payload(normalized["accuracy_metrics"])
-    return normalized
-
-
-def normalize_forecast_prediction_payload(
-    prediction: dict[str, Any] | None,
-) -> dict[str, Any]:
-    """Normalize forecast prediction interval aliases."""
-    if not isinstance(prediction, dict):
-        return {}
-
-    return _normalize_mapping_aliases(prediction, _FORECAST_PREDICTION_ALIASES)
+    pass
 
 
 class DateRangeValidator(BaseModel):
@@ -297,10 +105,7 @@ class QueryValidator:
         if table_name not in ALLOWED_TABLES:
             raise ValidationError(
                 f"Table '{table_name}' not allowed. "
-                f"Allowed tables: {', '.join(sorted(ALLOWED_TABLES))}",
-                code="invalid_table_name",
-                field="table_name",
-                details={"allowed_values": sorted(ALLOWED_TABLES)},
+                f"Allowed tables: {', '.join(sorted(ALLOWED_TABLES))}"
             )
         return table_name
 
@@ -318,11 +123,7 @@ class QueryValidator:
             ValidationError: If limit exceeds maximum
         """
         if limit <= 0:
-            raise ValidationError(
-                "Limit must be positive",
-                code="invalid_limit",
-                field="limit",
-            )
+            raise ValidationError("Limit must be positive")
         if limit > MAX_QUERY_RESULTS:
             raise ValidationError(
                 f"Limit exceeds maximum of {MAX_QUERY_RESULTS:,} rows (requested: {limit:,})"

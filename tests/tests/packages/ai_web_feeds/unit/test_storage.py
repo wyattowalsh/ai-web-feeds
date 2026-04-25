@@ -18,7 +18,7 @@ class TestDatabaseManager:
         """Test DatabaseManager initialization."""
         db_url = f"sqlite:///{temp_db_path}"
         db = DatabaseManager(database_url=db_url)
-        assert db.database_url == resolve_database_url(db_url)
+        assert db.database_url == db_url
         assert db.engine is not None
 
     def test_create_db_and_tables(self, temp_db_path):

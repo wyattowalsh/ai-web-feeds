@@ -10,27 +10,25 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import {
-  applyUserIdentityBinding,
-  isValidUserId,
-  resolveUserIdentity,
-  validateTrustedUserOwnership,
-} from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
+import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  if (requestedUserId && !isValidUserId(requestedUserId)) {
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
-  const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
-  const { identity } = resolvedIdentity;
-
-  if (requestedUserId && !validateTrustedUserOwnership(requestedUserId, identity)) {
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
     return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   try {
@@ -41,33 +39,23 @@ const GETHandler = async (request: NextRequest) => {
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       user_id: identity.user_id,
       follows: data,
       count: Array.isArray(data) ? data.length : 0,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
 };
 
 const POSTHandler = async (request: NextRequest) => {
   let body: { user_id?: string; feed_id?: string } | undefined;
-  let resolvedIdentity = resolveUserIdentity(request);
-  let identity = resolvedIdentity.identity;
+  let identity = getUserIdentity(request);
 
   try {
     body = (await request.json()) as { user_id?: string; feed_id?: string };
-    if (body.user_id && !isValidUserId(body.user_id)) {
-      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-    }
-
-    resolvedIdentity = resolveUserIdentity(request, body.user_id ?? null);
-    identity = resolvedIdentity.identity;
+    identity = getUserIdentity(request, body.user_id ?? null);
     const { feed_id } = body;
 
     if (body.user_id && identity.source === "anonymous") {
@@ -97,32 +85,21 @@ const POSTHandler = async (request: NextRequest) => {
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       follow: data,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
-    const errorCode =
-      typeof error === "object" && error !== null && "code" in error
-        ? String((error as { code?: unknown }).code ?? "")
-        : "";
-
-    if (getBackendErrorStatus(error) === 409 || errorCode === "ALREADY_FOLLOWING") {
-      const response = NextResponse.json({
+    if (typeof error === "object" && error !== null && "status" in error && error.status === 409) {
+      return NextResponse.json({
         success: true,
         already_following: true,
         user_id: identity.user_id,
         feed_id: body?.feed_id,
       });
-      applyUserIdentityBinding(response, resolvedIdentity);
-      return response;
     }
 
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
 };
 
@@ -130,15 +107,18 @@ const DELETEHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const feedId = searchParams.get("feed_id");
   const requestedUserId = searchParams.get("user_id");
-  if (requestedUserId && !isValidUserId(requestedUserId)) {
+  const identity = getUserIdentity(request, requestedUserId);
+
+  if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
-  const resolvedIdentity = resolveUserIdentity(request, requestedUserId);
-  const { identity } = resolvedIdentity;
-
-  if (requestedUserId && !validateTrustedUserOwnership(requestedUserId, identity)) {
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
     return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  if (identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
   if (!feedId) {
@@ -154,17 +134,13 @@ const DELETEHandler = async (request: NextRequest) => {
       },
     });
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       user_id: identity.user_id,
       feed_id: feedId,
     });
-    applyUserIdentityBinding(response, resolvedIdentity);
-    return response;
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
   }
 };
 

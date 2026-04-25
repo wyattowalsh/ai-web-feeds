@@ -1,25 +1,25 @@
 """CLI commands for AI-powered feed recommendations."""
 
-from __future__ import annotations
-
 from typing import Optional
 
 import typer
+from rich.console import Console
 from rich.table import Table
 
 from ai_web_feeds.config import settings
 from ai_web_feeds.storage import DatabaseManager
 
-app = typer.Typer(help="AI-powered feed recommendations", no_args_is_help=True)
+app = typer.Typer(help="AI-powered feed recommendations")
+console = Console()
 
 
 @app.command("get")
 def get_recommendations(
-    database_url: str | None = typer.Option(
-        None,
-        "--database",
+    database_url: str = typer.Option(
+        settings.database_url,
+        "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     user_id: Optional[str] = typer.Option(
         None,
@@ -41,7 +41,6 @@ def get_recommendations(
     ),
 ) -> None:
     """Get feed recommendations."""
-    database_url = resolve_runtime_database_url(database_url)
     console.print("[bold cyan]AI-Powered Feed Recommendations[/bold cyan]\n")
 
     db = DatabaseManager(database_url)
@@ -125,11 +124,11 @@ def track_interaction(
     interaction: str = typer.Argument(
         ..., help="Interaction type: view, click, subscribe, dismiss"
     ),
-    database_url: str | None = typer.Option(
-        None,
-        "--database",
+    database_url: str = typer.Option(
+        settings.database_url,
+        "--database-url",
         "-d",
-        help="Database URL (defaults to AIWF_DATABASE_URL)",
+        help="Database URL",
     ),
     user_id: str = typer.Option(
         "cli_user",
@@ -145,14 +144,13 @@ def track_interaction(
     ),
 ) -> None:
     """Track recommendation interaction."""
-    database_url = resolve_runtime_database_url(database_url)
     db = DatabaseManager(database_url)
 
     valid_interactions = ["view", "click", "subscribe", "dismiss"]
     if interaction not in valid_interactions:
         console.print(f"[red]Error:[/red] Invalid interaction type: {interaction}")
         console.print(f"Valid types: {', '.join(valid_interactions)}")
-        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        return
 
     db.track_recommendation_click(user_id, feed_id, interaction, reason)
 
@@ -169,7 +167,6 @@ def show_weights(
     ),
 ) -> None:
     """Show recommendation algorithm weights."""
-    settings = get_settings()
     console.print("[bold cyan]Recommendation Algorithm Weights[/bold cyan]\n")
 
     table = Table(show_header=True)

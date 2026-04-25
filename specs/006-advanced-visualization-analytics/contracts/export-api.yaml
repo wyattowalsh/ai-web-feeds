@@ -2,10 +2,7 @@ openapi: 3.1.0
 info:
   title: AIWebFeeds Export API
   version: 1.0.0
-  description: >
-    Current runtime export contract for the visualization backend. This file
-    mirrors the implemented `/api/v1/export` router rather than older
-    planning-only async export job designs.
+  description: API for exporting data in multiple formats (CSV, JSON, Parquet)
 
 servers:
 - url: /api/v1
@@ -15,100 +12,27 @@ security:
 - ApiKeyAuth: []
 
 paths:
-  /export/tables:
-    get:
-      summary: List exportable tables
-      operationId: listExportableTables
-      tags: [Export]
-      responses:
-        '200':
-          description: Exportable analytics tables and columns
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TablesResponse'
-
-  /export/data/{table}:
-    get:
-      summary: Export a table
-      operationId: exportTableData
-      tags: [Export]
-      parameters:
-      - $ref: '#/components/parameters/TableName'
-      - $ref: '#/components/parameters/ExportFormat'
-      - $ref: '#/components/parameters/Limit'
-      - $ref: '#/components/parameters/Cursor'
-      - $ref: '#/components/parameters/SortBy'
-      - $ref: '#/components/parameters/SortOrder'
-      responses:
-        '200':
-          description: Export payload in the requested format
-          content:
-            application/json:
-              schema:
-                type: object
-            text/csv:
-              schema:
-                type: string
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Validation failure
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-
-  /export/stream/{table}:
-    get:
-      summary: Stream a table export
-      operationId: streamTableExport
-      tags: [Export]
-      parameters:
-      - $ref: '#/components/parameters/TableName'
-      - name: format
-        in: query
-        schema:
-          type: string
-          enum: [json, csv]
-          default: csv
-      - name: batch_size
-        in: query
-        schema:
-          type: integer
-          default: 1000
-          maximum: 5000
-      responses:
-        '200':
-          description: Streaming export response
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Validation failure
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-
-  /export/bulk:
+  /export:
     post:
-      summary: Build bulk export URLs
-      operationId: bulkExportTables
+      summary: Export data
+      description: Export visualization or dashboard data in specified format
+      operationId: exportData
       tags: [Export]
-      parameters:
-      - $ref: '#/components/parameters/ExportFormat'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Sync export completed (small datasets)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+            text/csv:
+              schema:
                 type: string
             application/x-parquet:
               schema:
@@ -137,7 +61,7 @@ paths:
       - $ref: '#/components/parameters/DeviceId'
       responses:
         '200':
-          description: Bulk export URL bundle
+          description: Job status
           content:
             application/json:
               schema:
@@ -162,7 +86,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportJobStatus'
+
+  /export/formats:
+    get:
+      summary: Get supported export formats
+      description: List available export formats and their capabilities
+      operationId: getExportFormats
+      tags: [Export]
+      responses:
+        '200':
+          description: Supported formats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportFormat'
 
 components:
   securitySchemes:
@@ -175,77 +117,27 @@ components:
       name: X-API-Key
 
   parameters:
-    TableName:
-      name: table
-      in: path
+    DeviceId:
+      name: device_id
+      in: query
       required: true
       schema:
         type: string
-        enum: [topic_metrics, feed_health, article_metadata, validation_logs]
-    ExportFormat:
-      name: format
-      in: query
-      schema:
-        type: string
-        enum: [json, csv, parquet]
-        default: json
-    Limit:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 1000
-        maximum: 10000
-    Cursor:
-      name: cursor
-      in: query
-      schema:
-        type: string
-        nullable: true
-    SortBy:
-      name: sort_by
-      in: query
-      schema:
-        type: string
-        nullable: true
-    SortOrder:
-      name: sort_order
-      in: query
-      schema:
-        type: string
-        enum: [asc, desc]
-        default: asc
+        format: uuid
 
   schemas:
-    TableSummary:
+    ExportRequest:
       type: object
       properties:
-        description:
+        device_id:
           type: string
-        columns:
-          type: array
-          items:
-            type: string
-      required: [description, columns]
-
-    TablesResponse:
-      type: object
-      properties:
-        tables:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/TableSummary'
-      required: [tables]
-
-    BulkExportResponse:
-      type: object
-      properties:
-        export_id:
+          format: uuid
+        entity_type:
           type: string
-        tables:
-          type: array
-          items:
-            type: string
+          enum: [visualization, dashboard, forecast, raw_data]
+        entity_id:
+          type: integer
+          description: ID of visualization/dashboard/forecast
         format:
           type: string
           enum: [csv, json, parquet]
@@ -312,7 +204,6 @@ components:
         created_at:
           type: string
           format: date-time
-      required: [export_id, tables, format, download_urls, created_at]
 
     ExportJobStatus:
       allOf:
@@ -335,20 +226,15 @@ components:
     ExportFormat:
       type: object
       properties:
-        code:
+        format:
           type: string
-        message:
+        mime_type:
           type: string
-        field:
-          type: string
-        details:
-          type: object
-          additionalProperties: true
-      required: [code, message]
-
-    ValidationErrorResponse:
-      type: object
-      properties:
-        detail:
-          $ref: '#/components/schemas/ValidationErrorDetail'
-      required: [detail]
+        supports_compression:
+          type: boolean
+        max_rows_sync:
+          type: integer
+          description: Max rows for synchronous export
+        typical_size_kb:
+          type: integer
+          description: Typical file size per 1000 rows
