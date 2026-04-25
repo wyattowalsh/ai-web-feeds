@@ -7,10 +7,10 @@ AI Web Feeds supports two practical deployment profiles.
 
 ## Choose a Deployment Profile
 
-| Profile       | What runs                                   | When to use it                                                          |
-| ------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
-| Web only      | Next.js web app                             | Default choice for browsing feeds, docs, downloads, explorer, and stats |
-| Web + backend | Next.js web app plus `ai_web_feeds.web_api` | Use when you need recommendations and backend-backed analytics          |
+| Profile       | What runs                                   | When to use it                                                            |
+| ------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| Web only      | Next.js web app                             | Default choice for browsing feeds, docs, OPML export, explorer, and stats |
+| Web + backend | Next.js web app plus `ai_web_feeds.web_api` | Use when you need recommendations and backend-backed analytics            |
 
 ## Web-Only Deployment
 
@@ -20,7 +20,7 @@ It supports:
 
 - `/feeds`
 - `/explorer`
-- `/downloads`
+- `/api/exports/opml`
 - `/stats`
 - `/docs`
 - `/llms.txt` and `/llms-full.txt`

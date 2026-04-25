@@ -13,7 +13,6 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartConfiguration,
   ChartOptions,
   ChartData,
 } from "chart.js";

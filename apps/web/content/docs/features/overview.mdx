@@ -7,14 +7,14 @@ icon: Sparkles
 import { Card, Cards } from "fumadocs-ui/components/card";
 
 ai-web-feeds is organized around one primary product surface: the canonical
-reader at `/`. `/?mode=catalog` is the source-refinement view inside the same
-workspace, `/feeds` is kept for compatibility, and `/explorer` is the secondary
+reader at `/feeds`. `/feeds?mode=catalog` is the source-refinement view inside the same
+workspace, `/` redirects for compatibility, and `/explorer` is the secondary
 taxonomy map.
 
 ## Main Capabilities
 
 <Cards>
-  <Card title="Reader-First Feeds" description="Corpus-backed browsing, filtering, preview, and local reading state on /." href="/docs/features/reader" />
+  <Card title="Feeds Workspace" description="Corpus-backed browsing, filtering, preview, and local reading state on /feeds." href="/docs/features/reader" />
   <Card title="Search & Discovery" description="Unified article search, autocomplete, and explicit catalog mode for source discovery" href="/docs/features/search" />
   <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
   <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
@@ -25,10 +25,10 @@ taxonomy map.
 
 ## Curated Catalog
 
-1. Open `/` to browse the generated article corpus.
-2. Switch to `/?mode=catalog` when you need to narrow or expand the source slice.
-3. Return to the reader on `/` with that slice preserved in the URL.
-4. Treat `/feeds` as a compatibility path for older links and `/explorer` as a secondary taxonomy map.
+1. Open `/feeds` to browse the generated article corpus.
+2. Switch to `/feeds?mode=catalog` when you need to narrow or expand the source list.
+3. Return to the reader on `/feeds` with that slice preserved in the URL.
+4. Treat `/` as a compatibility redirect for older links and `/explorer` as a secondary taxonomy map.
 
 ## Reading Surface
 
@@ -41,11 +41,11 @@ taxonomy map.
 
 ## Export and Interop
 
-`/downloads` gives you the full catalog in portable formats:
+`/api/exports/opml` gives you the full catalog in portable OPML formats:
 
 - flat OPML for quick imports
 - foldered OPML for readers that support grouped feeds
-- JSON for scripts, apps, and custom pipelines
+- filtered OPML from the current catalog slice
 
 ## Optional Backend
 
@@ -60,4 +60,4 @@ Most of the public web app works without a Python HTTP backend. The backend is o
 1. Open **Feeds** to read recent posts and search the article library.
 2. Switch to **Catalog** mode when you want to change which sources are included.
 3. Use **Explorer** when you want to browse topics and source relationships visually.
-4. Use **Downloads** when you want the catalog in OPML or JSON.
+4. Use OPML export actions when you want the catalog in portable feed-reader formats.

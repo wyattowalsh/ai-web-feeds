@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s | AI Web Feeds",
   },
   description:
-    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
   keywords: [
     "AI",
     "RSS feeds",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     url: baseUrl,
     title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
     siteName: "AI Web Feeds",
     images: [
       {
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
     creator: "@wyattowalsh",
     images: [`${baseUrl}/og-image.png`],
   },

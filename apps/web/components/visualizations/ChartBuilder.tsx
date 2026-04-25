@@ -18,12 +18,7 @@ import { BarChart, createBarChartData } from "./charts/BarChart";
 import { ScatterChart, createScatterChartData } from "./charts/ScatterChart";
 import { PieChart, createPieChartData } from "./charts/PieChart";
 import { AreaChart, createAreaChartData } from "./charts/AreaChart";
-import {
-  HeatmapChart,
-  createHeatmapData,
-  type HeatmapChartProps,
-  type HeatmapDataPoint,
-} from "./charts/HeatmapChart";
+import { HeatmapChart, createHeatmapData, type HeatmapChartProps } from "./charts/HeatmapChart";
 
 interface ChartBuilderProps {
   onSave?: (config: ChartConfiguration) => void;
@@ -49,22 +44,6 @@ type ChartPreviewData =
       yLabels: string[];
     }
   | null;
-
-type HeatmapPreviewData = {
-  data: HeatmapDataPoint[];
-  xLabels: string[];
-  yLabels: string[];
-};
-
-function isHeatmapPreviewData(data: ChartPreviewData): data is HeatmapPreviewData {
-  return (
-    !!data &&
-    !("datasets" in data) &&
-    Array.isArray(data.data) &&
-    Array.isArray(data.xLabels) &&
-    Array.isArray(data.yLabels)
-  );
-}
 
 export function ChartBuilder({ onSave }: ChartBuilderProps) {
   // State management

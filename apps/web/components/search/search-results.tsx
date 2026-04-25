@@ -5,6 +5,7 @@ import { CalendarDays, ExternalLink, RadioTower, Search as SearchIcon } from "lu
 import { SearchArtworkSlot, SEARCH_ARTWORKS } from "@/components/search/search-artwork";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import type { SearchResponseMeta, SearchResult, SearchScope } from "@/lib/search";
 
 interface SearchResultsProps {
@@ -34,7 +35,7 @@ export function SearchResults({
   scope,
   meta,
   loading,
-  readerBasePath = "/reader",
+  readerBasePath = CANONICAL_READER_PATH,
   readerMode = null,
 }: SearchResultsProps) {
   if (loading) {

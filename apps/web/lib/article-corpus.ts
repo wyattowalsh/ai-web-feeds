@@ -867,7 +867,6 @@ function normalizeStringList(values: readonly string[] | null | undefined): stri
     return [];
   }
 
-  const source = Array.isArray(values) ? values : [];
   const seen = new Set<string>();
   const normalized: string[] = [];
 

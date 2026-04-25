@@ -27,7 +27,7 @@ If `BACKEND_URL` is missing or the backend is unavailable:
 - ranked feed recommendations
 - recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
 - topic chips for steering the current slice
-- feed actions for opening a result in `/?mode=catalog`, subscribing, or dismissing it
+- feed actions for opening a result in `/feeds?mode=catalog`, subscribing, or dismissing it
 
 ### Personalization Input
 
@@ -49,10 +49,10 @@ The backend stores that feedback, updates the user profile, and uses it to avoid
 If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
 
 - a setup message explaining that personalization is optional
-- a link to `/?mode=catalog`
+- a link to `/feeds?mode=catalog`
 - a link to the deployment guide
 
-That unavailable state is expected behavior in backend-free local development and should not compete with the reader-first path.
+That unavailable state is expected behavior in backend-free local development and should not compete with the main reading path.
 
 ## Proxy Contract
 

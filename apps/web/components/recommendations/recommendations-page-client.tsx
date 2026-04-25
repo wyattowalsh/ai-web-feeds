@@ -207,7 +207,8 @@ export function RecommendationsPageClient({
               </h1>
               <p className="hero-copy max-w-2xl">
                 Use this route when the backend recommender is available. Otherwise, the core
-                product remains the reader on `/` and the source catalog on `/?mode=catalog`.
+                product remains the reader on `/feeds` and the source catalog on
+                `/feeds?mode=catalog`.
               </p>
             </div>
           </div>

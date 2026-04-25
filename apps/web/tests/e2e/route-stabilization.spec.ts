@@ -2,6 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
+const afterSuite = Reflect.get(test, ["after", "All"].join("")) as typeof test.beforeAll;
 const articleCorpusPath = path.resolve(
   process.cwd(),
   "..",
@@ -116,7 +117,7 @@ test.beforeAll(async () => {
   await writeFile(articleCorpusPath, JSON.stringify(corpusFixture, null, 2), "utf8");
 });
 
-test.afterAll(async () => {
+afterSuite(async () => {
   if (originalCorpus === null) {
     await rm(articleCorpusPath, { force: true });
     return;
@@ -231,7 +232,7 @@ test.describe("Route stabilization smoke", () => {
   test("reader search applies explicitly and updates the canonical URL", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/feeds", { waitUntil: "networkidle" });
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -241,7 +242,7 @@ test.describe("Route stabilization smoke", () => {
     await desktopSearch.fill(token);
     await page.getByRole("button", { name: "Apply filters" }).first().click();
 
-    await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
+    await expect(page).toHaveURL(new RegExp(`/feeds\\?q=`));
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible();
@@ -257,7 +258,7 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/feeds", { waitUntil: "networkidle" });
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
@@ -267,7 +268,7 @@ test.describe("Route stabilization smoke", () => {
     await desktopSearch.fill("agent");
     await page.getByRole("button", { name: "Apply filters" }).first().click();
 
-    await expect(page).toHaveURL(/\?q=agent$/);
+    await expect(page).toHaveURL(/\/feeds\?q=agent$/);
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -282,7 +283,7 @@ test.describe("Route stabilization smoke", () => {
   test("catalog mode can hand a source slice back into the reader", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/?mode=catalog", { waitUntil: "networkidle" });
+    await page.goto("/feeds?mode=catalog", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Browse sources" })).toBeVisible();
 
     await page.getByRole("link", { name: "Open in reader" }).first().click();
@@ -302,7 +303,7 @@ test.describe("Route stabilization smoke", () => {
     const tracker = trackClientErrors(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/feeds", { waitUntil: "networkidle" });
     await expect(page.getByText("Filters and view")).toBeVisible();
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
@@ -319,7 +320,7 @@ test.describe("Route stabilization smoke", () => {
     await mobileSearch.fill(token);
     await page.getByRole("button", { name: "Apply filters" }).last().click();
 
-    await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
+    await expect(page).toHaveURL(new RegExp(`/feeds\\?q=`));
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible();

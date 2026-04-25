@@ -468,7 +468,7 @@ function ExplorerPageContent() {
                   </h3>
                   <p className="small-note mt-1">
                     Interactive graph for structural exploration, with direct handoff back into the
-                    reader-first product flow.
+                    main reading workflow.
                   </p>
                 </div>
               </div>

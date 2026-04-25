@@ -141,7 +141,7 @@ class TestNavigationWorkflow:
     @pytest.mark.e2e
     def test_homepage_to_features(self, page: Page):
         """Test navigating from homepage to feature pages."""
-        page.goto("/")
+        page.goto("/feeds")
 
         # Verify homepage loads
         expect(page.locator('text="AI Web Feeds"')).to_be_visible()
@@ -151,7 +151,7 @@ class TestNavigationWorkflow:
         expect(page).to_have_url("/analytics")
 
         # Navigate back to home
-        page.goto("/")
+        page.goto("/feeds")
 
         # Navigate to article search mode
         page.locator('a[href="/feeds?mode=articles"]').click()
@@ -163,7 +163,7 @@ class TestNavigationWorkflow:
         # Set mobile viewport
         page.set_viewport_size({"width": 375, "height": 667})
 
-        page.goto("/")
+        page.goto("/feeds")
 
         # Verify content is visible on mobile
         expect(page.locator('text="AI Web Feeds"')).to_be_visible()

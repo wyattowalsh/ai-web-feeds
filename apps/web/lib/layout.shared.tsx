@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 /**
  * Shared layout configurations
@@ -31,7 +32,7 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: "Sources",
-        url: "/?mode=catalog",
+        url: CANONICAL_CATALOG_PATH,
       },
       {
         text: "Taxonomy",

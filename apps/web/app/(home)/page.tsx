@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { FeedsWorkspaceClient } from "@/app/feeds/feeds-workspace-client";
-import { loadReaderRouteData, type ReaderPageSearchParams } from "@/lib/reader-route";
+import { redirect } from "next/navigation";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
 
 export const metadata: Metadata = {
   title: "AI Web Feeds - Browse AI articles across the open web",
   description:
-    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
   openGraph: {
     title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
     url: baseUrl,
     type: "website",
     images: [
@@ -27,30 +27,35 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
     images: [`${baseUrl}/og-image.png`],
   },
 };
 
 type HomePageProps = {
-  searchParams: Promise<ReaderPageSearchParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const { mode, feeds, stats, initialState, initialBrowse } =
-    await loadReaderRouteData(searchParams);
+function buildFeedsRedirectHref(searchParams: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
 
-  return (
-    <div className="page-wrap page-stack">
-      <section className="surface-panel space-y-8">
-        <FeedsWorkspaceClient
-          mode={mode}
-          feeds={feeds}
-          stats={stats}
-          initialState={initialState}
-          initialBrowse={initialBrowse}
-        />
-      </section>
-    </div>
-  );
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") {
+      params.append(key, value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(key, entry);
+      }
+    }
+  }
+
+  const query = params.toString();
+  return query ? `${CANONICAL_READER_PATH}?${query}` : CANONICAL_READER_PATH;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  redirect(buildFeedsRedirectHref(await searchParams));
 }

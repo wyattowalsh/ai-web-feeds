@@ -155,7 +155,7 @@ describe("FeedsWorkspaceClient", () => {
     );
   });
 
-  it("renders the reader-first corpus workspace from the seeded browse snapshot", async () => {
+  it("renders the reader corpus workspace from the seeded browse snapshot", async () => {
     const fetchMock = vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -377,11 +377,11 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/feeds?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 
-  it("applies draft filters explicitly and can reset them back to the canonical reader route", () => {
+  it("applies draft filters explicitly and can reset them back to the primary reader route", () => {
     currentSearchParams = new URLSearchParams();
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
     vi.stubGlobal("fetch", vi.fn());
@@ -424,12 +424,12 @@ describe("FeedsWorkspaceClient", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Apply filters" })[0]);
 
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/?q=models&source_type=newsletter&topics=ml&verified=false",
+      "/feeds?q=models&source_type=newsletter&topics=ml&verified=false",
       { scroll: false },
     );
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset" })[0]);
-    expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/feeds", { scroll: false });
   });
 
   it("adds recovery links when the current filters return no visible posts", async () => {
@@ -481,12 +481,15 @@ describe("FeedsWorkspaceClient", () => {
     expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
-      "/?source_type=blog&verified=true&feed=feed-1",
+      "/feeds?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute(
+      "href",
+      "/feeds",
+    );
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 
@@ -526,7 +529,7 @@ describe("FeedsWorkspaceClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Topic: agents" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/?q=agents&source_type=blog&verified=true&feed=feed-1",
+      "/feeds?q=agents&source_type=blog&verified=true&feed=feed-1",
       { scroll: false },
     );
   });

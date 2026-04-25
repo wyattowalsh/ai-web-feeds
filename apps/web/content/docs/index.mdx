@@ -6,29 +6,29 @@ icon: BookOpen
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Welcome to the **ai-web-feeds** documentation. The web app now has one canonical entry flow: open `/` for the reader, switch to `/?mode=catalog` to refine sources, keep `/feeds` only for compatibility with older links, and use `/explorer` as a secondary taxonomy map.
+Welcome to the **ai-web-feeds** documentation. The web app has one canonical entry flow: open `/feeds` for the reader, switch to `/feeds?mode=catalog` to refine sources, keep `/` only as a compatibility redirect, and use `/explorer` as a secondary taxonomy map.
 
 ## Start Here
 
-- **Read now:** [`/`](/)
-- **Refine sources:** [`/?mode=catalog`](/?mode=catalog)
-- **Compatibility path:** `/feeds`
+- **Read now:** [`/feeds`](/feeds)
+- **Refine sources:** [`/feeds?mode=catalog`](/feeds?mode=catalog)
+- **Compatibility redirect:** `/`
 - **Taxonomy map:** [`/explorer`](/explorer)
 
 ## Core Routes
 
 <Cards>
-  <Card title="Reader" description="Open / for the canonical article stream across all tracked sources." href="/docs/features/reader" />
-  <Card title="Search & Discovery" description="Use /?mode=catalog to refine the source slice without leaving the reader workflow." href="/docs/features/search" />
+  <Card title="Reader" description="Open /feeds for the canonical article stream across all tracked sources." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Use /feeds?mode=catalog to refine the source list without leaving the reader workflow." href="/docs/features/search" />
   <Card title="Getting Started" description="Set up the repo, build the article corpus, and learn the main route flow." href="/docs/guides/getting-started" />
   <Card title="Data Explorer" description="Use /explorer as the secondary taxonomy map for structure and relationships." href="/docs/guides/data-explorer" />
 </Cards>
 
 ## Product Model
 
-1. Open `/` to browse recent AI articles across all tracked sources.
+1. Open `/feeds` to browse recent AI articles across all tracked sources.
 2. Search the stream first, then narrow to specific feeds, topics, or source types only when you want to focus.
-3. Switch to `/?mode=catalog` when you need to inspect or refine the source list directly.
+3. Switch to `/feeds?mode=catalog` when you need to inspect or refine the source list directly.
 4. Use `/explorer` to inspect topic and feed structure, not as the main reading route.
 
 ## Main Documentation Paths
@@ -59,6 +59,6 @@ Welcome to the **ai-web-feeds** documentation. The web app now has one canonical
 
 <Cards>
   <Card title="GitHub Repository" description="View source code, issues, and contribution workflow." href="https://github.com/wyattowalsh/ai-web-feeds" />
-  <Card title="LLM Reference" description="Use /llms-full.txt for machine-readable project context." href="/llms-full.txt" />
+  <Card title="LLM Reference" description="Use the LLM format guide for machine-readable project context." href="/docs/features/llms-full-format" />
   <Card title="Quick Reference" description="Find the main commands, routes, and setup shortcuts." href="/docs/guides/quick-reference" />
 </Cards>

@@ -24,6 +24,7 @@ import {
   type SearchResult,
   type SearchScope,
 } from "@/lib/search";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 
 export type InitialSearchRequestState = "idle" | "success" | "failed";
 
@@ -117,11 +118,11 @@ export function SearchPageClient({
   initialMeta,
   initialSearchRequestState,
   shouldLogInitialSearch,
-  basePath = "/search",
-  browseFeedsHref = "/feeds",
+  basePath = CANONICAL_READER_PATH,
+  browseFeedsHref = CANONICAL_READER_PATH,
   embedded = false,
   forceScope,
-  readerBasePath = "/reader",
+  readerBasePath = CANONICAL_READER_PATH,
   readerMode = null,
   routeMode = null,
 }: SearchPageClientProps) {

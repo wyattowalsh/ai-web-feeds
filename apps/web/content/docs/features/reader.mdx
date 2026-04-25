@@ -1,22 +1,22 @@
 ---
 title: Reader
-description: Canonical homepage reader backed by a generated article corpus with /?mode=catalog source refinement and optional live refresh overlays
+description: Canonical feeds reader backed by a generated article corpus with /feeds?mode=catalog source refinement and optional live refresh overlays
 ---
 
 `/feeds` is the main workspace in AI Web Feeds. It combines a generated article library with the catalog filters from the curated source list.
 
 > **Status**: ✅ Available
-> **Surface**: `/` > **Catalog submode**: `/?mode=catalog` > **Compatibility route**: `/feeds`
+> **Surface**: `/feeds` > **Catalog submode**: `/feeds?mode=catalog` > **Compatibility redirect**: `/`
 
-The reader is the canonical homepage surface for AI Web Feeds. It uses the generated
+The reader is the canonical feeds workspace for AI Web Feeds. It uses the generated
 article corpus as its base dataset, keeps local reading state on-device, and
 adds live feed refreshes only as an explicit overlay.
 
 ## Two Modes on One Route
 
-- **Reader-first default** opens the article workspace on `/`.
-- **Catalog mode** lives at `/?mode=catalog` when you want to
-  change the source slice.
+- **Reader default** opens the article workspace on `/feeds`.
+- **Catalog mode** lives at `/feeds?mode=catalog` when you want to
+  change the source list.
 - **Corpus-backed article list** reads normalized article rows from
   `data/articles.generated.json`.
 - **Preview pane** opens only after an explicit article selection and closes back
@@ -29,7 +29,7 @@ adds live feed refreshes only as an explicit overlay.
 - **Refresh latest** fetches live posts for the current feed slice, dedupes
   them against the corpus, and prepends only genuinely new items.
 
-`/feeds` still renders the same workspace for compatibility, but new docs and links should point to `/` unless backward compatibility is the point.
+`/` redirects into the same workspace for compatibility, but new docs and links should point to `/feeds` unless backward compatibility is the point.
 
 ## URL parameters
 
@@ -43,7 +43,7 @@ The current query and filters are stored in the URL. That means you can:
 
 ```mermaid
 flowchart LR
-    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/"]
+    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/feeds"]
     runtime["feed_entries in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
     corpus --> browse["/api/articles"]
     route --> ui["FeedsWorkspaceClient"]
@@ -56,7 +56,7 @@ flowchart LR
 The catalog decides which feeds are available. The generated article corpus
 provides the default article list. The live aggregation API is only used when
 the user explicitly refreshes the current slice. The canonical reader lives at
-`/`; `/feeds` is the compatibility surface.
+`/feeds`; `/` is the compatibility redirect.
 
 - the catalog comes from `data/feeds.enriched.yaml` or the fallback source files
 - the article library comes from `data/articles.generated.json`
