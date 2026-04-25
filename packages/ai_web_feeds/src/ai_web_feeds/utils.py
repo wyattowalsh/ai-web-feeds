@@ -3,10 +3,11 @@
 import json
 import re
 import xml.etree.ElementTree as ET  # nosec B405
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
-from urllib.parse import urlparse
+from typing import Any, cast
+from urllib.parse import parse_qs, quote, urlparse
 
 import httpx
 import yaml

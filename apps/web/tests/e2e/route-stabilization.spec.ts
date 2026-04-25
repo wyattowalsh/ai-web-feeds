@@ -76,6 +76,30 @@ async function expectNoClientErrors(page: Page, tracker: ReturnType<typeof track
   await expect.poll(() => tracker.pageErrors, { timeout: 1000 }).toEqual([]);
 }
 
+async function gotoWithRetry(
+  page: Page,
+  path: string,
+  options?: Parameters<Page["goto"]>[1],
+  attempts = 2,
+) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      await page.goto(path, options);
+      return;
+    } catch (error) {
+      lastError = error;
+      const isAbortError = error instanceof Error && error.message.includes("ERR_ABORTED");
+      if (!isAbortError || attempt === attempts - 1) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 async function firstArticleSearchToken(page: Page): Promise<string> {
   const title = (await page.locator("article h3").first().textContent())?.trim() ?? "ai";
   const token =
@@ -101,7 +125,13 @@ test.afterAll(async () => {
 });
 
 test.describe("Route stabilization smoke", () => {
-  const publicRoutes = [
+  const publicRoutes: Array<{
+    path: string;
+    text: string;
+    role: "heading";
+    exact?: boolean;
+    timeout?: number;
+  }> = [
     {
       path: "/",
       text: "Latest AI posts from across the open web",

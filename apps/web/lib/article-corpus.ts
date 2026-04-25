@@ -31,6 +31,14 @@ export type ArticleCorpusMetadata = {
   is_empty: boolean;
 };
 
+type ExtractedCorpusMetadata = {
+  generated_at: string | null;
+  source_db: string;
+  article_count: number | undefined;
+  feed_count: number | undefined;
+  latest_published_at: string | null;
+};
+
 export type ArticleCorpus = {
   metadata: ArticleCorpusMetadata;
   articles: ArticleCorpusArticle[];

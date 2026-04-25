@@ -7,10 +7,12 @@ Implements FR-011d and FR-032e:
 """
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
+from itertools import pairwise
+from typing import Any
 
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 # Allowed table names for direct queries
 ALLOWED_TABLES = frozenset(

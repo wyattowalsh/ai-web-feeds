@@ -18,7 +18,12 @@ import { BarChart, createBarChartData } from "./charts/BarChart";
 import { ScatterChart, createScatterChartData } from "./charts/ScatterChart";
 import { PieChart, createPieChartData } from "./charts/PieChart";
 import { AreaChart, createAreaChartData } from "./charts/AreaChart";
-import { HeatmapChart, createHeatmapData, type HeatmapChartProps } from "./charts/HeatmapChart";
+import {
+  HeatmapChart,
+  createHeatmapData,
+  type HeatmapChartProps,
+  type HeatmapDataPoint,
+} from "./charts/HeatmapChart";
 
 interface ChartBuilderProps {
   onSave?: (config: ChartConfiguration) => void;

@@ -9,7 +9,7 @@ Implements FR-011a through FR-011c:
 import hashlib
 import json
 from collections import OrderedDict
-from typing import Any
+from typing import Any, cast
 
 from loguru import logger
 
@@ -162,7 +162,7 @@ class CacheLayer:
         logger.debug(f"Cache miss: {cache_key[:16]}...")
         return None
 
-    def set(  # noqa: PLR0913
+    def set(
         self,
         query_type: str,
         filters: dict[str, Any],
