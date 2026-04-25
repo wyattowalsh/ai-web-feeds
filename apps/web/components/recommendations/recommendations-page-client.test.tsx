@@ -75,10 +75,10 @@ describe("RecommendationsPageClient", () => {
 
     render(<RecommendationsPageClient />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Open in Feeds" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Open in catalog" }));
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/feeds?mode=catalog&feed=feed-1&q=Agent+Feed");
+      expect(pushMock).toHaveBeenCalledWith("/?mode=catalog&feed=feed-1&q=Agent+Feed");
     });
   });
 

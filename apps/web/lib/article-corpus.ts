@@ -147,15 +147,10 @@ export type AutocompleteResponse = {
   limit: number;
 };
 
-type ExtractedCorpusMetadata = Pick<
-  ArticleCorpusMetadata,
-  "generated_at" | "source_db" | "latest_published_at"
-> & {
-  article_count?: number;
-  feed_count?: number;
-};
-
-const ARTICLE_CORPUS_PATH = path.join(process.cwd(), "data", "articles.generated.json");
+const ARTICLE_CORPUS_PATHS = [
+  path.join(process.cwd(), "data", "articles.generated.json"),
+  path.resolve(process.cwd(), "..", "..", "data", "articles.generated.json"),
+];
 const CANONICAL_DATABASE_PATH = "data/ai-web-feeds.db";
 const AUTOCOMPLETE_MIN_PREFIX_LENGTH = 2;
 const DEFAULT_AUTOCOMPLETE_LIMIT = 8;
@@ -164,6 +159,7 @@ const MAX_BROWSE_LIMIT = 100;
 const MAX_AUTOCOMPLETE_LIMIT = 10;
 
 type ArticleCorpusCacheEntry = {
+  path: string;
   mtimeMs: number;
   payload: ArticleCorpus;
 };
@@ -174,12 +170,19 @@ let inflightArticleCorpus: Promise<ArticleCorpus> | null = null;
 export async function loadArticleCorpus(
   options: { refresh?: boolean } = {},
 ): Promise<ArticleCorpus> {
-  const fileInfo = await stat(ARTICLE_CORPUS_PATH).catch(() => null);
-  if (!fileInfo) {
+  const resolvedCorpus = await resolveArticleCorpusPath();
+  if (!resolvedCorpus) {
     return createEmptyCorpus();
   }
 
-  if (!options.refresh && cachedArticleCorpus?.mtimeMs === fileInfo.mtimeMs) {
+  const { articleCorpusPath, fileInfo } = resolvedCorpus;
+  const fileMtimeMs = normalizeMtimeMs(fileInfo.mtimeMs);
+
+  if (
+    !options.refresh &&
+    cachedArticleCorpus?.path === articleCorpusPath &&
+    cachedArticleCorpus.mtimeMs === fileMtimeMs
+  ) {
     return cachedArticleCorpus.payload;
   }
 
@@ -188,21 +191,22 @@ export async function loadArticleCorpus(
   }
 
   const loader = (async () => {
-    const raw = await readFile(ARTICLE_CORPUS_PATH, "utf8").catch(() => "");
+    const raw = await readFile(articleCorpusPath, "utf8").catch(() => "");
     if (!raw.trim()) {
-      return createEmptyCorpus(fileInfo.mtimeMs);
+      return createEmptyCorpus(fileMtimeMs);
     }
 
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw) as unknown;
     } catch {
-      return createEmptyCorpus(fileInfo.mtimeMs);
+      return createEmptyCorpus(fileMtimeMs);
     }
 
-    const payload = normalizeCorpusPayload(parsed, fileInfo.mtimeMs);
+    const payload = normalizeCorpusPayload(parsed, fileMtimeMs);
     cachedArticleCorpus = {
-      mtimeMs: fileInfo.mtimeMs,
+      path: articleCorpusPath,
+      mtimeMs: fileMtimeMs,
       payload,
     };
     return payload;
@@ -212,6 +216,19 @@ export async function loadArticleCorpus(
 
   inflightArticleCorpus = loader;
   return loader;
+}
+
+async function resolveArticleCorpusPath(): Promise<{
+  articleCorpusPath: string;
+  fileInfo: Awaited<ReturnType<typeof stat>>;
+} | null> {
+  for (const articleCorpusPath of ARTICLE_CORPUS_PATHS) {
+    const fileInfo = await stat(articleCorpusPath).catch(() => null);
+    if (fileInfo) {
+      return { articleCorpusPath, fileInfo };
+    }
+  }
+  return null;
 }
 
 export async function browseArticleCorpus(
@@ -317,7 +334,7 @@ export async function searchCatalogSources(options: {
         id: getFeedIdentifier(feed),
         title: feed.title?.trim() || feed.url,
         description: feed.description || null,
-        url: feed.site || feed.website_url || feed.url,
+        url: feed.website_url || feed.url,
         topics: feedTopics,
         source_type: feed.source_type || "feed",
         verified: feed.verified === true,
@@ -370,7 +387,7 @@ export async function buildAutocompleteSuggestions(
         type: "feed" as const,
         id: getFeedIdentifier(feed),
         title: feed.title?.trim() || feed.url,
-        url: feed.site || feed.website_url || feed.url,
+        url: feed.website_url || feed.url,
         source_type: feed.source_type || "feed",
         verified: feed.verified === true,
         is_active: feed.is_active !== false,
@@ -483,8 +500,8 @@ function normalizeCorpusPayload(raw: unknown, fileMtimeMs: number): ArticleCorpu
 
   return {
     metadata: {
-      generated_at: metadata.generated_at,
-      source_db: metadata.source_db,
+      generated_at: metadata.generated_at ?? null,
+      source_db: metadata.source_db ?? CANONICAL_DATABASE_PATH,
       article_count: metadata.article_count ?? articles.length,
       feed_count: metadata.feed_count ?? uniqueFeedIds.size,
       latest_published_at: latestPublishedAt,
@@ -712,10 +729,6 @@ function sortArticleCorpus(
       return sort === "oldest" ? leftPublished - rightPublished : rightPublished - leftPublished;
     }
 
-    if (sort === "source") {
-      return left.title.localeCompare(right.title);
-    }
-
     return left.title.localeCompare(right.title);
   });
 }
@@ -738,6 +751,7 @@ function compareSearchResults(
     if (leftTime !== rightTime) {
       return rightTime - leftTime;
     }
+
     return left.title.localeCompare(right.title);
   }
 
@@ -773,17 +787,9 @@ function compareAutocompleteSuggestions(
     return left.label.localeCompare(right.label);
   }
 
-  if (left.type === "feed" && right.type === "feed") {
-    return left.title.localeCompare(right.title);
-  }
-
-  if (left.type === "article" && right.type === "article") {
-    return left.title.localeCompare(right.title);
-  }
-
-  const leftDisplay = left.type === "topic" ? left.label : left.title;
-  const rightDisplay = right.type === "topic" ? right.label : right.title;
-  return leftDisplay.localeCompare(rightDisplay);
+  const leftLabel = left.type === "topic" ? left.label : left.title;
+  const rightLabel = right.type === "topic" ? right.label : right.title;
+  return leftLabel.localeCompare(rightLabel);
 }
 
 function buildFeedLookup(feeds: FeedSource[]): Map<string, FeedSource> {
@@ -853,6 +859,7 @@ function normalizeStringList(values: readonly string[] | null | undefined): stri
     return [];
   }
 
+  const source = Array.isArray(values) ? values : [];
   const seen = new Set<string>();
   const normalized: string[] = [];
 
@@ -1022,4 +1029,8 @@ function timestampFromMtime(mtimeMs?: number): string | null {
   }
 
   return new Date(mtimeMs).toISOString();
+}
+
+function normalizeMtimeMs(value: number | bigint): number {
+  return typeof value === "bigint" ? Number(value) : value;
 }

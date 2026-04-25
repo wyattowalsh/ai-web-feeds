@@ -5,24 +5,24 @@
  * No backend required - complete user privacy and instant performance.
  */
 
-export const DB_NAME = 'aiwebfeeds';
+export const DB_NAME = "aiwebfeeds";
 export const DB_VERSION = 1;
 
 /**
  * Database Store Names
  */
 export const STORES = {
-  ARTICLES: 'articles',
-  FEEDS: 'feeds',
-  FOLDERS: 'folders',
-  READING_HISTORY: 'readingHistory',
-  ANNOTATIONS: 'annotations',
-  SEARCH_INDEX: 'searchIndex',
-  PREFERENCES: 'preferences',
-  SYNC_QUEUE: 'syncQueue',
+  ARTICLES: "articles",
+  FEEDS: "feeds",
+  FOLDERS: "folders",
+  READING_HISTORY: "readingHistory",
+  ANNOTATIONS: "annotations",
+  SEARCH_INDEX: "searchIndex",
+  PREFERENCES: "preferences",
+  SYNC_QUEUE: "syncQueue",
 } as const;
 
-export type StoreName = typeof STORES[keyof typeof STORES];
+export type StoreName = (typeof STORES)[keyof typeof STORES];
 
 /**
  * Article stored in IndexedDB
@@ -114,7 +114,7 @@ export interface ReadingHistoryEntry {
 export interface Annotation {
   id: string;
   articleId: string;
-  type: 'highlight' | 'note' | 'bookmark';
+  type: "highlight" | "note" | "bookmark";
   content: string;
   selectionText?: string;
   startOffset?: number;
@@ -138,12 +138,12 @@ export interface SearchIndexEntry {
  * User preferences
  */
 export interface Preferences {
-  id: 'user_prefs'; // Singleton
-  theme: 'light' | 'dark' | 'system';
+  id: "user_prefs"; // Singleton
+  theme: "light" | "dark" | "system";
   fontSize: number;
   fontFamily: string;
-  readingWidth: 'narrow' | 'medium' | 'wide';
-  layout: 'list' | 'cards' | 'compact';
+  readingWidth: "narrow" | "medium" | "wide";
+  layout: "list" | "cards" | "compact";
   showImages: boolean;
   showSummaries: boolean;
   markAsReadOnScroll: boolean;
@@ -158,7 +158,7 @@ export interface Preferences {
  */
 export interface SyncQueueItem {
   id: string;
-  type: 'read' | 'star' | 'archive' | 'tag' | 'annotation';
+  type: "read" | "star" | "archive" | "tag" | "annotation";
   articleId: string;
   data: Record<string, unknown>;
   timestamp: number;
@@ -171,64 +171,64 @@ export interface SyncQueueItem {
 export function createDatabase(db: IDBDatabase): void {
   // Articles store
   if (!db.objectStoreNames.contains(STORES.ARTICLES)) {
-    const articlesStore = db.createObjectStore(STORES.ARTICLES, { keyPath: 'id' });
-    articlesStore.createIndex('feedId', 'feedId', { unique: false });
-    articlesStore.createIndex('pubDate', 'pubDate', { unique: false });
-    articlesStore.createIndex('read', 'read', { unique: false });
-    articlesStore.createIndex('starred', 'starred', { unique: false });
-    articlesStore.createIndex('tags', 'tags', { unique: false, multiEntry: true });
-    articlesStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+    const articlesStore = db.createObjectStore(STORES.ARTICLES, { keyPath: "id" });
+    articlesStore.createIndex("feedId", "feedId", { unique: false });
+    articlesStore.createIndex("pubDate", "pubDate", { unique: false });
+    articlesStore.createIndex("read", "read", { unique: false });
+    articlesStore.createIndex("starred", "starred", { unique: false });
+    articlesStore.createIndex("tags", "tags", { unique: false, multiEntry: true });
+    articlesStore.createIndex("cachedAt", "cachedAt", { unique: false });
   }
 
   // Feeds store
   if (!db.objectStoreNames.contains(STORES.FEEDS)) {
-    const feedsStore = db.createObjectStore(STORES.FEEDS, { keyPath: 'id' });
-    feedsStore.createIndex('folderId', 'folderId', { unique: false });
-    feedsStore.createIndex('lastSync', 'lastSync', { unique: false });
-    feedsStore.createIndex('category', 'category', { unique: false });
-    feedsStore.createIndex('enabled', 'enabled', { unique: false });
+    const feedsStore = db.createObjectStore(STORES.FEEDS, { keyPath: "id" });
+    feedsStore.createIndex("folderId", "folderId", { unique: false });
+    feedsStore.createIndex("lastSync", "lastSync", { unique: false });
+    feedsStore.createIndex("category", "category", { unique: false });
+    feedsStore.createIndex("enabled", "enabled", { unique: false });
   }
 
   // Folders store
   if (!db.objectStoreNames.contains(STORES.FOLDERS)) {
-    const foldersStore = db.createObjectStore(STORES.FOLDERS, { keyPath: 'id' });
-    foldersStore.createIndex('parentId', 'parentId', { unique: false });
-    foldersStore.createIndex('position', 'position', { unique: false });
+    const foldersStore = db.createObjectStore(STORES.FOLDERS, { keyPath: "id" });
+    foldersStore.createIndex("parentId", "parentId", { unique: false });
+    foldersStore.createIndex("position", "position", { unique: false });
   }
 
   // Reading history store
   if (!db.objectStoreNames.contains(STORES.READING_HISTORY)) {
-    const historyStore = db.createObjectStore(STORES.READING_HISTORY, { keyPath: 'id' });
-    historyStore.createIndex('articleId', 'articleId', { unique: false });
-    historyStore.createIndex('timestamp', 'timestamp', { unique: false });
+    const historyStore = db.createObjectStore(STORES.READING_HISTORY, { keyPath: "id" });
+    historyStore.createIndex("articleId", "articleId", { unique: false });
+    historyStore.createIndex("timestamp", "timestamp", { unique: false });
   }
 
   // Annotations store
   if (!db.objectStoreNames.contains(STORES.ANNOTATIONS)) {
-    const annotationsStore = db.createObjectStore(STORES.ANNOTATIONS, { keyPath: 'id' });
-    annotationsStore.createIndex('articleId', 'articleId', { unique: false });
-    annotationsStore.createIndex('type', 'type', { unique: false });
-    annotationsStore.createIndex('createdAt', 'createdAt', { unique: false });
+    const annotationsStore = db.createObjectStore(STORES.ANNOTATIONS, { keyPath: "id" });
+    annotationsStore.createIndex("articleId", "articleId", { unique: false });
+    annotationsStore.createIndex("type", "type", { unique: false });
+    annotationsStore.createIndex("createdAt", "createdAt", { unique: false });
   }
 
   // Search index store
   if (!db.objectStoreNames.contains(STORES.SEARCH_INDEX)) {
-    const searchStore = db.createObjectStore(STORES.SEARCH_INDEX, { keyPath: 'term' });
-    searchStore.createIndex('frequency', 'frequency', { unique: false });
-    searchStore.createIndex('lastUsed', 'lastUsed', { unique: false });
+    const searchStore = db.createObjectStore(STORES.SEARCH_INDEX, { keyPath: "term" });
+    searchStore.createIndex("frequency", "frequency", { unique: false });
+    searchStore.createIndex("lastUsed", "lastUsed", { unique: false });
   }
 
   // Preferences store (singleton)
   if (!db.objectStoreNames.contains(STORES.PREFERENCES)) {
-    db.createObjectStore(STORES.PREFERENCES, { keyPath: 'id' });
+    db.createObjectStore(STORES.PREFERENCES, { keyPath: "id" });
   }
 
   // Sync queue store
   if (!db.objectStoreNames.contains(STORES.SYNC_QUEUE)) {
-    const syncStore = db.createObjectStore(STORES.SYNC_QUEUE, { keyPath: 'id' });
-    syncStore.createIndex('synced', 'synced', { unique: false });
-    syncStore.createIndex('timestamp', 'timestamp', { unique: false });
-    syncStore.createIndex('type', 'type', { unique: false });
+    const syncStore = db.createObjectStore(STORES.SYNC_QUEUE, { keyPath: "id" });
+    syncStore.createIndex("synced", "synced", { unique: false });
+    syncStore.createIndex("timestamp", "timestamp", { unique: false });
+    syncStore.createIndex("type", "type", { unique: false });
   }
 }
 
@@ -236,27 +236,27 @@ export function createDatabase(db: IDBDatabase): void {
  * Default preferences
  */
 export const DEFAULT_PREFERENCES: Preferences = {
-  id: 'user_prefs',
-  theme: 'system',
+  id: "user_prefs",
+  theme: "system",
   fontSize: 16,
-  fontFamily: 'system-ui',
-  readingWidth: 'medium',
-  layout: 'cards',
+  fontFamily: "system-ui",
+  readingWidth: "medium",
+  layout: "cards",
   showImages: true,
   showSummaries: true,
   markAsReadOnScroll: false,
   keyboardShortcuts: {
-    'j': 'next_article',
-    'k': 'previous_article',
-    'm': 'mark_as_read',
-    's': 'star',
-    'v': 'open_original',
-    'r': 'refresh',
-    '/': 'search',
-    'g h': 'go_home',
-    'g s': 'go_starred',
-    'g u': 'go_unread',
-    'escape': 'close_modal',
+    j: "next_article",
+    k: "previous_article",
+    m: "mark_as_read",
+    s: "star",
+    v: "open_original",
+    r: "refresh",
+    "/": "search",
+    "g h": "go_home",
+    "g s": "go_starred",
+    "g u": "go_unread",
+    escape: "close_modal",
   },
   offlineMode: false,
   syncOnStartup: true,
@@ -276,7 +276,7 @@ export interface StorageQuota {
  * Get storage quota information
  */
 export async function getStorageQuota(): Promise<StorageQuota> {
-  if ('storage' in navigator && 'estimate' in navigator.storage) {
+  if ("storage" in navigator && "estimate" in navigator.storage) {
     const estimate = await navigator.storage.estimate();
     const usage = estimate.usage || 0;
     const quota = estimate.quota || 0;
@@ -292,7 +292,7 @@ export async function getStorageQuota(): Promise<StorageQuota> {
  * Request persistent storage (prevents eviction)
  */
 export async function requestPersistentStorage(): Promise<boolean> {
-  if ('storage' in navigator && 'persist' in navigator.storage) {
+  if ("storage" in navigator && "persist" in navigator.storage) {
     return await navigator.storage.persist();
   }
   return false;
@@ -302,7 +302,7 @@ export async function requestPersistentStorage(): Promise<boolean> {
  * Check if persistent storage is granted
  */
 export async function isPersistentStorageGranted(): Promise<boolean> {
-  if ('storage' in navigator && 'persisted' in navigator.storage) {
+  if ("storage" in navigator && "persisted" in navigator.storage) {
     return await navigator.storage.persisted();
   }
   return false;

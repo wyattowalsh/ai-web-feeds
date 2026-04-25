@@ -58,11 +58,7 @@ const PRESETS: Array<{
   },
 ];
 
-export function DateRangeFilter({
-  selected,
-  onSelect,
-  disabled = false,
-}: DateRangeFilterProps) {
+export function DateRangeFilter({ selected, onSelect, disabled = false }: DateRangeFilterProps) {
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -105,7 +101,7 @@ export function DateRangeFilter({
         start: start.toISOString().split("T")[0],
         end: end.toISOString().split("T")[0],
       },
-      preset
+      preset,
     );
   };
 
@@ -133,7 +129,7 @@ export function DateRangeFilter({
         start: customStart,
         end: customEnd,
       },
-      "custom"
+      "custom",
     );
 
     setShowCustomPicker(false);
@@ -142,12 +138,8 @@ export function DateRangeFilter({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-          Date Range
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Filter data by time period
-        </p>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Date Range</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Filter data by time period</p>
       </div>
 
       {/* Preset buttons */}
@@ -233,10 +225,14 @@ export function DateRangeFilter({
               <span className="font-mono">
                 {new Date(selected.start).toLocaleDateString()} -{" "}
                 {new Date(selected.end).toLocaleDateString()}
-              </span>
-              {" "}
+              </span>{" "}
               <span className="text-green-600 dark:text-green-400">
-                ({Math.ceil((new Date(selected.end).getTime() - new Date(selected.start).getTime()) / (1000 * 60 * 60 * 24))} days)
+                (
+                {Math.ceil(
+                  (new Date(selected.end).getTime() - new Date(selected.start).getTime()) /
+                    (1000 * 60 * 60 * 24),
+                )}{" "}
+                days)
               </span>
             </div>
             <button

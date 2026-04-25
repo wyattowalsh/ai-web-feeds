@@ -8,6 +8,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
+import { buildReaderRouteHref } from "@/lib/reader-routes";
+import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 interface Recommendation {
   feed: {
@@ -24,7 +26,7 @@ interface Recommendation {
   reason: string;
 }
 
-function buildFeedsHref(rec: Recommendation, selectedTopics: string[]): string {
+function buildCatalogHref(rec: Recommendation, selectedTopics: string[]): string {
   const params = new URLSearchParams();
   params.set("mode", "catalog");
   params.set("feed", rec.feed.id);
@@ -35,7 +37,7 @@ function buildFeedsHref(rec: Recommendation, selectedTopics: string[]): string {
     params.set("q", rec.feed.title);
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildReaderRouteHref(params);
 }
 
 export function RecommendationsPageClient({
@@ -162,7 +164,7 @@ export function RecommendationsPageClient({
 
   const handleFeedClick = (rec: Recommendation) => {
     void handleInteraction(rec.feed.id, "click", rec.reason);
-    router.push(buildFeedsHref(rec, selectedTopics));
+    router.push(buildCatalogHref(rec, selectedTopics));
   };
 
   const handleSubscribe = (rec: Recommendation) => {
@@ -201,18 +203,17 @@ export function RecommendationsPageClient({
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Discover feeds that fit how you already browse.
+                Optional recommendations layered on top of the reader workflow.
               </h1>
               <p className="hero-copy max-w-2xl">
-                The recommendation engine combines topic overlap, content similarity, and catalog
-                quality signals to surface relevant sources without flattening everything into a
-                generic popularity list.
+                Use this route when the backend recommender is available. Otherwise, the core
+                product remains the reader on `/` and the source catalog on `/?mode=catalog`.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">Scoring model</p>
+            <p className="metric-label">How suggestions are ranked</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-3xl border border-(--line) bg-(--surface) p-4">
                 <div className="text-sm font-semibold text-(--ink)">70%</div>
@@ -237,14 +238,13 @@ export function RecommendationsPageClient({
               title="Recommendations backend unavailable"
               description={unavailableMessage}
               tips={[
-                "Set BACKEND_URL to a running ai-web-feeds backend if you want personalized recommendations.",
-                "Catalog browsing in /feeds still works without the backend service.",
-                "Feeds remains available even when recommendations are offline.",
+                "The reader and catalog stay primary when personalization is offline.",
+                "Enable the optional recommender only when you need this route.",
               ]}
             >
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/feeds?mode=catalog"
+                  href={CANONICAL_CATALOG_PATH}
                   className={cn(buttonVariants({ variant: "secondary" }))}
                 >
                   Open catalog
@@ -395,7 +395,7 @@ export function RecommendationsPageClient({
                         variant="secondary"
                       >
                         <ExternalLink className="size-4" />
-                        Open in Feeds
+                        Open in catalog
                       </Button>
                       <Button
                         type="button"

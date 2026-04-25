@@ -22,7 +22,13 @@ The public web app uses two local data sources for search:
 
 ## Why the Split Exists
 
-The catalog is authored data, so it stays useful even when the runtime database has not been refreshed recently. The generated article library is derived from runtime entries, so it is the right place for browsing and searching recent posts.
+| Route                        | Backing data                          | Purpose                                          |
+| ---------------------------- | ------------------------------------- | ------------------------------------------------ |
+| `/api/articles`              | `data/articles.generated.json`        | filtered article browse with cursor pagination   |
+| `/api/search?scope=articles` | `data/articles.generated.json`        | ranked article search across the exported corpus |
+| `/api/search?scope=sources`  | checked-in catalog files              | source discovery and filtering                   |
+| `/api/search/autocomplete`   | shared catalog + article corpus index | feed, article, and topic suggestions             |
+| `POST /api/search`           | optional backend proxy                | analytics logging only                           |
 
 ## Data Flow
 
@@ -41,15 +47,51 @@ flowchart LR
     autocomplete --> feeds
 ```
 
-<Callout type="info" title="Practical rule">
-  If source search still works but post search is empty, check whether `data/articles.generated.json` is missing or stale before changing catalog files.
+## Shared article corpus behavior
+
+`apps/web/lib/article-corpus.ts` is the shared server-only adapter for:
+
+- loading `data/articles.generated.json`
+- normalizing article filters (`feed`, `topics`, `source_type`, `verified`)
+- applying browse sort order (`latest`, `oldest`, `source`)
+- serving article search and autocomplete from the same normalized article rows
+
+That means article browse, article search, and article autocomplete suggestions
+now share one authoritative dataset instead of mixing bounded live fetches and
+catalog-only matching.
+
+## Source catalog behavior
+
+Source search still uses the repository catalog because feed discovery is an
+authored-data concern.
+
+The web loader prefers these files in order:
+
+1. `data/feeds.enriched.yaml`
+2. `data/feeds.yaml`
+3. `data/feeds.json`
+
+This keeps source discovery available even when the runtime database or corpus
+has not been refreshed yet.
+
+<Callout type="info" title="Operational distinction">
+  If source search looks correct but article browse/search is empty, check the generated corpus path before changing catalog files. The reader workspace depends on `data/articles.generated.json`, not on direct SQLite access.
 </Callout>
 
 ## Runtime Search Features
 
 The Python runtime still has its own search stack for CLI and backend work, including SQLite FTS, autocomplete indexes, and optional embedding-based search. Those features remain useful operationally, but they are not required for the public `/feeds` experience.
 
-## Commands
+| Layer        | Implementation                          | Purpose                                |
+| ------------ | --------------------------------------- | -------------------------------------- |
+| Full-text    | SQLite FTS5 virtual table + triggers    | source search over stored runtime data |
+| Autocomplete | trie index built from titles and topics | fast prefix suggestions                |
+| Semantic     | embeddings + cosine similarity          | meaning-based retrieval                |
+
+Those runtime capabilities are still useful for CLI workflows, but they are no
+longer a prerequisite for the public `/feeds` experience.
+
+## Search operations checklist
 
 ```bash
 uv run ai-web-feeds corpus refresh

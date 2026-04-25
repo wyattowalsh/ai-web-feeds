@@ -3,10 +3,6 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine, select
-
 from ai_web_feeds.models import (
     FeedSource,
     FeedValidationResult,
@@ -14,6 +10,9 @@ from ai_web_feeds.models import (
     UserProfile,
 )
 from ai_web_feeds.web_api import create_app, get_db_session
+from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
+from sqlmodel import Session, SQLModel, create_engine, select
 
 
 @pytest.fixture

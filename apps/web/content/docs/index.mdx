@@ -1,60 +1,64 @@
 ---
 title: Documentation
-description: Learn how AI Web Feeds is organized, how to use the main pages, and how to work with the catalog, exports, CLI, and Python package.
+description: Use AI Web Feeds as a reader first, refine sources when needed, and treat docs as reference for the rest.
 icon: BookOpen
 ---
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-AI Web Feeds is a curated catalog of AI and machine learning sources. The web app lets you browse feeds, read recent posts, explore the catalog, and export the list for other readers or tools.
+Welcome to the **ai-web-feeds** documentation. The web app now has one canonical entry flow: open `/` for the reader, switch to `/?mode=catalog` to refine sources, keep `/feeds` only for compatibility with older links, and use `/explorer` as a secondary taxonomy map.
 
 ## Start Here
 
-<Cards>
-  <Card title="Getting Started" description="Set up the repo, install the required tools, and run the web app locally." href="/docs/guides/getting-started" />
-  <Card title="Feeds" description="Read recent posts, search the article library, and filter the source list." href="/docs/features/reader" />
-  <Card title="Search and Discovery" description="See how source search and post search work together in the app." href="/docs/features/search" />
-  <Card title="Downloads" description="Export the catalog as OPML or JSON." href="/downloads" />
-  <Card title="Stats" description="Check validation coverage, response times, and collection health." href="/stats" />
-  <Card title="Deployment" description="Choose between a web-only deployment and an optional backend-enabled deployment." href="/docs/guides/deployment" />
-  <Card title="CLI" description="Use the command-line workflows for validation, enrichment, exports, and runtime jobs." href="/docs/development/cli" />
-  <Card title="Python API" description="Import the package directly when you want to script against the catalog in Python." href="/docs/development/python-api" />
-</Cards>
+- **Read now:** [`/`](/)
+- **Refine sources:** [`/?mode=catalog`](/?mode=catalog)
+- **Compatibility path:** `/feeds`
+- **Taxonomy map:** [`/explorer`](/explorer)
 
-## Main Pages
-
-- **`/feeds`** is the main reading surface. It combines the generated article library with catalog filters.
-- **`/explorer`** is a visual browser for topics and sources.
-- **`/downloads`** exports the catalog in feed-reader-friendly formats.
-- **`/stats`** summarizes validation and health information.
-- **`/docs`** explains how the project works and how to contribute.
-
-## How the Data Fits Together
-
-- `data/feeds.yaml` is the authored source list.
-- `data/topics.yaml` is the topic taxonomy.
-- `data/feeds.enriched.yaml` is the generated catalog with richer metadata.
-- `data/ai-web-feeds.db` stores runtime data such as fetched entries and validation history.
-- `data/articles.generated.json` is the generated article library used by the standalone web app.
-
-## Technical References
+## Core Routes
 
 <Cards>
-  <Card title="Product Overview" description="See the major capabilities and how they fit together." href="/docs/features/overview" />
-  <Card title="Architecture" description="Read the high-level structure of the monorepo and runtime surfaces." href="/docs/development/architecture" />
-  <Card title="Data Sources and Ownership" description="See which files and runtime stores are authoritative for each part of the system." href="/docs/development/runtime-authority" />
-  <Card title="Search Architecture" description="Understand how catalog search and article search are split." href="/docs/development/search-architecture" />
+  <Card title="Reader" description="Open / for the canonical article stream across all tracked sources." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Use /?mode=catalog to refine the source slice without leaving the reader workflow." href="/docs/features/search" />
+  <Card title="Getting Started" description="Set up the repo, build the article corpus, and learn the main route flow." href="/docs/guides/getting-started" />
+  <Card title="Data Explorer" description="Use /explorer as the secondary taxonomy map for structure and relationships." href="/docs/guides/data-explorer" />
 </Cards>
 
-## Machine-Readable Docs
+## Product Model
 
-AI Web Feeds also publishes plain-text documentation for tools and agents:
+1. Open `/` to browse recent AI articles across all tracked sources.
+2. Search the stream first, then narrow to specific feeds, topics, or source types only when you want to focus.
+3. Switch to `/?mode=catalog` when you need to inspect or refine the source list directly.
+4. Use `/explorer` to inspect topic and feed structure, not as the main reading route.
 
-- `/llms.txt` is the concise index
-- `/llms-full.txt` is the full machine-readable reference
+## Main Documentation Paths
 
-## Related
+### Product
 
-- [GitHub repository](https://github.com/wyattowalsh/ai-web-feeds)
-- [Platform Integrations](/docs/features/platform-integrations)
-- [Testing Guide](/docs/guides/testing)
+- [Features Overview](/docs/features/overview)
+- [Reader](/docs/features/reader)
+- [Search & Discovery](/docs/features/search)
+- [Analytics](/docs/features/analytics)
+- [Recommendations](/docs/features/recommendations)
+
+### Guides
+
+- [Getting Started](/docs/guides/getting-started)
+- [Workflow Reference](/docs/guides/workflow-reference)
+- [Data Explorer](/docs/guides/data-explorer)
+- [Deployment](/docs/guides/deployment)
+
+### Development
+
+- [Architecture](/docs/development/architecture)
+- [Runtime Authority](/docs/development/runtime-authority)
+- [Search Architecture](/docs/development/search-architecture)
+- [Contributing](/docs/development/contributing)
+
+## Reference Surfaces
+
+<Cards>
+  <Card title="GitHub Repository" description="View source code, issues, and contribution workflow." href="https://github.com/wyattowalsh/ai-web-feeds" />
+  <Card title="LLM Reference" description="Use /llms-full.txt for machine-readable project context." href="/llms-full.txt" />
+  <Card title="Quick Reference" description="Find the main commands, routes, and setup shortcuts." href="/docs/guides/quick-reference" />
+</Cards>

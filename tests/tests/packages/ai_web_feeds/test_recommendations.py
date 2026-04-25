@@ -2,9 +2,6 @@
 
 import numpy as np
 import pytest
-from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine, select
-
 from ai_web_feeds.models import (
     FeedEmbedding,
     FeedSource,
@@ -21,6 +18,8 @@ from ai_web_feeds.recommendations import (
     get_user_recommendations,
     track_recommendation_interaction,
 )
+from sqlalchemy.pool import StaticPool
+from sqlmodel import Session, SQLModel, create_engine, select
 
 
 @pytest.fixture

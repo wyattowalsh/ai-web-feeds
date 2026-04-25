@@ -67,9 +67,7 @@ export function CustomizationPanel({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
           Customize Chart
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Adjust appearance and styling
-        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Adjust appearance and styling</p>
       </div>
 
       {/* Tab navigation */}
@@ -124,7 +122,7 @@ export function CustomizationPanel({
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {(customization.title?.length ?? 0)}/100 characters
+                {customization.title?.length ?? 0}/100 characters
               </p>
             </div>
 
@@ -138,9 +136,7 @@ export function CustomizationPanel({
                 min="12"
                 max="32"
                 value={customization.titleFontSize ?? 16}
-                onChange={(e) =>
-                  updateCustomization({ titleFontSize: parseInt(e.target.value) })
-                }
+                onChange={(e) => updateCustomization({ titleFontSize: parseInt(e.target.value) })}
                 className="w-full"
               />
             </div>
@@ -315,7 +311,8 @@ export function CustomizationPanel({
             {/* Custom colors hint */}
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                💡 <strong>Tip:</strong> Color palettes are optimized for accessibility and print quality.
+                💡 <strong>Tip:</strong> Color palettes are optimized for accessibility and print
+                quality.
               </p>
             </div>
           </div>

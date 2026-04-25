@@ -1,7 +1,7 @@
 import { Feed } from "feed";
 import { source } from "@/lib/source";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 const currentYear = new Date().getFullYear();
 const fallbackFeedDate = new Date("2025-01-01T00:00:00.000Z");
 

@@ -141,7 +141,9 @@ export function hashClientIp(ipAddress: string | null): string | null {
   }
 
   const salt =
-    process.env.AIWF_TELEMETRY_SALT?.trim() || process.env.AIWF_ADMIN_SESSION_SECRET?.trim() || "aiwf-dev-salt";
+    process.env.AIWF_TELEMETRY_SALT?.trim() ||
+    process.env.AIWF_ADMIN_SESSION_SECRET?.trim() ||
+    "aiwf-dev-salt";
 
   return createHash("sha256").update(`${salt}:${ipAddress}`).digest("hex").slice(0, 16);
 }
@@ -245,7 +247,9 @@ export async function getApiTelemetrySummary(windowHours = 24): Promise<Telemetr
     errorCount: errorEvents.length,
     errorRate: events.length > 0 ? errorEvents.length / events.length : 0,
     averageDurationMs:
-      durations.length > 0 ? durations.reduce((sum, value) => sum + value, 0) / durations.length : 0,
+      durations.length > 0
+        ? durations.reduce((sum, value) => sum + value, 0) / durations.length
+        : 0,
     p50DurationMs: percentile(durations, 0.5),
     p95DurationMs: percentile(durations, 0.95),
     routeCount: routeMap.size,

@@ -13,14 +13,11 @@ const GETHandler = async (request: Request) => {
   try {
     const payload = await buildAutocompleteSuggestions(prefix ?? "", limit);
 
-    return NextResponse.json(
-      payload,
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
-        },
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
-    );
+    });
   } catch (error) {
     console.error("Autocomplete error:", error);
     return NextResponse.json({ error: "Autocomplete failed" }, { status: 500 });

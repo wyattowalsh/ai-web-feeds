@@ -1,7 +1,9 @@
 {
   "title": "Documentation",
   "pages": ["index", "security", "taxonomy-visualization"],
-  "---Features": { "type": "separator" },
+  "---Features": {
+    "type": "separator"
+  },
   "features": {
     "title": "Features",
     "icon": "Sparkles",
@@ -28,13 +30,11 @@
       "workflow-reference",
       "deployment",
       "data-explorer",
-      "opml-viewer",
       "database-quick-start",
       "testing",
       "---1",
       "feed-schema",
-      "github-infrastructure",
-      "github-setup-summary"
+      "github-infrastructure"
     ]
   },
   "---Development": { "type": "separator" },

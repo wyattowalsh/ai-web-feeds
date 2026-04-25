@@ -140,7 +140,7 @@ class DigestManager:
         """Generate HTML email content.
 
         Args:
-            digest: EmailDigest instance
+            _digest: EmailDigest instance
             articles: List of FeedEntry objects
 
         Returns:
@@ -212,7 +212,10 @@ class DigestManager:
         Returns:
             Next scheduled send time
         """
-        normalized_from_time = self._ensure_utc(from_time)
-        cron = croniter(cron_expr, normalized_from_time)
+        reference_time = self._ensure_utc(from_time)
+        cron = croniter(cron_expr, reference_time)
         next_dt = cron.get_next(datetime)
-        return self._ensure_utc(next_dt)
+        next_send = self._ensure_utc(next_dt)
+        if from_time.tzinfo is None:
+            return next_send.replace(tzinfo=None)
+        return next_send

@@ -82,12 +82,7 @@ const CHART_TYPES: ChartTypeOption[] = [
           strokeWidth={2}
           d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
         />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 2v10l7.07 7.07"
-        />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v10l7.07 7.07" />
       </svg>
     ),
     bestFor: ["Proportions", "Percentages", "Parts of whole"],
@@ -173,9 +168,7 @@ export function ChartTypeSelector({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Chart Type
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Chart Type</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Choose how you want to visualize your data
           </p>
@@ -257,7 +250,13 @@ export function ChartTypeSelector({
               )}
 
               {/* Icon */}
-              <div className={`mb-3 ${isSelected ? "text-green-600 dark:text-green-400" : "text-gray-600 dark:text-gray-400"}`}>
+              <div
+                className={`mb-3 ${
+                  isSelected
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
                 {chartType.icon}
               </div>
 
@@ -279,9 +278,7 @@ export function ChartTypeSelector({
 
               {/* Best for */}
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-500">
-                  Best for:
-                </p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-500">Best for:</p>
                 <div className="flex flex-wrap gap-1">
                   {chartType.bestFor.map((tag) => (
                     <span
@@ -301,9 +298,7 @@ export function ChartTypeSelector({
       {/* Data requirements hint */}
       {selected && (
         <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Data Requirements
-          </h4>
+          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Data Requirements</h4>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {CHART_TYPES.find((t) => t.id === selected)?.dataRequirements}
           </p>

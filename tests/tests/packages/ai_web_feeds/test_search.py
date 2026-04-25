@@ -3,8 +3,6 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
-
 from ai_web_feeds.models import FeedEmbedding, FeedSource, SearchQuery
 from ai_web_feeds.search import (
     TrieIndex,
@@ -17,6 +15,7 @@ from ai_web_feeds.search import (
     save_search,
     semantic_search,
 )
+from sqlmodel import Session, SQLModel, create_engine, select
 
 
 @pytest.fixture
@@ -196,49 +195,42 @@ class TestBuildTrieIndex:
 class TestFullTextSearch:
     """Tests for FTS5 full-text search."""
 
-    @patch("ai_web_feeds.search.Session")
-    def test_full_text_search_basic(self, mock_session, test_session, sample_feeds):
+    def test_full_text_search_basic(self, test_session, sample_feeds):
         """Test basic full-text search."""
-        # Create FTS5 table (will fail in memory, so we'll mock the results)
-        mock_session.return_value.__enter__.return_value = test_session
+        mock_connection = Mock()
+        mock_connection.execute.return_value.all.return_value = [
+            ("openai-blog", -0.5),
+            ("huggingface", -1.0),
+        ]
 
-        with patch.object(test_session, "exec") as mock_exec:
-            # Mock FTS5 results
-            mock_exec.return_value.all.return_value = [
-                ("openai-blog", -0.5),
-                ("huggingface", -1.0),
-            ]
-
+        with patch.object(test_session, "connection", return_value=mock_connection):
             results = full_text_search(test_session, "machine learning", limit=10)
 
-            # Verify search was called
-            mock_exec.assert_called()
+        mock_connection.execute.assert_called_once()
+        assert [feed.id for feed in results] == ["openai-blog", "huggingface"]
 
-    @patch("ai_web_feeds.search.text")
-    def test_full_text_search_uses_parameterized_query(self, mock_text, test_session, sample_feeds):
+    def test_full_text_search_uses_parameterized_query(self, test_session, sample_feeds):
         """Test that FTS uses SQLAlchemy text() with parameterized query."""
         from sqlalchemy import text as real_text
 
+        mock_connection = Mock()
+        mock_connection.execute.return_value.all.return_value = [
+            ("openai-blog", -0.5),
+        ]
+
         # Use the real text() function for this test
         with patch("ai_web_feeds.search.text", side_effect=real_text) as mock_text_call:
-            with patch.object(test_session, "exec") as mock_exec:
-                # Mock FTS5 results
-                mock_exec.return_value.all.return_value = [
-                    ("openai-blog", -0.5),
-                ]
+            with patch.object(test_session, "connection", return_value=mock_connection):
+                full_text_search(test_session, "test query", limit=10)
 
-                try:
-                    results = full_text_search(test_session, "test query", limit=10)
-                except Exception:
-                    # It's ok if it fails due to missing FTS5 table
-                    pass
+        call_args = mock_text_call.call_args[0][0]
+        assert ":query" in call_args
+        assert ":limit" in call_args
+        assert "MATCH :query" in call_args
 
-                # Verify text() was called with parameterized query
-                if mock_text_call.called:
-                    call_args = mock_text_call.call_args[0][0]
-                    assert ":query" in call_args
-                    assert ":limit" in call_args
-                    assert "MATCH :query" in call_args
+        execute_args = mock_connection.execute.call_args[0]
+        assert execute_args[1]["query"] == "test query"
+        assert execute_args[1]["limit"] == 20
 
     def test_full_text_search_with_filters(self, test_session, sample_feeds):
         """Test full-text search with filters."""
@@ -279,7 +271,7 @@ class TestSemanticSearch:
         test_session.commit()
         return embeddings
 
-    @patch("ai_web_feeds.search.get_local_model")
+    @patch("ai_web_feeds.embeddings.get_local_model")
     def test_generate_query_embedding_uses_cached_model(self, mock_get_model):
         """Test that generate_query_embedding uses cached model from embeddings."""
         import numpy as np
@@ -304,7 +296,7 @@ class TestSemanticSearch:
         assert embedding.shape == (384,)
         assert embedding.dtype == np.float32
 
-    @patch("ai_web_feeds.search.get_local_model")
+    @patch("ai_web_feeds.embeddings.get_local_model")
     def test_semantic_search_uses_cached_embedding_model(
         self, mock_get_model, test_session, sample_feeds, sample_embeddings
     ):
@@ -375,6 +367,7 @@ class TestAutocomplete:
 
         assert "feeds" in results
         assert len(results["feeds"]) > 0
+        assert results["feeds"][0]["id"] == "openai-blog"
 
     @patch("ai_web_feeds.search.get_trie_index")
     def test_autocomplete_topic_suggestions(self, mock_get_trie, test_session, sample_feeds):

@@ -21,11 +21,11 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.a
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    default: "AI Web Feeds - Browse AI articles across the open web",
     template: "%s | AI Web Feeds",
   },
   description:
-    "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
   keywords: [
     "AI",
     "RSS feeds",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
     siteName: "AI Web Feeds",
     images: [
       {
@@ -70,9 +70,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - AI Source Discovery, Search, and Reading",
+    title: "AI Web Feeds - Browse AI articles across the open web",
     description:
-      "Find strong AI sources, search recent posts, and export clean feed bundles for your own reader, agent, or workflow.",
+      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one reader-first stream.",
     creator: "@wyattowalsh",
     images: [`${baseUrl}/og-image.png`],
   },
@@ -139,7 +139,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Layout({ children }: LayoutProps<"/">) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
@@ -152,3 +152,4 @@ export default function Layout({ children }: LayoutProps<"/">) {
     </html>
   );
 }
+import type { ReactNode } from "react";

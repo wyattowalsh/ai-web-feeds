@@ -29,24 +29,22 @@ export function FollowButton({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check current follow status on mount
-    checkFollowStatus();
+    // Check current follow status on mount.
+    void (async () => {
+      try {
+        const userId = getUserId();
+        const response = await fetch(`/api/follows?user_id=${userId}`);
+
+        if (!response.ok) throw new Error("Failed to fetch follows");
+
+        const data = await response.json();
+        const following = data.follows.includes(feedId);
+        setIsFollowing(following);
+      } catch (err) {
+        console.error("Failed to check follow status:", err);
+      }
+    })();
   }, [feedId]);
-
-  const checkFollowStatus = async () => {
-    try {
-      const userId = getUserId();
-      const response = await fetch(`/api/follows?user_id=${userId}`);
-
-      if (!response.ok) throw new Error("Failed to fetch follows");
-
-      const data = await response.json();
-      const following = data.follows.includes(feedId);
-      setIsFollowing(following);
-    } catch (err) {
-      console.error("Failed to check follow status:", err);
-    }
-  };
 
   const handleToggleFollow = async () => {
     setIsLoading(true);

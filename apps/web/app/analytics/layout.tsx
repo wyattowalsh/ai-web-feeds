@@ -17,11 +17,7 @@ const NAV_ITEMS = [
   { href: "/analytics/export", label: "Export (Advanced)", icon: "💾" },
 ];
 
-export default function AnalyticsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AnalyticsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -32,9 +28,7 @@ export default function AnalyticsLayout({
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <span className="text-2xl">📊</span>
-              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                Analytics
-              </span>
+              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">Analytics</span>
             </div>
 
             <div className="flex gap-1">

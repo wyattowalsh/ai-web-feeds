@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 
 import { browseArticleCorpus } from "@/lib/article-corpus";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { normalizeSearchFilters, parseSearchFeedIdsParam, parseSearchTopicsParam, parseVerifiedSearchFilter } from "@/lib/search";
+import {
+  normalizeSearchFilters,
+  parseSearchFeedIdsParam,
+  parseSearchTopicsParam,
+  parseVerifiedSearchFilter,
+} from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
@@ -59,12 +64,7 @@ function parseArticleSort(value: string | null): ArticleSort {
   }
 }
 
-function clampNumber(
-  value: string | null,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
+function clampNumber(value: string | null, min: number, max: number, fallback: number): number {
   const parsed = value ? Number.parseInt(value, 10) : Number.NaN;
   if (!Number.isFinite(parsed)) {
     return fallback;

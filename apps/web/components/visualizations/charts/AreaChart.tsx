@@ -29,7 +29,7 @@ ChartJS.register(
   Filler,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface AreaChartProps {
@@ -137,7 +137,7 @@ export function createAreaChartData(
     data: number[];
     borderColor?: string;
     backgroundColor?: string;
-  }>
+  }>,
 ): ChartData<"line"> {
   return {
     labels,
@@ -148,8 +148,11 @@ export function createAreaChartData(
       pointRadius: 0,
       pointHoverRadius: 4,
       tension: 0.4,
-      borderColor: dataset.borderColor ?? `rgb(${59 + index * 40}, ${130 - index * 20}, ${246 - index * 30})`,
-      backgroundColor: dataset.backgroundColor ?? `rgba(${59 + index * 40}, ${130 - index * 20}, ${246 - index * 30}, 0.2)`,
+      borderColor:
+        dataset.borderColor ?? `rgb(${59 + index * 40}, ${130 - index * 20}, ${246 - index * 30})`,
+      backgroundColor:
+        dataset.backgroundColor ??
+        `rgba(${59 + index * 40}, ${130 - index * 20}, ${246 - index * 30}, 0.2)`,
     })),
   };
 }

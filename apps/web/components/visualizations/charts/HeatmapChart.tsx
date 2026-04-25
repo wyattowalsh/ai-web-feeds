@@ -18,7 +18,7 @@ export interface HeatmapDataPoint {
   v: number; // value (intensity)
 }
 
-interface HeatmapChartProps {
+export interface HeatmapChartProps {
   data: HeatmapDataPoint[];
   xLabels: string[];
   yLabels: string[];

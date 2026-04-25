@@ -67,23 +67,22 @@ class TopicModelingJob:
 
         with self.db_manager.get_session() as session:
             # Get articles grouped by topic
-            if topic:
-                topics_to_process = [topic]
-            else:
-                # Get all unique topics from feed entries
-                # This would ideally query from a topics table
-                topics_to_process = ["Machine Learning", "AI", "Deep Learning"]  # Placeholder
+            # Get all unique topics from feed entries.
+            # This would ideally query from a topics table.
+            topics_to_process = [topic] if topic else ["Machine Learning", "AI", "Deep Learning"]
 
             for parent_topic in topics_to_process:
                 try:
                     # Query articles for this topic
                     # In production, this would filter by topic assignments
-                    query = select(FeedEntry).where(FeedEntry.topics_processed == False)
+                    query = select(FeedEntry).where(FeedEntry.topics_processed.is_(False))
                     articles = session.exec(query).all()
 
                     if len(articles) < min_articles:
                         logger.info(
-                            f"Skipping '{parent_topic}': insufficient articles ({len(articles)} < {min_articles})"
+                            "Skipping "
+                            f"'{parent_topic}': insufficient articles "
+                            f"({len(articles)} < {min_articles})"
                         )
                         continue
 
@@ -113,7 +112,10 @@ class TopicModelingJob:
                             parent_topic=parent_topic,
                             name=discovered.name,
                             keywords=json.dumps(discovered.keywords),
-                            description=f"Auto-discovered subtopic with coherence {discovered.coherence_score:.2f}",
+                            description=(
+                                "Auto-discovered subtopic with coherence "
+                                f"{discovered.coherence_score:.2f}"
+                            ),
                             article_count=discovered.article_count,
                             detected_at=_utc_now(),
                             approved=False,  # Requires manual curation

@@ -170,8 +170,12 @@ export class WebSocketClient {
     socket.emit("dismiss", { notification_id: notificationId });
 
     this.updateState((state) => {
-      const notifications = state.notifications.filter((notification) => notification.id !== notificationId);
-      return notifications.length === state.notifications.length ? state : { ...state, notifications };
+      const notifications = state.notifications.filter(
+        (notification) => notification.id !== notificationId,
+      );
+      return notifications.length === state.notifications.length
+        ? state
+        : { ...state, notifications };
     });
   }
 

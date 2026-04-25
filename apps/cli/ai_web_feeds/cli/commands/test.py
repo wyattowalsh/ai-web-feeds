@@ -3,10 +3,11 @@
 This command provides a convenient way to run tests using uv.
 """
 
-import subprocess
+import os
+import shutil
+import subprocess  # nosec B404 - used only to exec repo-controlled uv commands without a shell
 import sys
 from pathlib import Path
-from typing import Optional
 
 import typer
 from loguru import logger
@@ -25,7 +26,7 @@ def get_project_root() -> Path:
             try:
                 import tomllib
 
-                with open(pyproject, "rb") as f:
+                with pyproject.open("rb") as f:
                     data = tomllib.load(f)
                     if (
                         "tool" in data
@@ -33,8 +34,8 @@ def get_project_root() -> Path:
                         and "workspace" in data["tool"]["uv"]
                     ):
                         return parent
-            except Exception:
-                pass
+            except (OSError, tomllib.TOMLDecodeError):
+                continue
         # Fallback: if we find a tests directory at this level
         if (parent / "tests").exists() and (parent / "packages").exists():
             return parent
@@ -50,19 +51,23 @@ def get_tests_dir() -> Path:
     return tests_dir
 
 
-def run_uv_command(args: list[str], cwd: Optional[Path] = None) -> int:
+def resolve_uv_executable() -> str:
+    """Resolve the uv executable path."""
+    uv_executable = shutil.which("uv")
+    if uv_executable is None:
+        raise RuntimeError("uv executable not found on PATH")
+    return uv_executable
+
+
+def run_uv_command(args: list[str], cwd: Path | None = None) -> int:
     """Run a uv command and return exit code."""
-    cmd = ["uv", "run"] + args
+    uv_executable = resolve_uv_executable()
+    cmd = [uv_executable, "run", *args]
     logger.debug(f"Running: {' '.join(cmd)}")
     logger.debug(f"Working directory: {cwd or Path.cwd()}")
-
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-    )
-    return result.returncode
+    env = os.environ.copy()
+    completed = subprocess.run(cmd, cwd=cwd, env=env, check=False)  # nosec B603
+    return completed.returncode
 
 
 @app.command("all")
@@ -239,7 +244,7 @@ def test_quick():
 def test_file(
     file_path: str = typer.Argument(..., help="Path to test file or directory"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
-    keywords: Optional[str] = typer.Option(
+    keywords: str | None = typer.Option(
         None, "--keywords", "-k", help="Run tests matching keywords"
     ),
 ):
@@ -264,7 +269,7 @@ def test_file(
 
 @app.command("debug")
 def test_debug(
-    file_path: Optional[str] = typer.Argument(None, help="Path to test file"),
+    file_path: str | None = typer.Argument(None, help="Path to test file"),
 ):
     """Run tests in debug mode (with pdb)."""
     tests_dir = get_tests_dir()

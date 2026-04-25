@@ -11,6 +11,7 @@ from rich import box
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
+from sqlalchemy.exc import IntegrityError
 
 app = typer.Typer(help="Fetch feeds with enhanced metadata extraction")
 console = Console()
@@ -209,8 +210,8 @@ def fetch_all(
                         item.feed_source_id = feed.id
                         try:
                             db.add_feed_item(item)
-                        except Exception:
-                            pass  # Skip duplicates
+                        except IntegrityError:
+                            logger.debug(f"Skipping duplicate item for feed {feed.id}")
 
                 else:
                     results["failed"] += 1

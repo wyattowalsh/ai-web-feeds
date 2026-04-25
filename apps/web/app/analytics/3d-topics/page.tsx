@@ -48,7 +48,9 @@ export default function TopicCluster3DPage() {
     setLoadError(null);
 
     try {
-      const { generateSampleTopicData } = await import("@/components/visualizations/3d/TopicCluster3D");
+      const { generateSampleTopicData } = await import(
+        "@/components/visualizations/3d/TopicCluster3D"
+      );
       const data = generateSampleTopicData();
       setTopicData(data);
     } catch (error) {
@@ -81,7 +83,9 @@ export default function TopicCluster3DPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-8">
         <div className="max-w-lg rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm dark:border-red-900/60 dark:bg-gray-900">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Unable to load 3D topic graph</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Unable to load 3D topic graph
+          </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{loadError}</p>
           <button
             type="button"
@@ -143,7 +147,10 @@ export default function TopicCluster3DPage() {
         </div>
 
         {/* 3D Visualization */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden" style={{ height: "600px" }}>
+        <div
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+          style={{ height: "600px" }}
+        >
           {topicData && (
             <TopicCluster3D
               nodes={topicData.nodes}
@@ -163,9 +170,7 @@ export default function TopicCluster3DPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Name
-                </p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</p>
                 <p className="text-gray-900 dark:text-gray-100">{selectedTopic.label}</p>
               </div>
               <div>
@@ -192,13 +197,11 @@ export default function TopicCluster3DPage() {
               <div className="flex flex-wrap gap-2">
                 {topicData?.links
                   .filter(
-                    (link) =>
-                      link.source === selectedTopic.id || link.target === selectedTopic.id
+                    (link) => link.source === selectedTopic.id || link.target === selectedTopic.id,
                   )
                   .slice(0, 5)
                   .map((link, index) => {
-                    const relatedId =
-                      link.source === selectedTopic.id ? link.target : link.source;
+                    const relatedId = link.source === selectedTopic.id ? link.target : link.source;
                     const relatedNode = topicData.nodes.find((n) => n.id === relatedId);
                     return (
                       <span
@@ -220,13 +223,27 @@ export default function TopicCluster3DPage() {
             How to Use 3D Topic Clustering
           </h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• <strong>Rotate</strong>: Click and drag with left mouse button</li>
-            <li>• <strong>Zoom</strong>: Use scroll wheel</li>
-            <li>• <strong>Pan</strong>: Click and drag with right mouse button</li>
-            <li>• <strong>Hover</strong>: Move mouse over topics to see details</li>
-            <li>• <strong>Click</strong>: Select a topic to view full information</li>
-            <li>• <strong>Node size</strong>: Represents article count or relevance</li>
-            <li>• <strong>Connections</strong>: Show similarity between topics</li>
+            <li>
+              • <strong>Rotate</strong>: Click and drag with left mouse button
+            </li>
+            <li>
+              • <strong>Zoom</strong>: Use scroll wheel
+            </li>
+            <li>
+              • <strong>Pan</strong>: Click and drag with right mouse button
+            </li>
+            <li>
+              • <strong>Hover</strong>: Move mouse over topics to see details
+            </li>
+            <li>
+              • <strong>Click</strong>: Select a topic to view full information
+            </li>
+            <li>
+              • <strong>Node size</strong>: Represents article count or relevance
+            </li>
+            <li>
+              • <strong>Connections</strong>: Show similarity between topics
+            </li>
           </ul>
         </div>
       </div>

@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from loguru import logger
-from sqlmodel import select
+from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import Entity, EntityMention, FeedEntry
@@ -71,7 +71,7 @@ class EntityBatchJob:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
-                query = query.where(FeedEntry.entities_processed == False)
+                query = query.where(FeedEntry.entities_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()

@@ -716,8 +716,7 @@ def upgrade():
     op.add_column("sources", sa.Column("validation_count", sa.Integer(), default=0))
 
     # Create FTS5 virtual table
-    op.execute(
-        """
+    op.execute("""
         CREATE VIRTUAL TABLE feed_search_index USING fts5(
             feed_id UNINDEXED,
             title,
@@ -725,8 +724,7 @@ def upgrade():
             content,
             tokenize='porter unicode61'
         )
-    """
-    )
+    """)
 
     # Create indexes
     op.create_index("idx_sources_popularity", "sources", ["popularity_score"])

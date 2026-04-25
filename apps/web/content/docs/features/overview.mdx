@@ -6,24 +6,29 @@ icon: Sparkles
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-AI Web Feeds gives you one curated place to browse AI and machine learning sources, read recent posts, and export the catalog for other readers or tools.
+ai-web-feeds is organized around one primary product surface: the canonical
+reader at `/`. `/?mode=catalog` is the source-refinement view inside the same
+workspace, `/feeds` is kept for compatibility, and `/explorer` is the secondary
+taxonomy map.
 
 ## Main Capabilities
 
 <Cards>
-  <Card title="Feeds" description="Read recent posts and filter the source list from the main workspace." href="/docs/features/reader" />
-  <Card title="Search and Discovery" description="Use source search and post search together." href="/docs/features/search" />
-  <Card title="Explorer" description="Browse topic groups and source relationships visually." href="/explorer" />
-  <Card title="Downloads" description="Export the catalog as OPML or JSON." href="/downloads" />
-  <Card title="Stats" description="View validation coverage and collection health." href="/stats" />
-  <Card title="Recommendations" description="Get personalized source suggestions when the optional backend is available." href="/docs/features/recommendations" />
-  <Card title="Analytics" description="Review backend-backed metrics and exports when configured." href="/docs/features/analytics" />
-  <Card title="Platform Integrations" description="See which source platforms are supported by the catalog and tooling." href="/docs/features/platform-integrations" />
+  <Card title="Reader-First Feeds" description="Corpus-backed browsing, filtering, preview, and local reading state on /." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Unified article search, autocomplete, and explicit catalog mode for source discovery" href="/docs/features/search" />
+  <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
+  <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
+  <Card title="Analytics" description="8 analytics views with health monitoring" href="#analytics" />
+  <Card title="Platform Integration" description="Support for Reddit, GitHub, YouTube, and more" href="/docs/features/platform-integrations" />
+  <Card title="CLI Tools" description="Corpus refresh/export workflows plus command-line data operations" href="/docs/development/cli" />
 </Cards>
 
 ## Curated Catalog
 
-The project starts with an authored catalog in `data/feeds.yaml` plus a topic taxonomy in `data/topics.yaml`. Those files define the source list that appears in the web app, CLI, and Python package.
+1. Open `/` to browse the generated article corpus.
+2. Switch to `/?mode=catalog` when you need to narrow or expand the source slice.
+3. Return to the reader on `/` with that slice preserved in the URL.
+4. Treat `/feeds` as a compatibility path for older links and `/explorer` as a secondary taxonomy map.
 
 ## Reading Surface
 

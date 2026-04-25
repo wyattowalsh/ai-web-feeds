@@ -42,10 +42,9 @@ ______________________________________________________________________
 1. Cap external discovery leads at 5.
 1. Prefer no report over speculative or repetitive noise.
 1. Do not rely on the legacy issue-label approval flow for discovered candidates.
-1. Do not recommend `approved`, `feed-submission`, `validated`, or
-   `validation-failed`.
-1. Keep the final report at domain level with optional feed-path hints instead of
-   raw URLs.
+1. Do not recommend `approved`, `feed-submission`, `validated`, or `validation-failed`.
+1. Keep the final report at domain level with optional feed-path hints instead of raw
+   URLs.
 
 ______________________________________________________________________
 
@@ -58,8 +57,8 @@ Score each candidate on a simple 0-3 scale across these dimensions:
 1. `Freshness`: recent publishing activity or evidence of ongoing maintenance
 1. `Uniqueness`: adds perspective not already saturated in `data/feeds.yaml`
 
-Only include candidates with a convincing overall case. If the evidence is weak,
-move the insight into `Priority Gaps` or `Duplicate And Saturation Notes` instead.
+Only include candidates with a convincing overall case. If the evidence is weak, move
+the insight into `Priority Gaps` or `Duplicate And Saturation Notes` instead.
 
 ______________________________________________________________________
 
@@ -69,8 +68,8 @@ Use this exact section order:
 
 ### Weekly Summary
 
-- What changed, what remains under-covered, and whether external discovery is
-   configured for this workflow
+- What changed, what remains under-covered, and whether external discovery is configured
+  for this workflow
 
 ### Priority Gaps
 
@@ -88,8 +87,8 @@ For each lead include:
 - `Confidence`
 - `Maintainer Verification Step`
 
-If no discovery leads are appropriate, say `External discovery is not configured`
-or `No high-confidence leads this run` and explain why.
+If no discovery leads are appropriate, say `External discovery is not configured` or
+`No high-confidence leads this run` and explain why.
 
 ### Duplicate And Saturation Notes
 

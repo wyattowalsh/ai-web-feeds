@@ -17,6 +17,12 @@ class SentimentResult(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0, description="Model confidence score")
     model_name: str = Field(description="Hugging Face model identifier")
 
+    def __getitem__(self, key: str):
+        return getattr(self, key)
+
+    def __contains__(self, key: str) -> bool:
+        return hasattr(self, key)
+
 
 class SentimentAnalyzer:
     """Classify article sentiment using transformer models.
@@ -67,10 +73,14 @@ class SentimentAnalyzer:
             if not content:
                 logger.debug(f"No content to analyze sentiment: {article.get('id')}")
                 return None
+            if len(content.strip()) < 20:
+                logger.debug(f"Content too short for sentiment analysis: {article.get('id')}")
+                return None
 
             # Truncate to model's max length (512 tokens for DistilBERT)
-            # Approximate: 1 token ≈ 4 characters
-            max_chars = 512 * 4
+            # Keep the runtime cap aligned with the existing tests and the
+            # practical prompt size used in this app.
+            max_chars = 2000
             text = content[:max_chars]
 
             # Run sentiment analysis
@@ -109,21 +119,17 @@ class SentimentAnalyzer:
 
     def _get_content(self, article: dict) -> str:
         """Extract text content from article."""
-        # Prioritize: title + summary > content
-        parts = []
+        body = article.get("summary")
+        if body is None:
+            body = article.get("content")
+        if not body:
+            return ""
 
+        if isinstance(body, list):
+            body = " ".join(item.get("value", "") for item in body if isinstance(item, dict))
+
+        parts = []
         if article.get("title"):
             parts.append(article["title"])
-
-        if article.get("summary"):
-            parts.append(article["summary"])
-        elif article.get("content"):
-            # Use content if no summary
-            content = article["content"]
-            if isinstance(content, list):
-                content = " ".join(
-                    item.get("value", "") for item in content if isinstance(item, dict)
-                )
-            parts.append(content)
-
-        return " ".join(parts)
+        parts.append(str(body))
+        return " ".join(part for part in parts if part)

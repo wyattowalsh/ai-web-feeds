@@ -106,7 +106,7 @@ function writeVisualizations(visualizations: Visualization[]): void {
 function ensureVisualization(
   id: string,
   deviceId?: string,
-  updateLastViewed: boolean = false
+  updateLastViewed: boolean = false,
 ): Visualization {
   const visualizations = readVisualizations();
   const index = visualizations.findIndex((item) => item.id === id);
@@ -146,9 +146,7 @@ function normalizeCustomization(customization?: object): Record<string, unknown>
   return next;
 }
 
-export async function createVisualization(
-  input: CreateVisualizationInput
-): Promise<Visualization> {
+export async function createVisualization(input: CreateVisualizationInput): Promise<Visualization> {
   const now = new Date().toISOString();
   const visualizations = readVisualizations();
 
@@ -177,7 +175,7 @@ export async function getVisualization(id: string, deviceId?: string): Promise<V
 export async function updateVisualization(
   id: string,
   updates: UpdateVisualizationInput,
-  deviceId?: string
+  deviceId?: string,
 ): Promise<Visualization> {
   const visualizations = readVisualizations();
   const index = visualizations.findIndex((item) => item.id === id);
@@ -220,9 +218,7 @@ export async function deleteVisualization(id: string, deviceId?: string): Promis
 }
 
 function createSampleValues(seed: string, length: number): number[] {
-  let value = seed
-    .split("")
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  let value = seed.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
 
   return Array.from({ length }, () => {
     value = (value * 9301 + 49297) % 233280;
@@ -245,16 +241,16 @@ function createDateLabels(range?: { start: string; end: string }): string[] {
   const current = new Date(start);
   while (current <= end && labels.length < 12) {
     labels.push(current.toLocaleDateString());
-    current.setDate(current.getDate() + Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 6))));
+    current.setDate(
+      current.getDate() +
+        Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 6))),
+    );
   }
 
   return labels.length > 0 ? labels : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 }
 
-export async function getVisualizationData(
-  id: string,
-  deviceId?: string
-): Promise<unknown> {
+export async function getVisualizationData(id: string, deviceId?: string): Promise<unknown> {
   const visualization = ensureVisualization(id, deviceId);
   const labels = createDateLabels(visualization.filters.date_range);
   const values = createSampleValues(visualization.id, labels.length);
@@ -294,7 +290,7 @@ export async function getVisualizationData(
           x: columnLabel,
           y: rowLabel,
           v: (values[(rowIndex + columnIndex) % values.length] ?? 0) + rowIndex * 5,
-        }))
+        })),
       );
 
       return {
@@ -343,7 +339,7 @@ export async function listVisualizations(deviceId?: string): Promise<Visualizati
     : visualizations;
 
   return filtered.sort(
-    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
   );
 }
 

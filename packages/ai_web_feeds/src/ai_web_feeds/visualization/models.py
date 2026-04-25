@@ -249,8 +249,7 @@ class DashboardWidget(SQLModel, table=True):
 
     # Position on dashboard grid
     position: dict[str, Any] = SQLField(
-        sa_column=Column(JSON, nullable=False),
-        default_factory=dict,
+        sa_column=Column(JSON),
         description="{x, y, w, h} for React Grid Layout",
     )
 
@@ -285,7 +284,7 @@ class Forecast(SQLModel, table=True):
     __tablename__ = "forecasts"
 
     id: int | None = SQLField(default=None, primary_key=True)
-    topic_id: int = SQLField(
+    topic_id: str = SQLField(
         foreign_key="topics.id",
         nullable=False,
         index=True,
@@ -307,8 +306,7 @@ class Forecast(SQLModel, table=True):
 
     # Predictions
     predictions: dict[str, Any] = SQLField(
-        sa_column=Column(JSON, nullable=False),
-        default_factory=dict,
+        sa_column=Column(JSON),
         description="Array of {date, value, confidence_lower, confidence_upper}",
     )
 
@@ -321,8 +319,7 @@ class Forecast(SQLModel, table=True):
 
     # Model parameters for reproducibility
     model_params: dict[str, Any] = SQLField(
-        sa_column=Column(JSON, nullable=False),
-        default_factory=dict,
+        sa_column=Column(JSON),
         description="Model hyperparameters and settings",
     )
 

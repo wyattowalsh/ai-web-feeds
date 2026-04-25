@@ -20,7 +20,10 @@ const GETHandler = async (request: Request) => {
     }
 
     if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
-      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
     }
 
     if (identity.source === "anonymous") {
@@ -40,7 +43,9 @@ const GETHandler = async (request: Request) => {
       },
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
@@ -59,7 +64,10 @@ const POSTHandler = async (request: Request) => {
     }
 
     if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
-      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
     }
 
     const { search_name, query_text, filters } = body;
@@ -87,7 +95,9 @@ const POSTHandler = async (request: Request) => {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
@@ -107,7 +117,10 @@ const DELETEHandler = async (request: Request) => {
     }
 
     if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
-      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
     }
 
     if (identity.source === "anonymous") {
@@ -123,7 +136,9 @@ const DELETEHandler = async (request: Request) => {
 
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: getBackendErrorStatus(error) });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

@@ -140,6 +140,7 @@ class Phase3BSettings(BaseSettings):
     """Phase 3B: Real-Time Monitoring & Alerts configuration."""
 
     # WebSocket Server
+    websocket_host: str = Field("127.0.0.1", description="WebSocket server host")
     websocket_port: int = Field(8000, description="WebSocket server port")
     websocket_cors_origins: str = Field(
         "http://localhost:3000,https://aiwebfeeds.vercel.app",

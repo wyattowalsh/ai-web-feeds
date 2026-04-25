@@ -97,9 +97,7 @@ function parseDeviceData(data: string): DeviceDataExport | null {
       version: typeof record.version === "number" ? record.version : 1,
       deviceId: record.deviceId,
       exportedAt:
-        typeof record.exportedAt === "string"
-          ? record.exportedAt
-          : new Date().toISOString(),
+        typeof record.exportedAt === "string" ? record.exportedAt : new Date().toISOString(),
     };
   } catch {
     return null;

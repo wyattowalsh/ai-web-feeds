@@ -605,11 +605,11 @@ class OPMLOutline(SQLModel):
     text: str
     title: str | None = None
     type: str | None = None
-    xmlUrl: str | None = None  # noqa: N815
-    htmlUrl: str | None = None  # noqa: N815
+    xml_url: str | None = Field(default=None, alias="xmlUrl")
+    html_url: str | None = Field(default=None, alias="htmlUrl")
     description: str | None = None
     category: str | None = None
-    outlines: list["OPMLOutline"] = []
+    outlines: list["OPMLOutline"] = Field(default_factory=list)
 
     class Config:
         """Pydantic config."""
@@ -625,7 +625,7 @@ class OPMLDocument(SQLModel):
     date_modified: datetime = Field(default_factory=_utc_now)
     owner_name: str = "AI Web Feeds"
     owner_email: str | None = None
-    outlines: list[OPMLOutline] = []
+    outlines: list[OPMLOutline] = Field(default_factory=list)
 
 
 # ============================================================================

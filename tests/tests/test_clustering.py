@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from ai_web_feeds.visualization.clustering import (
     TopicClusteringService,
-    TopicNode,
     TopicLink,
+    TopicNode,
     generate_sample_embeddings,
 )
 
@@ -47,7 +47,7 @@ class TestTopicClusteringService:
         embeddings, metadata = sample_data
 
         service = TopicClusteringService(method="pca")
-        nodes, links = service.cluster_topics(embeddings, metadata)
+        nodes, _links = service.cluster_topics(embeddings, metadata)
 
         assert len(nodes) == 10
         assert all(len(node.position) == 3 for node in nodes)
@@ -57,7 +57,7 @@ class TestTopicClusteringService:
         embeddings, metadata = sample_data
 
         service = TopicClusteringService(method="kmeans")
-        nodes, links = service.cluster_topics(embeddings, metadata, n_clusters=3)
+        nodes, _links = service.cluster_topics(embeddings, metadata, n_clusters=3)
 
         assert len(nodes) == 10
 
@@ -66,7 +66,7 @@ class TestTopicClusteringService:
         embeddings, metadata = sample_data
 
         service = TopicClusteringService(method="dbscan")
-        nodes, links = service.cluster_topics(embeddings, metadata)
+        nodes, _links = service.cluster_topics(embeddings, metadata)
 
         assert len(nodes) == 10
 
@@ -84,7 +84,7 @@ class TestTopicClusteringService:
         embeddings, metadata = sample_data
 
         service = TopicClusteringService(method="pca")
-        nodes, links = service.cluster_topics(embeddings, metadata)
+        _nodes, links = service.cluster_topics(embeddings, metadata)
 
         # All links should have strength >= 0.3 (default threshold)
         assert all(link.strength >= 0.3 for link in links)
@@ -94,7 +94,7 @@ class TestTopicClusteringService:
         embeddings, metadata = sample_data
 
         service = TopicClusteringService(method="pca")
-        nodes, links = service.cluster_topics(embeddings, metadata)
+        nodes, _links = service.cluster_topics(embeddings, metadata)
 
         for node in nodes:
             assert node.id in embeddings

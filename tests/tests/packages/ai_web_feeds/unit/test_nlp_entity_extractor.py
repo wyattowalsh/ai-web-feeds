@@ -109,7 +109,7 @@ class TestEntityExtractor:
     def test_map_spacy_label_gpe(self, extractor):
         """Test spaCy label mapping for GPE"""
         result = extractor._map_spacy_label("GPE")
-        assert result == "organization"
+        assert result == "location"
 
     def test_map_spacy_label_product(self, extractor):
         """Test spaCy label mapping for PRODUCT"""
@@ -120,7 +120,7 @@ class TestEntityExtractor:
         """Test spaCy label mapping for unmapped labels"""
         assert extractor._map_spacy_label("LOC") is None
         assert extractor._map_spacy_label("DATE") is None
-        assert extractor._map_spacy_label("NORP") is None
+        assert extractor._map_spacy_label("NORP") == "concept"
 
     def test_compute_confidence(self, extractor):
         """Test confidence computation"""

@@ -7,7 +7,7 @@ The recommendations page is optional. It depends on the Python backend, so it is
 
 ## What It Does
 
-When the backend is available, `/recommendations` can:
+The recommendations page at `/recommendations` is wired to real backend routes, but it remains a secondary surface behind the reader and source catalog. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
 
 - load ranked source suggestions
 - explain why a source was suggested
@@ -24,9 +24,39 @@ If `BACKEND_URL` is missing or the backend is unavailable:
 - the proxy routes return `503 FEATURE_UNAVAILABLE`
 - Feeds and the catalog continue to work normally
 
-## Request Flow
+- ranked feed recommendations
+- recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
+- topic chips for steering the current slice
+- feed actions for opening a result in `/?mode=catalog`, subscribing, or dismissing it
 
-The web app uses two backend-backed routes:
+### Personalization Input
+
+The web client creates a stable local `user_id` in `localStorage` and sends it with every recommendation request. Topic chips refine the current request without changing the page URL, so personalization can persist locally without requiring user accounts.
+
+### Interaction Tracking
+
+The UI records these interaction types:
+
+- `view`
+- `click`
+- `subscribe`
+- `dismiss`
+
+The backend stores that feedback, updates the user profile, and uses it to avoid repeating previously followed or already-interacted feeds in later recommendations.
+
+### Unavailable State
+
+If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
+
+- a setup message explaining that personalization is optional
+- a link to `/?mode=catalog`
+- a link to the deployment guide
+
+That unavailable state is expected behavior in backend-free local development and should not compete with the reader-first path.
+
+## Proxy Contract
+
+The web layer uses two backend-backed routes:
 
 - `GET /api/recommendations`
 - `POST /api/recommendations`

@@ -1,4 +1,59 @@
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+
+const articleCorpusPath = path.resolve(
+  process.cwd(),
+  "..",
+  "..",
+  "data",
+  "articles.generated.json",
+);
+const corpusFixture = {
+  metadata: {
+    generated_at: "2026-04-22T00:00:00.000Z",
+    source_db: "playwright-fixture",
+    article_count: 2,
+    feed_count: 2,
+    latest_published_at: "2026-04-21T15:00:00.000Z",
+  },
+  articles: [
+    {
+      id: "fixture-article-1",
+      feed_id: "fixture-feed-1",
+      feed_title: "Fixture Feed One",
+      title: "OpenAI models weekly briefing",
+      link: "https://example.com/fixture-article-1",
+      summary: "A deterministic precomputed article for route-level workflow tests.",
+      content_html: "<p>A deterministic precomputed article for route-level workflow tests.</p>",
+      author: "Fixture Author",
+      published_at: "2026-04-21T15:00:00.000Z",
+      categories: ["models", "llm"],
+      topics: ["models", "llm"],
+      source_type: "blog",
+      verified: true,
+      is_active: true,
+    },
+    {
+      id: "fixture-article-2",
+      feed_id: "fixture-feed-2",
+      feed_title: "Fixture Feed Two",
+      title: "Agent systems roundup",
+      link: "https://example.com/fixture-article-2",
+      summary: "A second article keeps list and preview interactions realistic.",
+      content_html: "<p>A second article keeps list and preview interactions realistic.</p>",
+      author: "Fixture Author",
+      published_at: "2026-04-20T12:00:00.000Z",
+      categories: ["agents"],
+      topics: ["agents"],
+      source_type: "newsletter",
+      verified: false,
+      is_active: true,
+    },
+  ],
+};
+
+let originalCorpus: string | null = null;
 
 function trackClientErrors(page: Page) {
   const consoleErrors: string[] = [];
@@ -21,61 +76,56 @@ async function expectNoClientErrors(page: Page, tracker: ReturnType<typeof track
   await expect.poll(() => tracker.pageErrors, { timeout: 1000 }).toEqual([]);
 }
 
-async function gotoWithRetry(
-  page: Page,
-  path: string,
-  options?: Parameters<Page["goto"]>[1],
-  attempts = 2,
-) {
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      await page.goto(path, options);
-      return;
-    } catch (error) {
-      lastError = error;
-      const isAbortError = error instanceof Error && error.message.includes("ERR_ABORTED");
-      if (!isAbortError || attempt === attempts - 1) {
-        throw error;
-      }
-    }
-  }
-
-  throw lastError;
+async function firstArticleSearchToken(page: Page): Promise<string> {
+  const title = (await page.locator("article h3").first().textContent())?.trim() ?? "ai";
+  const token =
+    title
+      .split(/\s+/)
+      .map((part) => part.replace(/[^\p{L}\p{N}-]/gu, ""))
+      .find((part) => part.length >= 4) ?? "feeds";
+  return token.toLowerCase();
 }
+
+test.beforeAll(async () => {
+  originalCorpus = await readFile(articleCorpusPath, "utf8").catch(() => null);
+  await mkdir(path.dirname(articleCorpusPath), { recursive: true });
+  await writeFile(articleCorpusPath, JSON.stringify(corpusFixture, null, 2), "utf8");
+});
+
+test.afterAll(async () => {
+  if (originalCorpus === null) {
+    await rm(articleCorpusPath, { force: true });
+    return;
+  }
+  await writeFile(articleCorpusPath, originalCorpus, "utf8");
+});
 
 test.describe("Route stabilization smoke", () => {
   const publicRoutes = [
     {
       path: "/",
-      text: "Follow AI and machine learning sources in one place.",
+      text: "Latest AI posts from across the open web",
       role: "heading" as const,
     },
     {
       path: "/feeds",
-      text: "Read and filter your feeds",
+      text: "Latest AI posts from across the open web",
       role: "heading" as const,
     },
     {
       path: "/feeds?mode=catalog",
-      text: "Narrow the catalog",
-      role: "heading" as const,
-    },
-    {
-      path: "/downloads",
-      text: "Download the feed catalog",
+      text: "Browse sources",
       role: "heading" as const,
     },
     {
       path: "/docs",
       text: "Documentation",
       role: "heading" as const,
-      timeout: 120_000,
+      exact: true,
     },
     {
       path: "/explorer",
-      text: "Explore topics and sources before opening them in Feeds.",
+      text: "Inspect the catalog map, then hand the slice back to the reader.",
       role: "heading" as const,
     },
     {
@@ -90,8 +140,14 @@ test.describe("Route stabilization smoke", () => {
       test.setTimeout(route.timeout ?? 60_000);
       const tracker = trackClientErrors(page);
 
-      await gotoWithRetry(page, route.path, { waitUntil: "commit", timeout: route.timeout });
-      const locator = page.getByRole("heading", { name: route.text });
+      await page.goto(route.path, { waitUntil: "commit" });
+      const locator =
+        route.role === "heading"
+          ? page.getByRole("heading", {
+              name: route.text,
+              exact: route.exact ?? false,
+            })
+          : page.getByText(route.text);
       await expect(locator).toBeVisible({ timeout: 30_000 });
 
       await expectNoClientErrors(page, tracker);
@@ -138,6 +194,119 @@ test.describe("Route stabilization smoke", () => {
     await gotoWithRetry(page, "/analytics/forecasts", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Time-Series Forecasting" })).toBeVisible();
     await expect(page.locator("canvas")).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("reader search applies explicitly and updates the canonical URL", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator("article h3").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    const token = await firstArticleSearchToken(page);
+
+    const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
+    await desktopSearch.fill(token);
+    await page.getByRole("button", { name: "Apply filters" }).first().click();
+
+    await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
+    await expect(
+      page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") }),
+    ).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("desktop preview opens and closes explicitly without blocking the filter rail", async ({
+    page,
+  }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Preview" }).first().click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
+
+    const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
+    await desktopSearch.fill("agent");
+    await page.getByRole("button", { name: "Apply filters" }).first().click();
+
+    await expect(page).toHaveURL(/\?q=agent$/);
+    await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Preview" }).first().click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
+    await page.getByRole("button", { name: "Close preview" }).click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("catalog mode can hand a source slice back into the reader", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.goto("/?mode=catalog", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: "Browse sources" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Open in reader" }).first().click();
+
+    await expect(page).not.toHaveURL(/mode=catalog/);
+    await expect(page).toHaveURL(/feed=/);
+    await expect(
+      page.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+    ).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("mobile keeps filters collapsed until needed and preserves URL-driven reader state", async ({
+    page,
+  }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.getByText("Filters and view")).toBeVisible();
+    await expect(page.locator("article h3").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Preview" }).first().click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
+    await page.getByRole("button", { name: "Close preview" }).click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+
+    const token = await firstArticleSearchToken(page);
+
+    await page.getByText("Filters and view").click();
+    const mobileSearch = page.getByRole("textbox", { name: "Search posts mobile" });
+    await mobileSearch.fill(token);
+    await page.getByRole("button", { name: "Apply filters" }).last().click();
+
+    await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
+    await expect(
+      page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
+    ).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("explorer keeps graph tuning behind an explicit advanced disclosure", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.goto("/explorer", { waitUntil: "networkidle" });
+    const advancedSummary = page.getByText("Advanced controls", { exact: true });
+    await expect(advancedSummary).toBeVisible();
+    await expect(page.getByLabel("Layout")).toBeHidden();
+
+    await advancedSummary.click();
+    await expect(page.getByLabel("Layout")).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });

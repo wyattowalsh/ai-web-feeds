@@ -19,13 +19,11 @@ import pandas as pd
 from fastapi import APIRouter, Depends, Query, Response
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ai_web_feeds.visualization.auth import get_current_device_id
 from ai_web_feeds.visualization.rate_limiter import check_rate_limit
-from ai_web_feeds.visualization.validators import validate_table_name, validate_query_limit
-
+from ai_web_feeds.visualization.validators import validate_query_limit, validate_table_name
 
 router = APIRouter(prefix="/api/v1/export", tags=["export"])
 
@@ -133,7 +131,7 @@ async def export_data(
             },
         )
 
-    elif format == ExportFormat.CSV:
+    if format == ExportFormat.CSV:
         csv_buffer = StringIO()
         sample_data.to_csv(csv_buffer, index=False)
         return Response(
@@ -144,7 +142,7 @@ async def export_data(
             },
         )
 
-    elif format == ExportFormat.PARQUET:
+    if format == ExportFormat.PARQUET:
         # Parquet export (requires pyarrow)
         parquet_buffer = sample_data.to_parquet()
         return Response(
@@ -266,7 +264,7 @@ def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
             }
         )
 
-    elif table == "feed_health":
+    if table == "feed_health":
         return pd.DataFrame(
             {
                 "feed_id": [f"feed-{i % 20}" for i in range(limit)],
@@ -280,7 +278,7 @@ def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
             }
         )
 
-    elif table == "article_metadata":
+    if table == "article_metadata":
         return pd.DataFrame(
             {
                 "article_id": [f"article-{i}" for i in range(limit)],
@@ -291,11 +289,10 @@ def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
             }
         )
 
-    else:
-        # Default empty DataFrame
-        return pd.DataFrame(
-            {
-                "id": range(limit),
-                "value": pd.np.random.random(limit),
-            }
-        )
+    # Default empty DataFrame
+    return pd.DataFrame(
+        {
+            "id": range(limit),
+            "value": pd.np.random.random(limit),
+        }
+    )

@@ -5,11 +5,11 @@ info:
   description: API for generating time-series forecasts and tracking accuracy
 
 servers:
-  - url: /api/v1
+- url: /api/v1
 
 security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
+- BearerAuth: []
+- ApiKeyAuth: []
 
 paths:
   /forecasts:
@@ -19,16 +19,16 @@ paths:
       operationId: listForecasts
       tags: [Forecasts]
       parameters:
-        - $ref: '#/components/parameters/DeviceId'
-        - name: topic_id
-          in: query
-          schema:
-            type: integer
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [pending, completed, failed]
+      - $ref: '#/components/parameters/DeviceId'
+      - name: topic_id
+        in: query
+        schema:
+          type: integer
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [pending, completed, failed]
       responses:
         '200':
           description: List of forecasts
@@ -71,8 +71,8 @@ paths:
       operationId: getForecast
       tags: [Forecasts]
       parameters:
-        - $ref: '#/components/parameters/ForecastId'
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/ForecastId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '200':
           description: Forecast with predictions
@@ -87,8 +87,8 @@ paths:
       operationId: deleteForecast
       tags: [Forecasts]
       parameters:
-        - $ref: '#/components/parameters/ForecastId'
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/ForecastId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '204':
           description: Forecast deleted
@@ -100,7 +100,7 @@ paths:
       operationId: retrainForecast
       tags: [Forecasts]
       parameters:
-        - $ref: '#/components/parameters/ForecastId'
+      - $ref: '#/components/parameters/ForecastId'
       responses:
         '202':
           description: Retraining started
@@ -116,8 +116,8 @@ paths:
       operationId: getForecastAccuracy
       tags: [Accuracy]
       parameters:
-        - $ref: '#/components/parameters/ForecastId'
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/ForecastId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '200':
           description: Accuracy metrics
@@ -180,17 +180,17 @@ components:
 
     ForecastDetails:
       allOf:
-        - $ref: '#/components/schemas/Forecast'
-        - type: object
-          properties:
-            predictions:
-              type: array
-              items:
-                $ref: '#/components/schemas/Prediction'
-            accuracy_metrics:
-              $ref: '#/components/schemas/AccuracyMetrics'
-            model_params:
-              type: object
+      - $ref: '#/components/schemas/Forecast'
+      - type: object
+        properties:
+          predictions:
+            type: array
+            items:
+              $ref: '#/components/schemas/Prediction'
+          accuracy_metrics:
+            $ref: '#/components/schemas/AccuracyMetrics'
+          model_params:
+            type: object
 
     ForecastCreate:
       type: object

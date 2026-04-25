@@ -10,7 +10,12 @@ const GETHandler = withAdminRouteGuard(async (request: Request) => {
   const windowHours = Math.min(168, Math.max(1, Number(searchParams.get("window_hours") || "24")));
   const limit = Math.min(200, Math.max(1, Number(searchParams.get("limit") || "50")));
   const routeKey = searchParams.get("route_key") || undefined;
-  const status = searchParams.get("status") === "error" ? "error" : searchParams.get("status") === "success" ? "success" : undefined;
+  const status =
+    searchParams.get("status") === "error"
+      ? "error"
+      : searchParams.get("status") === "success"
+        ? "success"
+        : undefined;
 
   const [events, audit] = await Promise.all([
     listApiTelemetryEvents({ limit, routeKey, status, windowHours }),

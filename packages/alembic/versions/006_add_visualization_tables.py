@@ -5,9 +5,9 @@ Revises: (previous migration ID - to be filled)
 Create Date: 2025-11-02
 """
 
-import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic
 revision = "006_visualization"
@@ -16,7 +16,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     """Create all visualization tables."""
 
     # Visualizations table
@@ -234,7 +234,7 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     """Drop all visualization tables."""
     op.drop_table("api_usage")
     op.drop_table("export_jobs")

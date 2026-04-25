@@ -21,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
               AI Web Feeds
             </span>
             <span className="font-serif text-lg font-semibold text-(--ink)">
-              Curated AI and ML feeds
+              Read AI writing across the open web
             </span>
           </span>
         </span>
@@ -30,16 +30,12 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        text: "Feeds",
-        url: "/feeds",
+        text: "Sources",
+        url: "/?mode=catalog",
       },
       {
-        text: "Explorer",
+        text: "Taxonomy",
         url: "/explorer",
-      },
-      {
-        text: "Downloads",
-        url: "/downloads",
       },
       {
         text: "Documentation",

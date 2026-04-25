@@ -7,9 +7,9 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from xml.etree import ElementTree as ET
 
 import yaml
+from defusedxml import ElementTree as ET
 from jsonschema import Draft202012Validator
 
 try:
@@ -374,7 +374,7 @@ def validate_catalog_metadata_quality(catalog: dict[str, Any], description: str)
     return True
 
 
-def _parse_opml_file(filepath: Path) -> ET.Element:
+def _parse_opml_file(filepath: Path) -> Any:
     """Parse an OPML file and return its body element."""
     tree = ET.parse(filepath)
     root = tree.getroot()

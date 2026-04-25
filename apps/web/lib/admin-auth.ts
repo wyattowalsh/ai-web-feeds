@@ -26,10 +26,10 @@ type AdminRouteHandlerWithoutContext<TRequest extends Request = Request> = (
   request: TRequest,
 ) => Promise<Response>;
 
-type AdminRouteHandlerWithContext<TRequest extends Request = Request, TContext = AdminRouteHandlerContext> = (
-  request: TRequest,
-  context: TContext,
-) => Promise<Response>;
+type AdminRouteHandlerWithContext<
+  TRequest extends Request = Request,
+  TContext = AdminRouteHandlerContext,
+> = (request: TRequest, context: TContext) => Promise<Response>;
 
 type AdminRouteHandler<TRequest extends Request = Request, TContext = AdminRouteHandlerContext> =
   | AdminRouteHandlerWithoutContext<TRequest>
@@ -56,7 +56,11 @@ function decodePayload(encoded: string): AdminSession | null {
     const decoded = Buffer.from(encoded, "base64url").toString("utf-8");
     const parsed = JSON.parse(decoded) as Partial<AdminSession>;
 
-    if (parsed.sub !== "admin" || typeof parsed.exp !== "number" || typeof parsed.nonce !== "string") {
+    if (
+      parsed.sub !== "admin" ||
+      typeof parsed.exp !== "number" ||
+      typeof parsed.nonce !== "string"
+    ) {
       return null;
     }
 
@@ -144,7 +148,9 @@ function parseCookieValue(cookieHeader: string | null, name: string): string | n
 }
 
 export function getAdminSessionFromRequest(request: Request): AdminSession | null {
-  return verifyAdminSessionToken(parseCookieValue(request.headers.get("cookie"), ADMIN_SESSION_COOKIE));
+  return verifyAdminSessionToken(
+    parseCookieValue(request.headers.get("cookie"), ADMIN_SESSION_COOKIE),
+  );
 }
 
 export async function getAdminSession(): Promise<AdminSession | null> {
@@ -184,13 +190,17 @@ export function withAdminRouteGuard<TRequest extends Request = Request>(
   handler: AdminRouteHandlerWithoutContext<TRequest>,
 ): AdminRouteHandlerWithoutContext<TRequest>;
 
-export function withAdminRouteGuard<TRequest extends Request = Request, TContext = AdminRouteHandlerContext>(
+export function withAdminRouteGuard<
+  TRequest extends Request = Request,
+  TContext = AdminRouteHandlerContext,
+>(
   handler: AdminRouteHandlerWithContext<TRequest, TContext>,
 ): AdminRouteHandlerWithContext<TRequest, TContext>;
 
-export function withAdminRouteGuard<TRequest extends Request = Request, TContext = AdminRouteHandlerContext>(
-  handler: AdminRouteHandler<TRequest, TContext>,
-) {
+export function withAdminRouteGuard<
+  TRequest extends Request = Request,
+  TContext = AdminRouteHandlerContext,
+>(handler: AdminRouteHandler<TRequest, TContext>) {
   return async (request: TRequest, context?: TContext): Promise<Response> => {
     const session = getAdminSessionFromRequest(request);
     if (!session) {
@@ -227,7 +237,10 @@ export function sanitizeAdminNextPath(nextPath: string | null | undefined): stri
   }
 }
 
-export function getLoginThrottleState(key: string): { allowed: boolean; retryAfterSeconds: number } {
+export function getLoginThrottleState(key: string): {
+  allowed: boolean;
+  retryAfterSeconds: number;
+} {
   const now = Date.now();
   const current = loginAttempts.get(key);
 

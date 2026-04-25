@@ -9,16 +9,13 @@ from ai_web_feeds.embeddings import save_feed_embedding
 from ai_web_feeds.models import FeedEmbedding, FeedSource
 from ai_web_feeds.search import autocomplete, build_trie_index
 from ai_web_feeds.storage import DatabaseManager
-from sqlmodel import SQLModel, create_engine
 
 
 @pytest.fixture
-def integration_db():
+def integration_db(tmp_path):
     """Create temporary database for integration tests."""
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-
-    db = DatabaseManager(str(engine.url))
+    db = DatabaseManager(f"sqlite:///{tmp_path / 'integration-search.db'}")
+    db.create_db_and_tables()
     return db
 
 

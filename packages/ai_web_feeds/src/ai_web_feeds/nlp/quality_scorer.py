@@ -1,6 +1,7 @@
 """Quality scoring for articles using heuristic-based metrics (Phase 5A)."""
 
 import re
+from typing import ClassVar
 
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -33,7 +34,7 @@ class QualityScorer:
     """
 
     # Scoring weights for overall score calculation
-    WEIGHTS = {
+    WEIGHTS: ClassVar[dict[str, float]] = {
         "depth": 0.35,  # Content depth is most important
         "reference": 0.20,  # Citations matter
         "author": 0.15,  # Author credentials
@@ -67,7 +68,8 @@ class QualityScorer:
             # Skip if article is too short
             if word_count < self.min_words:
                 logger.debug(
-                    f"Article too short ({word_count} words < {self.min_words}), skipping quality scoring"
+                    "Article too short "
+                    f"({word_count} words < {self.min_words}), skipping quality scoring"
                 )
                 return None
 

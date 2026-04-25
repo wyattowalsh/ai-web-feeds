@@ -114,7 +114,10 @@ class NotificationManager:
                 user_id=user_id,
                 type=NotificationType.TRENDING_TOPIC,
                 title=f"Trending: {topic.topic_id}",
-                message=f"{topic.article_count} articles in the last hour (Z-score: {topic.z_score:.2f})",
+                message=(
+                    f"{topic.article_count} articles in the last hour "
+                    f"(Z-score: {topic.z_score:.2f})"
+                ),
                 action_url=f"/topics/{topic.topic_id}",
                 context_data={
                     "topic_id": topic.topic_id,

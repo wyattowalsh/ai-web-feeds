@@ -12,7 +12,6 @@ const { replaceMock, useSearchParamsMock, useArticleStateMock, useReaderPreferen
 let currentSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/feeds",
   useRouter: () => ({ replace: replaceMock }),
   useSearchParams: () => useSearchParamsMock(),
 }));
@@ -156,7 +155,7 @@ describe("FeedsWorkspaceClient", () => {
     );
   });
 
-  it("renders the feeds workspace from the seeded browse snapshot", () => {
+  it("renders the reader-first corpus workspace from the seeded browse snapshot", async () => {
     const fetchMock = vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -182,9 +181,11 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Read and filter your feeds" })).toBeInTheDocument();
-    expect(screen.getAllByText("Agent systems roundup").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Fresh research notes").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+    ).toBeInTheDocument();
+    expect((await screen.findAllByText("Agent systems roundup")).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText("Fresh research notes")).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Refresh latest/i })).toBeInTheDocument();
   });
 
@@ -254,7 +255,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getAllByText("New").length).toBeGreaterThan(0);
   });
 
-  it("sanitizes preview html while preserving safe rich markup", () => {
+  it("sanitizes preview html while preserving safe rich markup", async () => {
     const maliciousBrowse = {
       ...initialBrowse,
       items: [
@@ -295,12 +296,14 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    const previewLink = screen.getByRole("link", { name: "link" });
+    fireEvent.click(await screen.findByRole("button", { name: "Preview" }));
+
+    const previewLink = (await screen.findAllByRole("link", { name: "link" }))[0];
     expect(previewLink).toHaveAttribute("href", "https://example.com/source");
     expect(previewLink).toHaveAttribute("target", "_blank");
     expect(previewLink).toHaveAttribute("rel", "noreferrer noopener");
 
-    const previewImage = screen.getByRole("img", { name: "Preview cover" });
+    const previewImage = (await screen.findAllByRole("img", { name: "Preview cover" }))[0];
     expect(previewImage).toHaveAttribute("src", "https://example.com/cover.png");
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelector("iframe")).toBeNull();
@@ -309,7 +312,43 @@ describe("FeedsWorkspaceClient", () => {
     expect(container).not.toHaveTextContent("Do not render form");
   });
 
-  it("shows a dedicated article-library unavailable state when the article load fails", async () => {
+  it("keeps preview closed until the user opens it and allows Escape to close it", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => makeResponse(initialBrowse)),
+    );
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={initialState}
+        initialBrowse={initialBrowse as never}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Close preview" })).not.toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Preview" }));
+    expect(screen.getAllByRole("button", { name: "Close preview" }).length).toBeGreaterThan(0);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Close preview" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows a dedicated corpus unavailable state when the article load fails", async () => {
     const fetchMock = vi.fn(async () => makeResponse({}, false, 503));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -331,8 +370,66 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(await screen.findByText("Article library unavailable")).toBeInTheDocument();
-    expect(screen.getByText(/The article library has not been built yet/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Reader snapshot unavailable" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("The reader needs a prepared snapshot")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
+      "href",
+      "/?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
+    );
+  });
+
+  it("applies draft filters explicitly and can reset them back to the canonical reader route", () => {
+    currentSearchParams = new URLSearchParams();
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+    vi.stubGlobal("fetch", vi.fn());
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={{
+          ...initialState,
+          query: "",
+          feedIds: [],
+          sourceType: null,
+          topics: [],
+          verified: null,
+        }}
+        initialBrowse={initialBrowse as never}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search posts" }), {
+      target: { value: "models" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Source type" }), {
+      target: { value: "newsletter" },
+    });
+    fireEvent.click(screen.getAllByRole("button", { name: /^ml/i })[0]);
+    fireEvent.change(screen.getByRole("combobox", { name: "Verification" }), {
+      target: { value: "false" },
+    });
+    fireEvent.click(screen.getAllByRole("button", { name: "Apply filters" })[0]);
+
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/?q=models&source_type=newsletter&topics=ml&verified=false",
+      { scroll: false },
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Reset" })[0]);
+    expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
   });
 
   it("adds recovery links when the current filters return no visible posts", async () => {
@@ -382,14 +479,55 @@ describe("FeedsWorkspaceClient", () => {
     );
 
     expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Clear post filters" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1",
+      "/?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset filters" })).toHaveAttribute("href", "/feeds");
-    expect(screen.getByRole("link", { name: "Open catalog" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+    );
+  });
+
+  it("shows active reader chips and lets the user clear an individual slice", () => {
+    currentSearchParams = new URLSearchParams(
+      "q=agents&source_type=blog&topics=agents&verified=true&feed=feed-1",
+    );
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => makeResponse(initialBrowse)),
+    );
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={initialState}
+        initialBrowse={initialBrowse as never}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Search: agents" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Type: blog" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Topic: agents" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verified only" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Source: Agent Feed" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Topic: agents" }));
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/?q=agents&source_type=blog&verified=true&feed=feed-1",
+      { scroll: false },
     );
   });
 
@@ -416,7 +554,7 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Narrow the catalog" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Browse sources" })).toBeInTheDocument();
     expect(screen.getByText("Agent Feed")).toBeInTheDocument();
     expect(screen.getByText("ML Digest")).toBeInTheDocument();
   });

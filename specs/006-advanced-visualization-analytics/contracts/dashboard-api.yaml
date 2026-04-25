@@ -5,11 +5,11 @@ info:
   description: API for creating and managing custom dashboards with widgets
 
 servers:
-  - url: /api/v1
+- url: /api/v1
 
 security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
+- BearerAuth: []
+- ApiKeyAuth: []
 
 paths:
   /dashboards:
@@ -19,7 +19,7 @@ paths:
       operationId: listDashboards
       tags: [Dashboards]
       parameters:
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '200':
           description: List of dashboards
@@ -56,8 +56,8 @@ paths:
       operationId: getDashboard
       tags: [Dashboards]
       parameters:
-        - $ref: '#/components/parameters/DashboardId'
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/DashboardId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '200':
           description: Dashboard with widgets
@@ -72,7 +72,7 @@ paths:
       operationId: updateDashboard
       tags: [Dashboards]
       parameters:
-        - $ref: '#/components/parameters/DashboardId'
+      - $ref: '#/components/parameters/DashboardId'
       requestBody:
         content:
           application/json:
@@ -92,8 +92,8 @@ paths:
       operationId: deleteDashboard
       tags: [Dashboards]
       parameters:
-        - $ref: '#/components/parameters/DashboardId'
-        - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/DashboardId'
+      - $ref: '#/components/parameters/DeviceId'
       responses:
         '204':
           description: Dashboard deleted
@@ -105,7 +105,7 @@ paths:
       operationId: addWidget
       tags: [Widgets]
       parameters:
-        - $ref: '#/components/parameters/DashboardId'
+      - $ref: '#/components/parameters/DashboardId'
       requestBody:
         content:
           application/json:
@@ -126,11 +126,11 @@ paths:
       operationId: updateWidget
       tags: [Widgets]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
       requestBody:
         content:
           application/json:
@@ -150,11 +150,11 @@ paths:
       operationId: deleteWidget
       tags: [Widgets]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
       responses:
         '204':
           description: Widget deleted
@@ -212,13 +212,13 @@ components:
 
     DashboardWithWidgets:
       allOf:
-        - $ref: '#/components/schemas/Dashboard'
-        - type: object
-          properties:
-            widgets:
-              type: array
-              items:
-                $ref: '#/components/schemas/Widget'
+      - $ref: '#/components/schemas/Dashboard'
+      - type: object
+        properties:
+          widgets:
+            type: array
+            items:
+              $ref: '#/components/schemas/Widget'
 
     DashboardCreate:
       type: object

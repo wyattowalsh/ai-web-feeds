@@ -1,8 +1,9 @@
 """Topic modeling using LDA/BERTopic (Phase 5D)."""
 
-import numpy as np
-from gensim import corpora
-from gensim.models import LdaModel
+import re
+
+from gensim import corpora, models
+from gensim.models import CoherenceModel
 from loguru import logger
 from pydantic import BaseModel, Field
 
@@ -83,7 +84,7 @@ class TopicModeler:
                 return []
 
             # Train LDA model
-            lda_model = LdaModel(
+            lda_model = models.LdaModel(
                 corpus=corpus,
                 id2word=dictionary,
                 num_topics=num_topics,
@@ -103,8 +104,7 @@ class TopicModeler:
                 # Generate subtopic name from top keywords
                 subtopic_name = self._generate_subtopic_name(keywords, topic)
 
-                # Calculate coherence (simplified - use top word probabilities as proxy)
-                coherence = float(np.mean([prob for word, prob in topic_words[:5]]))
+                coherence = self._compute_coherence(lda_model, dictionary, texts)
 
                 # Count articles in this topic
                 article_count = sum(
@@ -194,11 +194,92 @@ class TopicModeler:
         Returns:
             List of tokenized and preprocessed text lists
         """
-        import re
-
         # Simple stopwords list (should use nltk.corpus.stopwords in production)
-        stopwords = set(
-            [
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "as",
+            "is",
+            "was",
+            "are",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "this",
+            "that",
+            "these",
+            "those",
+            "i",
+            "you",
+            "he",
+            "she",
+            "it",
+            "we",
+            "they",
+        }
+
+        texts = []
+        for article in articles:
+            # Extract content
+            content = ""
+            if article.get("title"):
+                content += article["title"] + " "
+            if article.get("summary"):
+                content += article["summary"] + " "
+            if article.get("content"):
+                content_data = article["content"]
+                if isinstance(content_data, list):
+                    content += " ".join(
+                        item.get("value", "") for item in content_data if isinstance(item, dict)
+                    )
+                else:
+                    content += str(content_data)
+
+            if not content:
+                continue
+
+            tokens = self._preprocess_text(content, stopwords)
+
+            if tokens:
+                texts.append(tokens)
+
+        return texts
+
+    def _preprocess_text(self, text: str, stopwords: set[str] | None = None) -> list[str]:
+        """Preprocess a single text block into topic-model tokens."""
+
+        if not text:
+            return []
+
+        if stopwords is None:
+            stopwords = {
                 "the",
                 "a",
                 "an",
@@ -246,41 +327,12 @@ class TopicModeler:
                 "it",
                 "we",
                 "they",
-            ]
-        )
+            }
 
-        texts = []
-        for article in articles:
-            # Extract content
-            content = ""
-            if article.get("title"):
-                content += article["title"] + " "
-            if article.get("summary"):
-                content += article["summary"] + " "
-            if article.get("content"):
-                content_data = article["content"]
-                if isinstance(content_data, list):
-                    content += " ".join(
-                        item.get("value", "") for item in content_data if isinstance(item, dict)
-                    )
-                else:
-                    content += str(content_data)
+        tokens = re.findall(r"\b[a-z]{3,}\b", text.lower())
+        return [token for token in tokens if token not in stopwords]
 
-            if not content:
-                continue
-
-            # Tokenize and clean
-            tokens = re.findall(r"\b[a-z]{3,}\b", content.lower())
-
-            # Remove stopwords
-            tokens = [t for t in tokens if t not in stopwords]
-
-            if tokens:
-                texts.append(tokens)
-
-        return texts
-
-    def _generate_subtopic_name(self, keywords: list[str], parent_topic: str) -> str:
+    def _generate_subtopic_name(self, keywords: list[str], parent_topic: str | None = None) -> str:
         """Generate a human-readable subtopic name from keywords.
 
         Args:
@@ -293,7 +345,32 @@ class TopicModeler:
         # Take top 3 keywords and capitalize
         top_keywords = keywords[:3]
         name = " & ".join([k.capitalize() for k in top_keywords])
-        return f"{parent_topic}: {name}"
+        if parent_topic:
+            return f"{parent_topic}: {name}"
+        return name
+
+    def _generate_subtopic_description(self, parent_topic: str, keywords: list[str]) -> str:
+        """Generate a short description for a discovered subtopic."""
+
+        if not keywords:
+            return f"Subtopic within {parent_topic}."
+        return f"{parent_topic} coverage centered on {', '.join(keywords[:3])} and related themes."
+
+    def _compute_coherence(
+        self,
+        lda_model,
+        dictionary,
+        texts: list[list[str]],
+    ) -> float:
+        """Compute topic coherence for an LDA model."""
+
+        coherence_model = CoherenceModel(
+            model=lda_model,
+            texts=texts,
+            dictionary=dictionary,
+            coherence="c_v",
+        )
+        return float(coherence_model.get_coherence())
 
     def _detect_evolution_events(
         self,
@@ -387,3 +464,69 @@ class TopicModeler:
         similarity = intersection / union if union > 0 else 0
 
         return similarity >= threshold
+
+    def extract_subtopics(
+        self,
+        parent_topic: str,
+        articles: list[dict],
+        num_topics: int = 5,
+        min_articles: int = 10,
+    ) -> list[DiscoveredSubtopic]:
+        """Compatibility wrapper for the older extract_subtopics API."""
+
+        return self.discover_subtopics(
+            topic=parent_topic,
+            articles=articles,
+            num_topics=num_topics,
+            min_articles=min_articles,
+        )
+
+    def detect_evolution(
+        self,
+        current_topics: list[dict],
+        previous_topics: list[dict],
+        threshold: float = 0.5,
+    ) -> list[dict]:
+        """Compatibility wrapper for direct topic-to-topic evolution checks."""
+
+        previous = [
+            DiscoveredSubtopic(
+                name=topic["name"],
+                keywords=topic.get("keywords", []),
+                coherence_score=topic.get("coherence_score", 1.0),
+                article_count=topic.get("article_count", 0),
+            )
+            for topic in previous_topics
+        ]
+        current = [
+            DiscoveredSubtopic(
+                name=topic["name"],
+                keywords=topic.get("keywords", []),
+                coherence_score=topic.get("coherence_score", 1.0),
+                article_count=topic.get("article_count", 0),
+            )
+            for topic in current_topics
+        ]
+
+        events: list[dict] = []
+
+        for topic in current:
+            if not any(self._subtopics_similar(topic, prev, threshold) for prev in previous):
+                events.append({"type": "emergence", "topic": topic.name})
+
+        for topic in previous:
+            match = next(
+                (curr for curr in current if self._subtopics_similar(topic, curr, threshold)),
+                None,
+            )
+            if match is None or match.article_count < topic.article_count:
+                events.append({"type": "decline", "topic": topic.name})
+
+        return events
+
+    def _compute_growth_rate(self, current_count: int, previous_count: int) -> float:
+        """Compute proportional growth between two article counts."""
+
+        if previous_count <= 0:
+            return 1.0 if current_count > 0 else 0.0
+        return (current_count - previous_count) / previous_count

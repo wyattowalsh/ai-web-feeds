@@ -58,9 +58,7 @@ class ChartErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-          <div className="mb-2 text-red-600 font-semibold">
-            Chart Rendering Error
-          </div>
+          <div className="mb-2 text-red-600 font-semibold">Chart Rendering Error</div>
           <div className="text-red-500 text-sm mb-4">
             {this.state.error?.message || "An unexpected error occurred"}
           </div>
@@ -81,11 +79,7 @@ class ChartErrorBoundary extends Component<
 /**
  * Loading skeleton for charts.
  */
-function ChartLoadingSkeleton({
-  minHeight = "300px",
-}: {
-  minHeight?: string;
-}) {
+function ChartLoadingSkeleton({ minHeight = "300px" }: { minHeight?: string }) {
   return (
     <div
       className="rounded-lg border border-gray-200 bg-gray-50 p-6 animate-pulse"
@@ -112,18 +106,10 @@ function ChartLoadingSkeleton({
 /**
  * Error display component.
  */
-function ChartError({
-  error,
-  onRetry,
-}: {
-  error: Error;
-  onRetry?: () => void;
-}) {
+function ChartError({ error, onRetry }: { error: Error; onRetry?: () => void }) {
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
-      <div className="mb-2 text-amber-700 font-semibold">
-        Unable to Load Chart
-      </div>
+      <div className="mb-2 text-amber-700 font-semibold">Unable to Load Chart</div>
       <div className="text-amber-600 text-sm mb-4">{error.message}</div>
       {onRetry && (
         <button
@@ -167,12 +153,8 @@ export function ChartContainer({
       {/* Header */}
       {(title || description) && (
         <div className="mb-4">
-          {title && (
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          )}
-          {description && (
-            <p className="mt-1 text-sm text-gray-600">{description}</p>
-          )}
+          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+          {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
         </div>
       )}
 

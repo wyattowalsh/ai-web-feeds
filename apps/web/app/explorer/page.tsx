@@ -1,15 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  Layers3,
-  RadioTower,
-  Search as SearchIcon,
-  TableProperties,
-  Waypoints,
-  X,
-} from "lucide-react";
+import { Activity, Layers3, RadioTower, Search as SearchIcon, Waypoints } from "lucide-react";
 import {
   getDefaultGraphControls,
   GraphVisualizer,
@@ -25,12 +17,10 @@ import {
   type TopicRecord,
 } from "@/lib/catalog-types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+import { buildReaderRouteHref } from "@/lib/reader-routes";
 
 type ExplorerTab = "topics" | "feeds" | "combined";
-type ExplorerView = "table" | "graph";
 
 // Utility to fetch and parse JSON from API routes
 async function fetchData<T>(url: string): Promise<T> {
@@ -80,7 +70,28 @@ function buildFeedsHref(options: { feedId?: string; query?: string; topics?: str
     params.set("feed", options.feedId);
   }
 
-  return `/feeds?${params.toString()}`;
+  return buildReaderRouteHref(params);
+}
+
+function buildReaderHref(options: { feedId?: string; query?: string; topics?: string[] }): string {
+  const params = new URLSearchParams();
+
+  if (options.query?.trim()) {
+    params.set("q", options.query.trim());
+  }
+
+  const topics = Array.from(
+    new Set((options.topics ?? []).map((topic) => topic.trim()).filter(Boolean)),
+  );
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
+  }
+
+  if (options.feedId) {
+    params.set("feed", options.feedId);
+  }
+
+  return buildReaderRouteHref(params);
 }
 
 function ExplorerPageContent() {
@@ -89,12 +100,7 @@ function ExplorerPageContent() {
   const { topics, feeds, loading, error } = useExplorerData();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [tab, setTab] = useState<ExplorerTab>(getTabFromSearchParams(searchParams));
-  const [view, setView] = useState<ExplorerView>(getViewFromSearchParams(searchParams));
-  const [selectedTags, setSelectedTags] = useState<string[]>(getTagsFromSearchParams(searchParams));
-  const [sortBy, setSortBy] = useState<string>(searchParams.get("sort") || "name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
-    searchParams.get("order") === "desc" ? "desc" : "asc",
-  );
+
   const [layout, setLayout] = useState<LayoutType>(getLayoutFromSearchParams(searchParams));
   const [graphControls, setGraphControls] = useState<GraphControls>(() =>
     getGraphControlsFromSearchParams(searchParams, getTabFromSearchParams(searchParams)),
@@ -123,10 +129,6 @@ function ExplorerPageContent() {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (tab !== "combined") params.set("tab", tab);
-    if (view !== "graph") params.set("view", view);
-    if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
-    if (sortBy !== "name") params.set("sort", sortBy);
-    if (sortOrder !== "asc") params.set("order", sortOrder);
     if (layout !== "force") params.set("layout", layout);
     writeGraphControlsToParams(params, graphControls, getDefaultGraphControls(tab));
 
@@ -138,7 +140,7 @@ function ExplorerPageContent() {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
     }
-  }, [graphControls, layout, search, selectedTags, sortBy, sortOrder, tab, view]);
+  }, [graphControls, layout, search, tab]);
 
   useEffect(() => {
     setLayout(getLayoutFromSearchParams(searchParams));
@@ -161,12 +163,8 @@ function ExplorerPageContent() {
       setTab("feeds");
       setHighlightedNode(nodeId);
     } else if (nodeType === "topic") {
-      // Clicked topic in topics graph - filter feeds by this topic
       setSearch(nodeId);
       setHighlightedNode(nodeId);
-      // Optionally switch to feeds tab to show related feeds
-      // setTab('feeds');
-      // setSelectedTags([nodeId]);
     } else {
       setHighlightedNode(nodeId);
     }
@@ -178,42 +176,33 @@ function ExplorerPageContent() {
       return;
     }
 
-    if (detailAction.action === "open-url") {
+    if (detailAction.action === "open-site") {
       const selectedFeed = feeds.find(
         (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
       );
-      if (selectedFeed?.id) {
-        router.push(
-          buildFeedsHref({
-            feedId: selectedFeed.id,
-            query: search,
-            topics:
-              selectedTags.length > 0
-                ? [
-                    ...selectedTags,
-                    ...normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
-                  ]
-                : normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
-          }),
-        );
+      const sourceUrl = selectedFeed?.feed ?? selectedFeed?.url;
+      if (sourceUrl) {
+        window.open(sourceUrl, "_blank", "noopener,noreferrer");
       }
       return;
     }
 
-    if (detailAction.action === "open-topics") {
+    if (detailAction.action === "open-reader") {
+      const selectedFeed = feeds.find(
+        (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
+      );
       router.push(
-        buildFeedsHref({
+        buildReaderHref({
           query: search,
-          topics:
-            detailAction.nodeType === "topic"
-              ? [detailAction.nodeId, ...selectedTags]
-              : selectedTags,
+          feedId:
+            detailAction.nodeType === "feed" ? selectedFeed?.id ?? detailAction.nodeId : undefined,
+          topics: detailAction.nodeType === "topic" ? [detailAction.nodeId] : [],
         }),
       );
       return;
     }
 
-    if (detailAction.action === "open-feeds") {
+    if (detailAction.action === "open-catalog") {
       const selectedFeed = feeds.find(
         (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
       );
@@ -223,11 +212,8 @@ function ExplorerPageContent() {
           feedId: selectedFeed?.id ?? detailAction.nodeId,
           topics:
             detailAction.nodeType === "topic"
-              ? [detailAction.nodeId, ...selectedTags]
-              : [
-                  ...selectedTags,
-                  ...normalizeTopicValues(selectedFeed?.topics ?? selectedFeed?.tags),
-                ],
+              ? [detailAction.nodeId]
+              : normalizeTopicValues(selectedFeed?.topics ?? selectedFeed?.tags),
         }),
       );
     }
@@ -254,16 +240,10 @@ function ExplorerPageContent() {
         topic.description?.toLowerCase().includes(searchValue),
     );
 
-    result.sort((a, b) => {
-      const sortField: keyof TopicRecord = sortBy === "name" ? "label" : "id";
-      const aVal = String(a[sortField] ?? "");
-      const bVal = String(b[sortField] ?? "");
-      const comparison = aVal.localeCompare(bVal);
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    result.sort((a, b) => a.label.localeCompare(b.label));
 
     return result;
-  }, [topics, search, sortBy, sortOrder]);
+  }, [topics, search]);
 
   const filteredFeeds = useMemo(() => {
     if (!feeds || !Array.isArray(feeds) || feeds.length === 0) return [];
@@ -276,30 +256,13 @@ function ExplorerPageContent() {
 
       if (!matchesSearch) return false;
 
-      if (selectedTags.length > 0) {
-        const topicsArray = normalizeTopicValues(feed.topics ?? feed.tags);
-        return selectedTags.some((tag) => topicsArray.includes(tag));
-      }
-
       return true;
     });
 
-    result.sort((a, b) => {
-      const sortField: keyof CatalogFeed = sortBy === "url" ? "url" : "title";
-      const aVal = a[sortField] ?? "";
-      const bVal = b[sortField] ?? "";
-      const comparison = String(aVal).localeCompare(String(bVal));
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    result.sort((a, b) => String(a.title ?? a.url).localeCompare(String(b.title ?? b.url)));
 
     return result;
-  }, [feeds, search, selectedTags, sortBy, sortOrder]);
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
-  };
+  }, [feeds, search]);
 
   const visibleCount =
     tab === "topics"
@@ -348,37 +311,33 @@ function ExplorerPageContent() {
           <div className="space-y-5">
             <span className="eyebrow">
               <Waypoints className="size-3.5" />
-              Catalog explorer
+              Advanced explorer
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Explore topics and sources before opening them in Feeds.
+                Inspect the catalog map, then hand the slice back to the reader.
               </h1>
               <p className="hero-copy max-w-2xl">
-                Use graph and table views to browse the catalog, then open the matching sources in
-                Feeds when you are ready to read posts.
+                Start on `/` to read. Use the explorer when you need structural context across
+                topics and sources, then jump back into the reader or the catalog with one action.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">How to use it</p>
+            <p className="metric-label">Explorer defaults</p>
             <p className="small-note">
-              Use graph view for relationships and table view for exact metadata. Search and topic
-              filters narrow the current results, and detail actions can open the same set in Feeds.
+              Search and one group filter stay visible by default. Layout changes and graph tuning
+              live behind advanced controls so the first screen stays calm.
             </p>
             <div className="grid gap-2 text-sm text-(--ink)">
               <div className="flex items-center gap-3">
                 <Waypoints className="size-4 text-(--brand-strong)" />
-                Graph layouts for browsing relationships
-              </div>
-              <div className="flex items-center gap-3">
-                <TableProperties className="size-4 text-(--brand-strong)" />
-                Table mode for scanning exact metadata
+                Open in reader when you want to read the current slice
               </div>
               <div className="flex items-center gap-3">
                 <SearchIcon className="size-4 text-(--brand-strong)" />
-                Search and topic filters for narrowing results
+                Open matching sources when you need to refine the catalog
               </div>
             </div>
           </div>
@@ -490,205 +449,60 @@ function ExplorerPageContent() {
               </span>
             </button>
           </div>
-
-          <div className="surface-card flex gap-3 xl:w-auto">
-            <button
-              type="button"
-              onClick={() => setView("graph")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
-                view === "graph"
-                  ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-              )}
-              aria-pressed={view === "graph"}
-            >
-              <Waypoints className="size-4" />
-              Graph View
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("table")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition duration-150 xl:flex-none",
-                view === "table"
-                  ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-              )}
-              aria-pressed={view === "table"}
-            >
-              <TableProperties className="size-4" />
-              Table View
-            </button>
-          </div>
         </div>
 
-        {view === "table" && tab !== "combined" && (
-          <div className="space-y-5">
-            <div className="surface-card">
-              <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
-                <div>
-                  <label htmlFor="catalog-search" className="field-label">
-                    Search {tab}
-                  </label>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--ink-muted)">
-                      <SearchIcon className="size-4" />
-                    </span>
-                    <Input
-                      id="catalog-search"
-                      type="text"
-                      placeholder={`Search ${tab}...`}
-                      value={search}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setSearch(e.target.value)
-                      }
-                      className="pl-11"
-                    />
-                  </div>
+        <div className="surface-panel overflow-hidden p-0">
+          <div className="border-b border-(--line) px-6 py-6 sm:px-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="flex size-14 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
+                  <Waypoints className="size-5" />
                 </div>
                 <div>
-                  <label htmlFor="catalog-sort" className="field-label">
-                    Sort by
-                  </label>
-                  <Select
-                    id="catalog-sort"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    aria-label={`Sort ${tab} results by`}
-                  >
-                    {tab === "topics" ? (
-                      <>
-                        <option value="name">Sort by name</option>
-                        <option value="id">Sort by ID</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="title">Sort by title</option>
-                        <option value="url">Sort by URL</option>
-                      </>
-                    )}
-                  </Select>
-                </div>
-                <Button
-                  type="button"
-                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                  aria-label={`Toggle sort order, currently ${
-                    sortOrder === "asc" ? "ascending" : "descending"
-                  }`}
-                  className="lg:self-end"
-                >
-                  {sortOrder === "asc" ? "Ascending" : "Descending"}
-                </Button>
-              </div>
-            </div>
-
-            {tab === "feeds" && allTags.length > 0 && (
-              <div className="surface-card space-y-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-1">
-                    <p className="metric-label">Tag filter</p>
-                    <h2 className="text-xl">Filter feed results by topic tags</h2>
-                  </div>
-                  {selectedTags.length > 0 && (
-                    <Button onClick={() => setSelectedTags([])} variant="ghost">
-                      <X className="size-4" />
-                      Clear ({selectedTags.length})
-                    </Button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {allTags.slice(0, 30).map((tag) => (
-                    <button
-                      type="button"
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={cn(
-                        "rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-150",
-                        selectedTags.includes(tag)
-                          ? "border-(--brand) bg-(--brand) text-(--fd-primary-foreground)"
-                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-                      )}
-                      aria-pressed={selectedTags.includes(tag)}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                  {allTags.length > 30 && (
-                    <span className="self-center px-4 text-sm font-medium text-(--ink-muted)">
-                      +{allTags.length - 30} more tags available
-                    </span>
-                  )}
+                  <h3 className="text-2xl font-semibold text-(--ink)">
+                    {tab === "topics"
+                      ? "Topics Knowledge Graph"
+                      : tab === "feeds"
+                        ? "Feeds Network Graph"
+                        : "Combined Topic + Feed Graph"}
+                  </h3>
+                  <p className="small-note mt-1">
+                    Interactive graph for structural exploration, with direct handoff back into the
+                    reader-first product flow.
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-        )}
-
-        {view === "graph" ? (
-          <div className="surface-panel overflow-hidden p-0">
-            <div className="border-b border-(--line) px-6 py-6 sm:px-8">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="flex size-14 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
-                    <Waypoints className="size-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-semibold text-(--ink)">
-                      {tab === "topics"
-                        ? "Topics Knowledge Graph"
-                        : tab === "feeds"
-                          ? "Feeds Network Graph"
-                          : "Combined Topic + Feed Graph"}
-                    </h3>
-                    <p className="small-note mt-1">
-                      Interactive visualization with zoom, pan, and follow-up exploration through
-                      node details.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
-                    Multiple layouts
-                  </span>
-                  <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
-                    Node details
-                  </span>
-                </div>
+              <div className="flex gap-2 flex-wrap">
+                <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
+                  Reader handoff
+                </span>
+                <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
+                  Advanced controls optional
+                </span>
               </div>
             </div>
-            <div className="p-4 sm:p-6">
-              <GraphVisualizer
-                data={
-                  tab === "topics"
-                    ? filteredTopics
-                    : tab === "feeds"
-                      ? filteredFeeds
-                      : combinedGraphData
-                }
-                type={tab}
-                width={1500}
-                height={800}
-                layout={layout}
-                onLayoutChange={setLayout}
-                graphControls={graphControls}
-                onGraphControlsChange={setGraphControls}
-                onNodeClick={handleNodeClick}
-                onDetailAction={handleDetailAction}
-              />
-            </div>
           </div>
-        ) : (
-          <div className="surface-panel overflow-hidden p-0">
-            {tab === "combined" ? (
-              <CombinedGraphTableNotice onSwitchToGraph={() => setView("graph")} />
-            ) : tab === "topics" ? (
-              <TopicsTable topics={filteredTopics} />
-            ) : (
-              <FeedsTable feeds={filteredFeeds} />
-            )}
+          <div className="p-4 sm:p-6">
+            <GraphVisualizer
+              data={
+                tab === "topics"
+                  ? filteredTopics
+                  : tab === "feeds"
+                    ? filteredFeeds
+                    : combinedGraphData
+              }
+              type={tab}
+              width={1500}
+              height={800}
+              layout={layout}
+              onLayoutChange={setLayout}
+              graphControls={graphControls}
+              onGraphControlsChange={setGraphControls}
+              onNodeClick={handleNodeClick}
+              onDetailAction={handleDetailAction}
+            />
           </div>
-        )}
+        </div>
       </section>
     </div>
   );
@@ -705,14 +519,6 @@ export default function ExplorerPage() {
 function getTabFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): ExplorerTab {
   const value = searchParams.get("tab");
   return value === "topics" || value === "feeds" || value === "combined" ? value : "combined";
-}
-
-function getViewFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): ExplorerView {
-  return searchParams.get("view") === "table" ? "table" : "graph";
-}
-
-function getTagsFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): string[] {
-  return searchParams.get("tags")?.split(",").filter(Boolean) || [];
 }
 
 function getLayoutFromSearchParams(searchParams: ReturnType<typeof useSearchParams>): LayoutType {
@@ -781,157 +587,5 @@ function areGraphControlsEqual(left: GraphControls, right: GraphControls): boole
     left.nodeScale === right.nodeScale &&
     left.labelSize === right.labelSize &&
     left.showLabels === right.showLabels
-  );
-}
-
-function CombinedGraphTableNotice({ onSwitchToGraph }: { onSwitchToGraph: () => void }) {
-  return (
-    <div className="px-6 py-16 text-center">
-      <div className="mb-4 flex justify-center">
-        <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
-          <Waypoints className="size-6" />
-        </span>
-      </div>
-      <div className="text-xl font-semibold text-(--ink)">
-        The combined topic/feed network is available in graph view.
-      </div>
-      <p className="small-note mx-auto mt-3 max-w-2xl">
-        This mode overlays taxonomy relationships with feed-to-topic links, so it works best as a
-        single interactive graph rather than a flattened table.
-      </p>
-      <Button onClick={onSwitchToGraph} className="mt-6">
-        Switch To Graph View
-      </Button>
-    </div>
-  );
-}
-
-function TopicsTable({ topics }: { topics: TopicRecord[] }) {
-  if (topics.length === 0) {
-    return (
-      <div className="px-6 py-16 text-center">
-        <div className="mb-4 flex justify-center">
-          <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
-            <SearchIcon className="size-6" />
-          </span>
-        </div>
-        <div className="text-lg font-medium text-(--ink)">
-          No topics found matching your search criteria
-        </div>
-        <p className="small-note mt-2">Try adjusting your search terms or filters</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-(--line) bg-(--surface-muted)">
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              ID
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Label
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Description
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Facet
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-(--line)">
-          {topics.map((t, idx) => (
-            <tr key={t.id || idx} className="transition-colors hover:bg-(--surface-muted)">
-              <td className="px-6 py-4 font-mono text-sm text-(--ink-muted)">{t.id}</td>
-              <td className="px-6 py-4 font-semibold text-(--ink)">{t.label}</td>
-              <td className="px-6 py-4 text-sm text-(--ink-muted)">{t.description}</td>
-              <td className="px-6 py-4">
-                {t.facet && (
-                  <span className="rounded-full bg-(--brand-soft) px-3 py-1 text-xs font-medium text-(--brand-strong)">
-                    {t.facet}
-                  </span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function FeedsTable({ feeds }: { feeds: CatalogFeed[] }) {
-  if (feeds.length === 0) {
-    return (
-      <div className="px-6 py-16 text-center">
-        <div className="mb-4 flex justify-center">
-          <span className="flex size-16 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
-            <SearchIcon className="size-6" />
-          </span>
-        </div>
-        <div className="text-lg font-medium text-(--ink)">
-          No feeds found matching your search criteria
-        </div>
-        <p className="small-note mt-2">Try adjusting your search terms or tag filters</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-(--line) bg-(--surface-muted)">
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Title
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              URL
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-(--ink-muted)">
-              Topics
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-(--line)">
-          {feeds.map((f, idx) => {
-            const topicsArray = normalizeTopicValues(f.topics ?? f.tags);
-
-            return (
-              <tr key={f.url || idx} className="transition-colors hover:bg-(--surface-muted)">
-                <td className="px-6 py-4 font-semibold text-(--ink)">
-                  {f.title || "Untitled Feed"}
-                </td>
-                <td className="px-6 py-4 font-mono text-sm">
-                  <a
-                    href={f.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-(--brand-strong) hover:underline"
-                  >
-                    {f.url}
-                  </a>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    {topicsArray.map((tag: string, tagIdx: number) => (
-                      <span
-                        key={tagIdx}
-                        className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-medium text-(--brand-strong)"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
   );
 }

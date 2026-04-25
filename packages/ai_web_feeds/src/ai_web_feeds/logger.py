@@ -1,6 +1,5 @@
 """ai_web_feeds.logger -- AIWebFeeds logging setup."""
 
-import os
 import sys
 from pathlib import Path
 
@@ -25,7 +24,7 @@ settings = get_settings()
 # Ensure log directory exists if file logging is enabled
 if settings.logging.file:
     log_dir = Path(settings.logging.file_path).parent
-    os.makedirs(log_dir, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
 
 logger.remove()  # Remove default logger
 

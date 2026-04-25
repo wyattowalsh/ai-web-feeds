@@ -1,5 +1,7 @@
 """Named entity extraction using spaCy (Phase 5B)."""
 
+from typing import ClassVar
+
 import spacy
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -15,6 +17,11 @@ class ExtractedEntity(BaseModel):
     start: int = Field(description="Character start position")
     end: int = Field(description="Character end position")
     confidence: float = Field(ge=0.0, le=1.0, description="Extraction confidence")
+
+    def __getitem__(self, key: str):
+        if key == "type":
+            return EntityExtractor.ENTITY_TYPE_MAP.get(self.label)
+        return getattr(self, key)
 
 
 class EntityExtractor:
@@ -34,7 +41,7 @@ class EntityExtractor:
     """
 
     # Entity type mapping from spaCy to our taxonomy
-    ENTITY_TYPE_MAP = {
+    ENTITY_TYPE_MAP: ClassVar[dict[str, str]] = {
         "PERSON": "person",
         "ORG": "organization",
         "GPE": "location",
@@ -90,11 +97,15 @@ class EntityExtractor:
                 return []
 
             # Process with spaCy
-            doc = self.nlp(content[:100000])  # Limit to 100k chars for performance
+            doc = self.nlp(content[:10000])  # Keep extraction bounded on long articles
 
             # Extract entities above confidence threshold
             entities = []
             for ent in doc.ents:
+                entity_type = self._map_spacy_label(ent.label_)
+                if entity_type is None:
+                    continue
+
                 # Calculate confidence (spaCy doesn't provide confidence directly)
                 # Use a heuristic based on entity properties
                 confidence = self._calculate_confidence(ent)
@@ -118,8 +129,11 @@ class EntityExtractor:
             return []
 
     def normalize_entity(
-        self, entity_text: str, entity_label: str, existing_entities: dict[str, dict] | None = None
-    ) -> dict:
+        self,
+        entity_text: str,
+        entity_label: str,
+        existing_entities: dict[str, dict] | list[str] | None = None,
+    ) -> dict | str:
         """Normalize entity to canonical form.
 
         Performs:
@@ -137,6 +151,13 @@ class EntityExtractor:
         """
         # Basic normalization
         canonical = entity_text.strip()
+
+        if isinstance(existing_entities, list):
+            normalized = canonical.title() if canonical else ""
+            for existing in existing_entities:
+                if self._is_same_entity(normalized, existing):
+                    return existing
+            return normalized
 
         # Map spaCy label to our taxonomy
         entity_type = self.ENTITY_TYPE_MAP.get(entity_label, "concept")
@@ -160,6 +181,31 @@ class EntityExtractor:
             "aliases": [canonical],  # Start with original text
             "is_new": True,
         }
+
+    def _map_spacy_label(self, label: str) -> str | None:
+        """Map a spaCy label into the internal entity taxonomy."""
+
+        return self.ENTITY_TYPE_MAP.get(label)
+
+    def _compute_confidence(self, ent: spacy.tokens.Span) -> float:
+        """Compatibility wrapper for older helper naming."""
+
+        return self._calculate_confidence(ent)
+
+    def _extract_context(self, ent: spacy.tokens.Span, doc, window: int = 50) -> str:
+        """Extract a short text window around an entity span."""
+
+        start = max(0, ent.start_char - window)
+        end = min(len(doc.text), ent.end_char + window)
+        return doc.text[start:end]
+
+    def _infer_type(self, entity_text: str) -> str:
+        """Infer a coarse entity type from the surface form."""
+
+        parts = [part for part in entity_text.strip().split() if part]
+        if 2 <= len(parts) <= 3:
+            return "person"
+        return "organization"
 
     def _get_content(self, article: dict) -> str:
         """Extract text content from article."""
@@ -233,7 +279,8 @@ class EntityExtractor:
         if name1.lower() == name2.lower():
             return True
 
-        # Check if one is contained in the other (handles "MIT" vs "Massachusetts Institute of Technology")
+        # Check if one is contained in the other
+        # (handles "MIT" vs "Massachusetts Institute of Technology")
         n1_lower = name1.lower()
         n2_lower = name2.lower()
         if n1_lower in n2_lower or n2_lower in n1_lower:

@@ -8,7 +8,7 @@ description: Backend-backed feed analytics with graceful unavailable states, exp
 > **Status**: Backend-backed
 > **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
 
-The analytics surface at `/analytics` now uses the real backend routes instead of placeholder APIs. When the optional backend is configured, the page loads summary metrics, trending topics, validation velocity, CSV export, and snapshots through the `/api/analytics/*` proxy layer. When it is not configured, the page shows one deliberate unavailable state instead of noisy card-level fetch failures.
+The analytics surface at `/analytics` uses the real backend routes instead of placeholder APIs, but it is intentionally secondary to the reader-first product flow. When the optional backend is configured, the page loads summary metrics, trending topics, validation velocity, CSV export, and snapshots through the `/api/analytics/*` proxy layer. When it is not configured, the page shows one deliberate unavailable state instead of noisy card-level fetch failures.
 
 ## At a Glance
 
@@ -50,11 +50,11 @@ They now share the same Chart.js registration path as the rest of the app, which
 
 If `BACKEND_URL` is unset or unreachable, `/analytics` intentionally renders one unavailable panel with:
 
-- setup guidance
-- a link back to `/feeds?mode=catalog`
+- concise setup guidance
+- a link back to `/?mode=catalog`
 - a link to the deployment guide
 
-That state is part of the product contract, not an implementation accident.
+That state is part of the product contract, not an implementation accident, and it should not overshadow the reader-first workflow.
 
 ## Proxy Contract
 

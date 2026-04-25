@@ -19,13 +19,47 @@ This page explains which data source owns each part of the product. Not every fi
 
 ## What Each Layer Owns
 
-### Authored repository data
+| Tier                      | Canonical assets                                                                                                             | Used for                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas                                                                          | contributor-edited catalog and taxonomy                                        |
+| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML                                                                               | checked-in outputs generated from authored inputs                              |
+| Runtime article store     | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state                                     |
+| Generated web corpus      | `data/articles.generated.json`                                                                                               | self-contained article browse/search/read payload for the Next.js app          |
+| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds`                                                         | corpus-backed reading/search plus catalog-backed source discovery              |
+| Browser-local runtime     | IndexedDB, localStorage, reader-local state                                                                                  | anonymous on-device reader preferences and article state                       |
+| External backend proxy    | `BACKEND_URL`-backed Python service                                                                                          | optional analytics logging, saved searches, and backend-proxied runtime routes |
 
 Use the YAML catalog and topic files when you are changing the source list itself.
 
 ### Derived repository data
 
-Use enriched YAML and exported assets as outputs. They should be regenerated when the authored catalog changes.
+| Context                | Primary responsibility                                                             | Typical paths                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Docs shell             | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components                               |
+| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX               | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
+| Admin                  | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`                         |
+| Backend proxy          | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers                   |
+
+Treat these as bounded code ownership areas inside one deployment, not as
+separate deployables or packages.
+
+## What each layer owns
+
+### Authored repository truth
+
+- `data/feeds.yaml` is the minimal curated source registry.
+- `data/topics.yaml` is the topic taxonomy.
+- schemas in `data/*.schema.json` define the validation contract for those files.
+
+These files are the starting point for contributor changes and workflow intake.
+
+### Derived repository assets
+
+- `data/feeds.enriched.yaml` is derived from the authored feed catalog.
+- exported JSON and OPML files are downstream artifacts, not the canonical input.
+
+Treat these as generated or regenerated outputs whenever the authored catalog
+changes.
 
 ### Runtime database
 
@@ -58,6 +92,27 @@ flowchart TD
 
 ## Related
 
-- [Architecture Overview](/docs/development/architecture)
-- [Search Architecture](/docs/development/search-architecture)
-- [Feeds](/docs/features/reader)
+The web app prefers repository catalog files in this order for source discovery:
+
+1. `data/feeds.enriched.yaml`
+2. `data/feeds.yaml`
+3. `data/feeds.json`
+
+The web app prefers `data/articles.generated.json` for article browse/search.
+
+- If the corpus exists, `/feeds`, `/api/articles`, article search, and
+  autocomplete article suggestions use it.
+- If the corpus is missing or empty, the reader-first workspace renders a
+  dedicated corpus-unavailable state.
+- Live fetches from `/api/feeds/posts/aggregate` remain a freshness overlay only.
+
+<Callout type="info" title="Practical rule">
+  Edit YAML when you are changing the catalog itself. Use the runtime database when you are inspecting operational behavior or populating `feed_entries`. Use the generated corpus when you are validating the reader/search experience that ships in the standalone web app.
+</Callout>
+
+## Related documentation
+
+- [Search architecture](/docs/development/search-architecture)
+- [Reader](/docs/features/reader)
+- [Search & Discovery](/docs/features/search)
+- [Deployment Guide](/docs/guides/deployment)

@@ -113,7 +113,8 @@ export const DESIGN_ASSETS = {
       provenance: {
         model: "flux_1_schnell_q8p.ckpt",
         seed: 52042,
-        promptSummary: "Support-tools plate representing downloads, docs, and machine-facing outputs.",
+        promptSummary:
+          "Support-tools plate representing downloads, docs, and machine-facing outputs.",
         postProcessed: false,
       },
     }),
@@ -143,7 +144,8 @@ export const DESIGN_ASSETS = {
       provenance: {
         model: "flux_1_schnell_q8p.ckpt",
         seed: 52044,
-        promptSummary: "Documentation-focused social background plate with left-side negative space.",
+        promptSummary:
+          "Documentation-focused social background plate with left-side negative space.",
         postProcessed: false,
       },
     }),

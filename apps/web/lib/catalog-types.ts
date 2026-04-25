@@ -16,6 +16,7 @@ export interface CatalogFeed {
   id?: string;
   url: string;
   feed?: string;
+  website_url?: string;
   title?: string | null;
   notes?: string | null;
   description?: string | null;

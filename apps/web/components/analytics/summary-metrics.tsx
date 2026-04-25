@@ -126,16 +126,8 @@ export function SummaryMetrics({
 
       <div className="surface-card-soft flex flex-wrap gap-4">
         <HealthChip label="Healthy" value={metrics.health_distribution.healthy} tone="success" />
-        <HealthChip
-          label="Moderate"
-          value={metrics.health_distribution.moderate}
-          tone="warning"
-        />
-        <HealthChip
-          label="Unhealthy"
-          value={metrics.health_distribution.unhealthy}
-          tone="danger"
-        />
+        <HealthChip label="Moderate" value={metrics.health_distribution.moderate} tone="warning" />
+        <HealthChip label="Unhealthy" value={metrics.health_distribution.unhealthy} tone="danger" />
       </div>
     </section>
   );

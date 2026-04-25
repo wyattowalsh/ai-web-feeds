@@ -8,7 +8,7 @@ Implements FR-011 through FR-011g:
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import text
@@ -25,7 +25,6 @@ from ai_web_feeds.visualization.cache import get_cache
 from ai_web_feeds.visualization.validators import (
     DateRangeValidator,
     QueryValidator,
-    ValidationError,
 )
 
 

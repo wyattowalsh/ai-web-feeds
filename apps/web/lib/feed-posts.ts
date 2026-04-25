@@ -1,6 +1,6 @@
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser } from "fast-xml-parser";
 
-import { loadFeeds, type FeedSource } from '@/lib/feeds';
+import { loadFeeds, type FeedSource } from "@/lib/feeds";
 
 export interface FeedPost {
   id: string;
@@ -33,14 +33,14 @@ export interface AggregateFeedPostsResponse {
   feeds: FeedPostsResponse[];
   fetchedAt: string;
   expiresAt: string;
-  cacheState: 'live' | 'cached';
+  cacheState: "live" | "cached";
   totalSources: number;
   successfulSources: number;
   failedSources: number;
 }
 
 interface LoadFeedOptions {
-  discoveryMode?: 'full' | 'fast';
+  discoveryMode?: "full" | "fast";
 }
 
 interface AggregateLoadOptions {
@@ -48,13 +48,16 @@ interface AggregateLoadOptions {
 }
 
 const AGGREGATE_CACHE_TTL_MS = 10 * 60 * 1000;
-const aggregateFeedCache = new Map<string, { expiresAt: number; payload: AggregateFeedPostsResponse }>();
+const aggregateFeedCache = new Map<
+  string,
+  { expiresAt: number; payload: AggregateFeedPostsResponse }
+>();
 const aggregateFeedInflight = new Map<string, Promise<AggregateFeedPostsResponse>>();
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
-  attributeNamePrefix: '@_',
-  textNodeName: '#text',
+  attributeNamePrefix: "@_",
+  textNodeName: "#text",
   removeNSPrefix: true,
   trimValues: true,
   parseTagValue: false,
@@ -66,10 +69,10 @@ export async function loadFeedPostsById(feedId: string, limit = 6): Promise<Feed
   const feed = resolveFeedSource(feedsData.sources, feedId);
 
   if (!feed) {
-    throw new Error('Feed not found');
+    throw new Error("Feed not found");
   }
 
-  return loadFeedPostsForSource(feed, feedId, limit, { discoveryMode: 'full' });
+  return loadFeedPostsForSource(feed, feedId, limit, { discoveryMode: "full" });
 }
 
 export async function loadAggregatedFeedPostsByIds(
@@ -85,7 +88,7 @@ export async function loadAggregatedFeedPostsByIds(
   const cacheKey = createAggregateCacheKey(uniqueFeedIds, totalLimit, perFeedLimit);
 
   if (uniqueFeedIds.length === 0) {
-    throw new Error('At least one feed is required');
+    throw new Error("At least one feed is required");
   }
 
   if (!options.forceRefresh) {
@@ -113,7 +116,7 @@ export async function loadAggregatedFeedPostsByIds(
     .filter((value): value is { feed: FeedSource; requestedId: string } => value !== null);
 
   if (resolvedFeeds.length === 0) {
-    throw new Error('No matching canonical feeds were found');
+    throw new Error("No matching canonical feeds were found");
   }
 
   const aggregatePromise = buildAggregatedFeedPosts(resolvedFeeds, totalLimit, perFeedLimit)
@@ -137,14 +140,14 @@ async function buildAggregatedFeedPosts(
   const attempts = await mapWithConcurrency(resolvedFeeds, 20, async ({ feed, requestedId }) => {
     try {
       const payload = await loadFeedPostsForSource(feed, requestedId, perFeedLimit, {
-        discoveryMode: 'fast',
+        discoveryMode: "fast",
       });
       return { ok: true as const, payload };
     } catch (error) {
       return {
         ok: false as const,
         feedId: requestedId,
-        message: error instanceof Error ? error.message : 'Failed to load feed posts',
+        message: error instanceof Error ? error.message : "Failed to load feed posts",
       };
     }
   });
@@ -153,7 +156,7 @@ async function buildAggregatedFeedPosts(
 
   if (feeds.length === 0) {
     const firstFailure = attempts.find((attempt) => !attempt.ok);
-    throw new Error(firstFailure?.message || 'Failed to load any feeds');
+    throw new Error(firstFailure?.message || "Failed to load any feeds");
   }
 
   const posts = feeds
@@ -177,7 +180,7 @@ async function buildAggregatedFeedPosts(
     feeds,
     fetchedAt,
     expiresAt,
-    cacheState: 'live',
+    cacheState: "live",
     totalSources: resolvedFeeds.length,
     successfulSources: feeds.length,
     failedSources: resolvedFeeds.length - feeds.length,
@@ -193,7 +196,7 @@ async function loadFeedPostsForSource(
   const resolvedFeedUrl = await resolveFeedUrl(feed, options);
   const xmlContent = await fetchFeedXml(
     resolvedFeedUrl,
-    options.discoveryMode === 'fast' ? 2500 : 8000,
+    options.discoveryMode === "fast" ? 2500 : 8000,
   );
   const posts = parseFeedXml(xmlContent, limit);
 
@@ -208,8 +211,8 @@ async function loadFeedPostsForSource(
 }
 
 function normalizeFeedLookupKey(value: unknown): string {
-  if (typeof value !== 'string') {
-    return '';
+  if (typeof value !== "string") {
+    return "";
   }
 
   return value.trim().toLowerCase();
@@ -237,33 +240,33 @@ async function resolveFeedUrl(feed: FeedSource, options: LoadFeedOptions = {}): 
   }
 
   if (isGitHubRepositoryUrl(candidateUrl)) {
-    return `${candidateUrl.replace(/\/$/, '')}/releases.atom`;
+    return `${candidateUrl.replace(/\/$/, "")}/releases.atom`;
   }
 
   if (isRedditSubredditUrl(candidateUrl)) {
-    return `${candidateUrl.replace(/\/$/, '')}/.rss`;
+    return `${candidateUrl.replace(/\/$/, "")}/.rss`;
   }
 
   const response = await fetchWithTimeout(
     candidateUrl,
     {
       headers: {
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.7',
-        'User-Agent': 'ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)',
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.7",
+        "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
       },
       next: { revalidate: 1800 },
     },
-    options.discoveryMode === 'fast' ? 2500 : 8000,
+    options.discoveryMode === "fast" ? 2500 : 8000,
   );
 
   if (!response.ok) {
     throw new Error(`Failed to load feed source (${response.status})`);
   }
 
-  const contentType = response.headers.get('content-type') || '';
+  const contentType = response.headers.get("content-type") || "";
   const body = await response.text();
 
-  if (contentType.includes('xml') || looksLikeXmlDocument(body)) {
+  if (contentType.includes("xml") || looksLikeXmlDocument(body)) {
     return candidateUrl;
   }
 
@@ -272,14 +275,14 @@ async function resolveFeedUrl(feed: FeedSource, options: LoadFeedOptions = {}): 
     return discoveredFeedUrl;
   }
 
-  if (options.discoveryMode !== 'fast') {
+  if (options.discoveryMode !== "fast") {
     const probedFeedUrl = await probeCommonFeedPaths(candidateUrl);
     if (probedFeedUrl) {
       return probedFeedUrl;
     }
   }
 
-  throw new Error('Could not discover a feed URL for this source');
+  throw new Error("Could not discover a feed URL for this source");
 }
 
 async function fetchFeedXml(feedUrl: string, timeoutMs = 8000): Promise<string> {
@@ -287,8 +290,8 @@ async function fetchFeedXml(feedUrl: string, timeoutMs = 8000): Promise<string> 
     feedUrl,
     {
       headers: {
-        Accept: 'application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5',
-        'User-Agent': 'ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)',
+        Accept: "application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5",
+        "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
       },
       next: { revalidate: 1800 },
     },
@@ -301,7 +304,7 @@ async function fetchFeedXml(feedUrl: string, timeoutMs = 8000): Promise<string> 
 
   const xmlContent = await response.text();
   if (!looksLikeXmlDocument(xmlContent)) {
-    throw new Error('Resolved URL did not return an RSS or Atom feed');
+    throw new Error("Resolved URL did not return an RSS or Atom feed");
   }
 
   return xmlContent;
@@ -322,16 +325,16 @@ function parseFeedXml(xmlContent: string, limit: number): FeedPost[] {
     return normalizeRssItems(parsed.RDF.item, limit);
   }
 
-  throw new Error('Unsupported feed format');
+  throw new Error("Unsupported feed format");
 }
 
 function normalizeRssItems(items: unknown, limit: number): FeedPost[] {
   return toArray<Record<string, unknown>>(items)
     .map((item, index) => {
       const title = readText(item.title) || `Untitled post ${index + 1}`;
-      const link = readText(item.link) || readText(item.guid) || '';
+      const link = readText(item.link) || readText(item.guid) || "";
       const summary = sanitizeSummary(
-        readText(item['content:encoded']) || readText(item.description) || readText(item.summary),
+        readText(item["content:encoded"]) || readText(item.description) || readText(item.summary),
       );
 
       return {
@@ -341,7 +344,9 @@ function normalizeRssItems(items: unknown, limit: number): FeedPost[] {
         publishedAt: readText(item.pubDate) || readText(item.published) || readText(item.updated),
         summary,
         author: readText(item.creator) || readText(item.author) || null,
-        categories: toArray(item.category).map((category) => readText(category)).filter(Boolean) as string[],
+        categories: toArray(item.category)
+          .map((category) => readText(category))
+          .filter(Boolean) as string[],
       };
     })
     .filter((item) => item.link.length > 0)
@@ -366,12 +371,12 @@ function normalizeAtomEntries(entries: unknown, limit: number): FeedPost[] {
         author: readAtomAuthor(entry.author),
         categories: toArray(entry.category)
           .map((category) => {
-            if (typeof category === 'string') return category;
-            if (category && typeof category === 'object' && '@_term' in category) {
-              const term = category['@_term'];
-              return typeof term === 'string' ? term : '';
+            if (typeof category === "string") return category;
+            if (category && typeof category === "object" && "@_term" in category) {
+              const term = category["@_term"];
+              return typeof term === "string" ? term : "";
             }
-            return '';
+            return "";
           })
           .filter(Boolean),
       };
@@ -383,15 +388,15 @@ function normalizeAtomEntries(entries: unknown, limit: number): FeedPost[] {
 function readAtomLink(value: unknown): string {
   const links = toArray<Record<string, unknown>>(value);
   const alternate = links.find((link) => {
-    const rel = typeof link?.['@_rel'] === 'string' ? link['@_rel'] : 'alternate';
-    return rel === 'alternate' || rel.length === 0;
+    const rel = typeof link?.["@_rel"] === "string" ? link["@_rel"] : "alternate";
+    return rel === "alternate" || rel.length === 0;
   });
 
-  if (alternate && typeof alternate['@_href'] === 'string') {
-    return alternate['@_href'];
+  if (alternate && typeof alternate["@_href"] === "string") {
+    return alternate["@_href"];
   }
 
-  return '';
+  return "";
 }
 
 function readAtomAuthor(value: unknown): string | null {
@@ -402,19 +407,19 @@ function readAtomAuthor(value: unknown): string | null {
 }
 
 function readText(value: unknown): string {
-  if (typeof value === 'string') return value.trim();
-  if (typeof value === 'number') return String(value);
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return String(value);
 
-  if (value && typeof value === 'object') {
-    if ('#text' in value && typeof value['#text'] === 'string') {
-      return value['#text'].trim();
+  if (value && typeof value === "object") {
+    if ("#text" in value && typeof value["#text"] === "string") {
+      return value["#text"].trim();
     }
-    if ('__cdata' in value && typeof value['__cdata'] === 'string') {
-      return value['__cdata'].trim();
+    if ("__cdata" in value && typeof value["__cdata"] === "string") {
+      return value["__cdata"].trim();
     }
   }
 
-  return '';
+  return "";
 }
 
 function toArray<T>(value: unknown): T[] {
@@ -425,8 +430,8 @@ function toArray<T>(value: unknown): T[] {
 
 function sanitizeSummary(value: string): string | null {
   const stripped = value
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
   if (stripped.length === 0) return null;
@@ -434,7 +439,9 @@ function sanitizeSummary(value: string): string | null {
 }
 
 function discoverFeedUrlFromHtml(html: string, sourceUrl: string): string | null {
-  const matches = html.matchAll(/<link[^>]+rel=["'][^"']*alternate[^"']*["'][^>]+type=["'](?:application\/rss\+xml|application\/atom\+xml|application\/xml|text\/xml)["'][^>]+href=["']([^"']+)["'][^>]*>/gi);
+  const matches = html.matchAll(
+    /<link[^>]+rel=["'][^"']*alternate[^"']*["'][^>]+type=["'](?:application\/rss\+xml|application\/atom\+xml|application\/xml|text\/xml)["'][^>]+href=["']([^"']+)["'][^>]*>/gi,
+  );
 
   for (const match of matches) {
     const href = match[1];
@@ -447,7 +454,15 @@ function discoverFeedUrlFromHtml(html: string, sourceUrl: string): string | null
 
 async function probeCommonFeedPaths(sourceUrl: string): Promise<string | null> {
   const baseUrl = new URL(sourceUrl);
-  const candidatePaths = ['/feed', '/feed/', '/rss', '/rss.xml', '/feed.xml', '/atom.xml', '/index.xml'];
+  const candidatePaths = [
+    "/feed",
+    "/feed/",
+    "/rss",
+    "/rss.xml",
+    "/feed.xml",
+    "/atom.xml",
+    "/index.xml",
+  ];
 
   for (const path of candidatePaths) {
     const candidateUrl = new URL(path, baseUrl).toString();
@@ -455,8 +470,9 @@ async function probeCommonFeedPaths(sourceUrl: string): Promise<string | null> {
     try {
       const response = await fetchWithTimeout(candidateUrl, {
         headers: {
-          Accept: 'application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5',
-          'User-Agent': 'ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)',
+          Accept:
+            "application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5",
+          "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
         },
         next: { revalidate: 1800 },
       });
@@ -465,10 +481,10 @@ async function probeCommonFeedPaths(sourceUrl: string): Promise<string | null> {
         continue;
       }
 
-      const contentType = response.headers.get('content-type') || '';
+      const contentType = response.headers.get("content-type") || "";
       const body = await response.text();
 
-      if (contentType.includes('xml') || looksLikeXmlDocument(body)) {
+      if (contentType.includes("xml") || looksLikeXmlDocument(body)) {
         return candidateUrl;
       }
     } catch {
@@ -493,18 +509,27 @@ function isRedditSubredditUrl(url: string): boolean {
 
 function looksLikeXmlDocument(value: string): boolean {
   const trimmed = value.trim();
-  return trimmed.startsWith('<?xml') || trimmed.startsWith('<rss') || trimmed.startsWith('<feed') || trimmed.startsWith('<rdf:RDF');
+  return (
+    trimmed.startsWith("<?xml") ||
+    trimmed.startsWith("<rss") ||
+    trimmed.startsWith("<feed") ||
+    trimmed.startsWith("<rdf:RDF")
+  );
 }
 
-async function fetchWithTimeout(input: string, init: RequestInit, timeoutMs = 8000): Promise<Response> {
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit,
+  timeoutMs = 8000,
+): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await fetch(input, { ...init, signal: controller.signal });
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timed out while loading the source feed');
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timed out while loading the source feed");
     }
 
     throw error;
@@ -541,10 +566,14 @@ function getPostTimestamp(value: string | null): number | null {
 }
 
 function compareText(left: string, right: string): number {
-  return left.localeCompare(right, undefined, { sensitivity: 'base' });
+  return left.localeCompare(right, undefined, { sensitivity: "base" });
 }
 
-function createAggregateCacheKey(feedIds: string[], totalLimit: number, perFeedLimit: number): string {
+function createAggregateCacheKey(
+  feedIds: string[],
+  totalLimit: number,
+  perFeedLimit: number,
+): string {
   return JSON.stringify({
     feedIds: [...feedIds].sort(),
     totalLimit,
@@ -565,7 +594,7 @@ function readAggregateCache(cacheKey: string): AggregateFeedPostsResponse | null
 
   return {
     ...entry.payload,
-    cacheState: 'cached',
+    cacheState: "cached",
   };
 }
 
@@ -588,7 +617,11 @@ function pruneAggregateCache(): void {
   }
 }
 
-async function mapWithConcurrency<T, U>(items: T[], concurrency: number, mapper: (item: T) => Promise<U>): Promise<U[]> {
+async function mapWithConcurrency<T, U>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T) => Promise<U>,
+): Promise<U[]> {
   const results = new Array<U>(items.length);
   let index = 0;
 

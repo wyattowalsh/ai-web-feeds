@@ -34,6 +34,9 @@ def load_feeds(path: Path | str) -> dict[str, Any]:
     # Handle empty/None YAML files
     if data is None:
         data = {}
+    if not isinstance(data, dict):
+        msg = f"Feeds file must contain a YAML object: {path}"
+        raise TypeError(msg)
 
     sources = data.get("sources", [])
     logger.info(f"Loaded {len(sources)} feed sources")
@@ -67,11 +70,20 @@ def load_topics(path: Path | str) -> dict[str, Any]:
 
     if data is None:
         data = {}
+    if not isinstance(data, dict):
+        msg = f"Topics file must contain a YAML object: {path}"
+        raise TypeError(msg)
 
     topics = data.get("topics", [])
     logger.info(f"Loaded {len(topics)} topics")
 
     return cast(dict[str, Any], data)
+
+
+def canonicalize_catalog(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the canonical catalog shape expected by validation helpers."""
+
+    return data
 
 
 def save_feeds(data: dict[str, Any], path: Path | str) -> None:

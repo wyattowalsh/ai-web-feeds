@@ -15,7 +15,7 @@ def show(
         "-d",
         help="Database URL",
     ),
-):
+) -> None:
     """Show feed statistics."""
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()

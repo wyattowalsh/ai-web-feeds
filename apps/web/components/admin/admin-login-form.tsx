@@ -30,9 +30,11 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         body: JSON.stringify({ password, next: nextPath }),
       });
 
-      const payload = (await response.json().catch(() => null)) as
-        | { authenticated?: boolean; next?: string; error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        authenticated?: boolean;
+        next?: string;
+        error?: string;
+      } | null;
 
       if (!response.ok || !payload?.authenticated) {
         setError(payload?.error ?? "Unable to authenticate admin session");
@@ -60,7 +62,8 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         <div className="space-y-2">
           <h1 className="hero-title max-w-xl">Protected observability for API telemetry.</h1>
           <p className="hero-copy max-w-lg">
-            This panel is guarded by a server-only shared secret and issues a signed admin session cookie after successful authentication.
+            This panel is guarded by a server-only shared secret and issues a signed admin session
+            cookie after successful authentication.
           </p>
         </div>
       </div>
@@ -77,7 +80,11 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         />
       </label>
 
-      {error ? <p className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="primary" disabled={isSubmitting}>

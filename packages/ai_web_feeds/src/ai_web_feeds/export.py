@@ -11,6 +11,49 @@ from loguru import logger
 OPML_ROOT_FOLDER = "aiwebfeeds"
 
 
+def build_export_data(catalog: dict[str, Any]) -> dict[str, Any]:
+    """Build the export payload expected by data validation and generated assets.
+
+    The current catalog shape is already export-ready, so this remains a thin
+    compatibility wrapper around the canonical data structure.
+    """
+
+    return catalog
+
+
+def build_opml_category_map(catalog: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Group sources by topic for categorized OPML rendering."""
+
+    categories: dict[str, list[dict[str, Any]]] = {}
+    for source in catalog.get("sources", []):
+        topics = source.get("topics", ["Uncategorized"])
+        if not topics:
+            topics = ["Uncategorized"]
+        for topic in topics:
+            categories.setdefault(topic, []).append(source)
+    return categories
+
+
+def render_opml(data: dict[str, Any], categorized: bool = False) -> str:
+    """Render OPML content without writing it to disk."""
+
+    opml = Element("opml", version="2.0")
+    head = SubElement(opml, "head")
+    SubElement(head, "title").text = data.get("document_meta", {}).get("title", "AI Web Feeds")
+    body = SubElement(opml, "body")
+
+    if categorized:
+        for category, category_sources in sorted(build_opml_category_map(data).items()):
+            outline = SubElement(body, "outline", text=category, title=category)
+            for source in category_sources:
+                _add_feed_outline(outline, source)
+    else:
+        for source in data.get("sources", []):
+            _add_feed_outline(body, source)
+
+    return wrap_opml_with_root_folder(_serialize_xml(opml))
+
+
 def export_to_json(data: dict[str, Any], output_path: Path | str) -> None:
     """Export feed data to JSON format.
 
@@ -44,36 +87,8 @@ def export_to_opml(
 
     logger.info(f"Exporting to OPML: {output_path}")
 
-    # Create OPML structure
-    opml = Element("opml", version="2.0")
-    head = SubElement(opml, "head")
-    SubElement(head, "title").text = data.get("document_meta", {}).get("title", "AI Web Feeds")
-    body = SubElement(opml, "body")
-
     sources = data.get("sources", [])
-
-    if categorized:
-        # Group by topics
-        categories: dict[str, list[dict[str, Any]]] = {}
-        for source in sources:
-            topics = source.get("topics", ["Uncategorized"])
-            if not topics:
-                topics = ["Uncategorized"]
-            for topic in topics:
-                categories.setdefault(topic, []).append(source)
-
-        # Create outline elements for each category
-        for category, category_sources in sorted(categories.items()):
-            outline = SubElement(body, "outline", text=category, title=category)
-            for source in category_sources:
-                _add_feed_outline(outline, source)
-    else:
-        # Flat list
-        for source in sources:
-            _add_feed_outline(body, source)
-
-    # Pretty print and save
-    xml_str = wrap_opml_with_root_folder(_serialize_xml(opml))
+    xml_str = render_opml(data, categorized=categorized)
     with output_path.open("w", encoding="utf-8") as f:
         f.write(xml_str)
 

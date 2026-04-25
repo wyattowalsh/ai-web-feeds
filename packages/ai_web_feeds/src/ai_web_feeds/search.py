@@ -15,6 +15,8 @@ from typing import Any
 
 import numpy as np
 from loguru import logger
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
@@ -168,32 +170,39 @@ def create_fts_table(session: Session):
     """
     logger.info("Creating FTS5 table for full-text search")
 
+    # Recreate the FTS table so its schema stays aligned with the current
+    # source-table contract instead of relying on external-content column names.
+    session.connection().execute(text("DROP TABLE IF EXISTS feeds_fts"))
+
     # Create FTS5 virtual table
-    session.exec(
-        """
-        CREATE VIRTUAL TABLE IF NOT EXISTS feeds_fts USING fts5(
+    session.connection().execute(
+        text(
+            """
+        CREATE VIRTUAL TABLE feeds_fts USING fts5(
             feed_id UNINDEXED,
             title,
             description,
-            topics,
-            content='sources',
-            content_rowid='rowid'
+            topics
         )
         """
+        )
     )
 
     # Create triggers to keep FTS5 in sync with sources table
-    session.exec(
-        """
+    session.connection().execute(
+        text(
+            """
         CREATE TRIGGER IF NOT EXISTS feeds_fts_insert AFTER INSERT ON sources BEGIN
             INSERT INTO feeds_fts(feed_id, title, description, topics)
             VALUES (new.id, new.title, new.notes, json_extract(new.topics, '$'));
         END
         """
+        )
     )
 
-    session.exec(
-        """
+    session.connection().execute(
+        text(
+            """
         CREATE TRIGGER IF NOT EXISTS feeds_fts_update AFTER UPDATE ON sources BEGIN
             UPDATE feeds_fts
             SET title = new.title,
@@ -202,14 +211,29 @@ def create_fts_table(session: Session):
             WHERE feed_id = old.id;
         END
         """
+        )
     )
 
-    session.exec(
-        """
+    session.connection().execute(
+        text(
+            """
         CREATE TRIGGER IF NOT EXISTS feeds_fts_delete AFTER DELETE ON sources BEGIN
             DELETE FROM feeds_fts WHERE feed_id = old.id;
         END
         """
+        )
+    )
+
+    # Backfill existing sources so full-text search works even when the FTS table
+    # is initialized after sources have already been inserted.
+    session.connection().execute(
+        text(
+            """
+        INSERT OR REPLACE INTO feeds_fts(rowid, feed_id, title, description, topics)
+        SELECT rowid, id, title, notes, json_extract(topics, '$')
+        FROM sources
+        """
+        )
     )
 
     session.commit()
@@ -233,8 +257,6 @@ def full_text_search(
     Returns:
         List of matching FeedSource objects
     """
-    from sqlalchemy import text
-
     settings = get_settings()
     logger.info(f"Full-text search: query='{query}', limit={limit}")
 
@@ -245,18 +267,25 @@ def full_text_search(
     fts_limit = limit * 2
 
     # Search FTS5 table using parameterized query with text()
-    fts_results = session.exec(
-        text(
-            """
-        SELECT feed_id, rank
-        FROM feeds_fts
-        WHERE feeds_fts MATCH :query
-        ORDER BY rank
-        LIMIT :limit
+    statement = text(
         """
-        ),
-        {"query": query, "limit": fts_limit},
-    ).all()
+    SELECT feed_id, rank
+    FROM feeds_fts
+    WHERE feeds_fts MATCH :query
+    ORDER BY rank
+    LIMIT :limit
+    """
+    )
+    parameters = {"query": query, "limit": fts_limit}
+
+    try:
+        fts_results = session.connection().execute(statement, parameters).all()
+    except OperationalError as exc:
+        if "no such table: feeds_fts" not in str(exc).lower():
+            raise
+        logger.info("FTS5 table missing during search; initializing lazily")
+        create_fts_table(session)
+        fts_results = session.connection().execute(statement, parameters).all()
 
     if not fts_results:
         logger.debug("No FTS5 results found")
@@ -264,6 +293,7 @@ def full_text_search(
 
     # Get feed IDs
     feed_ids = [row[0] for row in fts_results]
+    feed_positions = {feed_id: index for index, feed_id in enumerate(feed_ids)}
 
     # Build filter query
     statement = select(FeedSource).where(FeedSource.id.in_(feed_ids))
@@ -294,8 +324,14 @@ def full_text_search(
             boost *= 1.05
         feed._search_score = boost  # Store for sorting
 
-    # Sort by boosted score
-    feeds.sort(key=lambda f: getattr(f, "_search_score", 1.0), reverse=True)
+    # Sort by boosted score while preserving the underlying FTS rank order as
+    # the tie-breaker so search results remain deterministic.
+    feeds.sort(
+        key=lambda feed: (
+            -getattr(feed, "_search_score", 1.0),
+            feed_positions.get(feed.id, len(feed_positions)),
+        )
+    )
 
     logger.debug(f"Full-text search returned {len(feeds)} results")
     return feeds[:limit]
@@ -443,22 +479,48 @@ def autocomplete(
     if limit is None:
         limit = settings.search.autocomplete_limit
 
-    logger.info(f"Autocomplete: prefix='{prefix}', limit={limit}")
+    logger.debug(f"Autocomplete: prefix='{prefix}', limit={limit}")
 
     if len(prefix) < 2:
         return {"feeds": [], "topics": []}
 
     trie = get_trie_index(session)
     suggestions = trie.search_prefix(prefix, limit=limit)
+    feed_ids = sorted(
+        {feed_id for _word, suggestion_ids, _freq in suggestions for feed_id in suggestion_ids}
+    )
+
+    if not feed_ids:
+        return {"feeds": [], "topics": []}
+
+    feeds = session.exec(select(FeedSource).where(FeedSource.id.in_(feed_ids))).all()
+    feed_map = {feed.id: feed for feed in feeds}
 
     # Separate feeds and topics
     feed_suggestions = []
     topic_suggestions = []
 
-    for word, feed_ids, frequency in suggestions:
-        # Check if it's a topic (single word, lowercase)
-        if len(word.split()) == 1 and word.islower():
-            # Likely a topic
+    for word, feed_ids, _frequency in suggestions:
+        matching_feeds = [feed_map[feed_id] for feed_id in feed_ids if feed_id in feed_map]
+
+        matching_feed = next(
+            (feed for feed in matching_feeds if feed.title and word in feed.title.lower().split()),
+            None,
+        )
+
+        is_topic = any(word in {topic.lower() for topic in feed.topics} for feed in matching_feeds)
+
+        if matching_feed:
+            feed_suggestions.append(
+                {
+                    "id": matching_feed.id,
+                    "title": matching_feed.title,
+                    "type": "feed",
+                    "url": matching_feed.feed or matching_feed.site,
+                }
+            )
+
+        if is_topic:
             topic_suggestions.append(
                 {
                     "label": word.upper(),
@@ -466,19 +528,6 @@ def autocomplete(
                     "feed_count": len(feed_ids),
                 }
             )
-        # Feed title word
-        # Get first feed for this word
-        elif feed_ids:
-            feed = session.get(FeedSource, feed_ids[0])
-            if feed:
-                feed_suggestions.append(
-                    {
-                        "id": feed.id,
-                        "title": feed.title,
-                        "type": "feed",
-                        "url": feed.feed or feed.site,
-                    }
-                )
 
     # Return top 5 feeds and top 3 topics
     return {

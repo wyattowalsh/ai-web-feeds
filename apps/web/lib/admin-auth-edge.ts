@@ -52,7 +52,11 @@ function parsePayload(encodedPayload: string): AdminSessionPayload | null {
 
   try {
     const parsed = JSON.parse(decoded) as Partial<AdminSessionPayload>;
-    if (parsed.sub !== "admin" || typeof parsed.exp !== "number" || typeof parsed.nonce !== "string") {
+    if (
+      parsed.sub !== "admin" ||
+      typeof parsed.exp !== "number" ||
+      typeof parsed.nonce !== "string"
+    ) {
       return null;
     }
 
