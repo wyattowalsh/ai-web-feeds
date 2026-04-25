@@ -62,7 +62,9 @@ export function SavedSearches({
         method: "DELETE",
       });
       if (response.ok) {
-        setSearches((currentSearches) => currentSearches.filter((search) => search.id !== searchId));
+        setSearches((currentSearches) =>
+          currentSearches.filter((search) => search.id !== searchId),
+        );
       }
     } catch (error) {
       console.error("Failed to delete saved search:", error);
@@ -94,13 +96,17 @@ export function SavedSearches({
             <h3 className="text-lg font-semibold text-(--ink)">Reusable discovery shortcuts</h3>
           </div>
         </div>
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">{searches.length} saved</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-(--ink-muted)">
+          {searches.length} saved
+        </span>
       </div>
 
       {searches.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-(--line) px-6 py-10 text-center text-(--ink-muted)">
           <p className="text-sm font-semibold text-(--ink)">No saved searches yet</p>
-          <p className="mt-1 text-xs">Save a search to keep recurring monitoring queries close at hand.</p>
+          <p className="mt-1 text-xs">
+            Save a search to keep recurring monitoring queries close at hand.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -109,7 +115,11 @@ export function SavedSearches({
               key={search.id}
               className="group flex items-start justify-between rounded-3xl border border-(--line) bg-(--surface) p-4 transition duration-150 hover:bg-(--surface-muted)"
             >
-              <button type="button" onClick={() => handleLoadSearch(search)} className="flex-1 text-left">
+              <button
+                type="button"
+                onClick={() => handleLoadSearch(search)}
+                className="flex-1 text-left"
+              >
                 <p className="text-sm font-semibold text-(--ink)">{search.search_name}</p>
                 <p className="mt-1 truncate text-xs text-(--ink-muted)">{search.query_text}</p>
                 {Object.keys(search.filters).length > 0 && (

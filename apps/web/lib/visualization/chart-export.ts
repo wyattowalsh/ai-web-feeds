@@ -81,7 +81,7 @@ export async function exportChart(
   canvas: HTMLCanvasElement,
   config: ChartConfig,
   options: ExportOptions,
-  deviceId?: string
+  deviceId?: string,
 ): Promise<void> {
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Chart export is only available in the browser");
@@ -117,16 +117,16 @@ export async function exportChart(
           config,
         },
         null,
-        2
+        2,
       )
     : null;
 
   const html = [
     "<!doctype html>",
-    "<html lang=\"en\">",
+    '<html lang="en">',
     "<head>",
-    "  <meta charset=\"UTF-8\" />",
-    "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />",
+    '  <meta charset="UTF-8" />',
+    '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
     `  <title>${escapeHtml(options.title ?? "Visualization Export")}</title>`,
     "  <style>body{font-family:system-ui,-apple-system,sans-serif;margin:24px;color:#111827}img{max-width:100%;height:auto;border:1px solid #e5e7eb;border-radius:8px}pre{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto}</style>",
     "</head>",

@@ -28,12 +28,7 @@ interface ScatterChartProps {
   className?: string;
 }
 
-export function ScatterChart({
-  data,
-  options,
-  height = 300,
-  className = "",
-}: ScatterChartProps) {
+export function ScatterChart({ data, options, height = 300, className = "" }: ScatterChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<ChartJS<"scatter"> | null>(null);
 
@@ -120,7 +115,7 @@ export function createScatterChartData(
     data: Array<{ x: number; y: number }>;
     backgroundColor?: string;
     borderColor?: string;
-  }>
+  }>,
 ): ChartData<"scatter"> {
   return {
     datasets: datasets.map((dataset) => ({

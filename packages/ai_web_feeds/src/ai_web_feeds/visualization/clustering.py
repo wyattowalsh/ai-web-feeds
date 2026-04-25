@@ -49,6 +49,7 @@ class TopicClusteringService:
             method: Clustering method ('force-directed', 'kmeans', 'dbscan', 'pca')
         """
         self.method = method
+        self._rng = np.random.default_rng(42)
 
     def cluster_topics(
         self,
@@ -105,7 +106,7 @@ class TopicClusteringService:
     def _force_directed_layout(
         self,
         embeddings: np.ndarray,
-        topic_ids: list[str],
+        _topic_ids: list[str],
         iterations: int = 100,
     ) -> list[tuple[float, float, float]]:
         """
@@ -125,11 +126,10 @@ class TopicClusteringService:
         similarity = cosine_similarity(embeddings)
 
         # Initialize positions randomly in 3D space
-        positions = np.random.randn(n_topics, 3) * 20
+        positions = self._rng.standard_normal((n_topics, 3)) * 20
 
         # Force-directed layout parameters
         k = 20  # Optimal distance
-        area = 100 * 100 * 100  # 3D volume
         t = 10.0  # Temperature
 
         for _ in range(iterations):
@@ -191,11 +191,7 @@ class TopicClusteringService:
 
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        labels = kmeans.fit_predict(embeddings)
-
-        # Spread clusters apart in 3D space
-        cluster_centers = kmeans.cluster_centers_
-        cluster_centers_3d = pca.transform(cluster_centers)
+        kmeans.fit_predict(embeddings)
 
         # Scale positions
         positions_3d = positions_3d * 30  # Scale up for visibility
@@ -221,7 +217,7 @@ class TopicClusteringService:
 
         # Perform DBSCAN clustering
         dbscan = DBSCAN(eps=0.5, min_samples=2)
-        labels = dbscan.fit_predict(embeddings)
+        dbscan.fit_predict(embeddings)
 
         # Scale positions
         positions_3d = positions_3d * 30
@@ -297,12 +293,13 @@ def generate_sample_embeddings(n_topics: int = 15, dim: int = 128) -> dict[str, 
     embeddings = {}
 
     # Create 3 clusters of related topics
-    cluster_centers = np.random.randn(3, dim) * 2
+    rng = np.random.default_rng(42)
+    cluster_centers = rng.standard_normal((3, dim)) * 2
 
     for i, topic_id in enumerate(topics):
         cluster_idx = i % 3
         # Generate embedding near cluster center with some noise
-        embedding = cluster_centers[cluster_idx] + np.random.randn(dim) * 0.5
+        embedding = cluster_centers[cluster_idx] + rng.standard_normal(dim) * 0.5
         # Normalize
         embedding = embedding / np.linalg.norm(embedding)
         embeddings[topic_id] = embedding

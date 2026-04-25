@@ -9,41 +9,32 @@ Implements FR-055 through FR-065:
 - Rate limiting
 """
 
-from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Query, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
+from pydantic import BaseModel, Field
 
+from ai_web_feeds.visualization.auth import (
+    get_current_device_id,
+)
+from ai_web_feeds.visualization.dashboard_service import DashboardService
 from ai_web_feeds.visualization.models import (
     ChartType,
     DataSource,
-    Dashboard,
-    DashboardWidget,
     ExportFormat,
-    ExportJob,
-    ExportStatus,
-    Forecast,
     ForecastModelType,
-    Visualization,
     WidgetType,
 )
-from ai_web_feeds.visualization.auth import (
-    get_current_device_id,
-    verify_api_key,
-    create_jwt_token,
-)
-from ai_web_feeds.visualization.visualization_service import VisualizationService
-from ai_web_feeds.visualization.dashboard_service import DashboardService
 from ai_web_feeds.visualization.rate_limiter import check_rate_limit
+from ai_web_feeds.visualization.visualization_service import VisualizationService
 
 # Create router
 router = APIRouter(prefix="/api/v1", tags=["visualization"])
 
 # Services (will be initialized on startup)
-visualization_service: Optional[VisualizationService] = None
-dashboard_service: Optional[DashboardService] = None
+visualization_service: VisualizationService | None = None
+dashboard_service: DashboardService | None = None
 
 
 # ============================================================================
@@ -64,9 +55,9 @@ class CreateVisualizationRequest(BaseModel):
 class UpdateVisualizationRequest(BaseModel):
     """Request model for updating a visualization."""
 
-    name: Optional[str] = Field(None, max_length=255)
-    filters: Optional[dict[str, Any]] = None
-    customization: Optional[dict[str, Any]] = None
+    name: str | None = Field(None, max_length=255)
+    filters: dict[str, Any] | None = None
+    customization: dict[str, Any] | None = None
 
 
 class VisualizationResponse(BaseModel):
@@ -86,7 +77,7 @@ class VisualizationResponse(BaseModel):
 class VisualizationDataRequest(BaseModel):
     """Request model for fetching visualization data."""
 
-    date_range: Optional[dict[str, str]] = None
+    date_range: dict[str, str] | None = None
     limit: int = Field(default=1000, le=100_000)
 
 
@@ -94,17 +85,17 @@ class CreateDashboardRequest(BaseModel):
     """Request model for creating a dashboard."""
 
     name: str = Field(max_length=255)
-    description: Optional[str] = None
-    template_id: Optional[str] = None
+    description: str | None = None
+    template_id: str | None = None
     layout: dict[str, Any] = Field(default_factory=dict)
 
 
 class UpdateDashboardRequest(BaseModel):
     """Request model for updating a dashboard."""
 
-    name: Optional[str] = None
-    description: Optional[str] = None
-    layout: Optional[dict[str, Any]] = None
+    name: str | None = None
+    description: str | None = None
+    layout: dict[str, Any] | None = None
     version: int  # For optimistic locking
 
 
@@ -117,7 +108,7 @@ class AddWidgetRequest(BaseModel):
     refresh_interval_seconds: int = Field(default=300, ge=60, le=3600)
     position: dict[str, int]
     config: dict[str, Any] = Field(default_factory=dict)
-    visualization_id: Optional[int] = None
+    visualization_id: int | None = None
 
 
 class CreateForecastRequest(BaseModel):
@@ -134,7 +125,7 @@ class ExportRequest(BaseModel):
     entity_type: str = Field(pattern="^(feeds|topics|articles)$")
     filters: dict[str, Any] = Field(default_factory=dict)
     format: ExportFormat
-    limit: Optional[int] = Field(None, le=100_000)
+    limit: int | None = Field(None, le=100_000)
 
 
 # ============================================================================
@@ -346,7 +337,9 @@ async def get_visualization_data(
         limit=request.limit,
     )
 
-    logger.debug(f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}")
+    logger.debug(
+        f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}"
+    )
     return data
 
 
@@ -500,8 +493,8 @@ async def startup_event():
     """Initialize services on startup."""
     global visualization_service, dashboard_service
 
-    from ai_web_feeds.visualization.visualization_service import VisualizationService
     from ai_web_feeds.visualization.dashboard_service import DashboardService
+    from ai_web_feeds.visualization.visualization_service import VisualizationService
 
     visualization_service = VisualizationService()
     dashboard_service = DashboardService()

@@ -16,7 +16,10 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const POSTHandler = async (request: NextRequest) => {
-  const body = (await request.json().catch(() => null)) as { password?: string; next?: string } | null;
+  const body = (await request.json().catch(() => null)) as {
+    password?: string;
+    next?: string;
+  } | null;
   const password = body?.password?.trim() ?? "";
   const nextPath = sanitizeAdminNextPath(body?.next);
   const ipHash = hashClientIp(extractClientIp(request));
@@ -56,7 +59,11 @@ const POSTHandler = async (request: NextRequest) => {
   clearFailedLoginAttempts(throttleKey);
 
   const response = NextResponse.json({ authenticated: true, next: nextPath });
-  response.cookies.set(ADMIN_SESSION_COOKIE, createAdminSessionToken(), getAdminSessionCookieOptions());
+  response.cookies.set(
+    ADMIN_SESSION_COOKIE,
+    createAdminSessionToken(),
+    getAdminSessionCookieOptions(),
+  );
 
   await recordAdminAudit({
     timestamp: new Date().toISOString(),

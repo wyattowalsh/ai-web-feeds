@@ -68,15 +68,10 @@ export default function NewVisualizationPage() {
             <div className="flex items-start gap-3">
               <span className="text-red-500 text-xl">⚠️</span>
               <div className="flex-1">
-                <h4 className="font-medium text-red-900 dark:text-red-100 mb-1">
-                  Save Failed
-                </h4>
+                <h4 className="font-medium text-red-900 dark:text-red-100 mb-1">Save Failed</h4>
                 <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
               </div>
-              <button
-                onClick={() => setError(null)}
-                className="text-red-500 hover:text-red-700"
-              >
+              <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
                 ✕
               </button>
             </div>

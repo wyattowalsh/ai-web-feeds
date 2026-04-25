@@ -73,7 +73,7 @@ class SentimentBatchJob:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
-                query = query.where(FeedEntry.sentiment_processed == False)
+                query = query.where(FeedEntry.sentiment_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()
@@ -141,7 +141,8 @@ class SentimentBatchJob:
 
                     logger.debug(
                         f"Analyzed sentiment for article {article.id}: "
-                        f"{sentiment_result.classification} ({sentiment_result.sentiment_score:.2f})"
+                        f"{sentiment_result.classification} "
+                        f"({sentiment_result.sentiment_score:.2f})"
                     )
 
                 except Exception as e:
@@ -161,7 +162,8 @@ class SentimentBatchJob:
         logger.info(
             f"Sentiment analysis batch job completed: "
             f"processed={stats['processed']}, analyzed={stats['analyzed']}, "
-            f"positive={stats['positive']}, neutral={stats['neutral']}, negative={stats['negative']}, "
+            f"positive={stats['positive']}, neutral={stats['neutral']}, "
+            f"negative={stats['negative']}, "
             f"failed={stats['failed']}, duration={stats['duration_seconds']:.2f}s"
         )
 

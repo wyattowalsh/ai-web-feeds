@@ -140,10 +140,7 @@ function normalizeQueryDraft(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function matchesDraftState(
-  drafts: ReaderDraftState,
-  state: FeedsWorkspaceInitialState,
-): boolean {
+function matchesDraftState(drafts: ReaderDraftState, state: FeedsWorkspaceInitialState): boolean {
   return (
     normalizeQueryDraft(drafts.query) === state.query &&
     (drafts.sourceType || null) === state.sourceType &&
@@ -541,7 +538,13 @@ function PreviewPane({
             ) : null}
           </div>
           {onClose ? (
-            <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close preview">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+              aria-label="Close preview"
+            >
               <X className="size-4" />
             </Button>
           ) : null}
@@ -873,10 +876,7 @@ function ReaderWorkspace({
   }, [articleStateMap, currentState.readerView, mergedArticles]);
 
   useEffect(() => {
-    if (
-      previewArticleId &&
-      !visibleArticles.some((article) => article.id === previewArticleId)
-    ) {
+    if (previewArticleId && !visibleArticles.some((article) => article.id === previewArticleId)) {
       setPreviewArticleId(null);
     }
   }, [previewArticleId, visibleArticles]);
@@ -980,7 +980,13 @@ function ReaderWorkspace({
     } finally {
       setRefreshing(false);
     }
-  }, [browse.corpus.is_empty, browse.items.length, candidateFeeds, currentState.feedIds, mergedArticles]);
+  }, [
+    browse.corpus.is_empty,
+    browse.items.length,
+    candidateFeeds,
+    currentState.feedIds,
+    mergedArticles,
+  ]);
 
   const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
   const topicOptions = useMemo(() => getTopics(feeds), [feeds]);
@@ -1052,8 +1058,7 @@ function ReaderWorkspace({
     [queryDraft, readerViewDraft, sortDraft, sourceTypeDraft, topicsDraft, verifiedDraft],
   );
   const hasPendingDraftChanges = !matchesDraftState(draftState, currentState);
-  const snapshotTimestamp =
-    browse.corpus.generated_at ?? browse.corpus.latest_published_at ?? null;
+  const snapshotTimestamp = browse.corpus.generated_at ?? browse.corpus.latest_published_at ?? null;
   const snapshotCards = [
     {
       label: "Snapshot",
@@ -1245,7 +1250,11 @@ function ReaderWorkspace({
           <div key={label} className="surface-card flex items-start justify-between gap-4">
             <div className="space-y-3">
               <p className="metric-label">{label}</p>
-              <p className={cn(label === "Snapshot" ? "text-lg font-semibold text-(--ink)" : "metric-value")}>
+              <p
+                className={cn(
+                  label === "Snapshot" ? "text-lg font-semibold text-(--ink)" : "metric-value",
+                )}
+              >
                 {value}
               </p>
               <p className="small-note">{note}</p>
@@ -1581,239 +1590,238 @@ function ReaderWorkspace({
           </details>
 
           <section id="article-list" className="surface-card space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="space-y-1">
-              <p className="metric-label">Article stream</p>
-              <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">
-                {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
-              </h2>
-              <p className="small-note">
-                {filterSummary}. Refresh latest checks live feeds without replacing the base
-                snapshot.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {refreshError ? <p className="text-sm text-amber-700">{refreshError}</p> : null}
-              {error ? <p className="text-sm text-rose-700">{error}</p> : null}
-            </div>
-          </div>
-
-          {activeFilterChips.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {activeFilterChips.map((chip) => (
-                <button
-                  key={chip.key}
-                  type="button"
-                  onClick={() => updateUrl(chip.overrides)}
-                  className="inline-flex items-center gap-2 rounded-full border border-(--line) bg-(--surface-muted) px-3 py-1.5 text-xs font-semibold text-(--ink)"
-                >
-                  {chip.label}
-                  <X className="size-3.5 text-(--ink-muted)" />
-                </button>
-              ))}
-              <Button type="button" variant="ghost" size="sm" onClick={resetDrafts}>
-                Clear all
-              </Button>
-            </div>
-          ) : null}
-
-          {loading ? (
-            <div className="grid gap-3">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div
-                  key={`loading-${index}`}
-                  className="h-28 animate-pulse rounded-3xl border border-(--line) bg-(--surface-muted)"
-                />
-              ))}
-            </div>
-          ) : visibleArticles.length === 0 ? (
-            <EmptyState
-              icon={Newspaper}
-              title="No posts match these filters"
-              description="Clear filters, reset the page, or browse sources instead."
-            >
-              <div className="flex flex-wrap justify-center gap-3">
-                {canClearArticleFilters ? (
-                  <Link
-                    href={clearArticleFiltersHref}
-                    className={cn(buttonVariants({ variant: "default" }))}
-                  >
-                    Clear article filters
-                  </Link>
-                ) : null}
-                {canResetWorkspace ? (
-                  <Link
-                    href={resetWorkspaceHref}
-                    className={cn(buttonVariants({ variant: "outline" }))}
-                  >
-                    Reset all filters
-                  </Link>
-                ) : null}
-                <Link
-                  href={catalogRecoveryHref}
-                  className={cn(buttonVariants({ variant: "secondary" }))}
-                >
-                  Browse sources
-                </Link>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-1">
+                <p className="metric-label">Article stream</p>
+                <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">
+                  {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
+                </h2>
+                <p className="small-note">
+                  {filterSummary}. Refresh latest checks live feeds without replacing the base
+                  snapshot.
+                </p>
               </div>
-            </EmptyState>
-          ) : (
-            <div className="space-y-3">
-              {visibleArticles.map((article) => {
-                const state = articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE;
-                const isSelected = article.id === selectedArticle?.id;
-                const articleTopics = getArticleTopics(article);
+              <div className="flex flex-wrap gap-2">
+                {refreshError ? <p className="text-sm text-amber-700">{refreshError}</p> : null}
+                {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+              </div>
+            </div>
 
-                return (
-                  <article
-                    key={article.id}
-                    className={cn(
-                      "w-full rounded-3xl border p-5 text-left transition duration-150",
-                      isSelected
-                        ? "border-(--brand) bg-(--brand-soft)"
-                        : "border-(--line) bg-(--surface) hover:border-(--brand)",
-                      preferences.layout === "list" && "py-4",
-                    )}
+            {activeFilterChips.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {activeFilterChips.map((chip) => (
+                  <button
+                    key={chip.key}
+                    type="button"
+                    onClick={() => updateUrl(chip.overrides)}
+                    className="inline-flex items-center gap-2 rounded-full border border-(--line) bg-(--surface-muted) px-3 py-1.5 text-xs font-semibold text-(--ink)"
                   >
-                    <button
-                      type="button"
-                      onClick={() => handleSelectArticle(article.id)}
-                      className="w-full text-left"
-                      aria-pressed={isSelected}
+                    {chip.label}
+                    <X className="size-3.5 text-(--ink-muted)" />
+                  </button>
+                ))}
+                <Button type="button" variant="ghost" size="sm" onClick={resetDrafts}>
+                  Clear all
+                </Button>
+              </div>
+            ) : null}
+
+            {loading ? (
+              <div className="grid gap-3">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={`loading-${index}`}
+                    className="h-28 animate-pulse rounded-3xl border border-(--line) bg-(--surface-muted)"
+                  />
+                ))}
+              </div>
+            ) : visibleArticles.length === 0 ? (
+              <EmptyState
+                icon={Newspaper}
+                title="No posts match these filters"
+                description="Clear filters, reset the page, or browse sources instead."
+              >
+                <div className="flex flex-wrap justify-center gap-3">
+                  {canClearArticleFilters ? (
+                    <Link
+                      href={clearArticleFiltersHref}
+                      className={cn(buttonVariants({ variant: "default" }))}
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="metric-label">{article.feed_title}</span>
-                            {article.freshness === "live" ? (
-                              <span className="rounded-full bg-(--brand) px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-(--fd-primary-foreground)">
-                                New
-                              </span>
-                            ) : null}
-                            {state.read ? (
-                              <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                                Read
-                              </span>
-                            ) : null}
-                            {state.bookmarked ? (
-                              <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-sky-700">
-                                Saved
-                              </span>
-                            ) : null}
-                            {state.starred ? (
-                              <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-700">
-                                Starred
-                              </span>
-                            ) : null}
-                          </div>
-                          <h3 className="text-lg font-semibold text-(--ink)">{article.title}</h3>
-                          {preferences.showSummaries && article.summary ? (
-                            <p className="small-note max-w-3xl">{article.summary}</p>
-                          ) : null}
-                        </div>
+                      Clear article filters
+                    </Link>
+                  ) : null}
+                  {canResetWorkspace ? (
+                    <Link
+                      href={resetWorkspaceHref}
+                      className={cn(buttonVariants({ variant: "outline" }))}
+                    >
+                      Reset all filters
+                    </Link>
+                  ) : null}
+                  <Link
+                    href={catalogRecoveryHref}
+                    className={cn(buttonVariants({ variant: "secondary" }))}
+                  >
+                    Browse sources
+                  </Link>
+                </div>
+              </EmptyState>
+            ) : (
+              <div className="space-y-3">
+                {visibleArticles.map((article) => {
+                  const state = articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE;
+                  const isSelected = article.id === selectedArticle?.id;
+                  const articleTopics = getArticleTopics(article);
 
-                        <div className="space-y-2 text-right text-sm text-(--ink-muted)">
-                          <div>
-                            {article.published_at
-                              ? new Date(article.published_at).toLocaleDateString()
-                              : "Unknown date"}
-                          </div>
-                          <div className="flex flex-wrap justify-end gap-2">
-                            {state.archived ? (
-                              <span className="rounded-full border border-(--line) px-2 py-1 text-[0.7rem]">
-                                Archived
-                              </span>
+                  return (
+                    <article
+                      key={article.id}
+                      className={cn(
+                        "w-full rounded-3xl border p-5 text-left transition duration-150",
+                        isSelected
+                          ? "border-(--brand) bg-(--brand-soft)"
+                          : "border-(--line) bg-(--surface) hover:border-(--brand)",
+                        preferences.layout === "list" && "py-4",
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSelectArticle(article.id)}
+                        className="w-full text-left"
+                        aria-pressed={isSelected}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="metric-label">{article.feed_title}</span>
+                              {article.freshness === "live" ? (
+                                <span className="rounded-full bg-(--brand) px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-(--fd-primary-foreground)">
+                                  New
+                                </span>
+                              ) : null}
+                              {state.read ? (
+                                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                                  Read
+                                </span>
+                              ) : null}
+                              {state.bookmarked ? (
+                                <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-sky-700">
+                                  Saved
+                                </span>
+                              ) : null}
+                              {state.starred ? (
+                                <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                                  Starred
+                                </span>
+                              ) : null}
+                            </div>
+                            <h3 className="text-lg font-semibold text-(--ink)">{article.title}</h3>
+                            {preferences.showSummaries && article.summary ? (
+                              <p className="small-note max-w-3xl">{article.summary}</p>
                             ) : null}
-                            {article.author ? <span>{article.author}</span> : null}
+                          </div>
+
+                          <div className="space-y-2 text-right text-sm text-(--ink-muted)">
+                            <div>
+                              {article.published_at
+                                ? new Date(article.published_at).toLocaleDateString()
+                                : "Unknown date"}
+                            </div>
+                            <div className="flex flex-wrap justify-end gap-2">
+                              {state.archived ? (
+                                <span className="rounded-full border border-(--line) px-2 py-1 text-[0.7rem]">
+                                  Archived
+                                </span>
+                              ) : null}
+                              {article.author ? <span>{article.author}</span> : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </button>
+                      </button>
 
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-wrap gap-2">
-                        {articleTopics.slice(0, 4).map((topic) => (
-                          <span
-                            key={`${article.id}-${topic}`}
-                            className="rounded-full border border-(--line) bg-white/70 px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap gap-2">
+                          {articleTopics.slice(0, 4).map((topic) => (
+                            <span
+                              key={`${article.id}-${topic}`}
+                              className="rounded-full border border-(--line) bg-white/70 px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                            >
+                              {topic}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={isSelected ? "secondary" : "outline"}
+                            onClick={() => handleSelectArticle(article.id)}
                           >
-                            {topic}
-                          </span>
-                        ))}
+                            <PanelRight className="size-4" />
+                            {isSelected ? "Hide details" : "Preview"}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={state.read ? "secondary" : "ghost"}
+                            onClick={() => updateState(article.id, { read: !state.read })}
+                          >
+                            <CheckCheck className="size-4" />
+                            {state.read ? "Marked read" : "Mark read"}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={isSelected ? "secondary" : "outline"}
-                          onClick={() => handleSelectArticle(article.id)}
-                        >
-                          <PanelRight className="size-4" />
-                          {isSelected ? "Hide details" : "Preview"}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={state.read ? "secondary" : "ghost"}
-                          onClick={() => updateState(article.id, { read: !state.read })}
-                        >
-                          <CheckCheck className="size-4" />
-                          {state.read ? "Marked read" : "Mark read"}
-                        </Button>
-                      </div>
-                    </div>
 
-                    {isSelected ? (
-                      <div className="mt-4 xl:hidden">
-                        <PreviewPane
-                          article={article}
-                          state={state}
-                          variant="inline"
-                          onClose={() => setPreviewArticleId(null)}
-                          onToggleState={(partial) => updateState(article.id, partial)}
-                        />
-                      </div>
-                    ) : null}
-                  </article>
-                );
-              })}
-            </div>
-          )}
+                      {isSelected ? (
+                        <div className="mt-4 xl:hidden">
+                          <PreviewPane
+                            article={article}
+                            state={state}
+                            variant="inline"
+                            onClose={() => setPreviewArticleId(null)}
+                            onToggleState={(partial) => updateState(article.id, partial)}
+                          />
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--line) pt-4">
-            <p className="small-note">
-              Page offset {browse.cursor} · showing up to {browse.limit} results per page
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={browse.cursor === 0}
-                onClick={() =>
-                  updateUrl({
-                    cursor:
-                      browse.cursor > browse.limit ? String(browse.cursor - browse.limit) : null,
-                  })
-                }
-              >
-                Previous
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={browse.next_cursor === null}
-                onClick={() =>
-                  updateUrl({
-                    cursor: browse.next_cursor === null ? null : String(browse.next_cursor),
-                  })
-                }
-              >
-                Next
-              </Button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--line) pt-4">
+              <p className="small-note">
+                Page offset {browse.cursor} · showing up to {browse.limit} results per page
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={browse.cursor === 0}
+                  onClick={() =>
+                    updateUrl({
+                      cursor:
+                        browse.cursor > browse.limit ? String(browse.cursor - browse.limit) : null,
+                    })
+                  }
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={browse.next_cursor === null}
+                  onClick={() =>
+                    updateUrl({
+                      cursor: browse.next_cursor === null ? null : String(browse.next_cursor),
+                    })
+                  }
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
           </section>
-
         </section>
       </div>
 

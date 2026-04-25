@@ -10,10 +10,12 @@ from sqlalchemy import JSON, Column
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
 
+
 # Helper function for UTC-aware datetime defaults
 def _utc_now() -> datetime:
     """Return current UTC time with timezone awareness."""
     return datetime.now(UTC)
+
 
 # ============================================================================
 # Enums
@@ -584,11 +586,11 @@ class OPMLOutline(SQLModel):
     text: str
     title: str | None = None
     type: str | None = None
-    xmlUrl: str | None = None
-    htmlUrl: str | None = None
+    xml_url: str | None = Field(default=None, alias="xmlUrl")
+    html_url: str | None = Field(default=None, alias="htmlUrl")
     description: str | None = None
     category: str | None = None
-    outlines: list["OPMLOutline"] = []
+    outlines: list["OPMLOutline"] = Field(default_factory=list)
 
     class Config:
         """Pydantic config."""
@@ -604,7 +606,7 @@ class OPMLDocument(SQLModel):
     date_modified: datetime = Field(default_factory=_utc_now)
     owner_name: str = "AI Web Feeds"
     owner_email: str | None = None
-    outlines: list[OPMLOutline] = []
+    outlines: list[OPMLOutline] = Field(default_factory=list)
 
 
 # ============================================================================
@@ -1052,7 +1054,7 @@ class Entity(SQLModel, table=True):
 
     __tablename__ = "entities"
 
-    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: str = SQLField(default_factory=lambda: str(uuid4()), primary_key=True)
     canonical_name: str = SQLField(unique=True, max_length=255, index=True)
     entity_type: str = SQLField(
         max_length=50, description="Entity type: person, organization, technique, dataset, concept"
@@ -1137,7 +1139,7 @@ class Subtopic(SQLModel, table=True):
 
     __tablename__ = "subtopics"
 
-    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: str = SQLField(default_factory=lambda: str(uuid4()), primary_key=True)
     parent_topic: str = SQLField(max_length=255, index=True)
     name: str = SQLField(max_length=255)
     keywords: str = SQLField(description="JSON array of representative keywords")

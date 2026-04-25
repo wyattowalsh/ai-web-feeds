@@ -103,8 +103,8 @@ ______________________________________________________________________
   workspace root (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `LICENSE`, `AGENTS.md`)
 - ✅ **DEVELOPMENT ARTIFACT EXCEPTION**: `specs/**/*.md` are allowed for technical
-  specifications, planning, and checklists. They are repository development
-  artifacts, not user-facing project documentation.
+  specifications, planning, and checklists. They are repository development artifacts,
+  not user-facing project documentation.
 - ✅ **REQUIRED WORKFLOW**:
   1. Create `.mdx` file in `apps/web/content/docs/` (e.g.,
      `apps/web/content/docs/development/database.mdx`)

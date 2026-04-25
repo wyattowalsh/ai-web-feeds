@@ -6,12 +6,13 @@ import sys
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from sqlmodel import SQLModel
 
 
 # Add parent directory to path so we can import ai_web_feeds
 sys.path.insert(0, str(Path(__file__).parent.parent / "ai_web_feeds" / "src"))
 
-from ai_web_feeds.models import SQLModel  # This imports all models via SQLModel registry
+import ai_web_feeds.models  # noqa: F401  # Ensure models are registered for autogenerate
 
 
 # this is the Alembic Config object, which provides

@@ -40,7 +40,7 @@ def analytics_summary(
         "-t",
         help="Filter by topic ID",
     ),
-):
+) -> None:
     """Display analytics summary metrics."""
     console.print("[bold cyan]Analytics Summary[/bold cyan]\n")
 
@@ -100,7 +100,7 @@ def analytics_trending(
         "-r",
         help="Date range: 7d, 30d, 90d",
     ),
-):
+) -> None:
     """Display Most Active Topics."""
     console.print("[bold cyan]Most Active Topics[/bold cyan]\n")
 
@@ -155,7 +155,7 @@ def analytics_velocity(
         "-r",
         help="Date range: 7d, 30d, 90d",
     ),
-):
+) -> None:
     """Display publication velocity metrics."""
     console.print(f"[bold cyan]Publication Velocity ({granularity})[/bold cyan]\n")
 
@@ -200,7 +200,7 @@ def analytics_snapshot(
         "-d",
         help="Database URL",
     ),
-):
+) -> None:
     """Generate daily analytics snapshot."""
     console.print("[bold cyan]Generating Analytics Snapshot[/bold cyan]\n")
 
@@ -235,7 +235,7 @@ def analytics_export(
         "-r",
         help="Date range: 7d, 30d, 90d",
     ),
-):
+) -> None:
     """Export analytics to CSV."""
     console.print("[bold cyan]Exporting Analytics to CSV[/bold cyan]\n")
 

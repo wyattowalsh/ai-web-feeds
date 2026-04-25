@@ -1,7 +1,7 @@
 """ai_web_feeds.load -- Load feed data from YAML files"""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 from loguru import logger
@@ -34,11 +34,14 @@ def load_feeds(path: Path | str) -> dict[str, Any]:
     # Handle empty/None YAML files
     if data is None:
         data = {}
+    if not isinstance(data, dict):
+        msg = f"Feeds file must contain a YAML object: {path}"
+        raise TypeError(msg)
 
     sources = data.get("sources", [])
     logger.info(f"Loaded {len(sources)} feed sources")
 
-    return data
+    return cast(dict[str, Any], data)
 
 
 def load_topics(path: Path | str) -> dict[str, Any]:
@@ -65,8 +68,20 @@ def load_topics(path: Path | str) -> dict[str, Any]:
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
+    if data is None:
+        data = {}
+    if not isinstance(data, dict):
+        msg = f"Topics file must contain a YAML object: {path}"
+        raise TypeError(msg)
+
     topics = data.get("topics", [])
     logger.info(f"Loaded {len(topics)} topics")
+
+    return cast(dict[str, Any], data)
+
+
+def canonicalize_catalog(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the canonical catalog shape expected by validation helpers."""
 
     return data
 

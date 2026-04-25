@@ -19,13 +19,13 @@ work without a required Python HTTP backend.
 
 ## Public search surfaces
 
-| Route | Backing data | Purpose |
-| --- | --- | --- |
-| `/api/articles` | `data/articles.generated.json` | filtered article browse with cursor pagination |
-| `/api/search?scope=articles` | `data/articles.generated.json` | ranked article search across the exported corpus |
-| `/api/search?scope=sources` | checked-in catalog files | source discovery and filtering |
-| `/api/search/autocomplete` | shared catalog + article corpus index | feed, article, and topic suggestions |
-| `POST /api/search` | optional backend proxy | analytics logging only |
+| Route                        | Backing data                          | Purpose                                          |
+| ---------------------------- | ------------------------------------- | ------------------------------------------------ |
+| `/api/articles`              | `data/articles.generated.json`        | filtered article browse with cursor pagination   |
+| `/api/search?scope=articles` | `data/articles.generated.json`        | ranked article search across the exported corpus |
+| `/api/search?scope=sources`  | checked-in catalog files              | source discovery and filtering                   |
+| `/api/search/autocomplete`   | shared catalog + article corpus index | feed, article, and topic suggestions             |
+| `POST /api/search`           | optional backend proxy                | analytics logging only                           |
 
 All GET routes above are served from the Next.js app and set explicit cache
 headers. The POST logging path is the only search operation that still depends
@@ -78,9 +78,7 @@ This keeps source discovery available even when the runtime database or corpus
 has not been refreshed yet.
 
 <Callout type="info" title="Operational distinction">
-  If source search looks correct but article browse/search is empty, check the
-  generated corpus path before changing catalog files. The reader workspace
-  depends on `data/articles.generated.json`, not on direct SQLite access.
+  If source search looks correct but article browse/search is empty, check the generated corpus path before changing catalog files. The reader workspace depends on `data/articles.generated.json`, not on direct SQLite access.
 </Callout>
 
 ## Runtime search stack
@@ -88,11 +86,11 @@ has not been refreshed yet.
 The Python runtime still supports its own search stack for CLI and backend-side
 operations:
 
-| Layer | Implementation | Purpose |
-| --- | --- | --- |
-| Full-text | SQLite FTS5 virtual table + triggers | source search over stored runtime data |
-| Autocomplete | trie index built from titles and topics | fast prefix suggestions |
-| Semantic | embeddings + cosine similarity | meaning-based retrieval |
+| Layer        | Implementation                          | Purpose                                |
+| ------------ | --------------------------------------- | -------------------------------------- |
+| Full-text    | SQLite FTS5 virtual table + triggers    | source search over stored runtime data |
+| Autocomplete | trie index built from titles and topics | fast prefix suggestions                |
+| Semantic     | embeddings + cosine similarity          | meaning-based retrieval                |
 
 Those runtime capabilities are still useful for CLI workflows, but they are no
 longer a prerequisite for the public `/feeds` experience.

@@ -67,7 +67,7 @@ class QualityBatchJob:
             # Query unprocessed articles
             query = select(FeedEntry)
             if not force:
-                query = query.where(FeedEntry.quality_processed == False)
+                query = query.where(FeedEntry.quality_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()

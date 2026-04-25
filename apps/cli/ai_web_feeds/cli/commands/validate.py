@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, cast
 
 import typer
 import yaml
@@ -35,7 +35,7 @@ def validate_feeds(
     feeds_file: Optional[Path] = typer.Option(None, "--file", "-f", help="Path to feeds.yaml file"),
     schema_file: Optional[Path] = typer.Option(None, "--schema", "-s", help="Path to schema file"),
     strict: bool = typer.Option(True, "--strict/--lenient", help="Strict validation mode"),
-):
+) -> None:
     """Validate feeds.yaml against schema."""
     try:
         import jsonschema
@@ -58,10 +58,10 @@ def validate_feeds(
     console.print(f"📋 Validating {feeds_path.name} against {schema_path.name}")
 
     # Load files
-    with open(feeds_path) as f:
+    with feeds_path.open() as f:
         feeds_data = yaml.safe_load(f)
 
-    with open(schema_path) as f:
+    with schema_path.open() as f:
         schema_data = json.load(f)
 
     # Validate schema
@@ -98,7 +98,7 @@ def validate_topics(
         None, "--file", "-f", help="Path to topics.yaml file"
     ),
     schema_file: Optional[Path] = typer.Option(None, "--schema", "-s", help="Path to schema file"),
-):
+) -> None:
     """Validate topics.yaml against schema."""
     try:
         import jsonschema
@@ -121,10 +121,10 @@ def validate_topics(
     console.print(f"📋 Validating {topics_path.name} against {schema_path.name}")
 
     # Load files
-    with open(topics_path) as f:
+    with topics_path.open() as f:
         topics_data = yaml.safe_load(f)
 
-    with open(schema_path) as f:
+    with schema_path.open() as f:
         schema_data = json.load(f)
 
     # Validate schema
@@ -140,7 +140,7 @@ def validate_topics(
 
 
 @app.command("references")
-def validate_topic_references():
+def validate_topic_references() -> None:
     """Validate that all topic references in feeds exist in topics.yaml."""
     data_dir = get_data_dir()
     feeds_path = data_dir / "feeds.yaml"
@@ -153,10 +153,10 @@ def validate_topic_references():
     console.print("🔗 Validating topic references...")
 
     # Load data
-    with open(topics_path) as f:
+    with topics_path.open() as f:
         topics_data = yaml.safe_load(f)
 
-    with open(feeds_path) as f:
+    with feeds_path.open() as f:
         feeds_data = yaml.safe_load(f)
 
     # Get all valid topic IDs
@@ -195,7 +195,7 @@ def validate_topic_references():
 @app.command("all")
 def validate_all(
     strict: bool = typer.Option(True, "--strict/--lenient", help="Strict validation mode"),
-):
+) -> None:
     """Run all validation checks."""
     console.print("🔍 Running all validations...\n")
 
@@ -206,21 +206,21 @@ def validate_all(
         console.print("1. Validating feeds.yaml schema...")
         validate_feeds(strict=strict)
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = cast(int, e.code or 1)
 
     # Validate topics schema
     try:
         console.print("\n2. Validating topics.yaml schema...")
         validate_topics()
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = cast(int, e.code or 1)
 
     # Validate references
     try:
         console.print("\n3. Validating topic references...")
         validate_topic_references()
     except SystemExit as e:
-        exit_code = e.code or 1
+        exit_code = cast(int, e.code or 1)
 
     if exit_code == 0:
         console.print("\n[green]✅ All validations passed![/green]")
@@ -250,7 +250,7 @@ def validate_http_feeds(
         "-f",
         help="Validate specific feed by ID (otherwise validates all)",
     ),
-):
+) -> None:
     """Validate feed URLs with HTTP accessibility checks."""
     console.print("[bold]HTTP Feed Validation[/bold]\n")
 
@@ -274,7 +274,7 @@ def validate_http_feeds(
         console.print(f"[green]✓[/green] Found {len(feed_sources)} feeds\n")
 
     # Run async validation
-    async def run_validation():
+    async def run_validation() -> list[Any]:
         return await validate_all_feeds(
             feed_sources,
             concurrency_limit=concurrency,
@@ -299,7 +299,7 @@ def validate_http_feeds(
 
     console.print(f"Total Feeds:     {len(validation_results)}")
     console.print(f"[green]Successful:      {success_count} ({success_rate:.1f}%)[/green]")
-    console.print(f"[red]Failed:          {failure_count} ({100-success_rate:.1f}%)[/red]")
+    console.print(f"[red]Failed:          {failure_count} ({100 - success_rate:.1f}%)[/red]")
 
     # Average response time
     response_times = [r.response_time_ms for r in validation_results if r.response_time_ms]
@@ -310,7 +310,7 @@ def validate_http_feeds(
     # Error summary
     if failure_count > 0:
         console.print("\n[bold]Top Errors:[/bold]")
-        error_counts = {}
+        error_counts: dict[str, int] = {}
         for result in validation_results:
             if not result.success and result.error_message:
                 error = result.error_message.split(":")[0]  # Get error type
@@ -340,7 +340,7 @@ def validation_report(
         "-n",
         help="Number of recent validations to analyze per feed",
     ),
-):
+) -> None:
     """Generate comprehensive validation health report."""
     console.print("[bold]Validation Health Report[/bold]\n")
 
@@ -418,6 +418,6 @@ def validation_report(
     console.print("\n[bold]Summary:[/bold]")
     console.print(f"Average Health Score: {avg_health:.2f}")
     console.print(
-        f"Healthy Feeds (≥0.8): {healthy_feeds} ({healthy_feeds/len(health_data)*100:.1f}%)"
+        f"Healthy Feeds (≥0.8): {healthy_feeds} ({healthy_feeds / len(health_data) * 100:.1f}%)"
     )
     console.print(f"Total Feeds Analyzed: {len(health_data)}")

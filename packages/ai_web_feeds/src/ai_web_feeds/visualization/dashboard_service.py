@@ -4,10 +4,10 @@ Implements T051: Dashboard layout management, widget data fetching
 """
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from ai_web_feeds.storage import get_session
@@ -65,9 +65,9 @@ class DashboardService:
         self,
         device_id: str,
         name: str,
-        description: Optional[str] = None,
-        template_id: Optional[str] = None,
-        layout: Optional[dict[str, Any]] = None,
+        description: str | None = None,
+        template_id: str | None = None,
+        layout: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Create a new dashboard.
 
@@ -103,7 +103,7 @@ class DashboardService:
                 return dashboard.to_dict()
         except IntegrityError as e:
             logger.error(f"Integrity error creating dashboard: {e}")
-            raise ValidationError("Failed to create dashboard")
+            raise ValidationError("Failed to create dashboard") from e
         except Exception as e:
             logger.error(f"Error creating dashboard: {e}")
             raise
@@ -113,7 +113,7 @@ class DashboardService:
         dashboard_id: int,
         device_id: str,
         include_widgets: bool = True,
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get a specific dashboard.
 
         Args:
@@ -146,11 +146,11 @@ class DashboardService:
         self,
         dashboard_id: int,
         device_id: str,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        layout: Optional[dict[str, Any]] = None,
-        expected_version: Optional[int] = None,
-    ) -> Optional[dict[str, Any]]:
+        name: str | None = None,
+        description: str | None = None,
+        layout: dict[str, Any] | None = None,
+        expected_version: int | None = None,
+    ) -> dict[str, Any] | None:
         """Update a dashboard with optimistic locking.
 
         Args:
@@ -181,12 +181,11 @@ class DashboardService:
                     return None
 
                 # Check version for optimistic locking
-                if expected_version is not None:
-                    if dashboard.version != expected_version:
-                        raise ValidationError(
-                            f"Version mismatch: expected {expected_version}, "
-                            f"current {dashboard.version}. Dashboard was modified elsewhere."
-                        )
+                if expected_version is not None and dashboard.version != expected_version:
+                    raise ValidationError(
+                        f"Version mismatch: expected {expected_version}, "
+                        f"current {dashboard.version}. Dashboard was modified elsewhere."
+                    )
 
                 # Update fields
                 if name is not None:
@@ -259,7 +258,7 @@ class DashboardService:
         refresh_interval_seconds: int,
         position: dict[str, int],
         config: dict[str, Any],
-        visualization_id: Optional[int] = None,
+        visualization_id: int | None = None,
     ) -> dict[str, Any]:
         """Add a widget to a dashboard.
 

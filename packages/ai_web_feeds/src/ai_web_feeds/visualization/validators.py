@@ -8,12 +8,9 @@ Implements FR-011d and FR-032e:
 
 import re
 from datetime import UTC, datetime
-from typing import Any
-
-from pydantic import BaseModel, Field, field_validator
 
 from loguru import logger
-
+from pydantic import BaseModel, Field, field_validator
 
 # Allowed table names for direct queries
 ALLOWED_TABLES = frozenset(
@@ -84,8 +81,7 @@ class DateRangeValidator(BaseModel):
         delta = self.end - self.start
         if delta.days > max_days:
             raise ValidationError(
-                f"Date range exceeds maximum of {max_days} days "
-                f"(requested: {delta.days} days)"
+                f"Date range exceeds maximum of {max_days} days (requested: {delta.days} days)"
             )
 
 
@@ -129,8 +125,7 @@ class QueryValidator:
             raise ValidationError("Limit must be positive")
         if limit > MAX_QUERY_RESULTS:
             raise ValidationError(
-                f"Limit exceeds maximum of {MAX_QUERY_RESULTS:,} rows "
-                f"(requested: {limit:,})"
+                f"Limit exceeds maximum of {MAX_QUERY_RESULTS:,} rows (requested: {limit:,})"
             )
         return limit
 
@@ -163,15 +158,11 @@ class QueryValidator:
         value_upper = value.upper()
         for pattern in suspicious_patterns:
             if re.search(pattern, value_upper, re.IGNORECASE):
-                raise ValidationError(
-                    f"Input contains suspicious pattern: {pattern}"
-                )
+                raise ValidationError(f"Input contains suspicious pattern: {pattern}")
 
         # Escape special characters for LIKE
         # User wants literal %, _ → escape them
-        value = value.replace("%", r"\%").replace("_", r"\_")
-
-        return value
+        return value.replace("%", r"\%").replace("_", r"\_")
 
 
 class DashboardValidator:
@@ -212,34 +203,22 @@ class DashboardValidator:
         """
         required_keys = {"x", "y", "w", "h"}
         if not required_keys.issubset(position.keys()):
-            raise ValidationError(
-                f"Position must contain keys: {', '.join(required_keys)}"
-            )
+            raise ValidationError(f"Position must contain keys: {', '.join(required_keys)}")
 
         x, y, w, h = position["x"], position["y"], position["w"], position["h"]
 
         # Validate dimensions
         if w < MIN_WIDGET_WIDTH:
-            raise ValidationError(
-                f"Widget width must be at least {MIN_WIDGET_WIDTH} "
-                f"(got: {w})"
-            )
+            raise ValidationError(f"Widget width must be at least {MIN_WIDGET_WIDTH} (got: {w})")
         if h < MIN_WIDGET_HEIGHT:
-            raise ValidationError(
-                f"Widget height must be at least {MIN_WIDGET_HEIGHT} "
-                f"(got: {h})"
-            )
+            raise ValidationError(f"Widget height must be at least {MIN_WIDGET_HEIGHT} (got: {h})")
 
         # Validate column boundaries
         if x < 0 or x > MAX_GRID_COLUMN:
-            raise ValidationError(
-                f"Widget x position must be 0-{MAX_GRID_COLUMN} (got: {x})"
-            )
+            raise ValidationError(f"Widget x position must be 0-{MAX_GRID_COLUMN} (got: {x})")
 
         if x + w > MAX_GRID_COLUMN + 1:  # +1 because width is inclusive
-            raise ValidationError(
-                f"Widget extends beyond grid boundary (x={x}, w={w})"
-            )
+            raise ValidationError(f"Widget extends beyond grid boundary (x={x}, w={w})")
 
         # Validate row boundaries
         if y < 0:
@@ -248,9 +227,7 @@ class DashboardValidator:
         return position
 
     @staticmethod
-    def check_widget_overlap(
-        positions: list[dict[str, int]]
-    ) -> list[tuple[int, int]]:
+    def check_widget_overlap(positions: list[dict[str, int]]) -> list[tuple[int, int]]:
         """Check for overlapping widgets.
 
         Args:
@@ -276,9 +253,7 @@ class DashboardValidator:
                     overlaps.append((i, j))
 
         if overlaps:
-            overlap_desc = ", ".join(
-                f"widgets {i} and {j}" for i, j in overlaps
-            )
+            overlap_desc = ", ".join(f"widgets {i} and {j}" for i, j in overlaps)
             raise ValidationError(f"Widget overlap detected: {overlap_desc}")
 
         return overlaps
@@ -426,10 +401,7 @@ class ForecastValidator:
         # Check for large data gaps
         large_gaps = [g for g in gaps if g > ForecastValidator.MAX_DATA_GAP_DAYS]
         if large_gaps:
-            logger.warning(
-                f"Data gap detected: {max(large_gaps)} days "
-                f"(may affect accuracy)"
-            )
+            logger.warning(f"Data gap detected: {max(large_gaps)} days (may affect accuracy)")
 
         # Check data completeness
         completeness = data_points / date_range_days

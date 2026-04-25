@@ -1,8 +1,9 @@
 # Quickstart Guide: Advanced Visualization & Analytics
 
-Get started with interactive visualizations, custom dashboards, and time-series forecasting in 15 minutes.
+Get started with interactive visualizations, custom dashboards, and time-series
+forecasting in 15 minutes.
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
@@ -11,7 +12,7 @@ Get started with interactive visualizations, custom dashboards, and time-series 
 - **Existing AIWebFeeds installation** (from Phase 001-002)
 - **Phase 002 analytics data** (topic metrics, feed health, validation logs)
 
----
+______________________________________________________________________
 
 ## 1. Setup (5 minutes)
 
@@ -52,51 +53,51 @@ pnpm dev --port 3000
 redis-server
 ```
 
----
+______________________________________________________________________
 
 ## 2. Your First Visualization (3 minutes)
 
 ### Create a Line Chart via UI
 
 1. Open browser: `http://localhost:3000/analytics/visualizations`
-2. Click **"Create Visualization"**
-3. Configure:
+1. Click **"Create Visualization"**
+1. Configure:
    - **Chart Type**: Line Chart
    - **Data Source**: `topic_metrics` (from Phase 002)
    - **Filters**: `{"topic": "AI Research", "date_range": "7d"}`
    - **Customization**: `{"colors": ["#3b82f6"], "title": "AI Research - Weekly Trend"}`
-4. Click **Save** (auto-generates device UUID in localStorage)
-5. See preview with real data from Phase 002 analytics
+1. Click **Save** (auto-generates device UUID in localStorage)
+1. See preview with real data from Phase 002 analytics
 
 ### Export as PNG (300 DPI)
 
 1. Click **Export** button
-2. Select **PNG (High-Res)**
-3. Download: `ai-research-trend.png` (publication quality)
+1. Select **PNG (High-Res)**
+1. Download: `ai-research-trend.png` (publication quality)
 
----
+______________________________________________________________________
 
 ## 3. Create a Custom Dashboard (5 minutes)
 
 ### Use Dashboard Builder
 
 1. Navigate: `http://localhost:3000/analytics/dashboards`
-2. Click **"New Dashboard"** → Select **"Curator Dashboard"** template
-3. Drag 4 widgets onto grid:
+1. Click **"New Dashboard"** → Select **"Curator Dashboard"** template
+1. Drag 4 widgets onto grid:
    - **Widget 1**: Topic Cloud (top-left, 6x4 grid)
    - **Widget 2**: Feed Health Metric Card (top-right, 3x2 grid)
    - **Widget 3**: Validation Log Chart (bottom-left, 6x4 grid)
    - **Widget 4**: Latest Entries Feed List (bottom-right, 3x6 grid)
-4. Click **Save Layout** (persists in SQLite with device UUID)
+1. Click **Save Layout** (persists in SQLite with device UUID)
 
 ### Configure Widget Refresh
 
 1. Click widget settings (⚙️ icon)
-2. Set **Refresh Interval**: 300 seconds (5 minutes)
-3. Enable **Auto-Refresh** toggle
-4. Widgets now update every 5 minutes with live data
+1. Set **Refresh Interval**: 300 seconds (5 minutes)
+1. Enable **Auto-Refresh** toggle
+1. Widgets now update every 5 minutes with live data
 
----
+______________________________________________________________________
 
 ## 4. Generate a Time-Series Forecast (2 minutes)
 
@@ -127,11 +128,11 @@ curl -X POST http://localhost:8000/api/v1/forecasts \
 ### View Forecast in UI
 
 1. Navigate: `http://localhost:3000/analytics/forecasts`
-2. See forecast card: **"AI Research - 30 Days"**
-3. Accuracy badge: **MAPE: 12.3%** ✅ (green, no retraining needed)
-4. Confidence interval shading shows prediction uncertainty
+1. See forecast card: **"AI Research - 30 Days"**
+1. Accuracy badge: **MAPE: 12.3%** ✅ (green, no retraining needed)
+1. Confidence interval shading shows prediction uncertainty
 
----
+______________________________________________________________________
 
 ## 5. Export Data Programmatically
 
@@ -159,11 +160,8 @@ response = requests.post(
         "entity_type": "dashboard",
         "entity_id": 1,
         "format": "csv",
-        "options": {
-            "include_metadata": True,
-            "compression": "gzip"
-        }
-    }
+        "options": {"include_metadata": True, "compression": "gzip"},
+    },
 )
 
 # Async export (large datasets)
@@ -178,44 +176,52 @@ elif response.status_code == 200:
         f.write(response.json()["data"])
 ```
 
----
+______________________________________________________________________
 
 ## 6. Performance Testing
 
 ### Test 3D Visualization Fallback
 
 1. Open Chrome DevTools → **Performance** tab
-2. Enable **CPU throttling (6x slowdown)**
-3. Navigate to 3D Topic Graph: `http://localhost:3000/analytics/visualizations/3d-graph`
-4. **Expected**: After 3 seconds at <30fps → auto-switch to 2D network diagram
-5. **Verify**: Console logs `"FPS below threshold, switching to 2D"`
+1. Enable **CPU throttling (6x slowdown)**
+1. Navigate to 3D Topic Graph: `http://localhost:3000/analytics/visualizations/3d-graph`
+1. **Expected**: After 3 seconds at \<30fps → auto-switch to 2D network diagram
+1. **Verify**: Console logs `"FPS below threshold, switching to 2D"`
 
----
+______________________________________________________________________
 
 ## Common Issues
 
 ### ❌ `ModuleNotFoundError: No module named 'prophet'`
+
 **Fix**: Run `uv pip install prophet` (requires compilation, may take 2-3 minutes)
 
 ### ❌ Dashboard widgets show "Loading..." forever
+
 **Fix**: Check Phase 002 data exists:
+
 ```bash
 uv run python -c "from ai_web_feeds.storage import get_db; print(get_db().execute('SELECT COUNT(*) FROM topic_metrics').fetchone())"
 ```
 
 ### ❌ API returns `401 Unauthorized`
-**Fix**: Generate device UUID via web UI first (automatic on first visit), then pass in API calls
 
----
+**Fix**: Generate device UUID via web UI first (automatic on first visit), then pass in
+API calls
+
+______________________________________________________________________
 
 ## Next Steps
 
 - **Explore Templates**: Try "Research Overview" and "Topic Monitor" dashboard templates
 - **Customize Themes**: Edit Chart.js color palettes in `apps/web/lib/chart-themes.ts`
-- **API Rate Limits**: See `data-model.md` for rate limiting configuration (1000 req/hour default)
+- **API Rate Limits**: See `data-model.md` for rate limiting configuration (1000
+  req/hour default)
 - **Advanced Forecasting**: Read `research.md` for Prophet seasonality tuning
 
-**Full Documentation**: See `/specs/006-advanced-visualization-analytics/` directory for:
+**Full Documentation**: See `/specs/006-advanced-visualization-analytics/` directory
+for:
+
 - `spec.md`: Functional requirements and edge cases
 - `data-model.md`: Database schema and SQLAlchemy models
 - `contracts/*.yaml`: OpenAPI specifications for all endpoints

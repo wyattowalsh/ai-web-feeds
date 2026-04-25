@@ -60,7 +60,7 @@ export function DashboardBuilder({
           return { ...widget, layout: newLayout };
         }
         return widget;
-      })
+      }),
     );
   }, []);
 
@@ -93,9 +93,7 @@ export function DashboardBuilder({
   };
 
   const updateWidget = (widgetId: string, updates: Partial<DashboardWidget>) => {
-    setWidgets((prev) =>
-      prev.map((w) => (w.id === widgetId ? { ...w, ...updates } : w))
-    );
+    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, ...updates } : w)));
   };
 
   const handleSave = () => {
@@ -173,9 +171,7 @@ export function DashboardBuilder({
               <div
                 key={widget.id}
                 className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border-2 ${
-                  selectedWidget === widget.id
-                    ? "border-blue-500"
-                    : "border-transparent"
+                  selectedWidget === widget.id ? "border-blue-500" : "border-transparent"
                 }`}
                 onClick={() => setSelectedWidget(widget.id)}
               >
@@ -214,20 +210,12 @@ export function DashboardBuilder({
 /**
  * Individual widget card.
  */
-function WidgetCard({
-  widget,
-  onRemove,
-}: {
-  widget: DashboardWidget;
-  onRemove?: () => void;
-}) {
+function WidgetCard({ widget, onRemove }: { widget: DashboardWidget; onRemove?: () => void }) {
   return (
     <div className="h-full flex flex-col">
       {/* Widget header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-          {widget.title}
-        </h3>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{widget.title}</h3>
         {onRemove && (
           <button
             onClick={(e) => {
@@ -257,9 +245,7 @@ function WidgetCard({
 
         {widget.type === "metric" && (
           <div className="h-full flex flex-col items-center justify-center">
-            <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-              1,234
-            </div>
+            <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">1,234</div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Sample Metric</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">+12.5%</p>
           </div>
@@ -327,9 +313,7 @@ function AddWidgetModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Add Widget
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Widget</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -341,8 +325,7 @@ function AddWidgetModal({
         {!canAdd ? (
           <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <p className="text-amber-800 dark:text-amber-200">
-              Maximum widget limit reached ({maxWidgets} widgets). Remove a widget to add a
-              new one.
+              Maximum widget limit reached ({maxWidgets} widgets). Remove a widget to add a new one.
             </p>
           </div>
         ) : (
@@ -354,9 +337,7 @@ function AddWidgetModal({
                 className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-500 transition text-center"
               >
                 <div className="text-4xl mb-3">{wt.icon}</div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                  {wt.label}
-                </h4>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100">{wt.label}</h4>
               </button>
             ))}
           </div>
@@ -390,9 +371,7 @@ function WidgetConfigPanel({
   return (
     <div className="absolute right-0 top-0 bottom-0 w-80 bg-white dark:bg-gray-800 shadow-xl border-l border-gray-200 dark:border-gray-700 p-6 overflow-auto">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Widget Settings
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Widget Settings</h3>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -438,9 +417,7 @@ function WidgetConfigPanel({
             <input
               type="number"
               value={widget.visualization_id}
-              onChange={(e) =>
-                onUpdate({ visualization_id: parseInt(e.target.value) })
-              }
+              onChange={(e) => onUpdate({ visualization_id: parseInt(e.target.value) })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>

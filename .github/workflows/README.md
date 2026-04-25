@@ -184,23 +184,24 @@ ______________________________________________________________________
 
 ### Experimental Agentic Workflow Sources
 
-The repository now also contains experimental GitHub Agentic Workflows source files
-in `.github/workflows/*.md`.
+The repository now also contains experimental GitHub Agentic Workflows source files in
+`.github/workflows/*.md`.
 
 - These files are **not active** until they are compiled and reviewed.
 - Existing `.yml` workflows remain the production source of truth.
 - Agentic workflow pilots should begin with read-only or tightly-scoped automation
-   before replacing active CI/CD logic.
+  before replacing active CI/CD logic.
 - Reusable custom agents for these workflows live in `.github/agents/`.
 
 Current experimental source files:
 
 - `feed-submission-review.md`: read-only feed submission triage and validation pilot
-- `feed-discovery-report.md`: weekly report-only discovery pilot for topic gaps and candidate leads
+- `feed-discovery-report.md`: weekly report-only discovery pilot for topic gaps and
+  candidate leads
 
 The discovery pilot intentionally avoids `feed-submission`, `approved`, and other
-submission-path labels because the current issue-based approval automation still
-assumes an older submission shape than `data/feeds.yaml`.
+submission-path labels because the current issue-based approval automation still assumes
+an older submission shape than `data/feeds.yaml`.
 
 ### `auto-fix.yml` (Enhanced)
 

@@ -1,7 +1,6 @@
----
-name: feed-discovery-scout
-description: Generate weekly feed discovery reports with gap-aware candidate leads and safe maintainer handoff.
----
+______________________________________________________________________
+
+## name: feed-discovery-scout description: Generate weekly feed discovery reports with gap-aware candidate leads and safe maintainer handoff.
 
 # Feed Discovery Scout
 
@@ -20,9 +19,9 @@ Work from repository source-of-truth files first:
 ## Goals
 
 1. Identify topic, source-type, or perspective gaps in the current feed inventory.
-2. Surface a short list of plausible discovery leads only when evidence is strong.
-3. Explain why each lead is worth maintainer attention now.
-4. Hand off findings in a form that is safe for human review and PR-based curation.
+1. Surface a short list of plausible discovery leads only when evidence is strong.
+1. Explain why each lead is worth maintainer attention now.
+1. Hand off findings in a form that is safe for human review and PR-based curation.
 
 ## Rules
 
@@ -34,20 +33,20 @@ Work from repository source-of-truth files first:
   specialized practitioner sources over generic news aggregators.
 - Avoid raw URLs in the final report body; use bare domains and optional feed-path
   hints.
-- Never recommend `approved`, `feed-submission`, `validated`, or
-  `validation-failed` in this workflow.
+- Never recommend `approved`, `feed-submission`, `validated`, or `validation-failed` in
+  this workflow.
 - Never recommend direct mutation or automatic addition to `data/feeds.yaml`.
-- If external discovery is unavailable, provide a useful gap report with concrete
-  search hypotheses instead of fabricating candidates.
+- If external discovery is unavailable, provide a useful gap report with concrete search
+  hypotheses instead of fabricating candidates.
 
 ## Recommended Output Shape
 
 Use this structure in the final response:
 
 1. `Report Status`: `candidates-found`, `gap-report-only`, or `noop`
-2. `Weekly Summary`: short maintainer-facing synopsis
-3. `Priority Gaps`: up to 3 high-value gaps with why they matter
-4. `Candidate Leads`: up to 5 entries with domain, suggested title, proposed topics,
+1. `Weekly Summary`: short maintainer-facing synopsis
+1. `Priority Gaps`: up to 3 high-value gaps with why they matter
+1. `Candidate Leads`: up to 5 entries with domain, suggested title, proposed topics,
    rationale, duplicate risk, and confidence
-5. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
-6. `Maintainer Next Step`: smallest safe follow-up action
+1. `Duplicate And Saturation Notes`: overlap with existing feeds or recent issues
+1. `Maintainer Next Step`: smallest safe follow-up action

@@ -80,9 +80,7 @@ export function DataSourceSelector({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Data Source
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Data Source</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Choose the type of data you want to visualize
           </p>
@@ -164,9 +162,7 @@ export function DataSourceSelector({
               </h4>
 
               {/* Description */}
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {source.description}
-              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{source.description}</p>
             </button>
           );
         })}

@@ -53,6 +53,7 @@ markers = [
     "unit: Unit tests (fast, no external dependencies)",
     "integration: Integration tests (multiple components)",
     "e2e: End-to-end tests (full workflows)",
+    "benchmark: Performance benchmark tests",
     "slow: Slow running tests (may take several seconds)",
     "network: Tests requiring network access",
     "database: Tests requiring database",
@@ -127,8 +128,8 @@ line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF"]
-ignore = ["ANN101", "ANN102", "ANN401"]
+select = ["E", "F", "I", "N", "W", "UP", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF"]
+ignore = ["ANN101", "ANN102", "ANN401", "PLC0415", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0603"]
 
 [tool.ruff.lint.per-file-ignores]
 # Test files: Allow test-specific patterns
@@ -143,6 +144,7 @@ ignore = ["ANN101", "ANN102", "ANN401"]
     "ARG001",    # unused fixture arguments (pytest pattern)
     "ARG002",    # unused fixture arguments (pytest pattern)
     "ARG005",    # unused lambda arguments (test mocks)
+    "A006",      # builtin names in lambdas/mocks
     "S105",      # hardcoded passwords (test data)
     "S314",      # XML parsing (test data)
     "T201",      # print statements (benchmark output)

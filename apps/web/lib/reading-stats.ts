@@ -11,7 +11,7 @@
  * All data stored client-side in IndexedDB
  */
 
-import { readingHistory, articles, type ReadingHistoryEntry, type Article } from './db';
+import { readingHistory, articles, type ReadingHistoryEntry, type Article } from "./db";
 
 export interface ReadingStats {
   // Basic counts
@@ -33,7 +33,7 @@ export interface ReadingStats {
   // Patterns
   readingByHour: number[]; // 24 hours
   readingByDayOfWeek: number[]; // 7 days
-  readingTrend: 'increasing' | 'decreasing' | 'stable';
+  readingTrend: "increasing" | "decreasing" | "stable";
 }
 
 export interface DailyStats {
@@ -71,10 +71,7 @@ class ReadingStatsTracker {
    */
   updateScrollDepth(depth: number): void {
     if (this.activeSession) {
-      this.activeSession.lastScrollDepth = Math.max(
-        this.activeSession.lastScrollDepth,
-        depth
-      );
+      this.activeSession.lastScrollDepth = Math.max(this.activeSession.lastScrollDepth, depth);
     }
   }
 
@@ -118,7 +115,7 @@ class ReadingStatsTracker {
     // Basic counts
     const totalArticlesRead = allHistory.length;
     const totalReadingTime = Math.floor(
-      allHistory.reduce((sum, entry) => sum + entry.duration, 0) / 60
+      allHistory.reduce((sum, entry) => sum + entry.duration, 0) / 60,
     );
     const averageReadingTime = totalReadingTime / totalArticlesRead;
     const completionRate = (allHistory.filter((e) => e.completed).length / totalArticlesRead) * 100;
@@ -168,13 +165,13 @@ class ReadingStatsTracker {
   async getDailyStats(startDate: Date, endDate: Date): Promise<DailyStats[]> {
     const start = startDate.getTime();
     const end = endDate.getTime();
-    const history = await readingHistory.getByRange('timestamp', start, end);
+    const history = await readingHistory.getByRange("timestamp", start, end);
 
     const statsByDay = new Map<string, DailyStats>();
 
     history.forEach((entry) => {
       const date = new Date(entry.timestamp);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split("T")[0];
 
       if (!statsByDay.has(dateStr)) {
         statsByDay.set(dateStr, {
@@ -193,10 +190,11 @@ class ReadingStatsTracker {
     // Calculate completion rates
     statsByDay.forEach((stats) => {
       const dayHistory = history.filter((e) => {
-        const date = new Date(e.timestamp).toISOString().split('T')[0];
+        const date = new Date(e.timestamp).toISOString().split("T")[0];
         return date === stats.date;
       });
-      stats.completionRate = (dayHistory.filter((e) => e.completed).length / dayHistory.length) * 100;
+      stats.completionRate =
+        (dayHistory.filter((e) => e.completed).length / dayHistory.length) * 100;
     });
 
     return Array.from(statsByDay.values()).sort((a, b) => a.date.localeCompare(b.date));
@@ -209,13 +207,13 @@ class ReadingStatsTracker {
     if (history.length === 0) return 0;
 
     const sortedDates = history
-      .map((e) => new Date(e.timestamp).toISOString().split('T')[0])
+      .map((e) => new Date(e.timestamp).toISOString().split("T")[0])
       .filter((date, index, self) => self.indexOf(date) === index)
       .sort()
       .reverse();
 
     let streak = 0;
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     let currentDate = today;
 
     for (const date of sortedDates) {
@@ -223,7 +221,7 @@ class ReadingStatsTracker {
         streak++;
         const prev = new Date(currentDate);
         prev.setDate(prev.getDate() - 1);
-        currentDate = prev.toISOString().split('T')[0];
+        currentDate = prev.toISOString().split("T")[0];
       } else {
         break;
       }
@@ -237,7 +235,7 @@ class ReadingStatsTracker {
    */
   private getTopTopics(
     history: ReadingHistoryEntry[],
-    allArticles: Article[]
+    allArticles: Article[],
   ): Array<{ topic: string; count: number }> {
     const topicCounts = new Map<string, number>();
 
@@ -264,7 +262,7 @@ class ReadingStatsTracker {
 
     history.forEach((entry) => {
       // Extract feed ID from article ID (assuming format: feedId_articleId)
-      const feedId = entry.articleId.split('_')[0];
+      const feedId = entry.articleId.split("_")[0];
       feedCounts.set(feedId, (feedCounts.get(feedId) || 0) + 1);
     });
 
@@ -305,8 +303,8 @@ class ReadingStatsTracker {
   /**
    * Calculate reading trend
    */
-  private calculateTrend(history: ReadingHistoryEntry[]): 'increasing' | 'decreasing' | 'stable' {
-    if (history.length < 14) return 'stable';
+  private calculateTrend(history: ReadingHistoryEntry[]): "increasing" | "decreasing" | "stable" {
+    if (history.length < 14) return "stable";
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
@@ -314,14 +312,14 @@ class ReadingStatsTracker {
 
     const thisWeek = history.filter((e) => e.timestamp >= weekAgo).length;
     const lastWeek = history.filter(
-      (e) => e.timestamp >= twoWeeksAgo && e.timestamp < weekAgo
+      (e) => e.timestamp >= twoWeeksAgo && e.timestamp < weekAgo,
     ).length;
 
     const percentChange = lastWeek === 0 ? 100 : ((thisWeek - lastWeek) / lastWeek) * 100;
 
-    if (percentChange > 10) return 'increasing';
-    if (percentChange < -10) return 'decreasing';
-    return 'stable';
+    if (percentChange > 10) return "increasing";
+    if (percentChange < -10) return "decreasing";
+    return "stable";
   }
 
   /**
@@ -341,7 +339,7 @@ class ReadingStatsTracker {
       topFeeds: [],
       readingByHour: new Array(24).fill(0),
       readingByDayOfWeek: new Array(7).fill(0),
-      readingTrend: 'stable',
+      readingTrend: "stable",
     };
   }
 }
@@ -352,7 +350,7 @@ export const readingStatsTracker = new ReadingStatsTracker();
 /**
  * React hook for reading statistics
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useReadingStats() {
   const [stats, setStats] = useState<ReadingStats | null>(null);
@@ -364,7 +362,7 @@ export function useReadingStats() {
         const data = await readingStatsTracker.getStats();
         setStats(data);
       } catch (error) {
-        console.error('Failed to load reading stats:', error);
+        console.error("Failed to load reading stats:", error);
       } finally {
         setLoading(false);
       }
@@ -400,7 +398,7 @@ export function useDailyReadingStats(days = 30) {
         const data = await readingStatsTracker.getDailyStats(startDate, endDate);
         setStats(data);
       } catch (error) {
-        console.error('Failed to load daily stats:', error);
+        console.error("Failed to load daily stats:", error);
       } finally {
         setLoading(false);
       }

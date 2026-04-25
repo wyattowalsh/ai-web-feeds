@@ -149,7 +149,9 @@ class TrendingDetector:
         Returns:
             Dict mapping topic_id -> (mean, std_dev)
         """
-        # Group articles by day, then calculate stats per topic
+        # Group articles into rolling 24-hour baseline buckets relative to the
+        # end of the window instead of by calendar day. This keeps the baseline
+        # stable even when the current time is mid-day.
         with self.db.get_session() as session:
             statement = select(FeedEntry).where(
                 FeedEntry.discovered_at >= start,
@@ -157,37 +159,18 @@ class TrendingDetector:
             )
             entries = session.exec(statement).all()
 
-            # Group by topic and day
-            daily_counts: dict[str, list[int]] = {}
-            current_day = None
-            day_topics: dict[str, int] = {}
-
-            for entry in sorted(entries, key=lambda e: e.discovered_at):
-                entry_day = entry.discovered_at.date()
-                if current_day != entry_day:
-                    # New day, save previous day counts
-                    if current_day is not None:
-                        for topic, count in day_topics.items():
-                            if topic not in daily_counts:
-                                daily_counts[topic] = []
-                            daily_counts[topic].append(count)
-                    current_day = entry_day
-                    day_topics = {}
-
-                # Count categories for this day
+            # Group by topic and rolling day bucket
+            bucketed_counts: dict[str, dict[int, int]] = {}
+            for entry in entries:
+                bucket_index = int((end - entry.discovered_at).total_seconds() // 86400)
                 for category in entry.categories:
-                    day_topics[category] = day_topics.get(category, 0) + 1
-
-            # Save last day
-            if day_topics:
-                for topic, count in day_topics.items():
-                    if topic not in daily_counts:
-                        daily_counts[topic] = []
-                    daily_counts[topic].append(count)
+                    topic_buckets = bucketed_counts.setdefault(category, {})
+                    topic_buckets[bucket_index] = topic_buckets.get(bucket_index, 0) + 1
 
             # Calculate mean and std dev per topic
             baseline_stats = {}
-            for topic, counts in daily_counts.items():
+            for topic, counts_by_bucket in bucketed_counts.items():
+                counts = [count for _, count in sorted(counts_by_bucket.items())]
                 if len(counts) >= 2:  # Need at least 2 days for std dev
                     mean = float(np.mean(counts))
                     std_dev = float(np.std(counts))

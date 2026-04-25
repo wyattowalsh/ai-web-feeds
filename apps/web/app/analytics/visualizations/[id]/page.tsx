@@ -399,7 +399,7 @@ export default function VisualizationDetailPage() {
 function renderChart(
   type: string,
   data: unknown,
-  customization: Record<string, unknown> & VisualizationCustomization
+  customization: Record<string, unknown> & VisualizationCustomization,
 ) {
   if (!data) return null;
 

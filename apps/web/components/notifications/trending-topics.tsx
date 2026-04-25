@@ -66,7 +66,9 @@ export function TrendingTopics({ limit = 5, className = "" }: TrendingTopicsProp
     if (trendingAlerts.length > 0) {
       setTopics((prev) => {
         const newTopics = [...trendingAlerts, ...prev];
-        const unique = Array.from(new Map(newTopics.map((topic) => [topic.topic_id, topic])).values());
+        const unique = Array.from(
+          new Map(newTopics.map((topic) => [topic.topic_id, topic])).values(),
+        );
         return unique.slice(0, limit);
       });
     }

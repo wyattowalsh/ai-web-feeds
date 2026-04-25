@@ -15,7 +15,7 @@ def show(
         "-d",
         help="Database URL",
     ),
-):
+) -> None:
     """Show feed statistics."""
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()
@@ -29,7 +29,7 @@ def show(
     verified = sum(1 for f in feed_sources if f.verified)
 
     # By type
-    by_type = {}
+    by_type: dict[str, int] = {}
     for feed in feed_sources:
         if feed.source_type:
             by_type[feed.source_type.value] = by_type.get(feed.source_type.value, 0) + 1
@@ -38,7 +38,7 @@ def show(
     typer.echo("\n📊 Feed Statistics")
     typer.echo("═" * 50)
     typer.echo(f"Total Feeds: {total}")
-    typer.echo(f"Verified: {verified} ({verified/total*100:.1f}%)")
+    typer.echo(f"Verified: {verified} ({verified / total * 100:.1f}%)")
     typer.echo("\n By Source Type:")
     for source_type, count in sorted(by_type.items(), key=lambda x: -x[1]):
         typer.echo(f"  {source_type:15} : {count:3}")

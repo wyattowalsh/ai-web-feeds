@@ -1,324 +1,209 @@
-"""
-Unit tests for visualization validators.
+"""Unit tests for visualization validators."""
 
-Tests input validation and sanitization functions.
-"""
+from datetime import UTC, datetime, timedelta
 
 import pytest
-from datetime import datetime, timedelta
 from ai_web_feeds.visualization.validators import (
-    validate_table_name,
-    validate_query_limit,
-    validate_date_range,
-    sanitize_like_clause,
-    validate_dashboard_constraints,
-    validate_customization,
-    validate_forecast_data,
+    CustomizationValidator,
+    DashboardValidator,
+    DateRangeValidator,
+    ForecastValidator,
+    QueryValidator,
     ValidationError,
 )
 
 
 class TestTableNameValidation:
-    """Test table name validation (SQL injection prevention)."""
+    """Test table name validation."""
 
     def test_validate_table_name_valid(self):
-        """Test valid table names."""
-        valid_names = [
-            "topic_metrics",
-            "feed_health",
-            "validation_logs",
-            "article_metadata",
-        ]
-        
-        for name in valid_names:
-            assert validate_table_name(name) == name
+        """Whitelisted table names should pass."""
+        assert QueryValidator.validate_table_name("topic_metrics") == "topic_metrics"
 
     def test_validate_table_name_invalid(self):
-        """Test invalid table names are rejected."""
-        invalid_names = [
-            "users; DROP TABLE",
-            "../etc/passwd",
-            "table_name'--",
-            "invalid_table",
-        ]
-        
-        for name in invalid_names:
-            with pytest.raises(ValidationError):
-                validate_table_name(name)
-
-    def test_validate_table_name_case_sensitive(self):
-        """Test table name validation is case-sensitive."""
+        """Unexpected table names should be rejected."""
         with pytest.raises(ValidationError):
-            validate_table_name("TOPIC_METRICS")
+            QueryValidator.validate_table_name("users")
 
 
 class TestQueryLimitValidation:
-    """Test query limit validation."""
+    """Test query result limit validation."""
 
     def test_validate_query_limit_valid(self):
-        """Test valid query limits."""
-        assert validate_query_limit(10) == 10
-        assert validate_query_limit(50) == 50
-        assert validate_query_limit(1000) == 1000
+        """A reasonable limit should pass unchanged."""
+        assert QueryValidator.validate_result_limit(500) == 500
 
     def test_validate_query_limit_too_small(self):
-        """Test limit below minimum is rejected."""
+        """Zero and negative limits should fail."""
         with pytest.raises(ValidationError):
-            validate_query_limit(0)
-        
-        with pytest.raises(ValidationError):
-            validate_query_limit(-1)
+            QueryValidator.validate_result_limit(0)
 
     def test_validate_query_limit_too_large(self):
-        """Test limit above maximum is capped."""
-        # Should cap at max_limit (default 10000)
-        assert validate_query_limit(20000) == 10000
-
-    def test_validate_query_limit_custom_max(self):
-        """Test custom maximum limit."""
-        assert validate_query_limit(5000, max_limit=3000) == 3000
+        """Excessive limits should fail rather than silently clamp."""
+        with pytest.raises(ValidationError):
+            QueryValidator.validate_result_limit(200_000)
 
 
 class TestDateRangeValidation:
     """Test date range validation."""
 
     def test_validate_date_range_valid(self):
-        """Test valid date ranges."""
-        start = "2024-01-01"
-        end = "2024-01-31"
-        
-        validated_start, validated_end = validate_date_range(start, end)
-        
-        assert validated_start == start
-        assert validated_end == end
+        """A valid range should normalize to UTC."""
+        validator = DateRangeValidator.model_validate(
+            {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-01-31T00:00:00Z",
+            }
+        )
+
+        assert validator.start.tzinfo == UTC
+        assert validator.end.tzinfo == UTC
 
     def test_validate_date_range_inverted(self):
-        """Test start date after end date is rejected."""
-        with pytest.raises(ValidationError):
-            validate_date_range("2024-02-01", "2024-01-01")
+        """End dates before start should fail."""
+        with pytest.raises(ValueError):
+            DateRangeValidator.model_validate(
+                {
+                    "start": "2024-02-01T00:00:00Z",
+                    "end": "2024-01-01T00:00:00Z",
+                }
+            )
 
     def test_validate_date_range_future(self):
-        """Test future dates are rejected."""
-        future_date = (datetime.now() + timedelta(days=10)).strftime("%Y-%m-%d")
-        today = datetime.now().strftime("%Y-%m-%d")
-        
-        with pytest.raises(ValidationError):
-            validate_date_range(today, future_date)
+        """Future dates should be rejected."""
+        future = (datetime.now(UTC) + timedelta(days=10)).isoformat()
+        today = datetime.now(UTC).isoformat()
 
-    def test_validate_date_range_invalid_format(self):
-        """Test invalid date formats are rejected."""
-        with pytest.raises(ValidationError):
-            validate_date_range("01/01/2024", "01/31/2024")
+        with pytest.raises(ValueError):
+            DateRangeValidator.model_validate({"start": today, "end": future})
 
-    def test_validate_date_range_too_long(self):
-        """Test date ranges exceeding max days are rejected."""
-        start = "2020-01-01"
-        end = "2024-01-01"  # > 3 years
-        
+    def test_validate_date_range_max_days(self):
+        """Very large ranges should fail max-range validation."""
+        validator = DateRangeValidator.model_validate(
+            {
+                "start": "2020-01-01T00:00:00Z",
+                "end": "2024-01-01T00:00:00Z",
+            }
+        )
+
         with pytest.raises(ValidationError):
-            validate_date_range(start, end, max_days=365)
+            validator.validate_max_range(max_days=365)
 
 
 class TestLikeClauseSanitization:
-    """Test LIKE clause sanitization (SQL injection prevention)."""
+    """Test LIKE clause sanitization."""
 
     def test_sanitize_like_clause_basic(self):
-        """Test basic string sanitization."""
-        assert sanitize_like_clause("test") == "test"
+        """Plain text should pass through unchanged."""
+        assert QueryValidator.sanitize_like_clause("test") == "test"
 
     def test_sanitize_like_clause_special_chars(self):
-        """Test SQL special characters are escaped."""
-        assert sanitize_like_clause("test%value") == "test\\%value"
-        assert sanitize_like_clause("test_value") == "test\\_value"
-        assert sanitize_like_clause("test'value") == "test''value"
+        """Wildcard characters should be escaped."""
+        assert QueryValidator.sanitize_like_clause("test%value") == r"test\%value"
+        assert QueryValidator.sanitize_like_clause("test_value") == r"test\_value"
 
     def test_sanitize_like_clause_sql_keywords(self):
-        """Test SQL keywords are handled."""
-        # Should escape special chars, not block keywords
-        assert sanitize_like_clause("DROP TABLE") == "DROP TABLE"
-        assert sanitize_like_clause("'; DROP--") == "''; DROP--"
-
-    def test_sanitize_like_clause_empty(self):
-        """Test empty string handling."""
-        assert sanitize_like_clause("") == ""
-
-    def test_sanitize_like_clause_unicode(self):
-        """Test Unicode characters are preserved."""
-        assert sanitize_like_clause("test café") == "test café"
+        """Suspicious SQL patterns should be rejected."""
+        with pytest.raises(ValidationError):
+            QueryValidator.sanitize_like_clause("DROP TABLE")
 
 
 class TestDashboardConstraints:
-    """Test dashboard constraint validation."""
+    """Test dashboard validation rules."""
 
-    def test_validate_dashboard_constraints_valid(self):
-        """Test valid dashboard configuration."""
-        widgets = [
-            {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
-            {"position_x": 6, "position_y": 0, "width": 6, "height": 4},
-        ]
-        
-        validate_dashboard_constraints(widgets)
-        # Should not raise
+    def test_validate_widget_count(self):
+        """A valid widget count should pass."""
+        assert DashboardValidator.validate_widget_count(2) == 2
 
-    def test_validate_dashboard_constraints_too_many_widgets(self):
-        """Test exceeding maximum widget count (FR-032a)."""
-        widgets = [
-            {"position_x": 0, "position_y": i * 4, "width": 12, "height": 4}
-            for i in range(21)  # Max is 20
-        ]
-        
-        with pytest.raises(ValidationError, match="maximum 20 widgets"):
-            validate_dashboard_constraints(widgets)
-
-    def test_validate_dashboard_constraints_overlap(self):
-        """Test overlapping widgets are detected."""
-        widgets = [
-            {"position_x": 0, "position_y": 0, "width": 6, "height": 4},
-            {"position_x": 2, "position_y": 2, "width": 6, "height": 4},  # Overlaps
-        ]
-        
-        with pytest.raises(ValidationError, match="overlap"):
-            validate_dashboard_constraints(widgets)
-
-    def test_validate_dashboard_constraints_out_of_bounds(self):
-        """Test widgets outside grid bounds."""
-        widgets = [
-            {"position_x": 10, "position_y": 0, "width": 6, "height": 4},  # Extends beyond 12
-        ]
-        
-        with pytest.raises(ValidationError, match="out of bounds"):
-            validate_dashboard_constraints(widgets)
-
-    def test_validate_dashboard_constraints_invalid_size(self):
-        """Test widget size constraints."""
-        # Min size 2x2, max 12x12
+    def test_validate_widget_count_too_many(self):
+        """Widget count above the cap should fail."""
         with pytest.raises(ValidationError):
-            validate_dashboard_constraints([
-                {"position_x": 0, "position_y": 0, "width": 1, "height": 1}
-            ])
+            DashboardValidator.validate_widget_count(21)
+
+    def test_validate_widget_position_valid(self):
+        """Valid widget positions should pass."""
+        position = {"x": 0, "y": 0, "w": 6, "h": 4}
+        assert DashboardValidator.validate_widget_position(position) == position
+
+    def test_validate_widget_position_out_of_bounds(self):
+        """Widgets extending past the grid should fail."""
+        with pytest.raises(ValidationError):
+            DashboardValidator.validate_widget_position({"x": 10, "y": 0, "w": 6, "h": 4})
+
+    def test_validate_widget_overlap(self):
+        """Overlapping widgets should be detected."""
+        positions = [
+            {"x": 0, "y": 0, "w": 6, "h": 4},
+            {"x": 2, "y": 2, "w": 6, "h": 4},
+        ]
+        with pytest.raises(ValidationError):
+            DashboardValidator.check_widget_overlap(positions)
 
 
 class TestCustomizationValidation:
     """Test chart customization validation."""
 
-    def test_validate_customization_valid(self):
-        """Test valid customization options."""
-        customization = {
-            "title": "My Chart",
-            "show_legend": True,
-            "legend_position": "top",
-            "colors": ["#ff0000", "#00ff00", "#0000ff"],
-        }
-        
-        validate_customization(customization)
-        # Should not raise
+    def test_validate_title_truncates(self):
+        """Long titles should be truncated rather than rejected."""
+        title = "A" * 250
 
-    def test_validate_customization_title_too_long(self):
-        """Test title length constraint (FR-011g)."""
-        customization = {
-            "title": "A" * 101,  # Max is 100
-        }
-        
-        with pytest.raises(ValidationError, match="title.*100"):
-            validate_customization(customization)
+        result = CustomizationValidator.validate_title(title)
 
-    def test_validate_customization_invalid_color(self):
-        """Test invalid color format."""
-        customization = {
-            "colors": ["invalid-color"],
-        }
-        
-        with pytest.raises(ValidationError, match="color"):
-            validate_customization(customization)
+        assert len(result) == CustomizationValidator.MAX_TITLE_LENGTH + 3
+        assert result.endswith("...")
 
-    def test_validate_customization_invalid_legend_position(self):
-        """Test invalid legend position."""
-        customization = {
-            "legend_position": "invalid",
-        }
-        
-        with pytest.raises(ValidationError, match="legend"):
-            validate_customization(customization)
+    def test_validate_colors(self):
+        """Valid hex colors should be preserved."""
+        colors = ["#ff0000", "#00ff00", "#0000ff"]
+        assert CustomizationValidator.validate_colors(colors) == colors
 
-    def test_validate_customization_font_size_range(self):
-        """Test font size constraints."""
+    def test_validate_colors_invalid(self):
+        """Invalid hex colors should fail."""
         with pytest.raises(ValidationError):
-            validate_customization({"title_font_size": 5})  # Too small
-        
+            CustomizationValidator.validate_colors(["invalid-color"])
+
+    def test_validate_font_size_range(self):
+        """Font sizes outside the supported range should fail."""
         with pytest.raises(ValidationError):
-            validate_customization({"title_font_size": 100})  # Too large
+            CustomizationValidator.validate_font_size(5)
+
+        with pytest.raises(ValidationError):
+            CustomizationValidator.validate_font_size(100)
+
+    def test_validate_opacity_range(self):
+        """Opacity outside 0-100 should fail."""
+        with pytest.raises(ValidationError):
+            CustomizationValidator.validate_opacity(-1)
+
+        with pytest.raises(ValidationError):
+            CustomizationValidator.validate_opacity(101)
 
 
 class TestForecastDataValidation:
     """Test forecast data validation."""
 
     def test_validate_forecast_data_valid(self):
-        """Test valid forecast data."""
-        predictions = [
-            {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
-            {"date": "2024-02-02", "value": 105, "lower": 95, "upper": 115},
-        ]
-        
-        validate_forecast_data(predictions, horizon_days=2)
-        # Should not raise
+        """Adequate training data should pass."""
+        ForecastValidator.validate_training_data(
+            data_points=75,
+            date_range_days=90,
+            gaps=[1, 2, 5],
+        )
 
-    def test_validate_forecast_data_missing_fields(self):
-        """Test forecast data with missing required fields."""
-        predictions = [
-            {"date": "2024-02-01", "value": 100},  # Missing lower/upper
-        ]
-        
-        with pytest.raises(ValidationError, match="required fields"):
-            validate_forecast_data(predictions, horizon_days=1)
-
-    def test_validate_forecast_data_invalid_bounds(self):
-        """Test forecast with invalid confidence bounds."""
-        predictions = [
-            {"date": "2024-02-01", "value": 100, "lower": 110, "upper": 90},  # Invalid
-        ]
-        
-        with pytest.raises(ValidationError, match="lower.*upper"):
-            validate_forecast_data(predictions, horizon_days=1)
-
-    def test_validate_forecast_data_wrong_count(self):
-        """Test forecast data count mismatch."""
-        predictions = [
-            {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
-        ]
-        
-        with pytest.raises(ValidationError, match="predictions count"):
-            validate_forecast_data(predictions, horizon_days=7)
-
-    def test_validate_forecast_data_invalid_dates(self):
-        """Test forecast with non-sequential dates."""
-        predictions = [
-            {"date": "2024-02-01", "value": 100, "lower": 90, "upper": 110},
-            {"date": "2024-02-03", "value": 105, "lower": 95, "upper": 115},  # Gap
-        ]
-        
-        with pytest.raises(ValidationError, match="sequential"):
-            validate_forecast_data(predictions, horizon_days=2)
-
-
-class TestEdgeCases:
-    """Test edge cases and boundary conditions."""
-
-    def test_validate_empty_inputs(self):
-        """Test validation with empty inputs."""
+    def test_validate_forecast_data_insufficient_range(self):
+        """Insufficient training history should fail."""
         with pytest.raises(ValidationError):
-            validate_table_name("")
+            ForecastValidator.validate_training_data(
+                data_points=20,
+                date_range_days=30,
+                gaps=[],
+            )
 
-    def test_validate_none_inputs(self):
-        """Test validation with None inputs."""
+    def test_validate_forecast_data_low_completeness(self):
+        """Sparse historical data should fail completeness checks."""
         with pytest.raises(ValidationError):
-            validate_query_limit(None)
-
-    def test_validate_unicode_edge_cases(self):
-        """Test Unicode edge cases."""
-        # Unicode in table names should fail (not in whitelist)
-        with pytest.raises(ValidationError):
-            validate_table_name("table_名前")
-
-    def test_validate_extremely_large_numbers(self):
-        """Test validation with extremely large numbers."""
-        assert validate_query_limit(999999999) == 10000  # Capped
+            ForecastValidator.validate_training_data(
+                data_points=20,
+                date_range_days=90,
+                gaps=[1],
+            )

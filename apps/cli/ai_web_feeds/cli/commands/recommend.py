@@ -6,8 +6,8 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.config import settings
+from ai_web_feeds.storage import DatabaseManager
 
 app = typer.Typer(help="AI-powered feed recommendations")
 console = Console()
@@ -39,7 +39,7 @@ def get_recommendations(
         "-l",
         help="Maximum recommendations",
     ),
-):
+) -> None:
     """Get feed recommendations."""
     console.print("[bold cyan]AI-Powered Feed Recommendations[/bold cyan]\n")
 
@@ -102,7 +102,7 @@ def get_recommendations(
     console.print(f"\n[green]✓[/green] Generated {len(recommendations)} recommendations")
 
     # Show breakdown
-    reason_counts = {}
+    reason_counts: dict[str, int] = {}
     for _, _, reason in recommendations:
         reason_counts[reason] = reason_counts.get(reason, 0) + 1
 
@@ -142,7 +142,7 @@ def track_interaction(
         "-r",
         help="Recommendation reason",
     ),
-):
+) -> None:
     """Track recommendation interaction."""
     db = DatabaseManager(database_url)
 
@@ -165,7 +165,7 @@ def show_weights(
         "-d",
         help="Database URL",
     ),
-):
+) -> None:
     """Show recommendation algorithm weights."""
     console.print("[bold cyan]Recommendation Algorithm Weights[/bold cyan]\n")
 

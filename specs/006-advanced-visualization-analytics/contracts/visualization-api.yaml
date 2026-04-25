@@ -8,14 +8,14 @@ info:
     url: https://github.com/wyattowalsh/ai-web-feeds
 
 servers:
-  - url: http://localhost:8000/api/v1
-    description: Development server
-  - url: https://api.aiwebfeeds.com/v1
-    description: Production server
+- url: http://localhost:8000/api/v1
+  description: Development server
+- url: https://api.aiwebfeeds.com/v1
+  description: Production server
 
 security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
+- BearerAuth: []
+- ApiKeyAuth: []
 
 paths:
   /visualizations:
@@ -24,25 +24,25 @@ paths:
       operationId: listVisualizations
       tags: [Visualizations]
       parameters:
-        - name: device_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            default: 0
-            minimum: 0
+      - name: device_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
       responses:
         '200':
           description: List of visualizations
@@ -92,17 +92,17 @@ paths:
       operationId: getVisualization
       tags: [Visualizations]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: device_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: device_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '200':
           description: Visualization details
@@ -120,11 +120,11 @@ paths:
       operationId: updateVisualization
       tags: [Visualizations]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
       requestBody:
         required: true
         content:
@@ -150,17 +150,17 @@ paths:
       operationId: deleteVisualization
       tags: [Visualizations]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: device_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: device_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '204':
           description: Visualization deleted
@@ -176,17 +176,17 @@ paths:
       tags: [Visualizations]
       description: Fetch actual data for rendering the visualization
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: device_id
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: device_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '200':
           description: Visualization data

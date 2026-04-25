@@ -38,9 +38,16 @@
     --success-tone: var(--color-success, oklch(0.7 0.14 153));
     --warning-tone: var(--color-warning, oklch(0.79 0.12 79));
     --danger-tone: var(--color-error, oklch(0.64 0.19 27));
-    --page-background:
-      radial-gradient(circle at top left, color-mix(in oklab, var(--brand) 7%, transparent), transparent 28%),
-      radial-gradient(circle at 85% 12%, color-mix(in oklab, var(--highlight) 10%, transparent), transparent 24%),
+    --page-background: radial-gradient(
+        circle at top left,
+        color-mix(in oklab, var(--brand) 7%, transparent),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 85% 12%,
+        color-mix(in oklab, var(--highlight) 10%, transparent),
+        transparent 24%
+      ),
       var(--paper);
     --surface-shadow: 0 24px 80px -40px color-mix(in srgb, var(--ink) 22%, transparent);
     --surface-shadow-soft: 0 18px 50px -34px color-mix(in srgb, var(--ink) 18%, transparent);
@@ -83,9 +90,16 @@
     --success-tone: var(--color-success);
     --warning-tone: var(--color-warning);
     --danger-tone: var(--color-error);
-    --page-background:
-      radial-gradient(circle at top left, color-mix(in oklab, var(--brand) 10%, transparent), transparent 30%),
-      radial-gradient(circle at 82% 14%, color-mix(in oklab, var(--highlight) 8%, transparent), transparent 28%),
+    --page-background: radial-gradient(
+        circle at top left,
+        color-mix(in oklab, var(--brand) 10%, transparent),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 82% 14%,
+        color-mix(in oklab, var(--highlight) 8%, transparent),
+        transparent 28%
+      ),
       var(--paper);
     --surface-shadow: 0 28px 90px -46px rgba(0, 0, 0, 0.62);
     --surface-shadow-soft: 0 22px 60px -40px rgba(0, 0, 0, 0.54);
@@ -120,7 +134,9 @@
   }
 
   a {
-    transition: color 150ms ease, opacity 150ms ease;
+    transition:
+      color 150ms ease,
+      opacity 150ms ease;
   }
 
   a:hover {

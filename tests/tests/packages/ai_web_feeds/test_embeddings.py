@@ -1,11 +1,11 @@
 """Unit tests for ai_web_feeds.embeddings module."""
 
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
-
+import requests
 from ai_web_feeds.embeddings import (
     bytes_to_embedding,
     embedding_to_bytes,
@@ -18,6 +18,26 @@ from ai_web_feeds.embeddings import (
     save_feed_embedding,
 )
 from ai_web_feeds.models import FeedSource
+from sqlmodel import Session, SQLModel, create_engine
+
+TEST_HF_API_TOKEN = "test_token"
+
+
+def _mock_settings(
+    *,
+    provider: str = "local",
+    hf_api_token: str = "",
+    hf_model: str = "test-model",
+    local_model: str = "test-local-model",
+):
+    return SimpleNamespace(
+        embedding=SimpleNamespace(
+            provider=provider,
+            hf_api_token=hf_api_token,
+            hf_model=hf_model,
+            local_model=local_model,
+        )
+    )
 
 
 @pytest.fixture
@@ -89,10 +109,12 @@ class TestEmbeddingConversion:
 class TestLocalEmbeddings:
     """Tests for local Sentence-Transformers embeddings."""
 
-    @patch("ai_web_feeds.embeddings.SentenceTransformer")
-    def test_get_local_model_cached(self, mock_st):
+    @patch("sentence_transformers.SentenceTransformer")
+    @patch("ai_web_feeds.embeddings.get_settings")
+    def test_get_local_model_cached(self, mock_get_settings, mock_st):
         """Test that local model is cached."""
         mock_model = Mock()
+        mock_get_settings.return_value = _mock_settings()
         mock_st.return_value = mock_model
 
         # Clear cache first
@@ -146,16 +168,14 @@ class TestHuggingFaceEmbeddings:
     """Tests for Hugging Face API embeddings."""
 
     @patch("ai_web_feeds.embeddings.requests.post")
-    @patch("ai_web_feeds.embeddings.settings")
-    def test_generate_embeddings_hf_success(self, mock_settings, mock_post):
+    @patch("ai_web_feeds.embeddings.get_settings")
+    def test_generate_embeddings_hf_success(self, mock_get_settings, mock_post):
         """Test successful HF API embedding generation."""
-        # Mock settings
-        mock_settings.embedding.hf_api_token = "test_token"
-        mock_settings.embedding.hf_model = "test-model"
+        mock_get_settings.return_value = _mock_settings(hf_api_token=TEST_HF_API_TOKEN)
 
         # Mock API response
         mock_response = Mock()
-        mock_response.json.return_value = [[0.1] * 384, [0.2] * 384]
+        mock_response.json.return_value = [0.1] * 384
         mock_response.raise_for_status = Mock()
         mock_post.return_value = mock_response
 
@@ -170,26 +190,25 @@ class TestHuggingFaceEmbeddings:
         assert embeddings.dtype == np.float32
 
     @patch("ai_web_feeds.embeddings.os.getenv")
-    @patch("ai_web_feeds.embeddings.settings")
-    def test_generate_embeddings_hf_no_token(self, mock_settings, mock_getenv):
+    @patch("ai_web_feeds.embeddings.get_settings")
+    def test_generate_embeddings_hf_no_token(self, mock_get_settings, mock_getenv):
         """Test HF API fails without token."""
-        mock_settings.embedding.hf_api_token = ""
+        mock_get_settings.return_value = _mock_settings(hf_api_token="")
         mock_getenv.return_value = None
 
         with pytest.raises(ValueError, match="HF_API_TOKEN not set"):
             generate_embeddings_hf(["text"])
 
     @patch("ai_web_feeds.embeddings.requests.post")
-    @patch("ai_web_feeds.embeddings.settings")
-    def test_generate_embeddings_hf_api_error(self, mock_settings, mock_post):
+    @patch("ai_web_feeds.embeddings.get_settings")
+    def test_generate_embeddings_hf_api_error(self, mock_get_settings, mock_post):
         """Test HF API error handling."""
-        mock_settings.embedding.hf_api_token = "test_token"
-        mock_settings.embedding.hf_model = "test-model"
+        mock_get_settings.return_value = _mock_settings(hf_api_token=TEST_HF_API_TOKEN)
 
         # Mock API error
-        mock_post.side_effect = Exception("API error")
+        mock_post.side_effect = requests.RequestException("API error")
 
-        with pytest.raises(Exception):
+        with pytest.raises(requests.RequestException):
             generate_embeddings_hf(["text"])
 
 
@@ -197,13 +216,15 @@ class TestHybridEmbeddings:
     """Tests for hybrid embedding generation."""
 
     @patch("ai_web_feeds.embeddings.generate_embeddings_hf")
-    @patch("ai_web_feeds.embeddings.settings")
+    @patch("ai_web_feeds.embeddings.get_settings")
     @patch("ai_web_feeds.embeddings.os.getenv")
-    def test_generate_embeddings_uses_api(self, mock_getenv, mock_settings, mock_gen_hf):
+    def test_generate_embeddings_uses_api(self, mock_getenv, mock_get_settings, mock_gen_hf):
         """Test hybrid mode uses HF API when requested."""
-        mock_settings.embedding.provider = "huggingface"
-        mock_settings.embedding.hf_api_token = "test_token"
-        mock_getenv.return_value = "test_token"
+        mock_get_settings.return_value = _mock_settings(
+            provider="huggingface",
+            hf_api_token=TEST_HF_API_TOKEN,
+        )
+        mock_getenv.return_value = TEST_HF_API_TOKEN
 
         mock_embeddings = np.random.rand(2, 384).astype(np.float32)
         mock_gen_hf.return_value = mock_embeddings
@@ -217,18 +238,20 @@ class TestHybridEmbeddings:
 
     @patch("ai_web_feeds.embeddings.generate_embeddings_local")
     @patch("ai_web_feeds.embeddings.generate_embeddings_hf")
-    @patch("ai_web_feeds.embeddings.settings")
+    @patch("ai_web_feeds.embeddings.get_settings")
     @patch("ai_web_feeds.embeddings.os.getenv")
     def test_generate_embeddings_fallback_to_local(
-        self, mock_getenv, mock_settings, mock_gen_hf, mock_gen_local
+        self, mock_getenv, mock_get_settings, mock_gen_hf, mock_gen_local
     ):
         """Test hybrid mode falls back to local on API failure."""
-        mock_settings.embedding.provider = "huggingface"
-        mock_settings.embedding.hf_api_token = "test_token"
-        mock_getenv.return_value = "test_token"
+        mock_get_settings.return_value = _mock_settings(
+            provider="huggingface",
+            hf_api_token=TEST_HF_API_TOKEN,
+        )
+        mock_getenv.return_value = TEST_HF_API_TOKEN
 
         # HF API fails
-        mock_gen_hf.side_effect = Exception("API error")
+        mock_gen_hf.side_effect = requests.RequestException("API error")
 
         # Local succeeds
         mock_embeddings = np.random.rand(2, 384).astype(np.float32)

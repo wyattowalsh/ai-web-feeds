@@ -1,6 +1,6 @@
 """CLI commands for search and discovery."""
 
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
@@ -48,14 +48,14 @@ def search_query(
         "--verified/--unverified",
         help="Filter by verified status",
     ),
-):
+) -> None:
     """Search for feeds with full-text or semantic search."""
     console.print(f"[bold cyan]Search Query:[/bold cyan] {query}\n")
 
     db = DatabaseManager(database_url)
 
     # Build filters
-    filters = {}
+    filters: dict[str, Any] = {}
     if source_type:
         filters["source_type"] = source_type
     if topics:
@@ -136,7 +136,7 @@ def search_autocomplete(
         "-l",
         help="Maximum suggestions",
     ),
-):
+) -> None:
     """Get autocomplete suggestions."""
     console.print(f"[bold cyan]Autocomplete:[/bold cyan] {prefix}\n")
 
@@ -169,7 +169,7 @@ def search_init(
         "-d",
         help="Database URL",
     ),
-):
+) -> None:
     """Initialize search tables (FTS5 + Trie index)."""
     console.print("[bold cyan]Initializing Search Tables[/bold cyan]\n")
 
@@ -198,7 +198,7 @@ def search_embeddings(
         "-p",
         help="Embedding provider: local or huggingface",
     ),
-):
+) -> None:
     """Generate embeddings for all feeds."""
     console.print("[bold cyan]Generating Feed Embeddings[/bold cyan]\n")
 
@@ -241,7 +241,7 @@ def save_search_cmd(
         "--topics",
         help="Filter topics (comma-separated)",
     ),
-):
+) -> None:
     """Save a search for one-click replay."""
     console.print(f"[bold cyan]Saving Search:[/bold cyan] {name}\n")
 
@@ -276,7 +276,7 @@ def list_saved_searches(
         "-u",
         help="User ID",
     ),
-):
+) -> None:
     """List all saved searches for a user."""
     console.print(f"[bold cyan]Saved Searches for:[/bold cyan] {user_id}\n")
 

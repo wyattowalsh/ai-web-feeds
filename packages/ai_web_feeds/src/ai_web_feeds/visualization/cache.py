@@ -8,14 +8,17 @@ Implements FR-011a through FR-011c:
 
 import hashlib
 import json
-from functools import lru_cache
-from typing import Any, Optional
+from collections import OrderedDict
+from typing import Any
 
 from loguru import logger
 
+from ai_web_feeds.config import settings
+
 try:
     import redis
-    from redis.exceptions import ConnectionError, RedisError
+    from redis.exceptions import ConnectionError as RedisConnectionError
+    from redis.exceptions import RedisError
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -41,14 +44,14 @@ class CacheLayer:
         self,
         redis_url: str | None = None,
         enable_redis: bool = True,
-    ):
+    ) -> None:
         """Initialize cache layer.
 
         Args:
             redis_url: Redis connection URL (e.g., redis://localhost:6379/0)
             enable_redis: Whether to attempt Redis connection
         """
-        self.redis_client: Optional[redis.Redis] = None
+        self.redis_client: redis.Redis | None = None
         self.redis_enabled = False
 
         # Try to connect to Redis if available and enabled
@@ -63,7 +66,7 @@ class CacheLayer:
                 self.redis_client.ping()
                 self.redis_enabled = True
                 logger.info("Redis cache initialized successfully")
-            except (ConnectionError, RedisError) as e:
+            except (RedisConnectionError, RedisError) as e:
                 logger.warning(f"Failed to connect to Redis: {e}")
                 logger.info("Falling back to LRU cache")
                 self.redis_client = None
@@ -73,6 +76,7 @@ class CacheLayer:
         # Initialize in-memory cache statistics
         self._cache_hits = 0
         self._cache_misses = 0
+        self._lru_storage: OrderedDict[str, Any] = OrderedDict()
 
     def _generate_cache_key(
         self,
@@ -116,7 +120,7 @@ class CacheLayer:
         filters: dict[str, Any],
         date_range: dict[str, str],
         device_id: str,
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Retrieve cached data.
 
         Args:
@@ -252,11 +256,7 @@ class CacheLayer:
             Dictionary with cache metrics
         """
         total_requests = self._cache_hits + self._cache_misses
-        hit_rate = (
-            (self._cache_hits / total_requests * 100)
-            if total_requests > 0
-            else 0.0
-        )
+        hit_rate = (self._cache_hits / total_requests * 100) if total_requests > 0 else 0.0
 
         stats = {
             "cache_type": "redis" if self.redis_enabled else "lru",
@@ -279,37 +279,34 @@ class CacheLayer:
 
     # LRU cache methods (fallback implementation)
 
-    @lru_cache(maxsize=LRU_MAX_SIZE)
-    def _lru_get(self, key: str) -> Optional[Any]:
-        """Internal LRU cache get (never returns data, just tracks access)."""
-        # This is a sentinel method for lru_cache tracking
-        # Actual data is stored in _lru_storage
-        return None
+    def _lru_get(self, key: str) -> Any | None:
+        """Retrieve data from the in-memory LRU cache."""
+        if key not in self._lru_storage:
+            return None
+
+        self._lru_storage.move_to_end(key)
+        return self._lru_storage[key]
 
     def _lru_set(self, key: str, data: Any) -> None:
         """Store data in LRU cache."""
-        # Call _lru_get to register the key in lru_cache
-        self._lru_get(key)
-        # Store actual data in instance attribute
-        if not hasattr(self, "_lru_storage"):
-            self._lru_storage: dict[str, Any] = {}
         self._lru_storage[key] = data
+        self._lru_storage.move_to_end(key)
 
         # Enforce size limit
         if len(self._lru_storage) > self.LRU_MAX_SIZE:
-            # Remove oldest entry (simplified LRU)
-            oldest_key = next(iter(self._lru_storage))
-            del self._lru_storage[oldest_key]
+            self._lru_storage.popitem(last=False)
+
+    def _lru_delete(self, key: str) -> None:
+        """Delete a single LRU cache entry."""
+        self._lru_storage.pop(key, None)
 
     def _lru_clear(self) -> None:
         """Clear LRU cache."""
-        if hasattr(self, "_lru_storage"):
-            self._lru_storage.clear()
-        self._lru_get.cache_clear()
+        self._lru_storage.clear()
 
 
 # Global cache instance (initialized by config)
-_cache_instance: Optional[CacheLayer] = None
+_cache_state: dict[str, CacheLayer | None] = {"instance": None}
 
 
 def get_cache() -> CacheLayer:
@@ -318,13 +315,12 @@ def get_cache() -> CacheLayer:
     Returns:
         CacheLayer instance
     """
-    global _cache_instance
-    if _cache_instance is None:
-        from ai_web_feeds.config import settings
-
+    cache_instance = _cache_state["instance"]
+    if cache_instance is None:
         redis_url = getattr(settings, "redis_url", None)
-        _cache_instance = CacheLayer(redis_url=redis_url)
-    return _cache_instance
+        cache_instance = CacheLayer(redis_url=redis_url)
+        _cache_state["instance"] = cache_instance
+    return cache_instance
 
 
 def init_cache(redis_url: str | None = None, enable_redis: bool = True) -> CacheLayer:
@@ -337,6 +333,6 @@ def init_cache(redis_url: str | None = None, enable_redis: bool = True) -> Cache
     Returns:
         Initialized CacheLayer instance
     """
-    global _cache_instance
-    _cache_instance = CacheLayer(redis_url=redis_url, enable_redis=enable_redis)
-    return _cache_instance
+    cache_instance = CacheLayer(redis_url=redis_url, enable_redis=enable_redis)
+    _cache_state["instance"] = cache_instance
+    return cache_instance

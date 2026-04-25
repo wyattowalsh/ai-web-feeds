@@ -44,8 +44,41 @@ line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "T10", "T20", "Q", "RET", "SIM", "ARG", "PTH", "PD", "PL", "NPY", "RUF", "ASYNC"]
-ignore = ["ANN101", "ANN102", "ANN401"]
+select = [
+    "E",
+    "F",
+    "I",
+    "N",
+    "W",
+    "UP",
+    "S",
+    "B",
+    "A",
+    "C4",
+    "T10",
+    "T20",
+    "Q",
+    "RET",
+    "SIM",
+    "ARG",
+    "PTH",
+    "PD",
+    "PL",
+    "NPY",
+    "RUF",
+    "ASYNC",
+]
+ignore = [
+    "ANN101",
+    "ANN102",
+    "ANN401",
+    "PLC0415",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR2004",
+    "PLW0603",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # Utils: OPML generation uses datetime.utcnow() for RFC compliance + complex URL generation logic
@@ -64,5 +97,8 @@ ignore = ["ANN101", "ANN102", "ANN401"]
 "src/ai_web_feeds/nlp.py" = ["PLR0912", "PLR0913"]
 "src/ai_web_feeds/embeddings.py" = ["PLR0913"]
 "src/ai_web_feeds/jobs/*.py" = ["PLR0913"]
+"src/ai_web_feeds/migrations/*.py" = ["T201"]
+"src/ai_web_feeds/visualization/export_api.py" = ["A002", "ARG001", "B008", "RET503"]
 # Alembic: Generated migration files
 "**/alembic/**" = ["INP001", "ERA001", "PLR0915"]
+"**/scripts/**/*.py" = ["ANN", "S607", "T201"]

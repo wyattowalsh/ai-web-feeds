@@ -12,7 +12,8 @@ Uses caching with TTL for performance per config settings.
 """
 
 import csv
-from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+from datetime import UTC, datetime, timedelta
 from io import StringIO
 from typing import Any
 
@@ -43,6 +44,7 @@ def calculate_summary_metrics(
     session: Session,
     date_range: str = "30d",
     topic: str | None = None,
+    date_range_days: int | None = None,
 ) -> dict[str, Any]:
     """Calculate summary metrics for analytics dashboard.
 
@@ -59,22 +61,20 @@ def calculate_summary_metrics(
         - avg_response_time: float
         - health_score_distribution: dict
     """
-    settings = get_settings()
-    logger.info(f"Calculating summary metrics for date_range={date_range}, topic={topic}")
+    resolved_date_range, days = resolve_date_range(date_range, date_range_days)
+    logger.info(f"Calculating summary metrics for date_range={resolved_date_range}, topic={topic}")
 
     # Parse date range
-    days_map = {"7d": 7, "30d": 30, "90d": 90}
-    days = days_map.get(date_range, 30)
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
     # Base query for feeds
-    feed_query = select(FeedSource)
+    feeds = session.exec(select(FeedSource)).all()
     if topic:
-        feed_query = feed_query.where(FeedSource.topics.contains([topic]))
-
-    feeds = session.exec(feed_query).all()
+        feeds = [feed for feed in feeds if topic in (feed.topics or [])]
     total_feeds = len(feeds)
     active_feeds = sum(1 for f in feeds if f.curation_status != "inactive")
+    verified_feeds = sum(1 for feed in feeds if feed.verified)
+    total_topics = len({topic_name for feed in feeds for topic_name in feed.topics or []})
 
     # Validation metrics
     validation_query = select(FeedValidationResult).where(
@@ -83,11 +83,16 @@ def calculate_summary_metrics(
     validations = session.exec(validation_query).all()
 
     if validations:
-        success_count = sum(1 for v in validations if v.success)
+        success_count = sum(1 for validation in validations if validation_succeeded(validation))
         validation_success_rate = success_count / len(validations)
-        successful_validations = [v for v in validations if v.success and v.response_time_ms]
+        successful_validations = [
+            validation
+            for validation in validations
+            if validation_succeeded(validation) and validation.response_time_ms is not None
+        ]
         avg_response_time = (
-            sum(v.response_time_ms for v in successful_validations) / len(successful_validations)
+            sum(validation.response_time_ms or 0 for validation in successful_validations)
+            / len(successful_validations)
             if successful_validations
             else 0.0
         )
@@ -107,16 +112,19 @@ def calculate_summary_metrics(
                 health_distribution["unhealthy"] += 1
 
     logger.debug(
-        f"Summary metrics calculated: {total_feeds} feeds, {validation_success_rate:.2%} success rate"
+        "Summary metrics calculated: "
+        f"{total_feeds} feeds, {validation_success_rate:.2%} success rate"
     )
 
     return {
         "total_feeds": total_feeds,
         "active_feeds": active_feeds,
+        "verified_feeds": verified_feeds,
+        "total_topics": total_topics,
         "validation_success_rate": validation_success_rate,
         "avg_response_time": avg_response_time,
         "health_distribution": health_distribution,
-        "date_range": date_range,
+        "date_range": resolved_date_range,
         "topic": topic,
     }
 
@@ -125,6 +133,7 @@ def get_trending_topics(
     session: Session,
     limit: int = 10,
     date_range: str = "30d",
+    date_range_days: int | None = None,
 ) -> list[dict[str, Any]]:
     """Get Most Active Topics ranked by validation frequency.
 
@@ -143,7 +152,8 @@ def get_trending_topics(
         - validation_frequency: float
         - avg_health_score: float
     """
-    logger.info(f"Getting trending topics: limit={limit}, date_range={date_range}")
+    resolved_date_range, days = resolve_date_range(date_range, date_range_days)
+    logger.info(f"Getting trending topics: limit={limit}, date_range={resolved_date_range}")
 
     # Query TopicStats for the latest snapshot date
     latest_snapshot = session.exec(
@@ -151,8 +161,8 @@ def get_trending_topics(
     ).first()
 
     if not latest_snapshot:
-        logger.warning("No TopicStats snapshots found")
-        return []
+        logger.warning("No TopicStats snapshots found, falling back to live aggregation")
+        return aggregate_trending_topics(session, days=days, limit=limit)
 
     # Get top topics by validation frequency
     query = (
@@ -168,6 +178,7 @@ def get_trending_topics(
         {
             "topic": ts.topic,
             "feed_count": ts.feed_count,
+            "validation_count": round(ts.validation_frequency * ts.feed_count),
             "validation_frequency": ts.validation_frequency,
             "avg_health_score": ts.avg_health_score,
         }
@@ -182,6 +193,7 @@ def get_publication_velocity(
     session: Session,
     granularity: str = "daily",
     date_range: str = "30d",
+    date_range_days: int | None = None,
 ) -> dict[str, Any]:
     """Get publication velocity metrics (validation frequency as proxy).
 
@@ -198,28 +210,27 @@ def get_publication_velocity(
         - most_active_feed: dict
         - least_active_feed: dict
     """
-    settings = get_settings()
-    logger.info(f"Getting publication velocity: granularity={granularity}, date_range={date_range}")
+    resolved_date_range, days = resolve_date_range(date_range, date_range_days)
+    logger.info(
+        f"Getting publication velocity: granularity={granularity}, date_range={resolved_date_range}"
+    )
 
     # Parse date range
-    days_map = {"7d": 7, "30d": 30, "90d": 90}
-    days = days_map.get(date_range, 30)
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
     # Get validations in date range
     validations = session.exec(
-        select(FeedValidationResult)
-        .where(FeedValidationResult.validated_at >= cutoff_date)
-        .where(FeedValidationResult.success == True)
+        select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
     ).all()
+    successful_validations = [
+        validation for validation in validations if validation_succeeded(validation)
+    ]
 
     # Group by date based on granularity
-    from collections import defaultdict
-
     date_counts: dict[str, int] = defaultdict(int)
     feed_counts: dict[str, int] = defaultdict(int)
 
-    for validation in validations:
+    for validation in successful_validations:
         date_key = _format_date_by_granularity(validation.validated_at, granularity)
         date_counts[date_key] += 1
         feed_counts[validation.feed_source_id] += 1
@@ -228,7 +239,7 @@ def get_publication_velocity(
     data_points = [{"date": date, "count": count} for date, count in sorted(date_counts.items())]
 
     # Calculate average per feed
-    avg_per_feed = len(validations) / len(feed_counts) if feed_counts else 0.0
+    avg_per_feed = len(successful_validations) / len(feed_counts) if feed_counts else 0.0
 
     # Find most/least active feeds
     if feed_counts:
@@ -304,6 +315,163 @@ def get_health_distribution(session: Session) -> dict[str, int]:
     return health_distribution
 
 
+def calculate_trending_topics(
+    session: Session,
+    date_range_days: int = 30,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Compatibility wrapper for trending topic calculations."""
+    return get_trending_topics(session, limit=limit, date_range_days=date_range_days)
+
+
+def calculate_validation_velocity(
+    session: Session,
+    date_range_days: int = 30,
+    granularity: str = "daily",
+) -> list[dict[str, Any]]:
+    """Compatibility wrapper that returns only velocity datapoints."""
+    return get_publication_velocity(
+        session,
+        granularity=granularity,
+        date_range_days=date_range_days,
+    )["data_points"]
+
+
+def calculate_health_distribution(
+    session: Session,
+    date_range_days: int = 30,
+) -> dict[str, int]:
+    """Compatibility wrapper for validation-derived health distribution."""
+    cutoff_date = datetime.now(UTC) - timedelta(days=date_range_days)
+    validations = session.exec(
+        select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
+    ).all()
+    validations_by_feed: dict[str, list[FeedValidationResult]] = defaultdict(list)
+    for validation in validations:
+        validations_by_feed[validation.feed_source_id].append(validation)
+
+    distribution = {"healthy": 0, "moderate": 0, "unhealthy": 0}
+    feeds = session.exec(select(FeedSource)).all()
+    for feed in feeds:
+        feed_validations = validations_by_feed.get(feed.id, [])
+        if feed_validations:
+            success_rate = sum(
+                1 for validation in feed_validations if validation_succeeded(validation)
+            ) / len(feed_validations)
+            if success_rate >= 0.8:
+                distribution["healthy"] += 1
+            elif success_rate >= 0.5:
+                distribution["moderate"] += 1
+            else:
+                distribution["unhealthy"] += 1
+            continue
+
+        if feed.quality_score is None:
+            distribution["moderate"] += 1
+        elif feed.quality_score >= 0.8:
+            distribution["healthy"] += 1
+        elif feed.quality_score >= 0.5:
+            distribution["moderate"] += 1
+        else:
+            distribution["unhealthy"] += 1
+
+    return distribution
+
+
+def generate_analytics_csv_report(
+    session: Session,
+    date_range_days: int = 30,
+) -> str:
+    """Compatibility wrapper for CSV export."""
+    return export_analytics_csv(session, date_range=f"{date_range_days}d")
+
+
+def resolve_date_range(
+    date_range: str = "30d",
+    date_range_days: int | None = None,
+) -> tuple[str, int]:
+    """Resolve legacy day-based inputs into the canonical range format."""
+    if date_range_days is not None:
+        return f"{date_range_days}d", date_range_days
+
+    days_map = {"7d": 7, "30d": 30, "90d": 90}
+    return date_range, days_map.get(date_range, 30)
+
+
+def validation_succeeded(validation: FeedValidationResult) -> bool:
+    """Determine whether a validation should count as successful."""
+    if validation.is_valid:
+        return True
+    return validation.is_accessible and validation.format_valid
+
+
+def aggregate_trending_topics(
+    session: Session,
+    *,
+    days: int,
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Aggregate trending topics directly from feeds and validations."""
+    cutoff_date = datetime.now(UTC) - timedelta(days=days)
+    validation_counts: dict[str, int] = defaultdict(int)
+    for validation in session.exec(
+        select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
+    ).all():
+        validation_counts[validation.feed_source_id] += 1
+
+    topic_stats: dict[str, dict[str, Any]] = {}
+    feeds = session.exec(select(FeedSource)).all()
+    for feed in feeds:
+        feed_topics = feed.topics or []
+        if not feed_topics:
+            continue
+
+        feed_validation_count = validation_counts.get(feed.id, 0)
+        feed_health = (
+            feed.quality_score if feed.quality_score is not None else feed.popularity_score or 0.0
+        )
+        for topic_name in feed_topics:
+            stats = topic_stats.setdefault(
+                topic_name,
+                {
+                    "topic": topic_name,
+                    "feed_ids": set(),
+                    "validation_count": 0,
+                    "health_scores": [],
+                },
+            )
+            stats["feed_ids"].add(feed.id)
+            stats["validation_count"] += feed_validation_count
+            stats["health_scores"].append(feed_health)
+
+    aggregated = []
+    for stats in topic_stats.values():
+        feed_count = len(stats["feed_ids"])
+        validation_count = stats["validation_count"]
+        health_scores = stats["health_scores"]
+        aggregated.append(
+            {
+                "topic": stats["topic"],
+                "feed_count": feed_count,
+                "validation_count": validation_count,
+                "validation_frequency": validation_count / feed_count if feed_count else 0.0,
+                "avg_health_score": sum(health_scores) / len(health_scores)
+                if health_scores
+                else 0.0,
+            }
+        )
+
+    aggregated.sort(
+        key=lambda item: (
+            item["validation_count"],
+            item["feed_count"],
+            item["avg_health_score"],
+        ),
+        reverse=True,
+    )
+    return aggregated[:limit]
+
+
 class _ResultCache:
     """Simple result cache with TTL support."""
 
@@ -316,7 +484,7 @@ class _ResultCache:
             return None
 
         result, timestamp = self._cache[key]
-        current_time = datetime.now(timezone.utc).timestamp()
+        current_time = datetime.now(UTC).timestamp()
         if current_time - timestamp > ttl_seconds:
             del self._cache[key]
             return None
@@ -325,7 +493,7 @@ class _ResultCache:
 
     def set(self, key: str, value: Any):
         """Set cached value with current timestamp."""
-        current_time = datetime.now(timezone.utc).timestamp()
+        current_time = datetime.now(UTC).timestamp()
         self._cache[key] = (value, current_time)
 
 
@@ -382,7 +550,7 @@ def generate_analytics_snapshot(session: Session) -> AnalyticsSnapshot:
     """
     logger.info("Generating analytics snapshot")
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
 
     # Calculate metrics
     summary = calculate_summary_metrics(session, date_range="30d")

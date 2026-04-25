@@ -78,9 +78,8 @@ async function loadThemeModule(
   document.documentElement.className = "";
   document.documentElement.style.cssText = "";
   document.documentElement.removeAttribute("data-layout");
-  document.head.innerHTML = options.includeMeta === false
-    ? ""
-    : '<meta name="theme-color" content="#ffffff">';
+  document.head.innerHTML =
+    options.includeMeta === false ? "" : '<meta name="theme-color" content="#ffffff">';
 
   const matchMedia = installMatchMedia(options.prefersDark ?? false);
 
@@ -149,7 +148,10 @@ describe("theme-manager", () => {
       expect(document.documentElement).toHaveClass("dark");
     });
 
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#1a1a1a");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
+      "content",
+      "#1a1a1a",
+    );
     expect(document.documentElement.style.getPropertyValue("--color-background")).toBe("#1f2530");
     expect(document.documentElement.style.getPropertyValue("--font-size-base")).toBe("18px");
     expect(document.documentElement.style.getPropertyValue("--font-family")).toBe("Inter");
@@ -158,7 +160,10 @@ describe("theme-manager", () => {
   });
 
   it("syncs system theme changes only while the theme mode is system", async () => {
-    const { themeModule, matchMedia } = await loadThemeModule({ theme: "system" }, { prefersDark: false });
+    const { themeModule, matchMedia } = await loadThemeModule(
+      { theme: "system" },
+      { prefersDark: false },
+    );
 
     await waitFor(() => {
       expect(document.documentElement).toHaveClass("light");

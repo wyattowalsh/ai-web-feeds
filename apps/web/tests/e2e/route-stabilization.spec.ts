@@ -2,7 +2,13 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
-const articleCorpusPath = path.resolve(process.cwd(), "..", "..", "data", "articles.generated.json");
+const articleCorpusPath = path.resolve(
+  process.cwd(),
+  "..",
+  "..",
+  "data",
+  "articles.generated.json",
+);
 const corpusFixture = {
   metadata: {
     generated_at: "2026-04-22T00:00:00.000Z",
@@ -112,11 +118,11 @@ test.describe("Route stabilization smoke", () => {
       role: "heading" as const,
     },
     {
-        path: "/docs",
-        text: "Documentation",
-        role: "heading" as const,
-        exact: true,
-      },
+      path: "/docs",
+      text: "Documentation",
+      role: "heading" as const,
+      exact: true,
+    },
     {
       path: "/explorer",
       text: "Inspect the catalog map, then hand the slice back to the reader.",
@@ -205,8 +211,12 @@ test.describe("Route stabilization smoke", () => {
     await page.getByRole("button", { name: "Apply filters" }).first().click();
 
     await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
-    await expect(page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") })).toBeVisible();
-    await expect(page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") }),
+    ).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });
@@ -248,7 +258,9 @@ test.describe("Route stabilization smoke", () => {
 
     await expect(page).not.toHaveURL(/mode=catalog/);
     await expect(page).toHaveURL(/feed=/);
-    await expect(page.getByRole("heading", { name: "Latest AI posts from across the open web" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+    ).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });
@@ -277,7 +289,9 @@ test.describe("Route stabilization smoke", () => {
     await page.getByRole("button", { name: "Apply filters" }).last().click();
 
     await expect(page).toHaveURL(new RegExp(`\\/?\\?q=${token}`));
-    await expect(page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
+    ).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });

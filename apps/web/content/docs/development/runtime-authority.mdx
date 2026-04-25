@@ -12,27 +12,27 @@ Not every file in the repository has the same status.
 
 ## Authority tiers
 
-| Tier | Canonical assets | Used for |
-| --- | --- | --- |
-| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas | contributor-edited catalog and taxonomy |
-| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML | checked-in outputs generated from authored inputs |
-| Runtime article store | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state |
-| Generated web corpus | `data/articles.generated.json` | self-contained article browse/search/read payload for the Next.js app |
-| Web APIs and workspace | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds` | corpus-backed reading/search plus catalog-backed source discovery |
-| Browser-local runtime | IndexedDB, localStorage, reader-local state | anonymous on-device reader preferences and article state |
-| External backend proxy | `BACKEND_URL`-backed Python service | optional analytics logging, saved searches, and backend-proxied runtime routes |
+| Tier                      | Canonical assets                                                                                                             | Used for                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas                                                                          | contributor-edited catalog and taxonomy                                        |
+| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML                                                                               | checked-in outputs generated from authored inputs                              |
+| Runtime article store     | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state                                     |
+| Generated web corpus      | `data/articles.generated.json`                                                                                               | self-contained article browse/search/read payload for the Next.js app          |
+| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds`                                                         | corpus-backed reading/search plus catalog-backed source discovery              |
+| Browser-local runtime     | IndexedDB, localStorage, reader-local state                                                                                  | anonymous on-device reader preferences and article state                       |
+| External backend proxy    | `BACKEND_URL`-backed Python service                                                                                          | optional analytics logging, saved searches, and backend-proxied runtime routes |
 
 ## Bounded app contexts
 
 The repository still ships one Next.js application, but implementation work is
 split across four bounded contexts:
 
-| Context | Primary responsibility | Typical paths |
-| --- | --- | --- |
-| Docs shell | static docs, content rendering, and navigation | `app/docs`, `content/docs`, docs UI components |
-| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
-| Admin | operational dashboards, telemetry inspection, and admin session enforcement | `app/admin`, `components/admin`, `lib/admin-auth.ts` |
-| Backend proxy | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers |
+| Context                | Primary responsibility                                                             | Typical paths                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Docs shell             | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components                               |
+| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX               | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
+| Admin                  | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`                         |
+| Backend proxy          | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers                   |
 
 Treat these as bounded code ownership areas inside one deployment, not as
 separate deployables or packages.
@@ -172,10 +172,7 @@ The web app prefers `data/articles.generated.json` for article browse/search.
 - Live fetches from `/api/feeds/posts/aggregate` remain a freshness overlay only.
 
 <Callout type="info" title="Practical rule">
-  Edit YAML when you are changing the catalog itself. Use the runtime database
-  when you are inspecting operational behavior or populating `feed_entries`. Use
-  the generated corpus when you are validating the reader/search experience that
-  ships in the standalone web app.
+  Edit YAML when you are changing the catalog itself. Use the runtime database when you are inspecting operational behavior or populating `feed_entries`. Use the generated corpus when you are validating the reader/search experience that ships in the standalone web app.
 </Callout>
 
 ## Related documentation

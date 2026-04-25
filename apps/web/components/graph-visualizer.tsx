@@ -53,7 +53,7 @@ export interface GraphControls {
 }
 
 export interface GraphDetailAction {
-  action: "open-topics" | "open-feeds" | "copy-id" | "open-url";
+  action: "open-reader" | "open-catalog" | "copy-id" | "open-site";
   nodeId: string;
   nodeType: "topic" | "feed";
 }
@@ -209,12 +209,12 @@ export function GraphVisualizer({
         )
         .force("charge", forceManyBody().strength(-graphControls.chargeStrength))
         .force("center", forceCenter(width / 2, height / 2))
-          .force(
-            "collision",
-            forceCollide<GraphNode>().radius(
-              (node) => getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius,
-            ),
-          );
+        .force(
+          "collision",
+          forceCollide<GraphNode>().radius(
+            (node) => getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius,
+          ),
+        );
     } else if (layout === "radial") {
       // Radial layout - nodes arranged in concentric circles by group
       const groups = Array.from(new Set(graphData.nodes.map((n) => n.group)));
@@ -242,12 +242,13 @@ export function GraphVisualizer({
             .id((d) => d.id)
             .distance(graphControls.linkDistance),
         )
-          .force(
-            "collision",
-            forceCollide<GraphNode>().radius(
-              (node) => getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 2,
-            ),
-          )
+        .force(
+          "collision",
+          forceCollide<GraphNode>().radius(
+            (node) =>
+              getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 2,
+          ),
+        )
         .alpha(0.1)
         .alphaDecay(0.05);
     } else if (layout === "tree") {
@@ -281,12 +282,13 @@ export function GraphVisualizer({
             .id((d) => d.id)
             .distance(Math.max(40, graphControls.linkDistance * 0.5)),
         )
-          .force(
-            "collision",
-            forceCollide<GraphNode>().radius(
-              (node) => getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 3,
-            ),
-          )
+        .force(
+          "collision",
+          forceCollide<GraphNode>().radius(
+            (node) =>
+              getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 3,
+          ),
+        )
         .alpha(0.1)
         .alphaDecay(0.05);
     } else if (layout === "circular") {
@@ -307,12 +309,13 @@ export function GraphVisualizer({
             .id((d) => d.id)
             .distance(graphControls.linkDistance),
         )
-          .force(
-            "collision",
-            forceCollide<GraphNode>().radius(
-              (node) => getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 2,
-            ),
-          )
+        .force(
+          "collision",
+          forceCollide<GraphNode>().radius(
+            (node) =>
+              getNodeRadius(node, graphControls.nodeScale) + graphControls.collisionRadius / 2,
+          ),
+        )
         .alpha(0.1)
         .alphaDecay(0.05);
     }
@@ -479,50 +482,33 @@ export function GraphVisualizer({
   return (
     <div className="flex flex-col gap-4">
       {/* Controls */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex-1 min-w-50">
+      <div className="surface-card space-y-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="min-w-50 flex-1">
             <label htmlFor="graph-search" className="sr-only">
               Search graph nodes
             </label>
             <input
               id="graph-search"
               type="text"
-              placeholder="Search nodes..."
+              placeholder="Search visible nodes"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full rounded-2xl border border-(--line) bg-(--surface) px-4 py-2.5 text-sm text-(--ink) focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring)]"
             />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <label htmlFor="graph-layout" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Layout:
-            </label>
-            <select
-              id="graph-layout"
-              value={layout}
-              onChange={(e) => onLayoutChange(e.target.value as LayoutType)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="force">Force-Directed</option>
-              <option value="radial">Radial</option>
-              <option value="tree">Tree</option>
-              <option value="circular">Circular</option>
-            </select>
-          </div>
-
-          <div className="flex gap-2 items-center">
-            <label htmlFor="graph-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Filter:
+          <div className="flex items-center gap-2">
+            <label htmlFor="graph-filter" className="small-note whitespace-nowrap">
+              Filter
             </label>
             <select
               id="graph-filter"
               value={highlightGroup || ""}
               onChange={(e) => setHighlightGroup(e.target.value || null)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="rounded-2xl border border-(--line) bg-(--surface) px-3 py-2.5 text-sm text-(--ink) focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring)]"
             >
-              <option value="">All</option>
+              <option value="">All groups</option>
               {groups.map((g) => (
                 <option key={g} value={g}>
                   {g}
@@ -540,94 +526,121 @@ export function GraphVisualizer({
                 onLayoutChange("force");
                 onGraphControlsChange(getDefaultGraphControls(type));
               }}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors text-gray-900 dark:text-white"
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-(--line) bg-(--surface-muted) px-4 py-2.5 text-sm font-medium text-(--ink) transition duration-150 hover:bg-(--surface)"
             >
-              Reset
+              Reset view
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <GraphRangeControl
-            id="graph-charge"
-            label="Repulsion"
-            min={50}
-            max={900}
-            step={25}
-            value={graphControls.chargeStrength}
-            onChange={(value) =>
-              onGraphControlsChange((current) => ({ ...current, chargeStrength: value }))
-            }
-          />
-          <GraphRangeControl
-            id="graph-link-distance"
-            label="Edge Length"
-            min={40}
-            max={240}
-            step={5}
-            value={graphControls.linkDistance}
-            onChange={(value) =>
-              onGraphControlsChange((current) => ({ ...current, linkDistance: value }))
-            }
-          />
-          <GraphRangeControl
-            id="graph-collision"
-            label="Node Spacing"
-            min={4}
-            max={40}
-            step={1}
-            value={graphControls.collisionRadius}
-            onChange={(value) =>
-              onGraphControlsChange((current) => ({ ...current, collisionRadius: value }))
-            }
-          />
-          <GraphRangeControl
-            id="graph-node-scale"
-            label="Node Size"
-            min={0.6}
-            max={1.8}
-            step={0.1}
-            value={graphControls.nodeScale}
-            onChange={(value) =>
-              onGraphControlsChange((current) => ({ ...current, nodeScale: value }))
-            }
-          />
-          <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-3 py-3">
-            <GraphRangeControl
-              id="graph-label-size"
-              label="Label Size"
-              min={10}
-              max={18}
-              step={1}
-              value={graphControls.labelSize}
-              onChange={(value) =>
-                onGraphControlsChange((current) => ({ ...current, labelSize: value }))
-              }
-            />
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <input
-                type="checkbox"
-                checked={graphControls.showLabels}
-                onChange={(event) =>
-                  onGraphControlsChange((current) => ({
-                    ...current,
-                    showLabels: event.target.checked,
-                  }))
+        <details className="rounded-3xl border border-(--line) bg-(--surface-muted) px-4 py-4">
+          <summary className="cursor-pointer list-none text-sm font-semibold text-(--ink)">
+            Advanced controls
+          </summary>
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <label htmlFor="graph-layout" className="small-note">
+                Layout
+              </label>
+              <select
+                id="graph-layout"
+                value={layout}
+                onChange={(e) => onLayoutChange(e.target.value as LayoutType)}
+                className="rounded-2xl border border-(--line) bg-(--surface) px-3 py-2.5 text-sm text-(--ink) focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring)]"
+              >
+                <option value="force">Force-directed</option>
+                <option value="radial">Radial</option>
+                <option value="tree">Tree</option>
+                <option value="circular">Circular</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <GraphRangeControl
+                id="graph-charge"
+                label="Repulsion"
+                min={50}
+                max={900}
+                step={25}
+                value={graphControls.chargeStrength}
+                onChange={(value) =>
+                  onGraphControlsChange((current) => ({ ...current, chargeStrength: value }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              Show Labels
-            </label>
+              <GraphRangeControl
+                id="graph-link-distance"
+                label="Edge Length"
+                min={40}
+                max={240}
+                step={5}
+                value={graphControls.linkDistance}
+                onChange={(value) =>
+                  onGraphControlsChange((current) => ({ ...current, linkDistance: value }))
+                }
+              />
+              <GraphRangeControl
+                id="graph-collision"
+                label="Node Spacing"
+                min={4}
+                max={40}
+                step={1}
+                value={graphControls.collisionRadius}
+                onChange={(value) =>
+                  onGraphControlsChange((current) => ({ ...current, collisionRadius: value }))
+                }
+              />
+              <GraphRangeControl
+                id="graph-node-scale"
+                label="Node Size"
+                min={0.6}
+                max={1.8}
+                step={0.1}
+                value={graphControls.nodeScale}
+                onChange={(value) =>
+                  onGraphControlsChange((current) => ({ ...current, nodeScale: value }))
+                }
+              />
+              <div className="space-y-3 rounded-3xl border border-(--line) bg-(--surface) px-3 py-3">
+                <GraphRangeControl
+                  id="graph-label-size"
+                  label="Label Size"
+                  min={10}
+                  max={18}
+                  step={1}
+                  value={graphControls.labelSize}
+                  onChange={(value) =>
+                    onGraphControlsChange((current) => ({ ...current, labelSize: value }))
+                  }
+                />
+                <label className="flex items-center gap-2 text-sm font-medium text-(--ink)">
+                  <input
+                    type="checkbox"
+                    checked={graphControls.showLabels}
+                    onChange={(event) =>
+                      onGraphControlsChange((current) => ({
+                        ...current,
+                        showLabels: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-(--line) accent-(--brand)"
+                  />
+                  Show labels
+                </label>
+              </div>
+            </div>
           </div>
-        </div>
+        </details>
       </div>
 
       {/* Graph and Info Panel */}
       <div className="flex gap-4">
         {/* SVG Graph */}
-        <div className="flex-1 border rounded-lg bg-white shadow-sm overflow-hidden">
+        <div className="flex-1 overflow-hidden rounded-3xl border border-(--line) bg-(--surface) shadow-sm">
           <p id="graph-description" className="sr-only">
-            Interactive {type === "topics" ? "topics" : type === "feeds" ? "feeds" : "combined topic and feed"} graph. Use drag to pan, scroll to zoom, and click a node to inspect its details in the adjacent panel.
+            Interactive{" "}
+            {type === "topics" ? "topics" : type === "feeds" ? "feeds" : "combined topic and feed"}{" "}
+            graph. Use drag to pan, scroll to zoom, and click a node to inspect its details in the
+            adjacent panel.
           </p>
           <svg
             ref={svgRef}
@@ -636,44 +649,46 @@ export function GraphVisualizer({
             className="cursor-move"
             onClick={() => setSelectedNode(null)}
             role="img"
-            aria-label={`${type === "topics" ? "Topics" : type === "feeds" ? "Feeds" : "Combined topic and feed"} network graph`}
+            aria-label={`${
+              type === "topics" ? "Topics" : type === "feeds" ? "Feeds" : "Combined topic and feed"
+            } network graph`}
             aria-describedby="graph-description"
           />
         </div>
 
         {/* Info Panel */}
         {selectedNode && (
-          <div className="w-80 max-h-200 overflow-y-auto border rounded-lg bg-white shadow-lg p-6 space-y-4">
+          <div className="max-h-200 w-80 space-y-4 overflow-y-auto rounded-3xl border border-(--line) bg-(--surface) p-6 shadow-lg">
             <div className="flex items-start justify-between">
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900">{selectedNode.label}</h3>
+                <h3 className="text-xl font-bold text-(--ink)">{selectedNode.label}</h3>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() =>
                       onDetailAction?.({
-                        action: selectedNode.group === "feed" ? "open-feeds" : "open-topics",
+                        action: "open-reader",
                         nodeId: selectedNode.id,
                         nodeType: selectedNode.group === "feed" ? "feed" : "topic",
                       })
                     }
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                    className="rounded-2xl bg-(--brand) px-3 py-1.5 text-xs font-semibold text-(--fd-primary-foreground) transition duration-150 hover:opacity-90"
                   >
-                    {selectedNode.group === "feed" ? "Open feeds view" : "Open topics view"}
+                    Open in reader
                   </button>
-                  {selectedNode.group !== "feed" && selectedNodeConnections.feeds.length > 0 && (
+                  {(selectedNode.group !== "feed" || selectedNodeConnections.feeds.length > 0) && (
                     <button
                       type="button"
                       onClick={() =>
                         onDetailAction?.({
-                          action: "open-feeds",
+                          action: "open-catalog",
                           nodeId: selectedNode.id,
-                          nodeType: "topic",
+                          nodeType: selectedNode.group === "feed" ? "feed" : "topic",
                         })
                       }
-                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                      className="rounded-2xl border border-(--line) bg-(--surface-muted) px-3 py-1.5 text-xs font-semibold text-(--ink) transition duration-150 hover:bg-(--surface)"
                     >
-                      Open related feeds
+                      Open matching sources
                     </button>
                   )}
                   {selectedNode.group === "feed" && selectedNode.description && (
@@ -681,14 +696,14 @@ export function GraphVisualizer({
                       type="button"
                       onClick={() =>
                         onDetailAction?.({
-                          action: "open-url",
+                          action: "open-site",
                           nodeId: selectedNode.id,
                           nodeType: "feed",
                         })
                       }
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                      className="rounded-2xl border border-(--line) bg-(--surface) px-3 py-1.5 text-xs font-semibold text-(--ink-muted) transition duration-150 hover:bg-(--surface-muted)"
                     >
-                      Open source URL
+                      Open source site
                     </button>
                   )}
                   <button
@@ -700,7 +715,7 @@ export function GraphVisualizer({
                         nodeType: selectedNode.group === "feed" ? "feed" : "topic",
                       })
                     }
-                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold transition-colors"
+                    className="rounded-2xl border border-(--line) bg-(--surface) px-3 py-1.5 text-xs font-semibold text-(--ink-muted) transition duration-150 hover:bg-(--surface-muted)"
                   >
                     Copy ID
                   </button>
@@ -709,7 +724,7 @@ export function GraphVisualizer({
               <button
                 type="button"
                 onClick={() => setSelectedNode(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-(--ink-muted) hover:text-(--ink)"
                 aria-label="Close node details"
               >
                 ✕
@@ -796,7 +811,7 @@ export function GraphVisualizer({
                         key={connection.id}
                         onClick={() =>
                           onDetailAction?.({
-                            action: "open-topics",
+                            action: "open-reader",
                             nodeId: connection.id,
                             nodeType: "topic",
                           })
@@ -826,7 +841,7 @@ export function GraphVisualizer({
                         key={connection.id}
                         onClick={() =>
                           onDetailAction?.({
-                            action: "open-feeds",
+                            action: "open-catalog",
                             nodeId: connection.id,
                             nodeType: "feed",
                           })
@@ -912,11 +927,11 @@ function GraphRangeControl({
   return (
     <label
       htmlFor={id}
-      className="space-y-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-3 py-3"
+      className="space-y-2 rounded-3xl border border-(--line) bg-(--surface) px-3 py-3"
     >
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-        <span className="font-mono text-gray-500 dark:text-gray-400">{value}</span>
+        <span className="font-medium text-(--ink)">{label}</span>
+        <span className="font-mono text-(--ink-muted)">{value}</span>
       </div>
       <input
         id={id}
@@ -926,7 +941,7 @@ function GraphRangeControl({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="w-full accent-blue-600"
+        className="w-full accent-(--brand)"
       />
     </label>
   );
@@ -980,7 +995,7 @@ function buildTopicGraph(topics: TopicRecord[]): { nodes: GraphNode[]; links: Gr
     label: t.label || t.id,
     group: t.facet_group || "other",
     facet: t.facet,
-      description: t.description ?? undefined,
+    description: t.description ?? undefined,
     parents: t.parents || [],
     relations: t.relations || {},
     size: 8 + (t.rank_hint || 0.5) * 10,

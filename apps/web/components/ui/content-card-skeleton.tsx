@@ -5,10 +5,7 @@ interface ContentCardSkeletonProps {
   className?: string;
 }
 
-export function ContentCardSkeleton({
-  count = 3,
-  className,
-}: ContentCardSkeletonProps) {
+export function ContentCardSkeleton({ count = 3, className }: ContentCardSkeletonProps) {
   return (
     <div className={cn("space-y-4", className)}>
       {Array.from({ length: count }).map((_, index) => (

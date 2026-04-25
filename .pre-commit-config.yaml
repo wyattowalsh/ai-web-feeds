@@ -35,9 +35,12 @@ repos:
     additional_dependencies:
     - types-PyYAML
     - types-requests
+    - types-redis
+    - types-croniter
     - sqlalchemy[mypy]
     - sqlmodel
     - pydantic>=2.0
+    - pydantic-settings>=2.11.0
     args: [--config-file=pyproject.toml, --strict]
   - id: mypy
     name: mypy (apps/cli)
@@ -47,6 +50,7 @@ repos:
     - typer
     - rich
     - sqlmodel
+    - types-PyYAML
     args: [--config-file=apps/cli/pyproject.toml, --ignore-missing-imports]
 
   # ============================================================================
@@ -134,7 +138,7 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
-    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent]
+    args: [--ignore-words-list=crate,nd,sav,ba,als,datas,socio,ser,oint,asent,lod,mape,afterAll]
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================
@@ -256,7 +260,7 @@ repos:
     # Data assets validation
   - id: validate-data-assets
     name: validate data assets
-    entry: bash -c 'cd data && uv run python validate_data_assets.py'
+    entry: bash -c 'cd data && uv run --project .. python validate_data_assets.py'
     language: system
     pass_filenames: false
     always_run: false

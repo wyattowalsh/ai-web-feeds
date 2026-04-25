@@ -2,15 +2,15 @@
 
 import json
 import re
+import xml.etree.ElementTree as ET  # nosec B405
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
-from xml.dom.minidom import parseString
-from xml.etree.ElementTree import Element, SubElement, tostring
 
 import httpx
 import yaml
+from defusedxml.minidom import parseString
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -100,10 +100,9 @@ def generate_rsshub_url(
 
         # LinkedIn company pages
         elif platform == "linkedin":
-            if "company/" in path:
-                if match := re.match(r"company/([^/]+)", path):
-                    company = match.group(1)
-                    return f"{rsshub_base}/linkedin/company/{company}"
+            if "company/" in path and (match := re.match(r"company/([^/]+)", path)):
+                company = match.group(1)
+                return f"{rsshub_base}/linkedin/company/{company}"
 
         # Mastodon (requires instance)
         elif platform == "mastodon":
@@ -481,7 +480,7 @@ def generate_devto_feed_url(url: str, platform_config: dict[str, Any] | None = N
 
 
 def generate_hackernews_feed_url(
-    url: str, platform_config: dict[str, Any] | None = None
+    _url: str, platform_config: dict[str, Any] | None = None
 ) -> str | None:
     """Generate Hacker News RSS feed URL.
 
@@ -939,20 +938,24 @@ def generate_opml(feed_sources: list[FeedSource], title: str = "AI Web Feeds") -
     Returns:
         OPML XML string
     """
-    opml = Element("opml", version="2.0")
+    opml = ET.Element("opml", version="2.0")
 
     # Head
-    head = SubElement(opml, "head")
-    SubElement(head, "title").text = title
-    SubElement(head, "dateCreated").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "dateModified").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "ownerName").text = "AI Web Feeds"
+    head = ET.SubElement(opml, "head")
+    ET.SubElement(head, "title").text = title
+    ET.SubElement(head, "dateCreated").text = datetime.now(UTC).strftime(
+        "%a, %d %b %Y %H:%M:%S GMT"
+    )
+    ET.SubElement(head, "dateModified").text = datetime.now(UTC).strftime(
+        "%a, %d %b %Y %H:%M:%S GMT"
+    )
+    ET.SubElement(head, "ownerName").text = "AI Web Feeds"
 
     # Body
-    body = SubElement(opml, "body")
+    body = ET.SubElement(opml, "body")
 
     for feed in feed_sources:
-        outline = SubElement(body, "outline")
+        outline = ET.SubElement(body, "outline")
         outline.set("text", feed.title)
         outline.set("title", feed.title)
         outline.set("type", "rss")
@@ -965,7 +968,7 @@ def generate_opml(feed_sources: list[FeedSource], title: str = "AI Web Feeds") -
             outline.set("category", ",".join(feed.tags))
 
     # Pretty print
-    xml_str = tostring(opml, encoding="unicode")
+    xml_str = ET.tostring(opml, encoding="unicode")
     dom = parseString(xml_str)
     return dom.toprettyxml(indent="  ")
 
@@ -982,17 +985,21 @@ def generate_categorized_opml(
     Returns:
         Categorized OPML XML string
     """
-    opml = Element("opml", version="2.0")
+    opml = ET.Element("opml", version="2.0")
 
     # Head
-    head = SubElement(opml, "head")
-    SubElement(head, "title").text = title
-    SubElement(head, "dateCreated").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "dateModified").text = datetime.now(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
-    SubElement(head, "ownerName").text = "AI Web Feeds"
+    head = ET.SubElement(opml, "head")
+    ET.SubElement(head, "title").text = title
+    ET.SubElement(head, "dateCreated").text = datetime.now(UTC).strftime(
+        "%a, %d %b %Y %H:%M:%S GMT"
+    )
+    ET.SubElement(head, "dateModified").text = datetime.now(UTC).strftime(
+        "%a, %d %b %Y %H:%M:%S GMT"
+    )
+    ET.SubElement(head, "ownerName").text = "AI Web Feeds"
 
     # Body - organize by source_type
-    body = SubElement(opml, "body")
+    body = ET.SubElement(opml, "body")
 
     # Group feeds by source_type
     categories: dict[str, list[FeedSource]] = {}
@@ -1002,12 +1009,12 @@ def generate_categorized_opml(
 
     # Create outlines for each category
     for category, feeds in sorted(categories.items()):
-        category_outline = SubElement(body, "outline")
+        category_outline = ET.SubElement(body, "outline")
         category_outline.set("text", category.title())
         category_outline.set("title", category.title())
 
         for feed in sorted(feeds, key=lambda f: f.title):
-            feed_outline = SubElement(category_outline, "outline")
+            feed_outline = ET.SubElement(category_outline, "outline")
             feed_outline.set("text", feed.title)
             feed_outline.set("title", feed.title)
             feed_outline.set("type", "rss")
@@ -1020,7 +1027,7 @@ def generate_categorized_opml(
                 feed_outline.set("category", ",".join(feed.tags))
 
     # Pretty print
-    xml_str = tostring(opml, encoding="unicode")
+    xml_str = ET.tostring(opml, encoding="unicode")
     dom = parseString(xml_str)
     return dom.toprettyxml(indent="  ")
 

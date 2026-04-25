@@ -61,17 +61,11 @@ export function AnalyticsFilters({
       </div>
 
       <div className="flex flex-wrap gap-2 md:justify-end">
-        <Button
-          onClick={onRefresh}
-          variant="outline"
-        >
+        <Button onClick={onRefresh} variant="outline">
           <RefreshCcw className="size-4" />
           Refresh
         </Button>
-        <Button
-          onClick={onExport}
-          variant="default"
-        >
+        <Button onClick={onExport} variant="default">
           <Download className="size-4" />
           Export CSV
         </Button>

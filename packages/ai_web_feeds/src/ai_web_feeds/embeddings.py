@@ -8,7 +8,7 @@ Embeddings are 384-dim vectors from all-MiniLM-L6-v2 model.
 """
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import lru_cache
 
 import numpy as np
@@ -176,8 +176,7 @@ def generate_feed_embedding(feed: FeedSource) -> np.ndarray:
     text = " ".join(parts)
 
     # Generate embedding
-    embedding = generate_embeddings([text], show_progress=False)[0]
-    return embedding
+    return generate_embeddings([text], show_progress=False)[0]
 
 
 def generate_all_feed_embeddings(
@@ -268,7 +267,7 @@ def save_feed_embedding(
         # Update existing
         existing.embedding = embedding_bytes
         existing.embedding_provider = provider
-        existing.updated_at = datetime.now(timezone.utc)
+        existing.updated_at = datetime.now(UTC)
         session.add(existing)
     else:
         # Create new

@@ -73,6 +73,27 @@ function buildFeedsHref(options: { feedId?: string; query?: string; topics?: str
   return buildReaderRouteHref(params);
 }
 
+function buildReaderHref(options: { feedId?: string; query?: string; topics?: string[] }): string {
+  const params = new URLSearchParams();
+
+  if (options.query?.trim()) {
+    params.set("q", options.query.trim());
+  }
+
+  const topics = Array.from(
+    new Set((options.topics ?? []).map((topic) => topic.trim()).filter(Boolean)),
+  );
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
+  }
+
+  if (options.feedId) {
+    params.set("feed", options.feedId);
+  }
+
+  return buildReaderRouteHref(params);
+}
+
 function ExplorerPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -155,33 +176,33 @@ function ExplorerPageContent() {
       return;
     }
 
-    if (detailAction.action === "open-url") {
+    if (detailAction.action === "open-site") {
       const selectedFeed = feeds.find(
         (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
       );
-      if (selectedFeed?.id) {
-        router.push(
-          buildFeedsHref({
-            feedId: selectedFeed.id,
-            query: search,
-            topics: normalizeTopicValues(selectedFeed.topics ?? selectedFeed.tags),
-          }),
-        );
+      const sourceUrl = selectedFeed?.feed ?? selectedFeed?.url;
+      if (sourceUrl) {
+        window.open(sourceUrl, "_blank", "noopener,noreferrer");
       }
       return;
     }
 
-    if (detailAction.action === "open-topics") {
+    if (detailAction.action === "open-reader") {
+      const selectedFeed = feeds.find(
+        (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
+      );
       router.push(
-        buildFeedsHref({
+        buildReaderHref({
           query: search,
+          feedId:
+            detailAction.nodeType === "feed" ? selectedFeed?.id ?? detailAction.nodeId : undefined,
           topics: detailAction.nodeType === "topic" ? [detailAction.nodeId] : [],
         }),
       );
       return;
     }
 
-    if (detailAction.action === "open-feeds") {
+    if (detailAction.action === "open-catalog") {
       const selectedFeed = feeds.find(
         (feed, index) => `feed:${feed.id ?? index}` === detailAction.nodeId,
       );
@@ -290,33 +311,33 @@ function ExplorerPageContent() {
           <div className="space-y-5">
             <span className="eyebrow">
               <Waypoints className="size-3.5" />
-              Taxonomy graph
+              Advanced explorer
             </span>
             <div className="space-y-4">
               <h1 className="hero-title max-w-4xl">
-                Explore topics and feeds as one connected map.
+                Inspect the catalog map, then hand the slice back to the reader.
               </h1>
               <p className="hero-copy max-w-2xl">
-                Use this route to inspect the AI topic taxonomy and see how cataloged feeds connect
-                to it. Open `/` when you want to read recent posts or export a slice.
+                Start on `/` to read. Use the explorer when you need structural context across
+                topics and sources, then jump back into the reader or the catalog with one action.
               </p>
             </div>
           </div>
 
           <div className="surface-card-soft space-y-4">
-            <p className="metric-label">How to use this surface</p>
+            <p className="metric-label">Explorer defaults</p>
             <p className="small-note">
-              Search narrows the current working set, layout controls help with readability, and
-              node actions send the current slice into `/`.
+              Search and one group filter stay visible by default. Layout changes and graph tuning
+              live behind advanced controls so the first screen stays calm.
             </p>
             <div className="grid gap-2 text-sm text-(--ink)">
               <div className="flex items-center gap-3">
                 <Waypoints className="size-4 text-(--brand-strong)" />
-                Graph layouts for structural exploration
+                Open in reader when you want to read the current slice
               </div>
               <div className="flex items-center gap-3">
                 <SearchIcon className="size-4 text-(--brand-strong)" />
-                Search and feed-to-topic links for narrowing scope
+                Open matching sources when you need to refine the catalog
               </div>
             </div>
           </div>
@@ -446,17 +467,17 @@ function ExplorerPageContent() {
                         : "Combined Topic + Feed Graph"}
                   </h3>
                   <p className="small-note mt-1">
-                    Interactive visualization with zoom, pan, and follow-up exploration through node
-                    details.
+                    Interactive graph for structural exploration, with direct handoff back into the
+                    reader-first product flow.
                   </p>
                 </div>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
-                  Multiple layouts
+                  Reader handoff
                 </span>
                 <span className="rounded-full border border-(--line) bg-(--surface) px-4 py-2 text-sm font-semibold text-(--ink-muted)">
-                  Node details
+                  Advanced controls optional
                 </span>
               </div>
             </div>

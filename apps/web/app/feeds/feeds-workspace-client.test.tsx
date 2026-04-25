@@ -313,7 +313,10 @@ describe("FeedsWorkspaceClient", () => {
   });
 
   it("keeps preview closed until the user opens it and allows Escape to close it", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => makeResponse(initialBrowse)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => makeResponse(initialBrowse)),
+    );
 
     render(
       <FeedsWorkspaceClient
@@ -367,7 +370,9 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Reader snapshot unavailable" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Reader snapshot unavailable" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("The reader needs a prepared snapshot")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
@@ -394,7 +399,14 @@ describe("FeedsWorkspaceClient", () => {
           hasVerificationMetadata: true,
           hasActivityMetadata: true,
         }}
-        initialState={{ ...initialState, query: "", feedIds: [], sourceType: null, topics: [], verified: null }}
+        initialState={{
+          ...initialState,
+          query: "",
+          feedIds: [],
+          sourceType: null,
+          topics: [],
+          verified: null,
+        }}
         initialBrowse={initialBrowse as never}
       />,
     );
@@ -483,7 +495,10 @@ describe("FeedsWorkspaceClient", () => {
       "q=agents&source_type=blog&topics=agents&verified=true&feed=feed-1",
     );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
-    vi.stubGlobal("fetch", vi.fn(async () => makeResponse(initialBrowse)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => makeResponse(initialBrowse)),
+    );
 
     render(
       <FeedsWorkspaceClient

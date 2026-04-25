@@ -9,11 +9,11 @@
  * - Persistent storage in IndexedDB
  */
 
-import { preferences, type Preferences } from './db';
+import { preferences, type Preferences } from "./db";
 
-export type ThemeMode = 'light' | 'dark' | 'system';
-export type ReadingWidth = 'narrow' | 'medium' | 'wide';
-export type LayoutMode = 'list' | 'cards' | 'compact';
+export type ThemeMode = "light" | "dark" | "system";
+export type ReadingWidth = "narrow" | "medium" | "wide";
+export type LayoutMode = "list" | "cards" | "compact";
 
 export interface ThemeColors {
   // Background colors
@@ -60,12 +60,12 @@ export interface ThemeConfig {
 }
 
 class ThemeManager {
-  private currentTheme: ThemeMode = 'system';
-  private listeners: Set<(theme: 'light' | 'dark') => void> = new Set();
+  private currentTheme: ThemeMode = "system";
+  private listeners: Set<(theme: "light" | "dark") => void> = new Set();
   private mediaQuery: MediaQueryList | null = null;
 
   constructor() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.initialize();
     }
   }
@@ -79,8 +79,8 @@ class ThemeManager {
     this.currentTheme = prefs.theme;
 
     // Set up system theme listener
-    this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    this.mediaQuery.addEventListener('change', this.handleSystemThemeChange.bind(this));
+    this.mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    this.mediaQuery.addEventListener("change", this.handleSystemThemeChange.bind(this));
 
     // Apply initial theme
     this.applyTheme();
@@ -92,7 +92,7 @@ class ThemeManager {
    * Handle system theme change
    */
   private handleSystemThemeChange(): void {
-    if (this.currentTheme === 'system') {
+    if (this.currentTheme === "system") {
       this.applyTheme();
     }
   }
@@ -100,9 +100,9 @@ class ThemeManager {
   /**
    * Get effective theme (resolves 'system' to 'light' or 'dark')
    */
-  private getEffectiveTheme(): 'light' | 'dark' {
-    if (this.currentTheme === 'system') {
-      return this.mediaQuery?.matches ? 'dark' : 'light';
+  private getEffectiveTheme(): "light" | "dark" {
+    if (this.currentTheme === "system") {
+      return this.mediaQuery?.matches ? "dark" : "light";
     }
     return this.currentTheme;
   }
@@ -114,16 +114,13 @@ class ThemeManager {
     const effectiveTheme = this.getEffectiveTheme();
 
     // Update document class
-    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(effectiveTheme);
 
     // Update meta theme-color
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute(
-        'content',
-        effectiveTheme === 'dark' ? '#1a1a1a' : '#ffffff'
-      );
+      metaTheme.setAttribute("content", effectiveTheme === "dark" ? "#1a1a1a" : "#ffffff");
     }
 
     // Apply CSS variables
@@ -136,9 +133,9 @@ class ThemeManager {
   /**
    * Apply CSS variables
    */
-  private applyCSSVariables(theme: 'light' | 'dark'): void {
+  private applyCSSVariables(theme: "light" | "dark"): void {
     const root = document.documentElement;
-    const colors = theme === 'dark' ? this.getDarkColors() : this.getLightColors();
+    const colors = theme === "dark" ? this.getDarkColors() : this.getLightColors();
 
     Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(`--color-${this.kebabCase(key)}`, value);
@@ -150,26 +147,26 @@ class ThemeManager {
    */
   private getLightColors(): ThemeColors {
     return {
-      background: '#f7f4ee',
-      backgroundSecondary: '#fffdfa',
-      backgroundTertiary: '#ece7dc',
-      text: '#222b3b',
-      textSecondary: '#667086',
-      textTertiary: '#9ca4b6',
-      border: '#ddd6c7',
-      divider: '#e7e0d4',
-      overlay: 'rgba(0, 0, 0, 0.5)',
-      primary: '#4a5fd4',
-      primaryHover: '#394bb0',
-      secondary: '#768096',
-      secondaryHover: '#5e677c',
-      success: '#2f9f72',
-      warning: '#d6a437',
-      error: '#d2615b',
-      info: '#2e7ba8',
-      linkText: '#4a5fd4',
-      linkHover: '#394bb0',
-      selection: 'rgba(74, 95, 212, 0.14)',
+      background: "#f7f4ee",
+      backgroundSecondary: "#fffdfa",
+      backgroundTertiary: "#ece7dc",
+      text: "#222b3b",
+      textSecondary: "#667086",
+      textTertiary: "#9ca4b6",
+      border: "#ddd6c7",
+      divider: "#e7e0d4",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      primary: "#4a5fd4",
+      primaryHover: "#394bb0",
+      secondary: "#768096",
+      secondaryHover: "#5e677c",
+      success: "#2f9f72",
+      warning: "#d6a437",
+      error: "#d2615b",
+      info: "#2e7ba8",
+      linkText: "#4a5fd4",
+      linkHover: "#394bb0",
+      selection: "rgba(74, 95, 212, 0.14)",
     };
   }
 
@@ -178,26 +175,26 @@ class ThemeManager {
    */
   private getDarkColors(): ThemeColors {
     return {
-      background: '#1f2530',
-      backgroundSecondary: '#2a313d',
-      backgroundTertiary: '#353d4c',
-      text: '#f2ede4',
-      textSecondary: '#c1c7d3',
-      textTertiary: '#8d98ab',
-      border: '#474f5f',
-      divider: '#343b4a',
-      overlay: 'rgba(0, 0, 0, 0.7)',
-      primary: '#8b9cf0',
-      primaryHover: '#a5b1f5',
-      secondary: '#7e889c',
-      secondaryHover: '#a0abbd',
-      success: '#4fbd8a',
-      warning: '#e4bf62',
-      error: '#ef8a84',
-      info: '#5ea4d1',
-      linkText: '#8b9cf0',
-      linkHover: '#a5b1f5',
-      selection: 'rgba(139, 156, 240, 0.22)',
+      background: "#1f2530",
+      backgroundSecondary: "#2a313d",
+      backgroundTertiary: "#353d4c",
+      text: "#f2ede4",
+      textSecondary: "#c1c7d3",
+      textTertiary: "#8d98ab",
+      border: "#474f5f",
+      divider: "#343b4a",
+      overlay: "rgba(0, 0, 0, 0.7)",
+      primary: "#8b9cf0",
+      primaryHover: "#a5b1f5",
+      secondary: "#7e889c",
+      secondaryHover: "#a0abbd",
+      success: "#4fbd8a",
+      warning: "#e4bf62",
+      error: "#ef8a84",
+      info: "#5ea4d1",
+      linkText: "#8b9cf0",
+      linkHover: "#a5b1f5",
+      selection: "rgba(139, 156, 240, 0.22)",
     };
   }
 
@@ -207,8 +204,8 @@ class ThemeManager {
   private applyFontSettings(prefs: Preferences): void {
     const root = document.documentElement;
 
-    root.style.setProperty('--font-size-base', `${prefs.fontSize}px`);
-    root.style.setProperty('--font-family', prefs.fontFamily);
+    root.style.setProperty("--font-size-base", `${prefs.fontSize}px`);
+    root.style.setProperty("--font-family", prefs.fontFamily);
   }
 
   /**
@@ -219,14 +216,14 @@ class ThemeManager {
 
     // Reading width
     const widthMap = {
-      narrow: '600px',
-      medium: '800px',
-      wide: '1000px',
+      narrow: "600px",
+      medium: "800px",
+      wide: "1000px",
     };
-    root.style.setProperty('--reading-width', widthMap[prefs.readingWidth]);
+    root.style.setProperty("--reading-width", widthMap[prefs.readingWidth]);
 
     // Layout mode
-    root.setAttribute('data-layout', prefs.layout);
+    root.setAttribute("data-layout", prefs.layout);
   }
 
   /**
@@ -248,7 +245,7 @@ class ThemeManager {
   /**
    * Get effective theme
    */
-  getEffectiveThemeMode(): 'light' | 'dark' {
+  getEffectiveThemeMode(): "light" | "dark" {
     return this.getEffectiveTheme();
   }
 
@@ -257,7 +254,7 @@ class ThemeManager {
    */
   async toggleTheme(): Promise<void> {
     const effectiveTheme = this.getEffectiveTheme();
-    const newTheme = effectiveTheme === 'light' ? 'dark' : 'light';
+    const newTheme = effectiveTheme === "light" ? "dark" : "light";
     await this.setTheme(newTheme);
   }
 
@@ -308,7 +305,7 @@ class ThemeManager {
   /**
    * Add theme change listener
    */
-  addListener(listener: (theme: 'light' | 'dark') => void): () => void {
+  addListener(listener: (theme: "light" | "dark") => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
@@ -317,7 +314,7 @@ class ThemeManager {
    * Convert camelCase to kebab-case
    */
   private kebabCase(str: string): string {
-    return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+    return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
   }
 
   /**
@@ -325,15 +322,15 @@ class ThemeManager {
    */
   exportThemeCSS(): string {
     const effectiveTheme = this.getEffectiveTheme();
-    const colors = effectiveTheme === 'dark' ? this.getDarkColors() : this.getLightColors();
+    const colors = effectiveTheme === "dark" ? this.getDarkColors() : this.getLightColors();
 
-    const css = [':root {'];
+    const css = [":root {"];
     Object.entries(colors).forEach(([key, value]) => {
       css.push(`  --color-${this.kebabCase(key)}: ${value};`);
     });
-    css.push('}');
+    css.push("}");
 
-    return css.join('\n');
+    return css.join("\n");
   }
 }
 
@@ -343,11 +340,11 @@ export const themeManager = new ThemeManager();
 /**
  * React hooks for theme management
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useTheme() {
-  const [theme, setTheme] = useState<ThemeMode>('system');
-  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<ThemeMode>("system");
+  const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     setTheme(themeManager.getTheme());
@@ -377,7 +374,7 @@ export function useTheme() {
     effectiveTheme,
     toggleTheme,
     setTheme: setThemeMode,
-    isDark: effectiveTheme === 'dark',
+    isDark: effectiveTheme === "dark",
   };
 }
 
@@ -397,7 +394,7 @@ export function useFontSize() {
 }
 
 export function useReadingWidth() {
-  const [width, setWidthState] = useState<ReadingWidth>('medium');
+  const [width, setWidthState] = useState<ReadingWidth>("medium");
 
   useEffect(() => {
     preferences.get().then((prefs) => setWidthState(prefs.readingWidth));
@@ -412,7 +409,7 @@ export function useReadingWidth() {
 }
 
 export function useLayout() {
-  const [layout, setLayoutState] = useState<LayoutMode>('cards');
+  const [layout, setLayoutState] = useState<LayoutMode>("cards");
 
   useEffect(() => {
     preferences.get().then((prefs) => setLayoutState(prefs.layout));

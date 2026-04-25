@@ -13,10 +13,7 @@ import {
   getBackendErrorStatus,
   formatBackendErrorResponse,
 } from "@/lib/backend";
-import {
-  searchArticlesInCorpus,
-  searchCatalogSources,
-} from "@/lib/article-corpus";
+import { searchArticlesInCorpus, searchCatalogSources } from "@/lib/article-corpus";
 import {
   normalizeSearchFilters,
   normalizeSearchQuery,

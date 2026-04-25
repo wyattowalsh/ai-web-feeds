@@ -9,7 +9,6 @@ Implements FR-055 through FR-065:
 
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Optional
 
 import bcrypt
 import jwt
@@ -56,11 +55,10 @@ def create_jwt_token(device_id: str) -> str:
         "iat": _utc_now(),
     }
 
-    token = jwt.encode(payload, _get_jwt_secret_key(), algorithm=JWT_ALGORITHM)
-    return token
+    return jwt.encode(payload, _get_jwt_secret_key(), algorithm=JWT_ALGORITHM)
 
 
-def verify_jwt_token(token: str) -> Optional[str]:
+def verify_jwt_token(token: str) -> str | None:
     """Verify JWT token and extract device ID.
 
     Args:
@@ -125,8 +123,8 @@ def verify_api_key(plaintext_key: str, hashed_key: str) -> bool:
 
 
 async def get_current_device_id(
-    authorization: Optional[str] = Header(None),
-    x_api_key: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
+    x_api_key: str | None = Header(None),
 ) -> str:
     """Extract device ID from JWT token or API key.
 

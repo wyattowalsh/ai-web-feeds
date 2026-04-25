@@ -7,9 +7,9 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from xml.etree import ElementTree as ET
 
 import yaml
+from defusedxml import ElementTree as ET
 from jsonschema import Draft202012Validator
 
 try:
@@ -268,9 +268,7 @@ def validate_catalog_source_count(catalog: dict[str, Any], description: str) -> 
         _fail(f"{description}: document_meta.total_sources must be an integer")
         return False
 
-    actual_sources = [
-        source for source in catalog.get("sources", []) if isinstance(source, dict)
-    ]
+    actual_sources = [source for source in catalog.get("sources", []) if isinstance(source, dict)]
     if total_sources != len(actual_sources):
         _fail(
             f"{description}: document_meta.total_sources does not match the source count "
@@ -350,7 +348,9 @@ def validate_catalog_metadata_quality(catalog: dict[str, Any], description: str)
         else:
             topics_count += 1
 
-    total_sources = len([source for source in catalog.get("sources", []) if isinstance(source, dict)])
+    total_sources = len(
+        [source for source in catalog.get("sources", []) if isinstance(source, dict)]
+    )
 
     if errors:
         _fail(f"{description}: Metadata quality validation failed ({len(errors)} hard failures)")
@@ -374,7 +374,7 @@ def validate_catalog_metadata_quality(catalog: dict[str, Any], description: str)
     return True
 
 
-def _parse_opml_file(filepath: Path) -> ET.Element:
+def _parse_opml_file(filepath: Path) -> Any:
     """Parse an OPML file and return its body element."""
     tree = ET.parse(filepath)
     root = tree.getroot()
@@ -592,8 +592,7 @@ def validate_sample_analytics_data(
 
     if not isinstance(snapshots, list) or not isinstance(topic_stats, list):
         _fail(
-            f"{description}: Expected 'sample_analytics_snapshots' and "
-            "'sample_topic_stats' arrays"
+            f"{description}: Expected 'sample_analytics_snapshots' and 'sample_topic_stats' arrays"
         )
         return False
 
@@ -654,9 +653,7 @@ def validate_sample_analytics_data(
                 )
                 continue
 
-            missing_topic_fields = sorted(
-                _EXPECTED_TRENDING_TOPIC_FIELDS - set(topic_payload)
-            )
+            missing_topic_fields = sorted(_EXPECTED_TRENDING_TOPIC_FIELDS - set(topic_payload))
             if missing_topic_fields:
                 errors.append(
                     "sample_analytics_snapshots"
@@ -773,8 +770,7 @@ def validate_sqlite_asset_inventory(base_path: Path) -> bool:
             )
         else:
             _ok(
-                "SQLite asset inventory: canonical "
-                f"{DEFAULT_DATABASE_FILENAME} is scoped correctly"
+                f"SQLite asset inventory: canonical {DEFAULT_DATABASE_FILENAME} is scoped correctly"
             )
     elif LEGACY_DATABASE_FILENAME in db_files:
         _ok(
@@ -1131,7 +1127,9 @@ def main() -> int:
         sys.stdout.write("Data assets are ready for use:\n")
         sys.stdout.write("  • Canonical YAML feeds and topics validated\n")
         sys.stdout.write("  • Generated enriched YAML/JSON/OPML assets are synchronized\n")
-        sys.stdout.write("  • Flat and categorized OPML exports match catalog counts and taxonomy\n")
+        sys.stdout.write(
+            "  • Flat and categorized OPML exports match catalog counts and taxonomy\n"
+        )
         sys.stdout.write("  • Sample analytics fixtures remain model- and consumer-compatible\n")
         sys.stdout.write("  • SQLite assets are scoped to canonical and legacy runtime filenames\n")
         sys.stdout.write("  • SQLite database validated\n")

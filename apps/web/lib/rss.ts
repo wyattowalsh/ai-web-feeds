@@ -1,16 +1,16 @@
-import { Feed } from 'feed';
-import { source } from '@/lib/source';
+import { Feed } from "feed";
+import { source } from "@/lib/source";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ai-web-feeds.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 const currentYear = new Date().getFullYear();
-const fallbackFeedDate = new Date('2025-01-01T00:00:00.000Z');
+const fallbackFeedDate = new Date("2025-01-01T00:00:00.000Z");
 
 function resolvePageDate(page: ReturnType<typeof source.getPages>[number]) {
   const pageData = page.data as unknown as Record<string, unknown>;
   const candidates = [pageData.lastModified, pageData.date];
 
   for (const value of candidates) {
-    if (typeof value !== 'string' || value.length === 0) {
+    if (typeof value !== "string" || value.length === 0) {
       continue;
     }
 
@@ -24,19 +24,19 @@ function resolvePageDate(page: ReturnType<typeof source.getPages>[number]) {
 }
 
 function resolvePageCategory(pageUrl: string) {
-  if (pageUrl.includes('/features/')) {
-    return [{ name: 'Features' }];
+  if (pageUrl.includes("/features/")) {
+    return [{ name: "Features" }];
   }
 
-  if (pageUrl.includes('/guides/')) {
-    return [{ name: 'Guides' }];
+  if (pageUrl.includes("/guides/")) {
+    return [{ name: "Guides" }];
   }
 
-  if (pageUrl.includes('/development/')) {
-    return [{ name: 'Development' }];
+  if (pageUrl.includes("/development/")) {
+    return [{ name: "Development" }];
   }
 
-  return [{ name: 'Documentation' }];
+  return [{ name: "Documentation" }];
 }
 
 /**
@@ -44,11 +44,12 @@ function resolvePageCategory(pageUrl: string) {
  */
 export function getDocsRSS() {
   const feed = new Feed({
-    title: 'AI Web Feeds - Documentation',
+    title: "AI Web Feeds - Documentation",
     id: `${baseUrl}/docs`,
     link: `${baseUrl}/docs`,
-    language: 'en',
-    description: 'Documentation updates for AI Web Feeds - Curated RSS/Atom feeds optimized for AI agents',
+    language: "en",
+    description:
+      "Documentation updates for AI Web Feeds - Curated RSS/Atom feeds optimized for AI agents",
 
     image: `${baseUrl}/banner.png`,
     favicon: `${baseUrl}/favicon.ico`,
@@ -61,7 +62,7 @@ export function getDocsRSS() {
     },
 
     author: {
-      name: 'AI Web Feeds Team',
+      name: "AI Web Feeds Team",
       link: baseUrl,
     },
   });
@@ -83,7 +84,7 @@ export function getDocsRSS() {
 
       author: [
         {
-          name: 'AI Web Feeds Team',
+          name: "AI Web Feeds Team",
           link: baseUrl,
         },
       ],
@@ -98,11 +99,11 @@ export function getDocsRSS() {
  */
 export function getSitewideRSS() {
   const feed = new Feed({
-    title: 'AI Web Feeds',
+    title: "AI Web Feeds",
     id: baseUrl,
     link: baseUrl,
-    language: 'en',
-    description: 'Curated RSS/Atom feeds optimized for AI agents and large language models',
+    language: "en",
+    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
 
     image: `${baseUrl}/banner.png`,
     favicon: `${baseUrl}/favicon.ico`,
@@ -115,7 +116,7 @@ export function getSitewideRSS() {
     },
 
     author: {
-      name: 'AI Web Feeds Team',
+      name: "AI Web Feeds Team",
       link: baseUrl,
     },
   });
@@ -137,7 +138,7 @@ export function getSitewideRSS() {
 
       author: [
         {
-          name: 'AI Web Feeds Team',
+          name: "AI Web Feeds Team",
           link: baseUrl,
         },
       ],
@@ -153,11 +154,11 @@ export function getSitewideRSS() {
  */
 export function getBlogRSS() {
   const feed = new Feed({
-    title: 'AI Web Feeds - Blog',
+    title: "AI Web Feeds - Blog",
     id: `${baseUrl}/blog`,
     link: `${baseUrl}/blog`,
-    language: 'en',
-    description: 'Latest updates and articles from AI Web Feeds',
+    language: "en",
+    description: "Latest updates and articles from AI Web Feeds",
 
     image: `${baseUrl}/banner.png`,
     favicon: `${baseUrl}/favicon.ico`,
@@ -170,7 +171,7 @@ export function getBlogRSS() {
     },
 
     author: {
-      name: 'AI Web Feeds Team',
+      name: "AI Web Feeds Team",
       link: baseUrl,
     },
   });

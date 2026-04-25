@@ -1,45 +1,28 @@
----
-name: "Feed Submission Review"
-description: "Experimental gh-aw pilot for reviewing feed submissions before approval or repository mutation"
-on:
-  issues:
-    types: [opened, edited, labeled]
-  workflow_dispatch:
-permissions:
-  contents: read
-  issues: read
-  pull-requests: read
-engine: copilot
-imports:
-  - .github/agents/feed-curator.md
-tools:
-  github:
-    read-only: true
-    toolsets: [repos, issues]
-safe-outputs:
-  add-comment:
-    max: 2
-    footer: false
-  add-labels:
-    max: 3
-    allowed:
-      - validated
-      - validation-failed
-      - status/needs-info
-      - duplicate
-      - component/data
-      - component/schema
-strict: true
-timeout-minutes: 10
-labels: [automation, feed-submission, gh-aw-pilot]
----
+______________________________________________________________________
+
+name: "Feed Submission Review" description: "Experimental gh-aw pilot for reviewing feed
+submissions before approval or repository mutation" on: issues: types: \[opened, edited,
+labeled\] workflow_dispatch: permissions: contents: read issues: read pull-requests:
+read engine: copilot imports:
+
+- .github/agents/feed-curator.md tools: github: read-only: true toolsets: \[repos,
+  issues\] safe-outputs: add-comment: max: 2 footer: false add-labels: max: 3 allowed:
+  - validated
+  - validation-failed
+  - status/needs-info
+  - duplicate
+  - component/data
+  - component/schema strict: true timeout-minutes: 10 labels: \[automation,
+    feed-submission, gh-aw-pilot\]
+
+______________________________________________________________________
+
 # Feed Submission Review
 
 Review issue #${{ github.event.issue.number }} only when it is part of the feed
 submission flow. Use the sanitized issue context below instead of raw user input.
 
-Current sanitized issue context:
-"${{ needs.activation.outputs.text }}"
+Current sanitized issue context: "${{ needs.activation.outputs.text }}"
 
 ## Scope
 
@@ -60,11 +43,11 @@ Use these repository files as the source of truth:
 ## Decision Policy
 
 1. If the issue is not clearly a feed submission, return a brief no-op comment.
-2. If required submission data is missing or ambiguous, explain exactly what is
-   missing and recommend `status/needs-info` plus `validation-failed`.
-3. If the submission conflicts with an existing feed by id, url, or obvious
-   overlap, explain the conflict and recommend `duplicate`.
-4. If the submission is coherent and appears consistent with the schema and topic
+1. If required submission data is missing or ambiguous, explain exactly what is missing
+   and recommend `status/needs-info` plus `validation-failed`.
+1. If the submission conflicts with an existing feed by id, url, or obvious overlap,
+   explain the conflict and recommend `duplicate`.
+1. If the submission is coherent and appears consistent with the schema and topic
    taxonomy, summarize it cleanly and recommend `validated`, `component/data`, and
    `component/schema`.
 

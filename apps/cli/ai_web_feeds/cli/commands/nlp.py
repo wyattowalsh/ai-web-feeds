@@ -310,24 +310,24 @@ def show_nlp_stats() -> None:
 
             # Quality scoring stats
             quality_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.quality_processed == True)
+                select(func.count(FeedEntry.id)).where(FeedEntry.quality_processed.is_(True))
             ).one()
 
             avg_quality = session.exec(select(func.avg(ArticleQualityScore.overall_score))).one()
 
             # Entity extraction stats
             entities_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.entities_processed == True)
+                select(func.count(FeedEntry.id)).where(FeedEntry.entities_processed.is_(True))
             ).one()
 
             # Sentiment analysis stats
             sentiment_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.sentiment_processed == True)
+                select(func.count(FeedEntry.id)).where(FeedEntry.sentiment_processed.is_(True))
             ).one()
 
             # Topic modeling stats
             topics_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.topics_processed == True)
+                select(func.count(FeedEntry.id)).where(FeedEntry.topics_processed.is_(True))
             ).one()
 
         # Display results

@@ -9,7 +9,6 @@ Implements Phase 6 (US4): T058-T074
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -105,14 +104,16 @@ class ForecastService:
 
         predictions = []
         for _, row in future_predictions.iterrows():
-            predictions.append({
-                "date": row["ds"].strftime("%Y-%m-%d"),
-                "value": float(row["yhat"]),
-                "lower": float(row["yhat_lower"]),
-                "upper": float(row["yhat_upper"]),
-                "trend": float(row["trend"]),
-                "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
-            })
+            predictions.append(
+                {
+                    "date": row["ds"].strftime("%Y-%m-%d"),
+                    "value": float(row["yhat"]),
+                    "lower": float(row["yhat_lower"]),
+                    "upper": float(row["yhat_upper"]),
+                    "trend": float(row["trend"]),
+                    "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
+                }
+            )
 
         # Calculate evaluation metrics on historical data
         metrics = self._calculate_metrics(historical_data, forecast_df.head(len(historical_data)))
@@ -159,8 +160,8 @@ class ForecastService:
                 "r2": 0.0,
             }
 
-        y_true = merged["y"].values
-        y_pred = merged["yhat"].values
+        y_true = merged["y"].to_numpy()
+        y_pred = merged["yhat"].to_numpy()
 
         # Calculate metrics
         mae = float(np.mean(np.abs(y_true - y_pred)))
@@ -169,9 +170,7 @@ class ForecastService:
         if np.any(non_zero_mask):
             mape = float(
                 np.mean(
-                    np.abs(
-                        (y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask]
-                    )
+                    np.abs((y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask])
                 )
                 * 100
             )
@@ -286,18 +285,18 @@ def prepare_historical_data(
     Returns:
         DataFrame with 'ds' and 'y' columns
     """
-    df = pd.DataFrame(data)
+    frame = pd.DataFrame(data)
 
     # Rename columns to Prophet format
-    df = df.rename(columns={date_column: "ds", value_column: "y"})
+    frame = frame.rename(columns={date_column: "ds", value_column: "y"})
 
     # Convert date to datetime
-    df["ds"] = pd.to_datetime(df["ds"])
+    frame["ds"] = pd.to_datetime(frame["ds"])
 
     # Sort by date
-    df = df.sort_values("ds")
+    frame = frame.sort_values("ds")
 
-    return df[["ds", "y"]]
+    return frame[["ds", "y"]]
 
 
 def generate_sample_time_series(
@@ -321,11 +320,12 @@ def generate_sample_time_series(
         DataFrame with 'ds' and 'y' columns
     """
     dates = pd.date_range(start=start_date, periods=days, freq="D")
+    rng = np.random.default_rng(42)
 
     # Generate components
     trend = np.arange(days) * trend_slope
     seasonal = seasonal_amplitude * np.sin(2 * np.pi * np.arange(days) / 7)  # Weekly
-    noise = np.random.normal(0, noise_level, days)
+    noise = rng.normal(0, noise_level, days)
 
     # Combine
     values = 100 + trend + seasonal + noise

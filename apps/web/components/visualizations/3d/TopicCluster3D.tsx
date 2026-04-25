@@ -46,7 +46,10 @@ interface TopicClusterErrorBoundaryState {
   error: Error | null;
 }
 
-class TopicClusterErrorBoundary extends Component<{ children: ReactNode }, TopicClusterErrorBoundaryState> {
+class TopicClusterErrorBoundary extends Component<
+  { children: ReactNode },
+  TopicClusterErrorBoundaryState
+> {
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = {
@@ -74,7 +77,9 @@ class TopicClusterErrorBoundary extends Component<{ children: ReactNode }, Topic
       return (
         <div className="flex h-full items-center justify-center rounded-lg bg-gray-100 p-8 text-center dark:bg-gray-800">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">3D visualization unavailable</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              3D visualization unavailable
+            </h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {this.state.error?.message || "An unexpected rendering error occurred."}
             </p>
@@ -114,10 +119,7 @@ function TopicNodeSphere({
   useFrame(() => {
     if (meshRef.current) {
       const targetScale = isHovered || isSelected ? scale * 1.3 : scale;
-      meshRef.current.scale.lerp(
-        new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.1
-      );
+      meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
   });
 
@@ -166,13 +168,7 @@ function TopicNodeSphere({
 /**
  * Connection line between topics.
  */
-function TopicLinkLine({
-  link,
-  nodes,
-}: {
-  link: TopicLink;
-  nodes: TopicNode[];
-}) {
+function TopicLinkLine({ link, nodes }: { link: TopicLink; nodes: TopicNode[] }) {
   const sourceNode = nodes.find((n) => n.id === link.source);
   const targetNode = nodes.find((n) => n.id === link.target);
   const lineGeometry = useMemo(() => {
@@ -192,7 +188,7 @@ function TopicLinkLine({
         transparent: true,
         opacity: Math.max(0.1, Math.min(0.6, link.strength)),
       }),
-    [link.strength]
+    [link.strength],
   );
   const lineObject = useMemo(() => {
     if (!lineGeometry) {
@@ -212,9 +208,7 @@ function TopicLinkLine({
 
   if (!sourceNode || !targetNode || !lineGeometry || !lineObject) return null;
 
-  return (
-    <primitive object={lineObject} />
-  );
+  return <primitive object={lineObject} />;
 }
 
 /**
@@ -319,12 +313,7 @@ function PerformanceMonitor({
 /**
  * Main 3D Topic Cluster Component.
  */
-export function TopicCluster3D({
-  nodes,
-  links,
-  onNodeClick,
-  onNodeHover,
-}: TopicCluster3DProps) {
+export function TopicCluster3D({ nodes, links, onNodeClick, onNodeHover }: TopicCluster3DProps) {
   const [use2DFallback, setUse2DFallback] = useState(false);
   const [fps, setFps] = useState(60);
   const [showStats, setShowStats] = useState(false);
@@ -432,9 +421,21 @@ export function generateSampleTopicData(): {
   links: TopicLink[];
 } {
   const topics = [
-    "AI", "Machine Learning", "Deep Learning", "NLP", "Computer Vision",
-    "Robotics", "Data Science", "Cloud Computing", "Blockchain", "IoT",
-    "Cybersecurity", "Quantum Computing", "Edge Computing", "5G", "AR/VR",
+    "AI",
+    "Machine Learning",
+    "Deep Learning",
+    "NLP",
+    "Computer Vision",
+    "Robotics",
+    "Data Science",
+    "Cloud Computing",
+    "Blockchain",
+    "IoT",
+    "Cybersecurity",
+    "Quantum Computing",
+    "Edge Computing",
+    "5G",
+    "AR/VR",
   ];
 
   const nodes: TopicNode[] = topics.map((topic, index) => {
@@ -462,7 +463,8 @@ export function generateSampleTopicData(): {
   // Create links between related topics
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      if (Math.random() < 0.3) { // 30% connection probability
+      if (Math.random() < 0.3) {
+        // 30% connection probability
         links.push({
           source: nodes[i].id,
           target: nodes[j].id,

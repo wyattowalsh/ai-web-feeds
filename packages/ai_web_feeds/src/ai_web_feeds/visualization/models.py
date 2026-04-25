@@ -12,13 +12,11 @@ SQLAlchemy models for:
 
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import Field
 from sqlalchemy import JSON, Column, Index
 from sqlmodel import Field as SQLField
 from sqlmodel import Relationship, SQLModel
-
 
 # ============================================================================
 # Enums
@@ -199,9 +197,7 @@ class Dashboard(SQLModel, table=True):
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
-    __table_args__ = (
-        Index("idx_dashboard_device_updated", "device_id", "updated_at"),
-    )
+    __table_args__ = (Index("idx_dashboard_device_updated", "device_id", "updated_at"),)
 
     def to_dict(self, include_widgets: bool = False) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
@@ -254,7 +250,6 @@ class DashboardWidget(SQLModel, table=True):
     # Position on dashboard grid
     position: dict[str, Any] = SQLField(
         sa_column=Column(JSON),
-        nullable=False,
         description="{x, y, w, h} for React Grid Layout",
     )
 
@@ -289,7 +284,7 @@ class Forecast(SQLModel, table=True):
     __tablename__ = "forecasts"
 
     id: int | None = SQLField(default=None, primary_key=True)
-    topic_id: int = SQLField(
+    topic_id: str = SQLField(
         foreign_key="topics.id",
         nullable=False,
         index=True,
@@ -312,7 +307,6 @@ class Forecast(SQLModel, table=True):
     # Predictions
     predictions: dict[str, Any] = SQLField(
         sa_column=Column(JSON),
-        nullable=False,
         description="Array of {date, value, confidence_lower, confidence_upper}",
     )
 
@@ -326,7 +320,6 @@ class Forecast(SQLModel, table=True):
     # Model parameters for reproducibility
     model_params: dict[str, Any] = SQLField(
         sa_column=Column(JSON),
-        nullable=False,
         description="Model hyperparameters and settings",
     )
 
@@ -336,9 +329,7 @@ class Forecast(SQLModel, table=True):
         nullable=False,
     )
 
-    __table_args__ = (
-        Index("idx_forecast_topic_generated", "topic_id", "generated_at"),
-    )
+    __table_args__ = (Index("idx_forecast_topic_generated", "topic_id", "generated_at"),)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
@@ -404,9 +395,7 @@ class APIKey(SQLModel, table=True):
             "device_id": self.device_id,
             "name": self.name,
             "created_at": self.created_at.isoformat(),
-            "last_used_at": (
-                self.last_used_at.isoformat() if self.last_used_at else None
-            ),
+            "last_used_at": (self.last_used_at.isoformat() if self.last_used_at else None),
             "request_count": self.request_count,
             "is_revoked": self.is_revoked,
         }
@@ -477,9 +466,7 @@ class ExportJob(SQLModel, table=True):
             "record_count": self.record_count,
             "file_url": self.file_url,
             "created_at": self.created_at.isoformat(),
-            "completed_at": (
-                self.completed_at.isoformat() if self.completed_at else None
-            ),
+            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
             "error_message": self.error_message,
             "retry_count": self.retry_count,
         }

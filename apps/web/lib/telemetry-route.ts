@@ -92,16 +92,18 @@ export function withRouteTelemetry<TRequest extends Request = Request>(
   handler: RouteHandlerWithoutContext<TRequest>,
   options?: TelemetryOptions,
 ): RouteHandlerWithoutContext<TRequest>;
-export function withRouteTelemetry<TRequest extends Request = Request, TContext = RouteHandlerContext>(
+export function withRouteTelemetry<
+  TRequest extends Request = Request,
+  TContext = RouteHandlerContext,
+>(
   routeKey: string,
   handler: RouteHandlerWithContext<TRequest, TContext>,
   options?: TelemetryOptions,
 ): RouteHandlerWithContext<TRequest, TContext>;
-export function withRouteTelemetry<TRequest extends Request = Request, TContext = RouteHandlerContext>(
-  routeKey: string,
-  handler: RouteHandler<TRequest, TContext>,
-  options: TelemetryOptions = {},
-) {
+export function withRouteTelemetry<
+  TRequest extends Request = Request,
+  TContext = RouteHandlerContext,
+>(routeKey: string, handler: RouteHandler<TRequest, TContext>, options: TelemetryOptions = {}) {
   return async (request: TRequest, context?: TContext): Promise<Response> => {
     const startedAt = performance.now();
     const requestId = readHeader(request, "x-request-id") || randomUUID();

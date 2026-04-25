@@ -105,7 +105,9 @@ class AnalyticsSettings(BaseSettings):
     )
     dynamic_cache_ttl: int = Field(
         300,
-        description="Dynamic metrics cache TTL (seconds), e.g., trending_topics, validation_success_rate",
+        description=(
+            "Dynamic metrics cache TTL (seconds), e.g., trending_topics, validation_success_rate"
+        ),
     )
     max_concurrent_queries: int = Field(10, description="Maximum concurrent analytics queries")
 
@@ -138,6 +140,7 @@ class Phase3BSettings(BaseSettings):
     """Phase 3B: Real-Time Monitoring & Alerts configuration."""
 
     # WebSocket Server
+    websocket_host: str = Field("127.0.0.1", description="WebSocket server host")
     websocket_port: int = Field(8000, description="WebSocket server port")
     websocket_cors_origins: str = Field(
         "http://localhost:3000,https://aiwebfeeds.com",

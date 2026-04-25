@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from loguru import logger
-from sqlalchemy import create_engine, desc
+from sqlalchemy import MetaData, Table, create_engine, desc, inspect, literal
 from sqlmodel import Session, SQLModel, select
 
 from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
@@ -323,7 +323,7 @@ class DatabaseManager:
             # Delete old ones
             delete_statement = select(FeedEnrichmentData).where(
                 FeedEnrichmentData.feed_source_id == feed_source_id,
-                FeedEnrichmentData.id.not_in(keep_ids),  # type: ignore
+                FeedEnrichmentData.id.not_in(keep_ids),
             )
             old_enrichments = list(session.exec(delete_statement).all())
 
@@ -410,12 +410,12 @@ class DatabaseManager:
 
             return failed_validations
 
-    def get_validation_history(
+    def get_feed_validation_history(
         self,
         feed_source_id: str,
         limit: int = 10,
     ) -> list[FeedValidationResult]:
-        """Get validation history for a feed source.
+        """Get the most recent validation history for a single feed source.
 
         Args:
             feed_source_id: Feed source ID
@@ -449,8 +449,7 @@ class DatabaseManager:
             session.commit()
             session.refresh(analytics)
             logger.info(
-                f"Added analytics for feed: {analytics.feed_source_id} "
-                f"({analytics.period_type})"
+                f"Added analytics for feed: {analytics.feed_source_id} ({analytics.period_type})"
             )
             return analytics
 
@@ -1009,6 +1008,23 @@ class DatabaseManager:
         offset: int = 0,
     ) -> list[FeedEntry]:
         """Get all feed entries ordered for deterministic corpus export."""
+        available_columns = self._get_table_columns("feed_entries")
+        required_columns = {
+            "summary",
+            "content_html",
+            "pub_date",
+            "author",
+            "categories",
+            "discovered_at",
+            "created_at",
+        }
+        if not required_columns.issubset(available_columns):
+            return self._get_legacy_feed_entries(
+                available_columns=available_columns,
+                limit=limit,
+                offset=offset,
+            )
+
         with self.get_session() as session:
             statement = select(FeedEntry).order_by(
                 desc(FeedEntry.pub_date),
@@ -1020,6 +1036,148 @@ class DatabaseManager:
             if limit is not None:
                 statement = statement.limit(limit)
             return list(session.exec(statement).all())
+
+    def _get_table_columns(self, table_name: str) -> set[str]:
+        """Return the concrete column names for a table in the current database."""
+        try:
+            inspector = inspect(self.engine)
+            return {column["name"] for column in inspector.get_columns(table_name)}
+        except Exception:
+            return set()
+
+    def _get_legacy_feed_entries(
+        self,
+        *,
+        available_columns: set[str],
+        limit: int | None,
+        offset: int,
+    ) -> list[FeedEntry]:
+        """Read feed entries from older SQLite schemas and normalize them for corpus export."""
+
+        def select_expr(*candidates: str) -> str:
+            for candidate in candidates:
+                if candidate in available_columns:
+                    return candidate
+            return "NULL"
+
+        published_expr = select_expr("pub_date", "published_at", "created_at", "discovered_at")
+        created_expr = select_expr("created_at", "published_at", "discovered_at")
+        discovered_expr = select_expr("discovered_at", "created_at", "published_at")
+        metadata = MetaData()
+        legacy_feed_entries = Table("feed_entries", metadata, autoload_with=self.engine)
+
+        def aliased_column(alias: str, *candidates: str):
+            for candidate in candidates:
+                if candidate in available_columns:
+                    return legacy_feed_entries.c[candidate].label(alias)
+            return literal(None).label(alias)
+
+        published_order = (
+            legacy_feed_entries.c[published_expr].desc()
+            if published_expr in available_columns
+            else legacy_feed_entries.c.id.desc()
+        )
+
+        statement = (
+            select(
+                legacy_feed_entries.c.id,
+                legacy_feed_entries.c.feed_id,
+                legacy_feed_entries.c.guid,
+                legacy_feed_entries.c.link,
+                legacy_feed_entries.c.title,
+                aliased_column("summary", "summary"),
+                aliased_column("content_html", "content_html", "content"),
+                aliased_column("pub_date", published_expr),
+                aliased_column("author", "author"),
+                aliased_column("categories", "categories"),
+                aliased_column("discovered_at", discovered_expr),
+                aliased_column("created_at", created_expr),
+            )
+            .select_from(legacy_feed_entries)
+            .order_by(published_order, legacy_feed_entries.c.id.desc())
+        )
+        if limit is not None:
+            statement = statement.limit(limit)
+        if offset:
+            statement = statement.offset(offset)
+
+        with self.get_session() as session:
+            rows = session.exec(statement).mappings().all()
+
+        now = datetime.now(UTC)
+        entries: list[FeedEntry] = []
+        for row in rows:
+            pub_date = self._coerce_datetime(row.get("pub_date")) or now
+            created_at = self._coerce_datetime(row.get("created_at")) or pub_date
+            discovered_at = self._coerce_datetime(row.get("discovered_at")) or created_at
+            guid = str(row.get("guid") or row.get("link") or f"legacy-entry-{row.get('id')}")
+
+            entries.append(
+                FeedEntry(
+                    id=row.get("id"),
+                    feed_id=str(row.get("feed_id") or ""),
+                    guid=guid,
+                    link=str(row.get("link") or ""),
+                    title=str(row.get("title") or row.get("link") or guid),
+                    summary=self._coerce_optional_text(row.get("summary")),
+                    content_html=self._coerce_optional_text(row.get("content_html")),
+                    pub_date=pub_date,
+                    author=self._coerce_optional_text(row.get("author")),
+                    categories=self._coerce_categories(row.get("categories")),
+                    discovered_at=discovered_at,
+                    created_at=created_at,
+                )
+            )
+
+        logger.warning(
+            "Using legacy feed_entries schema fallback for corpus export: {}",
+            sorted(available_columns),
+        )
+        return entries
+
+    @staticmethod
+    def _coerce_optional_text(value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            stripped = value.strip()
+            return stripped or None
+        return str(value)
+
+    @staticmethod
+    def _coerce_datetime(value: Any) -> datetime | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value if value.tzinfo else value.replace(tzinfo=UTC)
+        if isinstance(value, str):
+            normalized = value.strip()
+            if not normalized:
+                return None
+            try:
+                parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+                return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+            except ValueError:
+                return None
+        return None
+
+    @staticmethod
+    def _coerce_categories(value: Any) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(entry) for entry in value if str(entry).strip()]
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return []
+            try:
+                parsed = json.loads(stripped)
+            except json.JSONDecodeError:
+                return [part.strip() for part in stripped.split(",") if part.strip()]
+            if isinstance(parsed, list):
+                return [str(entry) for entry in parsed if str(entry).strip()]
+        return []
 
     def build_articles_corpus_payload(
         self,

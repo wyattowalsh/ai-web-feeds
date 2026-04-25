@@ -1,11 +1,12 @@
 """Initialize Alembic for database migrations"""
 
-import subprocess
+import shutil
+import subprocess  # nosec B404 - used only to execute a resolved local alembic binary
 import sys
 from pathlib import Path
 
 
-def init_alembic():
+def init_alembic() -> None:
     """Initialize Alembic in the project."""
     # Get the project root
     project_root = Path(__file__).parent.parent.parent
@@ -15,14 +16,19 @@ def init_alembic():
         print(f"✓ Alembic directory already exists: {alembic_dir}")
         return
 
+    alembic_executable = shutil.which("alembic")
+    if alembic_executable is None:
+        msg = "Alembic executable not found on PATH"
+        raise RuntimeError(msg)
+
     # Run alembic init
-    result = subprocess.run(
-        ["alembic", "init", "alembic"],
+    result = subprocess.run(  # noqa: S603
+        [alembic_executable, "init", "alembic"],
         cwd=project_root,
         capture_output=True,
         text=True,
         check=False,
-    )
+    )  # nosec B603
 
     if result.returncode == 0:
         print(f"✓ Initialized Alembic: {alembic_dir}")

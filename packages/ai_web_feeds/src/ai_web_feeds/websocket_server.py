@@ -30,6 +30,7 @@ class WebSocketServer:
         """
         self.db = db
         self.settings = settings
+        self.host = settings.phase3b.websocket_host
         self.port = settings.phase3b.websocket_port
 
         # Parse CORS origins
@@ -62,9 +63,9 @@ class WebSocketServer:
         """Start WebSocket server."""
         runner = web.AppRunner(self.app)
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", self.port)
+        site = web.TCPSite(runner, self.host, self.port)
         await site.start()
-        logger.info(f"WebSocket server listening on port {self.port}")
+        logger.info(f"WebSocket server listening on {self.host}:{self.port}")
 
     async def on_connect(self, sid: str, environ: dict[str, Any]) -> None:
         """Handle client connection.

@@ -36,7 +36,10 @@ const PATCHHandler = async (
     }
 
     if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
-      return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
     }
 
     if (identity.source === "anonymous") {

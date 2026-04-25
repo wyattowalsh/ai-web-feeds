@@ -139,7 +139,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Layout({ children }: LayoutProps<"/">) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
@@ -152,3 +152,4 @@ export default function Layout({ children }: LayoutProps<"/">) {
     </html>
   );
 }
+import type { ReactNode } from "react";

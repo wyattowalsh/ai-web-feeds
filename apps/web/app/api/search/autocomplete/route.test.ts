@@ -71,7 +71,9 @@ describe("GET /api/search/autocomplete", () => {
       limit: 8,
     });
 
-    const response = await GET(new Request("http://localhost/api/search/autocomplete?prefix=agent"));
+    const response = await GET(
+      new Request("http://localhost/api/search/autocomplete?prefix=agent"),
+    );
 
     expect(response.status).toBe(200);
     expect(buildAutocompleteSuggestionsMock).toHaveBeenCalledWith("agent", 8);

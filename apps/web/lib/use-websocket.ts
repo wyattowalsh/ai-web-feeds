@@ -1,9 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
-import {
-  EMPTY_WEBSOCKET_STATE,
-  getWebSocketClient,
-  type WebSocketState,
-} from "./websocket";
+import { EMPTY_WEBSOCKET_STATE, getWebSocketClient, type WebSocketState } from "./websocket";
 
 function useSharedWebSocketState(): {
   client: ReturnType<typeof getWebSocketClient> | null;
@@ -21,11 +17,7 @@ function useSharedWebSocketState(): {
     [client],
   );
 
-  const snapshot = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    () => EMPTY_WEBSOCKET_STATE,
-  );
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_WEBSOCKET_STATE);
 
   return { client, snapshot };
 }

@@ -4,19 +4,19 @@ Implements T021: Chart generation, caching, validation
 """
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
-from sqlalchemy import select, update, delete
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from ai_web_feeds.storage import get_session
+from ai_web_feeds.visualization.data_service import DataService
 from ai_web_feeds.visualization.models import (
     ChartType,
     DataSource,
     Visualization,
 )
-from ai_web_feeds.visualization.data_service import DataService
 from ai_web_feeds.visualization.validators import (
     CustomizationValidator,
     ValidationError,
@@ -125,7 +125,7 @@ class VisualizationService:
                 return visualization.to_dict()
         except IntegrityError as e:
             logger.error(f"Integrity error creating visualization: {e}")
-            raise ValidationError("Failed to create visualization")
+            raise ValidationError("Failed to create visualization") from e
         except Exception as e:
             logger.error(f"Error creating visualization: {e}")
             raise
@@ -134,7 +134,7 @@ class VisualizationService:
         self,
         visualization_id: int,
         device_id: str,
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get a specific visualization.
 
         Args:
@@ -170,10 +170,10 @@ class VisualizationService:
         self,
         visualization_id: int,
         device_id: str,
-        name: Optional[str] = None,
-        filters: Optional[dict[str, Any]] = None,
-        customization: Optional[dict[str, Any]] = None,
-    ) -> Optional[dict[str, Any]]:
+        name: str | None = None,
+        filters: dict[str, Any] | None = None,
+        customization: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """Update a visualization.
 
         Args:
@@ -272,7 +272,7 @@ class VisualizationService:
     async def fetch_visualization_data(
         self,
         visualization: dict[str, Any],
-        date_range: Optional[dict[str, str]] = None,
+        date_range: dict[str, str] | None = None,
         limit: int = 1000,
     ) -> dict[str, Any]:
         """Fetch data for a visualization.

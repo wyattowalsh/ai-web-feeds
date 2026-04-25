@@ -53,8 +53,8 @@ export default function ExportPage() {
   const toggleTable = (tableName: string) => {
     setTables((prev) =>
       prev.map((table) =>
-        table.name === tableName ? { ...table, selected: !table.selected } : table
-      )
+        table.name === tableName ? { ...table, selected: !table.selected } : table,
+      ),
     );
   };
 
@@ -93,9 +93,7 @@ export default function ExportPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Data Export
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Data Export</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Export analytics data in multiple formats
           </p>
@@ -198,9 +196,7 @@ export default function ExportPage() {
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {selectedTables.length}
-                  <span className="text-sm text-gray-500 dark:text-gray-500 ml-1">
-                    / 10
-                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-500 ml-1">/ 10</span>
                 </div>
                 {selectedTables.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
@@ -242,15 +238,23 @@ export default function ExportPage() {
 
         {/* Export info */}
         <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-            Export Features
-          </h3>
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">Export Features</h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• <strong>Multiple formats</strong>: JSON, CSV, Parquet</li>
-            <li>• <strong>Bulk export</strong>: Up to 10 tables at once</li>
-            <li>• <strong>Pagination</strong>: Automatic handling of large datasets</li>
-            <li>• <strong>Streaming</strong>: Efficient for very large tables</li>
-            <li>• <strong>Rate limiting</strong>: 100 requests per hour</li>
+            <li>
+              • <strong>Multiple formats</strong>: JSON, CSV, Parquet
+            </li>
+            <li>
+              • <strong>Bulk export</strong>: Up to 10 tables at once
+            </li>
+            <li>
+              • <strong>Pagination</strong>: Automatic handling of large datasets
+            </li>
+            <li>
+              • <strong>Streaming</strong>: Efficient for very large tables
+            </li>
+            <li>
+              • <strong>Rate limiting</strong>: 100 requests per hour
+            </li>
           </ul>
         </div>
 

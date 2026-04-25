@@ -19,10 +19,9 @@ export default function ComparisonPage() {
   const [timeRange, setTimeRange] = useState("30d");
 
   // Sample data
-  const labels = Array.from({ length: 30 }, (_, i) =>
-    new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0]
+  const labels = Array.from(
+    { length: 30 },
+    (_, i) => new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   );
 
   const datasets = selectedFeeds.map((feedId, index) => ({
@@ -76,9 +75,7 @@ export default function ComparisonPage() {
               multiple
               value={selectedFeeds}
               onChange={(e) =>
-                setSelectedFeeds(
-                  Array.from(e.target.selectedOptions, (option) => option.value)
-                )
+                setSelectedFeeds(Array.from(e.target.selectedOptions, (option) => option.value))
               }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               size={4}
@@ -156,33 +153,19 @@ export default function ComparisonPage() {
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Mean Article Count
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                72.5
-              </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">72.5</div>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Std Deviation
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                15.2
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Std Deviation</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">15.2</div>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Min Value
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                42
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Min Value</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">42</div>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Max Value
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                105
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Max Value</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">105</div>
             </div>
           </div>
         </div>
@@ -193,11 +176,21 @@ export default function ComparisonPage() {
             Comparison Features
           </h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• <strong>Multi-series charts</strong> for side-by-side visualization</li>
-            <li>• <strong>Correlation analysis</strong> to identify relationships</li>
-            <li>• <strong>Trend indicators</strong> for quick insights</li>
-            <li>• <strong>Statistical summaries</strong> for data distribution</li>
-            <li>• Compare up to <strong>5 feeds or topics</strong> simultaneously</li>
+            <li>
+              • <strong>Multi-series charts</strong> for side-by-side visualization
+            </li>
+            <li>
+              • <strong>Correlation analysis</strong> to identify relationships
+            </li>
+            <li>
+              • <strong>Trend indicators</strong> for quick insights
+            </li>
+            <li>
+              • <strong>Statistical summaries</strong> for data distribution
+            </li>
+            <li>
+              • Compare up to <strong>5 feeds or topics</strong> simultaneously
+            </li>
           </ul>
         </div>
       </div>
