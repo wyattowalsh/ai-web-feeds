@@ -1,13 +1,16 @@
 ---
 title: Recommendations
-description: Personalized source recommendations that become available when the optional backend is configured.
+description: Backend recommendation APIs retained for integrations; the public page redirects to the reader.
 ---
 
-The recommendations page is optional. It depends on the Python backend, so it is only fully available when `BACKEND_URL` points to a running `ai_web_feeds.web_api` service.
+Recommendations are no longer a standalone public UI surface. `/recommendations`
+redirects to the reader at `/`; backend recommendation APIs remain available
+for integrations when `BACKEND_URL` points to a running `ai_web_feeds.web_api`
+service.
 
 ## What It Does
 
-The recommendations page at `/recommendations` is wired to real backend routes, but it remains a secondary surface behind the reader and source catalog. When the ai-web-feeds backend is configured, the page loads personalized suggestions and records recommendation interactions. When it is not configured, the page shows one explicit unavailable panel and routes people back to the catalog instead of failing noisily.
+The API layer can still:
 
 - load ranked source suggestions
 - explain why a source was suggested
@@ -16,18 +19,18 @@ The recommendations page at `/recommendations` is wired to real backend routes, 
 
 ## Backend Requirement
 
-Recommendations are not part of the standalone web-only profile.
+Recommendations are not part of the standalone web-only UI profile.
 
 If `BACKEND_URL` is missing or the backend is unavailable:
 
-- the page shows a clear unavailable state
+- `/recommendations` still redirects to `/`
 - the proxy routes return `503 FEATURE_UNAVAILABLE`
-- Feeds and the catalog continue to work normally
+- the reader and catalog continue to work normally
 
 - ranked feed recommendations
 - recommendation reasons such as `similar_topics`, `popular`, `discover`, and `similar_content`
 - topic chips for steering the current slice
-- feed actions for opening a result in `/feeds?mode=catalog`, subscribing, or dismissing it
+- feed actions for opening a result in `/?mode=catalog`, subscribing, or dismissing it
 
 ### Personalization Input
 
@@ -43,16 +46,6 @@ The UI records these interaction types:
 - `dismiss`
 
 The backend stores that feedback, updates the user profile, and uses it to avoid repeating previously followed or already-interacted feeds in later recommendations.
-
-### Unavailable State
-
-If `BACKEND_URL` is missing or the backend is unavailable, `/recommendations` shows:
-
-- a setup message explaining that personalization is optional
-- a link to `/feeds?mode=catalog`
-- a link to the deployment guide
-
-That unavailable state is expected behavior in backend-free local development and should not compete with the main reading path.
 
 ## Proxy Contract
 

@@ -377,7 +377,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/feeds?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 
@@ -424,12 +424,12 @@ describe("FeedsWorkspaceClient", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Apply filters" })[0]);
 
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?q=models&source_type=newsletter&topics=ml&verified=false",
+      "/?q=models&source_type=newsletter&topics=ml&verified=false",
       { scroll: false },
     );
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset" })[0]);
-    expect(replaceMock).toHaveBeenLastCalledWith("/feeds", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
   });
 
   it("adds recovery links when the current filters return no visible posts", async () => {
@@ -481,15 +481,12 @@ describe("FeedsWorkspaceClient", () => {
     expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1",
+      "/?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute(
-      "href",
-      "/feeds",
-    );
+    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/feeds?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
     );
   });
 
@@ -529,7 +526,7 @@ describe("FeedsWorkspaceClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Topic: agents" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?q=agents&source_type=blog&verified=true&feed=feed-1",
+      "/?q=agents&source_type=blog&verified=true&feed=feed-1",
       { scroll: false },
     );
   });

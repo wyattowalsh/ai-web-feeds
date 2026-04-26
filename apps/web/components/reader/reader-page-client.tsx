@@ -113,7 +113,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
     setParamState(new URLSearchParams(searchParams.toString()));
   }, [searchParams]);
 
-  const isFeedsEmbed = pathname.startsWith("/feeds");
+  const isFeedsEmbed = pathname === "/" || pathname.startsWith("/feeds");
   const readerViewKey = isFeedsEmbed ? "reader_view" : "view";
   const readerSortKey = isFeedsEmbed ? "reader_sort" : "sort";
   const topicKey = isFeedsEmbed ? "topics" : "topic";
@@ -376,9 +376,9 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
                   Reader stream
                 </h1>
                 <p className="small-note max-w-3xl">
-                  Canonical feed browsing lives under /feeds. Use feed, topic, source type,
-                  verification, stream, and reader state filters together while keeping the page
-                  shell compact inside the workspace.
+                  Canonical feed browsing lives at /. Use feed, topic, source type, verification,
+                  stream, and reader state filters together while keeping the page shell compact
+                  inside the workspace.
                 </p>
               </div>
 

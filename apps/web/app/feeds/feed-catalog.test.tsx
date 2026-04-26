@@ -76,9 +76,6 @@ describe("FeedCatalog", () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Query "agent" · Type blog · Verified only')).toBeInTheDocument();
 
-    const visibleExport = screen.getByRole("link", { name: "Export visible OPML" });
-    expect(visibleExport).toHaveAttribute("href", "/api/exports/opml?format=filtered&feed=feed-1");
-
     const directReaderLink = screen.getAllByRole("link", { name: "Open in reader" })[0];
     const matchingFeedsReaderLink = screen.getByRole("link", { name: "Read matching feeds" });
     const directReaderUrl = new URL(
@@ -90,14 +87,14 @@ describe("FeedCatalog", () => {
       "https://aiwebfeeds.test",
     );
 
-    expect(directReaderUrl.pathname).toBe("/feeds");
+    expect(directReaderUrl.pathname).toBe("/");
     expect(directReaderUrl.searchParams.get("mode")).toBeNull();
     expect(directReaderUrl.searchParams.get("feed")).toBe("feed-1");
     expect(directReaderUrl.searchParams.get("q")).toBe("agent");
     expect(directReaderUrl.searchParams.get("source_type")).toBe("blog");
     expect(directReaderUrl.searchParams.get("verified")).toBe("true");
 
-    expect(matchingFeedsUrl.pathname).toBe("/feeds");
+    expect(matchingFeedsUrl.pathname).toBe("/");
     expect(matchingFeedsUrl.searchParams.get("mode")).toBeNull();
     expect(matchingFeedsUrl.searchParams.get("feed")).toBe("feed-1");
     expect(matchingFeedsUrl.searchParams.get("q")).toBe("agent");
@@ -105,12 +102,9 @@ describe("FeedCatalog", () => {
     expect(matchingFeedsUrl.searchParams.get("verified")).toBe("true");
     expect(screen.getByRole("link", { name: "Search recent posts" })).toHaveAttribute(
       "href",
-      "/feeds?feed=feed-1&q=agent&source_type=blog&verified=true",
+      "/?feed=feed-1&q=agent&source_type=blog&verified=true",
     );
-    expect(screen.getByRole("link", { name: "Export OPML" })).toHaveAttribute(
-      "href",
-      "/api/exports/opml?format=filtered&feed=feed-1",
-    );
+    expect(screen.queryByRole("link", { name: /OPML/i })).not.toBeInTheDocument();
   });
 
   it("carries the exact visible feed slice into reader and article mode links", () => {
@@ -156,21 +150,21 @@ describe("FeedCatalog", () => {
     fireEvent.change(screen.getByLabelText("Search"), {
       target: { value: "agents" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents", { scroll: false });
 
     fireEvent.click(screen.getByRole("button", { name: "blog (1)" }));
-    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents&source_type=blog", {
+    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents&source_type=blog", {
       scroll: false,
     });
 
     fireEvent.click(screen.getByRole("button", { name: "agents" }));
-    expect(replaceMock).toHaveBeenLastCalledWith("/feeds?q=agents&source_type=blog&topics=agents", {
+    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents&source_type=blog&topics=agents", {
       scroll: false,
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Verified" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/feeds?q=agents&source_type=blog&topics=agents&verified=true",
+      "/?q=agents&source_type=blog&topics=agents&verified=true",
       { scroll: false },
     );
   });
@@ -193,11 +187,11 @@ describe("FeedCatalog", () => {
     expect(screen.getByText("No feeds match this filter set")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Reset to full catalog" })).toHaveAttribute(
       "href",
-      "/feeds?mode=catalog",
+      "/?mode=catalog",
     );
     expect(screen.getByRole("link", { name: "Browse posts for this query" })).toHaveAttribute(
       "href",
-      "/feeds?q=nonexistent",
+      "/?q=nonexistent",
     );
   });
 });

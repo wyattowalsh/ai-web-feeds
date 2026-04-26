@@ -1,12 +1,12 @@
 ---
 title: Search & Discovery
-description: Reader article browse plus catalog discovery inside the primary /feeds workspace with /feeds?mode=catalog for source refinement
+description: Reader article browse plus catalog discovery inside the primary / workspace with /?mode=catalog for source refinement
 ---
 
 AI Web Feeds uses two related search models inside the same product flow: source search for the catalog and post search for the generated article library.
 
-The Search & Discovery experience lives inside the primary reader route `/feeds`
-and its explicit catalog submode `/feeds?mode=catalog`. It answers two different
+The Search & Discovery experience lives inside the primary reader route `/`
+and its explicit catalog submode `/?mode=catalog`. It answers two different
 questions from one workspace:
 
 - **Source search** helps you find feeds in the curated catalog.
@@ -15,11 +15,11 @@ questions from one workspace:
 
 ## Source Search
 
-`/feeds` is the default reader route.
+`/` is the default reader route.
 
-- `/feeds` opens the article workspace
-- `/feeds?mode=catalog` opens the explicit source picker
-- `/` remains available as a compatibility redirect into the same workspace state
+- `/` opens the article workspace
+- `/?mode=catalog` opens the explicit source picker
+- `/feeds` remains available as a compatibility redirect into the same workspace state
 - legacy `mode=articles` and `mode=reader` URLs still normalize into the same
   feeds workspace state
 
@@ -89,12 +89,12 @@ BACKEND_URL=http://localhost:8000
 
 ### Web Interface
 
-Navigate to `/feeds`:
+Navigate to `/`:
 
 1. Type a query in the workspace search bar
 2. Keep or adjust the shared source-type, topic, verified, and pinned-feed filters
 3. Press Enter to refresh the article list, or use autocomplete suggestions
-4. Switch to `/feeds?mode=catalog` when you need to change the source list
+4. Switch to `/?mode=catalog` when you need to change the source list
 5. Use `Refresh latest` when you want a non-destructive live overlay on top of the corpus
 
 **Keyboard Shortcuts**:
@@ -153,7 +153,7 @@ The UI still reinforces the broader guidance of:
 
 ## Success Criteria
 
-- ✅ Reader `/feeds` works without a required Python HTTP backend
+- ✅ Reader `/` works without a required Python HTTP backend
 - ✅ Article browse and article search run across the generated corpus
 - ✅ Source results can jump directly into the article workspace inside the primary route model
 - ✅ `/` remains available as a compatibility redirect
@@ -161,7 +161,7 @@ The UI still reinforces the broader guidance of:
 
 ## Related
 
-- [Analytics Dashboard](./analytics) - View search analytics and popular queries
-- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/feeds`
-- [Recommendations](./recommendations) - AI-powered feed suggestions
+- [Dashboard and Analytics](./analytics) - Understand the compact dashboard and backend analytics APIs
+- [Reader](./reader) - Browse and triage the corpus-backed timeline inside `/`
+- [Recommendations](./recommendations) - Backend recommendation API reference
 - [Search architecture](/docs/development/search-architecture) - Runtime and local search split

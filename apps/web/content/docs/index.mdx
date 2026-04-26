@@ -6,30 +6,30 @@ icon: BookOpen
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Welcome to the **ai-web-feeds** documentation. The web app has one canonical entry flow: open `/feeds` for the reader, switch to `/feeds?mode=catalog` to refine sources, keep `/` only as a compatibility redirect, and use `/explorer` as a secondary taxonomy map.
+Welcome to the **ai-web-feeds** documentation. The web app is intentionally small: open `/` for the reader, use `/dashboard` for catalog health, and keep OPML plus analytics management in the repo tooling.
 
 ## Start Here
 
-- **Read now:** [`/feeds`](/feeds)
-- **Refine sources:** [`/feeds?mode=catalog`](/feeds?mode=catalog)
-- **Compatibility redirect:** `/`
-- **Taxonomy map:** [`/explorer`](/explorer)
+- **Read now:** [`/`](/)
+- **Refine sources:** [`/?mode=catalog`](/?mode=catalog)
+- **Dashboard:** [`/dashboard`](/dashboard)
+- **Compatibility redirect:** `/feeds`
 
 ## Core Routes
 
 <Cards>
-  <Card title="Reader" description="Open /feeds for the canonical article stream across all tracked sources." href="/docs/features/reader" />
-  <Card title="Search & Discovery" description="Use /feeds?mode=catalog to refine the source list without leaving the reader workflow." href="/docs/features/search" />
+  <Card title="Reader" description="Open / for the canonical article stream across all tracked sources." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Use /?mode=catalog to refine the source list without leaving the reader workflow." href="/docs/features/search" />
   <Card title="Getting Started" description="Set up the repo, build the article corpus, and learn the main route flow." href="/docs/guides/getting-started" />
-  <Card title="Data Explorer" description="Use /explorer as the secondary taxonomy map for structure and relationships." href="/docs/guides/data-explorer" />
+  <Card title="Dashboard" description="Use /dashboard for compact catalog health and operational boundaries." href="/docs/features/analytics" />
 </Cards>
 
 ## Product Model
 
-1. Open `/feeds` to browse recent AI articles across all tracked sources.
+1. Open `/` to browse recent AI articles across all tracked sources.
 2. Search the stream first, then narrow to specific feeds, topics, or source types only when you want to focus.
-3. Switch to `/feeds?mode=catalog` when you need to inspect or refine the source list directly.
-4. Use `/explorer` to inspect topic and feed structure, not as the main reading route.
+3. Switch to `/?mode=catalog` when you need to inspect or refine the source list directly.
+4. Use `/dashboard` to inspect catalog health; use CLI and repository workflows for OPML, enrichment, and analytics operations.
 
 ## Main Documentation Paths
 

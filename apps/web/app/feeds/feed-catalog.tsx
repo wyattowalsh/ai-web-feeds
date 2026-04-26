@@ -30,20 +30,6 @@ interface FeedCatalogProps {
   initialVerified: boolean | null;
 }
 
-function buildFilteredExportHref(feedIds: string[]): string | null {
-  if (feedIds.length === 0) {
-    return null;
-  }
-
-  const params = new URLSearchParams();
-  params.set("format", "filtered");
-  for (const feedId of feedIds) {
-    params.append("feed", feedId);
-  }
-
-  return `/api/exports/opml?${params.toString()}`;
-}
-
 function buildReaderHref({
   feedIds,
   query,
@@ -302,10 +288,6 @@ export function FeedCatalog({
         .filter((feedId): feedId is string => typeof feedId === "string" && feedId.length > 0),
     [filteredFeeds],
   );
-  const visibleExportHref = useMemo(
-    () => buildFilteredExportHref(visibleFeedIds),
-    [visibleFeedIds],
-  );
   const readerHref = useMemo(
     () =>
       buildReaderHref({
@@ -504,14 +486,6 @@ export function FeedCatalog({
           >
             Search recent posts
           </Link>
-          {visibleExportHref ? (
-            <a
-              href={visibleExportHref}
-              className="inline-flex items-center gap-2 rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
-            >
-              Export visible OPML
-            </a>
-          ) : null}
         </div>
       </div>
 
@@ -591,14 +565,6 @@ export function FeedCatalog({
                   <SearchIcon className="size-3.5" />
                   Search posts
                 </Link>
-                {feed.id ? (
-                  <a
-                    href={buildFilteredExportHref([feed.id]) ?? "#"}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
-                  >
-                    Export OPML
-                  </a>
-                ) : null}
                 <a
                   href={feed.url}
                   target="_blank"

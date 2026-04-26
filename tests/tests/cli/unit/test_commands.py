@@ -132,6 +132,16 @@ class TestCLIOPMLCommand:
         except ImportError:
             pytest.skip("CLI commands not yet implemented")
 
+    def test_opml_command_registered_on_main_app(self):
+        """Test that the top-level CLI exposes OPML management."""
+        from ai_web_feeds.cli import app
+
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "opml" in result.output
+
     def test_opml_import(self, temp_opml_file):
         """Test importing OPML file."""
         try:

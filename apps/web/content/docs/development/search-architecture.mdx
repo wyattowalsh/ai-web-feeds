@@ -41,7 +41,7 @@ flowchart LR
     corpus --> articleSearch[/api/search?scope=articles]
     enriched --> autocomplete[/api/search/autocomplete]
     corpus --> autocomplete
-    articleBrowse --> feeds[/feeds]
+    articleBrowse --> feeds[/]
     articleSearch --> feeds
     sourceSearch --> feeds
     autocomplete --> feeds
@@ -80,7 +80,7 @@ has not been refreshed yet.
 
 ## Runtime Search Features
 
-The Python runtime still has its own search stack for CLI and backend work, including SQLite FTS, autocomplete indexes, and optional embedding-based search. Those features remain useful operationally, but they are not required for the public `/feeds` experience.
+The Python runtime still has its own search stack for CLI and backend work, including SQLite FTS, autocomplete indexes, and optional embedding-based search. Those features remain useful operationally, but they are not required for the public `/` experience.
 
 | Layer        | Implementation                          | Purpose                                |
 | ------------ | --------------------------------------- | -------------------------------------- |
@@ -89,7 +89,7 @@ The Python runtime still has its own search stack for CLI and backend work, incl
 | Semantic     | embeddings + cosine similarity          | meaning-based retrieval                |
 
 Those runtime capabilities are still useful for CLI workflows, but they are no
-longer a prerequisite for the public `/feeds` experience.
+longer a prerequisite for the public `/` experience.
 
 ## Search operations checklist
 

@@ -13,7 +13,7 @@ This page explains which data source owns each part of the product. Not every fi
 | Derived repository data   | `data/feeds.enriched.yaml`, exported JSON, OPML files | Generated outputs derived from the authored catalog                                    |
 | Runtime database          | `data/ai-web-feeds.db`                                | Fetched entries, validation history, analytics, recommendations, and operational state |
 | Generated article library | `data/articles.generated.json`                        | Standalone web browsing and post search                                                |
-| Web APIs and pages        | `/api/articles`, `/api/search`, `/feeds`              | Reading and searching recent posts plus browsing the source catalog                    |
+| Web APIs and pages        | `/api/articles`, `/api/search`, `/`                   | Reading and searching recent posts plus browsing the source catalog                    |
 | Browser-local state       | `localStorage`, `IndexedDB`                           | Reading state, local preferences, and device-scoped client state                       |
 | Optional backend proxy    | `BACKEND_URL`                                         | Server-backed analytics and recommendations                                            |
 
@@ -25,7 +25,7 @@ This page explains which data source owns each part of the product. Not every fi
 | Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML                                                                               | checked-in outputs generated from authored inputs                              |
 | Runtime article store     | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state                                     |
 | Generated web corpus      | `data/articles.generated.json`                                                                                               | self-contained article browse/search/read payload for the Next.js app          |
-| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/feeds`                                                         | corpus-backed reading/search plus catalog-backed source discovery              |
+| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/`                                                              | corpus-backed reading/search plus catalog-backed source discovery              |
 | Browser-local runtime     | IndexedDB, localStorage, reader-local state                                                                                  | anonymous on-device reader preferences and article state                       |
 | External backend proxy    | `BACKEND_URL`-backed Python service                                                                                          | optional analytics logging, saved searches, and backend-proxied runtime routes |
 
@@ -33,12 +33,12 @@ Use the YAML catalog and topic files when you are changing the source list itsel
 
 ### Derived repository data
 
-| Context                | Primary responsibility                                                             | Typical paths                                                                |
-| ---------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Docs shell             | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components                               |
-| Public feeds workspace | catalog, article search, recommendations, saved state, and reader UX               | `app/feeds`, `components/search`, `components/reader`, browser state helpers |
-| Admin                  | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`                         |
-| Backend proxy          | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers                   |
+| Context                 | Primary responsibility                                                             | Typical paths                                              |
+| ----------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Docs shell              | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components             |
+| Public reader workspace | catalog, article search, saved state, and reader UX                                | `app/(home)`, `app/feeds`, browser state helpers           |
+| Admin                   | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`       |
+| Backend proxy           | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers |
 
 Treat these as bounded code ownership areas inside one deployment, not as
 separate deployables or packages.
@@ -75,7 +75,7 @@ Read, saved, starred, and archived state stays in the browser. That keeps the co
 
 ### Optional backend proxy
 
-The backend remains optional. It is only needed for features that require live server-side state, such as analytics exports and personalized recommendations.
+The backend remains optional. It is only needed for features that require live server-side state, such as backend analytics exports.
 
 ## Practical Precedence Rules
 
@@ -85,7 +85,7 @@ flowchart TD
     topics[data/topics.yaml] --> enriched
     runtime[(data/ai-web-feeds.db)] --> corpus[data/articles.generated.json]
     enriched --> web[/api/search + catalog UI]
-    corpus --> web[/api/articles + /feeds]
+    corpus --> web[/api/articles + /]
     web --> browser[localStorage + IndexedDB]
     web --> backend[optional BACKEND_URL proxy]
 ```
@@ -100,7 +100,7 @@ The web app prefers repository catalog files in this order for source discovery:
 
 The web app prefers `data/articles.generated.json` for article browse/search.
 
-- If the corpus exists, `/feeds`, `/api/articles`, article search, and
+- If the corpus exists, `/`, `/api/articles`, article search, and
   autocomplete article suggestions use it.
 - If the corpus is missing or empty, the feeds workspace renders a
   dedicated corpus-unavailable state.

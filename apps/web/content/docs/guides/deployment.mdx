@@ -7,10 +7,10 @@ AI Web Feeds supports two practical deployment profiles.
 
 ## Choose a Deployment Profile
 
-| Profile       | What runs                                   | When to use it                                                            |
-| ------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
-| Web only      | Next.js web app                             | Default choice for browsing feeds, docs, OPML export, explorer, and stats |
-| Web + backend | Next.js web app plus `ai_web_feeds.web_api` | Use when you need recommendations and backend-backed analytics            |
+| Profile       | What runs                                   | When to use it                                                          |
+| ------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| Web only      | Next.js web app                             | Default choice for the reader, compact dashboard, docs, and OPML export |
+| Web + backend | Next.js web app plus `ai_web_feeds.web_api` | Use when you need backend-backed analytics APIs                         |
 
 ## Web-Only Deployment
 
@@ -18,10 +18,9 @@ The web-only setup is enough for most of the public product.
 
 It supports:
 
-- `/feeds`
-- `/explorer`
+- `/`
+- `/dashboard`
 - `/api/exports/opml`
-- `/stats`
 - `/docs`
 - `/llms.txt` and `/llms-full.txt`
 
@@ -63,11 +62,11 @@ AIWF_TELEMETRY_DIR=../../data/telemetry
 
 You do not need email or SMTP variables for the simple admin telemetry setup.
 
-`BACKEND_URL` is optional. It is only required if you want live analytics and personalized recommendations. Without it:
+`BACKEND_URL` is optional. It is only required if you want live backend-backed analytics APIs. Without it:
 
-- `/feeds`, `/docs`, `/explorer`, and `/stats` still work
-- `/analytics` shows an intentional unavailable panel
-- `/recommendations` shows an intentional unavailable panel
+- `/`, `/dashboard`, and `/docs` still work
+- `/analytics` and advanced analytics routes redirect to `/dashboard`
+- `/recommendations` redirects to `/`
 
 ---
 
@@ -89,7 +88,7 @@ Notes:
 - The compose stack no longer assumes a separate nginx container or a generic
   Python HTTP backend that the repository does not currently assemble.
 - `BACKEND_URL` remains optional. Set it only if you are running the separate
-  ai-web-feeds backend HTTP surface for analytics and recommendations.
+  ai-web-feeds backend HTTP surface for analytics APIs.
 - `NEXT_PUBLIC_WEBSOCKET_URL` is optional. Local development defaults to
   `http://localhost:8000`; deployed environments default to same-origin WebSocket
   connections unless you set this variable to an explicit monitor/WebSocket URL.
@@ -105,7 +104,7 @@ The standalone web app expects two things for the full reader and search experie
 1. the checked-in source catalog under `data/`
 2. a generated article corpus at `data/articles.generated.json`
 
-You do **not** need a Python HTTP backend for `/feeds`, `/api/articles`, or GET-based search. You do need the Python runtime when you want to poll feeds and rebuild the corpus artifact.
+You do **not** need a Python HTTP backend for `/`, `/api/articles`, or GET-based search. You do need the Python runtime when you want to poll feeds and rebuild the corpus artifact.
 
 ### 1. Install Dependencies
 
@@ -139,7 +138,6 @@ BACKEND_URL=http://127.0.0.1:8001
 
 With `BACKEND_URL` configured, the web app can enable:
 
-- recommendations
 - analytics summaries and exports
 - write-side analytics logging
 
@@ -158,4 +156,4 @@ AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
 - the web app builds with `pnpm build`
 - `data/articles.generated.json` exists and is current
 - the public routes load without a backend
-- if `BACKEND_URL` is set, `/recommendations` and `/analytics` stop showing their unavailable states
+- if `BACKEND_URL` is set, `/api/analytics/*` and `/api/recommendations` proxy to the backend

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 /**
  * Shared layout configurations
@@ -31,12 +30,12 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        text: "Sources",
-        url: CANONICAL_CATALOG_PATH,
+        text: "Reader",
+        url: "/",
       },
       {
-        text: "Taxonomy",
-        url: "/explorer",
+        text: "Dashboard",
+        url: "/dashboard",
       },
       {
         text: "Documentation",

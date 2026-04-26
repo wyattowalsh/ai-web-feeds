@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { loadReaderRouteData, ReaderPageSearchParams } from "@/lib/reader-route";
-import { FeedsWorkspaceClient } from "./feeds-workspace-client";
+import { redirect } from "next/navigation";
+import { ReaderPageSearchParams } from "@/lib/reader-route";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 
 export const metadata: Metadata = {
   title: "AI Reader - AI Web Feeds",
-  description:
-    "Read recent AI articles across all tracked feeds, then refine by source when you need to.",
+  description: "Compatibility route for the AI Web Feeds reader. The reader now lives at /.",
   openGraph: {
     title: "AI Reader - AI Web Feeds",
-    description:
-      "Read recent AI articles across all tracked feeds, then refine by source when you need to.",
+    description: "Compatibility route for the AI Web Feeds reader. The reader now lives at /.",
   },
 };
 
@@ -18,20 +17,21 @@ type FeedsPageProps = {
 };
 
 export default async function FeedsPage({ searchParams }: FeedsPageProps) {
-  const { mode, feeds, stats, initialState, initialBrowse } =
-    await loadReaderRouteData(searchParams);
+  const params = new URLSearchParams();
 
-  return (
-    <div className="page-wrap page-stack">
-      <section className="surface-panel space-y-8">
-        <FeedsWorkspaceClient
-          mode={mode}
-          feeds={feeds}
-          stats={stats}
-          initialState={initialState}
-          initialBrowse={initialBrowse}
-        />
-      </section>
-    </div>
-  );
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") {
+      params.append(key, value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(key, entry);
+      }
+    }
+  }
+
+  const query = params.toString();
+  redirect(query ? `${CANONICAL_READER_PATH}?${query}` : CANONICAL_READER_PATH);
 }

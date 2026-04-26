@@ -1,28 +1,30 @@
 ---
-title: Analytics Dashboard
-description: Backend-backed feed analytics with graceful unavailable states, exportable metrics, and stable chart rendering across the analytics routes.
+title: Dashboard and Analytics
+description: The compact /dashboard surface plus the backend analytics APIs that remain available for repo tooling and integrations.
 ---
 
-# Analytics Dashboard
+# Dashboard and Analytics
 
-> **Status**: Backend-backed
-> **Local behavior**: Shows an intentional unavailable state until `BACKEND_URL` points to the ai-web-feeds backend.
+> **Status**: `/dashboard` is the public UI. `/analytics` redirects to `/dashboard`.
+> **Backend APIs**: `/api/analytics/*` remain available when `BACKEND_URL` points to the ai-web-feeds backend.
 
-The analytics surface at `/analytics` uses the real backend routes instead of placeholder APIs, but it is intentionally secondary to the main reading workflow. When the optional backend is configured, the page loads summary metrics, trending topics, validation velocity, CSV export, and snapshots through the `/api/analytics/*` proxy layer. When it is not configured, the page shows one deliberate unavailable state instead of noisy card-level fetch failures.
+The public app keeps analytics out of the main reader workflow. Use `/dashboard`
+for compact catalog health. Use CLI commands and backend API routes for
+analytics snapshots, CSV export, and downstream reporting.
 
 ## At a Glance
 
-| Surface                                            | Uses backend            | Behavior when backend is unavailable                 |
-| -------------------------------------------------- | ----------------------- | ---------------------------------------------------- |
-| `/analytics` overview                              | Yes                     | Renders one intentional unavailable panel            |
-| `/api/analytics/*` proxies                         | Yes                     | Returns `503 FEATURE_UNAVAILABLE`                    |
-| `/analytics/comparison` and `/analytics/forecasts` | Not for route rendering | Continue to render with the shared Chart.js registry |
+| Surface            | Uses backend | Behavior when backend is unavailable       |
+| ------------------ | ------------ | ------------------------------------------ |
+| `/dashboard`       | No           | Renders catalog health from repo artifacts |
+| `/analytics`       | No           | Redirects to `/dashboard`                  |
+| `/api/analytics/*` | Yes          | Returns `503 FEATURE_UNAVAILABLE`          |
 
 ## What Ships Today
 
-### Overview Dashboard
+### Analytics APIs
 
-The main `/analytics` page reads from these backend-backed routes:
+The backend-backed analytics routes remain available for integrations:
 
 - `/api/analytics/summary`
 - `/api/analytics/trending`
@@ -30,31 +32,12 @@ The main `/analytics` page reads from these backend-backed routes:
 - `/api/analytics/export`
 - `/api/analytics/snapshot`
 
-The dashboard supports:
+They support:
 
 - **Time range filtering**: 7, 30, or 90 day slices
 - **Topic focus**: Filter the overview by a topic string
 - **Refresh**: Re-run the current query slice
 - **CSV export**: Download the current summary slice as a CSV attachment
-
-### Chart Stability
-
-The comparison and forecasting routes remain exploratory surfaces:
-
-- `/analytics/comparison`
-- `/analytics/forecasts`
-
-They now share the same Chart.js registration path as the rest of the app, which prevents the missing-controller runtime crashes that previously broke those pages in the browser.
-
-### Unavailable State
-
-If `BACKEND_URL` is unset or unreachable, `/analytics` intentionally renders one unavailable panel with:
-
-- concise setup guidance
-- a link back to `/feeds?mode=catalog`
-- a link to the deployment guide
-
-That state is part of the product contract, not an implementation accident, and it should not overshadow the main reading workflow.
 
 ## Proxy Contract
 
@@ -95,8 +78,6 @@ Point the web app at it:
 BACKEND_URL=http://127.0.0.1:8001
 ```
 
-With that in place, `/analytics` switches from the unavailable panel to live metrics automatically.
-
 Quick verification:
 
 ```bash
@@ -105,6 +86,5 @@ curl "http://127.0.0.1:3000/api/analytics/summary?date_range=30d&topic=llm"
 
 ## Related
 
-- [Recommendations](./recommendations) - Backend-backed personalized discovery
 - [Admin Observability](./admin-observability) - Protected telemetry for the web API layer
 - [Deployment Guide](/docs/guides/deployment) - Running the optional backend service
