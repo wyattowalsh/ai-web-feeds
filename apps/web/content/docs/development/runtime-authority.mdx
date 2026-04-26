@@ -33,12 +33,12 @@ Use the YAML catalog and topic files when you are changing the source list itsel
 
 ### Derived repository data
 
-| Context                 | Primary responsibility                                                             | Typical paths                                              |
-| ----------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Docs shell              | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components             |
-| Public reader workspace | catalog, article search, saved state, and reader UX                                | `app/(home)`, `app/feeds`, browser state helpers           |
-| Admin                   | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`       |
-| Backend proxy           | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers |
+| Context                 | Primary responsibility                                                             | Typical paths                                               |
+| ----------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Docs shell              | static docs, content rendering, and navigation                                     | `app/docs`, `content/docs`, docs UI components              |
+| Public reader workspace | catalog, article search, saved state, and reader UX                                | `app/(home)`, `app/feeds` components, browser state helpers |
+| Admin                   | operational dashboards, telemetry inspection, and admin session enforcement        | `app/admin`, `components/admin`, `lib/admin-auth.ts`        |
+| Backend proxy           | route handlers that normalize browser requests and forward them to Python services | `app/api/**`, `lib/backend.ts`, anonymous identity helpers  |
 
 Treat these as bounded code ownership areas inside one deployment, not as
 separate deployables or packages.

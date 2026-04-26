@@ -7,25 +7,6 @@ const { rewrite: rewriteLLM } = rewritePath("/docs/*path", "/llms.mdx/*path");
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/feeds") {
-    const readerUrl = new URL("/", request.url);
-    readerUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(readerUrl);
-  }
-
-  if (
-    pathname === "/analytics" ||
-    pathname.startsWith("/analytics/") ||
-    pathname === "/explorer" ||
-    pathname === "/stats"
-  ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (pathname === "/recommendations") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
   const hasAdminSession = await hasValidAdminSession(request);
 
   // Protect /admin routes - redirect to login if no session

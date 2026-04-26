@@ -113,7 +113,7 @@ export function ReaderPageClient({ feeds }: ReaderPageClientProps) {
     setParamState(new URLSearchParams(searchParams.toString()));
   }, [searchParams]);
 
-  const isFeedsEmbed = pathname === "/" || pathname.startsWith("/feeds");
+  const isFeedsEmbed = pathname === "/";
   const readerViewKey = isFeedsEmbed ? "reader_view" : "view";
   const readerSortKey = isFeedsEmbed ? "reader_sort" : "sort";
   const topicKey = isFeedsEmbed ? "topics" : "topic";

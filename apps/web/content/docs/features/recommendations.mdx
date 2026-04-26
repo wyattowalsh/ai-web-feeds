@@ -1,11 +1,11 @@
 ---
-title: Recommendations
-description: Backend recommendation APIs retained for integrations; the public page redirects to the reader.
+title: Recommendations API
+description: Backend recommendation APIs retained for integrations without a standalone public page.
 ---
 
-Recommendations are no longer a standalone public UI surface. `/recommendations`
-redirects to the reader at `/`; backend recommendation APIs remain available
-for integrations when `BACKEND_URL` points to a running `ai_web_feeds.web_api`
+Recommendations are no longer a standalone public UI surface. There is no
+`/recommendations` page; backend recommendation APIs remain available for
+integrations when `BACKEND_URL` points to a running `ai_web_feeds.web_api`
 service.
 
 ## What It Does
@@ -23,7 +23,7 @@ Recommendations are not part of the standalone web-only UI profile.
 
 If `BACKEND_URL` is missing or the backend is unavailable:
 
-- `/recommendations` still redirects to `/`
+- there is no standalone recommendations page
 - the proxy routes return `503 FEATURE_UNAVAILABLE`
 - the reader and catalog continue to work normally
 

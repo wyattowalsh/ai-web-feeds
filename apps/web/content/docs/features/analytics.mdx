@@ -5,7 +5,7 @@ description: The compact /dashboard surface plus the backend analytics APIs that
 
 # Dashboard and Analytics
 
-> **Status**: `/dashboard` is the public UI. `/analytics` redirects to `/dashboard`.
+> **Status**: `/dashboard` is the public UI. `/analytics` is not a public page.
 > **Backend APIs**: `/api/analytics/*` remain available when `BACKEND_URL` points to the ai-web-feeds backend.
 
 The public app keeps analytics out of the main reader workflow. Use `/dashboard`
@@ -17,7 +17,7 @@ analytics snapshots, CSV export, and downstream reporting.
 | Surface            | Uses backend | Behavior when backend is unavailable       |
 | ------------------ | ------------ | ------------------------------------------ |
 | `/dashboard`       | No           | Renders catalog health from repo artifacts |
-| `/analytics`       | No           | Redirects to `/dashboard`                  |
+| `/analytics`       | No           | No public route                            |
 | `/api/analytics/*` | Yes          | Returns `503 FEATURE_UNAVAILABLE`          |
 
 ## What Ships Today

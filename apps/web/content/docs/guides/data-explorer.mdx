@@ -1,14 +1,13 @@
 ---
 title: Data Explorer
-description: Legacy taxonomy map reference; the public explorer route now redirects to the compact dashboard.
+description: Legacy taxonomy map reference; the public explorer route has been removed.
 ---
 
 # Data Explorer
 
-The former Data Explorer at `/explorer` has been removed from the public UI
-path and now redirects to `/dashboard`. Use `/` for the reader,
-`/?mode=catalog` for source refinement, and repo data files or docs when you
-need taxonomy details.
+The former Data Explorer at `/explorer` has been removed from the public UI.
+Use `/` for the reader, `/?mode=catalog` for source refinement, and repo data
+files or docs when you need taxonomy details.
 
 ## Features
 
@@ -204,8 +203,6 @@ All components use TypeScript with proper type annotations:
 ```
 apps/web/
 ├── app/
-│   ├── explorer/
-│   │   └── page.tsx              # Main explorer page
 │   └── api/
 │       ├── topics/
 │       │   └── route.ts          # Topics API endpoint
@@ -222,7 +219,6 @@ apps/web/
 
 Tests can be added to:
 
-- `/tests/tests/apps/web/explorer/` - Component tests
 - `/tests/tests/apps/web/api/` - API route tests
 
 Example test structure:
