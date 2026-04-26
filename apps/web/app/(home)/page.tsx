@@ -42,7 +42,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="page-wrap page-stack">
-      <section className="surface-panel space-y-8">
+      <section className="space-y-8">
         <FeedsWorkspaceClient
           mode={mode}
           feeds={feeds}

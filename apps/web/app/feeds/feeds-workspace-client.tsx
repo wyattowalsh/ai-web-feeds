@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Archive,
@@ -10,12 +10,14 @@ import {
   BookOpenText,
   CheckCheck,
   Clock3,
+  Copy,
+  Eye,
   Filter,
   LayoutGrid,
   List,
   Newspaper,
-  PanelRight,
   RefreshCcw,
+  Search,
   SlidersHorizontal,
   Star,
   X,
@@ -159,13 +161,71 @@ function getArticleTopics(article: WorkspaceArticle): string[] {
 
 function formatSnapshotTimestamp(value: string | null): string {
   if (!value) {
-    return "Snapshot not generated yet";
+    return "Waiting for posts";
   }
 
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatArticleDate(value: string | null): string {
+  if (!value) {
+    return "Unknown date";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatArticleDateTime(value: string | null): string {
+  if (!value) {
+    return "Unknown publish date";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getSourceInitials(value: string): string {
+  return value
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function Pill({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "brand" | "success" | "warning" | "info";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-7 items-center rounded-md border px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.08em]",
+        tone === "brand" && "border-(--brand)/25 bg-(--brand-soft) text-(--brand-strong)",
+        tone === "success" &&
+          "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+        tone === "warning" &&
+          "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+        tone === "info" && "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+        tone === "neutral" && "border-(--line) bg-(--surface-muted) text-(--ink-muted)",
+      )}
+    >
+      {children}
+    </span>
+  );
 }
 
 function toggleTopic(topics: string[], topic: string): string[] {
@@ -487,12 +547,12 @@ function PreviewPane({
 
   if (!article) {
     return (
-      <div className="surface-card space-y-4">
-        <p className="metric-label">Preview</p>
+      <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm">
+        <p className="metric-label">Inspector</p>
         <EmptyState
           icon={BookOpenText}
           title="Select an article"
-          description="Choose a post from the current result page to preview its summary and metadata."
+          description="Choose a post to read the summary, source context, and quick actions."
         />
       </div>
     );
@@ -501,25 +561,21 @@ function PreviewPane({
   return (
     <div
       className={cn(
-        "surface-card space-y-5",
+        "rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm",
         variant === "panel" &&
           "flex h-full max-h-[calc(100vh-3rem)] flex-col overflow-hidden border-(--brand)/20 bg-[color-mix(in_oklab,var(--surface)_98%,white)]",
       )}
     >
-      <div className="space-y-3">
+      <div className="space-y-4 border-b border-(--line) pb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="metric-label">{article.feed_title}</span>
-            {article.freshness === "live" ? (
-              <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-(--brand-strong)">
-                Fresh
-              </span>
-            ) : null}
-            {article.verified ? (
-              <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                Verified
-              </span>
-            ) : null}
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface-muted) text-xs font-semibold text-(--brand-strong)">
+              {getSourceInitials(article.feed_title)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-(--ink)">{article.feed_title}</p>
+              <p className="small-note">{formatArticleDateTime(article.published_at)}</p>
+            </div>
           </div>
           {onClose ? (
             <Button
@@ -533,14 +589,18 @@ function PreviewPane({
             </Button>
           ) : null}
         </div>
+        <div className="flex flex-wrap gap-2">
+          {article.freshness === "live" ? <Pill tone="brand">New</Pill> : null}
+          {article.verified ? <Pill tone="success">Verified</Pill> : null}
+          {state.read ? <Pill tone="success">Read</Pill> : <Pill tone="warning">Unread</Pill>}
+          {state.bookmarked ? <Pill tone="info">Saved</Pill> : null}
+          {state.starred ? <Pill tone="warning">Starred</Pill> : null}
+        </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">{article.title}</h2>
-          <p className="small-note">
-            {article.published_at
-              ? new Date(article.published_at).toLocaleString()
-              : "Unknown publish date"}
-            {article.author ? ` · ${article.author}` : ""}
-          </p>
+          <h2 className="break-words text-xl font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] sm:text-2xl">
+            {article.title}
+          </h2>
+          {article.author ? <p className="small-note">By {article.author}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -552,6 +612,14 @@ function PreviewPane({
             Read original
             <ArrowUpRight className="size-4" />
           </Link>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void navigator.clipboard?.writeText(article.link)}
+          >
+            <Copy className="size-4" />
+            Copy link
+          </Button>
           <Button
             type="button"
             variant={state.read ? "secondary" : "outline"}
@@ -588,7 +656,7 @@ function PreviewPane({
 
       <div className={cn("space-y-4", variant === "panel" && "overflow-y-auto pr-1")}>
         {article.summary ? (
-          <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4 text-sm text-(--ink-muted)">
+          <div className="rounded-lg border border-(--line) bg-(--surface-muted) p-4 text-sm leading-6 text-(--ink-muted)">
             {article.summary}
           </div>
         ) : null}
@@ -601,12 +669,12 @@ function PreviewPane({
         ) : null}
 
         <div className="space-y-2">
-          <p className="metric-label">Topic signals</p>
+          <p className="metric-label">Topics</p>
           <div className="flex flex-wrap gap-2">
             {getArticleTopics(article).map((topic) => (
               <span
                 key={`${article.id}-${topic}`}
-                className="rounded-full border border-(--line) bg-(--surface) px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                className="rounded-md border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)"
               >
                 {topic}
               </span>
@@ -1060,28 +1128,29 @@ function ReaderWorkspace({
     [queryDraft, readerViewDraft, sortDraft, sourceTypeDraft, topicsDraft, verifiedDraft],
   );
   const hasPendingDraftChanges = !matchesDraftState(draftState, currentState);
-  const snapshotTimestamp = browse.corpus.generated_at ?? browse.corpus.latest_published_at ?? null;
-  const snapshotCards = [
+  const freshnessTimestamp =
+    browse.corpus.generated_at ?? browse.corpus.latest_published_at ?? null;
+  const readerStats = [
     {
-      label: "Snapshot",
+      label: "Freshness",
       value: corpusEmpty
         ? "Live mode"
-        : snapshotTimestamp
-          ? formatSnapshotTimestamp(snapshotTimestamp)
-          : "Unavailable",
+        : freshnessTimestamp
+          ? formatSnapshotTimestamp(freshnessTimestamp)
+          : "Waiting",
       note: corpusEmpty
-        ? "Recent posts loaded through the web app server"
+        ? "Recent posts loaded live"
         : browse.corpus.generated_at
-          ? "Precomputed article snapshot loaded at first render"
-          : "Reader is waiting for a prepared snapshot",
+          ? "Prepared posts ready"
+          : "Live fallback ready",
       icon: Clock3,
     },
     {
-      label: "Articles",
-      value: String(browse.corpus.article_count),
+      label: "Visible",
+      value: String(visibleArticles.length),
       note: corpusEmpty
-        ? "Generated corpus rows; live posts appear in the stream"
-        : "Base snapshot rows ready for reading",
+        ? `${overlayArticles.length} live post${overlayArticles.length === 1 ? "" : "s"}`
+        : `${browse.total_matched} match${browse.total_matched === 1 ? "" : "es"}`,
       icon: Newspaper,
     },
     {
@@ -1093,14 +1162,14 @@ function ReaderWorkspace({
       icon: Filter,
     },
     {
-      label: "Live overlay",
+      label: "New",
       value: String(overlayArticles.length),
       note:
         overlayArticles.length > 0
           ? corpusEmpty
-            ? "Recent posts fetched from matching feeds"
-            : "Newer posts layered on top of the snapshot"
-          : "No live refresh applied yet",
+            ? "Live posts in stream"
+            : "Layered above prepared posts"
+          : "No live additions",
       icon: RefreshCcw,
     },
   ];
@@ -1183,36 +1252,38 @@ function ReaderWorkspace({
 
   if (corpusEmpty && overlayArticles.length === 0) {
     return (
-      <div className="space-y-6">
-        <div className="surface-card flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="metric-label">AI Web Feeds</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-              {refreshError ? "Live posts unavailable" : "Loading live posts"}
-            </h1>
-            <p className="small-note max-w-3xl">
-              {refreshError
-                ? `${refreshError} You can still browse sources or retry the live fetch.`
-                : `Checking ${candidateFeeds.length} matching source${
-                    candidateFeeds.length === 1 ? "" : "s"
-                  } through the web app server so the browser does not have to fetch RSS origins directly.`}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href={buildReaderHref(currentState, { mode: "catalog" })}
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              Browse sources
-            </Link>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => void refreshLatest()}
-              disabled={refreshing}
-            >
-              Try again
-            </Button>
+      <div className="reader-shell space-y-4">
+        <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2">
+              <p className="metric-label">AI Web Feeds</p>
+              <h1 className="text-2xl font-semibold tracking-tight text-(--ink) sm:text-3xl">
+                {refreshError ? "Live posts unavailable" : "Loading live posts"}
+              </h1>
+              <p className="small-note max-w-3xl">
+                {refreshError
+                  ? `${refreshError} You can browse sources or retry.`
+                  : `Checking ${candidateFeeds.length} matching source${
+                      candidateFeeds.length === 1 ? "" : "s"
+                    } for recent posts.`}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={buildReaderHref(currentState, { mode: "catalog" })}
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                Browse sources
+              </Link>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void refreshLatest()}
+                disabled={refreshing}
+              >
+                Try again
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -1221,14 +1292,9 @@ function ReaderWorkspace({
           title={refreshError ? "Could not fetch live posts" : "Fetching recent posts"}
           description={
             refreshError
-              ? "The reader can still open the source catalog while live feed fetching recovers."
-              : "The server is fetching recent RSS and Atom entries across the current source slice."
+              ? "The source catalog is still available while live fetching recovers."
+              : "Recent posts will appear here as soon as they are available."
           }
-          tips={[
-            "Browsers usually cannot fetch arbitrary RSS feeds directly because feed origins often block cross-origin requests.",
-            "The web app fetches through its own API route, then returns normalized posts to the client.",
-            "A generated article snapshot is still useful for speed and history, but it is not required for a live first read.",
-          ]}
           className="text-left"
         />
       </div>
@@ -1236,51 +1302,54 @@ function ReaderWorkspace({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="surface-card flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="metric-label">AI Web Feeds</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-            Latest AI posts from across the open web
-          </h1>
-          <p className="small-note max-w-3xl">
-            Open the reader first, narrow the current source slice when you need focus, and keep
-            local reading state in this browser.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={refreshLatest} disabled={refreshing}>
-            <RefreshCcw className={cn("size-4", refreshing && "animate-spin")} />
-            {refreshing ? "Checking live posts..." : "Refresh latest"}
-          </Button>
-          <Link
-            href={buildReaderHref(currentState, { mode: "catalog" })}
-            className={cn(buttonVariants({ variant: "secondary" }))}
-          >
-            Sources
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {snapshotCards.map(({ label, value, note, icon: Icon }) => (
-          <div key={label} className="surface-card flex items-start justify-between gap-4">
-            <div className="space-y-3">
-              <p className="metric-label">{label}</p>
-              <p
-                className={cn(
-                  label === "Snapshot" ? "text-lg font-semibold text-(--ink)" : "metric-value",
-                )}
-              >
-                {value}
-              </p>
-              <p className="small-note">{note}</p>
+    <div className="reader-shell space-y-5">
+      <div className="overflow-hidden rounded-lg border border-(--line) bg-(--surface) shadow-sm">
+        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end sm:p-6">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tone="brand">Reader</Pill>
+              {corpusEmpty ? <Pill tone="info">Live</Pill> : <Pill>Prepared posts</Pill>}
+              {refreshing ? <Pill tone="warning">Refreshing</Pill> : null}
             </div>
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-(--brand-soft) text-(--brand-strong)">
-              <Icon className="size-5" />
-            </span>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-semibold leading-tight text-(--ink) sm:text-3xl">
+                Latest AI posts from across the open web
+              </h1>
+              <p className="small-note max-w-3xl">
+                A clean reading desk for open AI writing, with local read, save, and focus state.
+              </p>
+            </div>
           </div>
-        ))}
+          <div className="flex flex-wrap gap-2 lg:justify-end">
+            <Button type="button" variant="outline" onClick={refreshLatest} disabled={refreshing}>
+              <RefreshCcw className={cn("size-4", refreshing && "animate-spin")} />
+              {refreshing ? "Checking..." : "Refresh latest"}
+            </Button>
+            <Link
+              href={buildReaderHref(currentState, { mode: "catalog" })}
+              className={cn(buttonVariants({ variant: "secondary" }))}
+            >
+              Sources
+            </Link>
+          </div>
+        </div>
+        <div className="hidden border-t border-(--line) bg-(--surface-muted) md:grid md:grid-cols-4">
+          {readerStats.map(({ label, value, note, icon: Icon }) => (
+            <div
+              key={label}
+              className="flex min-h-24 items-center gap-3 border-b border-(--line) px-5 py-4 last:border-b-0 md:border-r md:border-b-0 md:last:border-r-0"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface) text-(--brand-strong)">
+                <Icon className="size-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="metric-label">{label}</p>
+                <p className="truncate text-base font-semibold text-(--ink)">{value}</p>
+                <p className="truncate text-xs text-(--ink-muted)">{note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div
@@ -1290,15 +1359,13 @@ function ReaderWorkspace({
         )}
       >
         <aside className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
-          <div className="surface-card space-y-5">
+          <div className="rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm">
             <div className="space-y-2">
-              <p className="metric-label">Reader controls</p>
-              <p className="small-note">
-                Refine the current source slice, then apply the exact set of posts you want to read.
-              </p>
+              <p className="metric-label">Focus</p>
+              <p className="small-note">Narrow the stream without leaving the reader.</p>
             </div>
             <form
-              className="space-y-4"
+              className="mt-4 space-y-4"
               onSubmit={(event) => {
                 event.preventDefault();
                 applyDrafts();
@@ -1306,12 +1373,16 @@ function ReaderWorkspace({
             >
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Search posts</span>
-                <Input
-                  aria-label="Search posts"
-                  placeholder="Search titles, summaries, authors"
-                  value={queryDraft}
-                  onChange={(event) => setQueryDraft(event.target.value)}
-                />
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
+                  <Input
+                    aria-label="Search posts"
+                    placeholder="Search titles, summaries, authors"
+                    value={queryDraft}
+                    onChange={(event) => setQueryDraft(event.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </label>
 
               <label className="space-y-1.5 text-sm">
@@ -1446,8 +1517,8 @@ function ReaderWorkspace({
               </div>
             </form>
 
-            <div className="rounded-3xl border border-(--line) bg-(--surface-muted) p-4">
-              <p className="metric-label">Current slice</p>
+            <div className="mt-5 rounded-lg border border-(--line) bg-(--surface-muted) p-4">
+              <p className="metric-label">Current view</p>
               <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
                 <p>{filterSummary}</p>
                 <p>
@@ -1455,7 +1526,7 @@ function ReaderWorkspace({
                   {visibleArticles.length} visible on this page
                 </p>
                 <p>
-                  Snapshot: {browse.corpus.article_count} articles from {browse.corpus.feed_count}{" "}
+                  Prepared: {browse.corpus.article_count} articles from {browse.corpus.feed_count}{" "}
                   sources
                 </p>
                 <p>
@@ -1468,7 +1539,7 @@ function ReaderWorkspace({
 
         <section className="space-y-5">
           <details
-            className="surface-card xl:hidden"
+            className="rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm xl:hidden"
             open={mobileControlsOpen}
             onToggle={(event) =>
               setMobileControlsOpen((event.currentTarget as HTMLDetailsElement).open)
@@ -1492,12 +1563,16 @@ function ReaderWorkspace({
             >
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Search posts</span>
-                <Input
-                  aria-label="Search posts mobile"
-                  placeholder="Search titles, summaries, authors"
-                  value={queryDraft}
-                  onChange={(event) => setQueryDraft(event.target.value)}
-                />
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
+                  <Input
+                    aria-label="Search posts mobile"
+                    placeholder="Search titles, summaries, authors"
+                    value={queryDraft}
+                    onChange={(event) => setQueryDraft(event.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </label>
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Source type</span>
@@ -1606,49 +1681,53 @@ function ReaderWorkspace({
             </form>
           </details>
 
-          <section id="article-list" className="surface-card space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <p className="metric-label">Article stream</p>
-                <h2 className="text-2xl font-semibold tracking-tight text-(--ink)">
-                  {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
-                </h2>
-                <p className="small-note">
-                  {filterSummary}. Refresh latest checks live feeds{" "}
-                  {corpusEmpty ? "for this reader." : "without replacing the base snapshot."}
-                </p>
+          <section
+            id="article-list"
+            className="rounded-lg border border-(--line) bg-(--surface) shadow-sm"
+          >
+            <div className="space-y-4 border-b border-(--line) p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="metric-label">Stream</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-(--ink) sm:text-2xl">
+                    {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
+                  </h2>
+                  <p className="small-note">
+                    {filterSummary}. Refresh latest keeps your current reading state.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {refreshError ? <p className="text-sm text-amber-700">{refreshError}</p> : null}
+                  {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {refreshError ? <p className="text-sm text-amber-700">{refreshError}</p> : null}
-                {error ? <p className="text-sm text-rose-700">{error}</p> : null}
-              </div>
+
+              {activeFilterChips.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {activeFilterChips.map((chip) => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={() => updateUrl(chip.overrides)}
+                      className="inline-flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1.5 text-xs font-semibold text-(--ink)"
+                    >
+                      {chip.label}
+                      <X className="size-3.5 text-(--ink-muted)" />
+                    </button>
+                  ))}
+                  <Button type="button" variant="ghost" size="sm" onClick={resetDrafts}>
+                    Clear all
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
-            {activeFilterChips.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {activeFilterChips.map((chip) => (
-                  <button
-                    key={chip.key}
-                    type="button"
-                    onClick={() => updateUrl(chip.overrides)}
-                    className="inline-flex items-center gap-2 rounded-full border border-(--line) bg-(--surface-muted) px-3 py-1.5 text-xs font-semibold text-(--ink)"
-                  >
-                    {chip.label}
-                    <X className="size-3.5 text-(--ink-muted)" />
-                  </button>
-                ))}
-                <Button type="button" variant="ghost" size="sm" onClick={resetDrafts}>
-                  Clear all
-                </Button>
-              </div>
-            ) : null}
-
             {loading ? (
-              <div className="grid gap-3">
+              <div className="grid gap-3 p-5">
                 {Array.from({ length: 6 }, (_, index) => (
                   <div
                     key={`loading-${index}`}
-                    className="h-28 animate-pulse rounded-3xl border border-(--line) bg-(--surface-muted)"
+                    className="h-28 animate-pulse rounded-lg border border-(--line) bg-(--surface-muted)"
                   />
                 ))}
               </div>
@@ -1684,7 +1763,7 @@ function ReaderWorkspace({
                 </div>
               </EmptyState>
             ) : (
-              <div className="space-y-3">
+              <div className="divide-y divide-(--line)">
                 {visibleArticles.map((article) => {
                   const state = articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE;
                   const isSelected = article.id === selectedArticle?.id;
@@ -1694,10 +1773,10 @@ function ReaderWorkspace({
                     <article
                       key={article.id}
                       className={cn(
-                        "w-full rounded-3xl border p-5 text-left transition duration-150",
+                        "group w-full p-5 text-left transition duration-150",
                         isSelected
-                          ? "border-(--brand) bg-(--brand-soft)"
-                          : "border-(--line) bg-(--surface) hover:border-(--brand)",
+                          ? "bg-(--brand-soft)"
+                          : "bg-(--surface) hover:bg-[color-mix(in_oklab,var(--brand-soft)_45%,var(--surface))]",
                         preferences.layout === "list" && "py-4",
                       )}
                     >
@@ -1707,49 +1786,32 @@ function ReaderWorkspace({
                         className="w-full text-left"
                         aria-pressed={isSelected}
                       >
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="space-y-2">
+                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+                          <div className="min-w-0 space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="metric-label">{article.feed_title}</span>
-                              {article.freshness === "live" ? (
-                                <span className="rounded-full bg-(--brand) px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-(--fd-primary-foreground)">
-                                  New
-                                </span>
-                              ) : null}
-                              {state.read ? (
-                                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                                  Read
-                                </span>
-                              ) : null}
-                              {state.bookmarked ? (
-                                <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-sky-700">
-                                  Saved
-                                </span>
-                              ) : null}
-                              {state.starred ? (
-                                <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-700">
-                                  Starred
-                                </span>
-                              ) : null}
+                              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface-muted) text-[0.68rem] font-semibold text-(--brand-strong)">
+                                {getSourceInitials(article.feed_title)}
+                              </span>
+                              <span className="truncate text-sm font-semibold text-(--ink-muted)">
+                                {article.feed_title}
+                              </span>
+                              {article.freshness === "live" ? <Pill tone="brand">New</Pill> : null}
+                              {state.read ? <Pill tone="success">Read</Pill> : null}
+                              {state.bookmarked ? <Pill tone="info">Saved</Pill> : null}
+                              {state.starred ? <Pill tone="warning">Starred</Pill> : null}
                             </div>
-                            <h3 className="text-lg font-semibold text-(--ink)">{article.title}</h3>
+                            <h3 className="break-words text-lg font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] group-hover:text-(--brand-strong)">
+                              {article.title}
+                            </h3>
                             {preferences.showSummaries && article.summary ? (
                               <p className="small-note max-w-3xl">{article.summary}</p>
                             ) : null}
                           </div>
 
-                          <div className="space-y-2 text-right text-sm text-(--ink-muted)">
-                            <div>
-                              {article.published_at
-                                ? new Date(article.published_at).toLocaleDateString()
-                                : "Unknown date"}
-                            </div>
-                            <div className="flex flex-wrap justify-end gap-2">
-                              {state.archived ? (
-                                <span className="rounded-full border border-(--line) px-2 py-1 text-[0.7rem]">
-                                  Archived
-                                </span>
-                              ) : null}
+                          <div className="space-y-2 text-sm text-(--ink-muted) lg:text-right">
+                            <div>{formatArticleDate(article.published_at)}</div>
+                            <div className="flex flex-wrap gap-2 lg:justify-end">
+                              {state.archived ? <Pill>Archived</Pill> : null}
                               {article.author ? <span>{article.author}</span> : null}
                             </div>
                           </div>
@@ -1761,7 +1823,7 @@ function ReaderWorkspace({
                           {articleTopics.slice(0, 4).map((topic) => (
                             <span
                               key={`${article.id}-${topic}`}
-                              className="rounded-full border border-(--line) bg-white/70 px-3 py-1 text-xs font-semibold text-(--ink-muted)"
+                              className="rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)"
                             >
                               {topic}
                             </span>
@@ -1774,7 +1836,7 @@ function ReaderWorkspace({
                             variant={isSelected ? "secondary" : "outline"}
                             onClick={() => handleSelectArticle(article.id)}
                           >
-                            <PanelRight className="size-4" />
+                            <Eye className="size-4" />
                             {isSelected ? "Hide details" : "Preview"}
                           </Button>
                           <Button
@@ -1806,7 +1868,7 @@ function ReaderWorkspace({
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--line) pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--line) p-5">
               <p className="small-note">
                 Page offset {browse.cursor} · showing up to {browse.limit} results per page
               </p>

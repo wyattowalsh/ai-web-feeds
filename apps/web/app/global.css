@@ -285,19 +285,19 @@
   }
 
   .surface-panel {
-    @apply rounded-5xl border p-6 sm:p-8 lg:p-10;
+    @apply rounded-xl border p-6 sm:p-8 lg:p-10;
     background: color-mix(in oklab, var(--surface) 94%, transparent);
     box-shadow: var(--surface-shadow);
   }
 
   .surface-card {
-    @apply rounded-3xl border p-5 sm:p-6;
+    @apply rounded-lg border p-5 sm:p-6;
     background: color-mix(in oklab, var(--surface) 97%, transparent);
     box-shadow: var(--surface-shadow-soft);
   }
 
   .surface-card-soft {
-    @apply rounded-3xl border p-5 sm:p-6;
+    @apply rounded-lg border p-5 sm:p-6;
     background: color-mix(in oklab, var(--surface-muted) 94%, transparent);
   }
 
