@@ -27,6 +27,7 @@ type TopicsPayload = {
 };
 
 const ARTICLE_PREFIX = "/articles";
+let cachedTopicCatalog: TopicRecord[] | null = null;
 
 function getDataDirectory(): string {
   return join(process.cwd(), "../../data");
@@ -50,13 +51,23 @@ export function getSourceBySlug(slug: string): FeedSource | null {
   return loadFeedCatalog().sources.find((source) => getSourceSlug(source) === slug) ?? null;
 }
 
-export function loadTopicCatalog(): TopicRecord[] {
+export function loadTopicCatalog(options: { refresh?: boolean } = {}): TopicRecord[] {
+  if (!options.refresh && cachedTopicCatalog) {
+    return cachedTopicCatalog;
+  }
+
   try {
     const content = readFileSync(join(getDataDirectory(), "topics.yaml"), "utf-8");
     const payload = parse(content) as TopicsPayload;
-    return (payload.topics ?? []).map(normalizeTopicRecord);
-  } catch {
-    return [];
+    if (!Array.isArray(payload.topics)) {
+      throw new Error("Expected topics.yaml to contain a topics array");
+    }
+
+    cachedTopicCatalog = payload.topics.map(normalizeTopicRecord);
+    return cachedTopicCatalog;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to load topic catalog from data/topics.yaml: ${message}`);
   }
 }
 
