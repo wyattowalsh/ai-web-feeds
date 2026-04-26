@@ -18,6 +18,7 @@ import {
   SITE_URL,
 } from "@/lib/seo";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
+import { cn } from "@/lib/utils";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -139,7 +140,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${bodyFont.variable} ${displayFont.variable}`}
+      className={cn(bodyFont.variable, displayFont.variable, "font-sans")}
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col font-sans antialiased">

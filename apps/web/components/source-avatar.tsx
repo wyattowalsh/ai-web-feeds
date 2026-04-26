@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds";
 import { deriveSourceFaviconUrl, getSourceInitials } from "@/lib/source-favicon";
@@ -38,25 +39,18 @@ export function SourceAvatar({ source, className, imageClassName }: SourceAvatar
   });
 
   return (
-    <span
-      className={cn(
-        "relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-(--line) bg-(--surface-muted) text-[0.68rem] font-semibold text-(--brand-strong)",
-        className,
-      )}
-      aria-hidden="true"
-    >
+    <Avatar className={cn("size-9 rounded-lg after:rounded-lg", className)} aria-hidden="true">
       {faviconUrl && !failed ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <AvatarImage
           src={faviconUrl}
           alt=""
-          loading="lazy"
-          className={cn("size-full object-cover", imageClassName)}
+          className={cn("rounded-lg object-cover", imageClassName)}
           onError={() => setFailed(true)}
         />
-      ) : (
-        getSourceInitials(source.title)
-      )}
-    </span>
+      ) : null}
+      <AvatarFallback className="rounded-lg bg-muted text-[0.68rem] font-semibold text-primary">
+        {getSourceInitials(source.title)}
+      </AvatarFallback>
+    </Avatar>
   );
 }
