@@ -209,8 +209,74 @@ describe("GET /api/feeds/posts/aggregate", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(loadAggregatedFeedPostsByIdsMock).toHaveBeenCalledWith(["feed-1"], 24, 8, {
+    expect(loadAggregatedFeedPostsByIdsMock).toHaveBeenCalledWith(["feed-1"], 48, 8, {
       forceRefresh: false,
     });
+  });
+
+  it("filters and sorts POST bootstrap requests without relying on long query strings", async () => {
+    loadAggregatedFeedPostsByIdsMock.mockResolvedValue({
+      posts: [
+        {
+          id: "post-1",
+          feedId: "feed-1",
+          feedTitle: "Agent Systems Daily",
+          sourceUrl: "https://example.com/feed-1",
+          title: "Other topic",
+          link: "https://example.com/post-1",
+          summary: "No keyword",
+          author: "Alice",
+          categories: ["ops"],
+          publishedAt: "2026-04-05T12:00:00.000Z",
+        },
+        {
+          id: "post-2",
+          feedId: "feed-2",
+          feedTitle: "Reader Signals",
+          sourceUrl: "https://example.com/feed-2",
+          title: "Agent reader update",
+          link: "https://example.com/post-2",
+          summary: "Agent workflow",
+          author: "Bob",
+          categories: ["agents"],
+          publishedAt: "2026-04-03T12:00:00.000Z",
+        },
+      ],
+      feeds: [],
+      fetchedAt: "2026-04-06T12:00:00.000Z",
+      expiresAt: "2026-04-06T12:10:00.000Z",
+      cacheState: "live",
+      totalSources: 2,
+      successfulSources: 2,
+      failedSources: 0,
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/feeds/posts/aggregate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feedIds: ["feed-1", "feed-2"],
+          limit: 1,
+          perFeedLimit: 3,
+          refresh: true,
+          q: "agents",
+          sort: "oldest",
+        }),
+      }),
+    );
+
+    expect(loadAggregatedFeedPostsByIdsMock).toHaveBeenCalledWith(["feed-1", "feed-2"], 48, 3, {
+      forceRefresh: true,
+    });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        applied_query: "agents",
+        applied_sort: "oldest",
+        total_matched_posts: 1,
+        posts: [expect.objectContaining({ id: "post-2" })],
+      }),
+    );
   });
 });

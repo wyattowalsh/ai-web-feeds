@@ -102,9 +102,11 @@ The web app prefers `data/articles.generated.json` for article browse/search.
 
 - If the corpus exists, `/`, `/api/articles`, article search, and
   autocomplete article suggestions use it.
-- If the corpus is missing or empty, the feeds workspace renders a
-  dedicated corpus-unavailable state.
-- Live fetches from `/api/feeds/posts/aggregate` remain a freshness overlay only.
+- If the corpus is missing or empty, the feeds workspace uses
+  `/api/feeds/posts/aggregate` as a live fallback across the current source
+  slice.
+- Live fetches from `/api/feeds/posts/aggregate` also remain available as a
+  freshness overlay when a generated corpus is present.
 
 <Callout type="info" title="Practical rule">
   Edit YAML when you are changing the catalog itself. Use the runtime database when you are inspecting operational behavior or populating `feed_entries`. Use the generated corpus when you are validating the reader/search experience that ships in the standalone web app.

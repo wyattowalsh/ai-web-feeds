@@ -81,6 +81,8 @@ const DEFAULT_ARTICLE_STATE: ReaderArticleState = {
 };
 const DEFAULT_PAGE_LIMIT = 24;
 const LIVE_REFRESH_SAMPLE_FEED_LIMIT = 18;
+const LIVE_BOOTSTRAP_POST_LIMIT = 48;
+const LIVE_BOOTSTRAP_PER_FEED_LIMIT = 3;
 
 type ReaderDraftState = {
   query: string;
@@ -666,6 +668,7 @@ function ReaderWorkspace({
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
   const firstLoadRef = useRef(true);
+  const liveBootstrapAttemptedKeyRef = useRef<string | null>(null);
   const searchParamsString = searchParams.toString();
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
@@ -893,11 +896,12 @@ function ReaderWorkspace({
   };
 
   const refreshLatest = useCallback(async () => {
+    const shouldFetchAllMatchingSources = browse.corpus.is_empty && browse.items.length === 0;
     const feedIds =
       currentState.feedIds.length > 0
         ? currentState.feedIds
         : candidateFeeds
-            .slice(0, LIVE_REFRESH_SAMPLE_FEED_LIMIT)
+            .slice(0, shouldFetchAllMatchingSources ? undefined : LIVE_REFRESH_SAMPLE_FEED_LIMIT)
             .map((feed) => feed.id ?? "")
             .filter(Boolean);
 
@@ -906,20 +910,22 @@ function ReaderWorkspace({
       return;
     }
 
-    const params = new URLSearchParams();
-    for (const feedId of feedIds) {
-      params.append("feed", feedId);
-    }
-    params.set("stream", "sample");
-    params.set("limit", "48");
-    params.set("refresh", "true");
-
     setRefreshing(true);
     setRefreshError(null);
 
     try {
-      const response = await fetch(`/api/feeds/posts/aggregate?${params.toString()}`, {
+      const response = await fetch("/api/feeds/posts/aggregate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         cache: "no-store",
+        body: JSON.stringify({
+          feedIds,
+          limit: LIVE_BOOTSTRAP_POST_LIMIT,
+          perFeedLimit: LIVE_BOOTSTRAP_PER_FEED_LIMIT,
+          refresh: true,
+          q: currentState.query || null,
+          sort: currentState.sort,
+        }),
       });
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -967,6 +973,8 @@ function ReaderWorkspace({
     browse.items.length,
     candidateFeeds,
     currentState.feedIds,
+    currentState.query,
+    currentState.sort,
     mergedArticles,
   ]);
 
@@ -1028,6 +1036,18 @@ function ReaderWorkspace({
     () => buildCurrentFilterChips(currentState, feedLookup),
     [currentState, feedLookup],
   );
+  const liveBootstrapKey = useMemo(
+    () =>
+      [
+        currentState.query,
+        currentState.sourceType ?? "",
+        currentState.topics.join(","),
+        currentState.verified === null ? "" : String(currentState.verified),
+        currentState.feedIds.join(","),
+        currentState.sort,
+      ].join("|"),
+    [currentState],
+  );
   const draftState: ReaderDraftState = useMemo(
     () => ({
       query: queryDraft,
@@ -1044,22 +1064,32 @@ function ReaderWorkspace({
   const snapshotCards = [
     {
       label: "Snapshot",
-      value: snapshotTimestamp ? formatSnapshotTimestamp(snapshotTimestamp) : "Unavailable",
-      note: browse.corpus.generated_at
-        ? "Precomputed article snapshot loaded at first render"
-        : "Reader is waiting for a prepared snapshot",
+      value: corpusEmpty
+        ? "Live mode"
+        : snapshotTimestamp
+          ? formatSnapshotTimestamp(snapshotTimestamp)
+          : "Unavailable",
+      note: corpusEmpty
+        ? "Recent posts loaded through the web app server"
+        : browse.corpus.generated_at
+          ? "Precomputed article snapshot loaded at first render"
+          : "Reader is waiting for a prepared snapshot",
       icon: Clock3,
     },
     {
       label: "Articles",
       value: String(browse.corpus.article_count),
-      note: "Base snapshot rows ready for reading",
+      note: corpusEmpty
+        ? "Generated corpus rows; live posts appear in the stream"
+        : "Base snapshot rows ready for reading",
       icon: Newspaper,
     },
     {
       label: "Sources",
-      value: String(stats.active),
-      note: `${stats.verified} verified sources currently tracked`,
+      value: String(corpusEmpty ? candidateFeeds.length : stats.active),
+      note: corpusEmpty
+        ? `${candidateFeeds.length} matching sources checked live`
+        : `${stats.verified} verified sources currently tracked`,
       icon: Filter,
     },
     {
@@ -1067,11 +1097,26 @@ function ReaderWorkspace({
       value: String(overlayArticles.length),
       note:
         overlayArticles.length > 0
-          ? "Newer posts layered on top of the snapshot"
+          ? corpusEmpty
+            ? "Recent posts fetched from matching feeds"
+            : "Newer posts layered on top of the snapshot"
           : "No live refresh applied yet",
       icon: RefreshCcw,
     },
   ];
+
+  useEffect(() => {
+    if (!corpusEmpty || overlayArticles.length > 0 || refreshing) {
+      return;
+    }
+
+    if (liveBootstrapAttemptedKeyRef.current === liveBootstrapKey) {
+      return;
+    }
+
+    liveBootstrapAttemptedKeyRef.current = liveBootstrapKey;
+    void refreshLatest();
+  }, [corpusEmpty, liveBootstrapKey, overlayArticles.length, refreshLatest, refreshing]);
 
   const applyDrafts = useCallback(() => {
     updateUrl({
@@ -1143,12 +1188,14 @@ function ReaderWorkspace({
           <div className="space-y-2">
             <p className="metric-label">AI Web Feeds</p>
             <h1 className="text-3xl font-semibold tracking-tight text-(--ink)">
-              Reader snapshot unavailable
+              {refreshError ? "Live posts unavailable" : "Loading live posts"}
             </h1>
             <p className="small-note max-w-3xl">
               {refreshError
-                ? `${refreshError} You can still browse sources or try a live refresh.`
-                : "This deployment does not have a prepared article snapshot yet. You can still browse the source catalog and spot-check live posts without changing the route contract."}
+                ? `${refreshError} You can still browse sources or retry the live fetch.`
+                : `Checking ${candidateFeeds.length} matching source${
+                    candidateFeeds.length === 1 ? "" : "s"
+                  } through the web app server so the browser does not have to fetch RSS origins directly.`}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1171,16 +1218,16 @@ function ReaderWorkspace({
 
         <EmptyState
           icon={Newspaper}
-          title="The reader needs a prepared snapshot"
+          title={refreshError ? "Could not fetch live posts" : "Fetching recent posts"}
           description={
             refreshError
-              ? `${refreshError} Browse sources or try a manual refresh.`
-              : "Browse the catalog now, or use a live refresh to check recent posts while the snapshot catches up."
+              ? "The reader can still open the source catalog while live feed fetching recovers."
+              : "The server is fetching recent RSS and Atom entries across the current source slice."
           }
           tips={[
-            "The main reader is designed to open with a precomputed article snapshot already in place.",
-            "Manual refresh overlays live posts on top of the base reader without changing your filters.",
-            "Deployment and corpus preparation details live in the docs, not in the main reading flow.",
+            "Browsers usually cannot fetch arbitrary RSS feeds directly because feed origins often block cross-origin requests.",
+            "The web app fetches through its own API route, then returns normalized posts to the client.",
+            "A generated article snapshot is still useful for speed and history, but it is not required for a live first read.",
           ]}
           className="text-left"
         />
@@ -1197,8 +1244,8 @@ function ReaderWorkspace({
             Latest AI posts from across the open web
           </h1>
           <p className="small-note max-w-3xl">
-            Open the reader first, narrow the snapshot when you need focus, and keep local reading
-            state in this browser without turning first load into a live-bootstrap event.
+            Open the reader first, narrow the current source slice when you need focus, and keep
+            local reading state in this browser.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -1247,7 +1294,7 @@ function ReaderWorkspace({
             <div className="space-y-2">
               <p className="metric-label">Reader controls</p>
               <p className="small-note">
-                Refine the prepared snapshot, then apply the exact slice you want to read.
+                Refine the current source slice, then apply the exact set of posts you want to read.
               </p>
             </div>
             <form
@@ -1567,8 +1614,8 @@ function ReaderWorkspace({
                   {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
                 </h2>
                 <p className="small-note">
-                  {filterSummary}. Refresh latest checks live feeds without replacing the base
-                  snapshot.
+                  {filterSummary}. Refresh latest checks live feeds{" "}
+                  {corpusEmpty ? "for this reader." : "without replacing the base snapshot."}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

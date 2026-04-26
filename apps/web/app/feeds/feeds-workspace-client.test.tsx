@@ -348,7 +348,84 @@ describe("FeedsWorkspaceClient", () => {
     });
   });
 
-  it("shows a dedicated corpus unavailable state when the article load fails", async () => {
+  it("loads live posts from all matching feeds when the article snapshot is missing", async () => {
+    currentSearchParams = new URLSearchParams();
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith("/api/feeds/posts/aggregate")) {
+        return makeResponse({
+          posts: [
+            {
+              id: "live-1",
+              feedId: "feed-2",
+              feedTitle: "ML Digest",
+              title: "Live model update",
+              link: "https://example.com/live-1",
+              summary: "Fetched from the live feed",
+              sourceUrl: "https://example.com/feed-2",
+              author: "Mina",
+              publishedAt: "2026-04-06T12:00:00.000Z",
+              categories: ["ml"],
+            },
+          ],
+          fetchedAt: "2026-04-13T12:00:00.000Z",
+        });
+      }
+
+      return makeResponse({}, false, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={{
+          ...initialState,
+          query: "",
+          feedIds: [],
+          sourceType: null,
+          topics: [],
+          verified: null,
+        }}
+        initialBrowse={null}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Loading live posts" })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Live model update")).toBeInTheDocument();
+    });
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/feeds/posts/aggregate");
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          feedIds: ["feed-1", "feed-2"],
+          limit: 48,
+          perFeedLimit: 3,
+          refresh: true,
+          q: null,
+          sort: "latest",
+        }),
+      }),
+    );
+    expect(screen.getByText("Live mode")).toBeInTheDocument();
+  });
+
+  it("shows a live fetch recovery state when the snapshot is missing and feeds fail", async () => {
     const fetchMock = vi.fn(async () => makeResponse({}, false, 503));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -370,10 +447,10 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Reader snapshot unavailable" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("The reader needs a prepared snapshot")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Live posts unavailable" })).toBeInTheDocument();
+    });
+    expect(screen.getByText("Could not fetch live posts")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",

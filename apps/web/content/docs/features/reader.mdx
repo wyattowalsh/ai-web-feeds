@@ -81,20 +81,23 @@ The **Refresh latest** action fetches recent posts for the current source list a
 
 ## When the Article Library Is Missing
 
-If `data/articles.generated.json` is missing or empty, Feeds shows an explicit unavailable state instead of silently falling back to a partial live sample.
+If `data/articles.generated.json` is missing or empty, the reader asks the web
+app server to fetch recent posts from the current source slice through
+`/api/feeds/posts/aggregate`. The browser does not fetch arbitrary RSS origins
+directly; the server route handles feed requests, normalization, caching, and
+partial failures.
 
-- the base list still comes from the generated corpus
+- the generated corpus remains the preferred fast path when available
+- the live fallback checks all matching sources for the current slice
 - refresh requests use `/api/feeds/posts/aggregate`
 - live results are deduped by article identity before being merged
 - new live-only rows are marked with a freshness badge
-- refresh failures surface as non-blocking errors and preserve the base corpus list
+- refresh failures surface as non-blocking errors and keep the catalog available
 
 ## Empty states
 
-If `data/articles.generated.json` is missing or empty, the reader shows a
-dedicated product-facing snapshot-unavailable state instead of silently
-sampling live feeds or showing operator-oriented CLI guidance in the main
-surface.
+If both the generated corpus and live feed fallback are unavailable, the reader
+shows a compact recovery state with source browsing and retry actions.
 
 ## Related
 

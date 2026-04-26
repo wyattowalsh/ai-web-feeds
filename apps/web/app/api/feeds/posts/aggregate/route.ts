@@ -77,6 +77,8 @@ const POSTHandler = async (request: Request) => {
     limit?: number;
     perFeedLimit?: number;
     refresh?: boolean;
+    q?: string | null;
+    sort?: string | null;
   } | null;
 
   if (!Array.isArray(body?.feedIds) || body.feedIds.length === 0) {
@@ -85,17 +87,36 @@ const POSTHandler = async (request: Request) => {
 
   const limit = clampNumber(body.limit, 1, 48, 24);
   const perFeedLimit = clampNumber(body.perFeedLimit, 1, 8, 2);
+  const totalLimit = Math.max(limit, body.feedIds.length * perFeedLimit, 48);
+  const query = normalizeSearchQuery(body.q ?? null);
+  const sort = parseAggregateSort(body.sort ?? null);
 
   try {
-    const payload = await loadAggregatedFeedPostsByIds(body.feedIds, limit, perFeedLimit, {
+    const payload = await loadAggregatedFeedPostsByIds(body.feedIds, totalLimit, perFeedLimit, {
       forceRefresh: body.refresh === true,
     });
+    const filteredPosts = sortAggregatePosts(
+      query ? payload.posts.filter((post) => postMatchesQuery(post, query)) : payload.posts,
+      sort,
+    );
 
-    return NextResponse.json(payload, {
-      headers: {
-        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600",
+    return NextResponse.json(
+      {
+        ...payload,
+        posts: filteredPosts.slice(0, limit),
+        cursor: 0,
+        next_cursor: limit < filteredPosts.length ? limit : null,
+        total_matched_posts: filteredPosts.length,
+        applied_query: query,
+        applied_sort: sort,
+        applied_stream: "sample",
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600",
+        },
+      },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load aggregated feed posts";
     return NextResponse.json({ error: message }, { status: 502 });

@@ -254,7 +254,7 @@ async function resolveFeedUrl(feed: FeedSource, options: LoadFeedOptions = {}): 
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.7",
         "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
       },
-      next: { revalidate: 1800 },
+      cache: "no-store",
     },
     options.discoveryMode === "fast" ? 2500 : 8000,
   );
@@ -293,7 +293,7 @@ async function fetchFeedXml(feedUrl: string, timeoutMs = 8000): Promise<string> 
         Accept: "application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5",
         "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
       },
-      next: { revalidate: 1800 },
+      cache: "no-store",
     },
     timeoutMs,
   );
@@ -474,7 +474,7 @@ async function probeCommonFeedPaths(sourceUrl: string): Promise<string | null> {
             "application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5",
           "User-Agent": "ai-web-feeds/0.1.0 (+https://github.com/wyattowalsh/ai-web-feeds)",
         },
-        next: { revalidate: 1800 },
+        cache: "no-store",
       });
 
       if (!response.ok) {
