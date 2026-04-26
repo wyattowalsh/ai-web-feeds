@@ -27,6 +27,22 @@ YELLOW := \033[0;33m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
+PYTHON_TYPECHECK_TARGETS := \
+	apps/cli/ai_web_feeds/cli/commands/enrich.py \
+	apps/cli/ai_web_feeds/cli/commands/recommend.py \
+	apps/cli/ai_web_feeds/cli/commands/search.py \
+	apps/cli/ai_web_feeds/cli/commands/stats.py \
+	apps/cli/ai_web_feeds/cli/commands/validate.py \
+	packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+	packages/ai_web_feeds/src/ai_web_feeds/load.py \
+	packages/ai_web_feeds/src/ai_web_feeds/models.py \
+	packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+	packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+	packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+	packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+	packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+	packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
+
 # ============================================================================
 # Package Manager Enforcement
 # ============================================================================
@@ -104,9 +120,9 @@ format-check: check-uv ## Check code formatting without making changes
 	@echo "$(BLUE)Checking code format with uv...$(NC)"
 	uv run ruff format --check .
 
-type-check: check-uv ## Run mypy type checker
-	@echo "$(BLUE)Running mypy type checker via uv...$(NC)"
-	uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds
+type-check: check-uv ## Run ty type checker
+	@echo "$(BLUE)Running ty type checker via uv...$(NC)"
+	uv run ty check $(PYTHON_TYPECHECK_TARGETS)
 	@echo "$(GREEN)✓ Type checking complete!$(NC)"
 
 test: check-uv ## Run tests with pytest

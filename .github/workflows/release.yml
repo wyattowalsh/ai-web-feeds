@@ -41,7 +41,21 @@ jobs:
         run: |
           uv run ruff check .
           uv run ruff format --check .
-          uv run mypy packages/ai_web_feeds/src apps/cli/ai_web_feeds
+          uv run ty check \
+            apps/cli/ai_web_feeds/cli/commands/enrich.py \
+            apps/cli/ai_web_feeds/cli/commands/recommend.py \
+            apps/cli/ai_web_feeds/cli/commands/search.py \
+            apps/cli/ai_web_feeds/cli/commands/stats.py \
+            apps/cli/ai_web_feeds/cli/commands/validate.py \
+            packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
+            packages/ai_web_feeds/src/ai_web_feeds/load.py \
+            packages/ai_web_feeds/src/ai_web_feeds/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/recommendations.py \
+            packages/ai_web_feeds/src/ai_web_feeds/utils.py \
+            packages/ai_web_feeds/src/ai_web_feeds/web_api.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
+            packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
           uv run pytest --cov
 
   build-and-publish:

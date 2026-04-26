@@ -11,7 +11,7 @@ SQLAlchemy models for:
 """
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import JSON, Column, Index
@@ -28,7 +28,7 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-class ChartType(str, Enum):
+class ChartType(StrEnum):
     """Supported chart types."""
 
     LINE = "line"
@@ -39,7 +39,7 @@ class ChartType(str, Enum):
     HEATMAP = "heatmap"
 
 
-class DataSource(str, Enum):
+class DataSource(StrEnum):
     """Data source types."""
 
     FEEDS = "feeds"
@@ -50,7 +50,7 @@ class DataSource(str, Enum):
     QUALITY = "quality"
 
 
-class WidgetType(str, Enum):
+class WidgetType(StrEnum):
     """Dashboard widget types."""
 
     CHART = "chart"
@@ -59,7 +59,7 @@ class WidgetType(str, Enum):
     TOPIC_CLOUD = "topic_cloud"
 
 
-class ExportFormat(str, Enum):
+class ExportFormat(StrEnum):
     """Export file formats."""
 
     CSV = "csv"
@@ -67,7 +67,7 @@ class ExportFormat(str, Enum):
     PARQUET = "parquet"
 
 
-class ExportStatus(str, Enum):
+class ExportStatus(StrEnum):
     """Export job status."""
 
     PENDING = "pending"
@@ -76,7 +76,7 @@ class ExportStatus(str, Enum):
     FAILED = "failed"
 
 
-class ForecastModelType(str, Enum):
+class ForecastModelType(StrEnum):
     """Forecasting model types."""
 
     PROPHET = "prophet"

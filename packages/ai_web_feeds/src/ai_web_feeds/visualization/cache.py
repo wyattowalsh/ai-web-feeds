@@ -239,7 +239,8 @@ class CacheLayer:
 
                 if keys:
                     redis_keys = list(cast(list[str], keys))
-                    count = self.redis_client.delete(*redis_keys)
+                    deleted_count = self.redis_client.delete(*redis_keys)
+                    count = deleted_count if isinstance(deleted_count, int) else 0
                     logger.info(f"Invalidated {count} cache entries from Redis")
             except RedisError as e:
                 logger.error(f"Redis invalidation error: {e}")

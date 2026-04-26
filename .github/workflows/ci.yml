@@ -82,9 +82,14 @@ jobs:
             packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py \
             packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py
 
-      - name: Run mypy smoke
+      - name: Run ty smoke
         run: |
-          uv run pre-commit run mypy --files \
+          uv run ty check \
+            apps/cli/ai_web_feeds/cli/commands/enrich.py \
+            apps/cli/ai_web_feeds/cli/commands/recommend.py \
+            apps/cli/ai_web_feeds/cli/commands/search.py \
+            apps/cli/ai_web_feeds/cli/commands/stats.py \
+            apps/cli/ai_web_feeds/cli/commands/validate.py \
             packages/ai_web_feeds/src/ai_web_feeds/analytics.py \
             packages/ai_web_feeds/src/ai_web_feeds/load.py \
             packages/ai_web_feeds/src/ai_web_feeds/models.py \

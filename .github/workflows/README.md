@@ -39,7 +39,7 @@ ______________________________________________________________________
 1. **enforce-type-checking**: Validates type hints
 
    - CLI: `uv run typecheck`
-   - Standard: MyPy strict mode
+   - Standard: ty smoke type surface
 
 1. **enforce-testing**: Verifies test coverage ≥90%
 
@@ -80,10 +80,9 @@ ______________________________________________________________________
    - CLI: `uv run ruff check .` + `uv run ruff format --check .`
    - Outputs: GitHub annotations, JSON/text reports
 
-1. **type-check**: MyPy type validation
+1. **type-check**: ty smoke type validation
 
-   - CLI: `uv run mypy`
-   - Outputs: JUnit XML, HTML reports
+   - CLI: `uv run ty check <smoke targets>`
 
 1. **security-check**: Bandit security scanning
 
@@ -302,7 +301,7 @@ ______________________________________________________________________
 
 1. **Code Formatting**: Ruff format (100 char lines)
 1. **Linting**: Ruff with ANN, D, E, F, I, N, UP, etc.
-1. **Type Hints**: MyPy strict mode, all functions typed
+1. **Type Hints**: ty smoke surface for active Python quality gates
 1. **Test Coverage**: ≥90% required
 1. **Data Validation**: JSON Schema compliance
 1. **Security**: Bandit scanning
@@ -345,8 +344,8 @@ uv run aiwebfeeds validate all
 Install pre-commit hooks to run checks automatically:
 
 ```bash
-uv pip install pre-commit
-pre-commit install
+uv sync --extra dev
+uv run pre-commit install
 ```
 
 ______________________________________________________________________
@@ -356,7 +355,7 @@ ______________________________________________________________________
 Workflows generate artifacts for review:
 
 - **Ruff Reports**: JSON and text linting reports
-- **MyPy Reports**: JUnit XML and HTML type reports
+- **Type Check Output**: ty smoke diagnostics
 - **Bandit Reports**: JSON and text security reports
 - **Test Reports**: JUnit XML and pytest reports
 - **Coverage Reports**: HTML coverage reports

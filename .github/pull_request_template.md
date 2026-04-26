@@ -54,7 +54,7 @@ uv run ruff check .
 uv run ruff format --check .
 
 # Type checking
-uv run mypy .
+make type-check
 
 # Tests with coverage
 uv run aiwebfeeds test --coverage
@@ -114,7 +114,7 @@ uv run aiwebfeeds validate --feeds "your-feed-url"
 
 - [ ] Ruff linting passes (`uv run ruff check .`)
 - [ ] Ruff formatting passes (`uv run ruff format --check .`)
-- [ ] MyPy type checking passes (`uv run mypy .`)
+- [ ] ty smoke type checking passes (`make type-check`)
 - [ ] All tests pass with ≥90% coverage (`uv run aiwebfeeds test --coverage`)
 - [ ] No new linting warnings introduced
 - [ ] My code follows the project's style guidelines

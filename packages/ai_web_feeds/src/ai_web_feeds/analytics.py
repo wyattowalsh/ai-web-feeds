@@ -18,7 +18,7 @@ from io import StringIO
 from typing import Any
 
 from loguru import logger
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import (
@@ -157,7 +157,7 @@ def get_trending_topics(
 
     # Query TopicStats for the latest snapshot date
     latest_snapshot = session.exec(
-        select(TopicStats.snapshot_date).order_by(TopicStats.snapshot_date.desc()).limit(1)
+        select(TopicStats.snapshot_date).order_by(col(TopicStats.snapshot_date).desc()).limit(1)
     ).first()
 
     if not latest_snapshot:
@@ -168,7 +168,7 @@ def get_trending_topics(
     query = (
         select(TopicStats)
         .where(TopicStats.snapshot_date == latest_snapshot)
-        .order_by(TopicStats.validation_frequency.desc())
+        .order_by(col(TopicStats.validation_frequency).desc())
         .limit(limit)
     )
 
@@ -243,8 +243,8 @@ def get_publication_velocity(
 
     # Find most/least active feeds
     if feed_counts:
-        most_active_feed_id = max(feed_counts, key=feed_counts.get)
-        least_active_feed_id = min(feed_counts, key=feed_counts.get)
+        most_active_feed_id = max(feed_counts, key=lambda feed_id: feed_counts[feed_id])
+        least_active_feed_id = min(feed_counts, key=lambda feed_id: feed_counts[feed_id])
 
         most_active_feed = session.get(FeedSource, most_active_feed_id)
         least_active_feed = session.get(FeedSource, least_active_feed_id)

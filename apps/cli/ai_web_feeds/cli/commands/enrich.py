@@ -1,6 +1,7 @@
 """ai_web_feeds.cli.commands.enrich -- Enrich feeds with metadata"""
 
 import asyncio
+from datetime import UTC, datetime
 from pathlib import Path
 
 import typer
@@ -68,14 +69,11 @@ def enrich_all(
             logger.error(f"✗ Failed to enrich {source.get('id', 'unknown')}: {e}")
             enriched_sources.append(source)  # Keep original
 
-    # Update document metadata
-    from datetime import datetime
-
     enriched_data = {
         "schema_version": "feeds-enriched-1.0.0",
         "document_meta": {
             **feeds_data.get("document_meta", {}),
-            "enriched_at": datetime.utcnow().isoformat(),
+            "enriched_at": datetime.now(UTC).isoformat(),
             "total_sources": len(enriched_sources),
         },
         "sources": enriched_sources,

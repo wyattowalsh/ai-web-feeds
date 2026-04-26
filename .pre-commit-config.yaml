@@ -1,5 +1,5 @@
 # Pre-commit hooks for AI Web Feeds project
-# Install with: uv pip install pre-commit && pre-commit install
+# Install with: uv sync --extra dev && uv run pre-commit install
 # Run manually: pre-commit run --all-files
 # Docs: https://aiwebfeeds.com/docs/contributing/development#pre-commit-hooks
 
@@ -21,38 +21,6 @@ repos:
       # Run the formatter
   - id: ruff-format
     types_or: [python, pyi, jupyter]
-
-  # ============================================================================
-  # Python - MyPy (static type checking)
-  # ============================================================================
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.20.1
-  hooks:
-  - id: mypy
-    name: mypy (packages)
-    files: ^packages/
-    exclude: ^tests/
-    additional_dependencies:
-    - types-PyYAML
-    - types-redis
-    - types-requests
-    - types-redis
-    - types-croniter
-    - sqlalchemy[mypy]
-    - sqlmodel
-    - pydantic>=2.0
-    - pydantic-settings>=2.11.0
-    args: [--config-file=pyproject.toml, --strict]
-  - id: mypy
-    name: mypy (apps/cli)
-    files: ^apps/cli/
-    exclude: ^tests/
-    additional_dependencies:
-    - typer
-    - rich
-    - sqlmodel
-    - types-PyYAML
-    args: [--config-file=apps/cli/pyproject.toml, --ignore-missing-imports]
 
   # ============================================================================
   # Python - Security checks
@@ -139,7 +107,7 @@ repos:
   rev: v2.4.2
   hooks:
   - id: codespell
-    args: [--ignore-words-list=crate,nd,sav,ba,als,datas,socio,ser,oint,asent,lod,mape,afterAll]
+    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent, lod, mape, afterAll]
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================
@@ -200,6 +168,30 @@ repos:
   # ============================================================================
 - repo: local
   hooks:
+    # Python type checking
+  - id: ty-smoke
+    name: ty (python smoke)
+    entry: >-
+      bash -lc 'uv run ty check
+      apps/cli/ai_web_feeds/cli/commands/enrich.py
+      apps/cli/ai_web_feeds/cli/commands/recommend.py
+      apps/cli/ai_web_feeds/cli/commands/search.py
+      apps/cli/ai_web_feeds/cli/commands/stats.py
+      apps/cli/ai_web_feeds/cli/commands/validate.py
+      packages/ai_web_feeds/src/ai_web_feeds/analytics.py
+      packages/ai_web_feeds/src/ai_web_feeds/load.py
+      packages/ai_web_feeds/src/ai_web_feeds/models.py
+      packages/ai_web_feeds/src/ai_web_feeds/recommendations.py
+      packages/ai_web_feeds/src/ai_web_feeds/utils.py
+      packages/ai_web_feeds/src/ai_web_feeds/web_api.py
+      packages/ai_web_feeds/src/ai_web_feeds/visualization/cache.py
+      packages/ai_web_feeds/src/ai_web_feeds/visualization/models.py
+      packages/ai_web_feeds/src/ai_web_feeds/visualization/validators.py'
+    language: system
+    pass_filenames: false
+    always_run: false
+    files: ^(apps/cli/ai_web_feeds/cli/commands/(enrich|recommend|search|stats|validate)\.py|packages/ai_web_feeds/src/ai_web_feeds/(analytics|load|models|recommendations|utils|web_api)\.py|packages/ai_web_feeds/src/ai_web_feeds/visualization/(cache|models|validators)\.py)$
+
     # Python tests
   - id: pytest
     name: pytest (packages smoke)

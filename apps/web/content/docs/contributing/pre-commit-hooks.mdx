@@ -57,16 +57,16 @@ uv run ruff check --fix .        # Lint with auto-fix
 uv run ruff format .             # Format
 ```
 
-### Python - MyPy (Type Checking)
+### Python - ty (Type Checking)
 
 **Static type checking for Python**
 
 ```yaml
-- repo: https://github.com/pre-commit/mirrors-mypy
+- repo: local
   hooks:
-    - id: mypy
-      name: mypy (packages)
-      files: ^packages/
+    - id: ty-smoke
+      name: ty (python smoke)
+      entry: uv run ty check ...
 ```
 
 **Checks:**
@@ -79,8 +79,8 @@ uv run ruff format .             # Format
 **Manual run:**
 
 ```bash
-cd packages/ai_web_feeds && uv run mypy src/
-cd apps/cli && uv run mypy .
+make type-check
+uv run pre-commit run ty-smoke --all-files
 ```
 
 ### Python - Bandit (Security)
@@ -206,7 +206,7 @@ mdformat README.md
 - repo: https://github.com/codespell-project/codespell
   hooks:
     - id: codespell
-      args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio]
+      args: [--ignore-words-list=<project-accepted-words>]
 ```
 
 **Manual run:**
@@ -387,7 +387,7 @@ Run specific hook:
 
 ```bash
 uv run pre-commit run ruff --all-files
-uv run pre-commit run mypy --all-files
+uv run pre-commit run ty-smoke --all-files
 uv run pre-commit run prettier --all-files
 ```
 
@@ -419,7 +419,8 @@ SKIP=pytest git commit -m "message"
 
 ### pyproject.toml
 
-Ruff, MyPy, Pytest, and Coverage are configured in `pyproject.toml`:
+Ruff, ty, Pytest, and Coverage are configured in `pyproject.toml` and the local
+pre-commit hook:
 
 ```toml
 [tool.ruff]
@@ -428,12 +429,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "ANN", "S", "B", ...]
-ignore = ["ANN101", "ANN102", "S101", ...]
-
-[tool.mypy]
-python_version = "3.13"
-strict = true
-warn_return_any = true
+ignore = ["ANN401", "S101", ...]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -500,7 +496,7 @@ uv run pre-commit install-hooks
 uv run pre-commit run <hook-id> --all-files --verbose
 
 # Example
-uv run pre-commit run mypy --all-files --verbose
+uv run pre-commit run ty-smoke --all-files --verbose
 ```
 
 ### Update Hook Dependencies
@@ -604,7 +600,7 @@ Add local hooks for project-specific validations.
 - [Pre-commit Documentation](https://pre-commit.com/)
 - [Supported Hooks](https://pre-commit.com/hooks.html)
 - [Ruff Documentation](https://docs.astral.sh/ruff/)
-- [MyPy Documentation](https://mypy.readthedocs.io/)
+- [ty Documentation](https://docs.astral.sh/ty/)
 - [ESLint Rules](https://eslint.org/docs/rules/)
 - [Prettier Options](https://prettier.io/docs/en/options.html)
 

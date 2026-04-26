@@ -69,8 +69,6 @@ select = [
     "ASYNC",
 ]
 ignore = [
-    "ANN101",
-    "ANN102",
     "ANN401",
     "PLC0415",
     "PLR0912",

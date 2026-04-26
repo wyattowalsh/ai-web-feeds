@@ -107,7 +107,7 @@ def list_recommendations(
     session: DbSession,
 ) -> dict[str, Any]:
     """Return feed recommendations for a user or topic slice."""
-    seed_topics = [topic.strip() for topic in (topics or "").split(",") if topic.strip()]
+    seed_topics: list[str] = [topic.strip() for topic in (topics or "").split(",") if topic.strip()]
 
     if user_id and not seed_topics:
         recommendations = get_user_recommendations(session, user_id=user_id, limit=limit)

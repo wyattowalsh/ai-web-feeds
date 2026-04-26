@@ -12,11 +12,15 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff>=0.8.4",
-    "mypy>=1.13.0",
+    "hypothesis>=6.141.0",
     "pydantic-settings>=2.11.0",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-asyncio>=0.24.0",
+    "pytest-html>=4.1.1",
+    "pytest-mock>=3.15.1",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.6.1",
     "pre-commit>=4.0.1",
     "detect-secrets>=1.4.0",
     "bandit[toml]>=1.7.10",
@@ -24,6 +28,7 @@ dev = [
     "types-PyYAML>=6.0.12.20250915",
     "types-redis>=4.6.0.20241004",
     "types-requests>=2.32.4.20250913",
+    "ty>=0.0.32",
 ]
 
 [tool.uv.workspace]
@@ -135,8 +140,6 @@ select = [
 
 # Ignore specific rules that might be too strict
 ignore = [
-    "ANN101",  # Missing type annotation for self
-    "ANN102",  # Missing type annotation for cls
     "D100",    # Missing docstring in public module
     "D104",    # Missing docstring in public package
     "COM812",  # Trailing comma missing (conflicts with formatter)
@@ -328,6 +331,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+    "--ignore=tests/tests/e2e",
     "-ra",
     "-vv",
 ]
@@ -335,6 +339,10 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "e2e: marks tests as end-to-end browser workflows",
+    "benchmark: marks tests as performance benchmarks",
+    "network: marks tests as requiring network access",
+    "database: marks tests as requiring database access",
 ]
 
 # =======================

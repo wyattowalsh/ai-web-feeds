@@ -1,7 +1,7 @@
 """ai_web_feeds.models -- AIWebFeeds data models with SQLModel support"""
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -22,7 +22,7 @@ def _utc_now() -> datetime:
 # ============================================================================
 
 
-class SourceType(str, Enum):
+class SourceType(StrEnum):
     """Feed source types."""
 
     BLOG = "blog"
@@ -50,7 +50,7 @@ class SourceType(str, Enum):
     ARXIV = "arxiv"
 
 
-class FeedFormat(str, Enum):
+class FeedFormat(StrEnum):
     """Feed format types."""
 
     RSS = "rss"
@@ -59,7 +59,7 @@ class FeedFormat(str, Enum):
     UNKNOWN = "unknown"
 
 
-class CurationStatus(str, Enum):
+class CurationStatus(StrEnum):
     """Curation status values."""
 
     VERIFIED = "verified"
@@ -69,7 +69,7 @@ class CurationStatus(str, Enum):
     INACTIVE = "inactive"
 
 
-class Medium(str, Enum):
+class Medium(StrEnum):
     """Content medium types."""
 
     TEXT = "text"
@@ -482,6 +482,26 @@ class FeedValidationResult(SQLModel, table=True):
     # Timestamps
     created_at: datetime = SQLField(default_factory=_utc_now)
 
+    @property
+    def success(self) -> bool:
+        """Backward-compatible alias for legacy callers."""
+        return self.is_valid
+
+    @property
+    def status_code(self) -> int | None:
+        """Backward-compatible alias for legacy callers."""
+        return self.http_status
+
+    @property
+    def response_time(self) -> float | None:
+        """Backward-compatible alias for legacy callers."""
+        return self.response_time_ms
+
+    @property
+    def error_message(self) -> str | None:
+        """Backward-compatible alias for legacy callers."""
+        return self.warnings[0] if self.warnings else None
+
 
 class FeedAnalytics(SQLModel, table=True):
     """Analytics and metrics for feed sources.
@@ -819,7 +839,7 @@ class CollaborativeMatrix(SQLModel, table=True):
 # ============================================================================
 
 
-class PollStatus(str, Enum):
+class PollStatus(StrEnum):
     """Feed poll job status values."""
 
     PENDING = "pending"
@@ -828,7 +848,7 @@ class PollStatus(str, Enum):
     FAILURE = "failure"
 
 
-class NotificationType(str, Enum):
+class NotificationType(StrEnum):
     """Notification type values."""
 
     NEW_ARTICLE = "new_article"
@@ -837,7 +857,7 @@ class NotificationType(str, Enum):
     SYSTEM_ALERT = "system_alert"
 
 
-class DeliveryMethod(str, Enum):
+class DeliveryMethod(StrEnum):
     """Notification delivery method."""
 
     WEBSOCKET = "websocket"
@@ -845,7 +865,7 @@ class DeliveryMethod(str, Enum):
     IN_APP = "in_app"
 
 
-class NotificationFrequency(str, Enum):
+class NotificationFrequency(StrEnum):
     """Notification frequency preferences."""
 
     INSTANT = "instant"
@@ -855,7 +875,7 @@ class NotificationFrequency(str, Enum):
     OFF = "off"
 
 
-class ScheduleType(str, Enum):
+class ScheduleType(StrEnum):
     """Email digest schedule type."""
 
     DAILY = "daily"

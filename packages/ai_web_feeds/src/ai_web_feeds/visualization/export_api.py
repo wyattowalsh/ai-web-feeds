@@ -11,7 +11,7 @@ Implements Phase 8 (US6): T089-T098
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from io import StringIO
 from typing import Any
 
@@ -28,7 +28,7 @@ from ai_web_feeds.visualization.validators import validate_query_limit, validate
 router = APIRouter(prefix="/api/v1/export", tags=["export"])
 
 
-class ExportFormat(str, Enum):
+class ExportFormat(StrEnum):
     """Export format options."""
 
     JSON = "json"
