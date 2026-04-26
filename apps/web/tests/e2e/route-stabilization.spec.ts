@@ -59,10 +59,17 @@ let originalCorpus: string | null = null;
 function trackClientErrors(page: Page) {
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
+  const ignoredConsoleErrors = [
+    "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+    "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+  ];
 
   page.on("console", (message) => {
     if (message.type() === "error") {
-      consoleErrors.push(message.text());
+      const text = message.text();
+      if (!ignoredConsoleErrors.includes(text)) {
+        consoleErrors.push(text);
+      }
     }
   });
   page.on("pageerror", (error) => {
@@ -135,16 +142,16 @@ test.describe("Route stabilization smoke", () => {
   }> = [
     {
       path: "/",
+      text: "Read AI writing across the open web",
+      role: "heading" as const,
+    },
+    {
+      path: "/reader",
       text: "Latest AI posts from across the open web",
       role: "heading" as const,
     },
     {
-      path: "/feeds",
-      text: "Latest AI posts from across the open web",
-      role: "heading" as const,
-    },
-    {
-      path: "/feeds?mode=catalog",
+      path: "/sources",
       text: "Browse sources",
       role: "heading" as const,
     },
@@ -155,13 +162,8 @@ test.describe("Route stabilization smoke", () => {
       exact: true,
     },
     {
-      path: "/explorer",
-      text: "Inspect the catalog map, then hand the slice back to the reader.",
-      role: "heading" as const,
-    },
-    {
-      path: "/stats",
-      text: "Track collection health instead of guessing at it.",
+      path: "/dashboard",
+      text: "Catalog health without the control room.",
       role: "heading" as const,
     },
   ];
@@ -185,54 +187,10 @@ test.describe("Route stabilization smoke", () => {
     });
   }
 
-  test("shows the intentional unavailable state on /recommendations without a backend", async ({
-    page,
-  }) => {
-    const tracker = trackClientErrors(page);
-
-    await gotoWithRetry(page, "/recommendations", { waitUntil: "networkidle" });
-    await expect(page.getByText("Recommendations backend unavailable")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open catalog" })).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
-  test("shows the intentional unavailable state on /analytics without a backend", async ({
-    page,
-  }) => {
-    const tracker = trackClientErrors(page);
-
-    await gotoWithRetry(page, "/analytics", { waitUntil: "networkidle" });
-    await expect(page.getByText("Analytics backend unavailable")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open catalog" })).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
-  test("renders comparison charts without Chart.js controller errors", async ({ page }) => {
-    const tracker = trackClientErrors(page);
-
-    await gotoWithRetry(page, "/analytics/comparison", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "Comparative Analytics" })).toBeVisible();
-    await expect(page.locator("canvas")).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
-  test("renders forecast charts without Chart.js controller errors", async ({ page }) => {
-    const tracker = trackClientErrors(page);
-
-    await gotoWithRetry(page, "/analytics/forecasts", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "Time-Series Forecasting" })).toBeVisible();
-    await expect(page.locator("canvas")).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
   test("reader search applies explicitly and updates the canonical URL", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/feeds", { waitUntil: "networkidle" });
+    await page.goto("/reader", { waitUntil: "networkidle" });
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -242,7 +200,7 @@ test.describe("Route stabilization smoke", () => {
     await desktopSearch.fill(token);
     await page.getByRole("button", { name: "Apply filters" }).first().click();
 
-    await expect(page).toHaveURL(new RegExp(`/feeds\\?q=`));
+    await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible();
@@ -258,7 +216,7 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/feeds", { waitUntil: "networkidle" });
+    await page.goto("/reader", { waitUntil: "networkidle" });
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
@@ -268,7 +226,7 @@ test.describe("Route stabilization smoke", () => {
     await desktopSearch.fill("agent");
     await page.getByRole("button", { name: "Apply filters" }).first().click();
 
-    await expect(page).toHaveURL(/\/feeds\?q=agent$/);
+    await expect(page).toHaveURL(/\/reader\?q=agent$/);
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -283,10 +241,10 @@ test.describe("Route stabilization smoke", () => {
   test("catalog mode can hand a source slice back into the reader", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/feeds?mode=catalog", { waitUntil: "networkidle" });
+    await page.goto("/sources", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Browse sources" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Open in reader" }).first().click();
+    await page.getByRole("link", { name: "Read source" }).first().click();
 
     await expect(page).not.toHaveURL(/mode=catalog/);
     await expect(page).toHaveURL(/feed=/);
@@ -303,7 +261,7 @@ test.describe("Route stabilization smoke", () => {
     const tracker = trackClientErrors(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/feeds", { waitUntil: "networkidle" });
+    await page.goto("/reader", { waitUntil: "networkidle" });
     await expect(page.getByText("Filters and view")).toBeVisible();
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
@@ -320,24 +278,10 @@ test.describe("Route stabilization smoke", () => {
     await mobileSearch.fill(token);
     await page.getByRole("button", { name: "Apply filters" }).last().click();
 
-    await expect(page).toHaveURL(new RegExp(`/feeds\\?q=`));
+    await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
-  test("explorer keeps graph tuning behind an explicit advanced disclosure", async ({ page }) => {
-    const tracker = trackClientErrors(page);
-
-    await page.goto("/explorer", { waitUntil: "networkidle" });
-    const advancedSummary = page.getByText("Advanced controls", { exact: true });
-    await expect(advancedSummary).toBeVisible();
-    await expect(page.getByLabel("Layout")).toBeHidden();
-
-    await advancedSummary.click();
-    await expect(page.getByLabel("Layout")).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });

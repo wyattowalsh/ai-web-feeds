@@ -76,7 +76,7 @@ describe("FeedCatalog", () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Query "agent" · Type blog · Verified only')).toBeInTheDocument();
 
-    const directReaderLink = screen.getAllByRole("link", { name: "Open in reader" })[0];
+    const directReaderLink = screen.getAllByRole("link", { name: "Read source" })[0];
     const matchingFeedsReaderLink = screen.getByRole("link", { name: "Read matching feeds" });
     const directReaderUrl = new URL(
       directReaderLink.getAttribute("href") ?? "",
@@ -87,14 +87,14 @@ describe("FeedCatalog", () => {
       "https://aiwebfeeds.test",
     );
 
-    expect(directReaderUrl.pathname).toBe("/");
+    expect(directReaderUrl.pathname).toBe("/reader");
     expect(directReaderUrl.searchParams.get("mode")).toBeNull();
     expect(directReaderUrl.searchParams.get("feed")).toBe("feed-1");
     expect(directReaderUrl.searchParams.get("q")).toBe("agent");
     expect(directReaderUrl.searchParams.get("source_type")).toBe("blog");
     expect(directReaderUrl.searchParams.get("verified")).toBe("true");
 
-    expect(matchingFeedsUrl.pathname).toBe("/");
+    expect(matchingFeedsUrl.pathname).toBe("/reader");
     expect(matchingFeedsUrl.searchParams.get("mode")).toBeNull();
     expect(matchingFeedsUrl.searchParams.get("feed")).toBe("feed-1");
     expect(matchingFeedsUrl.searchParams.get("q")).toBe("agent");
@@ -102,7 +102,7 @@ describe("FeedCatalog", () => {
     expect(matchingFeedsUrl.searchParams.get("verified")).toBe("true");
     expect(screen.getByRole("link", { name: "Search recent posts" })).toHaveAttribute(
       "href",
-      "/?feed=feed-1&q=agent&source_type=blog&verified=true",
+      "/reader?feed=feed-1&q=agent&source_type=blog&verified=true",
     );
     expect(screen.queryByRole("link", { name: /OPML/i })).not.toBeInTheDocument();
   });
@@ -150,27 +150,30 @@ describe("FeedCatalog", () => {
     fireEvent.change(screen.getByLabelText("Search"), {
       target: { value: "agents" },
     });
-    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/sources?q=agents", { scroll: false });
 
     fireEvent.click(screen.getByRole("button", { name: "blog (1)" }));
-    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents&source_type=blog", {
+    expect(replaceMock).toHaveBeenLastCalledWith("/sources?q=agents&source_type=blog", {
       scroll: false,
     });
 
     fireEvent.click(screen.getByRole("button", { name: "agents" }));
-    expect(replaceMock).toHaveBeenLastCalledWith("/?q=agents&source_type=blog&topics=agents", {
-      scroll: false,
-    });
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/sources?q=agents&source_type=blog&topics=agents",
+      {
+        scroll: false,
+      },
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Verified" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/?q=agents&source_type=blog&topics=agents&verified=true",
+      "/sources?q=agents&source_type=blog&topics=agents&verified=true",
       { scroll: false },
     );
   });
 
   it("turns zero-result catalog states into recovery links", () => {
-    currentSearchParams = new URLSearchParams("mode=catalog&q=nonexistent&source_type=blog");
+    currentSearchParams = new URLSearchParams("q=nonexistent&source_type=blog");
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
 
     render(
@@ -187,11 +190,11 @@ describe("FeedCatalog", () => {
     expect(screen.getByText("No feeds match this filter set")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Reset to full catalog" })).toHaveAttribute(
       "href",
-      "/?mode=catalog",
+      "/sources",
     );
     expect(screen.getByRole("link", { name: "Browse posts for this query" })).toHaveAttribute(
       "href",
-      "/?q=nonexistent",
+      "/reader?q=nonexistent",
     );
   });
 });

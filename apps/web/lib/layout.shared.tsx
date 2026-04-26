@@ -31,7 +31,11 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: "Reader",
-        url: "/",
+        url: "/reader",
+      },
+      {
+        text: "Sources",
+        url: "/sources",
       },
       {
         text: "Dashboard",

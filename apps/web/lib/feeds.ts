@@ -16,6 +16,10 @@ export interface FeedSource {
   source_type?: string;
   description?: string;
   website_url?: string;
+  icon_url?: string;
+  favicon_url?: string;
+  logo_url?: string;
+  icon?: string;
   verified?: boolean;
   is_active?: boolean;
   topics?: string[];

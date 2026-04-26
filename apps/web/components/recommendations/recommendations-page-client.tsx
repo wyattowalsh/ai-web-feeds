@@ -8,7 +8,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
-import { buildReaderRouteHref } from "@/lib/reader-routes";
 import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 interface Recommendation {
@@ -28,7 +27,6 @@ interface Recommendation {
 
 function buildCatalogHref(rec: Recommendation, selectedTopics: string[]): string {
   const params = new URLSearchParams();
-  params.set("mode", "catalog");
   params.set("feed", rec.feed.id);
   if (selectedTopics.length > 0) {
     params.set("topics", selectedTopics.join(","));
@@ -37,7 +35,8 @@ function buildCatalogHref(rec: Recommendation, selectedTopics: string[]): string
     params.set("q", rec.feed.title);
   }
 
-  return buildReaderRouteHref(params);
+  const query = params.toString();
+  return query ? `${CANONICAL_CATALOG_PATH}?${query}` : CANONICAL_CATALOG_PATH;
 }
 
 export function RecommendationsPageClient({
@@ -207,7 +206,7 @@ export function RecommendationsPageClient({
               </h1>
               <p className="hero-copy max-w-2xl">
                 Use this route when the backend recommender is available. Otherwise, the core
-                product remains the reader on `/` and the source catalog on `/?mode=catalog`.
+                product remains the reader on `/reader` and the source catalog on `/sources`.
               </p>
             </div>
           </div>

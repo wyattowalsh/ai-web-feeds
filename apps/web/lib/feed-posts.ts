@@ -39,6 +39,39 @@ export interface AggregateFeedPostsResponse {
   failedSources: number;
 }
 
+export type AggregateFeedStreamEvent =
+  | {
+      type: "start";
+      totalSources: number;
+      limit: number;
+      perFeedLimit: number;
+      fetchedAt: string;
+    }
+  | {
+      type: "feed";
+      feedId: string;
+      feedTitle: string;
+      posts: AggregateFeedPost[];
+      successfulSources: number;
+      failedSources: number;
+    }
+  | {
+      type: "feed_error";
+      feedId: string;
+      feedTitle: string;
+      message: string;
+      successfulSources: number;
+      failedSources: number;
+    }
+  | {
+      type: "done";
+      totalSources: number;
+      successfulSources: number;
+      failedSources: number;
+      totalMatchedPosts: number;
+      fetchedAt: string;
+    };
+
 interface LoadFeedOptions {
   discoveryMode?: "full" | "fast";
 }
@@ -130,6 +163,160 @@ export async function loadAggregatedFeedPostsByIds(
 
   aggregateFeedInflight.set(cacheKey, aggregatePromise);
   return aggregatePromise;
+}
+
+export async function* streamAggregatedFeedPostsByIds(
+  feedIds: string[],
+  totalLimit = 24,
+  perFeedLimit = 2,
+  options: AggregateLoadOptions = {},
+): AsyncGenerator<AggregateFeedStreamEvent> {
+  const feedsData = await loadFeeds();
+  const uniqueFeedIds = Array.from(
+    new Set(feedIds.map((feedId) => normalizeFeedLookupKey(feedId)).filter(Boolean)),
+  );
+  const cacheKey = createAggregateCacheKey(uniqueFeedIds, totalLimit, perFeedLimit);
+
+  if (uniqueFeedIds.length === 0) {
+    throw new Error("At least one feed is required");
+  }
+
+  const cachedPayload = options.forceRefresh ? null : readAggregateCache(cacheKey);
+  if (cachedPayload) {
+    yield {
+      type: "start",
+      totalSources: cachedPayload.totalSources,
+      limit: totalLimit,
+      perFeedLimit,
+      fetchedAt: cachedPayload.fetchedAt,
+    };
+
+    let successfulSources = 0;
+    for (const feed of cachedPayload.feeds) {
+      successfulSources += 1;
+      yield {
+        type: "feed",
+        feedId: feed.feedId,
+        feedTitle: feed.feedTitle,
+        posts: feed.posts.map((post) => ({
+          ...post,
+          feedId: feed.feedId,
+          feedTitle: feed.feedTitle,
+          sourceUrl: feed.sourceUrl,
+          resolvedFeedUrl: feed.resolvedFeedUrl,
+        })),
+        successfulSources,
+        failedSources: cachedPayload.failedSources,
+      };
+    }
+
+    yield {
+      type: "done",
+      totalSources: cachedPayload.totalSources,
+      successfulSources: cachedPayload.successfulSources,
+      failedSources: cachedPayload.failedSources,
+      totalMatchedPosts: cachedPayload.posts.length,
+      fetchedAt: cachedPayload.fetchedAt,
+    };
+    return;
+  }
+
+  const resolvedFeeds = uniqueFeedIds
+    .map((requestedId) => {
+      const feed = resolveFeedSource(feedsData.sources, requestedId);
+
+      if (!feed) {
+        return null;
+      }
+
+      return { feed, requestedId };
+    })
+    .filter((value): value is { feed: FeedSource; requestedId: string } => value !== null);
+
+  if (resolvedFeeds.length === 0) {
+    throw new Error("No matching canonical feeds were found");
+  }
+
+  const fetchedAt = new Date().toISOString();
+  yield {
+    type: "start",
+    totalSources: resolvedFeeds.length,
+    limit: totalLimit,
+    perFeedLimit,
+    fetchedAt,
+  };
+
+  const feeds: FeedPostsResponse[] = [];
+  let successfulSources = 0;
+  let failedSources = 0;
+
+  for await (const attempt of streamFeedAttempts(resolvedFeeds, perFeedLimit, 20)) {
+    if (attempt.ok) {
+      successfulSources += 1;
+      feeds.push(attempt.payload);
+      yield {
+        type: "feed",
+        feedId: attempt.payload.feedId,
+        feedTitle: attempt.payload.feedTitle,
+        posts: attempt.payload.posts.map((post) => ({
+          ...post,
+          feedId: attempt.payload.feedId,
+          feedTitle: attempt.payload.feedTitle,
+          sourceUrl: attempt.payload.sourceUrl,
+          resolvedFeedUrl: attempt.payload.resolvedFeedUrl,
+        })),
+        successfulSources,
+        failedSources,
+      };
+      continue;
+    }
+
+    failedSources += 1;
+    yield {
+      type: "feed_error",
+      feedId: attempt.feedId,
+      feedTitle: attempt.feedTitle,
+      message: attempt.message,
+      successfulSources,
+      failedSources,
+    };
+  }
+
+  const posts = feeds
+    .flatMap((feed) =>
+      feed.posts.map((post) => ({
+        ...post,
+        feedId: feed.feedId,
+        feedTitle: feed.feedTitle,
+        sourceUrl: feed.sourceUrl,
+        resolvedFeedUrl: feed.resolvedFeedUrl,
+      })),
+    )
+    .sort(compareAggregatedPosts)
+    .slice(0, totalLimit);
+  const expiresAt = new Date(Date.now() + AGGREGATE_CACHE_TTL_MS).toISOString();
+
+  if (feeds.length > 0) {
+    writeAggregateCache(cacheKey, {
+      posts,
+      feeds,
+      fetchedAt,
+      expiresAt,
+      cacheState: "live",
+      totalSources: resolvedFeeds.length,
+      successfulSources,
+      failedSources,
+    });
+  }
+
+  yield {
+    type: "done",
+    totalSources: resolvedFeeds.length,
+    successfulSources,
+    failedSources,
+    totalMatchedPosts: posts.length,
+    fetchedAt,
+  };
 }
 
 async function buildAggregatedFeedPosts(
@@ -636,4 +823,52 @@ async function mapWithConcurrency<T, U>(
   );
 
   return results;
+}
+
+type FeedAttempt =
+  | { ok: true; payload: FeedPostsResponse }
+  | { ok: false; feedId: string; feedTitle: string; message: string };
+
+async function* streamFeedAttempts(
+  resolvedFeeds: Array<{ feed: FeedSource; requestedId: string }>,
+  perFeedLimit: number,
+  concurrency: number,
+): AsyncGenerator<FeedAttempt> {
+  let nextIndex = 0;
+  const active = new Map<number, Promise<{ key: number; attempt: FeedAttempt }>>();
+
+  const launch = () => {
+    if (nextIndex >= resolvedFeeds.length) {
+      return;
+    }
+
+    const key = nextIndex;
+    const { feed, requestedId } = resolvedFeeds[nextIndex];
+    nextIndex += 1;
+    active.set(
+      key,
+      loadFeedPostsForSource(feed, requestedId, perFeedLimit, { discoveryMode: "fast" })
+        .then((payload) => ({ key, attempt: { ok: true as const, payload } }))
+        .catch((error) => ({
+          key,
+          attempt: {
+            ok: false as const,
+            feedId: requestedId,
+            feedTitle: feed.title,
+            message: error instanceof Error ? error.message : "Failed to load feed posts",
+          },
+        })),
+    );
+  };
+
+  for (let index = 0; index < Math.min(concurrency, resolvedFeeds.length); index += 1) {
+    launch();
+  }
+
+  while (active.size > 0) {
+    const { key, attempt } = await Promise.race(active.values());
+    active.delete(key);
+    launch();
+    yield attempt;
+  }
 }

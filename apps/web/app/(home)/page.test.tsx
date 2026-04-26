@@ -1,18 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { loadReaderRouteDataMock } = vi.hoisted(() => ({
-  loadReaderRouteDataMock: vi.fn(),
+const { loadFeedCatalogMock, getFeedStatsMock } = vi.hoisted(() => ({
+  loadFeedCatalogMock: vi.fn(),
+  getFeedStatsMock: vi.fn(),
 }));
 
-vi.mock("@/lib/reader-route", () => ({
-  loadReaderRouteData: loadReaderRouteDataMock,
-}));
-
-vi.mock("../feeds/feeds-workspace-client", () => ({
-  FeedsWorkspaceClient: (props: unknown) => (
-    <pre data-testid="feeds-workspace-client">{JSON.stringify(props)}</pre>
-  ),
+vi.mock("@/lib/feeds", () => ({
+  loadFeedCatalog: loadFeedCatalogMock,
+  getFeedStats: getFeedStatsMock,
 }));
 
 async function loadHomePage() {
@@ -23,45 +19,39 @@ async function loadHomePage() {
 describe("HomePage", () => {
   beforeEach(() => {
     vi.resetModules();
-    loadReaderRouteDataMock.mockReset();
-    loadReaderRouteDataMock.mockResolvedValue({
-      mode: "reader",
-      feeds: [{ id: "feed-1", title: "Agent Feed", url: "https://example.com/feed.xml" }],
-      stats: {
-        total: 1,
-        verified: 1,
-        active: 1,
-        hasVerificationMetadata: true,
-        hasActivityMetadata: true,
-        sourceTypeCount: 1,
-        byType: { blog: 1 },
-        topicCount: 1,
-      },
-      initialState: {
-        query: "agents",
-        feedIds: ["feed-1", "feed-2"],
-        sourceType: null,
-        topics: [],
-        verified: null,
-        sort: "latest",
-        readerView: "latest",
-        cursor: 0,
-        limit: 24,
-      },
-      initialBrowse: null,
+    loadFeedCatalogMock.mockReset();
+    getFeedStatsMock.mockReset();
+    loadFeedCatalogMock.mockReturnValue({
+      sources: [{ id: "feed-1", title: "Agent Feed", url: "https://example.com/feed.xml" }],
+    });
+    getFeedStatsMock.mockReturnValue({
+      total: 1,
+      verified: 1,
+      active: 1,
+      hasVerificationMetadata: true,
+      hasActivityMetadata: true,
+      sourceTypeCount: 1,
+      byType: { blog: 1 },
+      topicCount: 1,
     });
   });
 
-  it("renders the canonical reader at the homepage", async () => {
+  it("renders a minimal home with canonical surface links", async () => {
     const HomePage = await loadHomePage();
 
-    render(
-      await HomePage({
-        searchParams: Promise.resolve({ q: "agents", feed: ["feed-1", "feed-2"] }),
-      }),
-    );
+    render(<HomePage />);
 
-    expect(loadReaderRouteDataMock).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId("feeds-workspace-client")).toHaveTextContent('"mode":"reader"');
+    expect(
+      screen.getByRole("heading", { name: "Read AI writing across the open web" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open reader/i })).toHaveAttribute("href", "/reader");
+    expect(screen.getByRole("link", { name: /Browse sources/i })).toHaveAttribute(
+      "href",
+      "/sources",
+    );
+    expect(screen.getByRole("link", { name: /View dashboard/i })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
   });
 });

@@ -192,7 +192,7 @@ describe("FeedsWorkspaceClient", () => {
   it("layers live overlay items on refresh and marks them fresh", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.startsWith("/api/feeds/posts/aggregate")) {
+      if (url.startsWith("/api/feeds/posts/aggregate/stream")) {
         return makeResponse({
           posts: [
             {
@@ -353,7 +353,7 @@ describe("FeedsWorkspaceClient", () => {
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.startsWith("/api/feeds/posts/aggregate")) {
+      if (url.startsWith("/api/feeds/posts/aggregate/stream")) {
         return makeResponse({
           posts: [
             {
@@ -402,13 +402,15 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Loading live posts" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+    ).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Live model update")).toBeInTheDocument();
     });
 
-    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/feeds/posts/aggregate");
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/feeds/posts/aggregate/stream");
     expect(fetchMock.mock.calls[0]?.[1]).toEqual(
       expect.objectContaining({
         method: "POST",
@@ -416,7 +418,7 @@ describe("FeedsWorkspaceClient", () => {
           feedIds: ["feed-1", "feed-2"],
           limit: 48,
           perFeedLimit: 3,
-          refresh: true,
+          refresh: false,
           q: null,
           sort: "latest",
         }),
@@ -454,7 +456,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/?q=agents&source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/sources",
     );
   });
 
@@ -501,12 +503,12 @@ describe("FeedsWorkspaceClient", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Apply filters" })[0]);
 
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/?q=models&source_type=newsletter&topics=ml&verified=false",
+      "/reader?q=models&source_type=newsletter&topics=ml&verified=false",
       { scroll: false },
     );
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset" })[0]);
-    expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
+    expect(replaceMock).toHaveBeenLastCalledWith("/reader", { scroll: false });
   });
 
   it("adds recovery links when the current filters return no visible posts", async () => {
@@ -558,12 +560,15 @@ describe("FeedsWorkspaceClient", () => {
     expect(await screen.findByText("No posts match these filters")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear article filters" })).toHaveAttribute(
       "href",
-      "/?source_type=blog&verified=true&feed=feed-1",
+      "/reader?source_type=blog&verified=true&feed=feed-1",
     );
-    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Reset all filters" })).toHaveAttribute(
+      "href",
+      "/reader",
+    );
     expect(screen.getByRole("link", { name: "Browse sources" })).toHaveAttribute(
       "href",
-      "/?source_type=blog&verified=true&feed=feed-1&mode=catalog",
+      "/sources",
     );
   });
 
@@ -603,7 +608,7 @@ describe("FeedsWorkspaceClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Topic: agents" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/?q=agents&source_type=blog&verified=true&feed=feed-1",
+      "/reader?q=agents&source_type=blog&verified=true&feed=feed-1",
       { scroll: false },
     );
   });

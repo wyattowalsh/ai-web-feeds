@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
     short_name: "AI Web Feeds",
     description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
-    start_url: "/",
+    start_url: "/reader",
     display: "standalone",
     background_color: "#0a0a0a",
     theme_color: "#667eea",

@@ -58,9 +58,9 @@ export default async function DashboardPage() {
                 Catalog health without the control room.
               </h1>
               <p className="hero-copy max-w-2xl">
-                The public app has two jobs: read on the homepage and check the collection here.
-                OPML generation, enrichment, validation, and analytics exports stay in the repo and
-                CLI workflows.
+                The public app has three jobs: read in the reader, browse sources, and check the
+                collection here. OPML generation, enrichment, validation, and analytics exports stay
+                in the repo and CLI workflows.
               </p>
             </div>
           </div>
@@ -68,9 +68,13 @@ export default async function DashboardPage() {
           <div className="surface-card-soft space-y-4">
             <p className="metric-label">Primary surfaces</p>
             <div className="grid gap-3 text-sm text-(--ink)">
-              <Link href="/" className="flex items-center gap-3 font-semibold">
+              <Link href="/reader" className="flex items-center gap-3 font-semibold">
                 <RadioTower className="size-4 text-(--brand-strong)" />
-                Reader at /
+                Reader at /reader
+              </Link>
+              <Link href="/sources" className="flex items-center gap-3 font-semibold">
+                <RadioTower className="size-4 text-(--brand-strong)" />
+                Sources at /sources
               </Link>
               <Link href="/dashboard" className="flex items-center gap-3 font-semibold">
                 <BarChart3 className="size-4 text-(--brand-strong)" />

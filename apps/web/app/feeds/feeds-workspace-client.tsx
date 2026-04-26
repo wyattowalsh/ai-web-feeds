@@ -28,11 +28,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { SourceAvatar } from "@/components/source-avatar";
 import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { getTopics } from "@/lib/feeds-filters";
-import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
+import { CANONICAL_CATALOG_PATH, CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import {
   type FeedsWorkspaceInitialBrowse,
   type FeedsWorkspaceInitialState,
@@ -72,6 +73,64 @@ type ReaderArticleState = {
 type WorkspaceArticle = FeedsWorkspaceInitialBrowse["items"][number] & {
   freshness: "corpus" | "live";
   published_at_ms: number | null;
+  source_url?: string | null;
+  resolved_feed_url?: string | null;
+};
+
+type LiveStreamEvent =
+  | {
+      type: "start";
+      totalSources: number;
+      limit: number;
+      perFeedLimit: number;
+      fetchedAt: string;
+    }
+  | {
+      type: "feed";
+      feedId: string;
+      feedTitle: string;
+      posts: Array<{
+        id: string;
+        feedId: string;
+        feedTitle: string;
+        title: string;
+        link: string;
+        summary: string | null;
+        sourceUrl: string;
+        resolvedFeedUrl: string;
+        author: string | null;
+        categories: string[];
+        publishedAt: string | null;
+      }>;
+      successfulSources: number;
+      failedSources: number;
+    }
+  | {
+      type: "feed_error";
+      feedId: string;
+      feedTitle: string;
+      message: string;
+      successfulSources: number;
+      failedSources: number;
+    }
+  | {
+      type: "done";
+      totalSources: number;
+      successfulSources: number;
+      failedSources: number;
+      totalMatchedPosts: number;
+      fetchedAt: string;
+    }
+  | {
+      type: "error";
+      message: string;
+    };
+
+type LiveStreamProgress = {
+  totalSources: number;
+  successfulSources: number;
+  failedSources: number;
+  completed: boolean;
 };
 
 const ARTICLE_STATE_STORAGE_PREFIX = "aiwebfeeds.reader.article.";
@@ -191,16 +250,6 @@ function formatArticleDateTime(value: string | null): string {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function getSourceInitials(value: string): string {
-  return value
-    .split(/\s+/)
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }
 
 function Pill({
@@ -347,6 +396,8 @@ function normalizeLiveArticle(post: {
   title: string;
   link: string;
   summary: string | null;
+  sourceUrl?: string;
+  resolvedFeedUrl?: string;
   author: string | null;
   categories: string[];
   publishedAt: string | null;
@@ -368,6 +419,8 @@ function normalizeLiveArticle(post: {
     is_active: true,
     freshness: "live",
     published_at_ms: post.publishedAt ? Date.parse(post.publishedAt) : null,
+    source_url: post.sourceUrl ?? null,
+    resolved_feed_url: post.resolvedFeedUrl ?? null,
   };
 }
 
@@ -526,12 +579,14 @@ function matchesReaderView(view: ReaderView, state: ReaderArticleState): boolean
 
 function PreviewPane({
   article,
+  source,
   state,
   onToggleState,
   onClose,
   variant = "panel",
 }: {
   article: WorkspaceArticle | null;
+  source?: FeedSource | null;
   state: ReaderArticleState;
   onToggleState: (partial: Partial<ReaderArticleState>) => void;
   onClose?: () => void;
@@ -569,9 +624,11 @@ function PreviewPane({
       <div className="space-y-4 border-b border-(--line) pb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface-muted) text-xs font-semibold text-(--brand-strong)">
-              {getSourceInitials(article.feed_title)}
-            </span>
+            <SourceAvatar
+              source={
+                source ?? { title: article.feed_title, url: article.source_url ?? article.link }
+              }
+            />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-(--ink)">{article.feed_title}</p>
               <p className="small-note">{formatArticleDateTime(article.published_at)}</p>
@@ -731,6 +788,7 @@ function ReaderWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [liveProgress, setLiveProgress] = useState<LiveStreamProgress | null>(null);
   const [overlayArticles, setOverlayArticles] = useState<WorkspaceArticle[]>([]);
   const [articleStates, setArticleStates] = useState<Record<string, ReaderArticleState>>({});
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
@@ -963,88 +1021,183 @@ function ReaderWorkspace({
     });
   };
 
-  const refreshLatest = useCallback(async () => {
-    const shouldFetchAllMatchingSources = browse.corpus.is_empty && browse.items.length === 0;
-    const feedIds =
-      currentState.feedIds.length > 0
-        ? currentState.feedIds
-        : candidateFeeds
-            .slice(0, shouldFetchAllMatchingSources ? undefined : LIVE_REFRESH_SAMPLE_FEED_LIMIT)
-            .map((feed) => feed.id ?? "")
-            .filter(Boolean);
+  const refreshLatest = useCallback(
+    async (forceRefresh = true) => {
+      const shouldFetchAllMatchingSources = browse.corpus.is_empty && browse.items.length === 0;
+      const feedIds =
+        currentState.feedIds.length > 0
+          ? currentState.feedIds
+          : candidateFeeds
+              .slice(0, shouldFetchAllMatchingSources ? undefined : LIVE_REFRESH_SAMPLE_FEED_LIMIT)
+              .map((feed) => feed.id ?? "")
+              .filter(Boolean);
 
-    if (feedIds.length === 0) {
-      setRefreshError("Choose at least one source to refresh.");
-      return;
-    }
-
-    setRefreshing(true);
-    setRefreshError(null);
-
-    try {
-      const response = await fetch("/api/feeds/posts/aggregate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          feedIds,
-          limit: LIVE_BOOTSTRAP_POST_LIMIT,
-          perFeedLimit: LIVE_BOOTSTRAP_PER_FEED_LIMIT,
-          refresh: true,
-          q: currentState.query || null,
-          sort: currentState.sort,
-        }),
-      });
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error || "Failed to refresh latest posts");
-      }
-
-      const payload = (await response.json()) as {
-        posts: Array<{
-          id: string;
-          feedId: string;
-          feedTitle: string;
-          title: string;
-          link: string;
-          summary: string | null;
-          author: string | null;
-          categories: string[];
-          publishedAt: string | null;
-        }>;
-      };
-      const normalizedPosts = payload.posts.map(normalizeLiveArticle);
-
-      if (browse.corpus.is_empty && browse.items.length === 0) {
-        setOverlayArticles(normalizedPosts);
+      if (feedIds.length === 0) {
+        setRefreshError("Choose at least one source to refresh.");
         return;
       }
 
-      const existingKeys = new Set(
-        mergedArticles.map((article) => article.id || `${article.feed_id}:${article.link}`),
-      );
-      const nextOverlay = normalizedPosts.filter((article) => {
-        const key = article.id || `${article.feed_id}:${article.link}`;
-        return !existingKeys.has(key);
+      setRefreshing(true);
+      setRefreshError(null);
+      setLiveProgress({
+        totalSources: feedIds.length,
+        successfulSources: 0,
+        failedSources: 0,
+        completed: false,
       });
 
-      setOverlayArticles(nextOverlay);
-    } catch (nextError) {
-      setRefreshError(
-        nextError instanceof Error ? nextError.message : "Failed to refresh latest posts",
-      );
-    } finally {
-      setRefreshing(false);
-    }
-  }, [
-    browse.corpus.is_empty,
-    browse.items.length,
-    candidateFeeds,
-    currentState.feedIds,
-    currentState.query,
-    currentState.sort,
-    mergedArticles,
-  ]);
+      try {
+        const response = await fetch("/api/feeds/posts/aggregate/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({
+            feedIds,
+            limit: LIVE_BOOTSTRAP_POST_LIMIT,
+            perFeedLimit: LIVE_BOOTSTRAP_PER_FEED_LIMIT,
+            refresh: forceRefresh,
+            q: currentState.query || null,
+            sort: currentState.sort,
+          }),
+        });
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error || "Failed to refresh latest posts");
+        }
+
+        const existingKeys = new Set(
+          mergedArticles.map((article) => article.id || `${article.feed_id}:${article.link}`),
+        );
+        const reader = response.body?.getReader();
+        if (!reader) {
+          const payload = (await response.json()) as {
+            posts?: Array<Parameters<typeof normalizeLiveArticle>[0]>;
+          };
+          const normalizedPosts = (payload.posts ?? []).map(normalizeLiveArticle);
+          setOverlayArticles((currentOverlay) =>
+            [...normalizedPosts, ...currentOverlay]
+              .sort((left, right) => (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0))
+              .slice(0, LIVE_BOOTSTRAP_POST_LIMIT),
+          );
+          setLiveProgress((current) => ({
+            totalSources: current?.totalSources ?? feedIds.length,
+            successfulSources: current?.totalSources ?? feedIds.length,
+            failedSources: 0,
+            completed: true,
+          }));
+          return;
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        const handleEvent = (event: LiveStreamEvent) => {
+          if (event.type === "start") {
+            setLiveProgress({
+              totalSources: event.totalSources,
+              successfulSources: 0,
+              failedSources: 0,
+              completed: false,
+            });
+            return;
+          }
+
+          if (event.type === "feed_error") {
+            setLiveProgress((current) => ({
+              totalSources: current?.totalSources ?? feedIds.length,
+              successfulSources: event.successfulSources,
+              failedSources: event.failedSources,
+              completed: false,
+            }));
+            return;
+          }
+
+          if (event.type === "feed") {
+            setLiveProgress((current) => ({
+              totalSources: current?.totalSources ?? feedIds.length,
+              successfulSources: event.successfulSources,
+              failedSources: event.failedSources,
+              completed: false,
+            }));
+
+            const normalizedPosts = event.posts.map(normalizeLiveArticle);
+            setOverlayArticles((currentOverlay) => {
+              const keys = new Set([
+                ...existingKeys,
+                ...currentOverlay.map(
+                  (article) => article.id || `${article.feed_id}:${article.link}`,
+                ),
+              ]);
+              const nextPosts = normalizedPosts.filter((article) => {
+                const key = article.id || `${article.feed_id}:${article.link}`;
+                if (keys.has(key)) {
+                  return false;
+                }
+                keys.add(key);
+                return true;
+              });
+
+              return [...nextPosts, ...currentOverlay]
+                .sort((left, right) => (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0))
+                .slice(0, LIVE_BOOTSTRAP_POST_LIMIT);
+            });
+            return;
+          }
+
+          if (event.type === "done") {
+            setLiveProgress({
+              totalSources: event.totalSources,
+              successfulSources: event.successfulSources,
+              failedSources: event.failedSources,
+              completed: true,
+            });
+            return;
+          }
+
+          if (event.type === "error") {
+            throw new Error(event.message);
+          }
+        };
+
+        while (true) {
+          const { value, done } = await reader.read();
+          buffer += decoder.decode(value, { stream: !done });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.trim()) {
+              continue;
+            }
+            handleEvent(JSON.parse(line) as LiveStreamEvent);
+          }
+
+          if (done) {
+            break;
+          }
+        }
+
+        if (buffer.trim()) {
+          handleEvent(JSON.parse(buffer) as LiveStreamEvent);
+        }
+      } catch (nextError) {
+        setRefreshError(
+          nextError instanceof Error ? nextError.message : "Failed to refresh latest posts",
+        );
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [
+      browse.corpus.is_empty,
+      browse.items.length,
+      candidateFeeds,
+      currentState.feedIds,
+      currentState.query,
+      currentState.sort,
+      mergedArticles,
+    ],
+  );
 
   const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
   const topicOptions = useMemo(() => getTopics(feeds), [feeds]);
@@ -1070,6 +1223,7 @@ function ReaderWorkspace({
       ),
     [feeds],
   );
+  const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
   const corpusEmpty = browse.corpus.is_empty;
   const canClearArticleFilters =
     Boolean(currentState.query) || currentState.readerView !== "latest" || currentState.cursor > 0;
@@ -1086,14 +1240,7 @@ function ReaderWorkspace({
     cursor: null,
   });
   const resetWorkspaceHref = CANONICAL_READER_PATH;
-  const catalogRecoveryHref = buildReaderHref(currentState, {
-    mode: "catalog",
-    q: null,
-    reader_view: null,
-    sort: null,
-    reader_sort: null,
-    cursor: null,
-  });
+  const catalogRecoveryHref = CANONICAL_CATALOG_PATH;
   const filterSummary =
     currentState.feedIds.length > 0
       ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
@@ -1173,6 +1320,17 @@ function ReaderWorkspace({
       icon: RefreshCcw,
     },
   ];
+  const livePendingSources = liveProgress
+    ? Math.max(
+        liveProgress.totalSources - liveProgress.successfulSources - liveProgress.failedSources,
+        0,
+      )
+    : 0;
+  const liveStatusText = liveProgress
+    ? `${
+        liveProgress.successfulSources + liveProgress.failedSources
+      } sources checked · ${livePendingSources} loading · ${visibleArticles.length} posts shown`
+    : null;
 
   useEffect(() => {
     if (!corpusEmpty || overlayArticles.length > 0 || refreshing) {
@@ -1184,7 +1342,7 @@ function ReaderWorkspace({
     }
 
     liveBootstrapAttemptedKeyRef.current = liveBootstrapKey;
-    void refreshLatest();
+    void refreshLatest(false);
   }, [corpusEmpty, liveBootstrapKey, overlayArticles.length, refreshLatest, refreshing]);
 
   const applyDrafts = useCallback(() => {
@@ -1250,7 +1408,7 @@ function ReaderWorkspace({
     };
   }, [previewArticleId]);
 
-  if (corpusEmpty && overlayArticles.length === 0) {
+  if (corpusEmpty && overlayArticles.length === 0 && refreshError && !refreshing) {
     return (
       <div className="reader-shell space-y-4">
         <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm sm:p-6">
@@ -1270,7 +1428,7 @@ function ReaderWorkspace({
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
-                href={buildReaderHref(currentState, { mode: "catalog" })}
+                href={CANONICAL_CATALOG_PATH}
                 className={cn(buttonVariants({ variant: "outline" }))}
               >
                 Browse sources
@@ -1278,7 +1436,7 @@ function ReaderWorkspace({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => void refreshLatest()}
+                onClick={() => void refreshLatest(true)}
                 disabled={refreshing}
               >
                 Try again
@@ -1310,6 +1468,9 @@ function ReaderWorkspace({
               <Pill tone="brand">Reader</Pill>
               {corpusEmpty ? <Pill tone="info">Live</Pill> : <Pill>Prepared posts</Pill>}
               {refreshing ? <Pill tone="warning">Refreshing</Pill> : null}
+              {liveProgress?.failedSources ? (
+                <Pill tone="warning">{liveProgress.failedSources} failed</Pill>
+              ) : null}
             </div>
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold leading-tight text-(--ink) sm:text-3xl">
@@ -1318,15 +1479,21 @@ function ReaderWorkspace({
               <p className="small-note max-w-3xl">
                 A clean reading desk for open AI writing, with local read, save, and focus state.
               </p>
+              {liveStatusText ? <p className="small-note">{liveStatusText}</p> : null}
             </div>
           </div>
           <div className="flex flex-wrap gap-2 lg:justify-end">
-            <Button type="button" variant="outline" onClick={refreshLatest} disabled={refreshing}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void refreshLatest(true)}
+              disabled={refreshing}
+            >
               <RefreshCcw className={cn("size-4", refreshing && "animate-spin")} />
               {refreshing ? "Checking..." : "Refresh latest"}
             </Button>
             <Link
-              href={buildReaderHref(currentState, { mode: "catalog" })}
+              href={CANONICAL_CATALOG_PATH}
               className={cn(buttonVariants({ variant: "secondary" }))}
             >
               Sources
@@ -1722,7 +1889,7 @@ function ReaderWorkspace({
               ) : null}
             </div>
 
-            {loading ? (
+            {loading || (refreshing && visibleArticles.length === 0) ? (
               <div className="grid gap-3 p-5">
                 {Array.from({ length: 6 }, (_, index) => (
                   <div
@@ -1786,12 +1953,18 @@ function ReaderWorkspace({
                         className="w-full text-left"
                         aria-pressed={isSelected}
                       >
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,12rem)]">
                           <div className="min-w-0 space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface-muted) text-[0.68rem] font-semibold text-(--brand-strong)">
-                                {getSourceInitials(article.feed_title)}
-                              </span>
+                              <SourceAvatar
+                                source={
+                                  feedLookup.get(article.feed_id) ?? {
+                                    title: article.feed_title,
+                                    url: article.source_url ?? article.link,
+                                  }
+                                }
+                                className="size-8"
+                              />
                               <span className="truncate text-sm font-semibold text-(--ink-muted)">
                                 {article.feed_title}
                               </span>
@@ -1808,11 +1981,15 @@ function ReaderWorkspace({
                             ) : null}
                           </div>
 
-                          <div className="space-y-2 text-sm text-(--ink-muted) lg:text-right">
+                          <div className="min-w-0 space-y-2 text-sm text-(--ink-muted) lg:text-right">
                             <div>{formatArticleDate(article.published_at)}</div>
                             <div className="flex flex-wrap gap-2 lg:justify-end">
                               {state.archived ? <Pill>Archived</Pill> : null}
-                              {article.author ? <span>{article.author}</span> : null}
+                              {article.author ? (
+                                <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+                                  {article.author}
+                                </span>
+                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -1855,6 +2032,7 @@ function ReaderWorkspace({
                         <div className="mt-4 xl:hidden">
                           <PreviewPane
                             article={article}
+                            source={feedLookup.get(article.feed_id)}
                             state={state}
                             variant="inline"
                             onClose={() => setPreviewArticleId(null)}
@@ -1909,6 +2087,7 @@ function ReaderWorkspace({
           <aside className="fixed inset-y-6 right-6 z-30 w-[24rem] max-w-[calc(100vw-3rem)]">
             <PreviewPane
               article={selectedArticle}
+              source={selectedArticleSource}
               state={selectedArticleState}
               variant="panel"
               onClose={() => setPreviewArticleId(null)}

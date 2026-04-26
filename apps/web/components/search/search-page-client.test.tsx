@@ -282,7 +282,7 @@ describe("SearchPageClient", () => {
     fireEvent.click(screen.getByText("Run Search"));
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/?q=fresh+query&scope=sources");
+      expect(pushMock).toHaveBeenCalledWith("/reader?q=fresh+query&scope=sources");
     });
     await waitFor(() => {
       expect(screen.getByTestId("results")).toHaveTextContent("Fresh Result");
@@ -335,7 +335,7 @@ describe("SearchPageClient", () => {
     fireEvent.click(screen.getByText("Scope Articles"));
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/?q=agents&scope=articles");
+      expect(pushMock).toHaveBeenCalledWith("/reader?q=agents&scope=articles");
     });
     expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/search?q=agents&scope=articles");
   });
@@ -388,7 +388,7 @@ describe("SearchPageClient", () => {
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith(
-        "/?q=fresh+query&scope=articles&feed=feed-2&feed=feed-1",
+        "/reader?q=fresh+query&scope=articles&feed=feed-2&feed=feed-1",
       );
     });
     expect(fetchMock.mock.calls[0]?.[0]).toBe(

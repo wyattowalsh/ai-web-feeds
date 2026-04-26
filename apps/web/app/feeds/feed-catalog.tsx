@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { SourceAvatar } from "@/components/source-avatar";
 import type { FeedSource } from "@/lib/feeds-filters";
 import {
   filterBySourceType,
@@ -17,7 +18,7 @@ import {
 import {
   buildReaderRouteHref,
   CANONICAL_CATALOG_PATH,
-  CANONICAL_READER_PATH,
+  CANONICAL_SOURCES_PATH,
 } from "@/lib/reader-routes";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
@@ -225,7 +226,7 @@ export function FeedCatalog({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("verified");
     const nextQuery = params.toString();
-    router.replace(nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH, {
+    router.replace(nextQuery ? `${CANONICAL_SOURCES_PATH}?${nextQuery}` : CANONICAL_SOURCES_PATH, {
       scroll: false,
     });
   }, [hasVerificationSignals, router, searchParams]);
@@ -243,7 +244,7 @@ export function FeedCatalog({
     }
 
     const nextQuery = params.toString();
-    router.replace(nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH, {
+    router.replace(nextQuery ? `${CANONICAL_SOURCES_PATH}?${nextQuery}` : CANONICAL_SOURCES_PATH, {
       scroll: false,
     });
   };
@@ -335,10 +336,13 @@ export function FeedCatalog({
 
   return (
     <div className="space-y-6">
-      <div className="surface-card space-y-6 xl:sticky xl:top-24 xl:z-10">
+      <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm xl:sticky xl:top-24 xl:z-10">
         <div>
-          <p className="metric-label">Filters</p>
-          <h2 className="mt-2 text-title-medium font-semibold text-(--ink)">Browse sources</h2>
+          <p className="metric-label">Source catalog</p>
+          <h1 className="mt-2 text-title-medium font-semibold text-(--ink)">Browse sources</h1>
+          <p className="small-note mt-2 max-w-3xl">
+            Search the open-web feed list, then jump into the reader for any source or slice.
+          </p>
         </div>
 
         <div>
@@ -466,7 +470,7 @@ export function FeedCatalog({
         )}
       </div>
 
-      <div className="surface-card flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1 text-sm text-(--ink-muted)">
           <p>
             Showing <strong>{filteredFeeds.length}</strong> of <strong>{feeds.length}</strong> feeds
@@ -493,11 +497,16 @@ export function FeedCatalog({
         {filteredFeeds.map((feed, idx) => (
           <div
             key={feed.url + idx}
-            className="surface-card transition duration-150 hover:-translate-y-0.5"
+            className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm transition duration-150 hover:-translate-y-0.5 hover:border-(--brand)/50"
           >
             <div className="space-y-4 text-sm">
               <div className="flex items-start justify-between gap-4">
-                <h3 className="text-lg font-semibold text-(--ink)">{feed.title}</h3>
+                <div className="flex min-w-0 items-center gap-3">
+                  <SourceAvatar source={feed} />
+                  <h3 className="break-words text-lg font-semibold text-(--ink) [overflow-wrap:anywhere]">
+                    {feed.title}
+                  </h3>
+                </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
                   {feed.verified === true && (
                     <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
@@ -555,7 +564,7 @@ export function FeedCatalog({
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
                   >
                     <RadioTower className="size-3.5" />
-                    Open in reader
+                    Read source
                   </Link>
                 ) : null}
                 <Link
