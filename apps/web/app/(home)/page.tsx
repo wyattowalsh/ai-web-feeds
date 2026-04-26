@@ -1,37 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpenText, RadioTower } from "lucide-react";
+import { JsonLd } from "@/components/json-ld";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { getFeedStats, loadFeedCatalog } from "@/lib/feeds";
+import { createPageMetadata } from "@/lib/seo";
+import { collectionPageJsonLd } from "@/lib/structured-data";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "AI Web Feeds - Read AI writing across the open web",
   description:
     "A focused reader, source catalog, and dashboard for tracking AI writing across blogs, labs, newsletters, organizations, and research feeds.",
-  openGraph: {
-    title: "AI Web Feeds - Read AI writing across the open web",
-    description: "Open the reader, browse sources, and track AI writing across the open web.",
-    url: baseUrl,
-    type: "website",
-    images: [
-      {
-        url: `${baseUrl}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: "AI Web Feeds",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Web Feeds - Read AI writing across the open web",
-    description: "Open the reader, browse sources, and track AI writing across the open web.",
-    images: [`${baseUrl}/og-image.png`],
-  },
-};
+  path: "/",
+});
 
 export default function HomePage() {
   const feedsData = loadFeedCatalog();
@@ -45,6 +27,31 @@ export default function HomePage() {
 
   return (
     <div className="page-wrap page-stack">
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "AI Web Feeds",
+          description:
+            "A focused reader, source catalog, and dashboard for tracking AI writing across the open web.",
+          url: "/",
+          items: [
+            {
+              name: "AI Reader",
+              url: "/reader",
+              description: "Read recent AI writing from tracked open web sources.",
+            },
+            {
+              name: "Sources",
+              url: "/sources",
+              description: "Browse the tracked source catalog.",
+            },
+            {
+              name: "Dashboard",
+              url: "/dashboard",
+              description: "Inspect catalog health and coverage.",
+            },
+          ],
+        })}
+      />
       <section className="grid gap-8 rounded-xl border border-(--line) bg-(--surface) p-6 shadow-(--surface-shadow-soft) lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:p-8">
         <div className="space-y-5">
           <div className="flex flex-wrap gap-2">

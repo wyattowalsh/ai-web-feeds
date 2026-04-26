@@ -1,8 +1,23 @@
 import "@/app/global.css";
 import "katex/dist/katex.css";
+import type { ReactNode } from "react";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { Fraunces, Manrope } from "next/font/google";
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
+import {
+  DEFAULT_DESCRIPTION,
+  getDefaultImageUrl,
+  getSiteVerification,
+  publicSeoRobots,
+  SITE_AUTHOR,
+  SITE_AUTHOR_URL,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_TWITTER_HANDLE,
+  SITE_URL,
+} from "@/lib/seo";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -16,16 +31,13 @@ const displayFont = Fraunces({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "AI Web Feeds - Browse AI articles across the open web",
-    template: "%s | AI Web Feeds",
+    default: `${SITE_NAME} - ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
+  description: DEFAULT_DESCRIPTION,
   keywords: [
     "AI",
     "RSS feeds",
@@ -40,12 +52,12 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: "Wyatt Walsh",
-      url: "https://github.com/wyattowalsh",
+      name: SITE_AUTHOR,
+      url: SITE_AUTHOR_URL,
     },
   ],
-  creator: "Wyatt Walsh",
-  publisher: "AI Web Feeds",
+  creator: SITE_AUTHOR,
+  publisher: SITE_NAME,
   formatDetection: {
     email: false,
     address: false,
@@ -54,39 +66,27 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: baseUrl,
-    title: "AI Web Feeds - Browse AI articles across the open web",
-    description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
-    siteName: "AI Web Feeds",
+    url: SITE_URL,
+    title: `${SITE_NAME} - ${SITE_TAGLINE}`,
+    description: DEFAULT_DESCRIPTION,
+    siteName: SITE_NAME,
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: getDefaultImageUrl(),
         width: 1200,
         height: 630,
-        alt: "AI Web Feeds",
+        alt: SITE_NAME,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Web Feeds - Browse AI articles across the open web",
-    description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
-    creator: "@wyattowalsh",
-    images: [`${baseUrl}/og-image.png`],
+    title: `${SITE_NAME} - ${SITE_TAGLINE}`,
+    description: DEFAULT_DESCRIPTION,
+    creator: SITE_TWITTER_HANDLE,
+    images: [getDefaultImageUrl()],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  robots: publicSeoRobots,
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -96,47 +96,43 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.webmanifest",
   alternates: {
-    canonical: baseUrl,
+    canonical: SITE_URL,
     types: {
       "application/rss+xml": [
         {
-          title: "AI Web Feeds - Sitewide",
-          url: `${baseUrl}/rss.xml`,
+          title: `${SITE_NAME} - Sitewide`,
+          url: `${SITE_URL}/rss.xml`,
         },
         {
-          title: "AI Web Feeds - Documentation",
-          url: `${baseUrl}/docs/rss.xml`,
+          title: `${SITE_NAME} - Documentation`,
+          url: `${SITE_URL}/docs/rss.xml`,
         },
       ],
       "application/atom+xml": [
         {
-          title: "AI Web Feeds - Sitewide (Atom)",
-          url: `${baseUrl}/atom.xml`,
+          title: `${SITE_NAME} - Sitewide (Atom)`,
+          url: `${SITE_URL}/atom.xml`,
         },
         {
-          title: "AI Web Feeds - Documentation (Atom)",
-          url: `${baseUrl}/docs/atom.xml`,
+          title: `${SITE_NAME} - Documentation (Atom)`,
+          url: `${SITE_URL}/docs/atom.xml`,
         },
       ],
-      "application/json": [
+      "application/feed+json": [
         {
-          title: "AI Web Feeds - Sitewide (JSON Feed)",
-          url: `${baseUrl}/feed.json`,
+          title: `${SITE_NAME} - Sitewide (JSON Feed)`,
+          url: `${SITE_URL}/feed.json`,
         },
         {
-          title: "AI Web Feeds - Documentation (JSON Feed)",
-          url: `${baseUrl}/docs/feed.json`,
+          title: `${SITE_NAME} - Documentation (JSON Feed)`,
+          url: `${SITE_URL}/docs/feed.json`,
         },
       ],
     },
   },
-  verification: {
-    google: "google-site-verification-code", // Add your verification code
-    // yandex: 'yandex-verification-code',
-    // yahoo: 'yahoo-verification-code',
-  },
+  verification: getSiteVerification(),
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -147,9 +143,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col font-sans antialiased">
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <RootProvider>{children}</RootProvider>
       </body>
     </html>
   );
 }
-import type { ReactNode } from "react";

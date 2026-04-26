@@ -1,22 +1,23 @@
 ---
 title: Reader
-description: Canonical feeds reader backed by a generated article corpus with /?mode=catalog source refinement and optional live refresh overlays
+description: Canonical feeds reader backed by a generated article corpus, source catalog links, and optional live refresh overlays
 ---
 
-`/` is the main workspace in AI Web Feeds. It combines a generated article library with the catalog filters from the curated source list.
+`/reader` is the main workspace in AI Web Feeds. It combines a generated article library with catalog filters from the curated source list.
 
 > **Status**: ✅ Available
-> **Surface**: `/` > **Catalog submode**: `/?mode=catalog`
+> **Surface**: `/reader` > **Source catalog**: `/sources`
 
 The reader is the canonical feeds workspace for AI Web Feeds. It uses the generated
 article corpus as its base dataset, keeps local reading state on-device, and
 adds live feed refreshes only as an explicit overlay.
 
-## Two Modes on One Route
+## Reader and Source Catalog
 
-- **Reader default** opens the article workspace on `/`.
-- **Catalog mode** lives at `/?mode=catalog` when you want to
-  change the source list.
+- **Reader** opens the article workspace on `/reader`.
+- **Source catalog** lives at `/sources` when you want to inspect or refine the source list.
+- **Source pages** live under `/sources/[sourceId]` and provide crawlable source metadata.
+- **Topic pages** live under `/topics/[topicId]` and group sources for long-tail discovery.
 - **Corpus-backed article list** reads normalized article rows from
   `data/articles.generated.json`.
 - **Preview pane** opens only after an explicit article selection and closes back
@@ -29,8 +30,8 @@ adds live feed refreshes only as an explicit overlay.
 - **Refresh latest** fetches live posts for the current feed slice, dedupes
   them against the corpus, and prepends only genuinely new items.
 
-There is no separate `/feeds` page. New docs and links should point to `/` or
-`/?mode=catalog`.
+There is no separate `/feeds` page. New docs and links should point to `/reader`,
+`/sources`, source pages, topic pages, or article reference pages.
 
 ## URL parameters
 
@@ -44,7 +45,7 @@ The current query and filters are stored in the URL. That means you can:
 
 ```mermaid
 flowchart LR
-    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/"]
+    catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/reader"]
     runtime["feed_entries in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
     corpus --> browse["/api/articles"]
     route --> ui["FeedsWorkspaceClient"]
@@ -57,7 +58,7 @@ flowchart LR
 The catalog decides which feeds are available. The generated article corpus
 provides the default article list. The live aggregation API is only used when
 the user explicitly refreshes the current slice. The canonical reader lives at
-`/`.
+`/reader`.
 
 - the catalog comes from `data/feeds.enriched.yaml` or the fallback source files
 - the article library comes from `data/articles.generated.json`

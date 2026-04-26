@@ -1,7 +1,7 @@
 import { Feed } from "feed";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { source } from "@/lib/source";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ai-web-feeds.vercel.app";
 const currentYear = new Date().getFullYear();
 const fallbackFeedDate = new Date("2025-01-01T00:00:00.000Z");
 
@@ -44,26 +44,26 @@ function resolvePageCategory(pageUrl: string) {
  */
 export function getDocsRSS() {
   const feed = new Feed({
-    title: "AI Web Feeds - Documentation",
-    id: `${baseUrl}/docs`,
-    link: `${baseUrl}/docs`,
+    title: `${SITE_NAME} - Documentation`,
+    id: `${SITE_URL}/docs`,
+    link: `${SITE_URL}/docs`,
     language: "en",
     description:
       "Documentation updates for AI Web Feeds - Curated RSS/Atom feeds optimized for AI agents",
 
-    image: `${baseUrl}/banner.png`,
-    favicon: `${baseUrl}/favicon.ico`,
-    copyright: `All rights reserved ${currentYear}, AI Web Feeds`,
+    image: `${SITE_URL}/og-image.png`,
+    favicon: `${SITE_URL}/favicon.ico`,
+    copyright: `All rights reserved ${currentYear}, ${SITE_NAME}`,
 
     feedLinks: {
-      rss2: `${baseUrl}/docs/rss.xml`,
-      json: `${baseUrl}/docs/feed.json`,
-      atom: `${baseUrl}/docs/atom.xml`,
+      rss2: `${SITE_URL}/docs/rss.xml`,
+      json: `${SITE_URL}/docs/feed.json`,
+      atom: `${SITE_URL}/docs/atom.xml`,
     },
 
     author: {
-      name: "AI Web Feeds Team",
-      link: baseUrl,
+      name: `${SITE_NAME} Team`,
+      link: SITE_URL,
     },
   });
 
@@ -74,18 +74,18 @@ export function getDocsRSS() {
     const publishedDate = resolvePageDate(page);
 
     feed.addItem({
-      id: `${baseUrl}${page.url}`,
+      id: `${SITE_URL}${page.url}`,
       title: page.data.title,
       description: page.data.description || `Documentation for ${page.data.title}`,
-      link: `${baseUrl}${page.url}`,
+      link: `${SITE_URL}${page.url}`,
       date: publishedDate,
 
       category: resolvePageCategory(page.url),
 
       author: [
         {
-          name: "AI Web Feeds Team",
-          link: baseUrl,
+          name: `${SITE_NAME} Team`,
+          link: SITE_URL,
         },
       ],
     });
@@ -99,25 +99,25 @@ export function getDocsRSS() {
  */
 export function getSitewideRSS() {
   const feed = new Feed({
-    title: "AI Web Feeds",
-    id: baseUrl,
-    link: baseUrl,
+    title: SITE_NAME,
+    id: SITE_URL,
+    link: SITE_URL,
     language: "en",
     description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
 
-    image: `${baseUrl}/banner.png`,
-    favicon: `${baseUrl}/favicon.ico`,
-    copyright: `All rights reserved ${currentYear}, AI Web Feeds`,
+    image: `${SITE_URL}/og-image.png`,
+    favicon: `${SITE_URL}/favicon.ico`,
+    copyright: `All rights reserved ${currentYear}, ${SITE_NAME}`,
 
     feedLinks: {
-      rss2: `${baseUrl}/rss.xml`,
-      json: `${baseUrl}/feed.json`,
-      atom: `${baseUrl}/atom.xml`,
+      rss2: `${SITE_URL}/rss.xml`,
+      json: `${SITE_URL}/feed.json`,
+      atom: `${SITE_URL}/atom.xml`,
     },
 
     author: {
-      name: "AI Web Feeds Team",
-      link: baseUrl,
+      name: `${SITE_NAME} Team`,
+      link: SITE_URL,
     },
   });
 
@@ -128,18 +128,18 @@ export function getSitewideRSS() {
     const publishedDate = resolvePageDate(page);
 
     feed.addItem({
-      id: `${baseUrl}${page.url}`,
+      id: `${SITE_URL}${page.url}`,
       title: page.data.title,
       description: page.data.description || `${page.data.title}`,
-      link: `${baseUrl}${page.url}`,
+      link: `${SITE_URL}${page.url}`,
       date: publishedDate,
 
       category: resolvePageCategory(page.url),
 
       author: [
         {
-          name: "AI Web Feeds Team",
-          link: baseUrl,
+          name: `${SITE_NAME} Team`,
+          link: SITE_URL,
         },
       ],
     });
@@ -154,25 +154,25 @@ export function getSitewideRSS() {
  */
 export function getBlogRSS() {
   const feed = new Feed({
-    title: "AI Web Feeds - Blog",
-    id: `${baseUrl}/blog`,
-    link: `${baseUrl}/blog`,
+    title: `${SITE_NAME} - Blog`,
+    id: `${SITE_URL}/blog`,
+    link: `${SITE_URL}/blog`,
     language: "en",
     description: "Latest updates and articles from AI Web Feeds",
 
-    image: `${baseUrl}/banner.png`,
-    favicon: `${baseUrl}/favicon.ico`,
-    copyright: `All rights reserved ${currentYear}, AI Web Feeds`,
+    image: `${SITE_URL}/og-image.png`,
+    favicon: `${SITE_URL}/favicon.ico`,
+    copyright: `All rights reserved ${currentYear}, ${SITE_NAME}`,
 
     feedLinks: {
-      rss2: `${baseUrl}/blog/rss.xml`,
-      json: `${baseUrl}/blog/feed.json`,
-      atom: `${baseUrl}/blog/atom.xml`,
+      rss2: `${SITE_URL}/blog/rss.xml`,
+      json: `${SITE_URL}/blog/feed.json`,
+      atom: `${SITE_URL}/blog/atom.xml`,
     },
 
     author: {
-      name: "AI Web Feeds Team",
-      link: baseUrl,
+      name: `${SITE_NAME} Team`,
+      link: SITE_URL,
     },
   });
 

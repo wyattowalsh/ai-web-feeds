@@ -6,16 +6,15 @@ icon: Sparkles
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-ai-web-feeds is organized around one primary product surface: the canonical
-reader at `/`. `/?mode=catalog` is the source-refinement view inside the same
-workspace, `/dashboard` is the compact health view, and legacy product routes
-redirect back to those two surfaces.
+ai-web-feeds is organized around a small public surface: the reader at `/reader`,
+the source catalog at `/sources`, crawlable source and topic pages, and the
+compact health view at `/dashboard`.
 
 ## Main Capabilities
 
 <Cards>
-  <Card title="Reader" description="Corpus-backed browsing, filtering, preview, and local reading state on /." href="/docs/features/reader" />
-  <Card title="Search & Discovery" description="Unified article search, autocomplete, and explicit catalog mode for source discovery" href="/docs/features/search" />
+  <Card title="Reader" description="Corpus-backed browsing, filtering, preview, and local reading state on /reader." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Article search, source catalog pages, topic collections, and article references." href="/docs/features/search" />
   <Card title="Feed Management" description="Centralized YAML-based registry with schema validation" href="#feed-management" />
   <Card title="Advanced Fetching" description="Extract 100+ metadata fields with quality scoring" href="#advanced-fetching" />
   <Card title="Analytics" description="8 analytics views with health monitoring" href="#analytics" />
@@ -25,19 +24,19 @@ redirect back to those two surfaces.
 
 ## Curated Catalog
 
-1. Open `/` to browse the generated article corpus, or live recent posts when
+1. Open `/reader` to browse the generated article corpus, or live recent posts when
    the corpus has not been generated yet.
-2. Switch to `/?mode=catalog` when you need to narrow or expand the source list.
-3. Return to the reader on `/` with that slice preserved in the URL.
+2. Switch to `/sources` when you need to narrow or expand the source list.
+3. Return to the reader on `/reader` with that slice preserved in the URL.
 4. Use `/dashboard` for catalog health and keep OPML, enrichment, and analytics management in CLI workflows.
 
 ## Reading Surface
 
-`/` is the main place to work with the catalog. It lets you:
+`/reader` is the main place to read from the catalog. It lets you:
 
 - search the generated article library
 - filter sources by topic, source type, and verification status
-- switch between the reading view and the catalog view
+- open `/sources`, source pages, and topic pages when you need catalog detail
 - keep read, saved, starred, and archived state in the browser
 
 ## Export and Interop
@@ -58,7 +57,7 @@ Most of the public web app works without a Python HTTP backend. The backend is o
 
 ## Typical Workflow
 
-1. Open `/` to read recent posts and search the article library.
-2. Switch to **Catalog** mode when you want to change which sources are included.
+1. Open `/reader` to read recent posts and search the article library.
+2. Switch to `/sources` when you want to change which sources are included.
 3. Use `/dashboard` when you want collection health.
 4. Use repo commands when you want OPML files, analytics exports, or generated artifacts.

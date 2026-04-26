@@ -1,9 +1,11 @@
 import { getLLMText, source } from "@/lib/source";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 export const revalidate = false;
 
 export async function GET(request: Request) {
   const { origin } = new URL(request.url);
+  const baseUrl = SITE_URL || origin;
   const pages = source.getPages();
 
   // Get current date in ISO format
@@ -12,14 +14,14 @@ export async function GET(request: Request) {
   // Build structured content with metadata header
   const header = [
     "=".repeat(80),
-    "AI WEB FEEDS - COMPLETE DOCUMENTATION",
+    `${SITE_NAME.toUpperCase()} - COMPLETE DOCUMENTATION`,
     "=".repeat(80),
     "",
     "METADATA",
     "-".repeat(80),
     `Generated: ${generatedDate}`,
     `Total Pages: ${pages.length}`,
-    `Base URL: ${origin}`,
+    `Base URL: ${baseUrl}`,
     `Format: Markdown`,
     `Encoding: UTF-8`,
     "",
@@ -45,6 +47,16 @@ export async function GET(request: Request) {
     "",
     ...pages.map((page, idx) => `  ${idx + 1}. ${page.data.title} - ${page.url}`),
     "",
+    "PUBLIC SEO ROUTES",
+    "-".repeat(80),
+    `Reader: ${baseUrl}/reader`,
+    `Sources: ${baseUrl}/sources`,
+    `Source pages: ${baseUrl}/sources/{sourceId}`,
+    `Topic pages: ${baseUrl}/topics/{topicId}`,
+    `Article references: ${baseUrl}/articles/{articleId}`,
+    `Sitemap: ${baseUrl}/sitemap.xml`,
+    `Robots: ${baseUrl}/robots.txt`,
+    "",
     "=".repeat(80),
     "DOCUMENTATION CONTENT",
     "=".repeat(80),
@@ -63,8 +75,8 @@ export async function GET(request: Request) {
         "=".repeat(80),
         "",
         `TITLE: ${page.data.title}`,
-        `URL: ${origin}${page.url}`,
-        `MARKDOWN: ${origin}${page.url}.mdx`,
+        `URL: ${baseUrl}${page.url}`,
+        `MARKDOWN: ${baseUrl}${page.url}.mdx`,
         ...(page.data.description ? [`DESCRIPTION: ${page.data.description}`] : []),
         `PATH: ${page.slugs.length > 0 ? "/" + page.slugs.join("/") : "/"}`,
         "",

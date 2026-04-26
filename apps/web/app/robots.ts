@@ -1,36 +1,31 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
-
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/_next/", "/static/"],
+        disallow: ["/api/", "/_next/", "/admin/", "/static/"],
       },
-      {
-        userAgent: "GPTBot",
+      ...[
+        "GPTBot",
+        "ChatGPT-User",
+        "OAI-SearchBot",
+        "PerplexityBot",
+        "ClaudeBot",
+        "Claude-SearchBot",
+        "Claude-User",
+        "anthropic-ai",
+        "Google-Extended",
+        "Bingbot",
+      ].map((userAgent) => ({
+        userAgent,
         allow: "/",
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: "/",
-      },
-      {
-        userAgent: "Google-Extended",
-        allow: "/",
-      },
-      {
-        userAgent: "anthropic-ai",
-        allow: "/",
-      },
-      {
-        userAgent: "ClaudeBot",
-        allow: "/",
-      },
+        disallow: ["/api/", "/_next/", "/admin/"],
+      })),
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

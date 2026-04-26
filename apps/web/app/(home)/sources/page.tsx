@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
 import { FeedCatalog } from "../../feeds/feed-catalog";
 import { getSourceTypes, loadFeedCatalog } from "@/lib/feeds";
+import { getSourcePath, getSourceTitle } from "@/lib/public-content";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
+import { createPageMetadata } from "@/lib/seo";
+import { collectionPageJsonLd } from "@/lib/structured-data";
 import type { ReaderPageSearchParams } from "@/lib/reader-route";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Sources - AI Web Feeds",
   description:
     "Browse the AI Web Feeds source catalog across blogs, labs, newsletters, organizations, and research feeds.",
-  alternates: {
-    canonical: `${baseUrl}/sources`,
-  },
-};
+  path: "/sources",
+});
 
 type SourcesPageProps = {
   searchParams: Promise<ReaderPageSearchParams>;
@@ -25,6 +25,19 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
 
   return (
     <div className="page-wrap page-stack">
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "AI Web Feeds Sources",
+          description:
+            "Browse AI writing sources across blogs, labs, newsletters, organizations, and research feeds.",
+          url: "/sources",
+          items: feedsData.sources.slice(0, 50).map((source) => ({
+            name: getSourceTitle(source),
+            url: getSourcePath(source),
+            description: source.description,
+          })),
+        })}
+      />
       <FeedCatalog
         feeds={feedsData.sources}
         sourceTypes={getSourceTypes(feedsData.sources)}

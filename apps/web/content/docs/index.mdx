@@ -6,28 +6,28 @@ icon: BookOpen
 
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Welcome to the **ai-web-feeds** documentation. The web app is intentionally small: open `/` for the reader, use `/dashboard` for catalog health, and keep OPML plus analytics management in the repo tooling.
+Welcome to the **ai-web-feeds** documentation. The web app is intentionally small: open `/reader` for the reader, use `/sources` for the source catalog, use `/dashboard` for catalog health, and keep OPML plus analytics management in the repo tooling.
 
 ## Start Here
 
-- **Read now:** [`/`](/)
-- **Refine sources:** [`/?mode=catalog`](/?mode=catalog)
+- **Read now:** [`/reader`](/reader)
+- **Refine sources:** [`/sources`](/sources)
 - **Dashboard:** [`/dashboard`](/dashboard)
 
 ## Core Routes
 
 <Cards>
-  <Card title="Reader" description="Open / for the canonical article stream across all tracked sources." href="/docs/features/reader" />
-  <Card title="Search & Discovery" description="Use /?mode=catalog to refine the source list without leaving the reader workflow." href="/docs/features/search" />
+  <Card title="Reader" description="Open /reader for the canonical article stream across all tracked sources." href="/docs/features/reader" />
+  <Card title="Search & Discovery" description="Use /sources to refine the source list without complicating the reader workflow." href="/docs/features/search" />
   <Card title="Getting Started" description="Set up the repo, build the article corpus, and learn the main route flow." href="/docs/guides/getting-started" />
   <Card title="Dashboard" description="Use /dashboard for compact catalog health and operational boundaries." href="/docs/features/analytics" />
 </Cards>
 
 ## Product Model
 
-1. Open `/` to browse recent AI articles across all tracked sources.
+1. Open `/reader` to browse recent AI articles across all tracked sources.
 2. Search the stream first, then narrow to specific feeds, topics, or source types only when you want to focus.
-3. Switch to `/?mode=catalog` when you need to inspect or refine the source list directly.
+3. Switch to `/sources` when you need to inspect or refine the source list directly.
 4. Use `/dashboard` to inspect catalog health; use CLI and repository workflows for OPML, enrichment, and analytics operations.
 
 ## Main Documentation Paths

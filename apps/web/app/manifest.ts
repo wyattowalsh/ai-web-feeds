@@ -1,22 +1,23 @@
 import type { MetadataRoute } from "next";
+import { DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "AI Web Feeds - RSS/Atom Feeds for AI Agents",
-    short_name: "AI Web Feeds",
-    description: "Curated RSS/Atom feeds optimized for AI agents and large language models",
+    name: `${SITE_NAME} - RSS and Atom feeds for AI writing`,
+    short_name: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
     start_url: "/reader",
     display: "standalone",
-    background_color: "#0a0a0a",
-    theme_color: "#667eea",
+    background_color: "#f8f5ed",
+    theme_color: "#f8f5ed",
     icons: [
       {
-        src: "/icon-192.png",
+        src: "/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/icon-512.png",
+        src: "/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
       },

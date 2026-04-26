@@ -20,6 +20,7 @@ import {
   CANONICAL_CATALOG_PATH,
   CANONICAL_SOURCES_PATH,
 } from "@/lib/reader-routes";
+import { getSourcePath, getTopicPath } from "@/lib/public-paths";
 import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
 
 interface FeedCatalogProps {
@@ -503,9 +504,12 @@ export function FeedCatalog({
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <SourceAvatar source={feed} />
-                  <h3 className="break-words text-lg font-semibold text-(--ink) [overflow-wrap:anywhere]">
+                  <Link
+                    href={getSourcePath(feed)}
+                    className="break-words text-lg font-semibold text-(--ink) transition hover:text-(--brand-strong) hover:underline [overflow-wrap:anywhere]"
+                  >
                     {feed.title}
-                  </h3>
+                  </Link>
                 </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
                   {feed.verified === true && (
@@ -537,12 +541,13 @@ export function FeedCatalog({
               {feed.topics && feed.topics.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {feed.topics.slice(0, 3).map((topic) => (
-                    <span
+                    <Link
                       key={topic}
+                      href={getTopicPath(topic)}
                       className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
                     >
                       {topic}
-                    </span>
+                    </Link>
                   ))}
                   {feed.topics.length > 3 && (
                     <span className="text-xs text-(--ink-muted)">
@@ -553,6 +558,15 @@ export function FeedCatalog({
               )}
 
               <div className="flex flex-wrap gap-3 pt-1">
+                {feed.id ? (
+                  <Link
+                    href={getSourcePath(feed)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                  >
+                    <RadioTower className="size-3.5" />
+                    Details
+                  </Link>
+                ) : null}
                 {feed.id ? (
                   <Link
                     href={buildFeedReaderHref({

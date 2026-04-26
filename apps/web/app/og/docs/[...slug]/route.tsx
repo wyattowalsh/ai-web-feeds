@@ -1,6 +1,7 @@
 import { getPageImage, source } from "@/lib/source";
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
+import { SITE_URL } from "@/lib/seo";
 
 export const revalidate = false;
 
@@ -136,7 +137,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
               display: "flex",
             }}
           >
-            aiwebfeeds.vercel.app
+            {SITE_URL.replace(/^https?:\/\//, "")}
           </div>
         </div>
       </div>

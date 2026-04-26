@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 
 import { DESIGN_ASSETS } from "@/lib/design-assets";
 import { getEmbeddedDesignAssetDataUrl } from "@/lib/design-assets.server";
+import { SITE_URL } from "@/lib/seo";
 
 export const runtime = "nodejs";
 
@@ -184,7 +185,7 @@ export async function GET() {
               marginTop: "12px",
             }}
           >
-            aiwebfeeds.vercel.app
+            {SITE_URL.replace(/^https?:\/\//, "")}
           </div>
         </div>
       </div>

@@ -9,15 +9,19 @@ import {
   RadioTower,
   ShieldCheck,
 } from "lucide-react";
+import { JsonLd } from "@/components/json-ld";
 import { getFeedStats, loadFeedCatalog } from "@/lib/feeds";
+import { createPageMetadata } from "@/lib/seo";
+import { collectionPageJsonLd } from "@/lib/structured-data";
 import { getValidationStats } from "@/lib/validation-stats";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Dashboard - AI Web Feeds",
   description: "A compact health and catalog dashboard for the AI Web Feeds reader.",
-};
+  path: "/dashboard",
+});
 
 function formatPercent(value: number | null): string {
   return value === null ? "N/A" : `${value.toFixed(1)}%`;
@@ -46,6 +50,25 @@ export default async function DashboardPage() {
 
   return (
     <div className="page-wrap page-stack">
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "AI Web Feeds Dashboard",
+          description: "Catalog health and coverage dashboard for AI Web Feeds.",
+          url: "/dashboard",
+          items: [
+            {
+              name: "Source coverage",
+              url: "/sources",
+              description: `${feedStats.total} tracked sources across ${feedStats.topicCount} topics.`,
+            },
+            {
+              name: "Reader",
+              url: "/reader",
+              description: "Read recent posts from the tracked source catalog.",
+            },
+          ],
+        })}
+      />
       <section className="surface-panel space-y-8">
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <div className="space-y-5">

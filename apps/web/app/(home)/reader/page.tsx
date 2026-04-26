@@ -1,39 +1,16 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
 import { loadReaderRouteData, ReaderPageSearchParams } from "@/lib/reader-route";
+import { createPageMetadata } from "@/lib/seo";
+import { collectionPageJsonLd } from "@/lib/structured-data";
 import { FeedsWorkspaceClient } from "../../feeds/feeds-workspace-client";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aiwebfeeds.vercel.app";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "AI Reader - AI Web Feeds",
   description:
     "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
-  alternates: {
-    canonical: `${baseUrl}/reader`,
-  },
-  openGraph: {
-    title: "AI Reader - AI Web Feeds",
-    description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
-    url: `${baseUrl}/reader`,
-    type: "website",
-    images: [
-      {
-        url: `${baseUrl}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: "AI Web Feeds",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Reader - AI Web Feeds",
-    description:
-      "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
-    images: [`${baseUrl}/og-image.png`],
-  },
-};
+  path: "/reader",
+});
 
 type ReaderPageProps = {
   searchParams: Promise<ReaderPageSearchParams>;
@@ -45,6 +22,19 @@ export default async function ReaderPage({ searchParams }: ReaderPageProps) {
 
   return (
     <div className="page-wrap page-stack">
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "AI Reader",
+          description:
+            "Read recent AI writing from blogs, labs, newsletters, organizations, and research sources in one focused stream.",
+          url: "/reader",
+          items: (initialBrowse?.items ?? []).slice(0, 20).map((article) => ({
+            name: article.title,
+            url: article.link,
+            description: article.summary,
+          })),
+        })}
+      />
       <section className="space-y-8">
         <FeedsWorkspaceClient
           mode={mode}
