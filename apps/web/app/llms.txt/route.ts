@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     `- [Dashboard](${baseUrl}/dashboard): Inspect catalog health and coverage.`,
     `- [Source pages](${baseUrl}/sources/{sourceId}): Crawlable source landing pages.`,
     `- [Topic pages](${baseUrl}/topics/{topicId}): Crawlable topic collections.`,
-    `- [Article references](${baseUrl}/articles/{articleId}): Summary and attribution pages when an article corpus exists.`,
+    `- [Article references](${baseUrl}/articles/{articleId}): Noindex summary and attribution pages when an article corpus exists.`,
     "",
     "## Documentation Pages",
     "",

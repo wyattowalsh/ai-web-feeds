@@ -1,12 +1,7 @@
 import type { MetadataRoute } from "next";
 import { loadArticleCorpus } from "@/lib/article-corpus";
 import { loadFeedCatalog } from "@/lib/feeds";
-import {
-  getArticlePath,
-  getSourcePath,
-  getTopicPath,
-  loadTopicCatalog,
-} from "@/lib/public-content";
+import { getSourcePath, getTopicPath, loadTopicCatalog } from "@/lib/public-content";
 import { DEFAULT_LAST_MODIFIED, parseDateOrDefault, SITE_URL } from "@/lib/seo";
 import { source } from "@/lib/source";
 
@@ -38,17 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.76,
   }));
-
-  const articleUrls: MetadataRoute.Sitemap = articleCorpus.metadata.is_empty
-    ? []
-    : articleCorpus.articles.map((article) => ({
-        url: `${SITE_URL}${getArticlePath(article)}`,
-        lastModified: parseDateOrDefault(
-          article.published_at ?? articleCorpus.metadata.generated_at,
-        ),
-        changeFrequency: "monthly" as const,
-        priority: 0.58,
-      }));
 
   const staticUrls: MetadataRoute.Sitemap = [
     {
@@ -89,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...staticUrls, ...sourceUrls, ...topicUrls, ...articleUrls, ...docUrls];
+  return [...staticUrls, ...sourceUrls, ...topicUrls, ...docUrls];
 }
 
 function getPageLastModified(pageData: Record<string, unknown>): Date {

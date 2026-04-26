@@ -35,6 +35,15 @@ export const noIndexRobots = {
   },
 } satisfies Metadata["robots"];
 
+export const noIndexFollowRobots = {
+  index: false,
+  follow: true,
+  googleBot: {
+    index: false,
+    follow: true,
+  },
+} satisfies Metadata["robots"];
+
 export function normalizeSiteUrl(value: string): string {
   const trimmed = value.trim().replace(/\/+$/, "");
 

@@ -16,7 +16,7 @@ import {
   getSourceTitle,
   getTopicPath,
 } from "@/lib/public-content";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadata, noIndexFollowRobots } from "@/lib/seo";
 import { articleJsonLd, breadcrumbsJsonLd } from "@/lib/structured-data";
 
 type ArticlePageProps = {
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     description: articleExcerpt(article),
     path: getArticlePath(article),
     type: "article",
-    canonical: article.link || undefined,
+    robots: noIndexFollowRobots,
   });
 }
 

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { absoluteUrl, createPageMetadata, normalizeSiteUrl, SITE_URL } from "./seo";
+import {
+  absoluteUrl,
+  createPageMetadata,
+  noIndexFollowRobots,
+  normalizeSiteUrl,
+  SITE_URL,
+} from "./seo";
 
 describe("seo helpers", () => {
   it("uses the configured canonical production host", () => {
@@ -32,5 +38,18 @@ describe("seo helpers", () => {
       card: "summary_large_image",
       title: "Sources - AI Web Feeds",
     });
+  });
+
+  it("supports noindex follow metadata for attribution pages", () => {
+    const metadata = createPageMetadata({
+      title: "Article reference",
+      description: "Article attribution page.",
+      path: "/articles/example",
+      type: "article",
+      robots: noIndexFollowRobots,
+    });
+
+    expect(metadata.alternates?.canonical).toBe("https://aiwebfeeds.w4w.dev/articles/example");
+    expect(metadata.robots).toEqual(noIndexFollowRobots);
   });
 });
