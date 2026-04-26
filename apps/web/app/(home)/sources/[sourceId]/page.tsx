@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { ArrowRight, ExternalLink, RadioTower } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
 import { SourceAvatar } from "@/components/source-avatar";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
 import { loadFeedCatalog } from "@/lib/feeds";
 import {
@@ -80,75 +82,86 @@ export default async function SourcePage({ params }: SourcePageProps) {
           }),
         ]}
       />
-      <section className="surface-panel space-y-8">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="space-y-5">
-            <span className="eyebrow">
-              <RadioTower className="size-3.5" />
-              Source
-            </span>
-            <div className="flex items-start gap-4">
-              <SourceAvatar source={source} className="size-14 rounded-xl" />
-              <div className="space-y-3">
-                <h1 className="text-title-large max-w-4xl">{sourceTitle}</h1>
-                <p className="hero-copy max-w-3xl">{sourceDescription}</p>
+      <section className="space-y-6">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-6">
+            <div className="space-y-5">
+              <span className="eyebrow">
+                <RadioTower className="size-3.5" />
+                Source
+              </span>
+              <div className="flex items-start gap-4">
+                <SourceAvatar source={source} className="size-14 rounded-lg" />
+                <div className="space-y-3">
+                  <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                    {sourceTitle}
+                  </h1>
+                  <p className="small-note max-w-3xl">{sourceDescription}</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href={readerHref} className={cn(buttonVariants({ variant: "default" }))}>
-              Read source
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href={sourceUrl}
-              className={cn(buttonVariants({ variant: "outline" }))}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Original site
-              <ExternalLink className="size-4" />
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href={readerHref} className={cn(buttonVariants({ variant: "default" }))}>
+                Read source
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href={sourceUrl}
+                className={cn(buttonVariants({ variant: "outline" }))}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Original site
+                <ExternalLink className="size-4" />
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="surface-card space-y-2">
-            <p className="metric-label">Source type</p>
-            <p className="text-lg font-semibold text-(--ink)">{source.source_type ?? "feed"}</p>
-          </div>
-          <div className="surface-card space-y-2">
-            <p className="metric-label">Verification</p>
-            <p className="text-lg font-semibold text-(--ink)">
-              {source.verified ? "Verified" : "Cataloged"}
-            </p>
-          </div>
-          <div className="surface-card space-y-2">
-            <p className="metric-label">Feed</p>
-            <Link
-              href={source.url}
-              className="break-all text-sm font-semibold text-(--brand-strong)"
-            >
-              {source.url}
-            </Link>
-          </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <Card>
+            <CardContent className="space-y-2">
+              <p className="metric-label">Source type</p>
+              <Badge variant="outline" className="h-7 rounded-md">
+                {source.source_type ?? "feed"}
+              </Badge>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-2">
+              <p className="metric-label">Verification</p>
+              <Badge variant={source.verified ? "secondary" : "outline"} className="h-7 rounded-md">
+                {source.verified ? "Verified" : "Cataloged"}
+              </Badge>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-2">
+              <p className="metric-label">Feed</p>
+              <Link href={source.url} className="break-all text-sm font-semibold text-primary">
+                {source.url}
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
         {source.topics && source.topics.length > 0 ? (
-          <div className="surface-card space-y-4">
-            <h2 className="text-title-medium">Topics</h2>
-            <div className="flex flex-wrap gap-2">
-              {source.topics.map((topic) => (
-                <Link
-                  key={topic}
-                  href={getTopicPath(topic)}
-                  className="rounded-lg border border-(--line) bg-(--surface-muted) px-3 py-2 text-sm font-semibold text-(--ink) transition hover:bg-(--brand-soft) hover:text-(--brand-strong)"
-                >
-                  {topic}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <Card>
+            <CardContent className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">Topics</h2>
+              <div className="flex flex-wrap gap-2">
+                {source.topics.map((topic) => (
+                  <Link
+                    key={topic}
+                    href={getTopicPath(topic)}
+                    className="rounded-lg border border-border bg-muted px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-primary/10 hover:text-primary"
+                  >
+                    {topic}
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         ) : null}
       </section>
     </div>

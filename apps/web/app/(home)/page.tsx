@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpenText, RadioTower } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpenText, RadioTower, Tags } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/json-ld";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -52,11 +53,13 @@ export default function HomePage() {
           ],
         })}
       />
-      <section className="grid gap-8 rounded-xl border border-(--line) bg-(--surface) p-6 shadow-(--surface-shadow-soft) lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:p-8">
+      <section className="grid gap-8 rounded-lg border border-border bg-card p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap gap-2">
-            <span className="eyebrow">AI Web Feeds</span>
-            <span className="eyebrow bg-(--surface-muted) text-(--ink-muted)">Open web reader</span>
+            <Badge className="h-7 rounded-md bg-primary/10 text-primary">AI Web Feeds</Badge>
+            <Badge variant="outline" className="h-7 rounded-md">
+              Open web reader
+            </Badge>
           </div>
           <div className="space-y-3">
             <h1 className="max-w-4xl text-4xl font-semibold leading-none text-(--ink) sm:text-5xl">
@@ -75,8 +78,9 @@ export default function HomePage() {
             <Link href="/sources" className={cn(buttonVariants({ variant: "secondary" }))}>
               Browse sources
             </Link>
-            <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }))}>
-              View dashboard
+            <Link href="/topics" className={cn(buttonVariants({ variant: "outline" }))}>
+              <Tags className="size-4" />
+              Topics
             </Link>
           </div>
         </div>

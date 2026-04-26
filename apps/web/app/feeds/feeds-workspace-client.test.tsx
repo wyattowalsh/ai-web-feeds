@@ -182,7 +182,7 @@ describe("FeedsWorkspaceClient", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+      screen.getByRole("heading", { name: "Read AI writing across the open web" }),
     ).toBeInTheDocument();
     expect((await screen.findAllByText("Agent systems roundup")).length).toBeGreaterThan(0);
     expect((await screen.findAllByText("Fresh research notes")).length).toBeGreaterThan(0);
@@ -403,7 +403,7 @@ describe("FeedsWorkspaceClient", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+      screen.getByRole("heading", { name: "Read AI writing across the open web" }),
     ).toBeInTheDocument();
 
     await waitFor(() => {

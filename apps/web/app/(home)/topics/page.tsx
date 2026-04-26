@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Tags } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
 import {
   getSourcesForTopic,
@@ -34,44 +36,52 @@ export default function TopicsPage() {
           })),
         })}
       />
-      <section className="surface-panel space-y-8">
-        <div className="space-y-5">
+      <section className="space-y-6">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
           <span className="eyebrow">
             <Tags className="size-3.5" />
             Topics
           </span>
-          <div className="space-y-3">
-            <h1 className="text-title-large max-w-4xl">Browse AI topics</h1>
-            <p className="hero-copy max-w-3xl">
-              Topic pages group the source catalog into crawlable collections for research areas,
-              product surfaces, infrastructure, evaluation, governance, and agent workflows.
+          <div className="mt-4 space-y-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Discover collections
+            </h1>
+            <p className="small-note max-w-3xl">
+              Topic pages group AI sources into useful reading lanes for research, products,
+              infrastructure, evaluation, governance, and agent workflows.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {topics.map((topic) => {
             const sourceCount = getSourcesForTopic(topic.id).length;
 
             return (
-              <Link
+              <Card
                 key={topic.id}
-                href={getTopicPath(topic.id)}
-                className="surface-card space-y-3 transition hover:border-(--brand)"
+                asChild
+                className="transition hover:border-primary/45 hover:bg-muted/25"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-lg font-semibold text-(--ink)">{topic.label}</h2>
-                  <span className="rounded-full bg-(--brand-soft) px-2.5 py-1 text-xs font-semibold text-(--brand-strong)">
-                    {sourceCount} sources
-                  </span>
-                </div>
-                <p className="line-clamp-3 text-sm leading-6 text-(--ink-muted)">
-                  {truncateDescription(
-                    topic.description,
-                    `Sources and reader filters for ${topic.label}.`,
-                  )}
-                </p>
-              </Link>
+                <Link href={getTopicPath(topic.id)}>
+                  <CardHeader>
+                    <CardTitle className="flex items-start justify-between gap-3">
+                      <span className="min-w-0 break-words">{topic.label}</span>
+                      <Badge variant="secondary" className="h-6 shrink-0 rounded-md">
+                        {sourceCount}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                      {truncateDescription(
+                        topic.description,
+                        `Sources and reader filters for ${topic.label}.`,
+                      )}
+                    </p>
+                  </CardContent>
+                </Link>
+              </Card>
             );
           })}
         </div>

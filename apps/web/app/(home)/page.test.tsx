@@ -49,9 +49,6 @@ describe("HomePage", () => {
       "href",
       "/sources",
     );
-    expect(screen.getByRole("link", { name: /View dashboard/i })).toHaveAttribute(
-      "href",
-      "/dashboard",
-    );
+    expect(screen.getByRole("link", { name: /Topics/i })).toHaveAttribute("href", "/topics");
   });
 });

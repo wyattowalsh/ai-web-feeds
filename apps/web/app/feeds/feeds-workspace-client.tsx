@@ -24,10 +24,12 @@ import {
 } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SourceAvatar } from "@/components/source-avatar";
 import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
@@ -259,21 +261,24 @@ function Pill({
   children: ReactNode;
   tone?: "neutral" | "brand" | "success" | "warning" | "info";
 }) {
+  const variant = tone === "neutral" ? "outline" : tone === "brand" ? "default" : "secondary";
+
   return (
-    <span
+    <Badge
+      variant={variant}
       className={cn(
-        "inline-flex min-h-7 items-center rounded-md border px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.08em]",
-        tone === "brand" && "border-(--brand)/25 bg-(--brand-soft) text-(--brand-strong)",
+        "min-h-6 px-2.5 text-[0.68rem] uppercase tracking-[0.08em]",
+        tone === "brand" && "border-primary/20 bg-primary/10 text-primary",
         tone === "success" &&
           "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
         tone === "warning" &&
           "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
         tone === "info" && "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-        tone === "neutral" && "border-(--line) bg-(--surface-muted) text-(--ink-muted)",
+        tone === "neutral" && "border-border bg-muted text-muted-foreground",
       )}
     >
       {children}
-    </span>
+    </Badge>
   );
 }
 
@@ -616,9 +621,9 @@ function PreviewPane({
   return (
     <div
       className={cn(
-        "rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm",
+        "rounded-lg border border-border bg-card p-5 shadow-sm",
         variant === "panel" &&
-          "flex h-full max-h-[calc(100vh-3rem)] flex-col overflow-hidden border-(--brand)/20 bg-[color-mix(in_oklab,var(--surface)_98%,white)]",
+          "flex h-full max-h-[calc(100vh-3rem)] flex-col overflow-hidden border-primary/20",
       )}
     >
       <div className="space-y-4 border-b border-(--line) pb-4">
@@ -1415,7 +1420,7 @@ function ReaderWorkspace({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="metric-label">AI Web Feeds</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-(--ink) sm:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {refreshError ? "Live posts unavailable" : "Loading live posts"}
               </h1>
               <p className="small-note max-w-3xl">
@@ -1461,20 +1466,17 @@ function ReaderWorkspace({
 
   return (
     <div className="reader-shell space-y-5">
-      <div className="overflow-hidden rounded-lg border border-(--line) bg-(--surface) shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end sm:p-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="brand">Reader</Pill>
               {corpusEmpty ? <Pill tone="info">Live</Pill> : <Pill>Prepared posts</Pill>}
               {refreshing ? <Pill tone="warning">Refreshing</Pill> : null}
-              {liveProgress?.failedSources ? (
-                <Pill tone="warning">{liveProgress.failedSources} failed</Pill>
-              ) : null}
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold leading-tight text-(--ink) sm:text-3xl">
-                Latest AI posts from across the open web
+              <h1 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+                Read AI writing across the open web
               </h1>
               <p className="small-note max-w-3xl">
                 A clean reading desk for open AI writing, with local read, save, and focus state.
@@ -1500,7 +1502,7 @@ function ReaderWorkspace({
             </Link>
           </div>
         </div>
-        <div className="hidden border-t border-(--line) bg-(--surface-muted) md:grid md:grid-cols-4">
+        <div className="hidden border-t border-border bg-muted/55 md:grid md:grid-cols-4">
           {readerStats.map(({ label, value, note, icon: Icon }) => (
             <div
               key={label}
@@ -1522,7 +1524,7 @@ function ReaderWorkspace({
       <div
         className={cn(
           "grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]",
-          selectedArticle && "2xl:pr-[26rem]",
+          selectedArticle && "2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
         )}
       >
         <aside className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
@@ -1894,8 +1896,17 @@ function ReaderWorkspace({
                 {Array.from({ length: 6 }, (_, index) => (
                   <div
                     key={`loading-${index}`}
-                    className="h-28 animate-pulse rounded-lg border border-(--line) bg-(--surface-muted)"
-                  />
+                    className="rounded-lg border border-border bg-card p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Skeleton className="size-9 rounded-lg" />
+                      <div className="flex-1 space-y-3">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-5 w-5/6" />
+                        <Skeleton className="h-4 w-2/3" />
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : visibleArticles.length === 0 ? (
@@ -2083,23 +2094,21 @@ function ReaderWorkspace({
       </div>
 
       {selectedArticle ? (
-        <div className="hidden xl:block">
-          <aside className="fixed inset-y-6 right-6 z-30 w-[24rem] max-w-[calc(100vw-3rem)]">
-            <PreviewPane
-              article={selectedArticle}
-              source={selectedArticleSource}
-              state={selectedArticleState}
-              variant="panel"
-              onClose={() => setPreviewArticleId(null)}
-              onToggleState={(partial) => {
-                if (!selectedArticle) {
-                  return;
-                }
-                updateState(selectedArticle.id, partial);
-              }}
-            />
-          </aside>
-        </div>
+        <aside className="hidden 2xl:block 2xl:sticky 2xl:top-24 2xl:self-start">
+          <PreviewPane
+            article={selectedArticle}
+            source={selectedArticleSource}
+            state={selectedArticleState}
+            variant="panel"
+            onClose={() => setPreviewArticleId(null)}
+            onToggleState={(partial) => {
+              if (!selectedArticle) {
+                return;
+              }
+              updateState(selectedArticle.id, partial);
+            }}
+          />
+        </aside>
       ) : null}
     </div>
   );

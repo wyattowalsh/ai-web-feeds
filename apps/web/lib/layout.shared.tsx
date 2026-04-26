@@ -12,17 +12,15 @@ export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: (
-        <span className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl border border-(--line) bg-(--surface) p-2 shadow-(--surface-shadow-soft)">
-            <Image src="/icon.svg" alt="AI Web Feeds" width={24} height={24} priority />
+        <span className="flex items-center gap-2.5">
+          <span className="flex size-9 items-center justify-center rounded-lg border border-border bg-card p-1.5 shadow-sm">
+            <Image src="/icon.svg" alt="AI Web Feeds" width={22} height={22} priority />
           </span>
           <span className="flex flex-col leading-none">
-            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-(--ink-muted)">
+            <span className="text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               AI Web Feeds
             </span>
-            <span className="font-serif text-lg font-semibold text-(--ink)">
-              Read AI writing across the open web
-            </span>
+            <span className="text-sm font-semibold text-foreground">Open web AI reader</span>
           </span>
         </span>
       ),
@@ -38,11 +36,15 @@ export function baseOptions(): BaseLayoutProps {
         url: "/sources",
       },
       {
+        text: "Topics",
+        url: "/topics",
+      },
+      {
         text: "Dashboard",
         url: "/dashboard",
       },
       {
-        text: "Documentation",
+        text: "Docs",
         url: "/docs",
       },
       {

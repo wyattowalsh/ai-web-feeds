@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Tags } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
 import { SourceAvatar } from "@/components/source-avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -81,16 +83,18 @@ export default async function TopicPage({ params }: TopicPageProps) {
           }),
         ]}
       />
-      <section className="surface-panel space-y-8">
+      <section className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="space-y-5">
+          <div className="space-y-4">
             <span className="eyebrow">
               <Tags className="size-3.5" />
               Topic
             </span>
             <div className="space-y-3">
-              <h1 className="text-title-large max-w-4xl">{topic.label}</h1>
-              <p className="hero-copy max-w-3xl">{description}</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {topic.label}
+              </h1>
+              <p className="small-note max-w-3xl">{description}</p>
             </div>
           </div>
           <Link href={readerHref} className={cn(buttonVariants({ variant: "default" }))}>
@@ -99,7 +103,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           <div className="surface-card space-y-2">
             <p className="metric-label">Sources</p>
             <p className="text-2xl font-semibold text-(--ink)">{sources.length}</p>
@@ -116,21 +120,39 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2">
           {sources.map((source) => (
-            <Link
+            <Card
               key={source.id ?? source.url}
-              href={getSourcePath(source)}
-              className="surface-card flex items-start gap-4 transition hover:border-(--brand)"
+              asChild
+              className="transition hover:border-primary/45 hover:bg-muted/25"
             >
-              <SourceAvatar source={source} />
-              <div className="min-w-0 space-y-2">
-                <h2 className="font-semibold text-(--ink)">{getSourceTitle(source)}</h2>
-                <p className="line-clamp-2 text-sm leading-6 text-(--ink-muted)">
-                  {source.description ?? source.url}
-                </p>
-              </div>
-            </Link>
+              <Link href={getSourcePath(source)}>
+                <CardHeader className="flex-row items-start gap-3">
+                  <SourceAvatar source={source} />
+                  <div className="min-w-0">
+                    <CardTitle>{getSourceTitle(source)}</CardTitle>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {source.source_type ? (
+                        <Badge variant="outline" className="h-6 rounded-md">
+                          {source.source_type}
+                        </Badge>
+                      ) : null}
+                      {source.verified ? (
+                        <Badge className="h-6 rounded-md bg-primary/10 text-primary">
+                          Verified
+                        </Badge>
+                      ) : null}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+                    {source.description ?? source.url}
+                  </p>
+                </CardContent>
+              </Link>
+            </Card>
           ))}
         </div>
       </section>
