@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { JsonLd } from "@/components/json-ld";
 import { FeedCatalog } from "../../feeds/feed-catalog";
 import { getSourceTypes, loadFeedCatalog } from "@/lib/feeds";
@@ -20,12 +21,14 @@ type SourcesPageProps = {
 };
 
 export default async function SourcesPage({ searchParams }: SourcesPageProps) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const params = toURLSearchParams(await searchParams);
   const feedsData = loadFeedCatalog();
 
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={collectionPageJsonLd({
           name: "AI Web Feeds Sources",
           description:

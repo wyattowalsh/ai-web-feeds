@@ -1,6 +1,7 @@
 import "@/app/global.css";
 import "katex/dist/katex.css";
 import type { ReactNode } from "react";
+import { headers } from "next/headers";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { Fraunces, Manrope } from "next/font/google";
 import type { Metadata } from "next";
@@ -136,7 +137,8 @@ export const metadata: Metadata = {
   verification: getSiteVerification(),
 };
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
@@ -144,7 +146,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col font-sans antialiased">
-        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} nonce={nonce} />
         <RootProvider>{children}</RootProvider>
       </body>
     </html>

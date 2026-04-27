@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { JsonLd } from "@/components/json-ld";
 import { loadReaderRouteData, ReaderPageSearchParams } from "@/lib/reader-route";
 import { createPageMetadata } from "@/lib/seo";
@@ -17,12 +18,14 @@ type ReaderPageProps = {
 };
 
 export default async function ReaderPage({ searchParams }: ReaderPageProps) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { mode, feeds, stats, initialState, initialBrowse } =
     await loadReaderRouteData(searchParams);
 
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={collectionPageJsonLd({
           name: "AI Reader",
           description:

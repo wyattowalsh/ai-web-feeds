@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpenText, RadioTower, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,8 @@ export const metadata: Metadata = createPageMetadata({
   path: "/",
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const feedsData = loadFeedCatalog();
   const stats = getFeedStats(feedsData.sources);
 
@@ -29,6 +31,7 @@ export default function HomePage() {
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={collectionPageJsonLd({
           name: "AI Web Feeds",
           description:

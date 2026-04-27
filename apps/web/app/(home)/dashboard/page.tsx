@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Activity, Database, Gauge, ShieldCheck } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
@@ -27,6 +28,7 @@ function formatNumber(value: number | null): string {
 }
 
 export default async function DashboardPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const feedsData = loadFeedCatalog();
   const feedStats = getFeedStats(feedsData.sources);
   const validationStats = await getValidationStats();
@@ -46,6 +48,7 @@ export default async function DashboardPage() {
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={collectionPageJsonLd({
           name: "AI Web Feeds Dashboard",
           description: "Catalog health and coverage dashboard for AI Web Feeds.",

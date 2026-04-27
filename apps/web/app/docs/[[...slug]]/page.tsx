@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { getMDXComponents } from "@/mdx-components";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import { BookOpenText } from "lucide-react";
 import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
@@ -25,6 +26,7 @@ type DocsPageProps = {
 
 export default async function Page(props: DocsPageProps) {
   const params = await props.params;
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
@@ -33,6 +35,7 @@ export default async function Page(props: DocsPageProps) {
   return (
     <>
       <JsonLd
+        nonce={nonce}
         data={breadcrumbsJsonLd([
           { name: "Home", url: "/" },
           { name: "Documentation", url: "/docs" },

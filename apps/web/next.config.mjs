@@ -10,12 +10,6 @@ const config = {
   reactStrictMode: true,
   output: "standalone",
   outputFileTracingRoot: workspaceRoot,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async rewrites() {
     return [
       {
@@ -25,6 +19,22 @@ const config = {
       {
         source: '/docs/:path*.md',
         destination: '/llms.md/:path*',
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Full Content-Security-Policy (including per-request nonces for dynamic inline
+          // JsonLd scripts) is set in middleware.ts. The nonce-based policy is the canonical
+          // approach for Next.js App Router when allowing specific inline scripts without
+          // 'unsafe-inline' on script-src. See middleware.ts for the current tight policy.
+        ],
       },
     ];
   },

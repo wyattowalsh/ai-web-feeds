@@ -26,7 +26,7 @@ type TelemetryOptions = {
   backendTarget?: string | null;
 };
 
-const ADMIN_SESSION_COOKIE = "aiwf_admin_session";
+const ADMIN_SESSION_COOKIE = "aiwf_session_token";
 
 function resolveQueryKeys(url: URL): string[] {
   return [...new Set([...url.searchParams.keys()])].sort();

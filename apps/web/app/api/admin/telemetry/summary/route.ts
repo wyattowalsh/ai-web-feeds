@@ -1,11 +1,17 @@
-import { withAdminRouteGuard } from "@/lib/admin-auth";
+import { NextResponse } from "next/server";
+import { withBetterAuthAdminGuard } from "@/lib/admin-auth-new";
 import { getApiTelemetrySummary, recordAdminAudit } from "@/lib/telemetry";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const GETHandler = withAdminRouteGuard(async (request: Request) => {
+const GETHandler = async (request: Request) => {
+  const { user } = await withBetterAuthAdminGuard(request);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const windowHours = Math.min(
     168,
     Math.max(1, Number(new URL(request.url).searchParams.get("window_hours") || "24")),
@@ -26,6 +32,6 @@ const GETHandler = withAdminRouteGuard(async (request: Request) => {
       "Cache-Control": "private, no-store",
     },
   });
-});
+};
 
 export const GET = withRouteTelemetry("admin.telemetry.summary", GETHandler);

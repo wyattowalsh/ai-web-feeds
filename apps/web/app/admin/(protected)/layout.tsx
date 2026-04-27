@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { ActivitySquare } from "lucide-react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { isAdminUser } from "@/lib/admin-auth-new";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
-import { requireAdminSession } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
-  await requireAdminSession();
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({
+    headers: requestHeaders,
+  });
+
+  if (!session?.user || !isAdminUser(session.user)) {
+    redirect("/admin/login");
+  }
 
   return (
     <div className="page-wrap page-stack">

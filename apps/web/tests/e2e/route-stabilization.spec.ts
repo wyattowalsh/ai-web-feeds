@@ -1,6 +1,12 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { expect, test, type Page } from "@playwright/test";
+import { getViolations, injectAxe } from "axe-playwright";
+import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import {
+  PLAYWRIGHT_AXE_OPTIONS,
+  buildAxeFailureMessage,
+  summarizeAxeViolations,
+} from "../../lib/accessibility/axe-tests";
 
 const afterSuite = Reflect.get(test, ["after", "All"].join("")) as typeof test.beforeAll;
 const articleCorpusPath = path.resolve(
@@ -108,6 +114,37 @@ async function gotoWithRetry(
   throw lastError;
 }
 
+async function warnOnA11yViolations(page: Page, testInfo: TestInfo) {
+  if (page.isClosed() || page.url() === "about:blank") {
+    return;
+  }
+
+  await injectAxe(page);
+  const violations = await getViolations(page, undefined, PLAYWRIGHT_AXE_OPTIONS);
+
+  if (violations.length === 0) {
+    return;
+  }
+
+  const summary = summarizeAxeViolations(violations);
+  await testInfo.attach("axe-violations.json", {
+    body: Buffer.from(
+      JSON.stringify(
+        {
+          title: testInfo.title,
+          url: page.url(),
+          violationCount: summary.length,
+          violations: summary,
+        },
+        null,
+        2,
+      ),
+    ),
+    contentType: "application/json",
+  });
+  console.warn(buildAxeFailureMessage(`[axe warning] ${testInfo.title}`, summary));
+}
+
 async function firstArticleSearchToken(page: Page): Promise<string> {
   const title = (await page.locator("article h3").first().textContent())?.trim() ?? "ai";
   const token =
@@ -122,6 +159,10 @@ test.beforeAll(async () => {
   originalCorpus = await readFile(articleCorpusPath, "utf8").catch(() => null);
   await mkdir(path.dirname(articleCorpusPath), { recursive: true });
   await writeFile(articleCorpusPath, JSON.stringify(corpusFixture, null, 2), "utf8");
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  await warnOnA11yViolations(page, testInfo);
 });
 
 afterSuite(async () => {
@@ -295,6 +336,8 @@ test.describe("Admin auth", () => {
     await expect(
       page.getByRole("heading", { name: "Protected observability for API telemetry." }),
     ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in with Google" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in with GitHub" })).toBeVisible();
 
     await expectNoClientErrors(page, tracker);
   });
@@ -307,26 +350,6 @@ test.describe("Admin auth", () => {
     await expect(
       page.getByRole("heading", { name: "Protected observability for API telemetry." }),
     ).toBeVisible();
-
-    await expectNoClientErrors(page, tracker);
-  });
-
-  test("supports login and logout without redirect loops", async ({ page }) => {
-    test.setTimeout(60_000);
-    const tracker = trackClientErrors(page);
-
-    await gotoWithRetry(page, "/admin/login", { waitUntil: "networkidle" });
-    await page.getByLabel("Admin password").fill("test-admin-password");
-    await page.getByRole("button", { name: "Unlock admin" }).click();
-
-    await expect(page).toHaveURL("/admin", { timeout: 30_000 });
-    await expect(page.getByText("API observability")).toBeVisible({ timeout: 30_000 });
-
-    await page.getByRole("button", { name: "Sign out" }).click();
-    await expect(page).toHaveURL("/admin/login", { timeout: 30_000 });
-    await expect(page.getByRole("button", { name: "Unlock admin" })).toBeVisible({
-      timeout: 30_000,
-    });
 
     await expectNoClientErrors(page, tracker);
   });

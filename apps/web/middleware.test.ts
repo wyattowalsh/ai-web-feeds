@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { hasValidAdminSessionMock, isMarkdownPreferredMock, rewriteLlmMock } = vi.hoisted(() => ({
-  hasValidAdminSessionMock: vi.fn(),
+const { isMarkdownPreferredMock, rewriteLlmMock } = vi.hoisted(() => ({
   isMarkdownPreferredMock: vi.fn(),
   rewriteLlmMock: vi.fn(),
 }));
@@ -13,16 +12,11 @@ vi.mock("fumadocs-core/negotiation", () => ({
   }),
 }));
 
-vi.mock("@/lib/admin-auth-edge", () => ({
-  hasValidAdminSession: hasValidAdminSessionMock,
-}));
-
 import { NextRequest } from "next/server";
 import { middleware } from "./middleware";
 
 describe("middleware admin auth", () => {
   beforeEach(() => {
-    hasValidAdminSessionMock.mockReset();
     isMarkdownPreferredMock.mockReset();
     rewriteLlmMock.mockReset();
     isMarkdownPreferredMock.mockReturnValue(false);
@@ -30,8 +24,6 @@ describe("middleware admin auth", () => {
   });
 
   it("redirects unauthenticated /admin requests to login with a next param", async () => {
-    hasValidAdminSessionMock.mockResolvedValue(false);
-
     const response = await middleware(new NextRequest("http://127.0.0.1:3000/admin"));
 
     expect(response?.status).toBe(307);
@@ -40,14 +32,9 @@ describe("middleware admin auth", () => {
     expect(location.search).toBe("?next=%2Fadmin");
   });
 
-  it("redirects authenticated /admin/login requests back to /admin", async () => {
-    hasValidAdminSessionMock.mockResolvedValue(true);
-
+  it("allows /admin/login for unauthenticated users", async () => {
     const response = await middleware(new NextRequest("http://127.0.0.1:3000/admin/login"));
 
-    expect(response?.status).toBe(307);
-    const location = new URL(response?.headers.get("location") ?? "http://localhost");
-    expect(location.pathname).toBe("/admin");
-    expect(location.search).toBe("");
+    expect(response?.status).toBe(200);
   });
 });

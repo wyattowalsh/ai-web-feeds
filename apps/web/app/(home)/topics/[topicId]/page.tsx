@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Tags } from "lucide-react";
@@ -49,6 +50,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
 }
 
 export default async function TopicPage({ params }: TopicPageProps) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { topicId } = await params;
   const topic = getTopicBySlug(topicId);
   if (!topic) {

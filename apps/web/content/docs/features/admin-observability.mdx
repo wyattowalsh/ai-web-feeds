@@ -1,11 +1,11 @@
 ---
 title: Admin Observability
-description: Password-protected admin telemetry for App Router APIs, including route latency, failure tracking, and audit visibility.
+description: OAuth-protected admin telemetry for App Router APIs, including route latency, failure tracking, and audit visibility.
 ---
 
 # Admin Observability
 
-The web application now includes a protected admin panel at `/admin` for reviewing API telemetry without exposing observability data publicly.
+The web application includes a protected admin panel at `/admin` for reviewing API telemetry without exposing observability data publicly.
 
 ## What It Captures
 
@@ -19,17 +19,23 @@ The web application now includes a protected admin panel at `/admin` for reviewi
 
 ## Security Model
 
-- Admin access uses a shared password stored only in server-side environment configuration
-- Successful login issues a signed HttpOnly cookie
-- The cookie is checked before rendering `/admin`
-- Admin telemetry APIs reject unauthenticated access
-- Password values are never persisted into telemetry records
+- Admin access uses Google or GitHub OAuth via better-auth
+- Successful login issues a signed HttpOnly session cookie
+- Only accounts with `role = 'admin'` are granted access
+- The session and role are checked before rendering `/admin`
+- Admin telemetry APIs reject unauthenticated or non-admin access
+- OAuth tokens are never persisted into telemetry records
 
 ## Minimal Environment Variables
 
 ```bash
-AIWF_ADMIN_PASSWORD=change-me
-AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+# pragma: allowlist secret - documentation placeholder
+DATABASE_URL=postgresql://user:pass@host.neon.tech/db?sslmode=require
+BETTER_AUTH_SECRET=replace-with-a-long-random-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 ```
 
 ## Optional Environment Variables
@@ -38,8 +44,6 @@ AIWF_ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
 AIWF_TELEMETRY_DIR=../../data/telemetry
 # AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
 ```
-
-You do not need SMTP, email digest, or notification configuration to use the admin panel. For the simple observability setup, the shared password and session secret are enough.
 
 Generate a session secret locally with either command:
 
@@ -51,9 +55,13 @@ openssl rand -base64 32
 node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 ```
 
+## Admin Role Assignment
+
+The first user with email `wyattowalsh@gmail.com` is automatically granted the `admin` role on account creation. Additional admins can be assigned by updating the `role` column in the `user` table directly.
+
 ## Current Scope
 
-This first implementation focuses on the Next.js API surface.
+This implementation focuses on the Next.js API surface.
 
 - Route-level API observability for App Router handlers
 - Protected admin overview for throughput, error rate, and latency trends

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ExternalLink, Newspaper } from "lucide-react";
@@ -51,6 +52,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { articleId } = await params;
   const article = await getArticleBySlug(articleId);
   if (!article) {

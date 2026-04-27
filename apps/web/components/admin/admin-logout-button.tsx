@@ -13,8 +13,8 @@ export function AdminLogoutButton() {
     setIsPending(true);
 
     try {
-      await fetch("/api/admin/session", {
-        method: "DELETE",
+      await fetch("/api/auth/signout", {
+        method: "POST",
       });
     } finally {
       startTransition(() => {

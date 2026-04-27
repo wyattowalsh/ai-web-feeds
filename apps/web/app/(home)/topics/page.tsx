@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -19,12 +20,14 @@ export const metadata: Metadata = createPageMetadata({
   path: "/topics",
 });
 
-export default function TopicsPage() {
+export default async function TopicsPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const topics = loadTopicCatalog();
 
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={collectionPageJsonLd({
           name: "AI Web Feeds Topics",
           description: "Topic collections for the AI Web Feeds source catalog.",
