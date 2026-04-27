@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isMarkdownPreferred, rewritePath } from "fumadocs-core/negotiation";
-import { hasValidAdminSession } from "@/lib/admin-auth-edge";
+
+const ADMIN_SESSION_COOKIE = "aiwf_session_token";
 
 const { rewrite: rewriteLLM } = rewritePath("/docs/*path", "/llms.mdx/*path");
+
+function hasAdminSessionCookie(request: NextRequest): boolean {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) {
+    return false;
+  }
+
+  return cookieHeader
+    .split(";")
+    .some((segment) => segment.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
+}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  const hasAdminSession = await hasValidAdminSession(request);
+  const hasAdminSession = hasAdminSessionCookie(request);
 
-  // Protect /admin routes - redirect to login if no session
+  // Protect /admin routes - redirect to login if no session cookie
   if ((pathname === "/admin" || pathname.startsWith("/admin/")) && pathname !== "/admin/login") {
     if (!hasAdminSession) {
       const loginUrl = new URL("/admin/login", request.url);
@@ -18,7 +30,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect /admin/login to dashboard if already authenticated
+  // Redirect /admin/login to dashboard if already has session cookie
   if (pathname === "/admin/login" && hasAdminSession) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }

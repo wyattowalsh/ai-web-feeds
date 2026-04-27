@@ -20,7 +20,7 @@ export interface NormalizedArticle extends ReaderArticleState {
 }
 
 export interface ReaderTimelineMeta {
-  cacheState: "live" | "cached";
+  cacheState: "live" | "cached" | "stale";
   fetchedAt: string;
   expiresAt: string;
   totalSources: number;

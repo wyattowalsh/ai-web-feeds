@@ -1,6 +1,11 @@
 import { XMLParser } from "fast-xml-parser";
 
 import { loadFeeds, type FeedSource } from "@/lib/feeds";
+import {
+  getCachedFeedPosts,
+  setCachedFeedPosts,
+  createCacheExpiresAt,
+} from "@/lib/feed-cache";
 
 export interface FeedPost {
   id: string;
@@ -33,7 +38,7 @@ export interface AggregateFeedPostsResponse {
   feeds: FeedPostsResponse[];
   fetchedAt: string;
   expiresAt: string;
-  cacheState: "live" | "cached";
+  cacheState: "live" | "cached" | "stale";
   totalSources: number;
   successfulSources: number;
   failedSources: number;
@@ -127,6 +132,32 @@ export async function loadAggregatedFeedPostsByIds(
   if (!options.forceRefresh) {
     const cachedPayload = readAggregateCache(cacheKey);
     if (cachedPayload) {
+      // If stale, trigger background revalidation without awaiting
+      if (cachedPayload.cacheState === "stale" && !aggregateFeedInflight.has(cacheKey)) {
+        const resolvedFeeds = uniqueFeedIds
+          .map((requestedId) => {
+            const feed = resolveFeedSource(feedsData.sources, requestedId);
+            if (!feed) return null;
+            return { feed, requestedId };
+          })
+          .filter((value): value is { feed: FeedSource; requestedId: string } => value !== null);
+
+        if (resolvedFeeds.length > 0) {
+          const refreshPromise = buildAggregatedFeedPosts(
+            resolvedFeeds,
+            totalLimit,
+            perFeedLimit,
+          )
+            .then((payload) => {
+              writeAggregateCache(cacheKey, payload);
+              return payload;
+            })
+            .finally(() => {
+              aggregateFeedInflight.delete(cacheKey);
+            });
+          aggregateFeedInflight.set(cacheKey, refreshPromise);
+        }
+      }
       return cachedPayload;
     }
   }
@@ -380,6 +411,27 @@ async function loadFeedPostsForSource(
   limit: number,
   options: LoadFeedOptions = {},
 ): Promise<FeedPostsResponse> {
+  // Check persistent DB cache first
+  const cached = await getCachedFeedPosts(requestedFeedId);
+  if (cached) {
+    return {
+      feedId: cached.feed_id,
+      feedTitle: cached.feed_title,
+      sourceUrl: cached.source_url,
+      resolvedFeedUrl: cached.resolved_feed_url,
+      posts: cached.posts.map((post) => ({
+        id: post.post_id,
+        title: post.title,
+        link: post.link,
+        publishedAt: post.published_at,
+        summary: post.summary,
+        author: post.author,
+        categories: post.categories,
+      })),
+      fetchedAt: cached.fetched_at,
+    };
+  }
+
   const resolvedFeedUrl = await resolveFeedUrl(feed, options);
   const xmlContent = await fetchFeedXml(
     resolvedFeedUrl,
@@ -387,7 +439,7 @@ async function loadFeedPostsForSource(
   );
   const posts = parseFeedXml(xmlContent, limit);
 
-  return {
+  const response: FeedPostsResponse = {
     feedId: requestedFeedId,
     feedTitle: feed.title,
     sourceUrl: feed.url,
@@ -395,6 +447,28 @@ async function loadFeedPostsForSource(
     posts,
     fetchedAt: new Date().toISOString(),
   };
+
+  // Write to persistent cache asynchronously (fire-and-forget)
+  setCachedFeedPosts({
+    feed_id: requestedFeedId,
+    feed_title: feed.title,
+    source_url: feed.url,
+    resolved_feed_url: resolvedFeedUrl,
+    posts: posts.map((post) => ({
+      feed_id: requestedFeedId,
+      post_id: post.id,
+      title: post.title,
+      link: post.link,
+      published_at: post.publishedAt,
+      summary: post.summary,
+      author: post.author,
+      categories: post.categories,
+    })),
+    fetched_at: response.fetchedAt,
+    expires_at: createCacheExpiresAt(),
+  }).catch(() => {});
+
+  return response;
 }
 
 function normalizeFeedLookupKey(value: unknown): string {
@@ -774,9 +848,14 @@ function readAggregateCache(cacheKey: string): AggregateFeedPostsResponse | null
     return null;
   }
 
-  if (entry.expiresAt <= Date.now()) {
-    aggregateFeedCache.delete(cacheKey);
-    return null;
+  const isStale = entry.expiresAt <= Date.now();
+
+  if (isStale) {
+    // Return stale data for SWR; don't delete yet
+    return {
+      ...entry.payload,
+      cacheState: "stale",
+    };
   }
 
   return {

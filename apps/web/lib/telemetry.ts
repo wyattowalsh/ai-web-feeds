@@ -142,7 +142,7 @@ export function hashClientIp(ipAddress: string | null): string | null {
 
   const salt =
     process.env.AIWF_TELEMETRY_SALT?.trim() ||
-    process.env.AIWF_ADMIN_SESSION_SECRET?.trim() ||
+    process.env.BETTER_AUTH_SECRET?.trim() ||
     "aiwf-dev-salt";
 
   return createHash("sha256").update(`${salt}:${ipAddress}`).digest("hex").slice(0, 16);

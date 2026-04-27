@@ -1,59 +1,34 @@
 "use client";
 
-import { startTransition, useState } from "react";
-import { useRouter } from "next/navigation";
-import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { ShieldCheck, Github, Chrome } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 type AdminLoginFormProps = {
   nextPath: string;
 };
 
 export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
-  const router = useRouter();
-  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  const handleSocialLogin = (provider: "google" | "github") => {
+    setIsLoading(provider);
     setError(null);
 
     try {
-      const response = await fetch("/api/admin/session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password, next: nextPath }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as {
-        authenticated?: boolean;
-        next?: string;
-        error?: string;
-      } | null;
-
-      if (!response.ok || !payload?.authenticated) {
-        setError(payload?.error ?? "Unable to authenticate admin session");
-        return;
-      }
-
-      startTransition(() => {
-        router.push(payload.next || "/admin");
-        router.refresh();
-      });
+      const callbackUrl = `${window.location.origin}${nextPath}`;
+      const url = new URL(`/api/auth/signin/${provider}`, window.location.origin);
+      url.searchParams.set("callbackUrl", callbackUrl);
+      window.location.href = url.toString();
     } catch {
-      setError("Unable to authenticate admin session");
-    } finally {
-      setIsSubmitting(false);
+      setError("Unable to initiate sign-in. Please try again.");
+      setIsLoading(null);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="surface-panel w-full max-w-lg space-y-6">
+    <div className="surface-panel w-full max-w-lg space-y-6">
       <div className="space-y-3">
         <span className="eyebrow">
           <ShieldCheck className="size-3.5" />
@@ -62,23 +37,11 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         <div className="space-y-2">
           <h1 className="hero-title max-w-xl">Protected observability for API telemetry.</h1>
           <p className="hero-copy max-w-lg">
-            This panel is guarded by a server-only shared secret and issues a signed admin session
-            cookie after successful authentication.
+            Sign in with your Google or GitHub account to access the admin panel. Only authorized
+            admin accounts are granted access.
           </p>
         </div>
       </div>
-
-      <label className="space-y-2 text-sm font-medium text-(--ink)">
-        <span>Admin password</span>
-        <Input
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Enter the admin password"
-          required
-        />
-      </label>
 
       {error ? (
         <p className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -86,13 +49,33 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
-          <LockKeyhole className="size-4" />
-          {isSubmitting ? "Unlocking" : "Unlock admin"}
+      <div className="space-y-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-center gap-2"
+          disabled={isLoading !== null}
+          onClick={() => handleSocialLogin("google")}
+        >
+          <Chrome className="size-4" />
+          {isLoading === "google" ? "Signing in..." : "Sign in with Google"}
         </Button>
-        <p className="small-note">Failed attempts are rate limited server-side.</p>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-center gap-2"
+          disabled={isLoading !== null}
+          onClick={() => handleSocialLogin("github")}
+        >
+          <Github className="size-4" />
+          {isLoading === "github" ? "Signing in..." : "Sign in with GitHub"}
+        </Button>
       </div>
-    </form>
+
+      <p className="small-note text-center">
+        Only pre-authorized accounts can access the admin panel.
+      </p>
+    </div>
   );
 }
