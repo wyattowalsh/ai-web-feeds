@@ -20,8 +20,7 @@ type SourcesPageProps = {
   searchParams: Promise<ReaderPageSearchParams>;
 };
 
-export default async function SourcesPage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export default async function SourcesPage({ searchParams }: SourcesPageProps) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const params = toURLSearchParams(await searchParams);
   const feedsData = loadFeedCatalog();

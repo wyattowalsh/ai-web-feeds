@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
 
-const reporters: any[] = [
+const reporters: any[] = [ // eslint-disable-line @typescript-eslint/no-explicit-any
   ["list"],
   ["html", { open: "never" }],
   ["json", { outputFile: "test-results/results.json" }],

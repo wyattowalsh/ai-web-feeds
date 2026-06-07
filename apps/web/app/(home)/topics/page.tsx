@@ -22,7 +22,6 @@ export const metadata: Metadata = createPageMetadata({
 
 export default async function TopicsPage() {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const topics = loadTopicCatalog();
 
   return (

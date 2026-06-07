@@ -19,7 +19,6 @@ export const metadata: Metadata = createPageMetadata({
 
 export default async function HomePage() {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const feedsData = loadFeedCatalog();
   const stats = getFeedStats(feedsData.sources);
 

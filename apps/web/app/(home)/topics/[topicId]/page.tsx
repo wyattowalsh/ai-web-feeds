@@ -49,8 +49,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   });
 }
 
-export default async function TopicPage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export default async function TopicPage({ params }: TopicPageProps) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { topicId } = await params;
   const topic = getTopicBySlug(topicId);

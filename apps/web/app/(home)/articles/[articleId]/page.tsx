@@ -51,8 +51,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   });
 }
 
-export default async function ArticlePage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export default async function ArticlePage({ params }: ArticlePageProps) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { articleId } = await params;
   const article = await getArticleBySlug(articleId);

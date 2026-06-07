@@ -51,8 +51,7 @@ export async function generateMetadata({ params }: SourcePageProps): Promise<Met
   });
 }
 
-export default async function SourcePage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export default async function SourcePage({ params }: SourcePageProps) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { sourceId } = await params;
   const source = getSourceBySlug(sourceId);
