@@ -24,7 +24,8 @@ type DocsPageProps = {
   }>;
 };
 
-export default async function Page(props: DocsPageProps) {
+export default async function Page() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const params = await props.params;
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const page = source.getPage(params.slug);

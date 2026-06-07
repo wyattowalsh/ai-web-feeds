@@ -17,7 +17,8 @@ type ReaderPageProps = {
   searchParams: Promise<ReaderPageSearchParams>;
 };
 
-export default async function ReaderPage({ searchParams }: ReaderPageProps) {
+export default async function ReaderPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { mode, feeds, stats, initialState, initialBrowse } =
     await loadReaderRouteData(searchParams);

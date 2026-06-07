@@ -49,7 +49,8 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   });
 }
 
-export default async function TopicPage({ params }: TopicPageProps) {
+export default async function TopicPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { topicId } = await params;
   const topic = getTopicBySlug(topicId);
@@ -67,6 +68,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={[
           breadcrumbsJsonLd([
             { name: "Home", url: "/" },

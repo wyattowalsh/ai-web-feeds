@@ -51,7 +51,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   });
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const { articleId } = await params;
   const article = await getArticleBySlug(articleId);
@@ -66,6 +67,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   return (
     <div className="page-wrap page-stack">
       <JsonLd
+        nonce={nonce}
         data={[
           breadcrumbsJsonLd([
             { name: "Home", url: "/" },

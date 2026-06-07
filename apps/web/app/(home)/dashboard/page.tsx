@@ -29,6 +29,7 @@ function formatNumber(value: number | null): string {
 
 export default async function DashboardPage() {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const feedsData = loadFeedCatalog();
   const feedStats = getFeedStats(feedsData.sources);
   const validationStats = await getValidationStats();
