@@ -12,35 +12,50 @@
           "article_count": 342,
           "z_score": 3.8,
           "rank": 1,
-          "growth_rate": 0.42
+          "growth_rate": 0.42,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "agents",
           "article_count": 198,
           "z_score": 2.9,
           "rank": 2,
-          "growth_rate": 0.38
+          "growth_rate": 0.38,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "inference",
           "article_count": 156,
           "z_score": 2.6,
           "rank": 3,
-          "growth_rate": 0.24
+          "growth_rate": 0.24,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "evaluation",
           "article_count": 134,
           "z_score": 2.4,
           "rank": 4,
-          "growth_rate": 0.31
+          "growth_rate": 0.31,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "safety",
           "article_count": 112,
           "z_score": 2.1,
           "rank": 5,
-          "growth_rate": 0.19
+          "growth_rate": 0.19,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         }
       ],
       "health_distribution": {
@@ -61,35 +76,50 @@
           "article_count": 287,
           "z_score": 3.2,
           "rank": 1,
-          "growth_rate": 0.35
+          "growth_rate": 0.35,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "multimodal",
           "article_count": 176,
           "z_score": 2.7,
           "rank": 2,
-          "growth_rate": 0.41
+          "growth_rate": 0.41,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "agents",
           "article_count": 165,
           "z_score": 2.5,
           "rank": 3,
-          "growth_rate": 0.28
+          "growth_rate": 0.28,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "retrieval",
           "article_count": 143,
           "z_score": 2.3,
           "rank": 4,
-          "growth_rate": 0.22
+          "growth_rate": 0.22,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "training",
           "article_count": 128,
           "z_score": 2.1,
           "rank": 5,
-          "growth_rate": 0.15
+          "growth_rate": 0.15,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         }
       ],
       "health_distribution": {
@@ -110,35 +140,50 @@
           "article_count": 264,
           "z_score": 3.1,
           "rank": 1,
-          "growth_rate": 0.32
+          "growth_rate": 0.32,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "evaluation",
           "article_count": 189,
           "z_score": 2.8,
           "rank": 2,
-          "growth_rate": 0.44
+          "growth_rate": 0.44,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "agents",
           "article_count": 158,
           "z_score": 2.4,
           "rank": 3,
-          "growth_rate": 0.26
+          "growth_rate": 0.26,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "optimization",
           "article_count": 147,
           "z_score": 2.3,
           "rank": 4,
-          "growth_rate": 0.29
+          "growth_rate": 0.29,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         },
         {
           "topic": "open-source",
           "article_count": 121,
           "z_score": 2.0,
           "rank": 5,
-          "growth_rate": 0.18
+          "growth_rate": 0.18,
+          "avg_health_score": 0.87,
+          "feed_count": 95,
+          "validation_frequency": "daily"
         }
       ],
       "health_distribution": {
@@ -170,7 +215,7 @@
       "topic": "inference",
       "feed_count": 198,
       "validation_frequency": 0.934,
-      "avg_health_score": 0.90,
+      "avg_health_score": 0.9,
       "snapshot_date": "2025-11-01"
     },
     {
@@ -234,7 +279,7 @@
       "topic": "research",
       "feed_count": 312,
       "validation_frequency": 0.938,
-      "avg_health_score": 0.90,
+      "avg_health_score": 0.9,
       "snapshot_date": "2025-11-01"
     },
     {
