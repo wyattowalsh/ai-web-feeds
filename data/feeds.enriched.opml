@@ -5,19 +5,19 @@
   </head>
   <body>
     <outline text="aiwebfeeds" title="aiwebfeeds">
-      <outline type="rss" text="http://export.arxiv.org/rss/cs.LG" title="http://export.arxiv.org/rss/cs.LG" xmlUrl="http://export.arxiv.org/rss/cs.LG" />
-      <outline type="rss" text="https://openai.com/blog/rss/" title="https://openai.com/blog/rss/" xmlUrl="https://openai.com/blog/rss/" />
-      <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml" />
-      <outline type="rss" text="https://www.latent.space/feed" title="https://www.latent.space/feed" xmlUrl="https://www.latent.space/feed" />
-      <outline type="rss" text="https://importai.substack.com/feed" title="https://importai.substack.com/feed" xmlUrl="https://importai.substack.com/feed" />
-      <outline type="rss" text="https://huggingface.co/blog" title="https://huggingface.co/blog" xmlUrl="https://huggingface.co/blog" />
+      <outline type="rss" text="Cs.Lg Feed" title="Cs.Lg Feed" xmlUrl="http://export.arxiv.org/rss/cs.LG" />
+      <outline type="rss" text="Rss Feed" title="Rss Feed" xmlUrl="https://openai.com/blog/rss/" />
+      <outline type="rss" text="Feed.Xml Feed" title="Feed.Xml Feed" xmlUrl="https://www.pinecone.io/learn/feed.xml" />
+      <outline type="rss" text="Feed Feed" title="Feed Feed" xmlUrl="https://www.latent.space/feed" />
+      <outline type="rss" text="Feed Feed" title="Feed Feed" xmlUrl="https://importai.substack.com/feed" />
+      <outline type="rss" text="Blog Feed" title="Blog Feed" xmlUrl="https://huggingface.co/blog" />
       <outline type="rss" text="Anthropic News" title="Anthropic News" xmlUrl="https://www.anthropic.com/news" />
-      <outline type="rss" text="https://openxla.org/blog" title="https://openxla.org/blog" xmlUrl="https://openxla.org/blog" />
-      <outline type="rss" text="https://www.reddit.com/r/MachineLearning" title="https://www.reddit.com/r/MachineLearning" xmlUrl="https://www.reddit.com/r/MachineLearning" />
+      <outline type="rss" text="Blog Feed" title="Blog Feed" xmlUrl="https://openxla.org/blog" />
+      <outline type="rss" text="Machinelearning Feed" title="Machinelearning Feed" xmlUrl="https://www.reddit.com/r/MachineLearning" />
       <outline type="rss" text="Towards Data Science" title="Towards Data Science" xmlUrl="https://towardsdatascience.com" />
       <outline type="rss" text="Two Minute Papers" title="Two Minute Papers" xmlUrl="https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg" />
-      <outline type="rss" text="https://github.com/pytorch/pytorch" title="https://github.com/pytorch/pytorch" xmlUrl="https://github.com/pytorch/pytorch" />
-      <outline type="rss" text="https://dev.to/t/machinelearning" title="https://dev.to/t/machinelearning" xmlUrl="https://dev.to/t/machinelearning" />
+      <outline type="rss" text="Pytorch Feed" title="Pytorch Feed" xmlUrl="https://github.com/pytorch/pytorch" />
+      <outline type="rss" text="Machinelearning Feed" title="Machinelearning Feed" xmlUrl="https://dev.to/t/machinelearning" />
       <outline type="rss" text="Andrej Karpathy" title="Andrej Karpathy" xmlUrl="https://x.com/karpathy" />
       <outline type="rss" text="Yoshua Bengio - arXiv Papers" title="Yoshua Bengio - arXiv Papers" xmlUrl="https://arxiv.org/search/?searchtype=author&amp;query=Bengio%2C+Y" />
       <outline type="rss" text="Google AI Blog" title="Google AI Blog" xmlUrl="https://ai.googleblog.com" />
@@ -93,7 +93,7 @@
       <outline type="rss" text="Mistral AI — News" title="Mistral AI — News" xmlUrl="https://mistral.ai/news" />
       <outline type="rss" text="Intel OpenVINO — Blog" title="Intel OpenVINO — Blog" xmlUrl="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html" />
       <outline type="rss" text="CrewAI — Blog" title="CrewAI — Blog" xmlUrl="https://www.crewai.com/blog" />
-      <outline type="rss" text="https://www.jmlr.org/jmlr.xml" title="https://www.jmlr.org/jmlr.xml" xmlUrl="https://www.jmlr.org/jmlr.xml" />
+      <outline type="rss" text="Jmlr.Xml Feed" title="Jmlr.Xml Feed" xmlUrl="https://www.jmlr.org/jmlr.xml" />
       <outline type="rss" text="Proceedings of Machine Learning Research (PMLR)" title="Proceedings of Machine Learning Research (PMLR)" xmlUrl="https://proceedings.mlr.press" />
       <outline type="rss" text="Transactions on Machine Learning Research (TMLR)" title="Transactions on Machine Learning Research (TMLR)" xmlUrl="https://jmlr.org/tmlr/" />
       <outline type="rss" text="Nature Machine Intelligence" title="Nature Machine Intelligence" xmlUrl="https://www.nature.com/natmachintell" />
@@ -173,7 +173,7 @@
       <outline type="rss" text="Neel Nanda — Mechanistic Interpretability" title="Neel Nanda — Mechanistic Interpretability" xmlUrl="https://www.neelnanda.io/blog" />
       <outline type="rss" text="OpenMetadata — Blog" title="OpenMetadata — Blog" xmlUrl="https://open-metadata.medium.com/" />
       <outline type="rss" text="Jigsaw — Blog" title="Jigsaw — Blog" xmlUrl="https://blog.jigsaw.google/" />
-      <outline type="rss" text="https://www.modular.com/blog" title="https://www.modular.com/blog" xmlUrl="https://www.modular.com/blog" />
+      <outline type="rss" text="Blog Feed" title="Blog Feed" xmlUrl="https://www.modular.com/blog" />
       <outline type="rss" text="AI Verify Foundation — Latest" title="AI Verify Foundation — Latest" xmlUrl="https://www.aiverifyfoundation.sg/latest" />
       <outline type="rss" text="NASA Earthdata — News &amp; Blog" title="NASA Earthdata — News &amp; Blog" xmlUrl="https://www.earthdata.nasa.gov/news/blog" />
       <outline type="rss" text="Ontotext — Knowledge Graph Blog" title="Ontotext — Knowledge Graph Blog" xmlUrl="https://www.ontotext.com/blog/" />
@@ -229,8 +229,8 @@
       <outline type="rss" text="Google DeepMind — YouTube" title="Google DeepMind — YouTube" xmlUrl="https://www.youtube.com/@GoogleDeepMind" />
       <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI" />
       <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI" />
-      <outline type="rss" text="https://www.reddit.com/r/LocalLLaMA" title="https://www.reddit.com/r/LocalLLaMA" xmlUrl="https://www.reddit.com/r/LocalLLaMA" />
-      <outline type="rss" text="https://www.reddit.com/r/StableDiffusion" title="https://www.reddit.com/r/StableDiffusion" xmlUrl="https://www.reddit.com/r/StableDiffusion" />
+      <outline type="rss" text="Localllama Feed" title="Localllama Feed" xmlUrl="https://www.reddit.com/r/LocalLLaMA" />
+      <outline type="rss" text="Stablediffusion Feed" title="Stablediffusion Feed" xmlUrl="https://www.reddit.com/r/StableDiffusion" />
       <outline type="rss" text="Ollama — GitHub" title="Ollama — GitHub" xmlUrl="https://github.com/ollama/ollama" />
       <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui" />
       <outline type="rss" text="Flowise — GitHub" title="Flowise — GitHub" xmlUrl="https://github.com/FlowiseAI/Flowise" />
@@ -259,14 +259,14 @@
       <outline type="rss" text="MLIR — The LLVM Project Blog" title="MLIR — The LLVM Project Blog" xmlUrl="https://blog.llvm.org/tags/mlir/" />
       <outline type="rss" text="FTC Business Blog — RSS" title="FTC Business Blog — RSS" xmlUrl="https://www.ftc.gov/feeds/blog-business.xml" />
       <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)" xmlUrl="https://www.jair.org" />
-      <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" description="Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage." />
-      <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" description="Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs." />
-      <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" description="MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking." />
-      <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" description="IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML." />
-      <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" description="Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications." />
-      <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" description="Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science." />
-      <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" description="IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications." />
-      <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" description="Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms." />
+      <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" />
+      <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" />
+      <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" />
+      <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" />
+      <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" />
+      <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" />
+      <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" />
+      <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" />
     </outline>
   </body>
 </opml>

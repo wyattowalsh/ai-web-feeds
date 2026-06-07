@@ -7,22 +7,20 @@
       "tool": "aiwebfeeds-cli",
       "version": "0.1.0"
     },
-    "notes": "Simplified schema - only URL and topics required. Titles and metadata auto-enriched, but can be customized.",
-    "enriched_at": "2026-04-03T18:12:03.887689+00:00",
-    "total_sources": 262
+    "notes": "Simplified schema - only URL and topics required. Titles and metadata auto-enriched, but can be customized."
   },
   "sources": [
     {
-      "url": "https://export.arxiv.org/rss/cs.LG",
+      "url": "http://export.arxiv.org/rss/cs.LG",
       "topics": [
         "research",
         "papers",
         "ml"
       ],
-      "title": "arXiv cs.LG",
       "notes": "Official arXiv RSS for Machine Learning",
-      "id": "6828bdd04b0a46ec",
-      "feed": "https://export.arxiv.org/rss/cs.LG",
+      "id": "72831963114989b0",
+      "feed": "http://export.arxiv.org/rss/cs.LG",
+      "title": "Cs.Lg Feed",
       "source_type": "arxiv"
     },
     {
@@ -32,9 +30,9 @@
         "product",
         "llm"
       ],
-      "title": "OpenAI Blog",
       "id": "c2e8f1ffb0b2b48b",
       "feed": "https://openai.com/blog/rss/",
+      "title": "Rss Feed",
       "source_type": "blog"
     },
     {
@@ -45,10 +43,10 @@
         "embeddings",
         "mlops"
       ],
-      "title": "Pinecone Learn",
       "id": "a1156030febbd9e6",
       "feed": "https://www.pinecone.io/learn/feed.xml",
-      "source_type": "education"
+      "title": "Feed.Xml Feed",
+      "source_type": "blog"
     },
     {
       "url": "https://www.latent.space/feed",
@@ -57,10 +55,10 @@
         "industry",
         "product"
       ],
-      "title": "Latent Space",
       "id": "a5689419c24836e7",
       "feed": "https://www.latent.space/feed",
-      "source_type": "podcast"
+      "title": "Feed Feed",
+      "source_type": "blog"
     },
     {
       "url": "https://importai.substack.com/feed",
@@ -69,9 +67,9 @@
         "industry",
         "research"
       ],
-      "title": "Import AI",
       "id": "0f90c142536df254",
       "feed": "https://importai.substack.com/feed",
+      "title": "Feed Feed",
       "source_type": "substack"
     },
     {
@@ -81,11 +79,10 @@
         "mlops",
         "nlp"
       ],
-      "title": "Hugging Face Blog",
       "notes": "Site URL; auto-discovers RSS feed",
       "id": "935fbe5ba89ff5f9",
       "feed": "https://huggingface.co/blog",
-      "site": "https://huggingface.co/blog",
+      "title": "Blog Feed",
       "source_type": "blog"
     },
     {
@@ -99,8 +96,7 @@
       "notes": "Custom title provided; feed auto-discovered",
       "id": "f6aa679babd7a46a",
       "feed": "https://www.anthropic.com/news",
-      "site": "https://www.anthropic.com/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://openxla.org/blog",
@@ -109,10 +105,9 @@
         "optimization",
         "open-source"
       ],
-      "title": "OpenXLA Blog",
       "id": "7151a155c27680f0",
       "feed": "https://openxla.org/blog",
-      "site": "https://openxla.org/blog",
+      "title": "Blog Feed",
       "source_type": "blog"
     },
     {
@@ -122,11 +117,10 @@
         "community",
         "research"
       ],
-      "title": "r/MachineLearning",
       "notes": "Reddit subreddit; auto-generates .rss URL",
       "id": "05e1130929e7ac30",
-      "feed": "https://www.reddit.com/r/MachineLearning/hot/.rss",
-      "site": "https://www.reddit.com/r/MachineLearning",
+      "feed": "https://www.reddit.com/r/MachineLearning",
+      "title": "Machinelearning Feed",
       "source_type": "reddit"
     },
     {
@@ -139,9 +133,8 @@
       "title": "Towards Data Science",
       "notes": "Popular Medium publication with custom title",
       "id": "80bd7e4b43bc6827",
-      "feed": "https://medium.com/feed/towardsdatascience",
-      "site": "https://towardsdatascience.com",
-      "source_type": "medium"
+      "feed": "https://towardsdatascience.com",
+      "source_type": "dataset"
     },
     {
       "url": "https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg",
@@ -153,8 +146,7 @@
       "title": "Two Minute Papers",
       "notes": "Excellent AI research video summaries",
       "id": "26be51fe87907faf",
-      "feed": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
-      "site": "https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg",
+      "feed": "https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg",
       "source_type": "youtube"
     },
     {
@@ -164,11 +156,10 @@
         "ml",
         "product"
       ],
-      "title": "PyTorch Releases",
       "notes": "PyTorch repo; auto-generates releases.atom",
       "id": "6ee2c2a30826817d",
-      "feed": "https://github.com/pytorch/pytorch/releases.atom",
-      "site": "https://github.com/pytorch/pytorch",
+      "feed": "https://github.com/pytorch/pytorch",
+      "title": "Pytorch Feed",
       "source_type": "github"
     },
     {
@@ -178,11 +169,10 @@
         "education",
         "ml"
       ],
-      "title": "DEV Community Machine Learning",
       "notes": "Dev.to tag; auto-generates feed URL",
       "id": "1448e130279b08bd",
-      "feed": "https://dev.to/feed/t",
-      "site": "https://dev.to/t/machinelearning",
+      "feed": "https://dev.to/t/machinelearning",
+      "title": "Machinelearning Feed",
       "source_type": "devto"
     },
     {
@@ -195,8 +185,7 @@
       "title": "Andrej Karpathy",
       "notes": "Custom title; uses RSSHub for Twitter feed",
       "id": "eb09beb38255e4f6",
-      "feed": "https://nitter.net/karpathy/rss",
-      "site": "https://x.com/karpathy",
+      "feed": "https://x.com/karpathy",
       "source_type": "twitter"
     },
     {
@@ -210,7 +199,6 @@
       "notes": "Custom title for arXiv author search",
       "id": "46a88037c9410525",
       "feed": "https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y",
-      "site": "https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y",
       "source_type": "arxiv"
     },
     {
@@ -224,7 +212,6 @@
       "notes": "Official Google AI blog; enrichment auto-discovers feed.",
       "id": "65d0cfe837afd1c3",
       "feed": "https://ai.googleblog.com",
-      "site": "https://ai.googleblog.com",
       "source_type": "blog"
     },
     {
@@ -238,7 +225,6 @@
       "notes": "DeepMind’s research & product posts; feed auto-discovery.",
       "id": "d02ec00905b7b5c3",
       "feed": "https://deepmind.google/discover/blog",
-      "site": "https://deepmind.google/discover/blog",
       "source_type": "blog"
     },
     {
@@ -253,7 +239,6 @@
       "notes": "Official Meta AI blog; enrichment will locate feed.",
       "id": "191cc99ce0bbb92f",
       "feed": "https://ai.meta.com/blog/",
-      "site": "https://ai.meta.com/blog/",
       "source_type": "blog"
     },
     {
@@ -295,7 +280,7 @@
       "notes": "Official RSS feed; production ML patterns & case studies.",
       "id": "50914fe5c60ced88",
       "feed": "https://aws.amazon.com/blogs/machine-learning/feed/",
-      "source_type": "education"
+      "source_type": "blog"
     },
     {
       "url": "https://bair.berkeley.edu/blog/feed.xml",
@@ -334,8 +319,7 @@
       "notes": "News & analysis from HAI; feed auto-discovery.",
       "id": "1647adede221cf8d",
       "feed": "https://hai.stanford.edu/news",
-      "site": "https://hai.stanford.edu/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://thegradient.pub/rss/",
@@ -348,7 +332,7 @@
       "notes": "Interviews, essays, and curated research.",
       "id": "4f833f985ed12add",
       "feed": "https://thegradient.pub/rss/",
-      "source_type": "newsletter"
+      "source_type": "blog"
     },
     {
       "url": "https://blog.tensorflow.org/feeds/posts/default?alt=rss",
@@ -401,7 +385,7 @@
       "notes": "Data+AI, lakehouse, eval/monitoring patterns.",
       "id": "7f1c72c187c23c51",
       "feed": "https://www.databricks.com/feed",
-      "source_type": "blog"
+      "source_type": "dataset"
     },
     {
       "url": "https://lmsys.org/blog/",
@@ -414,7 +398,6 @@
       "notes": "Chatbot Arena, SGLang; Hugo feed autodetected.",
       "id": "c84633173b800035",
       "feed": "https://lmsys.org/blog/",
-      "site": "https://lmsys.org/blog/",
       "source_type": "blog"
     },
     {
@@ -427,8 +410,7 @@
       "title": "vLLM (GitHub)",
       "notes": "Auto-generates releases feed via releases.atom.",
       "id": "e8ba7172314e48e9",
-      "feed": "https://github.com/vllm-project/vllm/releases.atom",
-      "site": "https://github.com/vllm-project/vllm",
+      "feed": "https://github.com/vllm-project/vllm",
       "source_type": "github"
     },
     {
@@ -441,8 +423,7 @@
       "title": "TensorRT-LLM (GitHub)",
       "notes": "Auto-generates releases feed via releases.atom.",
       "id": "754595d3bef49bf4",
-      "feed": "https://github.com/NVIDIA/TensorRT-LLM/releases.atom",
-      "site": "https://github.com/NVIDIA/TensorRT-LLM",
+      "feed": "https://github.com/NVIDIA/TensorRT-LLM",
       "source_type": "github"
     },
     {
@@ -457,7 +438,6 @@
       "notes": "Vector search patterns and product engineering.",
       "id": "a639b4426b7c8da8",
       "feed": "https://weaviate.io/blog",
-      "site": "https://weaviate.io/blog",
       "source_type": "blog"
     },
     {
@@ -472,7 +452,6 @@
       "notes": "Zilliz/Milvus updates & scaling notes.",
       "id": "b8d6cb38455ac73c",
       "feed": "https://milvus.io/blog",
-      "site": "https://milvus.io/blog",
       "source_type": "blog"
     },
     {
@@ -487,7 +466,6 @@
       "notes": "Vector database internals, HNSW, filters.",
       "id": "e09ae3dc4358cf27",
       "feed": "https://qdrant.tech/articles/",
-      "site": "https://qdrant.tech/articles/",
       "source_type": "blog"
     },
     {
@@ -502,7 +480,6 @@
       "notes": "LangGraph/agents runtime posts; feed autodiscovery.",
       "id": "77460b2256f18fac",
       "feed": "https://blog.langchain.com/",
-      "site": "https://blog.langchain.com/",
       "source_type": "blog"
     },
     {
@@ -517,7 +494,6 @@
       "notes": "RAG patterns & evaluation; feed autodiscovery.",
       "id": "3ccc18a956cae0b1",
       "feed": "https://www.llamaindex.ai/blog",
-      "site": "https://www.llamaindex.ai/blog",
       "source_type": "blog"
     },
     {
@@ -531,7 +507,6 @@
       "notes": "Practitioner case studies; WordPress feed typically at /feed/.",
       "id": "b321aa49164209fb",
       "feed": "https://mlops.community/blog",
-      "site": "https://mlops.community/blog",
       "source_type": "blog"
     },
     {
@@ -545,8 +520,7 @@
       "notes": "Safety, evaluations, system cards, assurance.",
       "id": "066b0307e23b6bdc",
       "feed": "https://www.aisafety.gov.uk/news",
-      "site": "https://www.aisafety.gov.uk/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://mlcommons.org/news/",
@@ -559,8 +533,7 @@
       "notes": "Benchmark releases and methodology updates.",
       "id": "dea463fd6c8c0a3c",
       "feed": "https://mlcommons.org/news/",
-      "site": "https://mlcommons.org/news/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://sebastianraschka.com/rss.xml",
@@ -612,8 +585,7 @@
       "notes": "On-device/edge ML research from Apple; platform auto-discovers feed.",
       "id": "d1cafa5415087246",
       "feed": "https://machinelearning.apple.com",
-      "site": "https://machinelearning.apple.com",
-      "source_type": "journal"
+      "source_type": "preprint"
     },
     {
       "url": "https://allenai.org/blog",
@@ -626,7 +598,6 @@
       "notes": "AI2 lab research updates; high-quality technical write-ups.",
       "id": "86e00abd227a3a01",
       "feed": "https://allenai.org/blog",
-      "site": "https://allenai.org/blog",
       "source_type": "blog"
     },
     {
@@ -640,11 +611,10 @@
       "notes": "Academic lab news and research explainers; feed autodiscovery.",
       "id": "efd5a9abfb4160fd",
       "feed": "https://www.csail.mit.edu/news",
-      "site": "https://www.csail.mit.edu/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
-      "url": "https://www.fast.ai",
+      "url": "http://www.fast.ai",
       "topics": [
         "education",
         "ml",
@@ -652,9 +622,8 @@
       ],
       "title": "fast.ai — Blog",
       "notes": "Hands-on deep learning essays; known feed endpoint historically at /atom.xml.",
-      "id": "5ff959bb12b4e6cb",
-      "feed": "https://www.fast.ai",
-      "site": "https://www.fast.ai",
+      "id": "c2e4778941fa6e5f",
+      "feed": "http://www.fast.ai",
       "source_type": "blog"
     },
     {
@@ -668,8 +637,7 @@
       "notes": "Weekly AI newsletter by Andrew Ng team.",
       "id": "d95936737ca33a17",
       "feed": "https://www.deeplearning.ai/the-batch/",
-      "site": "https://www.deeplearning.ai/the-batch/",
-      "source_type": "newsletter"
+      "source_type": "blog"
     },
     {
       "url": "https://robotics.googleblog.com/",
@@ -682,7 +650,6 @@
       "notes": "Google robotics research; Atom feed available.",
       "id": "fe4c4efe475f4201",
       "feed": "https://robotics.googleblog.com/",
-      "site": "https://robotics.googleblog.com/",
       "source_type": "blog"
     },
     {
@@ -696,7 +663,6 @@
       "notes": "PETs, federated learning, DP; Ghost-based site (feed autodiscovery).",
       "id": "b55443f051a2a8d2",
       "feed": "https://openmined.org/blog",
-      "site": "https://openmined.org/blog",
       "source_type": "blog"
     },
     {
@@ -710,7 +676,6 @@
       "notes": "Open research on LLMs and scaling; known feed endpoint at /index.xml.",
       "id": "6d1e4d5f90717cfb",
       "feed": "https://blog.eleuther.ai/",
-      "site": "https://blog.eleuther.ai/",
       "source_type": "blog"
     },
     {
@@ -724,7 +689,6 @@
       "notes": "Compiler stack for ML; kernels, codegen, deployment.",
       "id": "687b81f9a8985d70",
       "feed": "https://tvm.apache.org/blog",
-      "site": "https://tvm.apache.org/blog",
       "source_type": "blog"
     },
     {
@@ -738,8 +702,7 @@
       "notes": "Forecasting libraries, probabilistic TS; frequent technical posts.",
       "id": "ad36bfcc986c3a4f",
       "feed": "https://nixtla.github.io/blog",
-      "site": "https://nixtla.github.io/blog",
-      "source_type": "blog"
+      "source_type": "github"
     },
     {
       "url": "https://blog.roboflow.com",
@@ -752,7 +715,6 @@
       "notes": "Vision datasets, labeling, YOLO/Detectron tips; RSS available.",
       "id": "29ee65b2a0938244",
       "feed": "https://blog.roboflow.com",
-      "site": "https://blog.roboflow.com",
       "source_type": "blog"
     },
     {
@@ -766,7 +728,6 @@
       "notes": "Official OpenCV engineering posts; WordPress feed at /feed/.",
       "id": "75612d096bc66dfd",
       "feed": "https://opencv.org/blog",
-      "site": "https://opencv.org/blog",
       "source_type": "blog"
     },
     {
@@ -780,7 +741,6 @@
       "notes": "Graph algorithms, embeddings, graph-RAG patterns; RSS available.",
       "id": "4d7d6afe38671dbc",
       "feed": "https://neo4j.com/developer-blog/",
-      "site": "https://neo4j.com/developer-blog/",
       "source_type": "blog"
     },
     {
@@ -794,7 +754,6 @@
       "notes": "Multi-model DB posts incl. graph queries and vector search.",
       "id": "05e838380506f8fc",
       "feed": "https://www.arangodb.com/blog/",
-      "site": "https://www.arangodb.com/blog/",
       "source_type": "blog"
     },
     {
@@ -808,7 +767,6 @@
       "notes": "Prod ML/LLM monitoring, evals, and tracing patterns.",
       "id": "804715f8f1497559",
       "feed": "https://arize.com/blog",
-      "site": "https://arize.com/blog",
       "source_type": "blog"
     },
     {
@@ -822,7 +780,6 @@
       "notes": "Metrics, drift detection, eval pipelines; practical guides.",
       "id": "f9abf95c6ead4904",
       "feed": "https://www.evidentlyai.com/blog",
-      "site": "https://www.evidentlyai.com/blog",
       "source_type": "blog"
     },
     {
@@ -836,7 +793,6 @@
       "notes": "Observability, data quality, LLM risk; frequent how-tos.",
       "id": "f9aecb186e9a6484",
       "feed": "https://whylabs.ai/blog",
-      "site": "https://whylabs.ai/blog",
       "source_type": "blog"
     },
     {
@@ -850,7 +806,6 @@
       "notes": "Ray ecosystem (serve, actors, scaling); production case studies.",
       "id": "050119dbab88ea86",
       "feed": "https://www.anyscale.com/blog",
-      "site": "https://www.anyscale.com/blog",
       "source_type": "blog"
     },
     {
@@ -864,7 +819,6 @@
       "notes": "Serverless GPU workflows, model serving patterns.",
       "id": "0be5c22bd2fbf2c2",
       "feed": "https://modal.com/blog",
-      "site": "https://modal.com/blog",
       "source_type": "blog"
     },
     {
@@ -878,8 +832,7 @@
       "notes": "Graph embeddings, similarity search, pipelines.",
       "id": "78bab138682cfbd0",
       "feed": "https://neo4j.com/developer/graph-data-science/",
-      "site": "https://neo4j.com/developer/graph-data-science/",
-      "source_type": "blog"
+      "source_type": "dataset"
     },
     {
       "url": "https://cohere.com/research",
@@ -892,8 +845,7 @@
       "notes": "Provider research updates complementing ‘txt’; feed autodiscovery.",
       "id": "41aab499985c4dd8",
       "feed": "https://cohere.com/research",
-      "site": "https://cohere.com/research",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://www.microsoft.com/en-us/ai/blog/",
@@ -906,7 +858,6 @@
       "notes": "Platform features + partner work; separate from MSR feed.",
       "id": "5b13693f8f06a94e",
       "feed": "https://www.microsoft.com/en-us/ai/blog/",
-      "site": "https://www.microsoft.com/en-us/ai/blog/",
       "source_type": "blog"
     },
     {
@@ -920,8 +871,7 @@
       "notes": "On-device inference, NPUs, edge acceleration; feed autodiscovery.",
       "id": "f736744c2ef76e85",
       "feed": "https://www.qualcomm.com/research/artificial-intelligence",
-      "site": "https://www.qualcomm.com/research/artificial-intelligence",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://blog.langfuse.com",
@@ -934,7 +884,6 @@
       "notes": "LLM telemetry, tracing, evals for agentic systems.",
       "id": "ecb0da614acf3f20",
       "feed": "https://blog.langfuse.com",
-      "site": "https://blog.langfuse.com",
       "source_type": "blog"
     },
     {
@@ -948,7 +897,7 @@
       "notes": "Policy, governance, and safety analyses; active 2025 cadence.",
       "id": "c3775a125353e5c5",
       "feed": "https://ainowinstitute.org/category/news/feed",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://partnershiponai.org/blog/",
@@ -962,7 +911,6 @@
       "notes": "Standards & guidance (e.g., foundation-model deployment); feed auto-discovery.",
       "id": "86667bd1884f48e9",
       "feed": "https://partnershiponai.org/blog/",
-      "site": "https://partnershiponai.org/blog/",
       "source_type": "blog"
     },
     {
@@ -976,8 +924,7 @@
       "notes": "Leading academic lab; WordPress feed auto-discovery.",
       "id": "7f2bfb74575abbb6",
       "feed": "https://mila.quebec/en/news",
-      "site": "https://mila.quebec/en/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://vectorinstitute.ai/insights/",
@@ -990,8 +937,7 @@
       "notes": "Canadian institute analyses and research highlights.",
       "id": "5c3fed87d2fdc538",
       "feed": "https://vectorinstitute.ai/insights/",
-      "site": "https://vectorinstitute.ai/insights/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.turing.ac.uk/blog",
@@ -1004,7 +950,6 @@
       "notes": "National lab perspective; policy & technical posts.",
       "id": "a76b8940cf25eaeb",
       "feed": "https://www.turing.ac.uk/blog",
-      "site": "https://www.turing.ac.uk/blog",
       "source_type": "blog"
     },
     {
@@ -1018,7 +963,7 @@
       "notes": "Faculty/student explainers and research notes.",
       "id": "c07010ac537774a6",
       "feed": "https://blog.ml.cmu.edu/feed/",
-      "source_type": "education"
+      "source_type": "blog"
     },
     {
       "url": "https://news.mit.edu/topic/mitmachine-learning-rss.xml",
@@ -1031,7 +976,7 @@
       "notes": "Institute news stream with ML focus.",
       "id": "4ed5ebfd6d2eea30",
       "feed": "https://news.mit.edu/topic/mitmachine-learning-rss.xml",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://blog.vespa.ai",
@@ -1045,7 +990,6 @@
       "notes": "Production ranking/search/ANN at scale; auto-discovery.",
       "id": "3194b6528d7bd7ff",
       "feed": "https://blog.vespa.ai",
-      "site": "https://blog.vespa.ai",
       "source_type": "blog"
     },
     {
@@ -1059,7 +1003,6 @@
       "notes": "Embeddings, hybrid search, multimodal RAG.",
       "id": "a70f33e6628745ab",
       "feed": "https://jina.ai/blog/",
-      "site": "https://jina.ai/blog/",
       "source_type": "blog"
     },
     {
@@ -1073,7 +1016,6 @@
       "notes": "RAG patterns, pipelines, evaluation.",
       "id": "2a336b1f05476f87",
       "feed": "https://haystack.deepset.ai/blog",
-      "site": "https://haystack.deepset.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1087,7 +1029,6 @@
       "notes": "Edge/Apple/Android inference stacks; frequent updates.",
       "id": "d8db61643a229671",
       "feed": "https://llm.mlc.ai/blog",
-      "site": "https://llm.mlc.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1182,7 +1123,6 @@
       "notes": "Interchange & runtimes ecosystem; feed auto-discovery.",
       "id": "656698fe8acbfbd8",
       "feed": "https://onnx.ai/blog",
-      "site": "https://onnx.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1196,8 +1136,7 @@
       "notes": "Provider releases & product updates.",
       "id": "266ae3c8fd4248d3",
       "feed": "https://mistral.ai/news",
-      "site": "https://mistral.ai/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html",
@@ -1211,7 +1150,6 @@
       "notes": "Quantization, toolchain, kernel & deployment tutorials.",
       "id": "2fcec7ed63a5946b",
       "feed": "https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html",
-      "site": "https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html",
       "source_type": "blog"
     },
     {
@@ -1225,7 +1163,6 @@
       "notes": "Agentic frameworks, planning, multi-tool pipelines.",
       "id": "e880e6572e5a0803",
       "feed": "https://www.crewai.com/blog",
-      "site": "https://www.crewai.com/blog",
       "source_type": "blog"
     },
     {
@@ -1235,11 +1172,11 @@
         "papers",
         "ml"
       ],
-      "title": "Journal of Machine Learning Research",
       "notes": "Official Journal of Machine Learning Research RSS.",
       "id": "2b3e764ae193e0c3",
       "feed": "https://www.jmlr.org/jmlr.xml",
-      "source_type": "journal"
+      "title": "Jmlr.Xml Feed",
+      "source_type": "organization"
     },
     {
       "url": "https://proceedings.mlr.press",
@@ -1252,8 +1189,7 @@
       "notes": "Venue site; enrichment should auto-discover the RSS feed.",
       "id": "e85625fb94d48199",
       "feed": "https://proceedings.mlr.press",
-      "site": "https://proceedings.mlr.press",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://jmlr.org/tmlr/",
@@ -1266,8 +1202,7 @@
       "notes": "Venue page; enrichment to locate the feed.",
       "id": "9f44675f421cf191",
       "feed": "https://jmlr.org/tmlr/",
-      "site": "https://jmlr.org/tmlr/",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://www.nature.com/natmachintell",
@@ -1280,8 +1215,7 @@
       "notes": "Nature research journal; feed auto-discovery expected.",
       "id": "0ac423b4dfcf525a",
       "feed": "https://www.nature.com/natmachintell",
-      "site": "https://www.nature.com/natmachintell",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://ai.nejm.org",
@@ -1294,8 +1228,7 @@
       "notes": "Medical AI journal; healthcare focus.",
       "id": "5c45656572ca46e6",
       "feed": "https://ai.nejm.org",
-      "site": "https://ai.nejm.org",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://www.nature.com/npjdigitalmed/",
@@ -1308,8 +1241,7 @@
       "notes": "Digital medicine / clinical AI journal.",
       "id": "3daf7af1d06a28d1",
       "feed": "https://www.nature.com/npjdigitalmed/",
-      "site": "https://www.nature.com/npjdigitalmed/",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://developers.google.com/earth-engine/blog",
@@ -1323,7 +1255,6 @@
       "notes": "Official geospatial ML/dev updates.",
       "id": "6be3b96a55bfaed0",
       "feed": "https://developers.google.com/earth-engine/blog",
-      "site": "https://developers.google.com/earth-engine/blog",
       "source_type": "blog"
     },
     {
@@ -1338,7 +1269,6 @@
       "notes": "Geospatial datasets, APIs, notebooks.",
       "id": "5666b8ddb33ae1f6",
       "feed": "https://planetarycomputer.microsoft.com/blog",
-      "site": "https://planetarycomputer.microsoft.com/blog",
       "source_type": "blog"
     },
     {
@@ -1352,7 +1282,6 @@
       "notes": "Earth observation / ML datasets & methods.",
       "id": "a18faccba3716085",
       "feed": "https://www.radiant.earth/blog/",
-      "site": "https://www.radiant.earth/blog/",
       "source_type": "blog"
     },
     {
@@ -1367,7 +1296,6 @@
       "notes": "Monthly incident roundups; taxonomy & incident analysis.",
       "id": "18048e8eb7a6b27d",
       "feed": "https://incidentdatabase.ai/blog/",
-      "site": "https://incidentdatabase.ai/blog/",
       "source_type": "blog"
     },
     {
@@ -1382,7 +1310,6 @@
       "notes": "Lineage standards, integrations, and design notes.",
       "id": "9b03b9ad08ab4f7c",
       "feed": "https://openlineage.io/blog/",
-      "site": "https://openlineage.io/blog/",
       "source_type": "blog"
     },
     {
@@ -1396,7 +1323,6 @@
       "notes": "Data quality, validation patterns, case studies.",
       "id": "38df3d9fdf6d06bd",
       "feed": "https://greatexpectations.io/blog/",
-      "site": "https://greatexpectations.io/blog/",
       "source_type": "blog"
     },
     {
@@ -1410,7 +1336,6 @@
       "notes": "Observability patterns, lineage, incident response.",
       "id": "78c16cb04f525c7d",
       "feed": "https://www.montecarlodata.com/blog/",
-      "site": "https://www.montecarlodata.com/blog/",
       "source_type": "blog"
     },
     {
@@ -1439,7 +1364,6 @@
       "notes": "Embedded/edge ML workflows; enrichment to resolve feed.",
       "id": "94adae3f50be12a4",
       "feed": "https://www.edgeimpulse.com/blog",
-      "site": "https://www.edgeimpulse.com/blog",
       "source_type": "blog"
     },
     {
@@ -1454,7 +1378,6 @@
       "notes": "Community and conference updates for TinyML.",
       "id": "310dae39168d617a",
       "feed": "https://www.tinyml.org/blog/",
-      "site": "https://www.tinyml.org/blog/",
       "source_type": "blog"
     },
     {
@@ -1468,7 +1391,7 @@
       "notes": "Product/runtime changes; useful for MLOps tracking.",
       "id": "5d60e495d86ee1e1",
       "feed": "https://docs.wandb.ai/ref/release-notes/index.xml",
-      "source_type": "docs"
+      "source_type": "blog"
     },
     {
       "url": "https://www.nvidia.com/en-us/research/ai/",
@@ -1482,7 +1405,6 @@
       "notes": "Research highlights; enrichment to locate feed if present.",
       "id": "4960b74b4be54c74",
       "feed": "https://www.nvidia.com/en-us/research/ai/",
-      "site": "https://www.nvidia.com/en-us/research/ai/",
       "source_type": "blog"
     },
     {
@@ -1496,7 +1418,6 @@
       "notes": "Conference announcements, calls, and highlights; WordPress feed autodiscovery.",
       "id": "6902b81365908ed8",
       "feed": "https://blog.neurips.cc",
-      "site": "https://blog.neurips.cc",
       "source_type": "blog"
     },
     {
@@ -1510,7 +1431,6 @@
       "notes": "Conference news, calls, and program updates; feed autodiscovery.",
       "id": "32c0308e29797618",
       "feed": "https://blog.iclr.cc",
-      "site": "https://blog.iclr.cc",
       "source_type": "blog"
     },
     {
@@ -1524,7 +1444,6 @@
       "notes": "Active lab blog with explicit RSS; papers/talks round-ups and technical explainers.",
       "id": "3d11b8b7e6cb0ea8",
       "feed": "https://ai.stanford.edu/blog",
-      "site": "https://ai.stanford.edu/blog",
       "source_type": "blog"
     },
     {
@@ -1539,11 +1458,10 @@
       "notes": "Systems-for-ML, optimizers, and infra; frequent deep technical posts.",
       "id": "594aced327aa13ad",
       "feed": "https://hazyresearch.stanford.edu/blog",
-      "site": "https://hazyresearch.stanford.edu/blog",
       "source_type": "blog"
     },
     {
-      "url": "https://export.arxiv.org/rss/cs.CV",
+      "url": "http://export.arxiv.org/rss/cs.CV",
       "topics": [
         "research",
         "papers",
@@ -1551,12 +1469,12 @@
       ],
       "title": "arXiv — cs.CV RSS",
       "notes": "Official category feed (Computer Vision & Pattern Recognition).",
-      "id": "f16b7d8a335bb18f",
-      "feed": "https://export.arxiv.org/rss/cs.CV",
+      "id": "49c5d77c30cdd8dc",
+      "feed": "http://export.arxiv.org/rss/cs.CV",
       "source_type": "arxiv"
     },
     {
-      "url": "https://export.arxiv.org/rss/cs.CL",
+      "url": "http://export.arxiv.org/rss/cs.CL",
       "topics": [
         "research",
         "papers",
@@ -1564,12 +1482,12 @@
       ],
       "title": "arXiv — cs.CL RSS",
       "notes": "Official category feed (Computation and Language).",
-      "id": "0556400e581ef7b7",
-      "feed": "https://export.arxiv.org/rss/cs.CL",
+      "id": "b6a481a5909b0dcd",
+      "feed": "http://export.arxiv.org/rss/cs.CL",
       "source_type": "arxiv"
     },
     {
-      "url": "https://export.arxiv.org/rss/cs.IR",
+      "url": "http://export.arxiv.org/rss/cs.IR",
       "topics": [
         "research",
         "papers",
@@ -1577,8 +1495,8 @@
       ],
       "title": "arXiv — cs.IR RSS",
       "notes": "Official category feed (Information Retrieval).",
-      "id": "54981c30d995051f",
-      "feed": "https://export.arxiv.org/rss/cs.IR",
+      "id": "6cf01bed7152a71f",
+      "feed": "http://export.arxiv.org/rss/cs.IR",
       "source_type": "arxiv"
     },
     {
@@ -1592,7 +1510,6 @@
       "notes": "Practitioner posts on pipelines, lineage, assets; feed autodiscovery.",
       "id": "18e33c6f4d298399",
       "feed": "https://dagster.io/blog",
-      "site": "https://dagster.io/blog",
       "source_type": "blog"
     },
     {
@@ -1606,7 +1523,6 @@
       "notes": "Airflow best practices, scheduling, data reliability.",
       "id": "04fedffae7ee5a3f",
       "feed": "https://www.astronomer.io/blog",
-      "site": "https://www.astronomer.io/blog",
       "source_type": "blog"
     },
     {
@@ -1620,7 +1536,6 @@
       "notes": "Analytics engineering, testing, docs, deployments.",
       "id": "24d8ae846b1dec7e",
       "feed": "https://www.getdbt.com/blog",
-      "site": "https://www.getdbt.com/blog",
       "source_type": "blog"
     },
     {
@@ -1634,7 +1549,7 @@
       "notes": "Release notes and engineering posts; official RSS endpoint.",
       "id": "a6e5614cfda0c605",
       "feed": "https://duckdb.org/feed.xml",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://semianalysis.substack.com/feed",
@@ -1674,8 +1589,7 @@
       "notes": "Standards/guidance perspectives impacting AI/ML security.",
       "id": "7642be34774dc70f",
       "feed": "https://www.nist.gov/blogs/cybersecurity-insights",
-      "site": "https://www.nist.gov/blogs/cybersecurity-insights",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.safe.ai/blog",
@@ -1688,7 +1602,6 @@
       "notes": "Safety research, risk analyses, policy-relevant technical posts.",
       "id": "a27b8d271c27aa02",
       "feed": "https://www.safe.ai/blog",
-      "site": "https://www.safe.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1702,7 +1615,7 @@
       "notes": "Community research threads on alignment and safety.",
       "id": "1535857cab5f60ba",
       "feed": "https://alignmentforum.org/rss",
-      "source_type": "blog"
+      "source_type": "forum"
     },
     {
       "url": "https://aclrollingreview.org",
@@ -1715,8 +1628,7 @@
       "notes": "Peer-review updates for ACL venues; WordPress feed autodiscovery.",
       "id": "b1969a765a98917a",
       "feed": "https://aclrollingreview.org",
-      "site": "https://aclrollingreview.org",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://pytorch.org/blog",
@@ -1730,7 +1642,6 @@
       "notes": "Framework internals, performance work, and release details.",
       "id": "c4458a0a7dcab4fd",
       "feed": "https://pytorch.org/blog",
-      "site": "https://pytorch.org/blog",
       "source_type": "blog"
     },
     {
@@ -1745,7 +1656,6 @@
       "notes": "Trainer/Fabric ecosystem updates and best practices.",
       "id": "990bdc6bb9af959a",
       "feed": "https://lightning.ai/pages/blog",
-      "site": "https://lightning.ai/pages/blog",
       "source_type": "blog"
     },
     {
@@ -1760,7 +1670,6 @@
       "notes": "LPU-centric inference engineering and product posts.",
       "id": "b4240ef1cc51e832",
       "feed": "https://groq.com/blog",
-      "site": "https://groq.com/blog",
       "source_type": "blog"
     },
     {
@@ -1775,7 +1684,6 @@
       "notes": "Hosting, finetuning, datasets, and cost/perf notes.",
       "id": "985e561bc559a1cd",
       "feed": "https://www.together.ai/blog",
-      "site": "https://www.together.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1790,7 +1698,6 @@
       "notes": "High-throughput serving, agents, and platform releases.",
       "id": "64b811560a52e317",
       "feed": "https://fireworks.ai/blog",
-      "site": "https://fireworks.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1805,7 +1712,6 @@
       "notes": "Serverless model hosting patterns and case studies.",
       "id": "2b372a37cfd720ad",
       "feed": "https://www.baseten.co/blog",
-      "site": "https://www.baseten.co/blog",
       "source_type": "blog"
     },
     {
@@ -1820,7 +1726,6 @@
       "notes": "Optimized inference runtimes and workflow guides.",
       "id": "0a9670d7d20f9381",
       "feed": "https://octoai.cloud/blog",
-      "site": "https://octoai.cloud/blog",
       "source_type": "blog"
     },
     {
@@ -1835,7 +1740,6 @@
       "notes": "Open datasets and research updates.",
       "id": "c696f25176795f99",
       "feed": "https://laion.ai/blog",
-      "site": "https://laion.ai/blog",
       "source_type": "blog"
     },
     {
@@ -1850,7 +1754,6 @@
       "notes": "Observability, evals, and practical production ML guides.",
       "id": "e39898853af3e653",
       "feed": "https://wandb.com/articles",
-      "site": "https://wandb.com/articles",
       "source_type": "blog"
     },
     {
@@ -1865,7 +1768,6 @@
       "notes": "Prompt management, eval methodology, and tooling.",
       "id": "2f76f620c3ff2a8f",
       "feed": "https://humanloop.com/blog",
-      "site": "https://humanloop.com/blog",
       "source_type": "blog"
     },
     {
@@ -1880,7 +1782,6 @@
       "notes": "RAG evaluation techniques and benchmarks.",
       "id": "4a98c7a11f95007e",
       "feed": "https://ragas.io/blog",
-      "site": "https://ragas.io/blog",
       "source_type": "blog"
     },
     {
@@ -1895,7 +1796,6 @@
       "notes": "Telemetry and evaluation for LLM/agent systems.",
       "id": "b2d0617883584004",
       "feed": "https://www.trulens.org/blog",
-      "site": "https://www.trulens.org/blog",
       "source_type": "blog"
     },
     {
@@ -1910,7 +1810,6 @@
       "notes": "Evaluation frameworks and methodology posts.",
       "id": "3974c9e901d3b039",
       "feed": "https://www.confident-ai.com/blog",
-      "site": "https://www.confident-ai.com/blog",
       "source_type": "blog"
     },
     {
@@ -1924,8 +1823,7 @@
       "title": "KServe — GitHub",
       "notes": "K8s-native serving; releases feed auto-discovered.",
       "id": "bfb82f4462f890bb",
-      "feed": "https://github.com/kserve/kserve/releases.atom",
-      "site": "https://github.com/kserve/kserve",
+      "feed": "https://github.com/kserve/kserve",
       "source_type": "github"
     },
     {
@@ -1939,8 +1837,7 @@
       "title": "LangGraph — GitHub",
       "notes": "Agent graphs runtime; frequent releases.",
       "id": "642743ad9061795a",
-      "feed": "https://github.com/langchain-ai/langgraph/releases.atom",
-      "site": "https://github.com/langchain-ai/langgraph",
+      "feed": "https://github.com/langchain-ai/langgraph",
       "source_type": "github"
     },
     {
@@ -1954,8 +1851,7 @@
       "title": "LangChain — GitHub",
       "notes": "Core agents/tooling; release activity tracked.",
       "id": "c5a32632e586ab2c",
-      "feed": "https://github.com/langchain-ai/langchain/releases.atom",
-      "site": "https://github.com/langchain-ai/langchain",
+      "feed": "https://github.com/langchain-ai/langchain",
       "source_type": "github"
     },
     {
@@ -1969,8 +1865,7 @@
       "title": "JAX — GitHub",
       "notes": "XLA transforms and array program transformations.",
       "id": "a38d273f219db547",
-      "feed": "https://github.com/jax-ml/jax/releases.atom",
-      "site": "https://github.com/jax-ml/jax",
+      "feed": "https://github.com/jax-ml/jax",
       "source_type": "github"
     },
     {
@@ -1984,8 +1879,7 @@
       "title": "Transformers — GitHub",
       "notes": "Model library releases and API changes.",
       "id": "53d940334a2a5afd",
-      "feed": "https://github.com/huggingface/transformers/releases.atom",
-      "site": "https://github.com/huggingface/transformers",
+      "feed": "https://github.com/huggingface/transformers",
       "source_type": "github"
     },
     {
@@ -1999,8 +1893,7 @@
       "notes": "Evaluation framework, tasks, and documentation hub.",
       "id": "f6d8f5b7980b40df",
       "feed": "https://evals.openai.com",
-      "site": "https://evals.openai.com",
-      "source_type": "docs"
+      "source_type": "blog"
     },
     {
       "url": "https://www.nist.gov/aisi",
@@ -2013,8 +1906,7 @@
       "notes": "Safety guidance, evaluation artifacts, and calls.",
       "id": "84e0da6d5092e27d",
       "feed": "https://www.nist.gov/aisi",
-      "site": "https://www.nist.gov/aisi",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://oecd.ai",
@@ -2026,8 +1918,7 @@
       "notes": "Global AI policy data, indicators, and analysis.",
       "id": "52f7a3212c2dbad9",
       "feed": "https://oecd.ai",
-      "site": "https://oecd.ai",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://www.redwoodresearch.org/blog",
@@ -2041,7 +1932,6 @@
       "notes": "Alignment research updates and commentary.",
       "id": "f9a0efcdd35439b8",
       "feed": "https://www.redwoodresearch.org/blog",
-      "site": "https://www.redwoodresearch.org/blog",
       "source_type": "blog"
     },
     {
@@ -2056,7 +1946,6 @@
       "notes": "Evals and risk-reduction research perspectives.",
       "id": "6140873d1b290f04",
       "feed": "https://www.far.ai/blog",
-      "site": "https://www.far.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2070,7 +1959,7 @@
       "notes": "Official news feed for releases, safety & policy updates.",
       "id": "bea4293d5eddcb34",
       "feed": "https://openai.com/news/rss.xml",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office",
@@ -2083,8 +1972,7 @@
       "notes": "European Commission AI Office landing; feed auto-discovery during enrichment.",
       "id": "84894ec9fef04246",
       "feed": "https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office",
-      "site": "https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://cset.georgetown.edu/blog/",
@@ -2097,7 +1985,6 @@
       "notes": "Policy/governance analysis; typical WordPress feed at /feed/.",
       "id": "46e0d36ae8327d77",
       "feed": "https://cset.georgetown.edu/blog/",
-      "site": "https://cset.georgetown.edu/blog/",
       "source_type": "blog"
     },
     {
@@ -2111,7 +1998,7 @@
       "notes": "Independent robotics news & interviews; active cadence.",
       "id": "b71ced9408e9949e",
       "feed": "https://robohub.org/feed/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://blog.vllm.ai/",
@@ -2124,7 +2011,6 @@
       "notes": "Runtime internals, perf notes; feed auto-discovery (Jekyll).",
       "id": "413c7b566e2ec942",
       "feed": "https://blog.vllm.ai/",
-      "site": "https://blog.vllm.ai/",
       "source_type": "blog"
     },
     {
@@ -2138,7 +2024,6 @@
       "notes": "Multi-cloud GPU scheduling & orchestration patterns.",
       "id": "798984ec61f55607",
       "feed": "https://blog.skypilot.so/",
-      "site": "https://blog.skypilot.so/",
       "source_type": "blog"
     },
     {
@@ -2152,7 +2037,6 @@
       "notes": "ML compiler stack updates; kernel & codegen deep dives.",
       "id": "8f2f631625c147a5",
       "feed": "https://iree.dev/blog/",
-      "site": "https://iree.dev/blog/",
       "source_type": "blog"
     },
     {
@@ -2315,8 +2199,7 @@
       "notes": "Deep technical explainers; feed auto-discovery at /rss.xml.",
       "id": "fb43a215329b9e2a",
       "feed": "https://lilianweng.github.io/",
-      "site": "https://lilianweng.github.io/",
-      "source_type": "blog"
+      "source_type": "github"
     },
     {
       "url": "https://www.neelnanda.io/blog",
@@ -2330,7 +2213,6 @@
       "notes": "Mech-interp deep dives; active posts.",
       "id": "373d3140196b501f",
       "feed": "https://www.neelnanda.io/blog",
-      "site": "https://www.neelnanda.io/blog",
       "source_type": "blog"
     },
     {
@@ -2344,8 +2226,7 @@
       "title": "OpenMetadata — Blog",
       "notes": "Data catalog & lineage; Medium feed at /feed.",
       "id": "c93c85d1974e69b5",
-      "feed": "https://medium.com/feed/open-metadata",
-      "site": "https://open-metadata.medium.com/",
+      "feed": "https://open-metadata.medium.com/",
       "source_type": "medium"
     },
     {
@@ -2359,7 +2240,6 @@
       "notes": "Harms & safety tech; platform feed auto-discovery.",
       "id": "5f13317de4c74dd0",
       "feed": "https://blog.jigsaw.google/",
-      "site": "https://blog.jigsaw.google/",
       "source_type": "blog"
     },
     {
@@ -2371,11 +2251,10 @@
         "ai-infra-stacks",
         "blogs"
       ],
-      "title": "Modular Blog",
       "notes": "Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.",
       "id": "5785242ca67d5da7",
       "feed": "https://www.modular.com/blog",
-      "site": "https://www.modular.com/blog",
+      "title": "Blog Feed",
       "source_type": "blog"
     },
     {
@@ -2390,8 +2269,7 @@
       "notes": "Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards updates.",
       "id": "2b970ad8e9d28e5a",
       "feed": "https://www.aiverifyfoundation.sg/latest",
-      "site": "https://www.aiverifyfoundation.sg/latest",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.earthdata.nasa.gov/news/blog",
@@ -2406,8 +2284,7 @@
       "notes": "Earth-observation datasets & ML use cases; RSS support documented.",
       "id": "49c7103b140ca274",
       "feed": "https://www.earthdata.nasa.gov/news/blog",
-      "site": "https://www.earthdata.nasa.gov/news/blog",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.ontotext.com/blog/",
@@ -2421,7 +2298,6 @@
       "notes": "Enterprise/semantic KG practices (RDF, OWL, linked data) and production case studies.",
       "id": "fef68c7680a9013f",
       "feed": "https://www.ontotext.com/blog/",
-      "site": "https://www.ontotext.com/blog/",
       "source_type": "blog"
     },
     {
@@ -2437,7 +2313,6 @@
       "notes": "Robotics research & industry engineering coverage; steady weekly cadence.",
       "id": "22e6a14a4ffdd286",
       "feed": "https://spectrum.ieee.org/topic/robotics",
-      "site": "https://spectrum.ieee.org/topic/robotics",
       "source_type": "blog"
     },
     {
@@ -2453,8 +2328,7 @@
       "notes": "Metadata, lineage, governance patterns; LLM app metadata/eval posts.",
       "id": "a4f5be9aef7dbd4d",
       "feed": "https://datahub.com/blog",
-      "site": "https://datahub.com/blog",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://blog.agen.cy",
@@ -2469,8 +2343,7 @@
       "notes": "Agentic systems analysis and ecosystem updates; Substack feed auto-available.",
       "id": "f1699c68b6a727df",
       "feed": "https://blog.agen.cy",
-      "site": "https://blog.agen.cy",
-      "source_type": "substack"
+      "source_type": "blog"
     },
     {
       "url": "https://genai.owasp.org/llm-top-10/",
@@ -2485,8 +2358,7 @@
       "notes": "Canonical AI security reference for LLM apps; project updates and guidance.",
       "id": "c678f61aafadd507",
       "feed": "https://genai.owasp.org/llm-top-10/",
-      "site": "https://genai.owasp.org/llm-top-10/",
-      "source_type": "docs"
+      "source_type": "blog"
     },
     {
       "url": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/",
@@ -2500,8 +2372,7 @@
       "notes": "Active AI4Science lab stream (materials, bio, physics); RSS available from lab pages.",
       "id": "65b321f4f6fc4343",
       "feed": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/",
-      "site": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://scale.com/blog",
@@ -2517,7 +2388,6 @@
       "notes": "Data pipelines, evals, model-ops & deployment stories; weekly+ cadence.",
       "id": "179249eb8ad6fe4d",
       "feed": "https://scale.com/blog",
-      "site": "https://scale.com/blog",
       "source_type": "blog"
     },
     {
@@ -2532,8 +2402,7 @@
       "notes": "Operational updates for LangSmith/LangGraph (evals, tracing, agents).",
       "id": "7ed681c3449c37e5",
       "feed": "https://changelog.langchain.com/",
-      "site": "https://changelog.langchain.com/",
-      "source_type": "docs"
+      "source_type": "blog"
     },
     {
       "url": "https://mozilla.ai/blog/",
@@ -2548,7 +2417,6 @@
       "notes": "Independent lab on trustworthy AI; technical posts + policy perspective.",
       "id": "4075e0d026770dfb",
       "feed": "https://mozilla.ai/blog/",
-      "site": "https://mozilla.ai/blog/",
       "source_type": "blog"
     },
     {
@@ -2564,7 +2432,6 @@
       "notes": "Harvard/MIT open-source differential privacy project; methods & releases.",
       "id": "8ade4055a0a85622",
       "feed": "https://opendp.org/blog",
-      "site": "https://opendp.org/blog",
       "source_type": "blog"
     },
     {
@@ -2580,8 +2447,7 @@
       "notes": "Leading academic robotics lab; research spotlights and event posts.",
       "id": "fb7b2a0f8bdd6135",
       "feed": "https://www.ri.cmu.edu/news/",
-      "site": "https://www.ri.cmu.edu/news/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://metr.org/blog",
@@ -2596,7 +2462,6 @@
       "notes": "Frontier model evaluations and risk reports.",
       "id": "db5a00c01013fff4",
       "feed": "https://metr.org/blog",
-      "site": "https://metr.org/blog",
       "source_type": "blog"
     },
     {
@@ -2612,7 +2477,6 @@
       "notes": "Applied LLM security: prompt injection, model abuse, guardrails.",
       "id": "83cb083527c32d45",
       "feed": "https://www.lakera.ai/blog",
-      "site": "https://www.lakera.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2628,8 +2492,7 @@
       "notes": "AI security research & incident analysis from a specialist vendor.",
       "id": "1784b9b1d5e3e03a",
       "feed": "https://hiddenlayer.com/innovation-hub/",
-      "site": "https://hiddenlayer.com/innovation-hub/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.protectai.com/blog",
@@ -2643,7 +2506,6 @@
       "notes": "Threat modeling, SBOMs for ML, supply chain, scanning/model risk.",
       "id": "3b885a608add9f1e",
       "feed": "https://www.protectai.com/blog",
-      "site": "https://www.protectai.com/blog",
       "source_type": "blog"
     },
     {
@@ -2658,7 +2520,6 @@
       "notes": "Central-bank analytics incl. AI/ML in finance, model risk.",
       "id": "27f9ba5272b1eded",
       "feed": "https://bankunderground.co.uk/",
-      "site": "https://bankunderground.co.uk/",
       "source_type": "blog"
     },
     {
@@ -2674,8 +2535,7 @@
       "notes": "Swiss flagship AI center; research news & seminars.",
       "id": "12865c9d95018451",
       "feed": "https://ai.ethz.ch/news-and-events.html",
-      "site": "https://ai.ethz.ch/news-and-events.html",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://is.mpg.de/news",
@@ -2690,8 +2550,7 @@
       "notes": "Tübingen/Stuttgart; academic highlights and project updates.",
       "id": "09effde00bd7d9f3",
       "feed": "https://is.mpg.de/news",
-      "site": "https://is.mpg.de/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://www.tue.ai/news",
@@ -2706,8 +2565,7 @@
       "notes": "German national AI center (Uni Tübingen + MPI); research news.",
       "id": "9e06b31a9362e513",
       "feed": "https://www.tue.ai/news",
-      "site": "https://www.tue.ai/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://aip.riken.jp/news-en/",
@@ -2721,8 +2579,7 @@
       "notes": "Japan’s national AI research hub; multilingual updates.",
       "id": "cdf859a80b0fd558",
       "feed": "https://aip.riken.jp/news-en/",
-      "site": "https://aip.riken.jp/news-en/",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://x.ai/blog",
@@ -2737,7 +2594,6 @@
       "notes": "Model releases, evaluations, and research notes.",
       "id": "f87eff4db9a7ed4b",
       "feed": "https://x.ai/blog",
-      "site": "https://x.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2753,7 +2609,6 @@
       "notes": "Engineering-first posts on efficient training/inference.",
       "id": "ed682c56f4a399ae",
       "feed": "https://sakana.ai/blog/",
-      "site": "https://sakana.ai/blog/",
       "source_type": "blog"
     },
     {
@@ -2769,7 +2624,6 @@
       "notes": "Open research lab (France); speech & multimodal model posts.",
       "id": "2e33e59b5096e5d5",
       "feed": "https://kyutai.org/blog",
-      "site": "https://kyutai.org/blog",
       "source_type": "blog"
     },
     {
@@ -2785,7 +2639,6 @@
       "notes": "Local LLM ecosystem, model packs, runtime updates.",
       "id": "14866557b8777e62",
       "feed": "https://ollama.com/blog",
-      "site": "https://ollama.com/blog",
       "source_type": "blog"
     },
     {
@@ -2801,7 +2654,6 @@
       "notes": "Desktop local-LLM tooling; releases and tips.",
       "id": "0f1cd0bff5c281f6",
       "feed": "https://lmstudio.ai/blog",
-      "site": "https://lmstudio.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2813,11 +2665,10 @@
         "llmops",
         "blogs"
       ],
-      "title": "Perplexity Blog",
+      "title": "Perplexity — Hub",
       "notes": "Search+LLM product engineering, features, and research collabs.",
       "id": "7a850c68de309111",
       "feed": "https://blog.perplexity.ai/",
-      "site": "https://blog.perplexity.ai/",
       "source_type": "blog"
     },
     {
@@ -2833,7 +2684,6 @@
       "notes": "Model routing, cost/perf notes, and ecosystem updates.",
       "id": "1c762c14f88b7a61",
       "feed": "https://blog.openrouter.ai/",
-      "site": "https://blog.openrouter.ai/",
       "source_type": "blog"
     },
     {
@@ -2849,7 +2699,6 @@
       "notes": "Vector DB engineering & RAG patterns.",
       "id": "21d93218521ecaab",
       "feed": "https://trychroma.com/blog",
-      "site": "https://trychroma.com/blog",
       "source_type": "blog"
     },
     {
@@ -2864,7 +2713,6 @@
       "notes": "Embeddings, Atlas, and data-centric AI posts.",
       "id": "28a8d725f91b4072",
       "feed": "https://blog.nomic.ai/",
-      "site": "https://blog.nomic.ai/",
       "source_type": "blog"
     },
     {
@@ -2880,7 +2728,6 @@
       "notes": "LLM evaluation tooling, prompts-as-tests, CI/CD patterns.",
       "id": "3840e50541660c61",
       "feed": "https://promptfoo.dev/blog/",
-      "site": "https://promptfoo.dev/blog/",
       "source_type": "blog"
     },
     {
@@ -2895,7 +2742,6 @@
       "notes": "LLM evals/monitoring playbooks and case studies.",
       "id": "fea785acf653d20d",
       "feed": "https://www.uptrain.ai/blog",
-      "site": "https://www.uptrain.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2910,7 +2756,6 @@
       "notes": "Eval pipelines, benchmarks, and reliability for LLM apps.",
       "id": "a2f3b827e372e634",
       "feed": "https://blog.gentrace.ai/",
-      "site": "https://blog.gentrace.ai/",
       "source_type": "blog"
     },
     {
@@ -2926,7 +2771,6 @@
       "notes": "Feature platforms, real-time ML data engineering.",
       "id": "2af41b40a1e733ca",
       "feed": "https://www.tecton.ai/blog/",
-      "site": "https://www.tecton.ai/blog/",
       "source_type": "blog"
     },
     {
@@ -2942,7 +2786,6 @@
       "notes": "Feature store engineering and MLOps at scale.",
       "id": "91a3d470b0a9fc69",
       "feed": "https://www.hopsworks.ai/blog",
-      "site": "https://www.hopsworks.ai/blog",
       "source_type": "blog"
     },
     {
@@ -2958,7 +2801,6 @@
       "notes": "OSS workflow orchestration for data/ML; patterns and releases.",
       "id": "42ac26c597fb4774",
       "feed": "https://flyte.org/blog",
-      "site": "https://flyte.org/blog",
       "source_type": "blog"
     },
     {
@@ -2974,7 +2816,6 @@
       "notes": "Kubernetes-native workflows (Workflows, CD, Events).",
       "id": "368da37b7fb8eb0f",
       "feed": "https://blog.argoproj.io/",
-      "site": "https://blog.argoproj.io/",
       "source_type": "blog"
     },
     {
@@ -2990,7 +2831,6 @@
       "notes": "Dataflow orchestration, assets, and observability for ML/data.",
       "id": "df997f8ac78e0475",
       "feed": "https://www.prefect.io/blog",
-      "site": "https://www.prefect.io/blog",
       "source_type": "blog"
     },
     {
@@ -3006,7 +2846,6 @@
       "notes": "Agent frameworks, studio, and architecture updates.",
       "id": "251acb33677f6e4d",
       "feed": "https://devblogs.microsoft.com/autogen/",
-      "site": "https://devblogs.microsoft.com/autogen/",
       "source_type": "blog"
     },
     {
@@ -3021,7 +2860,6 @@
       "notes": "Schemas, constraints, and reliability for LLM outputs.",
       "id": "6ca1ef7914c94933",
       "feed": "https://blog.guardrailsai.com/",
-      "site": "https://blog.guardrailsai.com/",
       "source_type": "blog"
     },
     {
@@ -3037,7 +2875,6 @@
       "notes": "TTS/ASR engineering and model updates.",
       "id": "eb69a578ceb316b9",
       "feed": "https://coqui.ai/blog",
-      "site": "https://coqui.ai/blog",
       "source_type": "blog"
     },
     {
@@ -3053,8 +2890,7 @@
       "notes": "Image/video diffusion releases and ecosystem posts.",
       "id": "27576ba101af6eff",
       "feed": "https://stability.ai/news",
-      "site": "https://stability.ai/news",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://openmmlab.com/blog/",
@@ -3068,7 +2904,6 @@
       "notes": "MM* stacks (Det/Seg/Posing); kernels and model zoo notes.",
       "id": "9e2b6804acf69cd7",
       "feed": "https://openmmlab.com/blog/",
-      "site": "https://openmmlab.com/blog/",
       "source_type": "blog"
     },
     {
@@ -3084,7 +2919,6 @@
       "notes": "YOLO family updates and vision deployment tips.",
       "id": "6bfe15ea5eb4da3f",
       "feed": "https://ultralytics.com/blog",
-      "site": "https://ultralytics.com/blog",
       "source_type": "blog"
     },
     {
@@ -3100,7 +2934,6 @@
       "notes": "Research explainers, code releases, and demos.",
       "id": "f1de2f3335636fbc",
       "feed": "https://blog.salesforceairesearch.com/",
-      "site": "https://blog.salesforceairesearch.com/",
       "source_type": "blog"
     },
     {
@@ -3116,7 +2949,6 @@
       "notes": "Foundation models, tooling, and applied research.",
       "id": "c077ecebf217afc7",
       "feed": "https://research.ibm.com/blog/ai",
-      "site": "https://research.ibm.com/blog/ai",
       "source_type": "blog"
     },
     {
@@ -3132,7 +2964,6 @@
       "notes": "Platform features, MLOps patterns, and case studies.",
       "id": "5853e288138a16dd",
       "feed": "https://cloud.google.com/blog/topics/ai-ml",
-      "site": "https://cloud.google.com/blog/topics/ai-ml",
       "source_type": "blog"
     },
     {
@@ -3148,7 +2979,6 @@
       "notes": "Azure AI services, inference/training stacks, refs.",
       "id": "146b135a6ebbf0e7",
       "feed": "https://azure.microsoft.com/en-us/blog/topics/ai-ml/",
-      "site": "https://azure.microsoft.com/en-us/blog/topics/ai-ml/",
       "source_type": "blog"
     },
     {
@@ -3163,7 +2993,6 @@
       "notes": "Enterprise AI adoption, governance, and platform posts.",
       "id": "58032d19700e464a",
       "feed": "https://www.ibm.com/blog/ai/",
-      "site": "https://www.ibm.com/blog/ai/",
       "source_type": "blog"
     },
     {
@@ -3177,8 +3006,7 @@
       "title": "Yannic Kilcher — YouTube",
       "notes": "Paper walkthroughs and critical takes; high-cadence videos.",
       "id": "1f02eefb105a4042",
-      "feed": "https://www.youtube.com/feeds/videos.xml?user=YannicKilcher",
-      "site": "https://www.youtube.com/@YannicKilcher",
+      "feed": "https://www.youtube.com/@YannicKilcher",
       "source_type": "youtube"
     },
     {
@@ -3192,8 +3020,7 @@
       "title": "Henry AI Labs — YouTube",
       "notes": "Model explainers, interviews, and weekly recaps.",
       "id": "a64df8be753b9658",
-      "feed": "https://www.youtube.com/feeds/videos.xml?user=HenryAILabs",
-      "site": "https://www.youtube.com/@HenryAILabs",
+      "feed": "https://www.youtube.com/@HenryAILabs",
       "source_type": "youtube"
     },
     {
@@ -3207,8 +3034,7 @@
       "title": "Google DeepMind — YouTube",
       "notes": "Talks, demos, and research highlights.",
       "id": "b32c8fb72fe2c9ff",
-      "feed": "https://www.youtube.com/feeds/videos.xml?user=GoogleDeepMind",
-      "site": "https://www.youtube.com/@GoogleDeepMind",
+      "feed": "https://www.youtube.com/@GoogleDeepMind",
       "source_type": "youtube"
     },
     {
@@ -3222,8 +3048,7 @@
       "title": "OpenAI — YouTube",
       "notes": "Product demos, research talks, and updates.",
       "id": "4c2d8c92979beb4a",
-      "feed": "https://www.youtube.com/feeds/videos.xml?user=OpenAI",
-      "site": "https://www.youtube.com/@OpenAI",
+      "feed": "https://www.youtube.com/@OpenAI",
       "source_type": "youtube"
     },
     {
@@ -3237,8 +3062,7 @@
       "title": "Meta AI — YouTube",
       "notes": "FAIR/GenAI research talks and product tech.",
       "id": "3775c6f15991089c",
-      "feed": "https://www.youtube.com/feeds/videos.xml?user=MetaAI",
-      "site": "https://www.youtube.com/@MetaAI",
+      "feed": "https://www.youtube.com/@MetaAI",
       "source_type": "youtube"
     },
     {
@@ -3249,11 +3073,10 @@
         "community",
         "ml"
       ],
-      "title": "r/LocalLLaMA",
       "notes": "Community for running/optimizing local LLMs.",
       "id": "e620332497754836",
-      "feed": "https://www.reddit.com/r/LocalLLaMA/hot/.rss",
-      "site": "https://www.reddit.com/r/LocalLLaMA",
+      "feed": "https://www.reddit.com/r/LocalLLaMA",
+      "title": "Localllama Feed",
       "source_type": "reddit"
     },
     {
@@ -3264,11 +3087,10 @@
         "community",
         "multimodal"
       ],
-      "title": "r/StableDiffusion",
       "notes": "Image diffusion techniques, models, and workflows.",
       "id": "3913a1ff067804cf",
-      "feed": "https://www.reddit.com/r/StableDiffusion/hot/.rss",
-      "site": "https://www.reddit.com/r/StableDiffusion",
+      "feed": "https://www.reddit.com/r/StableDiffusion",
+      "title": "Stablediffusion Feed",
       "source_type": "reddit"
     },
     {
@@ -3282,8 +3104,7 @@
       "title": "Ollama — GitHub",
       "notes": "Local model runtime; follow releases for engine updates.",
       "id": "77b4be38215d4c71",
-      "feed": "https://github.com/ollama/ollama/releases.atom",
-      "site": "https://github.com/ollama/ollama",
+      "feed": "https://github.com/ollama/ollama",
       "source_type": "github"
     },
     {
@@ -3297,8 +3118,7 @@
       "title": "Open WebUI — GitHub",
       "notes": "Self-hosted chat/agent UI; rapid releases.",
       "id": "7c94eb734f17ebfc",
-      "feed": "https://github.com/open-webui/open-webui/releases.atom",
-      "site": "https://github.com/open-webui/open-webui",
+      "feed": "https://github.com/open-webui/open-webui",
       "source_type": "github"
     },
     {
@@ -3312,8 +3132,7 @@
       "title": "Flowise — GitHub",
       "notes": "Flow-based agent and tool graph builder.",
       "id": "22c27291c0ff8f7a",
-      "feed": "https://github.com/FlowiseAI/Flowise/releases.atom",
-      "site": "https://github.com/FlowiseAI/Flowise",
+      "feed": "https://github.com/FlowiseAI/Flowise",
       "source_type": "github"
     },
     {
@@ -3327,8 +3146,7 @@
       "title": "LiteLLM — GitHub",
       "notes": "Unified LLM API router; costs/observability features.",
       "id": "dab892839df45099",
-      "feed": "https://github.com/BerriAI/litellm/releases.atom",
-      "site": "https://github.com/BerriAI/litellm",
+      "feed": "https://github.com/BerriAI/litellm",
       "source_type": "github"
     },
     {
@@ -3342,8 +3160,7 @@
       "title": "Unsloth — GitHub",
       "notes": "Fast finetuning for LLMs; LoRA/QLoRA-focused.",
       "id": "1970f2aab6a882fb",
-      "feed": "https://github.com/unslothai/unsloth/releases.atom",
-      "site": "https://github.com/unslothai/unsloth",
+      "feed": "https://github.com/unslothai/unsloth",
       "source_type": "github"
     },
     {
@@ -3357,8 +3174,7 @@
       "title": "AutoAWQ — GitHub",
       "notes": "Activation-aware quantization for fast inference.",
       "id": "70602e696a51b03d",
-      "feed": "https://github.com/casper-hansen/AutoAWQ/releases.atom",
-      "site": "https://github.com/casper-hansen/AutoAWQ",
+      "feed": "https://github.com/casper-hansen/AutoAWQ",
       "source_type": "github"
     },
     {
@@ -3372,8 +3188,7 @@
       "title": "ExLlamaV2 — GitHub",
       "notes": "High-throughput kernels for LLaMA-family models.",
       "id": "736a2e973b799d71",
-      "feed": "https://github.com/turboderp/exllamav2/releases.atom",
-      "site": "https://github.com/turboderp/exllamav2",
+      "feed": "https://github.com/turboderp/exllamav2",
       "source_type": "github"
     },
     {
@@ -3387,8 +3202,7 @@
       "title": "whisper.cpp — GitHub",
       "notes": "On-device ASR; CPU/GPU-optimized ports.",
       "id": "1b4c7ffe2cc503af",
-      "feed": "https://github.com/ggerganov/whisper.cpp/releases.atom",
-      "site": "https://github.com/ggerganov/whisper.cpp",
+      "feed": "https://github.com/ggerganov/whisper.cpp",
       "source_type": "github"
     },
     {
@@ -3402,8 +3216,7 @@
       "title": "KoboldCpp — GitHub",
       "notes": "Local text-gen runtime with UI; frequent builds.",
       "id": "e2e64792950396e4",
-      "feed": "https://github.com/LostRuins/koboldcpp/releases.atom",
-      "site": "https://github.com/LostRuins/koboldcpp",
+      "feed": "https://github.com/LostRuins/koboldcpp",
       "source_type": "github"
     },
     {
@@ -3417,8 +3230,7 @@
       "title": "Guardrails — GitHub",
       "notes": "Output validation/guarded decoding library.",
       "id": "f083d320a47d5151",
-      "feed": "https://github.com/guardrails-ai/guardrails/releases.atom",
-      "site": "https://github.com/guardrails-ai/guardrails",
+      "feed": "https://github.com/guardrails-ai/guardrails",
       "source_type": "github"
     },
     {
@@ -3432,8 +3244,7 @@
       "title": "Outlines — GitHub",
       "notes": "Grammar/constrained decoding for reliable generation.",
       "id": "f666cb1bf6da00d6",
-      "feed": "https://github.com/outlines-dev/outlines/releases.atom",
-      "site": "https://github.com/outlines-dev/outlines",
+      "feed": "https://github.com/outlines-dev/outlines",
       "source_type": "github"
     },
     {
@@ -3445,8 +3256,7 @@
       "title": "OpenAI Whisper — GitHub",
       "notes": "Speech recognition model; track releases.",
       "id": "24d2ebb24ff35b75",
-      "feed": "https://github.com/openai/whisper/releases.atom",
-      "site": "https://github.com/openai/whisper",
+      "feed": "https://github.com/openai/whisper",
       "source_type": "github"
     },
     {
@@ -3458,8 +3268,7 @@
       "title": "SpeechBrain — GitHub",
       "notes": "Open speech toolkit (ASR/TTS/SSL).",
       "id": "98e6d69888ea533c",
-      "feed": "https://github.com/speechbrain/speechbrain/releases.atom",
-      "site": "https://github.com/speechbrain/speechbrain",
+      "feed": "https://github.com/speechbrain/speechbrain",
       "source_type": "github"
     },
     {
@@ -3471,8 +3280,7 @@
       "title": "Coqui TTS — GitHub",
       "notes": "TTS toolkit and models.",
       "id": "93d4e0dab34a8829",
-      "feed": "https://github.com/coqui-ai/TTS/releases.atom",
-      "site": "https://github.com/coqui-ai/TTS",
+      "feed": "https://github.com/coqui-ai/TTS",
       "source_type": "github"
     },
     {
@@ -3484,8 +3292,7 @@
       "title": "sktime — GitHub",
       "notes": "Time-series ML in Python; classical + deep.",
       "id": "c21c34f5075aa224",
-      "feed": "https://github.com/sktime/sktime/releases.atom",
-      "site": "https://github.com/sktime/sktime",
+      "feed": "https://github.com/sktime/sktime",
       "source_type": "github"
     },
     {
@@ -3497,8 +3304,7 @@
       "title": "Darts — GitHub",
       "notes": "Forecasting library; probabilistic & deep TS models.",
       "id": "fb6f1c126d55707b",
-      "feed": "https://github.com/unit8co/darts/releases.atom",
-      "site": "https://github.com/unit8co/darts",
+      "feed": "https://github.com/unit8co/darts",
       "source_type": "github"
     },
     {
@@ -3512,8 +3318,7 @@
       "notes": "Mechanistic interpretability research hub.",
       "id": "5083d746c2728ff2",
       "feed": "https://transformer-circuits.pub/",
-      "site": "https://transformer-circuits.pub/",
-      "source_type": "journal"
+      "source_type": "blog"
     },
     {
       "url": "https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/",
@@ -3526,8 +3331,7 @@
       "notes": "Legal+AI research; policy, tooling, structured generation.",
       "id": "1f3bf69da87690b7",
       "feed": "https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/",
-      "site": "https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/",
-      "source_type": "organization"
+      "source_type": "code-repo"
     },
     {
       "url": "https://blog.englishtest.duolingo.com/",
@@ -3541,7 +3345,6 @@
       "notes": "Assessment/measurement + ML-driven test design.",
       "id": "37c459c353a42daf",
       "feed": "https://blog.englishtest.duolingo.com/",
-      "site": "https://blog.englishtest.duolingo.com/",
       "source_type": "blog"
     },
     {
@@ -3555,8 +3358,7 @@
       "notes": "Provider announcements, product and research partnerships.",
       "id": "9a25d619c0101be8",
       "feed": "https://www.perplexity.ai/hub",
-      "site": "https://www.perplexity.ai/hub",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://github.com/All-Hands-AI/openhands",
@@ -3568,8 +3370,7 @@
       "title": "OpenHands — GitHub",
       "notes": "Agentic software-engineering framework.",
       "id": "27a3c0486cd7ac82",
-      "feed": "https://github.com/All-Hands-AI/openhands/releases.atom",
-      "site": "https://github.com/All-Hands-AI/openhands",
+      "feed": "https://github.com/All-Hands-AI/openhands",
       "source_type": "github"
     },
     {
@@ -3582,8 +3383,7 @@
       "title": "AutoGPT — GitHub",
       "notes": "Agent workflows; frequent ecosystem changes.",
       "id": "7fc08de27bce1b0c",
-      "feed": "https://github.com/Significant-Gravitas/AutoGPT/releases.atom",
-      "site": "https://github.com/Significant-Gravitas/AutoGPT",
+      "feed": "https://github.com/Significant-Gravitas/AutoGPT",
       "source_type": "github"
     },
     {
@@ -3610,7 +3410,6 @@
       "notes": "Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises RSS; frequent updates.",
       "id": "1ef09deabb13281c",
       "feed": "https://www.amd.com/en/technologies/rocm/blogs.html",
-      "site": "https://www.amd.com/en/technologies/rocm/blogs.html",
       "source_type": "blog"
     },
     {
@@ -3625,7 +3424,6 @@
       "notes": "First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active 2025 cadence.",
       "id": "33c91748e0480bca",
       "feed": "https://community.arm.com/arm-community-blogs/b/ai-blog",
-      "site": "https://community.arm.com/arm-community-blogs/b/ai-blog",
       "source_type": "blog"
     },
     {
@@ -3639,7 +3437,6 @@
       "notes": "Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects, lowering). Maintained under LLVM; feed autodiscovery.",
       "id": "807a2a1630af1988",
       "feed": "https://blog.llvm.org/tags/mlir/",
-      "site": "https://blog.llvm.org/tags/mlir/",
       "source_type": "blog"
     },
     {
@@ -3666,124 +3463,106 @@
       "notes": "Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major indices; feed autodiscovery from site.",
       "id": "b9edcea7e5067db8",
       "feed": "https://www.jair.org",
-      "site": "https://www.jair.org",
-      "source_type": "journal"
+      "source_type": "preprint"
     },
     {
       "url": "https://quantumcomputingreport.com/feed/",
       "topics": [
-        "ai-for-science",
+        "research",
         "industry",
-        "hardware",
-        "research"
+        "hardware"
       ],
       "title": "Quantum Computing Report",
-      "notes": "Industry news and analysis covering quantum computing companies, research developments, and market trends. RSS 2.0 with ~10 recent entries; established publication since 2016.",
+      "notes": "RSS 2.0 with ~10 recent entries. Established industry publication since 2016. Comprehensive quantum company database.",
       "id": "580eb14015a8c19d",
       "feed": "https://quantumcomputingreport.com/feed/",
-      "source_type": "newsroom"
+      "source_type": "code-repo"
     },
     {
       "url": "https://thequantuminsider.com/feed",
       "topics": [
-        "ai-for-science",
-        "industry",
-        "product",
-        "research"
+        "research",
+        "industry"
       ],
       "title": "The Quantum Insider",
-      "notes": "Leading provider of market intelligence on the quantum technology industry. RSS 2.0; useful for company, investment, and policy coverage.",
+      "notes": "RSS 2.0 format. Excellent for quantum computing business and market news. Last build: 2025-10-29.",
       "id": "c87eea6960de906c",
       "feed": "https://thequantuminsider.com/feed",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://news.mit.edu/topic/mitquantum-computing-rss.xml",
       "topics": [
-        "ai-for-science",
-        "research",
-        "education",
-        "hardware"
+        "research"
       ],
       "title": "MIT News — Quantum Computing",
-      "notes": "MIT News coverage of quantum computing research, including algorithms, information theory, superconducting qubits, and networking.",
+      "notes": "RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum computing. Strong industry collaborations.",
       "id": "9b1f428f43a34025",
       "feed": "https://news.mit.edu/topic/mitquantum-computing-rss.xml",
-      "source_type": "newsroom"
+      "source_type": "blog"
     },
     {
       "url": "https://research.ibm.com/blog",
       "topics": [
-        "ai-for-science",
-        "industry",
         "research",
+        "industry",
         "hardware"
       ],
       "title": "IBM Research Blog — Quantum Computing",
-      "notes": "IBM Research quantum-computing posts covering hardware, Qiskit, and algorithms. Platform URL; RSS autodiscovery expected.",
+      "notes": "Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years quantum R&D, 127+ qubit systems, Qiskit framework.",
       "id": "da8ebfcd6a451d00",
       "feed": "https://research.ibm.com/blog",
-      "site": "https://research.ibm.com/blog",
       "source_type": "blog"
     },
     {
       "url": "https://quantumai.google/",
       "topics": [
-        "ai-for-science",
         "research",
         "industry",
         "hardware"
       ],
       "title": "Google Quantum AI",
-      "notes": "Google Quantum AI updates on processors, error correction, and algorithms. Platform URL; RSS autodiscovery expected.",
+      "notes": "Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow chip breakthrough in error correction (2024).",
       "id": "d94657e6bf284e3c",
       "feed": "https://quantumai.google/",
-      "site": "https://quantumai.google/",
-      "source_type": "organization"
+      "source_type": "blog"
     },
     {
       "url": "https://azure.microsoft.com/en-us/blog/quantum/",
       "topics": [
-        "ai-for-science",
-        "industry",
-        "serving",
-        "product"
+        "research",
+        "industry"
       ],
       "title": "Microsoft Azure Quantum Blog",
-      "notes": "Azure Quantum posts on cloud services, algorithms, partnerships, and chemistry/materials applications.",
+      "notes": "Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti.",
       "id": "ac90267ef4e5af9f",
       "feed": "https://azure.microsoft.com/en-us/blog/quantum/",
-      "site": "https://azure.microsoft.com/en-us/blog/quantum/",
       "source_type": "blog"
     },
     {
       "url": "https://ionq.com/blog",
       "topics": [
-        "ai-for-science",
+        "research",
         "industry",
-        "hardware",
-        "serving"
+        "hardware"
       ],
       "title": "IonQ Blog",
-      "notes": "IonQ updates on trapped-ion hardware, partnerships, and applications. Publicly traded; cloud access across major providers.",
+      "notes": "Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google.",
       "id": "78f1d7b84e39ad8c",
       "feed": "https://ionq.com/blog",
-      "site": "https://ionq.com/blog",
       "source_type": "blog"
     },
     {
       "url": "https://rigetti.com/blog",
       "topics": [
-        "ai-for-science",
+        "research",
         "industry",
-        "hardware",
-        "research"
+        "hardware"
       ],
       "title": "Rigetti Computing Blog",
-      "notes": "Rigetti posts on superconducting processors and quantum-classical hybrid approaches; RSS autodiscovery expected.",
+      "notes": "Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing. Ankaa and Novera quantum processors.",
       "id": "7088018a6bbabdf8",
       "feed": "https://rigetti.com/blog",
-      "site": "https://rigetti.com/blog",
       "source_type": "blog"
     }
   ]

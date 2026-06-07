@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# Removed per AGENTS.md + Wave 0 packageManager rule: no bare python shebangs allowed in data/ or migrations/. Use: uv run python ...
 """Validate canonical data assets and generated derivatives."""
 
 import json

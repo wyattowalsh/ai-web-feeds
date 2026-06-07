@@ -16,7 +16,7 @@ sources:
   notes: Official arXiv RSS for Machine Learning
   id: 72831963114989b0
   feed: http://export.arxiv.org/rss/cs.LG
-  title: http://export.arxiv.org/rss/cs.LG
+  title: Cs.Lg Feed
   source_type: arxiv
 - url: https://openai.com/blog/rss/
   topics:
@@ -25,7 +25,7 @@ sources:
   - llm
   id: c2e8f1ffb0b2b48b
   feed: https://openai.com/blog/rss/
-  title: https://openai.com/blog/rss/
+  title: Rss Feed
   source_type: blog
 - url: https://www.pinecone.io/learn/feed.xml
   topics:
@@ -35,7 +35,7 @@ sources:
   - mlops
   id: a1156030febbd9e6
   feed: https://www.pinecone.io/learn/feed.xml
-  title: https://www.pinecone.io/learn/feed.xml
+  title: Feed.Xml Feed
   source_type: blog
 - url: https://www.latent.space/feed
   topics:
@@ -44,7 +44,7 @@ sources:
   - product
   id: a5689419c24836e7
   feed: https://www.latent.space/feed
-  title: https://www.latent.space/feed
+  title: Feed Feed
   source_type: blog
 - url: https://importai.substack.com/feed
   topics:
@@ -53,7 +53,7 @@ sources:
   - research
   id: 0f90c142536df254
   feed: https://importai.substack.com/feed
-  title: https://importai.substack.com/feed
+  title: Feed Feed
   source_type: substack
 - url: https://huggingface.co/blog
   topics:
@@ -63,7 +63,7 @@ sources:
   notes: Site URL; auto-discovers RSS feed
   id: 935fbe5ba89ff5f9
   feed: https://huggingface.co/blog
-  title: https://huggingface.co/blog
+  title: Blog Feed
   source_type: blog
 - url: https://www.anthropic.com/news
   topics:
@@ -82,7 +82,7 @@ sources:
   - open-source
   id: 7151a155c27680f0
   feed: https://openxla.org/blog
-  title: https://openxla.org/blog
+  title: Blog Feed
   source_type: blog
 - url: https://www.reddit.com/r/MachineLearning
   topics:
@@ -92,7 +92,7 @@ sources:
   notes: Reddit subreddit; auto-generates .rss URL
   id: 05e1130929e7ac30
   feed: https://www.reddit.com/r/MachineLearning
-  title: https://www.reddit.com/r/MachineLearning
+  title: Machinelearning Feed
   source_type: reddit
 - url: https://towardsdatascience.com
   topics:
@@ -122,7 +122,7 @@ sources:
   notes: PyTorch repo; auto-generates releases.atom
   id: 6ee2c2a30826817d
   feed: https://github.com/pytorch/pytorch
-  title: https://github.com/pytorch/pytorch
+  title: Pytorch Feed
   source_type: github
 - url: https://dev.to/t/machinelearning
   topics:
@@ -132,7 +132,7 @@ sources:
   notes: Dev.to tag; auto-generates feed URL
   id: 1448e130279b08bd
   feed: https://dev.to/t/machinelearning
-  title: https://dev.to/t/machinelearning
+  title: Machinelearning Feed
   source_type: devto
 - url: https://x.com/karpathy
   topics:
@@ -907,7 +907,7 @@ sources:
   notes: Official Journal of Machine Learning Research RSS.
   id: 2b3e764ae193e0c3
   feed: https://www.jmlr.org/jmlr.xml
-  title: https://www.jmlr.org/jmlr.xml
+  title: Jmlr.Xml Feed
   source_type: organization
 - url: https://proceedings.mlr.press
   topics:
@@ -1746,7 +1746,7 @@ sources:
   notes: Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.
   id: 5785242ca67d5da7
   feed: https://www.modular.com/blog
-  title: https://www.modular.com/blog
+  title: Blog Feed
   source_type: blog
 - url: https://www.aiverifyfoundation.sg/latest
   topics:
@@ -2403,7 +2403,7 @@ sources:
   notes: Community for running/optimizing local LLMs.
   id: e620332497754836
   feed: https://www.reddit.com/r/LocalLLaMA
-  title: https://www.reddit.com/r/LocalLLaMA
+  title: Localllama Feed
   source_type: reddit
 - url: https://www.reddit.com/r/StableDiffusion
   topics:
@@ -2414,7 +2414,7 @@ sources:
   notes: Image diffusion techniques, models, and workflows.
   id: 3913a1ff067804cf
   feed: https://www.reddit.com/r/StableDiffusion
-  title: https://www.reddit.com/r/StableDiffusion
+  title: Stablediffusion Feed
   source_type: reddit
 - url: https://github.com/ollama/ollama
   topics:
@@ -2712,14 +2712,9 @@ sources:
   source_type: preprint
 - url: https://quantumcomputingreport.com/feed/
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - research
-  tags:
-  - news
-  - analysis
-  - quantum-companies
   title: Quantum Computing Report
   notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016.
     Comprehensive quantum company database.
@@ -2728,15 +2723,8 @@ sources:
   source_type: code-repo
 - url: https://thequantuminsider.com/feed
   topics:
-  - quantum-computing
-  - industry
-  - business
   - research
-  tags:
-  - news
-  - startups
-  - quantum-companies
-  - investment
+  - industry
   title: The Quantum Insider
   notes: 'RSS 2.0 format. Excellent for quantum computing business and market news.
     Last build: 2025-10-29.'
@@ -2745,15 +2733,7 @@ sources:
   source_type: blog
 - url: https://news.mit.edu/topic/mitquantum-computing-rss.xml
   topics:
-  - quantum-computing
   - research
-  - academic
-  - physics
-  tags:
-  - university
-  - research
-  - quantum-theory
-  - quantum-hardware
   title: MIT News — Quantum Computing
   notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum
     computing. Strong industry collaborations.
@@ -2762,15 +2742,9 @@ sources:
   source_type: blog
 - url: https://research.ibm.com/blog
   topics:
-  - quantum-computing
-  - industry
   - research
+  - industry
   - hardware
-  tags:
-  - superconducting-qubits
-  - quantum-algorithms
-  - qiskit
-  - quantum-software
   title: IBM Research Blog — Quantum Computing
   notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years
     quantum R&D, 127+ qubit systems, Qiskit framework.
@@ -2779,14 +2753,9 @@ sources:
   source_type: blog
 - url: https://quantumai.google/
   topics:
-  - quantum-computing
   - research
   - industry
   - hardware
-  tags:
-  - quantum-processors
-  - error-correction
-  - quantum-algorithms
   title: Google Quantum AI
   notes: Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow
     chip breakthrough in error correction (2024).
@@ -2795,14 +2764,8 @@ sources:
   source_type: blog
 - url: https://azure.microsoft.com/en-us/blog/quantum/
   topics:
-  - quantum-computing
+  - research
   - industry
-  - cloud
-  - software
-  tags:
-  - quantum-cloud
-  - quantum-algorithms
-  - quantum-chemistry
   title: Microsoft Azure Quantum Blog
   notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit.
     Partnerships with IonQ, Quantinuum, Rigetti.
@@ -2811,14 +2774,9 @@ sources:
   source_type: blog
 - url: https://ionq.com/blog
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - trapped-ions
-  tags:
-  - trapped-ion
-  - quantum-hardware
-  - quantum-cloud
   title: IonQ Blog
   notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion
     technology leader. Cloud access via AWS/Azure/Google.'
@@ -2827,14 +2785,9 @@ sources:
   source_type: blog
 - url: https://rigetti.com/blog
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - superconducting
-  tags:
-  - superconducting-qubits
-  - quantum-cloud
-  - quantum-processors
   title: Rigetti Computing Blog
   notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing.
     Ankaa and Novera quantum processors.

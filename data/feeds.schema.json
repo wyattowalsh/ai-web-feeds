@@ -1,10 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/wyattowalsh/ai-web-feeds/raw/main/data/schema/feeds.schema.json",
-  "title": "AIWebFeeds — Minimal Contributor Feeds Schema",
+  "title": "AIWebFeeds \u2014 Minimal Contributor Feeds Schema",
   "description": "Ultra-simplified schema: contributors only provide a URL and topics. Everything else (title, feed URL, metadata) is auto-enriched via platform detection, feed discovery, and RSSHub fallback.",
   "type": "object",
-  "required": ["schema_version", "sources"],
+  "required": [
+    "schema_version",
+    "sources"
+  ],
   "additionalProperties": false,
   "properties": {
     "schema_version": {
@@ -17,23 +20,49 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "created":       { "type": "string", "format": "date" },
-        "updated":       { "type": "string", "format": "date" },
-        "generated_with":{
+        "created": {
+          "type": "string",
+          "format": "date"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date"
+        },
+        "generated_with": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "tool":    { "type": "string" },
-            "version": { "type": "string" }
+            "tool": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
           }
         },
-        "notes":         { "type": "string", "maxLength": 500 }
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
       }
     },
     "sources": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/source" }
+      "items": {
+        "$ref": "#/$defs/source",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": true
+      }
     }
   },
   "$defs": {
@@ -51,9 +80,12 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["url", "topics"],
+      "required": [
+        "url",
+        "topics"
+      ],
       "properties": {
-        "url":    {
+        "url": {
           "$ref": "#/$defs/http_uri",
           "description": "Any URL: direct RSS/Atom feed, website homepage, or platform URL (x.com/username, youtube.com/channel/ID, reddit.com/r/subreddit, github.com/owner/repo, etc.). System auto-detects platform and enriches."
         },
@@ -62,16 +94,18 @@
           "minItems": 1,
           "maxItems": 6,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/topic_id" },
+          "items": {
+            "$ref": "#/$defs/topic_id"
+          },
           "description": "1-6 topic IDs from topics.yaml that categorize this source."
         },
-        "title":  {
+        "title": {
           "type": "string",
           "minLength": 1,
           "maxLength": 160,
           "description": "Optional custom title. If not provided, title will be auto-extracted from the feed during enrichment."
         },
-        "notes":  {
+        "notes": {
           "type": "string",
           "maxLength": 500,
           "description": "Optional contributor notes about this source (quality, update frequency, special considerations, etc.)"
