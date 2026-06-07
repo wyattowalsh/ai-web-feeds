@@ -79,7 +79,7 @@
     },
     "source": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "url",
         "topics"
@@ -101,14 +101,16 @@
         },
         "title": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160,
-          "description": "Optional custom title. If not provided, title will be auto-extracted from the feed during enrichment."
+          "minLength": 1
         },
         "notes": {
           "type": "string",
           "maxLength": 500,
           "description": "Optional contributor notes about this source (quality, update frequency, special considerations, etc.)"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "description": "Minimal source entry - only URL and topics required. Title and metadata auto-enriched, but can be overridden with custom values."
