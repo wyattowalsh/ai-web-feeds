@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { FeedCatalog } from "../../feeds/feed-catalog";
 import { getSourceTypes, loadFeedCatalog } from "@/lib/feeds";
 import { getSourcePath, getSourceTitle } from "@/lib/public-content";
@@ -21,7 +21,7 @@ type SourcesPageProps = {
 };
 
 export default async function SourcesPage({ searchParams }: SourcesPageProps) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const params = toURLSearchParams(await searchParams);
   const feedsData = loadFeedCatalog();
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { Activity, Database, Gauge, ShieldCheck } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -28,7 +28,7 @@ function formatNumber(value: number | null): string {
 }
 
 export default async function DashboardPage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const feedsData = loadFeedCatalog();
   const feedStats = getFeedStats(feedsData.sources);
   const validationStats = await getValidationStats();

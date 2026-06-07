@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpenText, RadioTower, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { getFeedStats, loadFeedCatalog } from "@/lib/feeds";
@@ -18,7 +18,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function HomePage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const feedsData = loadFeedCatalog();
   const stats = getFeedStats(feedsData.sources);
 

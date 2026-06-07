@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { loadReaderRouteData, ReaderPageSearchParams } from "@/lib/reader-route";
 import { createPageMetadata } from "@/lib/seo";
 import { collectionPageJsonLd } from "@/lib/structured-data";
@@ -18,7 +18,7 @@ type ReaderPageProps = {
 };
 
 export default async function ReaderPage({ searchParams }: ReaderPageProps) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const { mode, feeds, stats, initialState, initialBrowse } =
     await loadReaderRouteData(searchParams);
 

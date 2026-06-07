@@ -1,6 +1,10 @@
 {
   "title": "Documentation",
-  "pages": ["index", "security", "taxonomy-visualization"],
+  "pages": [
+    "index",
+    "security",
+    "taxonomy-visualization"
+  ],
   "---Features": {
     "type": "separator"
   },
@@ -20,7 +24,9 @@
       "llms-full-format"
     ]
   },
-  "---Guides": { "type": "separator" },
+  "---Guides": {
+    "type": "separator"
+  },
   "guides": {
     "title": "Guides",
     "icon": "BookOpen",
@@ -37,7 +43,9 @@
       "github-infrastructure"
     ]
   },
-  "---Development": { "type": "separator" },
+  "---Development": {
+    "type": "separator"
+  },
   "development": {
     "title": "Development",
     "icon": "Code",
@@ -45,6 +53,7 @@
       "index",
       "architecture",
       "runtime-authority",
+      "security-csp-nonce",
       "search-architecture",
       "implementation",
       "database",
@@ -60,10 +69,14 @@
       "contributing"
     ]
   },
-  "---Visualization": { "type": "separator" },
+  "---Visualization": {
+    "type": "separator"
+  },
   "visualization": {
     "title": "Visualization & Analytics",
     "icon": "ChartBar",
-    "pages": ["getting-started"]
+    "pages": [
+      "getting-started"
+    ]
   }
 }

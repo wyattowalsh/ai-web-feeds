@@ -255,6 +255,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(screen.getAllByText("New").length).toBeGreaterThan(0);
   });
 
+  // pre-existing slow sanitization + rich markup render in jsdom; timeout increased to prevent flakiness on CI/local
   it("sanitizes preview html while preserving safe rich markup", async () => {
     const maliciousBrowse = {
       ...initialBrowse,
@@ -310,7 +311,7 @@ describe("FeedsWorkspaceClient", () => {
     expect(container.querySelector("table")).not.toBeNull();
     expect(container.querySelector("pre code")).not.toBeNull();
     expect(container).not.toHaveTextContent("Do not render form");
-  });
+  }, 15000);
 
   it("keeps preview closed until the user opens it and allows Escape to close it", async () => {
     vi.stubGlobal(

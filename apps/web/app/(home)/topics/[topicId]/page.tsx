@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { SourceAvatar } from "@/components/source-avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
 }
 
 export default async function TopicPage({ params }: TopicPageProps) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const { topicId } = await params;
   const topic = getTopicBySlug(topicId);
   if (!topic) {

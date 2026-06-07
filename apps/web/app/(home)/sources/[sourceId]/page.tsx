@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ExternalLink, RadioTower } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { SourceAvatar } from "@/components/source-avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: SourcePageProps): Promise<Met
 }
 
 export default async function SourcePage({ params }: SourcePageProps) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const { sourceId } = await params;
   const source = getSourceBySlug(sourceId);
   if (!source) {

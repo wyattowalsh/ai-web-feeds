@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import {
   getSourcesForTopic,
   getTopicPath,
@@ -21,7 +21,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function TopicsPage() {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const topics = loadTopicCatalog();
 
   return (

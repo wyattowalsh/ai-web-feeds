@@ -1,0 +1,180 @@
+---
+title: Strict Nonce-Based CSP
+description: Per-request nonce Content-Security-Policy enforcement via middleware for safe inline JsonLd scripts without 'unsafe-inline' on script-src. Production enforcement (Path B) for Next.js 15 App Router + Fumadocs.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+
+## Motivation and Decision
+
+We chose **Path B**: enforce a strict nonce-based Content-Security-Policy (CSP) in production immediately, rather than starting in Report-Only mode.
+
+**Why middleware is the only place per-request nonces can be generated:**
+
+- In Next.js 15 App Router, `headers()` is a dynamic function. It opts the route into dynamic rendering and can only be read at request time.
+- `next.config.*` `headers()` (and `async headers()`) are evaluated at build time / for static routes. They cannot produce a unique nonce per response.
+- Middleware runs on every matching request and is the canonical location for setting per-request response headers (including `Content-Security-Policy` with a fresh nonce and the `x-nonce` header that Server Components read via `headers()`).
+
+The implementation centralizes nonce generation in middleware, exposes it via a tiny DRY helper (`getRequestNonce`), and forwards it only to the `<JsonLd>` components that render our controlled inline `<script type="application/ld+json">` tags.
+
+## The Policy (Exact Directives + Rationale)
+
+The policy is generated fresh on every request in `middleware.ts`:
+
+```ts
+const nonce = btoa(crypto.randomUUID());
+
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'nonce-${nonce}'`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https: wss:",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+```
+
+### Directive-by-Directive Rationale
+
+| Directive                  | Value                                      | Rationale |
+|---------------------------|--------------------------------------------|---------|
+| `default-src`             | `'self'`                                   | Baseline: only same-origin resources by default. |
+| `script-src`              | `'self' 'nonce-${nonce}'`                  | **Strict**. No `'unsafe-inline'`, no `'unsafe-eval'`. Only our per-request nonced inline JsonLd scripts + first-party bundles. This is the core security win. |
+| `style-src`               | `'self' 'unsafe-inline'`                   | **Pragmatic documented exception**. Tailwind 4, Fumadocs UI, shadcn/ui, katex, and `tw-animate-css` emit style rules that are not practical to nonce at runtime today. We accept the (limited) risk and document it. |
+| `img-src`                 | `'self' data: https:`                      | Remote feed images come from arbitrary external sources. `https:` is required for the reader use case. |
+| `font-src`                | `'self' data: https://fonts.gstatic.com`   | Self-hosted + Google Fonts (common for Fumadocs + design system). |
+| `connect-src`             | `'self' https: wss:`                       | Same-origin APIs, Better Auth OAuth flows, remote feed fetches in the reader, future WebSocket real-time features. Broad for now; can be tightened with a `report-to` endpoint later. |
+| `frame-ancestors`         | `'none'`                                   | Clickjacking defense (equivalent to `X-Frame-Options: DENY`). |
+| `base-uri`                | `'self'`                                   | Prevents base-tag injection attacks. |
+| `form-action`             | `'self'`                                   | Forms can only submit to same origin. |
+
+**Static security headers** (also set in middleware so they apply to redirects/rewrites, and duplicated in `next.config.mjs` for static completeness):
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+
+## Developer Usage
+
+In any Server Component or page that renders structured data via `<JsonLd>` (or future nonced inline scripts):
+
+```tsx
+import { getRequestNonce } from "@/lib/nonce";
+import { JsonLd } from "@/components/json-ld";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const nonce = await getRequestNonce();
+
+  return (
+    <html lang="en">
+      <body>
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} nonce={nonce} />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+The small helper `lib/nonce.ts` was extracted for DRYness:
+
+```ts
+import { headers } from "next/headers";
+
+export async function getRequestNonce(): Promise<string | undefined> {
+  return (await headers()).get("x-nonce") ?? undefined;
+}
+```
+
+It gracefully returns `undefined` for static renders or when middleware did not run (e.g., certain dev or test paths).
+
+## The JsonLd Component
+
+`components/json-ld.tsx` accepts an optional `nonce` prop and sets it on the script element:
+
+```tsx
+export function JsonLd({ data, nonce }: JsonLdProps) {
+  return (
+    <script
+      type="application/ld+json"
+      nonce={nonce}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
+    />
+  );
+}
+```
+
+This is the **only** inline `<script>` we control and intentionally allow through the strict `script-src` policy.
+
+## Verification & Observability
+
+Run these checks after any change to middleware, the nonce helper, or JsonLd usage:
+
+1. **Headers on every response** (different nonce each time):
+   ```bash
+   curl -I http://localhost:3000
+   # Look for:
+   # x-nonce: <base64-uuid>
+   # content-security-policy: default-src 'self'; script-src 'self' 'nonce-...'; ...
+   ```
+
+2. **Per-request uniqueness**:
+   ```bash
+   for i in 1 2 3; do curl -sI http://localhost:3000 | grep -i '^x-nonce:'; done
+   ```
+
+3. **View source / DevTools on key surfaces**:
+   - `/` (home)
+   - `/docs` (and any docs page)
+   - `/reader`, article pages, source pages, topic pages, dashboard
+   - Confirm `<script type="application/ld+json" nonce="...">` attributes are present on the JsonLd blocks.
+   - Confirm **no CSP violations** in the browser console for these scripts.
+
+4. **Production build succeeds with middleware**:
+   ```bash
+   pnpm --dir apps/web build
+   ```
+   The standalone output must include the middleware (verified by successful build + runtime header behavior).
+
+## Surfaces Covered and Policy Shape
+
+The policy is deliberately shaped for the actual runtime surfaces of this app:
+
+- **JsonLd (only controlled inline script)**: organization, website, collectionPage, article, dataFeed, breadcrumbs — all go through the nonced component.
+- **Reader surfaces**: same-origin API calls + remote feed images.
+- **DOMPurify sanitizer** (used for feed content): runs in a way compatible with the policy.
+- **Fumadocs + MDX**: Mermaid diagrams, Katex math, UI components.
+- **Better Auth flows**: OAuth redirects/callbacks (covered by `connect-src`).
+- **Viz libraries**: Chart.js, Three.js / React Three Fiber (self-hosted bundles + any data URLs).
+- **Remote feed images**: arbitrary `https:` origins (reader core feature).
+
+`connect-src` and `img-src` are intentionally broad because this is a feed reader. They can be tightened later once real-time features and exact third-party origins are finalized (ideally with a `report-to` / `report-uri` directive + monitoring).
+
+## Source Links
+
+- **Policy + generation**: `apps/web/middleware.ts` (the canonical location; includes extensive comments)
+- **DRY helper**: `apps/web/lib/nonce.ts`
+- **Component**: `apps/web/components/json-ld.tsx`
+- **Root usage**: `apps/web/app/layout.tsx`
+- **Page usage examples**: `app/(home)/page.tsx`, `app/(home)/reader/page.tsx`, `app/(home)/articles/[articleId]/page.tsx`, `app/(home)/sources/*`, `app/(home)/topics/*`, `app/(home)/dashboard/page.tsx`, `app/docs/[[...slug]]/page.tsx`
+- **Static header delegation comment**: `apps/web/next.config.mjs`
+
+## Future Notes / Gotchas
+
+- **Broad directives are intentional for the feed-reader use case.** Do not over-tighten `img-src` or `connect-src` without reader impact assessment.
+- **Report-to / CSP reporting**: Adding a `report-to` endpoint + `report-uri` (legacy) would give visibility into any future violations without breaking the current enforcement.
+- **strict-dynamic**: Could be added to `script-src` later (`'strict-dynamic'`) if we introduce dynamic script loading from a nonced context. Current policy is already strict enough for our controlled inline scripts.
+- **Style-src exception**: Revisit if a future Tailwind / UI stack allows practical nonceing or hashed styles. For now it is the documented pragmatic trade-off.
+- **Middleware matcher**: Currently excludes `api`, `_next/static`, `_next/image`, `favicon.ico`, `llms*`. Changes here affect which responses receive the nonce + CSP.
+
+<Callout type="info">
+  This is a living security control. Any new inline script, third-party connect, or image source must be evaluated against the policy and either nonced (preferred) or explicitly added with justification.
+</Callout>

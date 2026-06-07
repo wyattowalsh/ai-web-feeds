@@ -2,9 +2,9 @@ import { getPageImage, source } from "@/lib/source";
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
+import { getRequestNonce } from "@/lib/nonce";
 import { getMDXComponents } from "@/mdx-components";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import { BookOpenText } from "lucide-react";
 import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
@@ -25,7 +25,7 @@ type DocsPageProps = {
 };
 
 export default async function Page(props: DocsPageProps) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = await getRequestNonce();
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
