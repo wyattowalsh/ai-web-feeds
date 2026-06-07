@@ -6,7 +6,7 @@
   <body>
     <outline text="aiwebfeeds" title="aiwebfeeds">
       <outline text="academic" title="academic">
-        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" description="MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking." />
+        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" />
       </outline>
       <outline text="accelerators" title="accelerators">
         <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/" />
@@ -170,10 +170,10 @@
         <outline type="rss" text="Duolingo English Test — Blog" title="Duolingo English Test — Blog" xmlUrl="https://blog.englishtest.duolingo.com/" />
       </outline>
       <outline text="business" title="business">
-        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" description="Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs." />
+        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" />
       </outline>
       <outline text="cloud" title="cloud">
-        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" description="Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science." />
+        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" />
       </outline>
       <outline text="community" title="community">
         <outline type="rss" text="https://www.reddit.com/r/MachineLearning" title="https://www.reddit.com/r/MachineLearning" xmlUrl="https://www.reddit.com/r/MachineLearning" />
@@ -365,11 +365,11 @@
       <outline text="hardware" title="hardware">
         <outline type="rss" text="SemiAnalysis — Substack (RSS)" title="SemiAnalysis — Substack (RSS)" xmlUrl="https://semianalysis.substack.com/feed" />
         <outline type="rss" text="Chips and Cheese — RSS" title="Chips and Cheese — RSS" xmlUrl="https://chipsandcheese.com/feed/" />
-        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" description="Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage." />
-        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" description="IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML." />
-        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" description="Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications." />
-        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" description="IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications." />
-        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" description="Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms." />
+        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" />
+        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" />
+        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" />
+        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" />
+        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" />
       </outline>
       <outline text="healthcare-ai" title="healthcare-ai">
         <outline type="rss" text="NEJM AI" title="NEJM AI" xmlUrl="https://ai.nejm.org" />
@@ -410,13 +410,13 @@
         <outline type="rss" text="OpenAI — YouTube" title="OpenAI — YouTube" xmlUrl="https://www.youtube.com/@OpenAI" />
         <outline type="rss" text="Meta AI — YouTube" title="Meta AI — YouTube" xmlUrl="https://www.youtube.com/@MetaAI" />
         <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://www.perplexity.ai/hub" />
-        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" description="Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage." />
-        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" description="Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs." />
-        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" description="IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML." />
-        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" description="Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications." />
-        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" description="Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science." />
-        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" description="IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications." />
-        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" description="Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms." />
+        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" />
+        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" />
+        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" />
+        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" />
+        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" />
+        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" />
+        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" />
       </outline>
       <outline text="inference" title="inference">
         <outline type="rss" text="NVIDIA Technical Blog — RSS" title="NVIDIA Technical Blog — RSS" xmlUrl="https://developer.nvidia.com/blog/feed/" />
@@ -780,7 +780,7 @@
         <outline type="rss" text="OpenDP — Blog" title="OpenDP — Blog" xmlUrl="https://opendp.org/blog" />
       </outline>
       <outline text="physics" title="physics">
-        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" description="MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking." />
+        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" />
       </outline>
       <outline text="podcasts" title="podcasts">
         <outline type="rss" text="https://www.latent.space/feed" title="https://www.latent.space/feed" xmlUrl="https://www.latent.space/feed" />
@@ -827,15 +827,15 @@
         <outline type="rss" text="Open WebUI — GitHub" title="Open WebUI — GitHub" xmlUrl="https://github.com/open-webui/open-webui" />
         <outline type="rss" text="Perplexity — Hub" title="Perplexity — Hub" xmlUrl="https://www.perplexity.ai/hub" />
       </outline>
-      <outline text="quantum_computing" title="quantum_computing">
-        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" description="Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage." />
-        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" description="Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs." />
-        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" description="MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking." />
-        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" description="IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML." />
-        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" description="Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications." />
-        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" description="Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science." />
-        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" description="IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications." />
-        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" description="Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms." />
+      <outline text="quantum-computing" title="quantum-computing">
+        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" />
+        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" />
+        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" />
+        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" />
+        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" />
+        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" />
+        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" />
+        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" />
       </outline>
       <outline text="rag" title="rag">
         <outline type="rss" text="LlamaIndex — Blog" title="LlamaIndex — Blog" xmlUrl="https://www.llamaindex.ai/blog" />
@@ -913,11 +913,11 @@
         <outline type="rss" text="Transformer Circuits" title="Transformer Circuits" xmlUrl="https://transformer-circuits.pub/" />
         <outline type="rss" text="arXiv — cs.AI RSS" title="arXiv — cs.AI RSS" xmlUrl="https://rss.arxiv.org/rss/cs.AI" />
         <outline type="rss" text="Journal of Artificial Intelligence Research (JAIR)" title="Journal of Artificial Intelligence Research (JAIR)" xmlUrl="https://www.jair.org" />
-        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" description="Industry news and analysis covering quantum computing companies, research developments, and market trends. Updated multiple times daily with comprehensive coverage." />
-        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" description="Leading provider of market intelligence on the quantum technology industry, covering companies, investments, policy, and research breakthroughs." />
-        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" description="MIT News coverage of quantum computing research, including quantum algorithms, quantum information theory, superconducting qubits, and quantum networking." />
-        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" description="IBM Research quantum computing blog covering hardware developments, Qiskit releases, quantum algorithms, and applications in chemistry, optimization, and ML." />
-        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" description="Google Quantum AI research blog covering quantum processor development (Willow chip), quantum error correction, quantum algorithms, and applications." />
+        <outline type="rss" text="Quantum Computing Report" title="Quantum Computing Report" xmlUrl="https://quantumcomputingreport.com/feed/" />
+        <outline type="rss" text="The Quantum Insider" title="The Quantum Insider" xmlUrl="https://thequantuminsider.com/feed" />
+        <outline type="rss" text="MIT News — Quantum Computing" title="MIT News — Quantum Computing" xmlUrl="https://news.mit.edu/topic/mitquantum-computing-rss.xml" />
+        <outline type="rss" text="IBM Research Blog — Quantum Computing" title="IBM Research Blog — Quantum Computing" xmlUrl="https://research.ibm.com/blog" />
+        <outline type="rss" text="Google Quantum AI" title="Google Quantum AI" xmlUrl="https://quantumai.google/" />
       </outline>
       <outline text="retrieval" title="retrieval">
         <outline type="rss" text="https://www.pinecone.io/learn/feed.xml" title="https://www.pinecone.io/learn/feed.xml" xmlUrl="https://www.pinecone.io/learn/feed.xml" />
@@ -1018,7 +1018,7 @@
         <outline type="rss" text="KoboldCpp — GitHub" title="KoboldCpp — GitHub" xmlUrl="https://github.com/LostRuins/koboldcpp" />
       </outline>
       <outline text="software" title="software">
-        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" description="Microsoft Azure Quantum blog covering quantum computing cloud services, quantum algorithms, partnerships, and applications in chemistry and materials science." />
+        <outline type="rss" text="Microsoft Azure Quantum Blog" title="Microsoft Azure Quantum Blog" xmlUrl="https://azure.microsoft.com/en-us/blog/quantum/" />
       </outline>
       <outline text="structured-generation" title="structured-generation">
         <outline type="rss" text="Humanloop — Blog" title="Humanloop — Blog" xmlUrl="https://humanloop.com/blog" />
@@ -1030,7 +1030,7 @@
         <outline type="rss" text="Stanford CodeX — Legal Informatics" title="Stanford CodeX — Legal Informatics" xmlUrl="https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/" />
       </outline>
       <outline text="superconducting" title="superconducting">
-        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" description="Rigetti Computing blog on superconducting quantum processors, quantum cloud computing, and quantum-classical hybrid algorithms." />
+        <outline type="rss" text="Rigetti Computing Blog" title="Rigetti Computing Blog" xmlUrl="https://rigetti.com/blog" />
       </outline>
       <outline text="time-series" title="time-series">
         <outline type="rss" text="Nixtla — Blog" title="Nixtla — Blog" xmlUrl="https://nixtla.github.io/blog" />
@@ -1061,7 +1061,7 @@
         <outline type="rss" text="Unsloth — GitHub" title="Unsloth — GitHub" xmlUrl="https://github.com/unslothai/unsloth" />
       </outline>
       <outline text="trapped-ions" title="trapped-ions">
-        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" description="IonQ blog on trapped-ion quantum computing, including hardware updates, research collaborations, and quantum computing applications." />
+        <outline type="rss" text="IonQ Blog" title="IonQ Blog" xmlUrl="https://ionq.com/blog" />
       </outline>
       <outline text="trust-audit" title="trust-audit">
         <outline type="rss" text="Partnership on AI — Blog" title="Partnership on AI — Blog" xmlUrl="https://partnershiponai.org/blog/" />

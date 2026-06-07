@@ -14,57 +14,51 @@ sources:
   - papers
   - ml
   notes: Official arXiv RSS for Machine Learning
-  id: 72831963114989b0
-  feed: http://export.arxiv.org/rss/cs.LG
+  id: src-28a423a2e4b183
   title: http://export.arxiv.org/rss/cs.LG
-  source_type: arxiv
+  feed: http://export.arxiv.org/rss/cs.LG
 - url: https://openai.com/blog/rss/
   topics:
   - industry
   - product
   - llm
-  id: c2e8f1ffb0b2b48b
-  feed: https://openai.com/blog/rss/
+  id: src-3984c1978b1021
   title: https://openai.com/blog/rss/
-  source_type: blog
+  feed: https://openai.com/blog/rss/
 - url: https://www.pinecone.io/learn/feed.xml
   topics:
   - retrieval
   - vector
   - embeddings
   - mlops
-  id: a1156030febbd9e6
-  feed: https://www.pinecone.io/learn/feed.xml
+  id: src-7a37d27d92df9d
   title: https://www.pinecone.io/learn/feed.xml
-  source_type: blog
+  feed: https://www.pinecone.io/learn/feed.xml
 - url: https://www.latent.space/feed
   topics:
   - podcasts
   - industry
   - product
-  id: a5689419c24836e7
-  feed: https://www.latent.space/feed
+  id: src-750cfe36084664
   title: https://www.latent.space/feed
-  source_type: blog
+  feed: https://www.latent.space/feed
 - url: https://importai.substack.com/feed
   topics:
   - newsletters
   - industry
   - research
-  id: 0f90c142536df254
-  feed: https://importai.substack.com/feed
+  id: src-43c6058d2c0bd7
   title: https://importai.substack.com/feed
-  source_type: substack
+  feed: https://importai.substack.com/feed
 - url: https://huggingface.co/blog
   topics:
   - open-source
   - mlops
   - nlp
   notes: Site URL; auto-discovers RSS feed
-  id: 935fbe5ba89ff5f9
-  feed: https://huggingface.co/blog
+  id: src-5f0ffb9c781dd4
   title: https://huggingface.co/blog
-  source_type: blog
+  feed: https://huggingface.co/blog
 - url: https://www.anthropic.com/news
   topics:
   - industry
@@ -72,28 +66,25 @@ sources:
   - llm
   title: Anthropic News
   notes: Custom title provided; feed auto-discovered
-  id: f6aa679babd7a46a
+  id: src-61b56a2e3a8f05
   feed: https://www.anthropic.com/news
-  source_type: blog
 - url: https://openxla.org/blog
   topics:
   - compilers
   - optimization
   - open-source
-  id: 7151a155c27680f0
-  feed: https://openxla.org/blog
+  id: src-6274fc8943ac6d
   title: https://openxla.org/blog
-  source_type: blog
+  feed: https://openxla.org/blog
 - url: https://www.reddit.com/r/MachineLearning
   topics:
   - ml
   - community
   - research
   notes: Reddit subreddit; auto-generates .rss URL
-  id: 05e1130929e7ac30
-  feed: https://www.reddit.com/r/MachineLearning
+  id: src-7e56814043b7d4
   title: https://www.reddit.com/r/MachineLearning
-  source_type: reddit
+  feed: https://www.reddit.com/r/MachineLearning
 - url: https://towardsdatascience.com
   topics:
   - ml
@@ -101,9 +92,8 @@ sources:
   - education
   title: Towards Data Science
   notes: Popular Medium publication with custom title
-  id: 80bd7e4b43bc6827
+  id: src-62cf525bbb31cb
   feed: https://towardsdatascience.com
-  source_type: dataset
 - url: https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg
   topics:
   - research
@@ -111,29 +101,26 @@ sources:
   - education
   title: Two Minute Papers
   notes: Excellent AI research video summaries
-  id: 26be51fe87907faf
+  id: src-730146047039ee
   feed: https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg
-  source_type: youtube
 - url: https://github.com/pytorch/pytorch
   topics:
   - open-source
   - ml
   - product
   notes: PyTorch repo; auto-generates releases.atom
-  id: 6ee2c2a30826817d
-  feed: https://github.com/pytorch/pytorch
+  id: src-2f3cfe7465c7b0
   title: https://github.com/pytorch/pytorch
-  source_type: github
+  feed: https://github.com/pytorch/pytorch
 - url: https://dev.to/t/machinelearning
   topics:
   - blogs
   - education
   - ml
   notes: Dev.to tag; auto-generates feed URL
-  id: 1448e130279b08bd
-  feed: https://dev.to/t/machinelearning
+  id: src-515d7d5fea4027
   title: https://dev.to/t/machinelearning
-  source_type: devto
+  feed: https://dev.to/t/machinelearning
 - url: https://x.com/karpathy
   topics:
   - ai
@@ -141,9 +128,8 @@ sources:
   - research
   title: Andrej Karpathy
   notes: Custom title; uses RSSHub for Twitter feed
-  id: eb09beb38255e4f6
+  id: src-5f50d1e28e8251
   feed: https://x.com/karpathy
-  source_type: twitter
 - url: https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y
   topics:
   - research
@@ -151,9 +137,8 @@ sources:
   - ml
   title: Yoshua Bengio - arXiv Papers
   notes: Custom title for arXiv author search
-  id: 46a88037c9410525
+  id: src-5042ae6929a474
   feed: https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y
-  source_type: arxiv
 - url: https://ai.googleblog.com
   topics:
   - industry
@@ -161,9 +146,8 @@ sources:
   - llm
   title: Google AI Blog
   notes: Official Google AI blog; enrichment auto-discovers feed.
-  id: 65d0cfe837afd1c3
+  id: src-3126eaeb923fa5
   feed: https://ai.googleblog.com
-  source_type: blog
 - url: https://deepmind.google/discover/blog
   topics:
   - research
@@ -171,9 +155,8 @@ sources:
   - llm
   title: DeepMind — Discover/Blog
   notes: DeepMind’s research & product posts; feed auto-discovery.
-  id: d02ec00905b7b5c3
+  id: src-11cd3271e3b2cb
   feed: https://deepmind.google/discover/blog
-  source_type: blog
 - url: https://ai.meta.com/blog/
   topics:
   - industry
@@ -182,9 +165,8 @@ sources:
   - open-source
   title: Meta AI — Blog
   notes: Official Meta AI blog; enrichment will locate feed.
-  id: 191cc99ce0bbb92f
+  id: src-273074eaf80c2a
   feed: https://ai.meta.com/blog/
-  source_type: blog
 - url: https://www.microsoft.com/en-us/research/feed/
   topics:
   - research
@@ -192,9 +174,8 @@ sources:
   - llm
   title: Microsoft Research Blog
   notes: Official RSS feed.
-  id: 689dc3f1b092fd61
+  id: src-6abb1cfe3f0744
   feed: https://www.microsoft.com/en-us/research/feed/
-  source_type: blog
 - url: https://developer.nvidia.com/blog/feed/
   topics:
   - accelerators
@@ -203,9 +184,8 @@ sources:
   - mlops
   title: NVIDIA Technical Blog — RSS
   notes: Official RSS feed; heavy on kernels, Triton/TensorRT-LLM, perf.
-  id: e60f411a58119b26
+  id: src-6a61a18e511c91
   feed: https://developer.nvidia.com/blog/feed/
-  source_type: blog
 - url: https://aws.amazon.com/blogs/machine-learning/feed/
   topics:
   - mlops
@@ -214,9 +194,8 @@ sources:
   - industry
   title: AWS Machine Learning Blog — RSS
   notes: Official RSS feed; production ML patterns & case studies.
-  id: 50914fe5c60ced88
+  id: src-5a868f560e15d1
   feed: https://aws.amazon.com/blogs/machine-learning/feed/
-  source_type: blog
 - url: https://bair.berkeley.edu/blog/feed.xml
   topics:
   - research
@@ -224,9 +203,8 @@ sources:
   - ml
   title: BAIR Blog (UC Berkeley) — RSS
   notes: Academic explainers & lab highlights.
-  id: 51f8274975973f60
+  id: src-2a2323782c1449
   feed: https://bair.berkeley.edu/blog/feed.xml
-  source_type: blog
 - url: https://crfm.stanford.edu/feed
   topics:
   - research
@@ -234,9 +212,8 @@ sources:
   - evaluation
   title: Stanford CRFM — RSS
   notes: HELM, FMs, policy & research updates.
-  id: d8fbfd4426ed3c35
+  id: src-4740a96e3e3c2a
   feed: https://crfm.stanford.edu/feed
-  source_type: blog
 - url: https://hai.stanford.edu/news
   topics:
   - industry
@@ -244,9 +221,8 @@ sources:
   - research
   title: Stanford HAI — News
   notes: News & analysis from HAI; feed auto-discovery.
-  id: 1647adede221cf8d
+  id: src-24d3d5e179b67b
   feed: https://hai.stanford.edu/news
-  source_type: blog
 - url: https://thegradient.pub/rss/
   topics:
   - newsletters
@@ -254,9 +230,8 @@ sources:
   - ml
   title: The Gradient — RSS
   notes: Interviews, essays, and curated research.
-  id: 4f833f985ed12add
+  id: src-59368ace284625
   feed: https://thegradient.pub/rss/
-  source_type: blog
 - url: https://blog.tensorflow.org/feeds/posts/default?alt=rss
   topics:
   - open-source
@@ -264,9 +239,8 @@ sources:
   - inference
   title: TensorFlow Blog — RSS
   notes: Core framework updates, tutorials, performance.
-  id: 039f43877f4d8915
+  id: src-70b098fff7d788
   feed: https://blog.tensorflow.org/feeds/posts/default?alt=rss
-  source_type: blog
 - url: https://txt.cohere.ai/rss/
   topics:
   - industry
@@ -274,9 +248,8 @@ sources:
   - product
   title: Cohere — txt (RSS)
   notes: Provider perspective on LLMs and use cases.
-  id: e203e23af281125c
+  id: src-f8b72984c1ba19
   feed: https://txt.cohere.ai/rss/
-  source_type: blog
 - url: https://replicate.com/blog/rss
   topics:
   - open-source
@@ -284,9 +257,8 @@ sources:
   - inference
   title: Replicate Blog — RSS
   notes: Models-as-APIs, infra notes, OSS ecosystem.
-  id: 3347f81cd4f6a214
+  id: src-3c90be60a88fdb
   feed: https://replicate.com/blog/rss
-  source_type: blog
 - url: https://www.databricks.com/feed
   topics:
   - mlops
@@ -295,9 +267,8 @@ sources:
   - industry
   title: Databricks Blog — RSS
   notes: Data+AI, lakehouse, eval/monitoring patterns.
-  id: 7f1c72c187c23c51
+  id: src-38feb1d12cfed7
   feed: https://www.databricks.com/feed
-  source_type: dataset
 - url: https://lmsys.org/blog/
   topics:
   - evaluation
@@ -305,9 +276,8 @@ sources:
   - agents
   title: LMSYS — Blog
   notes: Chatbot Arena, SGLang; Hugo feed autodetected.
-  id: c84633173b800035
+  id: src-365dbefec55b00
   feed: https://lmsys.org/blog/
-  source_type: blog
 - url: https://github.com/vllm-project/vllm
   topics:
   - open-source
@@ -315,9 +285,8 @@ sources:
   - inference
   title: vLLM (GitHub)
   notes: Auto-generates releases feed via releases.atom.
-  id: e8ba7172314e48e9
+  id: src-74d32ca0219fb8
   feed: https://github.com/vllm-project/vllm
-  source_type: github
 - url: https://github.com/NVIDIA/TensorRT-LLM
   topics:
   - accelerators
@@ -325,9 +294,8 @@ sources:
   - open-source
   title: TensorRT-LLM (GitHub)
   notes: Auto-generates releases feed via releases.atom.
-  id: 754595d3bef49bf4
+  id: src-73ea6234c2a8df
   feed: https://github.com/NVIDIA/TensorRT-LLM
-  source_type: github
 - url: https://weaviate.io/blog
   topics:
   - vector
@@ -336,9 +304,8 @@ sources:
   - open-source
   title: Weaviate — Blog
   notes: Vector search patterns and product engineering.
-  id: a639b4426b7c8da8
+  id: src-4b45630ed7bf33
   feed: https://weaviate.io/blog
-  source_type: blog
 - url: https://milvus.io/blog
   topics:
   - vector
@@ -347,9 +314,8 @@ sources:
   - mlops
   title: Milvus — Blog
   notes: Zilliz/Milvus updates & scaling notes.
-  id: b8d6cb38455ac73c
+  id: src-1bf87337331862
   feed: https://milvus.io/blog
-  source_type: blog
 - url: https://qdrant.tech/articles/
   topics:
   - vector
@@ -358,9 +324,8 @@ sources:
   - mlops
   title: Qdrant — Articles
   notes: Vector database internals, HNSW, filters.
-  id: e09ae3dc4358cf27
+  id: src-3d5e02ec474c42
   feed: https://qdrant.tech/articles/
-  source_type: blog
 - url: https://blog.langchain.com/
   topics:
   - agents
@@ -369,9 +334,8 @@ sources:
   - workflows
   title: LangChain — Blog
   notes: LangGraph/agents runtime posts; feed autodiscovery.
-  id: 77460b2256f18fac
+  id: src-29af4df14ceec0
   feed: https://blog.langchain.com/
-  source_type: blog
 - url: https://www.llamaindex.ai/blog
   topics:
   - retrieval
@@ -380,9 +344,8 @@ sources:
   - llm
   title: LlamaIndex — Blog
   notes: RAG patterns & evaluation; feed autodiscovery.
-  id: 3ccc18a956cae0b1
+  id: src-29d7fffba11802
   feed: https://www.llamaindex.ai/blog
-  source_type: blog
 - url: https://mlops.community/blog
   topics:
   - mlops
@@ -390,9 +353,8 @@ sources:
   - workflows
   title: MLOps Community — Blog
   notes: Practitioner case studies; WordPress feed typically at /feed/.
-  id: b321aa49164209fb
+  id: src-785b9ee005d44f
   feed: https://mlops.community/blog
-  source_type: blog
 - url: https://www.aisafety.gov.uk/news
   topics:
   - safety
@@ -400,9 +362,8 @@ sources:
   - evaluation
   title: UK AI Safety Institute — News
   notes: Safety, evaluations, system cards, assurance.
-  id: 066b0307e23b6bdc
+  id: src-36c3e517dd1ed7
   feed: https://www.aisafety.gov.uk/news
-  source_type: blog
 - url: https://mlcommons.org/news/
   topics:
   - evaluation
@@ -410,9 +371,8 @@ sources:
   - industry
   title: MLCommons — News (MLPerf)
   notes: Benchmark releases and methodology updates.
-  id: dea463fd6c8c0a3c
+  id: src-2d16a50699bc56
   feed: https://mlcommons.org/news/
-  source_type: blog
 - url: https://sebastianraschka.com/rss.xml
   topics:
   - education
@@ -420,9 +380,8 @@ sources:
   - llm
   title: Sebastian Raschka — RSS
   notes: Hands-on deep learning/LLM posts, high cadence.
-  id: 338c0f69c10eb1c7
+  id: src-363665227aaa3b
   feed: https://sebastianraschka.com/rss.xml
-  source_type: blog
 - url: https://eugeneyan.com/rss/
   topics:
   - education
@@ -430,9 +389,8 @@ sources:
   - data
   title: Eugene Yan — RSS
   notes: Practical prod-ML systems & design write-ups.
-  id: e2a35dcabe116d15
+  id: src-6739a8034952d2
   feed: https://eugeneyan.com/rss/
-  source_type: blog
 - url: https://hamel.dev/atom.xml
   topics:
   - llmops
@@ -440,9 +398,8 @@ sources:
   - agents
   title: Hamel Husain — Atom
   notes: Agentic systems, evals, and tooling deep dives.
-  id: 1739dc2b7e937a4e
+  id: src-504b678997faa9
   feed: https://hamel.dev/atom.xml
-  source_type: blog
 - url: https://machinelearning.apple.com
   topics:
   - research
@@ -450,9 +407,8 @@ sources:
   - ai
   title: Apple Machine Learning Research (Journal)
   notes: On-device/edge ML research from Apple; platform auto-discovers feed.
-  id: d1cafa5415087246
+  id: src-74c8e7db1fc339
   feed: https://machinelearning.apple.com
-  source_type: preprint
 - url: https://allenai.org/blog
   topics:
   - research
@@ -460,9 +416,8 @@ sources:
   - evaluation
   title: Allen Institute for AI — Blog
   notes: AI2 lab research updates; high-quality technical write-ups.
-  id: 86e00abd227a3a01
+  id: src-7f6a3eb2b33dcf
   feed: https://allenai.org/blog
-  source_type: blog
 - url: https://www.csail.mit.edu/news
   topics:
   - research
@@ -470,9 +425,8 @@ sources:
   - robotics
   title: MIT CSAIL — News
   notes: Academic lab news and research explainers; feed autodiscovery.
-  id: efd5a9abfb4160fd
+  id: src-642f753a82345e
   feed: https://www.csail.mit.edu/news
-  source_type: blog
 - url: http://www.fast.ai
   topics:
   - education
@@ -480,9 +434,8 @@ sources:
   - blogs
   title: fast.ai — Blog
   notes: Hands-on deep learning essays; known feed endpoint historically at /atom.xml.
-  id: c2e4778941fa6e5f
+  id: src-7a3d2686fa56c1
   feed: http://www.fast.ai
-  source_type: blog
 - url: https://www.deeplearning.ai/the-batch/
   topics:
   - newsletters
@@ -490,9 +443,8 @@ sources:
   - education
   title: DeepLearning.AI — The Batch
   notes: Weekly AI newsletter by Andrew Ng team.
-  id: d95936737ca33a17
+  id: src-67b5610cfbc3d8
   feed: https://www.deeplearning.ai/the-batch/
-  source_type: blog
 - url: https://robotics.googleblog.com/
   topics:
   - robotics
@@ -500,9 +452,8 @@ sources:
   - rl
   title: Robotics at Google — Blog
   notes: Google robotics research; Atom feed available.
-  id: fe4c4efe475f4201
+  id: src-45d46841ed4e41
   feed: https://robotics.googleblog.com/
-  source_type: blog
 - url: https://openmined.org/blog
   topics:
   - privacy
@@ -510,9 +461,8 @@ sources:
   - security
   title: OpenMined — Blog
   notes: PETs, federated learning, DP; Ghost-based site (feed autodiscovery).
-  id: b55443f051a2a8d2
+  id: src-5e8a686d68326c
   feed: https://openmined.org/blog
-  source_type: blog
 - url: https://blog.eleuther.ai/
   topics:
   - open-source
@@ -520,9 +470,8 @@ sources:
   - research
   title: EleutherAI — Blog
   notes: Open research on LLMs and scaling; known feed endpoint at /index.xml.
-  id: 6d1e4d5f90717cfb
+  id: src-39dfb2228d2553
   feed: https://blog.eleuther.ai/
-  source_type: blog
 - url: https://tvm.apache.org/blog
   topics:
   - compilers
@@ -530,9 +479,8 @@ sources:
   - inference
   title: Apache TVM — Blog
   notes: Compiler stack for ML; kernels, codegen, deployment.
-  id: 687b81f9a8985d70
+  id: src-22884f87a7326d
   feed: https://tvm.apache.org/blog
-  source_type: blog
 - url: https://nixtla.github.io/blog
   topics:
   - time-series
@@ -540,9 +488,8 @@ sources:
   - education
   title: Nixtla — Blog
   notes: Forecasting libraries, probabilistic TS; frequent technical posts.
-  id: ad36bfcc986c3a4f
+  id: src-634a890d5ad868
   feed: https://nixtla.github.io/blog
-  source_type: github
 - url: https://blog.roboflow.com
   topics:
   - cv
@@ -550,9 +497,8 @@ sources:
   - product
   title: Roboflow — Blog
   notes: Vision datasets, labeling, YOLO/Detectron tips; RSS available.
-  id: 29ee65b2a0938244
+  id: src-4fdad81b411b22
   feed: https://blog.roboflow.com
-  source_type: blog
 - url: https://opencv.org/blog
   topics:
   - cv
@@ -560,9 +506,8 @@ sources:
   - open-source
   title: OpenCV — Blog
   notes: Official OpenCV engineering posts; WordPress feed at /feed/.
-  id: 75612d096bc66dfd
+  id: src-2d8718b38aa410
   feed: https://opencv.org/blog
-  source_type: blog
 - url: https://neo4j.com/developer-blog/
   topics:
   - knowledge-graphs
@@ -570,9 +515,8 @@ sources:
   - vector
   title: Neo4j — Developer Blog
   notes: Graph algorithms, embeddings, graph-RAG patterns; RSS available.
-  id: 4d7d6afe38671dbc
+  id: src-5ced929814663f
   feed: https://neo4j.com/developer-blog/
-  source_type: blog
 - url: https://www.arangodb.com/blog/
   topics:
   - knowledge-graphs
@@ -580,9 +524,8 @@ sources:
   - open-source
   title: ArangoDB — Blog
   notes: Multi-model DB posts incl. graph queries and vector search.
-  id: 05e838380506f8fc
+  id: src-7e1512b3163ccd
   feed: https://www.arangodb.com/blog/
-  source_type: blog
 - url: https://arize.com/blog
   topics:
   - mlops
@@ -590,9 +533,8 @@ sources:
   - llmops
   title: Arize AI — Blog
   notes: Prod ML/LLM monitoring, evals, and tracing patterns.
-  id: 804715f8f1497559
+  id: src-603966bc3aec16
   feed: https://arize.com/blog
-  source_type: blog
 - url: https://www.evidentlyai.com/blog
   topics:
   - mlops
@@ -600,9 +542,8 @@ sources:
   - monitoring
   title: Evidently AI — Blog
   notes: Metrics, drift detection, eval pipelines; practical guides.
-  id: f9abf95c6ead4904
+  id: src-5e3af6b679821c
   feed: https://www.evidentlyai.com/blog
-  source_type: blog
 - url: https://whylabs.ai/blog
   topics:
   - mlops
@@ -610,9 +551,8 @@ sources:
   - security
   title: WhyLabs — Blog
   notes: Observability, data quality, LLM risk; frequent how-tos.
-  id: f9aecb186e9a6484
+  id: src-23ed1fcd05e02c
   feed: https://whylabs.ai/blog
-  source_type: blog
 - url: https://www.anyscale.com/blog
   topics:
   - ai-infra-stacks
@@ -620,9 +560,8 @@ sources:
   - serving
   title: Anyscale (Ray) — Blog
   notes: Ray ecosystem (serve, actors, scaling); production case studies.
-  id: 050119dbab88ea86
+  id: src-4252c3a27e2dc6
   feed: https://www.anyscale.com/blog
-  source_type: blog
 - url: https://modal.com/blog
   topics:
   - serving
@@ -630,9 +569,8 @@ sources:
   - optimization
   title: Modal — Blog
   notes: Serverless GPU workflows, model serving patterns.
-  id: 0be5c22bd2fbf2c2
+  id: src-7c51ee1616a244
   feed: https://modal.com/blog
-  source_type: blog
 - url: https://neo4j.com/developer/graph-data-science/
   topics:
   - knowledge-graphs
@@ -640,9 +578,8 @@ sources:
   - retrieval
   title: Neo4j Graph Data Science — Articles
   notes: Graph embeddings, similarity search, pipelines.
-  id: 78bab138682cfbd0
+  id: src-7506767f1f58e7
   feed: https://neo4j.com/developer/graph-data-science/
-  source_type: dataset
 - url: https://cohere.com/research
   topics:
   - research
@@ -650,9 +587,8 @@ sources:
   - evaluation
   title: Cohere — Research
   notes: Provider research updates complementing ‘txt’; feed autodiscovery.
-  id: 41aab499985c4dd8
+  id: src-12f8b4fa2d8104
   feed: https://cohere.com/research
-  source_type: blog
 - url: https://www.microsoft.com/en-us/ai/blog/
   topics:
   - industry
@@ -660,9 +596,8 @@ sources:
   - llm
   title: Microsoft AI — Blog
   notes: Platform features + partner work; separate from MSR feed.
-  id: 5b13693f8f06a94e
+  id: src-5704c0aae82fe8
   feed: https://www.microsoft.com/en-us/ai/blog/
-  source_type: blog
 - url: https://www.qualcomm.com/research/artificial-intelligence
   topics:
   - edge
@@ -670,9 +605,8 @@ sources:
   - accelerators
   title: Qualcomm — AI Research/Engineering
   notes: On-device inference, NPUs, edge acceleration; feed autodiscovery.
-  id: f736744c2ef76e85
+  id: src-4cc3d848d4fcd0
   feed: https://www.qualcomm.com/research/artificial-intelligence
-  source_type: blog
 - url: https://blog.langfuse.com
   topics:
   - llmops
@@ -680,9 +614,8 @@ sources:
   - monitoring
   title: Langfuse — Blog
   notes: LLM telemetry, tracing, evals for agentic systems.
-  id: ecb0da614acf3f20
+  id: src-3659bb9ef0a251
   feed: https://blog.langfuse.com
-  source_type: blog
 - url: https://ainowinstitute.org/category/news/feed
   topics:
   - governance
@@ -690,9 +623,8 @@ sources:
   - research
   title: AI Now Institute — News (RSS)
   notes: Policy, governance, and safety analyses; active 2025 cadence.
-  id: c3775a125353e5c5
+  id: src-e93142cf8b6b66
   feed: https://ainowinstitute.org/category/news/feed
-  source_type: blog
 - url: https://partnershiponai.org/blog/
   topics:
   - governance
@@ -701,9 +633,8 @@ sources:
   - evaluation
   title: Partnership on AI — Blog
   notes: Standards & guidance (e.g., foundation-model deployment); feed auto-discovery.
-  id: 86667bd1884f48e9
+  id: src-3efe16cd59f2cf
   feed: https://partnershiponai.org/blog/
-  source_type: blog
 - url: https://mila.quebec/en/news
   topics:
   - research
@@ -711,9 +642,8 @@ sources:
   - genai
   title: Mila — News
   notes: Leading academic lab; WordPress feed auto-discovery.
-  id: 7f2bfb74575abbb6
+  id: src-71bda321ec97d8
   feed: https://mila.quebec/en/news
-  source_type: blog
 - url: https://vectorinstitute.ai/insights/
   topics:
   - research
@@ -721,9 +651,8 @@ sources:
   - evaluation
   title: Vector Institute — Insights
   notes: Canadian institute analyses and research highlights.
-  id: 5c3fed87d2fdc538
+  id: src-2e0e3dc34d30fa
   feed: https://vectorinstitute.ai/insights/
-  source_type: blog
 - url: https://www.turing.ac.uk/blog
   topics:
   - research
@@ -731,9 +660,8 @@ sources:
   - ethics
   title: The Alan Turing Institute — Blog
   notes: National lab perspective; policy & technical posts.
-  id: a76b8940cf25eaeb
+  id: src-33b60e4de9d3b9
   feed: https://www.turing.ac.uk/blog
-  source_type: blog
 - url: https://blog.ml.cmu.edu/feed/
   topics:
   - research
@@ -741,9 +669,8 @@ sources:
   - ml
   title: CMU Machine Learning Department — Blog (RSS)
   notes: Faculty/student explainers and research notes.
-  id: c07010ac537774a6
+  id: src-7b6e352ae4bb5d
   feed: https://blog.ml.cmu.edu/feed/
-  source_type: blog
 - url: https://news.mit.edu/topic/mitmachine-learning-rss.xml
   topics:
   - research
@@ -751,9 +678,8 @@ sources:
   - ml
   title: MIT News — Machine Learning (RSS)
   notes: Institute news stream with ML focus.
-  id: 4ed5ebfd6d2eea30
+  id: src-5a393627768a6a
   feed: https://news.mit.edu/topic/mitmachine-learning-rss.xml
-  source_type: blog
 - url: https://blog.vespa.ai
   topics:
   - retrieval
@@ -762,9 +688,8 @@ sources:
   - ai-infra-stacks
   title: Vespa.ai — Blog
   notes: Production ranking/search/ANN at scale; auto-discovery.
-  id: 3194b6528d7bd7ff
+  id: src-329a9050d8b6e4
   feed: https://blog.vespa.ai
-  source_type: blog
 - url: https://jina.ai/blog/
   topics:
   - retrieval
@@ -772,9 +697,8 @@ sources:
   - open-source
   title: Jina AI — Blog
   notes: Embeddings, hybrid search, multimodal RAG.
-  id: a70f33e6628745ab
+  id: src-879d4fa8d5816e
   feed: https://jina.ai/blog/
-  source_type: blog
 - url: https://haystack.deepset.ai/blog
   topics:
   - retrieval
@@ -782,9 +706,8 @@ sources:
   - llmops
   title: Haystack (deepset) — Blog
   notes: RAG patterns, pipelines, evaluation.
-  id: 2a336b1f05476f87
+  id: src-378cd5a104a68c
   feed: https://haystack.deepset.ai/blog
-  source_type: blog
 - url: https://llm.mlc.ai/blog
   topics:
   - on-device
@@ -792,9 +715,8 @@ sources:
   - inference
   title: MLC LLM — Blog
   notes: Edge/Apple/Android inference stacks; frequent updates.
-  id: d8db61643a229671
+  id: src-29b7757d91f3c0
   feed: https://llm.mlc.ai/blog
-  source_type: blog
 - url: https://github.com/ggml-org/llama.cpp/releases.atom
   topics:
   - open-source
@@ -802,9 +724,8 @@ sources:
   - small-models
   title: llama.cpp — Releases (Atom)
   notes: CPU/GPU kernels, quantization, perf; release-driven signal.
-  id: 48997f89982be5dc
+  id: src-6b9ae0609762e8
   feed: https://github.com/ggml-org/llama.cpp/releases.atom
-  source_type: github
 - url: https://github.com/huggingface/text-generation-inference/releases.atom
   topics:
   - open-source
@@ -812,9 +733,8 @@ sources:
   - inference
   title: Hugging Face TGI — Releases (Atom)
   notes: 'Serving updates: tensor/kv cache, batching, spec-decoding.'
-  id: dc31d42bcef675c9
+  id: src-43875f1554c78d
   feed: https://github.com/huggingface/text-generation-inference/releases.atom
-  source_type: github
 - url: https://github.com/sgl-project/sglang/releases.atom
   topics:
   - open-source
@@ -822,9 +742,8 @@ sources:
   - ai-infra-stacks
   title: SGLang — Releases (Atom)
   notes: High-throughput serving/runtime; arena-visible in 2025.
-  id: 94b482af1af4a4c2
+  id: src-214a0e2cccef13
   feed: https://github.com/sgl-project/sglang/releases.atom
-  source_type: github
 - url: https://github.com/triton-lang/triton/releases.atom
   topics:
   - compilers
@@ -833,9 +752,8 @@ sources:
   - open-source
   title: Triton — Releases (Atom)
   notes: Kernel DSL & compiler; fused ops, matmul, attention kernels.
-  id: 26ada7d305748c94
+  id: src-f4c5e85b389106
   feed: https://github.com/triton-lang/triton/releases.atom
-  source_type: github
 - url: https://github.com/mlc-ai/mlc-llm/releases.atom
   topics:
   - on-device
@@ -844,9 +762,8 @@ sources:
   - small-models
   title: MLC-LLM — Releases (Atom)
   notes: Mobile/edge packaging and runtime improvements.
-  id: 42b0309b738347a3
+  id: src-2c887380b30fcf
   feed: https://github.com/mlc-ai/mlc-llm/releases.atom
-  source_type: github
 - url: https://neptune.ai/blog/feed
   topics:
   - mlops
@@ -855,9 +772,8 @@ sources:
   - education
   title: Neptune.ai — Blog (RSS)
   notes: Telemetry, drift, evals, practical prod-ML guides.
-  id: b6cb4b82f8dbf7fc
+  id: src-4870ebb4eb975c
   feed: https://neptune.ai/blog/feed
-  source_type: blog
 - url: https://onnx.ai/blog
   topics:
   - compilers
@@ -865,9 +781,8 @@ sources:
   - open-source
   title: ONNX — Blog
   notes: Interchange & runtimes ecosystem; feed auto-discovery.
-  id: 656698fe8acbfbd8
+  id: src-7dbac26aa5928d
   feed: https://onnx.ai/blog
-  source_type: blog
 - url: https://mistral.ai/news
   topics:
   - industry
@@ -875,9 +790,8 @@ sources:
   - llm
   title: Mistral AI — News
   notes: Provider releases & product updates.
-  id: 266ae3c8fd4248d3
+  id: src-2efbd3b141690c
   feed: https://mistral.ai/news
-  source_type: blog
 - url: https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html
   topics:
   - optimization
@@ -886,9 +800,8 @@ sources:
   - accelerators
   title: Intel OpenVINO — Blog
   notes: Quantization, toolchain, kernel & deployment tutorials.
-  id: 2fcec7ed63a5946b
+  id: src-3de973cb25380e
   feed: https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html
-  source_type: blog
 - url: https://www.crewai.com/blog
   topics:
   - agents
@@ -896,19 +809,17 @@ sources:
   - orchestration
   title: CrewAI — Blog
   notes: Agentic frameworks, planning, multi-tool pipelines.
-  id: e880e6572e5a0803
+  id: src-46bf5dc9602dee
   feed: https://www.crewai.com/blog
-  source_type: blog
 - url: https://www.jmlr.org/jmlr.xml
   topics:
   - research
   - papers
   - ml
   notes: Official Journal of Machine Learning Research RSS.
-  id: 2b3e764ae193e0c3
-  feed: https://www.jmlr.org/jmlr.xml
+  id: src-8fa8bf1c0abdd9
   title: https://www.jmlr.org/jmlr.xml
-  source_type: organization
+  feed: https://www.jmlr.org/jmlr.xml
 - url: https://proceedings.mlr.press
   topics:
   - research
@@ -916,9 +827,8 @@ sources:
   - ml
   title: Proceedings of Machine Learning Research (PMLR)
   notes: Venue site; enrichment should auto-discover the RSS feed.
-  id: e85625fb94d48199
+  id: src-5d5798608be9f5
   feed: https://proceedings.mlr.press
-  source_type: blog
 - url: https://jmlr.org/tmlr/
   topics:
   - research
@@ -926,9 +836,8 @@ sources:
   - ml
   title: Transactions on Machine Learning Research (TMLR)
   notes: Venue page; enrichment to locate the feed.
-  id: 9f44675f421cf191
+  id: src-7f847f89ecd37c
   feed: https://jmlr.org/tmlr/
-  source_type: blog
 - url: https://www.nature.com/natmachintell
   topics:
   - research
@@ -936,9 +845,8 @@ sources:
   - ml
   title: Nature Machine Intelligence
   notes: Nature research journal; feed auto-discovery expected.
-  id: 0ac423b4dfcf525a
+  id: src-436fa407a8f8e9
   feed: https://www.nature.com/natmachintell
-  source_type: blog
 - url: https://ai.nejm.org
   topics:
   - healthcare-ai
@@ -946,9 +854,8 @@ sources:
   - papers
   title: NEJM AI
   notes: Medical AI journal; healthcare focus.
-  id: 5c45656572ca46e6
+  id: src-63f66572cc778c
   feed: https://ai.nejm.org
-  source_type: blog
 - url: https://www.nature.com/npjdigitalmed/
   topics:
   - healthcare-ai
@@ -956,9 +863,8 @@ sources:
   - papers
   title: NPJ Digital Medicine
   notes: Digital medicine / clinical AI journal.
-  id: 3daf7af1d06a28d1
+  id: src-20d085e21b8f27
   feed: https://www.nature.com/npjdigitalmed/
-  source_type: blog
 - url: https://developers.google.com/earth-engine/blog
   topics:
   - geospatial-ml
@@ -967,9 +873,8 @@ sources:
   - education
   title: Google Earth Engine — Developer Blog
   notes: Official geospatial ML/dev updates.
-  id: 6be3b96a55bfaed0
+  id: src-1f2aff3ca48e49
   feed: https://developers.google.com/earth-engine/blog
-  source_type: blog
 - url: https://planetarycomputer.microsoft.com/blog
   topics:
   - geospatial-ml
@@ -978,9 +883,8 @@ sources:
   - education
   title: Microsoft Planetary Computer — Blog
   notes: Geospatial datasets, APIs, notebooks.
-  id: 5666b8ddb33ae1f6
+  id: src-641b38a98e2cae
   feed: https://planetarycomputer.microsoft.com/blog
-  source_type: blog
 - url: https://www.radiant.earth/blog/
   topics:
   - geospatial-ml
@@ -988,9 +892,8 @@ sources:
   - ai-for-science
   title: Radiant Earth — Blog
   notes: Earth observation / ML datasets & methods.
-  id: a18faccba3716085
+  id: src-428d99304b36ba
   feed: https://www.radiant.earth/blog/
-  source_type: blog
 - url: https://incidentdatabase.ai/blog/
   topics:
   - trust-audit
@@ -999,9 +902,8 @@ sources:
   - evaluation
   title: AI Incident Database — Blog
   notes: Monthly incident roundups; taxonomy & incident analysis.
-  id: 18048e8eb7a6b27d
+  id: src-487245e60a2ef2
   feed: https://incidentdatabase.ai/blog/
-  source_type: blog
 - url: https://openlineage.io/blog/
   topics:
   - data-governance
@@ -1010,9 +912,8 @@ sources:
   - orchestration
   title: OpenLineage — Blog
   notes: Lineage standards, integrations, and design notes.
-  id: 9b03b9ad08ab4f7c
+  id: src-4dc2e775c03b94
   feed: https://openlineage.io/blog/
-  source_type: blog
 - url: https://greatexpectations.io/blog/
   topics:
   - data-governance
@@ -1020,9 +921,8 @@ sources:
   - evaluation
   title: Great Expectations (GX) — Blog
   notes: Data quality, validation patterns, case studies.
-  id: 38df3d9fdf6d06bd
+  id: src-1ccb0540e68db9
   feed: https://greatexpectations.io/blog/
-  source_type: blog
 - url: https://www.montecarlodata.com/blog/
   topics:
   - mlops
@@ -1030,9 +930,8 @@ sources:
   - data-governance
   title: Monte Carlo — Data Observability Blog
   notes: Observability patterns, lineage, incident response.
-  id: 78c16cb04f525c7d
+  id: src-6ab2687808f45d
   feed: https://www.montecarlodata.com/blog/
-  source_type: blog
 - url: https://www.assemblyai.com/blog/rss/
   topics:
   - audio-speech
@@ -1041,9 +940,8 @@ sources:
   - product
   title: AssemblyAI — Blog (RSS)
   notes: ASR/LLM audio techniques, benchmarks, and tutorials.
-  id: 35b869b7beb9c7f7
+  id: src-3eb51f12196f7e
   feed: https://www.assemblyai.com/blog/rss/
-  source_type: blog
 - url: https://www.edgeimpulse.com/blog
   topics:
   - on-device
@@ -1052,9 +950,8 @@ sources:
   - mlops
   title: Edge Impulse — Blog
   notes: Embedded/edge ML workflows; enrichment to resolve feed.
-  id: 94adae3f50be12a4
+  id: src-422733cb8c3b0a
   feed: https://www.edgeimpulse.com/blog
-  source_type: blog
 - url: https://www.tinyml.org/blog/
   topics:
   - on-device
@@ -1063,9 +960,8 @@ sources:
   - optimization
   title: tinyML Foundation — Blog
   notes: Community and conference updates for TinyML.
-  id: 310dae39168d617a
+  id: src-49fe329a50e510
   feed: https://www.tinyml.org/blog/
-  source_type: blog
 - url: https://docs.wandb.ai/ref/release-notes/index.xml
   topics:
   - mlops
@@ -1073,9 +969,8 @@ sources:
   - benchops
   title: Weights & Biases — Release Notes (RSS)
   notes: Product/runtime changes; useful for MLOps tracking.
-  id: 5d60e495d86ee1e1
+  id: src-7442062d62c4a0
   feed: https://docs.wandb.ai/ref/release-notes/index.xml
-  source_type: blog
 - url: https://www.nvidia.com/en-us/research/ai/
   topics:
   - accelerators
@@ -1084,9 +979,8 @@ sources:
   - research
   title: NVIDIA Research — AI
   notes: Research highlights; enrichment to locate feed if present.
-  id: 4960b74b4be54c74
+  id: src-38fb015686c03d
   feed: https://www.nvidia.com/en-us/research/ai/
-  source_type: blog
 - url: https://blog.neurips.cc
   topics:
   - research
@@ -1094,9 +988,8 @@ sources:
   - papers
   title: NeurIPS — Official Blog
   notes: Conference announcements, calls, and highlights; WordPress feed autodiscovery.
-  id: 6902b81365908ed8
+  id: src-7c73af8f2a01cb
   feed: https://blog.neurips.cc
-  source_type: blog
 - url: https://blog.iclr.cc
   topics:
   - research
@@ -1104,9 +997,8 @@ sources:
   - papers
   title: ICLR — Official Blog
   notes: Conference news, calls, and program updates; feed autodiscovery.
-  id: 32c0308e29797618
+  id: src-439ac5e295a806
   feed: https://blog.iclr.cc
-  source_type: blog
 - url: https://ai.stanford.edu/blog
   topics:
   - research
@@ -1114,9 +1006,8 @@ sources:
   - education
   title: Stanford AI Lab — SAIL Blog
   notes: Active lab blog with explicit RSS; papers/talks round-ups and technical explainers.
-  id: 3d11b8b7e6cb0ea8
+  id: src-15a0dbd78b3b33
   feed: https://ai.stanford.edu/blog
-  source_type: blog
 - url: https://hazyresearch.stanford.edu/blog
   topics:
   - research
@@ -1125,9 +1016,8 @@ sources:
   - ai-infra-stacks
   title: Hazy Research — Blog
   notes: Systems-for-ML, optimizers, and infra; frequent deep technical posts.
-  id: 594aced327aa13ad
+  id: src-411ba8bd311d53
   feed: https://hazyresearch.stanford.edu/blog
-  source_type: blog
 - url: http://export.arxiv.org/rss/cs.CV
   topics:
   - research
@@ -1135,9 +1025,8 @@ sources:
   - cv
   title: arXiv — cs.CV RSS
   notes: Official category feed (Computer Vision & Pattern Recognition).
-  id: 49c5d77c30cdd8dc
+  id: src-45fd211c5ead33
   feed: http://export.arxiv.org/rss/cs.CV
-  source_type: arxiv
 - url: http://export.arxiv.org/rss/cs.CL
   topics:
   - research
@@ -1145,9 +1034,8 @@ sources:
   - nlp
   title: arXiv — cs.CL RSS
   notes: Official category feed (Computation and Language).
-  id: b6a481a5909b0dcd
+  id: src-60934d219aed1b
   feed: http://export.arxiv.org/rss/cs.CL
-  source_type: arxiv
 - url: http://export.arxiv.org/rss/cs.IR
   topics:
   - research
@@ -1155,9 +1043,8 @@ sources:
   - retrieval
   title: arXiv — cs.IR RSS
   notes: Official category feed (Information Retrieval).
-  id: 6cf01bed7152a71f
+  id: src-7d87fcaa73d151
   feed: http://export.arxiv.org/rss/cs.IR
-  source_type: arxiv
 - url: https://dagster.io/blog
   topics:
   - mlops
@@ -1165,9 +1052,8 @@ sources:
   - orchestration
   title: Dagster — Blog
   notes: Practitioner posts on pipelines, lineage, assets; feed autodiscovery.
-  id: 18e33c6f4d298399
+  id: src-5ae9035fdf0779
   feed: https://dagster.io/blog
-  source_type: blog
 - url: https://www.astronomer.io/blog
   topics:
   - data
@@ -1175,9 +1061,8 @@ sources:
   - orchestration
   title: Astronomer (Airflow) — Blog
   notes: Airflow best practices, scheduling, data reliability.
-  id: 04fedffae7ee5a3f
+  id: src-62236a5b2539f2
   feed: https://www.astronomer.io/blog
-  source_type: blog
 - url: https://www.getdbt.com/blog
   topics:
   - data
@@ -1185,9 +1070,8 @@ sources:
   - workflows
   title: dbt Labs — Blog
   notes: Analytics engineering, testing, docs, deployments.
-  id: 24d8ae846b1dec7e
+  id: src-762726c79e2af5
   feed: https://www.getdbt.com/blog
-  source_type: blog
 - url: https://duckdb.org/feed.xml
   topics:
   - data
@@ -1195,9 +1079,8 @@ sources:
   - product
   title: DuckDB — News (RSS)
   notes: Release notes and engineering posts; official RSS endpoint.
-  id: a6e5614cfda0c605
+  id: src-3717d1d25b8963
   feed: https://duckdb.org/feed.xml
-  source_type: blog
 - url: https://semianalysis.substack.com/feed
   topics:
   - industry
@@ -1206,9 +1089,8 @@ sources:
   - infra-economics
   title: SemiAnalysis — Substack (RSS)
   notes: Semiconductor supply/compute economics analyses for AI workloads.
-  id: d5a74a813c99617c
+  id: src-4235c6a51399d0
   feed: https://semianalysis.substack.com/feed
-  source_type: substack
 - url: https://chipsandcheese.com/feed/
   topics:
   - hardware
@@ -1216,9 +1098,8 @@ sources:
   - optimization
   title: Chips and Cheese — RSS
   notes: Microarchitecture deep dives relevant to AI inference/training.
-  id: dcf6789803e4f5c4
+  id: src-70fc47d9285e6c
   feed: https://chipsandcheese.com/feed/
-  source_type: blog
 - url: https://www.nist.gov/blogs/cybersecurity-insights
   topics:
   - security
@@ -1226,9 +1107,8 @@ sources:
   - trust-audit
   title: NIST — Cybersecurity Insights
   notes: Standards/guidance perspectives impacting AI/ML security.
-  id: 7642be34774dc70f
+  id: src-28d25b6398ef2d
   feed: https://www.nist.gov/blogs/cybersecurity-insights
-  source_type: blog
 - url: https://www.safe.ai/blog
   topics:
   - safety
@@ -1236,9 +1116,8 @@ sources:
   - evaluation
   title: Center for AI Safety — Blog
   notes: Safety research, risk analyses, policy-relevant technical posts.
-  id: a27b8d271c27aa02
+  id: src-3370fd90bf0fee
   feed: https://www.safe.ai/blog
-  source_type: blog
 - url: https://alignmentforum.org/rss
   topics:
   - alignment
@@ -1246,9 +1125,8 @@ sources:
   - research
   title: Alignment Forum — RSS
   notes: Community research threads on alignment and safety.
-  id: 1535857cab5f60ba
+  id: src-424835a04ceec7
   feed: https://alignmentforum.org/rss
-  source_type: forum
 - url: https://aclrollingreview.org
   topics:
   - nlp
@@ -1256,9 +1134,8 @@ sources:
   - research
   title: ACL Rolling Review — Site
   notes: Peer-review updates for ACL venues; WordPress feed autodiscovery.
-  id: b1969a765a98917a
+  id: src-537e48456b94cd
   feed: https://aclrollingreview.org
-  source_type: blog
 - url: https://pytorch.org/blog
   topics:
   - open-source
@@ -1267,9 +1144,8 @@ sources:
   - blogs
   title: PyTorch — Engineering Blog
   notes: Framework internals, performance work, and release details.
-  id: c4458a0a7dcab4fd
+  id: src-5d14f89ad19461
   feed: https://pytorch.org/blog
-  source_type: blog
 - url: https://lightning.ai/pages/blog
   topics:
   - training
@@ -1278,9 +1154,8 @@ sources:
   - blogs
   title: Lightning AI — Blog
   notes: Trainer/Fabric ecosystem updates and best practices.
-  id: 990bdc6bb9af959a
+  id: src-77df377c6a77f7
   feed: https://lightning.ai/pages/blog
-  source_type: blog
 - url: https://groq.com/blog
   topics:
   - accelerators
@@ -1289,9 +1164,8 @@ sources:
   - product
   title: Groq — Blog
   notes: LPU-centric inference engineering and product posts.
-  id: b4240ef1cc51e832
+  id: src-88353dde8bcd81
   feed: https://groq.com/blog
-  source_type: blog
 - url: https://www.together.ai/blog
   topics:
   - industry
@@ -1300,9 +1174,8 @@ sources:
   - inference
   title: Together AI — Blog
   notes: Hosting, finetuning, datasets, and cost/perf notes.
-  id: 985e561bc559a1cd
+  id: src-70fcd368c9f180
   feed: https://www.together.ai/blog
-  source_type: blog
 - url: https://fireworks.ai/blog
   topics:
   - serving
@@ -1311,9 +1184,8 @@ sources:
   - product
   title: Fireworks.ai — Blog
   notes: High-throughput serving, agents, and platform releases.
-  id: 64b811560a52e317
+  id: src-1083bddba85744
   feed: https://fireworks.ai/blog
-  source_type: blog
 - url: https://www.baseten.co/blog
   topics:
   - serving
@@ -1322,9 +1194,8 @@ sources:
   - product
   title: Baseten — Blog
   notes: Serverless model hosting patterns and case studies.
-  id: 2b372a37cfd720ad
+  id: src-410576fc4a5c26
   feed: https://www.baseten.co/blog
-  source_type: blog
 - url: https://octoai.cloud/blog
   topics:
   - serving
@@ -1333,9 +1204,8 @@ sources:
   - product
   title: OctoAI — Blog
   notes: Optimized inference runtimes and workflow guides.
-  id: 0a9670d7d20f9381
+  id: src-443c306847e35b
   feed: https://octoai.cloud/blog
-  source_type: blog
 - url: https://laion.ai/blog
   topics:
   - open-source
@@ -1344,9 +1214,8 @@ sources:
   - blogs
   title: LAION — Blog
   notes: Open datasets and research updates.
-  id: c696f25176795f99
+  id: src-578667a740505b
   feed: https://laion.ai/blog
-  source_type: blog
 - url: https://wandb.com/articles
   topics:
   - mlops
@@ -1355,9 +1224,8 @@ sources:
   - blogs
   title: Weights & Biases — Articles
   notes: Observability, evals, and practical production ML guides.
-  id: e39898853af3e653
+  id: src-131c1f2339f214
   feed: https://wandb.com/articles
-  source_type: blog
 - url: https://humanloop.com/blog
   topics:
   - llmops
@@ -1366,9 +1234,8 @@ sources:
   - blogs
   title: Humanloop — Blog
   notes: Prompt management, eval methodology, and tooling.
-  id: 2f76f620c3ff2a8f
+  id: src-6fc067ea0a0c5b
   feed: https://humanloop.com/blog
-  source_type: blog
 - url: https://ragas.io/blog
   topics:
   - evaluation
@@ -1377,9 +1244,8 @@ sources:
   - blogs
   title: Ragas — Blog
   notes: RAG evaluation techniques and benchmarks.
-  id: 4a98c7a11f95007e
+  id: src-26ce9150fb8325
   feed: https://ragas.io/blog
-  source_type: blog
 - url: https://www.trulens.org/blog
   topics:
   - evaluation
@@ -1388,9 +1254,8 @@ sources:
   - blogs
   title: TruLens — Blog
   notes: Telemetry and evaluation for LLM/agent systems.
-  id: b2d0617883584004
+  id: src-157883fb66336a
   feed: https://www.trulens.org/blog
-  source_type: blog
 - url: https://www.confident-ai.com/blog
   topics:
   - evaluation
@@ -1399,9 +1264,8 @@ sources:
   - blogs
   title: DeepEval (Confident AI) — Blog
   notes: Evaluation frameworks and methodology posts.
-  id: 3974c9e901d3b039
+  id: src-6beeddbfbf0ca8
   feed: https://www.confident-ai.com/blog
-  source_type: blog
 - url: https://github.com/kserve/kserve
   topics:
   - serving
@@ -1410,9 +1274,8 @@ sources:
   - open-source
   title: KServe — GitHub
   notes: K8s-native serving; releases feed auto-discovered.
-  id: bfb82f4462f890bb
+  id: src-24fba30eb8520e
   feed: https://github.com/kserve/kserve
-  source_type: github
 - url: https://github.com/langchain-ai/langgraph
   topics:
   - agents
@@ -1421,9 +1284,8 @@ sources:
   - open-source
   title: LangGraph — GitHub
   notes: Agent graphs runtime; frequent releases.
-  id: 642743ad9061795a
+  id: src-7f2663755c8815
   feed: https://github.com/langchain-ai/langgraph
-  source_type: github
 - url: https://github.com/langchain-ai/langchain
   topics:
   - agents
@@ -1432,9 +1294,8 @@ sources:
   - open-source
   title: LangChain — GitHub
   notes: Core agents/tooling; release activity tracked.
-  id: c5a32632e586ab2c
+  id: src-7a64c3d3fff7ce
   feed: https://github.com/langchain-ai/langchain
-  source_type: github
 - url: https://github.com/jax-ml/jax
   topics:
   - compilers
@@ -1443,9 +1304,8 @@ sources:
   - open-source
   title: JAX — GitHub
   notes: XLA transforms and array program transformations.
-  id: a38d273f219db547
+  id: src-b7bca938cd9162
   feed: https://github.com/jax-ml/jax
-  source_type: github
 - url: https://github.com/huggingface/transformers
   topics:
   - nlp
@@ -1454,9 +1314,8 @@ sources:
   - training
   title: Transformers — GitHub
   notes: Model library releases and API changes.
-  id: 53d940334a2a5afd
+  id: src-6fc3afc919f0db
   feed: https://github.com/huggingface/transformers
-  source_type: github
 - url: https://evals.openai.com
   topics:
   - evaluation
@@ -1464,9 +1323,8 @@ sources:
   - benchops
   title: OpenAI — Evals
   notes: Evaluation framework, tasks, and documentation hub.
-  id: f6d8f5b7980b40df
+  id: src-4800a73593767b
   feed: https://evals.openai.com
-  source_type: blog
 - url: https://www.nist.gov/aisi
   topics:
   - safety
@@ -1474,18 +1332,16 @@ sources:
   - evaluation
   title: U.S. AI Safety Institute (NIST)
   notes: Safety guidance, evaluation artifacts, and calls.
-  id: 84e0da6d5092e27d
+  id: src-55798c7db2d440
   feed: https://www.nist.gov/aisi
-  source_type: blog
 - url: https://oecd.ai
   topics:
   - governance
   - industry
   title: OECD.AI Policy Observatory
   notes: Global AI policy data, indicators, and analysis.
-  id: 52f7a3212c2dbad9
+  id: src-5b7c90f2372353
   feed: https://oecd.ai
-  source_type: blog
 - url: https://www.redwoodresearch.org/blog
   topics:
   - alignment
@@ -1494,9 +1350,8 @@ sources:
   - blogs
   title: Redwood Research — Blog
   notes: Alignment research updates and commentary.
-  id: f9a0efcdd35439b8
+  id: src-7b4612cc3fe479
   feed: https://www.redwoodresearch.org/blog
-  source_type: blog
 - url: https://www.far.ai/blog
   topics:
   - safety
@@ -1505,9 +1360,8 @@ sources:
   - blogs
   title: FAR AI — Blog
   notes: Evals and risk-reduction research perspectives.
-  id: 6140873d1b290f04
+  id: src-6bd0913eedb8b2
   feed: https://www.far.ai/blog
-  source_type: blog
 - url: https://openai.com/news/rss.xml
   topics:
   - industry
@@ -1515,9 +1369,8 @@ sources:
   - llm
   title: OpenAI — News (RSS)
   notes: Official news feed for releases, safety & policy updates.
-  id: bea4293d5eddcb34
+  id: src-779db77b091ffe
   feed: https://openai.com/news/rss.xml
-  source_type: blog
 - url: https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office
   topics:
   - governance
@@ -1525,9 +1378,8 @@ sources:
   - safety
   title: European AI Office — Policy & News
   notes: European Commission AI Office landing; feed auto-discovery during enrichment.
-  id: 84894ec9fef04246
+  id: src-6040f6544f5528
   feed: https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office
-  source_type: blog
 - url: https://cset.georgetown.edu/blog/
   topics:
   - governance
@@ -1535,9 +1387,8 @@ sources:
   - industry
   title: Georgetown CSET — Blog
   notes: Policy/governance analysis; typical WordPress feed at /feed/.
-  id: 46e0d36ae8327d77
+  id: src-34dcb9e4ab4bf4
   feed: https://cset.georgetown.edu/blog/
-  source_type: blog
 - url: https://robohub.org/feed/
   topics:
   - robotics
@@ -1545,9 +1396,8 @@ sources:
   - education
   title: Robohub — RSS
   notes: Independent robotics news & interviews; active cadence.
-  id: b71ced9408e9949e
+  id: src-bbf3feb03823b5
   feed: https://robohub.org/feed/
-  source_type: blog
 - url: https://blog.vllm.ai/
   topics:
   - ai-infra-stacks
@@ -1555,9 +1405,8 @@ sources:
   - inference
   title: vLLM — Blog
   notes: Runtime internals, perf notes; feed auto-discovery (Jekyll).
-  id: 413c7b566e2ec942
+  id: src-49d04f6363ae45
   feed: https://blog.vllm.ai/
-  source_type: blog
 - url: https://blog.skypilot.so/
   topics:
   - ai-infra-stacks
@@ -1565,9 +1414,8 @@ sources:
   - optimization
   title: SkyPilot — Blog
   notes: Multi-cloud GPU scheduling & orchestration patterns.
-  id: 798984ec61f55607
+  id: src-74efbb7810e982
   feed: https://blog.skypilot.so/
-  source_type: blog
 - url: https://iree.dev/blog/
   topics:
   - compilers
@@ -1575,9 +1423,8 @@ sources:
   - accelerators
   title: IREE — Blog (OpenXLA)
   notes: ML compiler stack updates; kernel & codegen deep dives.
-  id: 8f2f631625c147a5
+  id: src-7a330d4cdf041e
   feed: https://iree.dev/blog/
-  source_type: blog
 - url: https://github.com/ml-explore/mlx/releases.atom
   topics:
   - on-device
@@ -1586,9 +1433,8 @@ sources:
   - compilers
   title: MLX — Releases (Atom)
   notes: Apple’s on-device array/NN framework—release notes as they ship.
-  id: e02523670f8a9ffe
+  id: src-1deb1e1d33330f
   feed: https://github.com/ml-explore/mlx/releases.atom
-  source_type: github
 - url: https://github.com/microsoft/onnxruntime/releases.atom
   topics:
   - inference
@@ -1596,9 +1442,8 @@ sources:
   - compilers
   title: ONNX Runtime — Releases (Atom)
   notes: Cross-provider inference runtime updates.
-  id: 57a0984f48fb2062
+  id: src-4ebfa8b8b04139
   feed: https://github.com/microsoft/onnxruntime/releases.atom
-  source_type: github
 - url: https://github.com/NVIDIA/NeMo/releases.atom
   topics:
   - audio-speech
@@ -1607,9 +1452,8 @@ sources:
   - training
   title: NVIDIA NeMo — Releases (Atom)
   notes: ASR/TTS/LLM toolkit releases.
-  id: 7b63143f9a99d87a
+  id: src-62183e2f8872e0
   feed: https://github.com/NVIDIA/NeMo/releases.atom
-  source_type: github
 - url: https://github.com/facebookresearch/faiss/releases.atom
   topics:
   - vector
@@ -1618,9 +1462,8 @@ sources:
   - open-source
   title: FAISS — Releases (Atom)
   notes: ANN/vector search library releases.
-  id: cc0aa7367c6a604f
+  id: src-4ef3619859ee4a
   feed: https://github.com/facebookresearch/faiss/releases.atom
-  source_type: github
 - url: https://github.com/openxla/iree/releases.atom
   topics:
   - compilers
@@ -1628,9 +1471,8 @@ sources:
   - accelerators
   title: OpenXLA IREE — Releases (Atom)
   notes: IREE release channel complementing the blog.
-  id: 331ce1847c65b313
+  id: src-47223452600f8a
   feed: https://github.com/openxla/iree/releases.atom
-  source_type: github
 - url: https://github.com/microsoft/autogen/releases.atom
   topics:
   - agents
@@ -1639,9 +1481,8 @@ sources:
   - open-source
   title: Microsoft AutoGen — Releases (Atom)
   notes: Agentic framework updates.
-  id: 30011710ddbe2a91
+  id: src-281e1d35b72b7e
   feed: https://github.com/microsoft/autogen/releases.atom
-  source_type: github
 - url: https://github.com/OpenDevin/OpenDevin/releases.atom
   topics:
   - agents
@@ -1650,9 +1491,8 @@ sources:
   - open-source
   title: OpenDevin — Releases (Atom)
   notes: AI SWE agent—release feed.
-  id: 338291d25c668a87
+  id: src-75bd5a905cec1d
   feed: https://github.com/OpenDevin/OpenDevin/releases.atom
-  source_type: github
 - url: https://github.com/NVIDIA/FasterTransformer/releases.atom
   topics:
   - inference
@@ -1660,9 +1500,8 @@ sources:
   - accelerators
   title: NVIDIA FasterTransformer — Releases (Atom)
   notes: Transformer inference kernels & fused ops.
-  id: 0e06fbd2db5eff7e
+  id: src-4a43c2c01dce4b
   feed: https://github.com/NVIDIA/FasterTransformer/releases.atom
-  source_type: github
 - url: https://github.com/Dao-AILab/flash-attention/releases.atom
   topics:
   - optimization
@@ -1670,9 +1509,8 @@ sources:
   - training
   title: FlashAttention — Releases (Atom)
   notes: Attention kernel library releases.
-  id: 30d5a932cf1ba04f
+  id: src-76cec52bc3065f
   feed: https://github.com/Dao-AILab/flash-attention/releases.atom
-  source_type: github
 - url: https://changelog.com/practicalai/feed
   topics:
   - podcasts
@@ -1680,9 +1518,8 @@ sources:
   - industry
   title: Practical AI — Podcast (RSS)
   notes: Weekly AI engineering podcast by Changelog.
-  id: a06fef82a0a4c18a
+  id: src-30721d946526a6
   feed: https://changelog.com/practicalai/feed
-  source_type: podcast
 - url: https://feeds.buzzsprout.com/682433.rss
   topics:
   - podcasts
@@ -1690,9 +1527,8 @@ sources:
   - research
   title: The Data Exchange — Podcast (RSS)
   notes: Ben Lorica interviews & quick takes; weekly cadence.
-  id: af79d2368a96bd92
+  id: src-6571b5c7aff37f
   feed: https://feeds.buzzsprout.com/682433.rss
-  source_type: podcast
 - url: https://lilianweng.github.io/
   topics:
   - llm
@@ -1701,9 +1537,8 @@ sources:
   - blogs
   title: Lilian Weng — Blog
   notes: Deep technical explainers; feed auto-discovery at /rss.xml.
-  id: fb43a215329b9e2a
+  id: src-13eb1114ee5c26
   feed: https://lilianweng.github.io/
-  source_type: github
 - url: https://www.neelnanda.io/blog
   topics:
   - interpretability
@@ -1712,9 +1547,8 @@ sources:
   - blogs
   title: Neel Nanda — Mechanistic Interpretability
   notes: Mech-interp deep dives; active posts.
-  id: 373d3140196b501f
+  id: src-1c7f1500a25437
   feed: https://www.neelnanda.io/blog
-  source_type: blog
 - url: https://open-metadata.medium.com/
   topics:
   - data-governance
@@ -1723,9 +1557,8 @@ sources:
   - open-source
   title: OpenMetadata — Blog
   notes: Data catalog & lineage; Medium feed at /feed.
-  id: c93c85d1974e69b5
+  id: src-3ab14fc8e5a918
   feed: https://open-metadata.medium.com/
-  source_type: medium
 - url: https://blog.jigsaw.google/
   topics:
   - content-moderation
@@ -1733,9 +1566,8 @@ sources:
   - governance
   title: Jigsaw — Blog
   notes: Harms & safety tech; platform feed auto-discovery.
-  id: 5f13317de4c74dd0
+  id: src-6531554eb09f9b
   feed: https://blog.jigsaw.google/
-  source_type: blog
 - url: https://www.modular.com/blog
   topics:
   - compilers
@@ -1744,10 +1576,9 @@ sources:
   - ai-infra-stacks
   - blogs
   notes: Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.
-  id: 5785242ca67d5da7
-  feed: https://www.modular.com/blog
+  id: src-246324138fe53a
   title: https://www.modular.com/blog
-  source_type: blog
+  feed: https://www.modular.com/blog
 - url: https://www.aiverifyfoundation.sg/latest
   topics:
   - governance
@@ -1757,9 +1588,8 @@ sources:
   title: AI Verify Foundation — Latest
   notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards
     updates.
-  id: 2b970ad8e9d28e5a
+  id: src-5e1934d4dd604a
   feed: https://www.aiverifyfoundation.sg/latest
-  source_type: blog
 - url: https://www.earthdata.nasa.gov/news/blog
   topics:
   - geospatial-ml
@@ -1769,9 +1599,8 @@ sources:
   - blogs
   title: NASA Earthdata — News & Blog
   notes: Earth-observation datasets & ML use cases; RSS support documented.
-  id: 49c7103b140ca274
+  id: src-79550792ae68f0
   feed: https://www.earthdata.nasa.gov/news/blog
-  source_type: blog
 - url: https://www.ontotext.com/blog/
   topics:
   - knowledge-graphs
@@ -1781,9 +1610,8 @@ sources:
   title: Ontotext — Knowledge Graph Blog
   notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case
     studies.
-  id: fef68c7680a9013f
+  id: src-3ca06fa2ba160a
   feed: https://www.ontotext.com/blog/
-  source_type: blog
 - url: https://spectrum.ieee.org/topic/robotics
   topics:
   - robotics
@@ -1793,9 +1621,8 @@ sources:
   - blogs
   title: IEEE Spectrum — Robotics
   notes: Robotics research & industry engineering coverage; steady weekly cadence.
-  id: 22e6a14a4ffdd286
+  id: src-5fb66a3e95bf5d
   feed: https://spectrum.ieee.org/topic/robotics
-  source_type: blog
 - url: https://datahub.com/blog
   topics:
   - data-governance
@@ -1805,9 +1632,8 @@ sources:
   - blogs
   title: DataHub — Blog
   notes: Metadata, lineage, governance patterns; LLM app metadata/eval posts.
-  id: a4f5be9aef7dbd4d
+  id: src-7aecac925eabda
   feed: https://datahub.com/blog
-  source_type: blog
 - url: https://blog.agen.cy
   topics:
   - agents
@@ -1817,9 +1643,8 @@ sources:
   - industry
   title: Agency — Substack
   notes: Agentic systems analysis and ecosystem updates; Substack feed auto-available.
-  id: f1699c68b6a727df
+  id: src-1f0f99ff72000f
   feed: https://blog.agen.cy
-  source_type: blog
 - url: https://genai.owasp.org/llm-top-10/
   topics:
   - security
@@ -1829,9 +1654,8 @@ sources:
   - evaluation
   title: OWASP — Top 10 for LLM Applications
   notes: Canonical AI security reference for LLM apps; project updates and guidance.
-  id: c678f61aafadd507
+  id: src-4652f0243ce05b
   feed: https://genai.owasp.org/llm-top-10/
-  source_type: blog
 - url: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
   topics:
   - ai-for-science
@@ -1841,9 +1665,8 @@ sources:
   title: Microsoft Research — AI for Science (News & Awards)
   notes: Active AI4Science lab stream (materials, bio, physics); RSS available from
     lab pages.
-  id: 65b321f4f6fc4343
+  id: src-51cf3d54215027
   feed: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
-  source_type: blog
 - url: https://scale.com/blog
   topics:
   - industry
@@ -1854,9 +1677,8 @@ sources:
   - blogs
   title: Scale AI — Blog
   notes: Data pipelines, evals, model-ops & deployment stories; weekly+ cadence.
-  id: 179249eb8ad6fe4d
+  id: src-e8f1e5b9a926ba
   feed: https://scale.com/blog
-  source_type: blog
 - url: https://changelog.langchain.com/
   topics:
   - llmops
@@ -1865,9 +1687,8 @@ sources:
   - agents
   title: LangChain — Changelog
   notes: Operational updates for LangSmith/LangGraph (evals, tracing, agents).
-  id: 7ed681c3449c37e5
+  id: src-4822ad598e88c6
   feed: https://changelog.langchain.com/
-  source_type: blog
 - url: https://mozilla.ai/blog/
   topics:
   - industry
@@ -1877,9 +1698,8 @@ sources:
   - blogs
   title: Mozilla.ai — Blog
   notes: Independent lab on trustworthy AI; technical posts + policy perspective.
-  id: 4075e0d026770dfb
+  id: src-52f67fd9ed9d1f
   feed: https://mozilla.ai/blog/
-  source_type: blog
 - url: https://opendp.org/blog
   topics:
   - privacy
@@ -1889,9 +1709,8 @@ sources:
   - blogs
   title: OpenDP — Blog
   notes: Harvard/MIT open-source differential privacy project; methods & releases.
-  id: 8ade4055a0a85622
+  id: src-6f0b1285435562
   feed: https://opendp.org/blog
-  source_type: blog
 - url: https://www.ri.cmu.edu/news/
   topics:
   - robotics
@@ -1901,9 +1720,8 @@ sources:
   - blogs
   title: CMU Robotics Institute — News
   notes: Leading academic robotics lab; research spotlights and event posts.
-  id: fb7b2a0f8bdd6135
+  id: src-2bbd70db497b9f
   feed: https://www.ri.cmu.edu/news/
-  source_type: blog
 - url: https://metr.org/blog
   topics:
   - safety
@@ -1913,9 +1731,8 @@ sources:
   - blogs
   title: METR (ARC Evals) — Blog
   notes: Frontier model evaluations and risk reports.
-  id: db5a00c01013fff4
+  id: src-4a581b17a76c61
   feed: https://metr.org/blog
-  source_type: blog
 - url: https://www.lakera.ai/blog
   topics:
   - security
@@ -1925,9 +1742,8 @@ sources:
   - blogs
   title: Lakera — Blog
   notes: 'Applied LLM security: prompt injection, model abuse, guardrails.'
-  id: 83cb083527c32d45
+  id: src-19b138e3ddda37
   feed: https://www.lakera.ai/blog
-  source_type: blog
 - url: https://hiddenlayer.com/innovation-hub/
   topics:
   - security
@@ -1937,9 +1753,8 @@ sources:
   - blogs
   title: HiddenLayer — Innovation Hub
   notes: AI security research & incident analysis from a specialist vendor.
-  id: 1784b9b1d5e3e03a
+  id: src-7fd67557e735d9
   feed: https://hiddenlayer.com/innovation-hub/
-  source_type: blog
 - url: https://www.protectai.com/blog
   topics:
   - security
@@ -1948,9 +1763,8 @@ sources:
   - blogs
   title: Protect AI — MLSecOps Blog
   notes: Threat modeling, SBOMs for ML, supply chain, scanning/model risk.
-  id: 3b885a608add9f1e
+  id: src-2fbc5aa1e997eb
   feed: https://www.protectai.com/blog
-  source_type: blog
 - url: https://bankunderground.co.uk/
   topics:
   - infra-economics
@@ -1959,9 +1773,8 @@ sources:
   - blogs
   title: Bank Underground (Bank of England)
   notes: Central-bank analytics incl. AI/ML in finance, model risk.
-  id: 27f9ba5272b1eded
+  id: src-1008a89377d072
   feed: https://bankunderground.co.uk/
-  source_type: blog
 - url: https://ai.ethz.ch/news-and-events.html
   topics:
   - research
@@ -1971,9 +1784,8 @@ sources:
   - blogs
   title: ETH AI Center — News & Events
   notes: Swiss flagship AI center; research news & seminars.
-  id: 12865c9d95018451
+  id: src-78355ea4411924
   feed: https://ai.ethz.ch/news-and-events.html
-  source_type: blog
 - url: https://is.mpg.de/news
   topics:
   - research
@@ -1983,9 +1795,8 @@ sources:
   - blogs
   title: Max Planck Institute for Intelligent Systems — News
   notes: Tübingen/Stuttgart; academic highlights and project updates.
-  id: 09effde00bd7d9f3
+  id: src-1d906c193f043b
   feed: https://is.mpg.de/news
-  source_type: blog
 - url: https://www.tue.ai/news
   topics:
   - research
@@ -1995,9 +1806,8 @@ sources:
   - blogs
   title: Tübingen AI Center — News
   notes: German national AI center (Uni Tübingen + MPI); research news.
-  id: 9e06b31a9362e513
+  id: src-55530eb1edadd8
   feed: https://www.tue.ai/news
-  source_type: blog
 - url: https://aip.riken.jp/news-en/
   topics:
   - research
@@ -2006,9 +1816,8 @@ sources:
   - blogs
   title: RIKEN AIP — News
   notes: Japan’s national AI research hub; multilingual updates.
-  id: cdf859a80b0fd558
+  id: src-461de752999e10
   feed: https://aip.riken.jp/news-en/
-  source_type: blog
 - url: https://x.ai/blog
   topics:
   - industry
@@ -2018,9 +1827,8 @@ sources:
   - blogs
   title: xAI — Blog
   notes: Model releases, evaluations, and research notes.
-  id: f87eff4db9a7ed4b
+  id: src-2c700713320623
   feed: https://x.ai/blog
-  source_type: blog
 - url: https://sakana.ai/blog/
   topics:
   - optimization
@@ -2030,9 +1838,8 @@ sources:
   - blogs
   title: Sakana AI — Blog
   notes: Engineering-first posts on efficient training/inference.
-  id: ed682c56f4a399ae
+  id: src-5b6feac38a488d
   feed: https://sakana.ai/blog/
-  source_type: blog
 - url: https://kyutai.org/blog
   topics:
   - audio-speech
@@ -2042,9 +1849,8 @@ sources:
   - blogs
   title: Kyutai — Blog
   notes: Open research lab (France); speech & multimodal model posts.
-  id: 2e33e59b5096e5d5
+  id: src-11a837943f1478
   feed: https://kyutai.org/blog
-  source_type: blog
 - url: https://ollama.com/blog
   topics:
   - on-device
@@ -2054,9 +1860,8 @@ sources:
   - blogs
   title: Ollama — Blog
   notes: Local LLM ecosystem, model packs, runtime updates.
-  id: 14866557b8777e62
+  id: src-36021d763077cd
   feed: https://ollama.com/blog
-  source_type: blog
 - url: https://lmstudio.ai/blog
   topics:
   - on-device
@@ -2066,9 +1871,8 @@ sources:
   - blogs
   title: LM Studio — Blog
   notes: Desktop local-LLM tooling; releases and tips.
-  id: 0f1cd0bff5c281f6
+  id: src-69afb3d09ec045
   feed: https://lmstudio.ai/blog
-  source_type: blog
 - url: https://blog.perplexity.ai/
   topics:
   - product
@@ -2078,9 +1882,8 @@ sources:
   - blogs
   title: Perplexity — Hub
   notes: Search+LLM product engineering, features, and research collabs.
-  id: 7a850c68de309111
+  id: src-4fd08131e41901
   feed: https://blog.perplexity.ai/
-  source_type: blog
 - url: https://blog.openrouter.ai/
   topics:
   - product
@@ -2090,9 +1893,8 @@ sources:
   - blogs
   title: OpenRouter — Blog
   notes: Model routing, cost/perf notes, and ecosystem updates.
-  id: 1c762c14f88b7a61
+  id: src-6a9de2eb16e4bc
   feed: https://blog.openrouter.ai/
-  source_type: blog
 - url: https://trychroma.com/blog
   topics:
   - vector
@@ -2102,9 +1904,8 @@ sources:
   - blogs
   title: Chroma — Blog
   notes: Vector DB engineering & RAG patterns.
-  id: 21d93218521ecaab
+  id: src-2df0c6597bbc0c
   feed: https://trychroma.com/blog
-  source_type: blog
 - url: https://blog.nomic.ai/
   topics:
   - embeddings
@@ -2113,9 +1914,8 @@ sources:
   - blogs
   title: Nomic — Blog
   notes: Embeddings, Atlas, and data-centric AI posts.
-  id: 28a8d725f91b4072
+  id: src-1d9f1bcf5cb850
   feed: https://blog.nomic.ai/
-  source_type: blog
 - url: https://promptfoo.dev/blog/
   topics:
   - evaluation
@@ -2125,9 +1925,8 @@ sources:
   - blogs
   title: promptfoo — Blog
   notes: LLM evaluation tooling, prompts-as-tests, CI/CD patterns.
-  id: 3840e50541660c61
+  id: src-367d7bfa58e335
   feed: https://promptfoo.dev/blog/
-  source_type: blog
 - url: https://www.uptrain.ai/blog
   topics:
   - evaluation
@@ -2136,9 +1935,8 @@ sources:
   - blogs
   title: UpTrain — Blog
   notes: LLM evals/monitoring playbooks and case studies.
-  id: fea785acf653d20d
+  id: src-a6694a5c25b785
   feed: https://www.uptrain.ai/blog
-  source_type: blog
 - url: https://blog.gentrace.ai/
   topics:
   - evaluation
@@ -2147,9 +1945,8 @@ sources:
   - blogs
   title: Gentrace — Blog
   notes: Eval pipelines, benchmarks, and reliability for LLM apps.
-  id: a2f3b827e372e634
+  id: src-5ebd0fb6b84a02
   feed: https://blog.gentrace.ai/
-  source_type: blog
 - url: https://www.tecton.ai/blog/
   topics:
   - data
@@ -2159,9 +1956,8 @@ sources:
   - blogs
   title: Tecton — Blog
   notes: Feature platforms, real-time ML data engineering.
-  id: 2af41b40a1e733ca
+  id: src-1e1aae922c4082
   feed: https://www.tecton.ai/blog/
-  source_type: blog
 - url: https://www.hopsworks.ai/blog
   topics:
   - data
@@ -2171,9 +1967,8 @@ sources:
   - blogs
   title: Hopsworks — Blog
   notes: Feature store engineering and MLOps at scale.
-  id: 91a3d470b0a9fc69
+  id: src-9a9c0e2dfe4839
   feed: https://www.hopsworks.ai/blog
-  source_type: blog
 - url: https://flyte.org/blog
   topics:
   - orchestration
@@ -2183,9 +1978,8 @@ sources:
   - blogs
   title: Flyte — Blog
   notes: OSS workflow orchestration for data/ML; patterns and releases.
-  id: 42ac26c597fb4774
+  id: src-2a028f1f376b2d
   feed: https://flyte.org/blog
-  source_type: blog
 - url: https://blog.argoproj.io/
   topics:
   - orchestration
@@ -2195,9 +1989,8 @@ sources:
   - blogs
   title: Argo Project — Blog
   notes: Kubernetes-native workflows (Workflows, CD, Events).
-  id: 368da37b7fb8eb0f
+  id: src-6c5bbf6ca8a52a
   feed: https://blog.argoproj.io/
-  source_type: blog
 - url: https://www.prefect.io/blog
   topics:
   - orchestration
@@ -2207,9 +2000,8 @@ sources:
   - blogs
   title: Prefect — Blog
   notes: Dataflow orchestration, assets, and observability for ML/data.
-  id: df997f8ac78e0475
+  id: src-40bbc457e39015
   feed: https://www.prefect.io/blog
-  source_type: blog
 - url: https://devblogs.microsoft.com/autogen/
   topics:
   - agents
@@ -2219,9 +2011,8 @@ sources:
   - blogs
   title: Microsoft AutoGen — Blog
   notes: Agent frameworks, studio, and architecture updates.
-  id: 251acb33677f6e4d
+  id: src-409ff02275dbc3
   feed: https://devblogs.microsoft.com/autogen/
-  source_type: blog
 - url: https://blog.guardrailsai.com/
   topics:
   - structured-generation
@@ -2230,9 +2021,8 @@ sources:
   - blogs
   title: Guardrails AI — Blog
   notes: Schemas, constraints, and reliability for LLM outputs.
-  id: 6ca1ef7914c94933
+  id: src-19d097132a7db3
   feed: https://blog.guardrailsai.com/
-  source_type: blog
 - url: https://coqui.ai/blog
   topics:
   - audio-speech
@@ -2242,9 +2032,8 @@ sources:
   - blogs
   title: Coqui — Blog
   notes: TTS/ASR engineering and model updates.
-  id: eb69a578ceb316b9
+  id: src-3eda4e9ebbec47
   feed: https://coqui.ai/blog
-  source_type: blog
 - url: https://stability.ai/news
   topics:
   - diffusion
@@ -2254,9 +2043,8 @@ sources:
   - blogs
   title: Stability AI — News
   notes: Image/video diffusion releases and ecosystem posts.
-  id: 27576ba101af6eff
+  id: src-61fc50236dac3c
   feed: https://stability.ai/news
-  source_type: blog
 - url: https://openmmlab.com/blog/
   topics:
   - cv
@@ -2265,9 +2053,8 @@ sources:
   - blogs
   title: OpenMMLab — Blog
   notes: MM* stacks (Det/Seg/Posing); kernels and model zoo notes.
-  id: 9e2b6804acf69cd7
+  id: src-df3968d620ff83
   feed: https://openmmlab.com/blog/
-  source_type: blog
 - url: https://ultralytics.com/blog
   topics:
   - cv
@@ -2277,9 +2064,8 @@ sources:
   - blogs
   title: Ultralytics — Blog
   notes: YOLO family updates and vision deployment tips.
-  id: 6bfe15ea5eb4da3f
+  id: src-19bc9bb9379dbd
   feed: https://ultralytics.com/blog
-  source_type: blog
 - url: https://blog.salesforceairesearch.com/
   topics:
   - research
@@ -2289,9 +2075,8 @@ sources:
   - blogs
   title: Salesforce AI Research — Blog
   notes: Research explainers, code releases, and demos.
-  id: f1de2f3335636fbc
+  id: src-5bfcce29f6dd75
   feed: https://blog.salesforceairesearch.com/
-  source_type: blog
 - url: https://research.ibm.com/blog/ai
   topics:
   - industry
@@ -2301,9 +2086,8 @@ sources:
   - blogs
   title: IBM Research — AI Blog
   notes: Foundation models, tooling, and applied research.
-  id: c077ecebf217afc7
+  id: src-12540c5705caa0
   feed: https://research.ibm.com/blog/ai
-  source_type: blog
 - url: https://cloud.google.com/blog/topics/ai-ml
   topics:
   - industry
@@ -2313,9 +2097,8 @@ sources:
   - blogs
   title: Google Cloud — AI & ML
   notes: Platform features, MLOps patterns, and case studies.
-  id: 5853e288138a16dd
+  id: src-3040d078da268b
   feed: https://cloud.google.com/blog/topics/ai-ml
-  source_type: blog
 - url: https://azure.microsoft.com/en-us/blog/topics/ai-ml/
   topics:
   - industry
@@ -2325,9 +2108,8 @@ sources:
   - blogs
   title: Microsoft Azure — AI & ML
   notes: Azure AI services, inference/training stacks, refs.
-  id: 146b135a6ebbf0e7
+  id: src-2f3ee06480d177
   feed: https://azure.microsoft.com/en-us/blog/topics/ai-ml/
-  source_type: blog
 - url: https://www.ibm.com/blog/ai/
   topics:
   - industry
@@ -2336,9 +2118,8 @@ sources:
   - blogs
   title: IBM — AI Blog
   notes: Enterprise AI adoption, governance, and platform posts.
-  id: 58032d19700e464a
+  id: src-231a68c2fa8631
   feed: https://www.ibm.com/blog/ai/
-  source_type: blog
 - url: https://www.youtube.com/@YannicKilcher
   topics:
   - research
@@ -2347,9 +2128,8 @@ sources:
   - ml
   title: Yannic Kilcher — YouTube
   notes: Paper walkthroughs and critical takes; high-cadence videos.
-  id: 1f02eefb105a4042
+  id: src-2c3061c2007324
   feed: https://www.youtube.com/@YannicKilcher
-  source_type: youtube
 - url: https://www.youtube.com/@HenryAILabs
   topics:
   - research
@@ -2358,9 +2138,8 @@ sources:
   - llm
   title: Henry AI Labs — YouTube
   notes: Model explainers, interviews, and weekly recaps.
-  id: a64df8be753b9658
+  id: src-99e702aade38a7
   feed: https://www.youtube.com/@HenryAILabs
-  source_type: youtube
 - url: https://www.youtube.com/@GoogleDeepMind
   topics:
   - research
@@ -2369,9 +2148,8 @@ sources:
   - multimodal
   title: Google DeepMind — YouTube
   notes: Talks, demos, and research highlights.
-  id: b32c8fb72fe2c9ff
+  id: src-7d77a054231bed
   feed: https://www.youtube.com/@GoogleDeepMind
-  source_type: youtube
 - url: https://www.youtube.com/@OpenAI
   topics:
   - industry
@@ -2380,9 +2158,8 @@ sources:
   - llm
   title: OpenAI — YouTube
   notes: Product demos, research talks, and updates.
-  id: 4c2d8c92979beb4a
+  id: src-70ec6ae3d6b7f2
   feed: https://www.youtube.com/@OpenAI
-  source_type: youtube
 - url: https://www.youtube.com/@MetaAI
   topics:
   - industry
@@ -2391,9 +2168,8 @@ sources:
   - open-source
   title: Meta AI — YouTube
   notes: FAIR/GenAI research talks and product tech.
-  id: 3775c6f15991089c
+  id: src-578fd1471daecb
   feed: https://www.youtube.com/@MetaAI
-  source_type: youtube
 - url: https://www.reddit.com/r/LocalLLaMA
   topics:
   - small-models
@@ -2401,10 +2177,9 @@ sources:
   - community
   - ml
   notes: Community for running/optimizing local LLMs.
-  id: e620332497754836
-  feed: https://www.reddit.com/r/LocalLLaMA
+  id: src-6eef4f3b1f69ca
   title: https://www.reddit.com/r/LocalLLaMA
-  source_type: reddit
+  feed: https://www.reddit.com/r/LocalLLaMA
 - url: https://www.reddit.com/r/StableDiffusion
   topics:
   - diffusion
@@ -2412,10 +2187,9 @@ sources:
   - community
   - multimodal
   notes: Image diffusion techniques, models, and workflows.
-  id: 3913a1ff067804cf
-  feed: https://www.reddit.com/r/StableDiffusion
+  id: src-39f7e1fdee03a9
   title: https://www.reddit.com/r/StableDiffusion
-  source_type: reddit
+  feed: https://www.reddit.com/r/StableDiffusion
 - url: https://github.com/ollama/ollama
   topics:
   - on-device
@@ -2424,9 +2198,8 @@ sources:
   - open-source
   title: Ollama — GitHub
   notes: Local model runtime; follow releases for engine updates.
-  id: 77b4be38215d4c71
+  id: src-3fc6ec530a8725
   feed: https://github.com/ollama/ollama
-  source_type: github
 - url: https://github.com/open-webui/open-webui
   topics:
   - agents
@@ -2435,9 +2208,8 @@ sources:
   - open-source
   title: Open WebUI — GitHub
   notes: Self-hosted chat/agent UI; rapid releases.
-  id: 7c94eb734f17ebfc
+  id: src-6d368b53ef1dc0
   feed: https://github.com/open-webui/open-webui
-  source_type: github
 - url: https://github.com/FlowiseAI/Flowise
   topics:
   - agents
@@ -2446,9 +2218,8 @@ sources:
   - open-source
   title: Flowise — GitHub
   notes: Flow-based agent and tool graph builder.
-  id: 22c27291c0ff8f7a
+  id: src-fc3315ec12ff26
   feed: https://github.com/FlowiseAI/Flowise
-  source_type: github
 - url: https://github.com/BerriAI/litellm
   topics:
   - llmops
@@ -2457,9 +2228,8 @@ sources:
   - open-source
   title: LiteLLM — GitHub
   notes: Unified LLM API router; costs/observability features.
-  id: dab892839df45099
+  id: src-63e9bea0eae09e
   feed: https://github.com/BerriAI/litellm
-  source_type: github
 - url: https://github.com/unslothai/unsloth
   topics:
   - training
@@ -2468,9 +2238,8 @@ sources:
   - open-source
   title: Unsloth — GitHub
   notes: Fast finetuning for LLMs; LoRA/QLoRA-focused.
-  id: 1970f2aab6a882fb
+  id: src-5fbf665d374edb
   feed: https://github.com/unslothai/unsloth
-  source_type: github
 - url: https://github.com/casper-hansen/AutoAWQ
   topics:
   - optimization
@@ -2479,9 +2248,8 @@ sources:
   - open-source
   title: AutoAWQ — GitHub
   notes: Activation-aware quantization for fast inference.
-  id: 70602e696a51b03d
+  id: src-559bba3a188f5f
   feed: https://github.com/casper-hansen/AutoAWQ
-  source_type: github
 - url: https://github.com/turboderp/exllamav2
   topics:
   - inference
@@ -2490,9 +2258,8 @@ sources:
   - open-source
   title: ExLlamaV2 — GitHub
   notes: High-throughput kernels for LLaMA-family models.
-  id: 736a2e973b799d71
+  id: src-40c515ff13f2ea
   feed: https://github.com/turboderp/exllamav2
-  source_type: github
 - url: https://github.com/ggerganov/whisper.cpp
   topics:
   - audio-speech
@@ -2501,9 +2268,8 @@ sources:
   - open-source
   title: whisper.cpp — GitHub
   notes: On-device ASR; CPU/GPU-optimized ports.
-  id: 1b4c7ffe2cc503af
+  id: src-2c9c3dd7de7618
   feed: https://github.com/ggerganov/whisper.cpp
-  source_type: github
 - url: https://github.com/LostRuins/koboldcpp
   topics:
   - inference
@@ -2512,9 +2278,8 @@ sources:
   - open-source
   title: KoboldCpp — GitHub
   notes: Local text-gen runtime with UI; frequent builds.
-  id: e2e64792950396e4
+  id: src-72aad05c213281
   feed: https://github.com/LostRuins/koboldcpp
-  source_type: github
 - url: https://github.com/guardrails-ai/guardrails
   topics:
   - structured-generation
@@ -2523,9 +2288,8 @@ sources:
   - open-source
   title: Guardrails — GitHub
   notes: Output validation/guarded decoding library.
-  id: f083d320a47d5151
+  id: src-7b36da02690ae3
   feed: https://github.com/guardrails-ai/guardrails
-  source_type: github
 - url: https://github.com/outlines-dev/outlines
   topics:
   - structured-generation
@@ -2534,54 +2298,48 @@ sources:
   - open-source
   title: Outlines — GitHub
   notes: Grammar/constrained decoding for reliable generation.
-  id: f666cb1bf6da00d6
+  id: src-1c7197e49dd51f
   feed: https://github.com/outlines-dev/outlines
-  source_type: github
 - url: https://github.com/openai/whisper
   topics:
   - audio-speech
   - open-source
   title: OpenAI Whisper — GitHub
   notes: Speech recognition model; track releases.
-  id: 24d2ebb24ff35b75
+  id: src-66700db1b3a6dd
   feed: https://github.com/openai/whisper
-  source_type: github
 - url: https://github.com/speechbrain/speechbrain
   topics:
   - audio-speech
   - open-source
   title: SpeechBrain — GitHub
   notes: Open speech toolkit (ASR/TTS/SSL).
-  id: 98e6d69888ea533c
+  id: src-3b0e52a38fb2c1
   feed: https://github.com/speechbrain/speechbrain
-  source_type: github
 - url: https://github.com/coqui-ai/TTS
   topics:
   - audio-speech
   - open-source
   title: Coqui TTS — GitHub
   notes: TTS toolkit and models.
-  id: 93d4e0dab34a8829
+  id: src-185e10216d8327
   feed: https://github.com/coqui-ai/TTS
-  source_type: github
 - url: https://github.com/sktime/sktime
   topics:
   - time-series
   - open-source
   title: sktime — GitHub
   notes: Time-series ML in Python; classical + deep.
-  id: c21c34f5075aa224
+  id: src-13c1ea2ff71dab
   feed: https://github.com/sktime/sktime
-  source_type: github
 - url: https://github.com/unit8co/darts
   topics:
   - time-series
   - open-source
   title: Darts — GitHub
   notes: Forecasting library; probabilistic & deep TS models.
-  id: fb6f1c126d55707b
+  id: src-18a07f0c3b9f78
   feed: https://github.com/unit8co/darts
-  source_type: github
 - url: https://transformer-circuits.pub/
   topics:
   - interpretability
@@ -2589,9 +2347,8 @@ sources:
   - research
   title: Transformer Circuits
   notes: Mechanistic interpretability research hub.
-  id: 5083d746c2728ff2
+  id: src-3c68ca9f69e534
   feed: https://transformer-circuits.pub/
-  source_type: blog
 - url: https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/
   topics:
   - legal-ai
@@ -2599,9 +2356,8 @@ sources:
   - structured-generation
   title: Stanford CodeX — Legal Informatics
   notes: Legal+AI research; policy, tooling, structured generation.
-  id: 1f3bf69da87690b7
+  id: src-dacf2981daa64c
   feed: https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/
-  source_type: code-repo
 - url: https://blog.englishtest.duolingo.com/
   topics:
   - edtech-ai
@@ -2610,9 +2366,8 @@ sources:
   - blogs
   title: Duolingo English Test — Blog
   notes: Assessment/measurement + ML-driven test design.
-  id: 37c459c353a42daf
+  id: src-582ddcb665dab6
   feed: https://blog.englishtest.duolingo.com/
-  source_type: blog
 - url: https://www.perplexity.ai/hub
   topics:
   - industry
@@ -2620,9 +2375,8 @@ sources:
   - llm
   title: Perplexity — Hub
   notes: Provider announcements, product and research partnerships.
-  id: 9a25d619c0101be8
+  id: src-7d0603b4e42482
   feed: https://www.perplexity.ai/hub
-  source_type: blog
 - url: https://github.com/All-Hands-AI/openhands
   topics:
   - agents
@@ -2630,9 +2384,8 @@ sources:
   - open-source
   title: OpenHands — GitHub
   notes: Agentic software-engineering framework.
-  id: 27a3c0486cd7ac82
+  id: src-a8ac93f36f42ea
   feed: https://github.com/All-Hands-AI/openhands
-  source_type: github
 - url: https://github.com/Significant-Gravitas/AutoGPT
   topics:
   - agents
@@ -2640,9 +2393,8 @@ sources:
   - open-source
   title: AutoGPT — GitHub
   notes: Agent workflows; frequent ecosystem changes.
-  id: 7fc08de27bce1b0c
+  id: src-3ff651b7304d4e
   feed: https://github.com/Significant-Gravitas/AutoGPT
-  source_type: github
 - url: https://rss.arxiv.org/rss/cs.AI
   topics:
   - research
@@ -2651,9 +2403,8 @@ sources:
   title: arXiv — cs.AI RSS
   notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence;
     primary preprint venue for labs/venues.
-  id: 4317c649bc1b9ce7
+  id: src-e8a38ea4bb4de0
   feed: https://rss.arxiv.org/rss/cs.AI
-  source_type: arxiv
 - url: https://www.amd.com/en/technologies/rocm/blogs.html
   topics:
   - accelerators
@@ -2662,9 +2413,8 @@ sources:
   title: AMD ROCm — Blogs
   notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises
     RSS; frequent updates.
-  id: 1ef09deabb13281c
+  id: src-39fe5bbffb2c74
   feed: https://www.amd.com/en/technologies/rocm/blogs.html
-  source_type: blog
 - url: https://community.arm.com/arm-community-blogs/b/ai-blog
   topics:
   - edge
@@ -2674,9 +2424,8 @@ sources:
   title: Arm — AI & ML Blog
   notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active
     2025 cadence.
-  id: 33c91748e0480bca
+  id: src-2e9a6527d68726
   feed: https://community.arm.com/arm-community-blogs/b/ai-blog
-  source_type: blog
 - url: https://blog.llvm.org/tags/mlir/
   topics:
   - compilers
@@ -2685,9 +2434,8 @@ sources:
   title: MLIR — The LLVM Project Blog
   notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects,
     lowering). Maintained under LLVM; feed autodiscovery.
-  id: 807a2a1630af1988
+  id: src-10c734be2e1ac5
   feed: https://blog.llvm.org/tags/mlir/
-  source_type: blog
 - url: https://www.ftc.gov/feeds/blog-business.xml
   topics:
   - governance
@@ -2696,9 +2444,8 @@ sources:
   title: FTC Business Blog — RSS
   notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed;
     frequent policy/complaint analysis.
-  id: 231f8b7a061b8b6b
+  id: src-3f7f4e8b4ab382
   feed: https://www.ftc.gov/feeds/blog-business.xml
-  source_type: blog
 - url: https://www.jair.org
   topics:
   - research
@@ -2707,137 +2454,93 @@ sources:
   title: Journal of Artificial Intelligence Research (JAIR)
   notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major
     indices; feed autodiscovery from site.
-  id: b9edcea7e5067db8
+  id: src-24a24658d043ef
   feed: https://www.jair.org
-  source_type: preprint
 - url: https://quantumcomputingreport.com/feed/
   topics:
   - quantum-computing
   - industry
   - hardware
   - research
-  tags:
-  - news
-  - analysis
-  - quantum-companies
   title: Quantum Computing Report
   notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016.
     Comprehensive quantum company database.
-  id: 580eb14015a8c19d
+  id: src-4e77280b457381
   feed: https://quantumcomputingreport.com/feed/
-  source_type: code-repo
 - url: https://thequantuminsider.com/feed
   topics:
   - quantum-computing
   - industry
   - business
   - research
-  tags:
-  - news
-  - startups
-  - quantum-companies
-  - investment
   title: The Quantum Insider
   notes: 'RSS 2.0 format. Excellent for quantum computing business and market news.
     Last build: 2025-10-29.'
-  id: c87eea6960de906c
+  id: src-6cc7946065e27f
   feed: https://thequantuminsider.com/feed
-  source_type: blog
 - url: https://news.mit.edu/topic/mitquantum-computing-rss.xml
   topics:
   - quantum-computing
   - research
   - academic
   - physics
-  tags:
-  - university
-  - research
-  - quantum-theory
-  - quantum-hardware
   title: MIT News — Quantum Computing
   notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum
     computing. Strong industry collaborations.
-  id: 9b1f428f43a34025
+  id: src-658c315e0e255d
   feed: https://news.mit.edu/topic/mitquantum-computing-rss.xml
-  source_type: blog
 - url: https://research.ibm.com/blog
   topics:
   - quantum-computing
   - industry
   - research
   - hardware
-  tags:
-  - superconducting-qubits
-  - quantum-algorithms
-  - qiskit
-  - quantum-software
   title: IBM Research Blog — Quantum Computing
   notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years
     quantum R&D, 127+ qubit systems, Qiskit framework.
-  id: da8ebfcd6a451d00
+  id: src-79d4c6bb6b478c
   feed: https://research.ibm.com/blog
-  source_type: blog
 - url: https://quantumai.google/
   topics:
   - quantum-computing
   - research
   - industry
   - hardware
-  tags:
-  - quantum-processors
-  - error-correction
-  - quantum-algorithms
   title: Google Quantum AI
   notes: Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow
     chip breakthrough in error correction (2024).
-  id: d94657e6bf284e3c
+  id: src-43494a8c48afa1
   feed: https://quantumai.google/
-  source_type: blog
 - url: https://azure.microsoft.com/en-us/blog/quantum/
   topics:
   - quantum-computing
   - industry
   - cloud
   - software
-  tags:
-  - quantum-cloud
-  - quantum-algorithms
-  - quantum-chemistry
   title: Microsoft Azure Quantum Blog
   notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit.
     Partnerships with IonQ, Quantinuum, Rigetti.
-  id: ac90267ef4e5af9f
+  id: src-77d80e71a6421d
   feed: https://azure.microsoft.com/en-us/blog/quantum/
-  source_type: blog
 - url: https://ionq.com/blog
   topics:
   - quantum-computing
   - industry
   - hardware
   - trapped-ions
-  tags:
-  - trapped-ion
-  - quantum-hardware
-  - quantum-cloud
   title: IonQ Blog
   notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion
     technology leader. Cloud access via AWS/Azure/Google.'
-  id: 78f1d7b84e39ad8c
+  id: src-23f472cddd3b81
   feed: https://ionq.com/blog
-  source_type: blog
 - url: https://rigetti.com/blog
   topics:
   - quantum-computing
   - industry
   - hardware
   - superconducting
-  tags:
-  - superconducting-qubits
-  - quantum-cloud
-  - quantum-processors
   title: Rigetti Computing Blog
   notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing.
     Ankaa and Novera quantum processors.
-  id: 7088018a6bbabdf8
+  id: src-7d7871c509fefe
   feed: https://rigetti.com/blog
-  source_type: blog
