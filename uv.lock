@@ -32,14 +32,10 @@ dependencies = [
     { name = "defusedxml" },
     { name = "fastapi" },
     { name = "feedparser" },
-    { name = "gensim" },
     { name = "httpx" },
     { name = "jsonschema" },
     { name = "langdetect" },
     { name = "loguru" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "prophet" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
@@ -47,14 +43,22 @@ dependencies = [
     { name = "python-socketio" },
     { name = "pyyaml" },
     { name = "redis" },
-    { name = "scikit-learn" },
-    { name = "spacy" },
     { name = "sqlalchemy" },
     { name = "sqlmodel" },
     { name = "tenacity" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+ml = [
+    { name = "gensim" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "prophet" },
+    { name = "scikit-learn" },
+    { name = "spacy" },
     { name = "torch" },
     { name = "transformers" },
-    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -68,14 +72,14 @@ requires-dist = [
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "feedparser", specifier = ">=6.0.11" },
-    { name = "gensim", specifier = ">=4.3.0" },
+    { name = "gensim", marker = "extra == 'ml'", specifier = ">=4.3.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "jsonschema", specifier = ">=4.23.0" },
     { name = "langdetect", specifier = ">=1.0.9" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "numpy", specifier = ">=2.2.4" },
-    { name = "pandas", specifier = ">=2.2.0" },
-    { name = "prophet", specifier = ">=1.1.0" },
+    { name = "numpy", marker = "extra == 'ml'", specifier = ">=2.2.4" },
+    { name = "pandas", marker = "extra == 'ml'", specifier = ">=2.2.0" },
+    { name = "prophet", marker = "extra == 'ml'", specifier = ">=1.1.0" },
     { name = "pydantic", specifier = ">=2.12.2" },
     { name = "pydantic-settings", specifier = ">=2.11.0" },
     { name = "pyjwt", specifier = ">=2.8.0" },
@@ -83,15 +87,16 @@ requires-dist = [
     { name = "python-socketio", specifier = ">=5.12.0" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "redis", specifier = ">=5.0.0" },
-    { name = "scikit-learn", specifier = ">=1.4.0" },
-    { name = "spacy", specifier = ">=3.7.0" },
+    { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.4.0" },
+    { name = "spacy", marker = "extra == 'ml'", specifier = ">=3.7.0" },
     { name = "sqlalchemy", specifier = ">=2.0.36" },
     { name = "sqlmodel", specifier = ">=0.0.27" },
     { name = "tenacity", specifier = ">=9.1.2" },
-    { name = "torch", specifier = ">=2.0.0" },
-    { name = "transformers", specifier = ">=4.40.0" },
+    { name = "torch", marker = "extra == 'ml'", specifier = ">=2.0.0" },
+    { name = "transformers", marker = "extra == 'ml'", specifier = ">=4.40.0" },
     { name = "uvicorn", specifier = ">=0.30.0" },
 ]
+provides-extras = ["ml"]
 
 [[package]]
 name = "ai-web-feeds-cli"

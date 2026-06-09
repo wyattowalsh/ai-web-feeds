@@ -14,14 +14,10 @@ dependencies = [
     "defusedxml>=0.7.1",
     "fastapi>=0.115.0",
     "feedparser>=6.0.11",
-    "gensim>=4.3.0",
     "httpx>=0.28.1",
     "jsonschema>=4.23.0",
     "langdetect>=1.0.9",
     "loguru>=0.7.3",
-    "numpy>=2.2.4",
-    "pandas>=2.2.0",
-    "prophet>=1.1.0",
     "pydantic>=2.12.2",
     "pydantic-settings>=2.11.0",
     "pyjwt>=2.8.0",
@@ -29,14 +25,25 @@ dependencies = [
     "python-socketio>=5.12.0",
     "pyyaml>=6.0.3",
     "redis>=5.0.0",
-    "scikit-learn>=1.4.0",
-    "spacy>=3.7.0",
     "sqlalchemy>=2.0.36",
     "sqlmodel>=0.0.27",
     "tenacity>=9.1.2",
+    "uvicorn>=0.30.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    # Aggressive dep split (Wave 0 per user plan): heavy ML moved out of core.
+    # Install via: uv sync --extra ml
+    # Only nlp/ and visualization/ modules actually use them; always lazy import.
+    "gensim>=4.3.0",
+    "numpy>=2.2.4",
+    "pandas>=2.2.0",
+    "prophet>=1.1.0",
+    "scikit-learn>=1.4.0",
+    "spacy>=3.7.0",
     "torch>=2.0.0",
     "transformers>=4.40.0",
-    "uvicorn>=0.30.0",
 ]
 
 [tool.ruff]
