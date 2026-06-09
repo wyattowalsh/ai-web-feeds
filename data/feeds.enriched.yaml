@@ -2458,10 +2458,9 @@ sources:
   feed: https://www.jair.org
 - url: https://quantumcomputingreport.com/feed/
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - research
   title: Quantum Computing Report
   notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016.
     Comprehensive quantum company database.
@@ -2469,10 +2468,8 @@ sources:
   feed: https://quantumcomputingreport.com/feed/
 - url: https://thequantuminsider.com/feed
   topics:
-  - quantum-computing
-  - industry
-  - business
   - research
+  - industry
   title: The Quantum Insider
   notes: 'RSS 2.0 format. Excellent for quantum computing business and market news.
     Last build: 2025-10-29.'
@@ -2480,10 +2477,7 @@ sources:
   feed: https://thequantuminsider.com/feed
 - url: https://news.mit.edu/topic/mitquantum-computing-rss.xml
   topics:
-  - quantum-computing
   - research
-  - academic
-  - physics
   title: MIT News — Quantum Computing
   notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum
     computing. Strong industry collaborations.
@@ -2491,9 +2485,8 @@ sources:
   feed: https://news.mit.edu/topic/mitquantum-computing-rss.xml
 - url: https://research.ibm.com/blog
   topics:
-  - quantum-computing
-  - industry
   - research
+  - industry
   - hardware
   title: IBM Research Blog — Quantum Computing
   notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years
@@ -2502,7 +2495,6 @@ sources:
   feed: https://research.ibm.com/blog
 - url: https://quantumai.google/
   topics:
-  - quantum-computing
   - research
   - industry
   - hardware
@@ -2513,10 +2505,8 @@ sources:
   feed: https://quantumai.google/
 - url: https://azure.microsoft.com/en-us/blog/quantum/
   topics:
-  - quantum-computing
+  - research
   - industry
-  - cloud
-  - software
   title: Microsoft Azure Quantum Blog
   notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit.
     Partnerships with IonQ, Quantinuum, Rigetti.
@@ -2524,10 +2514,9 @@ sources:
   feed: https://azure.microsoft.com/en-us/blog/quantum/
 - url: https://ionq.com/blog
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - trapped-ions
   title: IonQ Blog
   notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion
     technology leader. Cloud access via AWS/Azure/Google.'
@@ -2535,10 +2524,9 @@ sources:
   feed: https://ionq.com/blog
 - url: https://rigetti.com/blog
   topics:
-  - quantum-computing
+  - research
   - industry
   - hardware
-  - superconducting
   title: Rigetti Computing Blog
   notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing.
     Ankaa and Novera quantum processors.
