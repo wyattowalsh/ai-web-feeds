@@ -11,6 +11,10 @@ vi.mock("@/lib/feeds", () => ({
   getFeedStats: getFeedStatsMock,
 }));
 
+vi.mock("@/lib/nonce", () => ({
+  getRequestNonce: vi.fn(async () => undefined),
+}));
+
 async function loadHomePage() {
   const pageModule = await import("./page");
   return pageModule.default;
@@ -39,7 +43,7 @@ describe("HomePage", () => {
   it("renders a minimal home with canonical surface links", async () => {
     const HomePage = await loadHomePage();
 
-    render(<HomePage />);
+    render(await HomePage());
 
     expect(
       screen.getByRole("heading", { name: "Read AI writing across the open web" }),
