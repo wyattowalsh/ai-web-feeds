@@ -9,11 +9,6 @@ from rich.table import Table
 
 # Import NLP components
 from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
-from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
-from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
-from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
-from ai_web_feeds.nlp.scheduler import NLPScheduler
 
 app = typer.Typer(help="Advanced AI/NLP features (Phase 5)")
 console = Console()
@@ -39,6 +34,8 @@ def run_quality_scoring(
     console.print()
 
     try:
+        from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
+
         settings = Settings()
         job = QualityBatchJob(settings)
 
@@ -89,6 +86,8 @@ def run_entity_extraction(
     console.print()
 
     try:
+        from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
+
         settings = Settings()
         job = EntityBatchJob(settings)
 
@@ -139,6 +138,8 @@ def run_sentiment_analysis(
     console.print()
 
     try:
+        from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
+
         settings = Settings()
         job = SentimentBatchJob(settings)
 
@@ -194,6 +195,8 @@ def run_topic_modeling(
     console.print()
 
     try:
+        from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
+
         settings = Settings()
         job = TopicModelingJob(settings)
 
@@ -251,6 +254,8 @@ def manage_scheduler(
     console.print(f"[bold blue]NLP Scheduler: {action}[/bold blue]")
 
     try:
+        from ai_web_feeds.nlp.scheduler import NLPScheduler
+
         settings = Settings()
         scheduler = NLPScheduler(settings)
 

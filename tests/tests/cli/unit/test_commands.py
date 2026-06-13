@@ -1,6 +1,9 @@
 """Unit tests for CLI commands."""
 
+import builtins
+import importlib
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -27,6 +30,27 @@ def _write_catalog(path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+
+@pytest.mark.unit
+def test_cli_startup_does_not_import_optional_nlp_dependencies(monkeypatch):
+    """The base CLI must start without optional NLP packages such as spaCy."""
+    original_import = builtins.__import__
+
+    def guarded_import(name, global_vars=None, local_vars=None, fromlist=(), level=0):
+        if name == "spacy" or name.startswith("spacy."):
+            raise AssertionError("spacy was imported during CLI startup")
+        return original_import(name, global_vars, local_vars, fromlist, level)
+
+    for module_name in list(sys.modules):
+        if module_name == "ai_web_feeds.cli" or module_name.startswith("ai_web_feeds.cli."):
+            monkeypatch.delitem(sys.modules, module_name, raising=False)
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+    cli_module = importlib.import_module("ai_web_feeds.cli")
+
+    assert cli_module.app is not None
 
 
 @pytest.mark.unit
