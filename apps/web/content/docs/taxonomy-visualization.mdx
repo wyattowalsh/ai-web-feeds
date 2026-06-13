@@ -44,20 +44,20 @@ Generate Mermaid diagrams, JSON graphs, or view statistics:
 
 ```bash
 # Generate Mermaid diagram
-aiwebfeeds visualize mermaid -o taxonomy.mermaid
+ai-web-feeds visualize mermaid -o taxonomy.mermaid
 
 # With options
-aiwebfeeds visualize mermaid \
+ai-web-feeds visualize mermaid \
   --direction LR \
   --max-depth 3 \
   --facets "domain,task" \
   --no-relations
 
 # Generate JSON graph for D3.js/visualization libraries
-aiwebfeeds visualize json -o taxonomy.json
+ai-web-feeds visualize json -o taxonomy.json
 
 # View statistics
-aiwebfeeds visualize stats
+ai-web-feeds visualize stats
 ```
 
 ### 2. Python API
@@ -268,7 +268,7 @@ For high-quality static diagrams (requires Graphviz):
 
 ```bash
 # Generate DOT file
-python -c "
+uv run python -c "
 from ai_web_feeds.taxonomy import load_taxonomy, TaxonomyVisualizer
 viz = TaxonomyVisualizer(load_taxonomy())
 print(viz.to_dot())
@@ -284,7 +284,7 @@ To add or modify topics:
 
 1. Edit `/data/topics.yaml`
 2. Validate against `/data/topics.schema.json`
-3. Run `aiwebfeeds validate data/topics.yaml`
+3. Run `ai-web-feeds validate data/topics.yaml`
 4. Generate updated visualizations
 5. Submit a pull request
 

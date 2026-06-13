@@ -1,6 +1,5 @@
 """Batch job for topic modeling (Phase 5D)."""
 
-import json
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -8,7 +7,7 @@ from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, Subtopic
+from ai_web_feeds.models import ArticleEntry, Subtopic
 from ai_web_feeds.nlp.topic_modeler import TopicModeler
 from ai_web_feeds.storage import DatabaseManager
 
@@ -67,7 +66,7 @@ class TopicModelingJob:
 
         with self.db_manager.get_session() as session:
             # Get articles grouped by topic
-            # Get all unique topics from feed entries.
+            # Get all unique topics from articles.
             # This would ideally query from a topics table.
             topics_to_process = [topic] if topic else ["Machine Learning", "AI", "Deep Learning"]
 
@@ -75,7 +74,7 @@ class TopicModelingJob:
                 try:
                     # Query articles for this topic
                     # In production, this would filter by topic assignments
-                    query = select(FeedEntry).where(FeedEntry.topics_processed.is_(False))
+                    query = select(ArticleEntry).where(ArticleEntry.topics_processed.is_(False))
                     articles = session.exec(query).all()
 
                     if len(articles) < min_articles:
@@ -94,7 +93,7 @@ class TopicModelingJob:
                         {
                             "id": a.id,
                             "title": a.title,
-                            "content": a.content or a.summary or "",
+                            "content": a.content_html or a.summary or "",
                             "summary": a.summary,
                         }
                         for a in articles
@@ -111,7 +110,7 @@ class TopicModelingJob:
                             id=str(uuid4()),
                             parent_topic=parent_topic,
                             name=discovered.name,
-                            keywords=json.dumps(discovered.keywords),
+                            keywords=list(discovered.keywords),
                             description=(
                                 "Auto-discovered subtopic with coherence "
                                 f"{discovered.coherence_score:.2f}"
@@ -145,7 +144,7 @@ class TopicModelingJob:
         stats["duration_seconds"] = (end_time - start_time).total_seconds()
 
         logger.info(
-            f"Topic modeling batch job completed: "
+            f"TopicNode modeling batch job completed: "
             f"topics={stats['topics_processed']}, subtopics={stats['subtopics_discovered']}, "
             f"articles={stats['articles_analyzed']}, failed={stats['failed']}, "
             f"duration={stats['duration_seconds']:.2f}s"

@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "schema_version": "articles-3.0.0",
+    "generated_at": "2026-04-22T00:00:00.000Z",
+    "source_db": "playwright-fixture",
+    "article_count": 2,
+    "feed_count": 2,
+    "latest_published_at": "2026-04-21T15:00:00.000Z",
+    "freshness_watermark": "2026-04-21T15:00:00.000Z",
+    "is_empty": false
+  },
+  "articles": [
+    {
+      "id": "fixture-article-1",
+      "feed_id": "fixture-feed-1",
+      "feed_title": "Fixture Feed One",
+      "title": "OpenAI models weekly briefing",
+      "link": "https://example.com/fixture-article-1",
+      "canonical_url": "https://example.com/fixture-article-1",
+      "summary": "A deterministic precomputed article for route-level workflow tests.",
+      "content_html": "<p>A deterministic precomputed article for route-level workflow tests.</p>",
+      "author": "Fixture Author",
+      "published_at": "2026-04-21T15:00:00.000Z",
+      "discovered_at": "2026-04-21T15:30:00.000Z",
+      "raw_categories": ["models", "llm"],
+      "topics": ["ai", "ml"],
+      "source_topics": ["ai", "ml"],
+      "source_type": "blog",
+      "verified": true,
+      "is_active": true,
+      "ingest_meta": {
+        "fixture": true
+      }
+    },
+    {
+      "id": "fixture-article-2",
+      "feed_id": "fixture-feed-2",
+      "feed_title": "Fixture Feed Two",
+      "title": "Agent systems roundup",
+      "link": "https://example.com/fixture-article-2",
+      "canonical_url": "https://example.com/fixture-article-2",
+      "summary": "A second article keeps list and preview interactions realistic.",
+      "content_html": "<p>A second article keeps list and preview interactions realistic.</p>",
+      "author": "Fixture Author",
+      "published_at": "2026-04-20T12:00:00.000Z",
+      "discovered_at": "2026-04-20T12:30:00.000Z",
+      "raw_categories": ["agents"],
+      "topics": ["agents"],
+      "source_topics": ["agents"],
+      "source_type": "newsletter",
+      "verified": false,
+      "is_active": true,
+      "ingest_meta": {
+        "fixture": true
+      }
+    }
+  ]
+}

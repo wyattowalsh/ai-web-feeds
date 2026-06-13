@@ -3,11 +3,15 @@
 These tests verify complete user workflows from start to finish.
 """
 
+import json
+import xml.etree.ElementTree as ET  # nosec B405
 from datetime import UTC, datetime
 
 import pytest
-from ai_web_feeds.models import FeedItem, FeedSource, SourceType, Topic
+from ai_web_feeds.export import export_to_json
+from ai_web_feeds.models import ArticleEntry, FeedSource, SourceType, TopicNode
 from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.utils import generate_categorized_opml
 
 
 @pytest.mark.e2e
@@ -39,20 +43,21 @@ class TestCompleteWorkflow:
 
         # 4. Add some items to the feed
         items = [
-            FeedItem(
-                feed_source_id="my-first-feed",
+            ArticleEntry(
+                feed_id="my-first-feed",
                 guid=f"item-{i}",
                 title=f"Article {i}",
-                published=datetime.now(),
+                link=f"https://example.com/article-{i}",
+                pub_date=datetime.now(UTC),
             )
             for i in range(10)
         ]
 
         for item in items:
-            db.add_feed_item(item)
+            db.add_article(item)
 
         # 5. Verify items were added
-        stored_items = db.get_feed_items("my-first-feed")
+        stored_items = db.get_articles("my-first-feed")
         assert len(stored_items) == 10
 
     def test_feed_management_workflow(self, temp_db_path):
@@ -84,16 +89,18 @@ class TestCompleteWorkflow:
         # 5. Add items to each feed
         for feed in feeds:
             for i in range(3):
-                item = FeedItem(
-                    feed_source_id=feed.id,
+                item = ArticleEntry(
+                    feed_id=feed.id,
                     guid=f"{feed.id}-item-{i}",
                     title=f"Article {i}",
+                    link=f"https://example.com/{feed.id}/article-{i}",
+                    pub_date=datetime.now(UTC),
                 )
-                db.add_feed_item(item)
+                db.add_article(item)
 
         # 6. Verify all items
         for feed in feeds:
-            items = db.get_feed_items(feed.id)
+            items = db.get_articles(feed.id)
             assert len(items) == 3
 
     def test_topic_organization_workflow(self, temp_db_path):
@@ -103,9 +110,14 @@ class TestCompleteWorkflow:
 
         # 1. Create topics
         topics = [
-            Topic(id="ai", name="Artificial Intelligence"),
-            Topic(id="ml", name="Machine Learning"),
-            Topic(id="nlp", name="Natural Language Processing", parent_topic_id="ai"),
+            TopicNode(id="ai", label="Artificial Intelligence", facet="domain"),
+            TopicNode(id="ml", label="Machine Learning", facet="domain"),
+            TopicNode(
+                id="nlp",
+                label="Natural Language Processing",
+                facet="subfield",
+                parents=["ai"],
+            ),
         ]
 
         for topic in topics:
@@ -157,16 +169,18 @@ class TestCompleteWorkflow:
         # 4. Add items to each
         for feed in feeds[:10]:  # Just first 10 for speed
             for i in range(50):
-                item = FeedItem(
-                    feed_source_id=feed.id,
+                item = ArticleEntry(
+                    feed_id=feed.id,
                     guid=f"{feed.id}-item-{i}",
                     title=f"Article {i}",
+                    link=f"https://example.com/{feed.id}/article-{i}",
+                    pub_date=datetime.now(UTC),
                 )
-                db.add_feed_item(item)
+                db.add_article(item)
 
         # 5. Verify item counts
         for feed in feeds[:10]:
-            items = db.get_feed_items(feed.id)
+            items = db.get_articles(feed.id, limit=50)
             assert len(items) == 50
 
 
@@ -174,31 +188,36 @@ class TestCompleteWorkflow:
 class TestDataExportWorkflow:
     """Test data export workflows."""
 
-    def test_export_feeds_to_yaml(self, temp_db_path, tmp_path):
-        """Test exporting feeds to YAML format."""
+    def test_export_feeds_to_json(self, temp_db_path, tmp_path):
+        """Test exporting feeds to JSON format."""
         db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
 
-        # Add some feeds
         feeds = [FeedSource(id=f"feed-{i}", title=f"Feed {i}") for i in range(5)]
 
         for feed in feeds:
             db.add_feed_source(feed)
 
-        # Export would happen here
-        # This is a placeholder for export functionality
-        assert len(db.get_all_feed_sources()) == 5
+        output_path = tmp_path / "feeds.json"
+        export_to_json(
+            {"sources": [feed.model_dump(mode="json") for feed in db.get_all_feed_sources()]},
+            output_path,
+        )
+
+        exported = json.loads(output_path.read_text(encoding="utf-8"))
+        assert [source["id"] for source in exported["sources"]] == [f"feed-{i}" for i in range(5)]
 
     def test_export_feeds_to_opml(self, temp_db_path, tmp_path):
         """Test exporting feeds to OPML format."""
         db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
 
-        # Add feeds with categories
         feeds = [
             FeedSource(
                 id=f"feed-{i}",
                 title=f"Feed {i}",
+                feed=f"https://example.com/feed-{i}.xml",
+                source_type=SourceType.BLOG,
                 topics=["ai", "ml"],
             )
             for i in range(5)
@@ -207,8 +226,20 @@ class TestDataExportWorkflow:
         for feed in feeds:
             db.add_feed_source(feed)
 
-        # Export functionality placeholder
-        assert len(db.get_all_feed_sources()) == 5
+        output_path = tmp_path / "feeds.opml"
+        output_path.write_text(
+            generate_categorized_opml(db.get_all_feed_sources(), title="Test Feeds"),
+            encoding="utf-8",
+        )
+
+        root = ET.fromstring(output_path.read_text(encoding="utf-8"))
+        body = root.find("body")
+        assert body is not None
+        blog_outline = body.find("outline")
+        assert blog_outline is not None
+        exported_feeds = blog_outline.findall("outline")
+        assert len(exported_feeds) == 5
+        assert exported_feeds[0].attrib["xmlUrl"] == "https://example.com/feed-0.xml"
 
 
 @pytest.mark.e2e
@@ -236,7 +267,7 @@ class TestErrorRecoveryWorkflow:
             error_message="Server error",
             fetch_duration_ms=100,
         )
-        db.add_fetch_log(failed_log)
+        db.add_feed_fetch_log(failed_log)
 
         # Log successful retry
         success_log = FeedFetchLog(
@@ -249,7 +280,7 @@ class TestErrorRecoveryWorkflow:
             items_new=10,
             fetch_duration_ms=1500,
         )
-        db.add_fetch_log(success_log)
+        db.add_feed_fetch_log(success_log)
 
         # Verify both logs exist
         logs = db.get_fetch_logs("test-feed")

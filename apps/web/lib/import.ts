@@ -196,6 +196,8 @@ export async function importOPML(file: File): Promise<ImportResult> {
             title: outline.getAttribute("title") || outline.getAttribute("text") || "Untitled Feed",
             description: outline.getAttribute("description") || undefined,
             link: outline.getAttribute("htmlUrl") || undefined,
+            topics: [],
+            tags: parseOpmlCategories(outline),
             lastSync: 0,
             syncInterval: 60, // 1 hour default
             enabled: true,
@@ -246,6 +248,8 @@ export async function importOPML(file: File): Promise<ImportResult> {
                 description: feedOutline.getAttribute("description") || undefined,
                 link: feedOutline.getAttribute("htmlUrl") || undefined,
                 folderId: folder.id,
+                topics: [],
+                tags: parseOpmlCategories(feedOutline),
                 lastSync: 0,
                 syncInterval: 60,
                 enabled: true,
@@ -354,6 +358,22 @@ function isValidExportData(data: unknown): boolean {
  */
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function parseOpmlCategories(outline: Element): string[] {
+  const category = outline.getAttribute("category");
+  if (!category) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      category
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
 }
 
 /**

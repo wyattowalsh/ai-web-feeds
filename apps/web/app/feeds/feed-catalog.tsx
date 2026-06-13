@@ -2,21 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, RadioTower, Search as SearchIcon } from "lucide-react";
+import { Download, ExternalLink, RadioTower, Search as SearchIcon, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { SourceAvatar } from "@/components/source-avatar";
 import type { FeedSource } from "@/lib/feeds-filters";
-import {
-  filterBySourceType,
-  getTopics,
-  filterByTopic,
-  filterByVerified,
-} from "@/lib/feeds-filters";
+import { filterBySourceType, getTopics, filterByVerified } from "@/lib/feeds-filters";
 import {
   buildReaderRouteHref,
   CANONICAL_CATALOG_PATH,
@@ -30,7 +26,7 @@ interface FeedCatalogProps {
   sourceTypes: string[];
   initialQuery: string;
   initialSourceType: string | null;
-  initialTopic: string | null;
+  initialTopics: string[];
   initialVerified: boolean | null;
 }
 
@@ -38,13 +34,13 @@ function buildReaderHref({
   feedIds,
   query,
   sourceType,
-  topic,
+  topics,
   verified,
 }: {
   feedIds: string[];
   query: string;
   sourceType: string | null;
-  topic: string | null;
+  topics: string[];
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
@@ -64,8 +60,8 @@ function buildReaderHref({
   if (verified !== null) {
     params.set("verified", String(verified));
   }
-  if (topic) {
-    params.set("topics", topic);
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
   }
 
   return buildReaderRouteHref(params);
@@ -75,13 +71,13 @@ function buildScopedSearchHref({
   feedIds,
   query,
   sourceType,
-  topic,
+  topics,
   verified,
 }: {
   feedIds: string[];
   query: string;
   sourceType: string | null;
-  topic: string | null;
+  topics: string[];
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
@@ -98,8 +94,8 @@ function buildScopedSearchHref({
   if (sourceType) {
     params.set("source_type", sourceType);
   }
-  if (topic) {
-    params.set("topics", topic);
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
   }
   if (verified !== null) {
     params.set("verified", String(verified));
@@ -129,11 +125,13 @@ function buildFeedReaderHref({
   feedId,
   query,
   sourceType,
+  topics,
   verified,
 }: {
   feedId: string;
   query: string;
   sourceType: string | null;
+  topics: string[];
   verified: boolean | null;
 }): string {
   const params = new URLSearchParams();
@@ -145,6 +143,9 @@ function buildFeedReaderHref({
   if (sourceType) {
     params.set("source_type", sourceType);
   }
+  if (topics.length > 0) {
+    params.set("topics", topics.join(","));
+  }
   if (verified !== null) {
     params.set("verified", String(verified));
   }
@@ -155,12 +156,12 @@ function buildFeedReaderHref({
 function buildActiveFilterSummary({
   query,
   sourceType,
-  topic,
+  topics,
   verified,
 }: {
   query: string;
   sourceType: string | null;
-  topic: string | null;
+  topics: string[];
   verified: boolean | null;
 }): string {
   const parts: string[] = [];
@@ -171,8 +172,10 @@ function buildActiveFilterSummary({
   if (sourceType) {
     parts.push(`Type ${sourceType}`);
   }
-  if (topic) {
-    parts.push(`Topic ${topic}`);
+  if (topics.length === 1) {
+    parts.push(`Topic ${topics[0]}`);
+  } else if (topics.length > 1) {
+    parts.push(`Topics ${topics.join(", ")}`);
   }
   if (verified === true) {
     parts.push("Verified only");
@@ -183,19 +186,67 @@ function buildActiveFilterSummary({
   return parts.length > 0 ? parts.join(" · ") : "No filters applied";
 }
 
+function parseTopicsParam(searchParams: URLSearchParams): string[] {
+  const topics = new Set<string>();
+
+  for (const value of searchParams.getAll("topics")) {
+    for (const topic of value.split(",")) {
+      const normalized = topic.trim().toLowerCase();
+      if (normalized) {
+        topics.add(normalized);
+      }
+    }
+  }
+
+  return Array.from(topics);
+}
+
+function filterByTopics(feeds: FeedSource[], topics: string[]): FeedSource[] {
+  if (topics.length === 0) {
+    return feeds;
+  }
+
+  return feeds.filter((feed) => {
+    const feedTopics = new Set(
+      [...(feed.topics ?? []), ...(feed.tags ?? [])].map((topic) => topic.toLowerCase()),
+    );
+    return topics.every((topic) => feedTopics.has(topic));
+  });
+}
+
+function buildOpmlHref(feedIds: string[], allFeedCount: number): string {
+  if (feedIds.length === allFeedCount) {
+    return "/api/exports/opml";
+  }
+
+  const params = new URLSearchParams({ format: "filtered" });
+  for (const feedId of feedIds) {
+    params.append("feed", feedId);
+  }
+
+  return `/api/exports/opml?${params.toString()}`;
+}
+
+function toggleTopic(topics: string[], topic: string): string[] {
+  return topics.includes(topic)
+    ? topics.filter((currentTopic) => currentTopic !== topic)
+    : [...topics, topic].sort();
+}
+
 export function FeedCatalog({
   feeds,
   sourceTypes,
   initialQuery,
   initialSourceType,
-  initialTopic,
+  initialTopics,
   initialVerified,
 }: FeedCatalogProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [selectedType, setSelectedType] = useState<string | null>(initialSourceType);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(initialTopic);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>(initialTopics);
+  const [topicQuery, setTopicQuery] = useState("");
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(initialVerified);
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
   const hasVerificationSignals = useMemo(
@@ -207,17 +258,14 @@ export function FeedCatalog({
   useEffect(() => {
     const nextQuery = normalizeSearchQuery(searchParams.get("q")) ?? "";
     const nextSourceType = searchParams.get("source_type")?.trim() || null;
-    const nextTopic =
-      searchParams.get("topics")?.split(",")[0]?.trim() ||
-      searchParams.get("topic")?.trim() ||
-      null;
+    const nextTopics = parseTopicsParam(searchParams);
     const nextVerified = hasVerificationSignals
       ? parseVerifiedSearchFilter(searchParams.get("verified")) ?? null
       : null;
 
     setSearchQuery(nextQuery);
     setSelectedType(nextSourceType);
-    setSelectedTopic(nextTopic);
+    setSelectedTopics(nextTopics);
     setVerifiedFilter(nextVerified);
   }, [hasVerificationSignals, searchParams]);
 
@@ -252,8 +300,33 @@ export function FeedCatalog({
     });
   };
 
+  const setTopicsParam = (topics: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("topic");
+    params.delete("topics");
+    if (!hasVerificationSignals) {
+      params.delete("verified");
+    }
+    if (topics.length > 0) {
+      params.set("topics", topics.join(","));
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${CANONICAL_SOURCES_PATH}?${nextQuery}` : CANONICAL_SOURCES_PATH, {
+      scroll: false,
+    });
+  };
+
   // Get all topics from feeds
   const allTopics = useMemo(() => getTopics(feeds), [feeds]);
+  const visibleTopicOptions = useMemo(() => {
+    const normalizedQuery = topicQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return allTopics;
+    }
+
+    return allTopics.filter((topic) => topic.toLowerCase().includes(normalizedQuery));
+  }, [allTopics, topicQuery]);
 
   // Apply filters
   const filteredFeeds = useMemo(() => {
@@ -263,7 +336,7 @@ export function FeedCatalog({
     result = filterBySourceType(result, selectedType);
 
     // Filter by topic
-    result = filterByTopic(result, selectedTopic);
+    result = filterByTopics(result, selectedTopics);
 
     // Filter by verification
     result = filterByVerified(result, effectiveVerifiedFilter);
@@ -283,7 +356,7 @@ export function FeedCatalog({
     }
 
     return result;
-  }, [effectiveVerifiedFilter, feeds, searchQuery, selectedTopic, selectedType]);
+  }, [effectiveVerifiedFilter, feeds, searchQuery, selectedTopics, selectedType]);
 
   const visibleFeedIds = useMemo(
     () =>
@@ -298,10 +371,10 @@ export function FeedCatalog({
         feedIds: visibleFeedIds,
         query: searchQuery,
         sourceType: selectedType,
-        topic: selectedTopic,
+        topics: selectedTopics,
         verified: effectiveVerifiedFilter,
       }),
-    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
+    [effectiveVerifiedFilter, searchQuery, selectedTopics, selectedType, visibleFeedIds],
   );
   const searchHref = useMemo(
     () =>
@@ -309,10 +382,14 @@ export function FeedCatalog({
         feedIds: visibleFeedIds,
         query: searchQuery,
         sourceType: selectedType,
-        topic: selectedTopic,
+        topics: selectedTopics,
         verified: effectiveVerifiedFilter,
       }),
-    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType, visibleFeedIds],
+    [effectiveVerifiedFilter, searchQuery, selectedTopics, selectedType, visibleFeedIds],
+  );
+  const opmlHref = useMemo(
+    () => buildOpmlHref(visibleFeedIds, feeds.length),
+    [feeds.length, visibleFeedIds],
   );
   const resetCatalogHref = CANONICAL_CATALOG_PATH;
   const browsePostsHref = useMemo(
@@ -321,7 +398,7 @@ export function FeedCatalog({
         feedIds: [],
         query: searchQuery,
         sourceType: null,
-        topic: null,
+        topics: [],
         verified: null,
       }),
     [searchQuery],
@@ -331,10 +408,10 @@ export function FeedCatalog({
       buildActiveFilterSummary({
         query: searchQuery,
         sourceType: selectedType,
-        topic: selectedTopic,
+        topics: selectedTopics,
         verified: effectiveVerifiedFilter,
       }),
-    [effectiveVerifiedFilter, searchQuery, selectedTopic, selectedType],
+    [effectiveVerifiedFilter, searchQuery, selectedTopics, selectedType],
   );
 
   return (
@@ -416,32 +493,69 @@ export function FeedCatalog({
           {allTopics.length > 0 && (
             <div>
               <label className="field-label">Topic</label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedTopic === null ? "default" : "outline"}
-                  size="sm"
-                  aria-pressed={selectedTopic === null}
-                  onClick={() => {
-                    setSelectedTopic(null);
-                    setParam("topics", null);
-                  }}
-                >
-                  All Topics
-                </Button>
-                {allTopics.slice(0, 10).map((topic) => (
-                  <Button
-                    key={topic}
-                    variant={selectedTopic === topic ? "default" : "outline"}
-                    size="sm"
-                    aria-pressed={selectedTopic === topic}
-                    onClick={() => {
-                      setSelectedTopic(topic);
-                      setParam("topics", topic);
+              <div className="flex flex-col gap-2">
+                <div className="grid gap-2 sm:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)]">
+                  <Input
+                    aria-label="Search topics"
+                    value={topicQuery}
+                    onChange={(event) => setTopicQuery(event.target.value)}
+                    placeholder="Search all topics"
+                  />
+                  <Select
+                    aria-label="Topic filter"
+                    value=""
+                    onChange={(event) => {
+                      const topic = event.target.value;
+                      if (!topic) {
+                        return;
+                      }
+                      const nextTopics = toggleTopic(selectedTopics, topic);
+                      setSelectedTopics(nextTopics);
+                      setTopicsParam(nextTopics);
+                      setTopicQuery("");
                     }}
                   >
-                    {topic}
-                  </Button>
-                ))}
+                    <option value="">
+                      {selectedTopics.length === 0 ? "All topics" : "Add another topic"}
+                    </option>
+                    {visibleTopicOptions.map((topic) => (
+                      <option key={topic} value={topic}>
+                        {topic}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                {selectedTopics.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTopics.map((topic) => (
+                      <Button
+                        key={topic}
+                        variant="secondary"
+                        size="sm"
+                        aria-pressed
+                        aria-label={`Remove ${topic} topic filter`}
+                        onClick={() => {
+                          const nextTopics = toggleTopic(selectedTopics, topic);
+                          setSelectedTopics(nextTopics);
+                          setTopicsParam(nextTopics);
+                        }}
+                      >
+                        {topic}
+                        <X className="size-3.5" />
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTopics([]);
+                        setTopicsParam([]);
+                      }}
+                    >
+                      Clear topics
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
           )}
@@ -503,6 +617,12 @@ export function FeedCatalog({
           <Link href={searchHref} className={buttonVariants({ variant: "outline" })}>
             Search recent posts
           </Link>
+          {visibleFeedIds.length > 0 ? (
+            <a href={opmlHref} className={buttonVariants({ variant: "secondary" })}>
+              <Download className="size-4" />
+              Export OPML
+            </a>
+          ) : null}
         </div>
       </div>
 
@@ -587,6 +707,7 @@ export function FeedCatalog({
                       feedId: feed.id,
                       query: searchQuery,
                       sourceType: selectedType,
+                      topics: selectedTopics,
                       verified: effectiveVerifiedFilter,
                     })}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"

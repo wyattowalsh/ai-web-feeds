@@ -208,32 +208,17 @@ describe("/api/search route", () => {
     expect(searchArticlesInCorpusMock).not.toHaveBeenCalled();
   });
 
-  it("treats legacy semantic scope as article search", async () => {
+  it("rejects unsupported semantic scope on GET", async () => {
     const { GET } = await loadRouteModule();
-    searchArticlesInCorpusMock.mockResolvedValue({
-      scope: "articles",
-      results: [],
-      meta: {
-        mode: "bounded",
-        bounded: true,
-        candidate_sources: 0,
-        scanned_sources: 0,
-        scan_limit: 18,
-        per_source_limit: null,
-        truncated: false,
-      },
-    });
 
     const response = await GET(
       createRequest("http://localhost/api/search?q=agents&scope=semantic"),
     );
 
-    expect(response.status).toBe(200);
-    expect(searchArticlesInCorpusMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        q: "agents",
-      }),
-    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: "Invalid search scope" });
+    expect(searchCatalogSourcesMock).not.toHaveBeenCalled();
+    expect(searchArticlesInCorpusMock).not.toHaveBeenCalled();
   });
 
   it("binds anonymous identity and forwards user_id for POST analytics", async () => {
@@ -246,7 +231,7 @@ describe("/api/search route", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: "test query",
-          type: "full_text",
+          type: "sources",
           filters: {},
           clicked_results: [],
           result_count: 12,
@@ -279,7 +264,7 @@ describe("/api/search route", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: "  agent   systems  ",
-          type: "semantic",
+          type: "articles",
           filters: {
             topics: ["ml", " agents ", "ml"],
             verified: "false",
@@ -317,7 +302,7 @@ describe("/api/search route", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: "test query",
-          type: "full_text",
+          type: "sources",
           filters: {},
           clicked_results: [],
         }),
@@ -341,7 +326,7 @@ describe("/api/search route", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: "test query",
-          type: "full_text",
+          type: "sources",
           filters: {},
           clicked_results: [],
         }),

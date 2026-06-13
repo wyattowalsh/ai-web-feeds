@@ -45,9 +45,9 @@ Our CI/CD pipeline enforces:
 
 3. **CLI Integration**
 
-   - Feed validation (`uv run aiwebfeeds validate --all`)
-   - Analytics generation (`uv run aiwebfeeds analytics`)
-   - Export verification (`uv run aiwebfeeds export`)
+   - Feed validation (`uv run ai-web-feeds validate all`)
+   - Analytics generation (`uv run ai-web-feeds analytics summary`)
+   - Export verification (`uv run ai-web-feeds export all --output-dir data`)
 
 4. **Test Suite**
    - Unit tests (≥90% coverage required)
@@ -103,7 +103,7 @@ cd apps/web && pnpm lint
 uv run pytest --cov=ai_web_feeds --cov-report=html --cov-report=xml
 
 # Validate feeds after tests
-uv run aiwebfeeds validate --all --strict
+uv run ai-web-feeds validate all --strict
 ```
 
 **Artifacts**:
@@ -127,19 +127,19 @@ uv run aiwebfeeds validate --all --strict
 
 ```bash
 # 1. Schema validation
-uv run aiwebfeeds validate --schema --strict
+uv run ai-web-feeds validate feeds --strict
 
 # 2. URL reachability checks
-uv run aiwebfeeds validate --check-urls --timeout 30
+uv run ai-web-feeds validate http
 
 # 3. Feed parsing validation
-uv run aiwebfeeds validate --parse-feeds
+uv run ai-web-feeds validate feeds
 
 # 4. OPML export verification
-uv run aiwebfeeds opml export --validate
+uv run ai-web-feeds opml all --output data/feeds.opml
 
 # 5. Analytics generation
-uv run aiwebfeeds analytics --output data/analytics.json
+uv run ai-web-feeds analytics export --output data/analytics.csv
 ```
 
 **Notifications**: Posts summary to Slack/Discord on failures
@@ -163,10 +163,10 @@ uv run aiwebfeeds analytics --output data/analytics.json
 
 ```bash
 # Validate specific feeds
-uv run aiwebfeeds validate --feeds "https://example.com/feed.xml"
+uv run ai-web-feeds validate http --feed-id openai-blog
 
 # Validate with strict schema
-uv run aiwebfeeds validate --schema --strict --feeds-file data/feeds.yaml
+uv run ai-web-feeds validate feeds --file data/feeds.yaml --strict
 ```
 
 **Auto-labels**: Adds `feeds:valid` or `feeds:invalid` label
@@ -181,7 +181,7 @@ uv run aiwebfeeds validate --schema --strict --feeds-file data/feeds.yaml
 
 1. Parses feed URL from issue body
 2. Validates feed structure
-3. Enriches metadata with `aiwebfeeds enrich`
+3. Enriches metadata with `ai-web-feeds enrich`
 4. Creates PR with new feed
 5. Auto-assigns reviewers
 
@@ -192,8 +192,8 @@ uv run aiwebfeeds validate --schema --strict --feeds-file data/feeds.yaml
 FEED_URL=$(gh issue view $ISSUE_NUMBER --json body -q .body | grep -oP 'https?://\S+')
 
 # Validate and enrich
-uv run aiwebfeeds validate --feeds "$FEED_URL"
-uv run aiwebfeeds enrich --url "$FEED_URL" --output data/feeds.yaml
+uv run ai-web-feeds validate http --feed-id <feed-id>
+uv run ai-web-feeds enrich one <feed-id> --input data/feeds.yaml
 ```
 
 ---
@@ -227,10 +227,10 @@ uv run aiwebfeeds enrich --url "$FEED_URL" --output data/feeds.yaml
 
    ```bash
    # Re-enrich feeds to fix metadata
-   uv run aiwebfeeds enrich --all --fix-schema
+   uv run ai-web-feeds enrich all
 
    # Regenerate OPML with correct structure
-   uv run aiwebfeeds opml export --fix-structure
+   uv run ai-web-feeds opml categorized --output data/feeds.categorized.opml
    ```
 
 4. **Auto-commit**: Pushes fixes back to PR branch
@@ -258,10 +258,10 @@ uv run aiwebfeeds enrich --url "$FEED_URL" --output data/feeds.yaml
 ```yaml
 # Runs different CLI commands based on changes
 if: contains(steps.changes.outputs.files, 'data/feeds.yaml')
-run: uv run aiwebfeeds validate --incremental
+run: uv run ai-web-feeds validate all
 
 if: contains(steps.changes.outputs.files, 'packages/ai_web_feeds/')
-run: uv run aiwebfeeds test --coverage
+run: uv run ai-web-feeds test coverage
 
 if: contains(steps.changes.outputs.files, 'apps/web/')
 run: cd apps/web && pnpm lint && pnpm build
@@ -324,7 +324,7 @@ run: cd apps/web && pnpm lint && pnpm build
 
 ```bash
 # Generate labels from feed changes
-uv run aiwebfeeds analytics --changed-feeds --output labels.json
+uv run ai-web-feeds analytics --changed-feeds --output labels.json
 ```
 
 ---
@@ -378,9 +378,9 @@ uv run aiwebfeeds analytics --changed-feeds --output labels.json
 
 ```bash
 # Verify CLI works before release
-uv run aiwebfeeds --version
-uv run aiwebfeeds validate --all
-uv run aiwebfeeds test --quick
+uv run ai-web-feeds --version
+uv run ai-web-feeds validate all
+uv run ai-web-feeds test quick
 ```
 
 ---
@@ -422,71 +422,71 @@ All workflows use these CLI commands:
 
 ```bash
 # Validate all feeds
-uv run aiwebfeeds validate --all
+uv run ai-web-feeds validate all
 
 # Validate specific feeds
-uv run aiwebfeeds validate --feeds "url1" "url2"
+uv run ai-web-feeds validate http --feed-id <feed-id>
 
 # Schema validation only
-uv run aiwebfeeds validate --schema
+uv run ai-web-feeds validate feeds
 
 # Check URL accessibility
-uv run aiwebfeeds validate --check-urls
+uv run ai-web-feeds validate http
 
 # Strict mode (fail on warnings)
-uv run aiwebfeeds validate --strict
+uv run ai-web-feeds validate all --strict
 ```
 
 ### Analytics
 
 ```bash
 # Generate analytics
-uv run aiwebfeeds analytics
+uv run ai-web-feeds analytics summary
 
 # Output to file
-uv run aiwebfeeds analytics --output data/analytics.json
+uv run ai-web-feeds analytics export --output data/analytics.csv
 
 # Specific metrics
-uv run aiwebfeeds analytics --metrics "count,categories,languages"
+uv run ai-web-feeds analytics summary
 ```
 
 ### Export
 
 ```bash
 # Export to OPML
-uv run aiwebfeeds opml export --output feeds.opml
+uv run ai-web-feeds opml all --output feeds.opml
 
 # Export to JSON
-uv run aiwebfeeds export --format json --output feeds.json
+uv run ai-web-feeds export json --output feeds.json
 
 # Export with validation
-uv run aiwebfeeds export --validate
+uv run ai-web-feeds export all --output-dir data
 ```
 
 ### Enrichment
 
 ```bash
 # Enrich all feeds
-uv run aiwebfeeds enrich --all
+uv run ai-web-feeds enrich all
 
 # Enrich specific feed
-uv run aiwebfeeds enrich --url "https://example.com/feed.xml"
+uv run ai-web-feeds enrich one openai-blog
 
 # Fix schema issues
-uv run aiwebfeeds enrich --fix-schema
+uv run ai-web-feeds enrich all
 ```
 
 ### Testing
 
 ```bash
 # Run test suite via CLI
-uv run aiwebfeeds test
+uv run ai-web-feeds test
 
 # Quick tests only
-uv run aiwebfeeds test --quick
+uv run ai-web-feeds test quick
 
 # With coverage
-uv run aiwebfeeds test --coverage
+uv run ai-web-feeds test coverage
 ```
 
 ---
@@ -540,13 +540,13 @@ Add to README:
 
 ### Workflow Fails on CLI Command
 
-**Problem**: `aiwebfeeds: command not found`
+**Problem**: `ai-web-feeds: command not found`
 
 **Solution**: Ensure workflow uses `uv run`:
 
 ```yaml
 - name: Validate feeds
-  run: uv run aiwebfeeds validate --all
+  run: uv run ai-web-feeds validate all
 ```
 
 ### Coverage Below Threshold
@@ -567,7 +567,7 @@ Add to README:
 
 ```yaml
 - name: Validate with longer timeout
-  run: uv run aiwebfeeds validate --check-urls --timeout 60
+  run: uv run ai-web-feeds validate http
 ```
 
 ---

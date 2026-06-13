@@ -5,9 +5,12 @@ import re
 import xml.etree.ElementTree as ET  # nosec B405
 from collections.abc import Callable
 from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
+from hashlib import sha256
+from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, cast
-from urllib.parse import parse_qs, quote, urlparse
+from typing import Any, ClassVar, cast
+from urllib.parse import parse_qs, quote, urljoin, urlparse
 
 import httpx
 import yaml
@@ -19,6 +22,94 @@ from ai_web_feeds.models import (
     FeedFormat,
     FeedSource,
 )
+
+
+class _FeedLinkParser(HTMLParser):
+    """Extract feed alternate links from an HTML document."""
+
+    FEED_TYPES: ClassVar[set[str]] = {
+        "application/rss+xml",
+        "application/atom+xml",
+        "application/feed+json",
+        "application/json",
+    }
+
+    def __init__(self, base_url: str) -> None:
+        super().__init__(convert_charrefs=True)
+        self.base_url = base_url
+        self.links: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() != "link":
+            return
+
+        attr_map = {key.lower(): value for key, value in attrs if value is not None}
+        rel_values = {value.lower() for value in attr_map.get("rel", "").split()}
+        link_type = attr_map.get("type", "").lower()
+        href = attr_map.get("href")
+
+        if "alternate" in rel_values and href and link_type in self.FEED_TYPES:
+            self.links.append(urljoin(self.base_url, href))
+
+
+def sanitize_url(url: str) -> str:
+    """Normalize a user-provided URL string for deterministic comparisons."""
+
+    normalized = url.strip()
+    if normalized.endswith("/") and urlparse(normalized).path in {"", "/"}:
+        return normalized.rstrip("/")
+    return normalized.rstrip("/") if normalized.endswith("/") else normalized
+
+
+def sanitize_text(text: object) -> str:
+    """Collapse whitespace in arbitrary text-like input."""
+
+    return re.sub(r"\s+", " ", str(text)).strip()
+
+
+def generate_feed_id(url: str) -> str:
+    """Generate a stable, readable feed ID from a URL."""
+
+    normalized = sanitize_url(url).lower()
+    parsed = urlparse(normalized)
+    host = parsed.netloc.removeprefix("www.")
+    path = parsed.path.strip("/").replace("/", "-")
+    slug_source = "-".join(part for part in (host, path) if part) or "feed"
+    slug = re.sub(r"[^a-z0-9]+", "-", slug_source).strip("-") or "feed"
+    digest = sha256(normalized.encode("utf-8")).hexdigest()[:10]
+    return f"{slug[:48].rstrip('-')}-{digest}"
+
+
+def parse_datetime(value: str) -> datetime | None:
+    """Parse common feed timestamp formats into timezone-aware datetimes."""
+
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    raw = value.strip()
+    normalized = raw[:-1] + "+00:00" if raw.endswith("Z") else raw
+
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        try:
+            parsed = parsedate_to_datetime(raw)
+        except (TypeError, ValueError):
+            return None
+
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed
+
+
+def is_valid_url(url: str) -> bool:
+    """Return whether a URL is an HTTP(S) URL with a network location."""
+
+    if not isinstance(url, str) or not url.strip():
+        return False
+    parsed = urlparse(url.strip())
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
 
 # ============================================================================
 # RSSHub Integration
@@ -653,6 +744,14 @@ def generate_platform_feed_url(
     return None
 
 
+def _extract_feed_links(html: str, base_url: str) -> list[str]:
+    """Return feed links advertised by HTML alternate-link tags."""
+
+    parser = _FeedLinkParser(base_url)
+    parser.feed(html)
+    return list(dict.fromkeys(parser.links))
+
+
 # ============================================================================
 # Feed Discovery and Enrichment
 # ============================================================================
@@ -688,30 +787,17 @@ async def discover_feed_url(
             response = await client.get(site_url, follow_redirects=True)
             response.raise_for_status()
 
-            # Look for feed links in HTML
-            html = response.text.lower()
+            for feed_url in _extract_feed_links(response.text, str(response.url)):
+                try:
+                    feed_resp = await client.get(feed_url, follow_redirects=True)
+                    if feed_resp.status_code == 200:
+                        content_type = feed_resp.headers.get("content-type", "")
+                        if any(t in content_type for t in ["xml", "rss", "atom", "feed", "json"]):
+                            logger.info(f"Discovered feed from HTML metadata: {feed_url}")
+                            return feed_url
+                except httpx.HTTPError:
+                    continue
 
-            # Common feed link patterns
-            patterns = [
-                'type="application/rss+xml"',
-                'type="application/atom+xml"',
-                'type="application/json"',
-                "/rss.xml",
-                "/feed.xml",
-                "/atom.xml",
-                "/feed/",
-                "/feeds/",
-            ]
-
-            for pattern in patterns:
-                if pattern in html:
-                    # Extract the href (simplified - would need proper HTML parsing)
-                    logger.info(f"Found potential feed pattern: {pattern}")
-                    # This is a placeholder - real implementation would parse HTML
-                    # For now, we'll just return common feed URLs
-                    break
-
-            # Try common feed URLs
             common_feeds = [
                 f"{site_url.rstrip('/')}/feed",
                 f"{site_url.rstrip('/')}/feed.xml",
@@ -740,7 +826,6 @@ async def discover_feed_url(
 
 async def enrich_feed_source(
     feed_source: dict[str, Any],
-    use_rsshub: bool = True,
     rsshub_instance: str = "https://rsshub.app",
 ) -> dict[str, Any]:
     """Enrich a feed source with additional metadata.
@@ -749,7 +834,7 @@ async def enrich_feed_source(
     - Platform detection
     - Feed URL generation (for known platforms)
     - Feed discovery (for websites)
-    - RSSHub fallback (for platforms without native feeds)
+    - RSSHub generation when explicitly requested by `discover.strategy: rsshub`
     - Title extraction (if not provided)
     - Format detection
     - Metadata
@@ -757,7 +842,6 @@ async def enrich_feed_source(
     Args:
         feed_source: Minimal feed source dict with 'url' and 'topics'.
                     Optional 'title' and 'notes' can be provided to override auto-enrichment.
-        use_rsshub: Whether to use RSSHub as fallback for platforms without native feeds
         rsshub_instance: RSSHub instance URL (default: public instance)
 
     Returns:
@@ -776,6 +860,9 @@ async def enrich_feed_source(
 
     platform_config = enriched.get("platform_config")
     enriched["meta"] = enriched.get("meta", {})
+    discover_value = enriched.get("discover")
+    discover_config = discover_value if isinstance(discover_value, dict) else {}
+    rsshub_requested = discover_config.get("strategy") == "rsshub"
 
     # Step 1: Detect platform
     platform = detect_platform(input_url)
@@ -797,7 +884,6 @@ async def enrich_feed_source(
 
     # Try platform-specific feed generation
     elif platform and platform not in ["instagram", "tiktok", "telegram", "linkedin", "mastodon"]:
-        # These platforms don't have native RSS, will use RSSHub later
         platform_feed_url = generate_platform_feed_url(input_url, platform, platform_config)
         if platform_feed_url:
             feed_url = platform_feed_url
@@ -817,8 +903,8 @@ async def enrich_feed_source(
         except Exception as e:
             logger.warning(f"Feed discovery failed for {input_url}: {e}")
 
-    # Step 4: RSSHub fallback for platforms without native feeds
-    if not feed_url and use_rsshub and platform:
+    # Step 4: explicit RSSHub generation for platforms without native feeds
+    if not feed_url and rsshub_requested and platform:
         rsshub_url = generate_rsshub_url(input_url, platform, rsshub_instance)
         if rsshub_url:
             feed_url = rsshub_url
@@ -969,7 +1055,7 @@ def generate_opml(feed_sources: list[FeedSource], title: str = "AI Web Feeds") -
 def generate_categorized_opml(
     feed_sources: list[FeedSource], title: str = "AI Web Feeds (Categorized)"
 ) -> str:
-    """Generate categorized OPML XML from feed sources.
+    """Generate topic-grouped OPML XML from feed sources.
 
     Args:
         feed_sources: List of FeedSource objects
@@ -991,20 +1077,18 @@ def generate_categorized_opml(
     )
     ET.SubElement(head, "ownerName").text = "AI Web Feeds"
 
-    # Body - organize by source_type
     body = ET.SubElement(opml, "body")
 
-    # Group feeds by source_type
-    categories: dict[str, list[FeedSource]] = {}
+    topic_groups: dict[str, list[FeedSource]] = {}
     for feed in feed_sources:
-        category = feed.source_type.value if feed.source_type else "Uncategorized"
-        categories.setdefault(category, []).append(feed)
+        topics = feed.topics or ["Uncategorized"]
+        for topic in topics:
+            topic_groups.setdefault(topic, []).append(feed)
 
-    # Create outlines for each category
-    for category, feeds in sorted(categories.items()):
+    for topic, feeds in sorted(topic_groups.items()):
         category_outline = ET.SubElement(body, "outline")
-        category_outline.set("text", category.title())
-        category_outline.set("title", category.title())
+        category_outline.set("text", topic)
+        category_outline.set("title", topic)
 
         for feed in sorted(feeds, key=lambda f: f.title):
             feed_outline = ET.SubElement(category_outline, "outline")
@@ -1066,8 +1150,8 @@ def generate_enriched_schema() -> dict[str, Any]:
         "properties": {
             "schema_version": {
                 "type": "string",
-                "pattern": "^feeds-enriched-1\\.[0-9]+\\.[0-9]+$",
-                "default": "feeds-enriched-1.0.0",
+                "pattern": "^feeds\\.enriched-3\\.[0-9]+\\.[0-9]+$",
+                "default": "feeds.enriched-3.0.0",
             },
             "document_meta": {
                 "type": "object",
@@ -1083,9 +1167,10 @@ def generate_enriched_schema() -> dict[str, Any]:
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "required": ["id", "title"],
+                    "required": ["id", "url", "title", "source_type", "topics"],
                     "properties": {
                         "id": {"type": "string"},
+                        "url": {"type": "string"},
                         "feed": {"type": "string"},
                         "site": {"type": "string"},
                         "title": {"type": "string"},

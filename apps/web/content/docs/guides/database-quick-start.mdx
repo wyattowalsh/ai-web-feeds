@@ -29,7 +29,7 @@ uv run alembic upgrade head
 from ai_web_feeds.data_sync import DataSyncOrchestrator
 from ai_web_feeds import DatabaseManager
 
-db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
 sync = DataSyncOrchestrator(db)
 
 # Load feeds.yaml and topics.yaml into database
@@ -45,7 +45,7 @@ print(f"Loaded {results['feeds_loaded']} feeds and {results['topics_loaded']} to
 from ai_web_feeds import DatabaseManager
 from ai_web_feeds.analytics import FeedAnalytics
 
-db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
 
 with db.get_session() as session:
     analytics = FeedAnalytics(session)
@@ -142,12 +142,13 @@ with db.get_session() as session:
 ### Basic Analytics
 
 ```python
-from ai_web_feeds import DatabaseManager
+from ai_web_feeds import DatabaseManager, upgrade_database_to_head
 from ai_web_feeds.analytics import FeedAnalytics
 
 # Initialize
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
-db.create_db_and_tables()
+database_url = "sqlite:///data/ai-web-feeds.db"
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 
 # Run analytics
 with db.get_session() as session:
@@ -246,7 +247,7 @@ print(f"Exported to: {output_path}")
 ```python
 from ai_web_feeds import DatabaseManager
 
-db = DatabaseManager("sqlite:///../../data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///../../data/ai-web-feeds.db")
 
 with db.get_session() as session:
     from ai_web_feeds.models import FeedSource
@@ -274,10 +275,10 @@ uv run alembic history
 
 ```bash
 # SQLite backup
-cp data/aiwebfeeds.db data/aiwebfeeds.db.backup
+cp data/ai-web-feeds.db data/ai-web-feeds.db.backup
 
 # Or use SQLite backup command
-sqlite3 data/aiwebfeeds.db ".backup data/aiwebfeeds.db.backup"
+sqlite3 data/ai-web-feeds.db ".backup data/ai-web-feeds.db.backup"
 ```
 
 ## Migration Strategy
@@ -285,18 +286,8 @@ sqlite3 data/aiwebfeeds.db ".backup data/aiwebfeeds.db.backup"
 ### Initial Setup (First Time)
 
 ```bash
-# 1. Create tables
-cd packages/ai_web_feeds
-uv run python -c "from ai_web_feeds import DatabaseManager; db = DatabaseManager(); db.create_db_and_tables()"
-
-# 2. Initialize Alembic
-uv run alembic init alembic
-
-# 3. Create initial migration
-uv run alembic revision --autogenerate -m "initial_schema"
-
-# 4. Apply migration
-uv run alembic upgrade head
+# Upgrade to the reviewed migration head
+uv run python -c "from ai_web_feeds import upgrade_database_to_head; upgrade_database_to_head()"
 
 # 5. Load data
 uv run python -c "from ai_web_feeds.data_sync import DataSyncOrchestrator; from ai_web_feeds import DatabaseManager; sync = DataSyncOrchestrator(DatabaseManager()); sync.full_sync()"
@@ -332,14 +323,14 @@ uv run pytest -m "not slow" -v
 
 ## File Reference
 
-| File                    | Purpose                                           |
-| ----------------------- | ------------------------------------------------- |
-| `models.py`             | Core database models (FeedSource, FeedItem, etc.) |
-| `models_advanced.py`    | Advanced models (health, quality, embeddings)     |
-| `analytics/core.py`     | Core analytics functions                          |
-| `analytics/advanced.py` | ML-powered analytics                              |
-| `data_sync.py`          | YAML ↔ Database synchronization                  |
-| `storage.py`            | Database connection management                    |
+| File                    | Purpose                                                          |
+| ----------------------- | ---------------------------------------------------------------- |
+| `models.py`             | Core database models (FeedSource, ArticleEntry, TopicNode, etc.) |
+| `models_advanced.py`    | Advanced models (health, quality, embeddings)                    |
+| `analytics/core.py`     | Core analytics functions                                         |
+| `analytics/advanced.py` | ML-powered analytics                                             |
+| `data_sync.py`          | YAML ↔ Database synchronization                                 |
+| `storage.py`            | Database connection management                                   |
 
 ## Related Documentation
 

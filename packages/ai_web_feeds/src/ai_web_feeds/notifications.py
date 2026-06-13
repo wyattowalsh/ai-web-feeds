@@ -5,17 +5,25 @@ for real-time alerts.
 """
 
 from datetime import UTC, datetime, timedelta
+from typing import Protocol
 
 from loguru import logger
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import (
-    FeedEntry,
+    ArticleEntry,
     Notification,
     NotificationType,
     TrendingTopic,
 )
 from ai_web_feeds.storage import DatabaseManager
+
+
+class NotificationBroadcaster(Protocol):
+    """Async delivery target for live notification fanout."""
+
+    async def broadcast_notification(self, user_id: str, notification: Notification) -> None:
+        """Broadcast a notification to one user."""
 
 
 class NotificationManager:
@@ -25,22 +33,25 @@ class NotificationManager:
         self,
         db: DatabaseManager,
         settings: Settings,
+        broadcaster: NotificationBroadcaster | None = None,
     ):
         """Initialize notification manager.
 
         Args:
             db: Database manager instance
             settings: Application settings
+            broadcaster: Optional live delivery target, such as WebSocketServer.
         """
         self.db = db
         self.settings = settings
+        self.broadcaster = broadcaster
         self.bundle_threshold = settings.phase3b.notification_bundle_threshold
         self.bundle_window_seconds = settings.phase3b.notification_bundle_window_seconds
 
     async def notify_new_articles(
         self,
         feed_id: str,
-        articles: list[FeedEntry],
+        articles: list[ArticleEntry],
     ) -> None:
         """Create notifications for new articles.
 
@@ -48,13 +59,13 @@ class NotificationManager:
 
         Args:
             feed_id: Feed ID
-            articles: List of new FeedEntry objects
+            articles: List of new ArticleEntry objects
         """
         if not articles:
             return
 
-        # Get users following this feed
-        followers = self.db.get_feed_followers(feed_id)
+        # Get users following this source.
+        followers = self.db.get_source_followers(feed_id)
         if not followers:
             logger.debug(f"No followers for feed {feed_id}, skipping notifications")
             return
@@ -133,14 +144,19 @@ class NotificationManager:
         )
 
     async def _broadcast_notification(self, notification: Notification) -> None:
-        """Broadcast notification via WebSocket.
+        """Broadcast notification through the configured live delivery target.
 
         Args:
             notification: Notification to broadcast
         """
-        # TODO: Implement WebSocket broadcasting in websocket_server.py
-        # For now, just log
-        logger.debug(f"Broadcasting notification {notification.id} to user {notification.user_id}")
+        if self.broadcaster is None:
+            logger.debug(
+                f"Notification {notification.id} queued for user "
+                f"{notification.user_id}; live broadcaster is not configured"
+            )
+            return
+
+        await self.broadcaster.broadcast_notification(notification.user_id, notification)
 
     def cleanup_old_notifications(self) -> int:
         """Delete notifications older than retention period.
@@ -151,7 +167,6 @@ class NotificationManager:
         retention_days = self.settings.phase3b.notification_retention_days
         cutoff_date = datetime.now(UTC) - timedelta(days=retention_days)
 
-        # TODO: Implement bulk delete in storage.py
-        # For now, return 0
-        logger.info(f"Cleaned up notifications older than {cutoff_date}")
-        return 0
+        deleted_count = self.db.delete_notifications_before(cutoff_date)
+        logger.info(f"Cleaned up {deleted_count} notifications older than {cutoff_date}")
+        return deleted_count

@@ -268,7 +268,7 @@ python scripts/test-feed-submission.py \
 ✅ Schema validation passed
 ✅ No duplicate entry found
 
-📝 Preview of feed entry:
+📝 Preview of article:
 ---
 - id: "example-blog"
   feed: "https://example.com/feed.xml"
@@ -415,8 +415,8 @@ Solution:
 # Test feed URL
 curl -I https://example.com/feed.xml
 
-# Check with Python
-python -c "
+# Check with Python through uv
+uv run python -c "
 import requests
 resp = requests.get('https://example.com/feed.xml', timeout=10)
 print(f'Status: {resp.status_code}')
@@ -432,8 +432,8 @@ Solution:
 # List valid topics
 cat data/topics.yaml | grep "^  - id:"
 
-# Or use Python
-python -c "
+# Or use Python through uv
+uv run python -c "
 import yaml
 with open('data/topics.yaml') as f:
     topics = yaml.safe_load(f)

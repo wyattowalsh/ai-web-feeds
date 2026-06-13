@@ -74,7 +74,7 @@ self.addEventListener("activate", (event) => {
 });
 
 /**
- * Fetch event - serve from cache, fallback to network
+ * Fetch event - serve from cache, then use network when needed
  */
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -201,7 +201,7 @@ self.addEventListener("message", (event) => {
 // ============================================================================
 
 /**
- * Cache first, fallback to network
+ * Cache first, then network
  */
 async function cacheFirst(request, cacheName = DYNAMIC_CACHE, maxSize = MAX_DYNAMIC_CACHE_SIZE) {
   try {
@@ -238,7 +238,7 @@ async function cacheFirst(request, cacheName = DYNAMIC_CACHE, maxSize = MAX_DYNA
 }
 
 /**
- * Network first, fallback to cache
+ * Network first, then cache
  */
 async function networkFirst(request) {
   try {

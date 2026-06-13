@@ -159,7 +159,7 @@ class WebSocketServer:
 
         Args:
             user_id: User ID (localStorage UUID)
-            topic_id: Topic ID
+            topic_id: TopicNode ID
             z_score: Z-score value
             article_count: Number of articles
         """

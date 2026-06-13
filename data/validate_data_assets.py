@@ -13,7 +13,7 @@ from defusedxml import ElementTree as ET
 from jsonschema import Draft202012Validator
 
 try:
-    from ai_web_feeds.config import DEFAULT_DATABASE_FILENAME, LEGACY_DATABASE_FILENAME
+    from ai_web_feeds.config import DEFAULT_DATABASE_FILENAME
     from ai_web_feeds.export import (
         build_export_data,
         build_opml_category_map,
@@ -29,7 +29,6 @@ try:
     )
 except Exception as exc:  # pragma: no cover - exercised by CLI/runtime environment
     DEFAULT_DATABASE_FILENAME = "ai-web-feeds.db"
-    LEGACY_DATABASE_FILENAME = "aiwebfeeds.db"
     build_export_data = None
     build_opml_category_map = None
     render_opml = None
@@ -42,12 +41,41 @@ except Exception as exc:  # pragma: no cover - exercised by CLI/runtime environm
 else:
     IMPORT_ERROR = None
 
-_ALLOWED_DATABASE_FILENAMES = frozenset({DEFAULT_DATABASE_FILENAME, LEGACY_DATABASE_FILENAME})
+_ALLOWED_DATABASE_FILENAMES = frozenset({DEFAULT_DATABASE_FILENAME})
 _EXPECTED_HEALTH_DISTRIBUTION_KEYS = frozenset({"healthy", "moderate", "unhealthy"})
 _EXPECTED_TRENDING_TOPIC_FIELDS = frozenset(
     {"topic", "feed_count", "validation_frequency", "avg_health_score"}
 )
 _URL_TITLE_PREFIXES = ("http://", "https://")
+_ARTICLE_CORPUS_SCHEMA_VERSION = "articles-3.0.0"
+_REQUIRED_V3_SQLITE_TABLES = frozenset(
+    {
+        "source_topics",
+        "topic_edges",
+        "article_topics",
+        "article_raw_terms",
+        "pipeline_runs",
+        "pipeline_stage_runs",
+        "asset_manifests",
+        "quarantine_records",
+        "data_quality_results",
+        "user_article_states",
+        "user_topic_preferences",
+        "sync_events",
+    }
+)
+_REQUIRED_ARTICLE_COLUMNS = frozenset(
+    {
+        "topics",
+        "raw_categories",
+        "guid_hash",
+        "link_hash",
+        "canonical_url",
+        "first_seen_at",
+        "last_seen_at",
+    }
+)
+_REQUIRED_TOPIC_COLUMNS = frozenset({"label", "facet", "parents", "relations"})
 
 
 def _ok(message: str) -> None:
@@ -785,14 +813,117 @@ def validate_sample_analytics_data(
             seen_topic_snapshots.add(topic_snapshot_key)
 
     if errors:
-        _fail(f"{description}: Analytics model compatibility failed")
+        _fail(f"{description}: Analytics model integrity failed")
         for error in errors[:10]:
             sys.stdout.write(f"  - {error}\n")
         return False
 
-    _ok(f"{description}: Compatible with AnalyticsSnapshot and TopicStats models")
+    _ok(f"{description}: Valid AnalyticsSnapshot and TopicStats payloads")
     sys.stdout.write(f"  - {len(snapshots)} AnalyticsSnapshot payloads\n")
     sys.stdout.write(f"  - {len(topic_stats)} TopicStats payloads\n")
+    return True
+
+
+def validate_article_corpus(
+    filepath: Path,
+    description: str,
+    feed_ids: set[str],
+    topic_ids: set[str],
+) -> bool:
+    """Validate the generated article corpus used by the standalone web reader."""
+    try:
+        payload = load_json_file(filepath)
+    except Exception as exc:
+        _fail(f"{description}: Failed - {exc}")
+        return False
+
+    if not isinstance(payload, dict):
+        _fail(f"{description}: Corpus root must be an object")
+        return False
+
+    metadata = payload.get("metadata")
+    articles = payload.get("articles")
+    errors: list[str] = []
+
+    if not isinstance(metadata, dict):
+        errors.append("metadata must be an object")
+        metadata = {}
+    if not isinstance(articles, list):
+        errors.append("articles must be an array")
+        articles = []
+
+    schema_version = metadata.get("schema_version")
+    if schema_version != _ARTICLE_CORPUS_SCHEMA_VERSION:
+        errors.append(
+            "metadata.schema_version must be "
+            f"{_ARTICLE_CORPUS_SCHEMA_VERSION!r}, got {schema_version!r}"
+        )
+
+    article_count = metadata.get("article_count")
+    if article_count != len(articles):
+        errors.append(
+            f"metadata.article_count does not match articles length ({article_count} != "
+            f"{len(articles)})"
+        )
+
+    unique_feed_ids: set[str] = set()
+    seen_ids: set[str] = set()
+    for index, article in enumerate(articles):
+        if not isinstance(article, dict):
+            errors.append(f"articles[{index}] must be an object")
+            continue
+
+        article_id = article.get("id")
+        if not isinstance(article_id, str) or not article_id.strip():
+            errors.append(f"articles[{index}].id must be a non-empty string")
+        elif article_id in seen_ids:
+            errors.append(f"duplicate article id {article_id!r}")
+        else:
+            seen_ids.add(article_id)
+
+        feed_id = article.get("feed_id")
+        if not isinstance(feed_id, str) or not feed_id:
+            errors.append(f"articles[{index}].feed_id must be a non-empty string")
+        else:
+            unique_feed_ids.add(feed_id)
+            if feed_ids and feed_id not in feed_ids:
+                errors.append(f"articles[{index}].feed_id references unknown source {feed_id!r}")
+
+        if "categories" in article:
+            errors.append(
+                f"articles[{index}] uses unsupported categories; use raw_categories instead"
+            )
+        for field_name in ("topics", "raw_categories", "source_topics"):
+            value = article.get(field_name)
+            if not isinstance(value, list):
+                errors.append(f"articles[{index}].{field_name} must be an array")
+                continue
+            if any(not isinstance(item, str) or not item.strip() for item in value):
+                errors.append(f"articles[{index}].{field_name} contains a blank/non-string item")
+
+        article_topics = article.get("topics") if isinstance(article.get("topics"), list) else []
+        for topic_id in article_topics:
+            if topic_ids and topic_id not in topic_ids:
+                errors.append(f"articles[{index}].topics references unknown topic {topic_id!r}")
+
+        if not isinstance(article.get("ingest_meta", {}), dict):
+            errors.append(f"articles[{index}].ingest_meta must be an object when present")
+
+    feed_count = metadata.get("feed_count")
+    if feed_count != len(unique_feed_ids):
+        errors.append(
+            f"metadata.feed_count does not match unique article feed count ({feed_count} != "
+            f"{len(unique_feed_ids)})"
+        )
+
+    if errors:
+        _fail(f"{description}: Article corpus validation failed")
+        for error in errors[:10]:
+            sys.stdout.write(f"  - {error}\n")
+        return False
+
+    _ok(f"{description}: Valid generated article corpus")
+    sys.stdout.write(f"  - {len(articles)} articles across {len(unique_feed_ids)} feeds\n")
     return True
 
 
@@ -807,22 +938,7 @@ def validate_sqlite_asset_inventory(base_path: Path) -> bool:
         return False
 
     if DEFAULT_DATABASE_FILENAME in db_files:
-        if LEGACY_DATABASE_FILENAME in db_files:
-            _ok(
-                "SQLite asset inventory: canonical "
-                f"{DEFAULT_DATABASE_FILENAME} takes precedence over legacy "
-                f"{LEGACY_DATABASE_FILENAME}"
-            )
-        else:
-            _ok(
-                f"SQLite asset inventory: canonical {DEFAULT_DATABASE_FILENAME} is scoped correctly"
-            )
-    elif LEGACY_DATABASE_FILENAME in db_files:
-        _ok(
-            "SQLite asset inventory: using legacy "
-            f"{LEGACY_DATABASE_FILENAME} as a fallback until "
-            f"{DEFAULT_DATABASE_FILENAME} is materialized"
-        )
+        _ok(f"SQLite asset inventory: canonical {DEFAULT_DATABASE_FILENAME} is scoped correctly")
     else:
         _ok("SQLite asset inventory: no unexpected database files found")
 
@@ -843,15 +959,47 @@ def validate_sqlite_db(filepath: Path, description: str) -> bool:
         table_count = cursor.fetchone()[0]
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
         tables = [row[0] for row in cursor.fetchall()]
+        table_set = set(tables)
+        article_columns = (
+            _sqlite_column_names(cursor, "articles") if "articles" in table_set else set()
+        )
+        topic_columns = _sqlite_column_names(cursor, "topics") if "topics" in table_set else set()
         conn.close()
     except Exception as exc:
         _fail(f"{description}: Failed - {exc}")
+        return False
+
+    errors: list[str] = []
+    if "articles" not in table_set:
+        errors.append("missing canonical articles table")
+    missing_tables = sorted(_REQUIRED_V3_SQLITE_TABLES - table_set)
+    for table_name in missing_tables:
+        errors.append(f"missing v3 table: {table_name}")
+    for unsupported_table in ("feed_entries", "items"):
+        if unsupported_table in table_set:
+            errors.append(f"contains unsupported table: {unsupported_table}")
+    for column_name in sorted(_REQUIRED_ARTICLE_COLUMNS):
+        if column_name not in article_columns:
+            errors.append(f"articles table missing column: {column_name}")
+    for column_name in sorted(_REQUIRED_TOPIC_COLUMNS):
+        if column_name not in topic_columns:
+            errors.append(f"topics table missing column: {column_name}")
+
+    if errors:
+        _fail(f"{description}: SQLite v3 contract validation failed")
+        for error in errors[:10]:
+            sys.stdout.write(f"  - {error}\n")
         return False
 
     _ok(f"{description}: Valid SQLite database")
     sys.stdout.write(f"  - {table_count} tables created\n")
     sys.stdout.write(f"  - Sample tables: {', '.join(tables[:5])}...\n")
     return True
+
+
+def _sqlite_column_names(cursor: sqlite3.Cursor, table_name: str) -> set[str]:
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    return {row[1] for row in cursor.fetchall()}
 
 
 def main() -> int:
@@ -1031,6 +1179,22 @@ def main() -> int:
         )
     else:
         results.append(False)
+    if feeds_ok and topic_ids:
+        source_ids = {
+            source["id"]
+            for source in canonicalize_catalog(feeds_data, enriched=False).get("sources", [])
+            if isinstance(source, dict) and isinstance(source.get("id"), str)
+        }
+        results.append(
+            validate_article_corpus(
+                base_path / "articles.generated.json",
+                "articles.generated.json (generated reader corpus)",
+                source_ids,
+                topic_ids,
+            )
+        )
+    else:
+        results.append(False)
     sys.stdout.write("\n")
 
     sys.stdout.write("📰 OPML Export Files:\n")
@@ -1053,20 +1217,6 @@ def main() -> int:
         )
         results.append(
             validate_text_matches(
-                base_path / "all.opml",
-                "all.opml (legacy flat OPML alias)",
-                flat_expected,
-            )
-        )
-        results.append(
-            validate_flat_opml_parity(
-                base_path / "all.opml",
-                "all.opml (legacy flat OPML alias)",
-                feeds_data,
-            )
-        )
-        results.append(
-            validate_text_matches(
                 base_path / "feeds.categorized.opml",
                 "feeds.categorized.opml (canonical categorized OPML export)",
                 categorized_expected,
@@ -1083,26 +1233,8 @@ def main() -> int:
             )
         else:
             results.append(False)
-        results.append(
-            validate_text_matches(
-                base_path / "categorized.opml",
-                "categorized.opml (legacy categorized OPML alias)",
-                categorized_expected,
-            )
-        )
-        if topic_ids:
-            results.append(
-                validate_categorized_opml_parity(
-                    base_path / "categorized.opml",
-                    "categorized.opml (legacy categorized OPML alias)",
-                    feeds_data,
-                    topic_ids,
-                )
-            )
-        else:
-            results.append(False)
     else:
-        results.extend([False, False, False, False, False, False, False, False])
+        results.extend([False, False, False, False])
 
     if enriched_ok:
         enriched_flat_expected = render_opml(enriched_data, categorized=False)
@@ -1145,17 +1277,9 @@ def main() -> int:
 
     sys.stdout.write("🗄️  Database Files:\n")
     results.append(validate_sqlite_asset_inventory(base_path))
-    canonical_db = base_path / DEFAULT_DATABASE_FILENAME
-    legacy_db = base_path / LEGACY_DATABASE_FILENAME
-    if canonical_db.exists():
-        db_path = canonical_db
-    elif legacy_db.exists():
-        db_path = legacy_db
-    else:
-        _fail(
-            "SQLite database asset not found: expected "
-            f"{DEFAULT_DATABASE_FILENAME} or {LEGACY_DATABASE_FILENAME}"
-        )
+    db_path = base_path / DEFAULT_DATABASE_FILENAME
+    if not db_path.exists():
+        _fail(f"SQLite database asset not found: expected {DEFAULT_DATABASE_FILENAME}")
         results.append(False)
         db_path = None
 
@@ -1176,7 +1300,7 @@ def main() -> int:
             "  • Flat and categorized OPML exports match catalog counts and taxonomy\n"
         )
         sys.stdout.write("  • Sample analytics fixtures remain model- and consumer-compatible\n")
-        sys.stdout.write("  • SQLite assets are scoped to canonical and legacy runtime filenames\n")
+        sys.stdout.write("  • SQLite assets are scoped to the canonical runtime filename\n")
         sys.stdout.write("  • SQLite database validated\n")
         return 0
 

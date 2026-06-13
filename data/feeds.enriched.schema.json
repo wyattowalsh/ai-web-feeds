@@ -10,8 +10,8 @@
     "schema_version": {
       "type": "string",
       "description": "Semantic version for this file format.",
-      "pattern": "^feeds-2\\.[0-9]+\\.[0-9]+$",
-      "default": "feeds-2.1.0"
+      "pattern": "^feeds\\.enriched-3\\.[0-9]+\\.[0-9]+$",
+      "default": "feeds.enriched-3.0.0"
     },
     "document_meta": {
       "type": "object",
@@ -161,8 +161,7 @@
           "properties": {
             "enabled": { "type": "boolean" },
             "strategy": { "type": "string", "enum": ["auto", "rss-autodiscovery", "rsshub", "api", "custom"] },
-            "params": { "type": "object" },
-            "fallback": { "type": "array", "items": { "type": "string" } }
+            "params": { "type": "object" }
           }
         }
       ]
@@ -173,7 +172,7 @@
         "required": ["id", "title", "source_type", "topics"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Stable unique identifier" },
-          "url": { "$ref": "#/$defs/http_uri", "description": "Canonical source URL alias retained for compatibility with minimal feeds and downstream consumers" },
+          "url": { "$ref": "#/$defs/http_uri", "description": "Canonical source URL alias for authored catalog inputs and downstream consumers" },
           "feed": { "$ref": "#/$defs/http_uri", "description": "Direct feed URL or alias" },
           "site": { "$ref": "#/$defs/http_uri", "description": "Site homepage/section URL" },
         "title": { "type": "string", "minLength": 1, "maxLength": 160 },

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from ai_web_feeds.config import Settings
 from ai_web_feeds.digests import DigestManager
-from ai_web_feeds.models import EmailDigest, FeedEntry
+from ai_web_feeds.models import ArticleEntry, EmailDigest
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -16,8 +16,8 @@ def mock_db():
     """Mock database manager"""
     db = MagicMock(spec=DatabaseManager)
     db.get_due_digests = MagicMock(return_value=[])
-    db.get_user_follows = MagicMock(return_value=[])
-    db.get_feed_entries = MagicMock(return_value=[])
+    db.get_user_followed_sources = MagicMock(return_value=[])
+    db.get_articles = MagicMock(return_value=[])
     db.update_email_digest = MagicMock()
     return db
 
@@ -62,12 +62,12 @@ def sample_digest():
 
 @pytest.fixture
 def sample_articles():
-    """Sample feed entries"""
+    """Sample articles"""
     base_time = datetime.now(UTC)
     articles = []
 
     for i in range(5):
-        article = FeedEntry(
+        article = ArticleEntry(
             id=i + 1,
             feed_id="test-feed",
             guid=f"article-{i + 1}",
@@ -110,8 +110,8 @@ class TestDigestManager:
     ):
         """Test successful digest sending"""
         mock_db.get_due_digests.return_value = [sample_digest]
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = sample_articles
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = sample_articles
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()
@@ -129,10 +129,8 @@ class TestDigestManager:
     ):
         """Test digest sending with SMTP error"""
         mock_db.get_due_digests.return_value = [sample_digest]
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = (
-            sample_articles  # Must have articles to trigger SMTP
-        )
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = sample_articles  # Must have articles to trigger SMTP
 
         with patch("smtplib.SMTP", side_effect=Exception("SMTP Error")):
             # Should not raise, just log error
@@ -144,8 +142,8 @@ class TestDigestManager:
     @pytest.mark.asyncio
     async def test_send_digest_no_articles(self, digest_manager, mock_db, sample_digest):
         """Test sending digest when no articles are available"""
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = []
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = []
 
         # Should return without sending
         await digest_manager._send_digest(sample_digest)
@@ -158,8 +156,8 @@ class TestDigestManager:
         self, digest_manager, mock_db, sample_digest, sample_articles
     ):
         """Test sending digest with articles"""
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = sample_articles
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = sample_articles
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()
@@ -178,7 +176,7 @@ class TestDigestManager:
         self, digest_manager, mock_db, sample_digest, sample_articles
     ):
         """Test digest with articles from multiple feeds"""
-        mock_db.get_user_follows.return_value = ["feed-1", "feed-2", "feed-3"]
+        mock_db.get_user_followed_sources.return_value = ["feed-1", "feed-2", "feed-3"]
 
         # Return different articles for each feed
         def mock_get_entries(feed_id, limit):
@@ -188,7 +186,7 @@ class TestDigestManager:
                 return sample_articles[2:4]
             return sample_articles[4:]
 
-        mock_db.get_feed_entries.side_effect = mock_get_entries
+        mock_db.get_articles.side_effect = mock_get_entries
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()
@@ -205,19 +203,19 @@ class TestDigestManager:
         # Create more articles than max_articles
         many_articles = []
         for i in range(30):  # More than max_articles (20)
-            article = FeedEntry(
+            article = ArticleEntry(
                 id=i + 1,
                 feed_id="test-feed",
                 guid=f"article-{i + 1}",
                 link=f"http://example.com/article-{i + 1}",
                 title=f"Article {i + 1}",
-                pub_date=datetime.utcnow() - timedelta(hours=i),
-                discovered_at=datetime.utcnow() - timedelta(hours=i),
+                pub_date=datetime.now(UTC) - timedelta(hours=i),
+                discovered_at=datetime.now(UTC) - timedelta(hours=i),
             )
             many_articles.append(article)
 
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = many_articles
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = many_articles
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()
@@ -237,8 +235,8 @@ class TestDigestManager:
         digest_manager.smtp_user = "user@example.com"
         digest_manager.smtp_password = "password123"
 
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = sample_articles
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = sample_articles
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()
@@ -272,7 +270,7 @@ class TestDigestManager:
 
     def test_generate_html_empty_summary(self, digest_manager, sample_digest):
         """Test HTML generation with articles missing summaries"""
-        article = FeedEntry(
+        article = ArticleEntry(
             id=1,
             feed_id="test-feed",
             guid="article-1",
@@ -291,7 +289,7 @@ class TestDigestManager:
 
     def test_generate_html_special_characters(self, digest_manager, sample_digest):
         """Test HTML generation with special characters"""
-        article = FeedEntry(
+        article = ArticleEntry(
             id=1,
             feed_id="test-feed",
             guid="article-1",
@@ -310,7 +308,7 @@ class TestDigestManager:
 
     def test_generate_html_rejects_unsafe_links(self, digest_manager, sample_digest):
         """Test unsafe article links are not rendered into the email."""
-        article = FeedEntry(
+        article = ArticleEntry(
             id=1,
             feed_id="test-feed",
             guid="article-unsafe",
@@ -373,8 +371,8 @@ class TestDigestManager:
 
         random.shuffle(shuffled)
 
-        mock_db.get_user_follows.return_value = ["feed-1"]
-        mock_db.get_feed_entries.return_value = shuffled
+        mock_db.get_user_followed_sources.return_value = ["feed-1"]
+        mock_db.get_articles.return_value = shuffled
 
         with patch("smtplib.SMTP") as mock_smtp:
             mock_server = MagicMock()

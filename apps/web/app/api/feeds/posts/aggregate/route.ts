@@ -9,6 +9,7 @@ import { normalizeSearchQuery } from "@/lib/search";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
+const MAX_LIVE_FEED_IDS = 48;
 
 type AggregateSort = "latest" | "oldest" | "title" | "source";
 type AggregateStream = "sample" | "all";
@@ -21,6 +22,15 @@ const GETHandler = async (request: Request) => {
     return NextResponse.json(
       { error: 'At least one "feed" query parameter is required' },
       { status: 400 },
+    );
+  }
+
+  if (feedIds.length > MAX_LIVE_FEED_IDS) {
+    return NextResponse.json(
+      {
+        error: `Live aggregate requests are limited to ${MAX_LIVE_FEED_IDS} feed IDs. Narrow filters or use the generated article corpus.`,
+      },
+      { status: 413 },
     );
   }
 
@@ -57,7 +67,7 @@ const GETHandler = async (request: Request) => {
         total_matched_posts: filteredPosts.length,
         applied_query: query,
         applied_sort: sort,
-        applied_stream: stream ?? "legacy",
+        applied_stream: stream,
       },
       {
         headers: {
@@ -83,6 +93,15 @@ const POSTHandler = async (request: Request) => {
 
   if (!Array.isArray(body?.feedIds) || body.feedIds.length === 0) {
     return NextResponse.json({ error: "feedIds is required" }, { status: 400 });
+  }
+
+  if (body.feedIds.length > MAX_LIVE_FEED_IDS) {
+    return NextResponse.json(
+      {
+        error: `Live aggregate requests are limited to ${MAX_LIVE_FEED_IDS} feed IDs. Narrow filters or use the generated article corpus.`,
+      },
+      { status: 413 },
+    );
   }
 
   const limit = clampNumber(body.limit, 1, 48, 24);
@@ -139,7 +158,7 @@ function clampNumber(
   value: number | string | null | undefined,
   min: number,
   max: number,
-  fallback: number,
+  defaultValue: number,
 ): number {
   const parsed =
     typeof value === "number"
@@ -149,7 +168,7 @@ function clampNumber(
         : Number.NaN;
 
   if (!Number.isFinite(parsed)) {
-    return fallback;
+    return defaultValue;
   }
 
   return Math.min(Math.max(Math.trunc(parsed), min), max);
@@ -166,13 +185,13 @@ function parseAggregateSort(value: string | null): AggregateSort {
   }
 }
 
-function parseAggregateStream(value: string | null): AggregateStream | null {
+function parseAggregateStream(value: string | null): AggregateStream {
   switch (value) {
-    case "sample":
     case "all":
       return value;
+    case "sample":
     default:
-      return null;
+      return "sample";
   }
 }
 
@@ -183,7 +202,7 @@ function postMatchesQuery(post: AggregateFeedPost, query: string): boolean {
     post.feedTitle,
     post.summary ?? "",
     post.author ?? "",
-    post.categories.join(" "),
+    post.rawCategories.join(" "),
   ]
     .join(" ")
     .toLowerCase();

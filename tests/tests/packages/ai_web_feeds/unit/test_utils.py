@@ -11,34 +11,24 @@ class TestUtilityFunctions:
 
     def test_utils_module_exists(self):
         """Test that utils module can be imported."""
-        try:
-            from ai_web_feeds import utils
+        from ai_web_feeds import utils
 
-            assert utils is not None
-        except ImportError:
-            pytest.skip("Utils module not yet implemented")
+        assert utils is not None
 
     def test_sanitize_url(self):
         """Test URL sanitization."""
-        try:
-            from ai_web_feeds.utils import sanitize_url
+        from ai_web_feeds.utils import sanitize_url
 
-            assert sanitize_url("https://example.com") == "https://example.com"
-            assert sanitize_url("http://example.com/") == "http://example.com"
-        except ImportError:
-            pytest.skip("sanitize_url not yet implemented")
+        assert sanitize_url("https://example.com") == "https://example.com"
+        assert sanitize_url("http://example.com/") == "http://example.com"
 
     @given(st.text())
     def test_sanitize_text_property_based(self, text):
         """Property-based test for text sanitization."""
-        try:
-            from ai_web_feeds.utils import sanitize_text
+        from ai_web_feeds.utils import sanitize_text
 
-            result = sanitize_text(text)
-            # Result should be string type
-            assert isinstance(result, str)
-        except ImportError:
-            pytest.skip("sanitize_text not yet implemented")
+        result = sanitize_text(text)
+        assert isinstance(result, str)
 
 
 @pytest.mark.unit
@@ -47,21 +37,18 @@ class TestHashingFunctions:
 
     def test_generate_feed_id(self):
         """Test feed ID generation."""
-        try:
-            from ai_web_feeds.utils import generate_feed_id
+        from ai_web_feeds.utils import generate_feed_id
 
-            url = "https://example.com/feed.xml"
-            id1 = generate_feed_id(url)
-            id2 = generate_feed_id(url)
+        url = "https://example.com/feed.xml"
+        id1 = generate_feed_id(url)
+        id2 = generate_feed_id(url)
 
-            # Same URL should generate same ID
-            assert id1 == id2
+        # Same URL should generate same ID
+        assert id1 == id2
 
-            # Different URL should generate different ID
-            id3 = generate_feed_id("https://different.com/feed.xml")
-            assert id1 != id3
-        except ImportError:
-            pytest.skip("generate_feed_id not yet implemented")
+        # Different URL should generate different ID
+        id3 = generate_feed_id("https://different.com/feed.xml")
+        assert id1 != id3
 
 
 @pytest.mark.unit
@@ -70,18 +57,15 @@ class TestDateTimeFunctions:
 
     def test_parse_datetime(self):
         """Test datetime parsing."""
-        try:
-            from ai_web_feeds.utils import parse_datetime
+        from ai_web_feeds.utils import parse_datetime
 
-            # ISO format
-            result = parse_datetime("2024-01-15T10:30:00Z")
-            assert result is not None
+        # ISO format
+        result = parse_datetime("2024-01-15T10:30:00Z")
+        assert result is not None
 
-            # RFC 2822 format
-            result = parse_datetime("Mon, 15 Jan 2024 10:30:00 GMT")
-            assert result is not None
-        except ImportError:
-            pytest.skip("parse_datetime not yet implemented")
+        # RFC 2822 format
+        result = parse_datetime("Mon, 15 Jan 2024 10:30:00 GMT")
+        assert result is not None
 
 
 @pytest.mark.unit
@@ -101,12 +85,9 @@ class TestValidationFunctions:
     )
     def test_is_valid_url(self, url, expected):
         """Test URL validation."""
-        try:
-            from ai_web_feeds.utils import is_valid_url
+        from ai_web_feeds.utils import is_valid_url
 
-            assert is_valid_url(url) == expected
-        except ImportError:
-            pytest.skip("is_valid_url not yet implemented")
+        assert is_valid_url(url) == expected
 
 
 @pytest.mark.unit

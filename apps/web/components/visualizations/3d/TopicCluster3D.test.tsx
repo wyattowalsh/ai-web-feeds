@@ -72,18 +72,20 @@ describe("TopicCluster3D", () => {
     vi.restoreAllMocks();
   });
 
-  it("falls back to 2D mode when WebGL is unavailable", async () => {
+  it("shows the 2D static view when WebGL is unavailable", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
 
     render(<TopicCluster3D nodes={sampleNodes} links={sampleLinks} />);
 
-    expect(await screen.findByText("2D Fallback Mode")).toBeInTheDocument();
+    expect(await screen.findByText("2D Static View")).toBeInTheDocument();
     expect(
-      screen.getByText("WebGL is not available in this browser, so a fallback view is being used."),
+      screen.getByText(
+        "WebGL is not available in this browser, so a static 2D view is being used.",
+      ),
     ).toBeInTheDocument();
   });
 
-  it("shows stats for the live 3D view and can fall back on low performance", async () => {
+  it("shows stats for the live 3D view and switches to static 2D on low performance", async () => {
     let currentTime = 0;
     vi.spyOn(performance, "now").mockImplementation(() => {
       currentTime += 100;
@@ -108,7 +110,7 @@ describe("TopicCluster3D", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "Rendering performance is too low for the 3D graph, so a fallback view is being used.",
+          "Rendering performance is too low for the 3D graph, so a static 2D view is being used.",
         ),
       ).toBeInTheDocument();
     });

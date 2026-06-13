@@ -153,7 +153,7 @@ def search_autocomplete(
 
     # Display topics
     if suggestions["topics"]:
-        console.print("\n[bold]Topic Suggestions:[/bold]")
+        console.print("\n[bold]TopicNode Suggestions:[/bold]")
         for topic in suggestions["topics"]:
             console.print(f"  • [green]{topic['label']}[/green] ({topic['feed_count']} feeds)")
 

@@ -23,7 +23,8 @@ def test_engine():
     """Create in-memory SQLite engine for testing."""
     engine = create_engine("sqlite:///:memory:")
     SQLModel.metadata.create_all(engine)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 @pytest.fixture

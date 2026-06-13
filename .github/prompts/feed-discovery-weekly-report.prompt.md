@@ -41,7 +41,7 @@ ______________________________________________________________________
    explicitly configured in the workflow.
 1. Cap external discovery leads at 5.
 1. Prefer no report over speculative or repetitive noise.
-1. Do not rely on the legacy issue-label approval flow for discovered candidates.
+1. Do not rely on the previous issue-label approval flow for discovered candidates.
 1. Do not recommend `approved`, `feed-submission`, `validated`, or `validation-failed`.
 1. Keep the final report at domain level with optional feed-path hints instead of raw
    URLs.

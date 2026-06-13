@@ -101,7 +101,7 @@ type LiveStreamEvent =
         sourceUrl: string;
         resolvedFeedUrl: string;
         author: string | null;
-        categories: string[];
+        rawCategories: string[];
         publishedAt: string | null;
       }>;
       successfulSources: number;
@@ -217,7 +217,7 @@ function matchesDraftState(drafts: ReaderDraftState, state: FeedsWorkspaceInitia
 }
 
 function getArticleTopics(article: WorkspaceArticle): string[] {
-  return article.topics.length > 0 ? article.topics : article.categories;
+  return article.topics;
 }
 
 function formatSnapshotTimestamp(value: string | null): string {
@@ -367,7 +367,7 @@ function buildCurrentFilterChips(
     chips.push({
       key: "sort",
       label: `Sort: ${labels[state.sort as Exclude<ArticleSort, "latest">]}`,
-      overrides: { sort: null, reader_sort: null, cursor: null },
+      overrides: { sort: null, cursor: null },
     });
   }
 
@@ -404,7 +404,7 @@ function normalizeLiveArticle(post: {
   sourceUrl?: string;
   resolvedFeedUrl?: string;
   author: string | null;
-  categories: string[];
+  rawCategories: string[];
   publishedAt: string | null;
 }): WorkspaceArticle {
   return {
@@ -417,8 +417,9 @@ function normalizeLiveArticle(post: {
     content_html: null,
     author: post.author,
     published_at: post.publishedAt,
-    categories: post.categories,
-    topics: post.categories,
+    topics: [],
+    source_topics: [],
+    raw_categories: post.rawCategories,
     source_type: "feed",
     verified: false,
     is_active: true,
@@ -500,7 +501,6 @@ function buildReaderHref(
   }
   if (state.sort !== "latest") {
     params.set("sort", state.sort);
-    params.set("reader_sort", state.sort);
   }
   if (state.readerView !== "latest") {
     params.set("reader_view", state.readerView);
@@ -799,20 +799,22 @@ function ReaderWorkspace({
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
   const firstLoadRef = useRef(true);
-  const liveBootstrapAttemptedKeyRef = useRef<string | null>(null);
   const searchParamsString = searchParams.toString();
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
     const query = searchParams.get("q")?.trim().replace(/\s+/g, " ") ?? "";
     const sourceType = searchParams.get("source_type")?.trim() || null;
     const verifiedValue = searchParams.get("verified");
-    const verified = verifiedValue === "true" ? true : verifiedValue === "false" ? false : null;
+    const verified = stats.hasVerificationMetadata
+      ? verifiedValue === "true"
+        ? true
+        : verifiedValue === "false"
+          ? false
+          : null
+      : null;
     const cursor = Number.parseInt(searchParams.get("cursor") ?? "0", 10);
     const limit = Number.parseInt(searchParams.get("limit") ?? `${DEFAULT_PAGE_LIMIT}`, 10);
-    const sortValue =
-      searchParams.get("sort")?.trim().toLowerCase() ??
-      searchParams.get("reader_sort")?.trim().toLowerCase() ??
-      "";
+    const sortValue = searchParams.get("sort")?.trim().toLowerCase() ?? "";
     const readerView = searchParams.get("reader_view")?.trim().toLowerCase() ?? "";
 
     return {
@@ -835,7 +837,7 @@ function ReaderWorkspace({
       cursor: Number.isFinite(cursor) && cursor > 0 ? cursor : 0,
       limit: Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : DEFAULT_PAGE_LIMIT,
     };
-  }, [searchParams]);
+  }, [searchParams, stats.hasVerificationMetadata]);
 
   useEffect(() => {
     setQueryDraft(currentState.query);
@@ -1028,12 +1030,11 @@ function ReaderWorkspace({
 
   const refreshLatest = useCallback(
     async (forceRefresh = true) => {
-      const shouldFetchAllMatchingSources = browse.corpus.is_empty && browse.items.length === 0;
       const feedIds =
         currentState.feedIds.length > 0
           ? currentState.feedIds
           : candidateFeeds
-              .slice(0, shouldFetchAllMatchingSources ? undefined : LIVE_REFRESH_SAMPLE_FEED_LIMIT)
+              .slice(0, LIVE_REFRESH_SAMPLE_FEED_LIMIT)
               .map((feed) => feed.id ?? "")
               .filter(Boolean);
 
@@ -1095,6 +1096,7 @@ function ReaderWorkspace({
 
         const decoder = new TextDecoder();
         let buffer = "";
+        let malformedEventCount = 0;
 
         const handleEvent = (event: LiveStreamEvent) => {
           if (event.type === "start") {
@@ -1163,6 +1165,21 @@ function ReaderWorkspace({
             throw new Error(event.message);
           }
         };
+        const handleEventLine = (line: string) => {
+          if (!line.trim()) {
+            return;
+          }
+
+          let event: LiveStreamEvent;
+          try {
+            event = JSON.parse(line) as LiveStreamEvent;
+          } catch {
+            malformedEventCount += 1;
+            return;
+          }
+
+          handleEvent(event);
+        };
 
         while (true) {
           const { value, done } = await reader.read();
@@ -1171,10 +1188,7 @@ function ReaderWorkspace({
           buffer = lines.pop() ?? "";
 
           for (const line of lines) {
-            if (!line.trim()) {
-              continue;
-            }
-            handleEvent(JSON.parse(line) as LiveStreamEvent);
+            handleEventLine(line);
           }
 
           if (done) {
@@ -1183,7 +1197,15 @@ function ReaderWorkspace({
         }
 
         if (buffer.trim()) {
-          handleEvent(JSON.parse(buffer) as LiveStreamEvent);
+          handleEventLine(buffer);
+        }
+
+        if (malformedEventCount > 0) {
+          setRefreshError(
+            malformedEventCount === 1
+              ? "Skipped a malformed refresh event; kept loaded posts."
+              : `Skipped ${malformedEventCount} malformed refresh events; kept loaded posts.`,
+          );
         }
       } catch (nextError) {
         setRefreshError(
@@ -1193,15 +1215,7 @@ function ReaderWorkspace({
         setRefreshing(false);
       }
     },
-    [
-      browse.corpus.is_empty,
-      browse.items.length,
-      candidateFeeds,
-      currentState.feedIds,
-      currentState.query,
-      currentState.sort,
-      mergedArticles,
-    ],
+    [candidateFeeds, currentState.feedIds, currentState.query, currentState.sort, mergedArticles],
   );
 
   const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
@@ -1218,6 +1232,10 @@ function ReaderWorkspace({
         .sort((left, right) => right.count - left.count || left.topic.localeCompare(right.topic))
         .slice(0, 12),
     [feeds, topicOptions],
+  );
+  const availableTopicOptions = useMemo(
+    () => topicOptions.filter((topic) => !topicsDraft.includes(topic)),
+    [topicOptions, topicsDraft],
   );
   const feedLookup = useMemo(
     () =>
@@ -1249,24 +1267,19 @@ function ReaderWorkspace({
   const filterSummary =
     currentState.feedIds.length > 0
       ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
-      : `${candidateFeeds.length} active source${
+      : `${candidateFeeds.length} ${stats.hasActivityMetadata ? "active" : "tracked"} source${
           candidateFeeds.length === 1 ? "" : "s"
         } matching these filters`;
+  const visibleArticleCountLabel = corpusEmpty
+    ? `${overlayArticles.length} live post${overlayArticles.length === 1 ? "" : "s"} loaded`
+    : `${browse.total_matched} article match${browse.total_matched === 1 ? "" : "es"}`;
+  const sourceStatValue = stats.hasActivityMetadata ? stats.active : stats.total;
+  const sourceStatNote = stats.hasVerificationMetadata
+    ? `${stats.verified} verified sources currently tracked`
+    : "Verification metadata is not present in this catalog";
   const activeFilterChips = useMemo(
     () => buildCurrentFilterChips(currentState, feedLookup),
     [currentState, feedLookup],
-  );
-  const liveBootstrapKey = useMemo(
-    () =>
-      [
-        currentState.query,
-        currentState.sourceType ?? "",
-        currentState.topics.join(","),
-        currentState.verified === null ? "" : String(currentState.verified),
-        currentState.feedIds.join(","),
-        currentState.sort,
-      ].join("|"),
-    [currentState],
   );
   const draftState: ReaderDraftState = useMemo(
     () => ({
@@ -1294,7 +1307,7 @@ function ReaderWorkspace({
         ? "Recent posts loaded live"
         : browse.corpus.generated_at
           ? "Prepared posts ready"
-          : "Live fallback ready",
+          : "Live sample ready",
       icon: Clock3,
     },
     {
@@ -1307,10 +1320,10 @@ function ReaderWorkspace({
     },
     {
       label: "Sources",
-      value: String(corpusEmpty ? candidateFeeds.length : stats.active),
+      value: String(corpusEmpty ? candidateFeeds.length : sourceStatValue),
       note: corpusEmpty
-        ? `${candidateFeeds.length} matching sources checked live`
-        : `${stats.verified} verified sources currently tracked`,
+        ? `${Math.min(candidateFeeds.length, LIVE_REFRESH_SAMPLE_FEED_LIMIT)} source live sample`
+        : sourceStatNote,
       icon: Filter,
     },
     {
@@ -1337,20 +1350,8 @@ function ReaderWorkspace({
       } sources checked · ${livePendingSources} loading · ${visibleArticles.length} posts shown`
     : null;
 
-  useEffect(() => {
-    if (!corpusEmpty || overlayArticles.length > 0 || refreshing) {
-      return;
-    }
-
-    if (liveBootstrapAttemptedKeyRef.current === liveBootstrapKey) {
-      return;
-    }
-
-    liveBootstrapAttemptedKeyRef.current = liveBootstrapKey;
-    void refreshLatest(false);
-  }, [corpusEmpty, liveBootstrapKey, overlayArticles.length, refreshLatest, refreshing]);
-
   const applyDrafts = useCallback(() => {
+    setPreviewArticleId(null);
     updateUrl({
       q: normalizeQueryDraft(queryDraft) || null,
       source_type: sourceTypeDraft || null,
@@ -1358,7 +1359,6 @@ function ReaderWorkspace({
       verified: verifiedDraft || null,
       reader_view: readerViewDraft === "latest" ? null : readerViewDraft,
       sort: sortDraft === "latest" ? null : sortDraft,
-      reader_sort: sortDraft === "latest" ? null : sortDraft,
       cursor: null,
     });
     setMobileControlsOpen(false);
@@ -1373,6 +1373,7 @@ function ReaderWorkspace({
   ]);
 
   const resetDrafts = useCallback(() => {
+    setPreviewArticleId(null);
     setQueryDraft("");
     setSourceTypeDraft("");
     setTopicsDraft([]);
@@ -1386,7 +1387,6 @@ function ReaderWorkspace({
       verified: null,
       reader_view: null,
       sort: null,
-      reader_sort: null,
       cursor: null,
     });
     setMobileControlsOpen(false);
@@ -1413,7 +1413,7 @@ function ReaderWorkspace({
     };
   }, [previewArticleId]);
 
-  if (corpusEmpty && overlayArticles.length === 0 && refreshError && !refreshing) {
+  if (corpusEmpty && overlayArticles.length === 0 && !refreshing) {
     return (
       <div className="reader-shell space-y-4">
         <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm sm:p-6">
@@ -1421,14 +1421,15 @@ function ReaderWorkspace({
             <div className="space-y-2">
               <p className="metric-label">AI Web Feeds</p>
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {refreshError ? "Live posts unavailable" : "Loading live posts"}
+                {refreshError ? "Live posts unavailable" : "No prepared article corpus"}
               </h1>
               <p className="small-note max-w-3xl">
                 {refreshError
                   ? `${refreshError} You can browse sources or retry.`
-                  : `Checking ${candidateFeeds.length} matching source${
-                      candidateFeeds.length === 1 ? "" : "s"
-                    } for recent posts.`}
+                  : `The generated article corpus is empty or missing. Load a bounded live sample from up to ${Math.min(
+                      candidateFeeds.length,
+                      LIVE_REFRESH_SAMPLE_FEED_LIMIT,
+                    )} matching sources, or browse the catalog while the corpus is regenerated.`}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1444,7 +1445,7 @@ function ReaderWorkspace({
                 onClick={() => void refreshLatest(true)}
                 disabled={refreshing}
               >
-                Try again
+                {refreshError ? "Try again" : "Load live sample"}
               </Button>
             </div>
           </div>
@@ -1452,11 +1453,11 @@ function ReaderWorkspace({
 
         <EmptyState
           icon={Newspaper}
-          title={refreshError ? "Could not fetch live posts" : "Fetching recent posts"}
+          title={refreshError ? "Could not fetch live posts" : "Prepared posts are unavailable"}
           description={
             refreshError
               ? "The source catalog is still available while live fetching recovers."
-              : "Recent posts will appear here as soon as they are available."
+              : "Live fetching is available as an explicit sample so the first page load does not crawl the full catalog."
           }
           className="text-left"
         />
@@ -1573,6 +1574,25 @@ function ReaderWorkspace({
               <div className="space-y-3">
                 <div className="space-y-1.5 text-sm">
                   <span className="small-note">Topic focus</span>
+                  <Select
+                    aria-label="Add topic focus"
+                    value=""
+                    onChange={(event) => {
+                      const topic = event.target.value;
+                      if (topic) {
+                        setTopicsDraft(toggleTopic(topicsDraft, topic));
+                      }
+                    }}
+                  >
+                    <option value="">
+                      {topicsDraft.length > 0 ? "Add another topic" : "All topics"}
+                    </option>
+                    {availableTopicOptions.map((topic) => (
+                      <option key={topic} value={topic}>
+                        {topic}
+                      </option>
+                    ))}
+                  </Select>
                   {topicsDraft.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {topicsDraft.map((topic) => (
@@ -1614,18 +1634,20 @@ function ReaderWorkspace({
                 </div>
               </div>
 
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Verification</span>
-                <Select
-                  aria-label="Verification"
-                  value={verifiedDraft}
-                  onChange={(event) => setVerifiedDraft(event.target.value as VerifiedDraftValue)}
-                >
-                  <option value="">All feeds</option>
-                  <option value="true">Verified only</option>
-                  <option value="false">Unverified only</option>
-                </Select>
-              </label>
+              {stats.hasVerificationMetadata ? (
+                <label className="space-y-1.5 text-sm">
+                  <span className="small-note">Verification</span>
+                  <Select
+                    aria-label="Verification"
+                    value={verifiedDraft}
+                    onChange={(event) => setVerifiedDraft(event.target.value as VerifiedDraftValue)}
+                  >
+                    <option value="">All feeds</option>
+                    <option value="true">Verified only</option>
+                    <option value="false">Unverified only</option>
+                  </Select>
+                </label>
+              ) : null}
 
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Reader view</span>
@@ -1691,8 +1713,7 @@ function ReaderWorkspace({
               <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
                 <p>{filterSummary}</p>
                 <p>
-                  {browse.total_matched} article match{browse.total_matched === 1 ? "" : "es"} ·{" "}
-                  {visibleArticles.length} visible on this page
+                  {visibleArticleCountLabel} · {visibleArticles.length} visible on this page
                 </p>
                 <p>
                   Prepared: {browse.corpus.article_count} articles from {browse.corpus.feed_count}{" "}
@@ -1708,7 +1729,7 @@ function ReaderWorkspace({
 
         <section className="space-y-5">
           <details
-            className="rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm xl:hidden"
+            className="relative isolate z-20 rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm xl:hidden"
             open={mobileControlsOpen}
             onToggle={(event) =>
               setMobileControlsOpen((event.currentTarget as HTMLDetailsElement).open)
@@ -1760,6 +1781,40 @@ function ReaderWorkspace({
               </label>
               <div className="space-y-2">
                 <span className="small-note">Topic focus</span>
+                <Select
+                  aria-label="Add topic focus mobile"
+                  value=""
+                  onChange={(event) => {
+                    const topic = event.target.value;
+                    if (topic) {
+                      setTopicsDraft(toggleTopic(topicsDraft, topic));
+                    }
+                  }}
+                >
+                  <option value="">
+                    {topicsDraft.length > 0 ? "Add another topic" : "All topics"}
+                  </option>
+                  {availableTopicOptions.map((topic) => (
+                    <option key={topic} value={topic}>
+                      {topic}
+                    </option>
+                  ))}
+                </Select>
+                {topicsDraft.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {topicsDraft.map((topic) => (
+                      <button
+                        key={topic}
+                        type="button"
+                        onClick={() => setTopicsDraft(toggleTopic(topicsDraft, topic))}
+                        className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
+                      >
+                        {topic}
+                        <X className="size-3.5" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap gap-2">
                   {topicCounts.map(({ topic }) => (
                     <button
@@ -1780,18 +1835,22 @@ function ReaderWorkspace({
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1.5 text-sm">
-                  <span className="small-note">Verification</span>
-                  <Select
-                    aria-label="Verification mobile"
-                    value={verifiedDraft}
-                    onChange={(event) => setVerifiedDraft(event.target.value as VerifiedDraftValue)}
-                  >
-                    <option value="">All feeds</option>
-                    <option value="true">Verified only</option>
-                    <option value="false">Unverified only</option>
-                  </Select>
-                </label>
+                {stats.hasVerificationMetadata ? (
+                  <label className="space-y-1.5 text-sm">
+                    <span className="small-note">Verification</span>
+                    <Select
+                      aria-label="Verification mobile"
+                      value={verifiedDraft}
+                      onChange={(event) =>
+                        setVerifiedDraft(event.target.value as VerifiedDraftValue)
+                      }
+                    >
+                      <option value="">All feeds</option>
+                      <option value="true">Verified only</option>
+                      <option value="false">Unverified only</option>
+                    </Select>
+                  </label>
+                ) : null}
                 <label className="space-y-1.5 text-sm">
                   <span className="small-note">View</span>
                   <Select
@@ -1852,7 +1911,7 @@ function ReaderWorkspace({
 
           <section
             id="article-list"
-            className="rounded-lg border border-(--line) bg-(--surface) shadow-sm"
+            className="relative z-0 rounded-lg border border-(--line) bg-(--surface) shadow-sm"
           >
             <div className="space-y-4 border-b border-(--line) p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2130,7 +2189,7 @@ export function FeedsWorkspaceClient({
         sourceTypes={sourceTypes}
         initialQuery={initialState.query}
         initialSourceType={initialState.sourceType}
-        initialTopic={initialState.topics[0] ?? null}
+        initialTopics={initialState.topics}
         initialVerified={initialState.verified}
       />
     );
@@ -2152,10 +2211,12 @@ export function FeedsWorkspaceClient({
           applied_sort: "latest",
           corpus: {
             generated_at: null,
+            schema_version: "articles-3.0.0",
             source_db: "data/ai-web-feeds.db",
             article_count: 0,
             feed_count: 0,
             latest_published_at: null,
+            freshness_watermark: null,
             is_empty: true,
           },
         }

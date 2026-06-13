@@ -388,7 +388,7 @@ class TestValidateTopics:
             "topics": [
                 {
                     "id": f"{topic_id_prefix}-{i}",
-                    "name": f"Topic {i}",
+                    "name": f"TopicNode {i}",
                 }
                 for i in range(topic_count)
             ]

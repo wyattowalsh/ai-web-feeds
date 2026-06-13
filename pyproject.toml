@@ -327,7 +327,6 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--cov=ai_web_feeds",
-    "--cov=ai_web_feeds_cli",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",

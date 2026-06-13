@@ -1,13 +1,38 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, ExternalLinkIcon, MessageCircleIcon } from "lucide-react";
 import { cn } from "../lib/cn";
-import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
 import { buttonVariants } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "fumadocs-ui/components/ui/popover";
 import { cva } from "class-variance-authority";
 
 const cache = new Map<string, string>();
+
+async function writeMarkdownToClipboard(content: string): Promise<void> {
+  const writeText = navigator.clipboard?.writeText;
+
+  if (typeof ClipboardItem !== "undefined" && typeof navigator.clipboard?.write === "function") {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/plain": new Blob([content], { type: "text/plain" }),
+        }),
+      ]);
+      return;
+    } catch (error) {
+      if (typeof writeText !== "function") {
+        throw error;
+      }
+    }
+  }
+
+  if (typeof writeText === "function") {
+    await writeText.call(navigator.clipboard, content);
+    return;
+  }
+
+  throw new Error("Clipboard access is unavailable in this browser.");
+}
 
 export function LLMCopyButton({
   /**
@@ -17,44 +42,73 @@ export function LLMCopyButton({
 }: {
   markdownUrl: string;
 }) {
+  const copyErrorId = useId();
   const [isLoading, setLoading] = useState(false);
-  const [checked, onClick] = useCopyButton(async () => {
-    const cached = cache.get(markdownUrl);
-    if (cached) return navigator.clipboard.writeText(cached);
+  const [checked, setChecked] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
+
+  const copyMarkdown = useCallback(async () => {
     setLoading(true);
+    setCopyError(null);
 
     try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/plain": fetch(markdownUrl).then(async (res) => {
-            const content = await res.text();
-            cache.set(markdownUrl, content);
+      let content = cache.get(markdownUrl);
+      if (content === undefined) {
+        const response = await fetch(markdownUrl);
+        if (!response.ok) {
+          throw new Error(`Markdown source returned ${response.status}`);
+        }
+        content = await response.text();
+      }
 
-            return content;
-          }),
-        }),
-      ]);
+      cache.set(markdownUrl, content);
+      await writeMarkdownToClipboard(content);
+
+      setChecked(true);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+      resetTimerRef.current = setTimeout(() => setChecked(false), 1800);
+    } catch (error) {
+      setChecked(false);
+      setCopyError(error instanceof Error ? error.message : "Unable to copy Markdown.");
     } finally {
       setLoading(false);
     }
-  });
+  }, [markdownUrl]);
 
   return (
-    <button
-      disabled={isLoading}
-      className={cn(
-        buttonVariants({
-          color: "secondary",
-          size: "sm",
-          className: "gap-2 [&_svg]:size-3.5 [&_svg]:text-fd-muted-foreground",
-        }),
-      )}
-      onClick={onClick}
-    >
-      {checked ? <Check /> : <Copy />}
-      Copy Markdown
-    </button>
+    <span className="inline-flex flex-col items-start gap-1">
+      <button
+        disabled={isLoading}
+        className={cn(
+          buttonVariants({
+            color: "secondary",
+            size: "sm",
+            className: "gap-2 [&_svg]:size-3.5 [&_svg]:text-fd-muted-foreground",
+          }),
+        )}
+        onClick={() => void copyMarkdown()}
+        aria-describedby={copyError ? copyErrorId : undefined}
+      >
+        {checked ? <Check /> : <Copy />}
+        {isLoading ? "Copying..." : "Copy Markdown"}
+      </button>
+      {copyError ? (
+        <span id={copyErrorId} role="status" className="text-xs text-fd-destructive">
+          {copyError}
+        </span>
+      ) : null}
+    </span>
   );
 }
 

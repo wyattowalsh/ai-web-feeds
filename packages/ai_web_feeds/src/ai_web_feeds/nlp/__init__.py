@@ -4,7 +4,7 @@ This package contains modules for:
 - Quality scoring: Heuristic-based article quality assessment
 - Entity extraction: Named entity recognition and normalization
 - Sentiment analysis: Transformer-based sentiment classification
-- Topic modeling: LDA-based topic discovery and evolution tracking
+- TopicNode modeling: LDA-based topic discovery and evolution tracking
 """
 
 from ai_web_feeds.nlp.entity_extractor import EntityExtractor

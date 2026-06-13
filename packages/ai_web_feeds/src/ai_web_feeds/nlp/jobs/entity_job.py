@@ -1,6 +1,5 @@
 """Batch job for entity extraction (Phase 5B)."""
 
-import json
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -8,7 +7,7 @@ from loguru import logger
 from sqlmodel import Session, select
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import Entity, EntityMention, FeedEntry
+from ai_web_feeds.models import ArticleEntry, Entity, EntityMention
 from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 from ai_web_feeds.storage import DatabaseManager
 
@@ -69,9 +68,9 @@ class EntityBatchJob:
 
         with self.db_manager.get_session() as session:
             # Query unprocessed articles
-            query = select(FeedEntry)
+            query = select(ArticleEntry)
             if not force:
-                query = query.where(FeedEntry.entities_processed.is_(False))
+                query = query.where(ArticleEntry.entities_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()
@@ -93,7 +92,7 @@ class EntityBatchJob:
                     article_dict = {
                         "id": article.id,
                         "title": article.title,
-                        "content": article.content or article.summary or "",
+                        "content": article.content_html or article.summary or "",
                         "summary": article.summary,
                     }
 
@@ -126,7 +125,7 @@ class EntityBatchJob:
                                 id=entity_id,
                                 canonical_name=normalized["canonical_name"],
                                 entity_type=normalized["entity_type"],
-                                aliases=json.dumps([normalized["canonical_name"]]),
+                                aliases=[normalized["canonical_name"]],
                                 frequency_count=1,
                                 first_seen=_utc_now(),
                                 last_seen=_utc_now(),

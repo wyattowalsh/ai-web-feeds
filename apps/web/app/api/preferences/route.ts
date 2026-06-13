@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
+import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,9 @@ const GETHandler = async (request: NextRequest) => {
       preferences: data,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
@@ -107,7 +109,9 @@ const POSTHandler = async (request: NextRequest) => {
       preference: data,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

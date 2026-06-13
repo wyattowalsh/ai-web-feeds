@@ -43,9 +43,9 @@ ai_web_feeds/analytics/
 **Core Models** (`models.py`):
 
 - `FeedSource` - Feed metadata and configuration
-- `FeedItem` - Individual feed entries
+- `ArticleEntry` - Individual articles from feed polling
 - `FeedFetchLog` - Fetch attempt history
-- `Topic` - Topic taxonomy
+- `TopicNode` - v3 topic taxonomy
 
 **Advanced Models** (`models_advanced.py`):
 
@@ -115,14 +115,14 @@ Core feed metadata and configuration:
 - **Discovery:** `discover_enabled`, `discover_config`
 - **Relations:** `relations`, `mappings` (JSON fields)
 
-#### `feed_items` Table
+#### `articles` Table
 
-Individual feed entries:
+Individual articles:
 
-- **Identifiers:** `id` (UUID), `feed_source_id` (foreign key)
-- **Content:** `title`, `link`, `description`, `content`, `author`
-- **Timestamps:** `published`, `updated`, `created_at`, `updated_at`
-- **Metadata:** `guid`, `categories`, `tags`, `enclosures`, `extra_data`
+- **Identifiers:** `id`, `feed_id` (foreign key), `guid_hash`, `link_hash`, `canonical_url`
+- **Content:** `title`, `link`, `summary`, `content`, `author`
+- **Timestamps:** `pub_date`, `updated_at`, `first_seen_at`, `last_seen_at`, `created_at`
+- **Taxonomy and ingress metadata:** `topics`, `raw_categories`, `source_topics`, `extra_data`
 
 #### `feed_fetch_logs` Table
 
@@ -278,7 +278,7 @@ metric = DataQualityMetric(
 5. **Index frequently queried fields**
 6. **Monitor query performance** using `echo=True` during development
 7. **Cache expensive analytics** using `AnalyticsCacheEntry`
-8. **Regular backups** of `aiwebfeeds.db`
+8. **Regular backups** of `ai-web-feeds.db`
 
 ## Future Enhancements
 

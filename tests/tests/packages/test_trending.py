@@ -1,11 +1,11 @@
 """Unit tests for ai_web_feeds.trending module"""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry
+from ai_web_feeds.models import ArticleEntry
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.trending import TrendingDetector
 
@@ -38,11 +38,11 @@ def detector(mock_db, mock_settings):
 
 @pytest.fixture
 def sample_entries():
-    """Sample feed entries with categories"""
-    base_time = datetime.utcnow()
+    """Sample articles with topics."""
+    base_time = datetime.now(UTC)
     entries = []
 
-    # Create entries with different categories
+    # Create entries with different topic assignments
     categories_list = [
         ["AI", "Machine Learning"],
         ["AI", "GPT"],
@@ -52,7 +52,7 @@ def sample_entries():
     ]
 
     for i, categories in enumerate(categories_list):
-        entry = FeedEntry(
+        entry = ArticleEntry(
             id=i + 1,
             feed_id="test-feed",
             guid=f"article-{i + 1}",
@@ -61,7 +61,7 @@ def sample_entries():
             summary=f"Summary {i + 1}",
             pub_date=base_time - timedelta(minutes=i * 10),
             discovered_at=base_time - timedelta(minutes=i * 10),
-            categories=categories,
+            topics=categories,
         )
         entries.append(entry)
 
@@ -90,13 +90,13 @@ class TestTrendingDetector:
 
         detector.db.get_session = MagicMock(return_value=mock_session)
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         start = now - timedelta(hours=1)
 
         counts = await detector._get_topic_counts(start, now)
 
         # Verify counts
-        assert counts["AI"] == 4  # 4 entries have "AI" category
+        assert counts["AI"] == 4  # 4 entries have the "AI" topic
         assert counts["Machine Learning"] == 1
         assert counts["GPT"] == 1
         assert counts["Blockchain"] == 1
@@ -106,12 +106,12 @@ class TestTrendingDetector:
     async def test_get_baseline_stats(self, detector):
         """Test baseline statistics calculation"""
         # Create entries spread over 3 days
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         entries = []
 
         # Day 1: 10 AI articles
         for i in range(10):
-            entry = FeedEntry(
+            entry = ArticleEntry(
                 id=i + 1,
                 feed_id="test-feed",
                 guid=f"d1-article-{i}",
@@ -119,13 +119,13 @@ class TestTrendingDetector:
                 title=f"Day 1 Article {i}",
                 pub_date=now - timedelta(days=2, hours=i),
                 discovered_at=now - timedelta(days=2, hours=i),
-                categories=["AI"],
+                topics=["AI"],
             )
             entries.append(entry)
 
         # Day 2: 12 AI articles
         for i in range(12):
-            entry = FeedEntry(
+            entry = ArticleEntry(
                 id=i + 11,
                 feed_id="test-feed",
                 guid=f"d2-article-{i}",
@@ -133,13 +133,13 @@ class TestTrendingDetector:
                 title=f"Day 2 Article {i}",
                 pub_date=now - timedelta(days=1, hours=i),
                 discovered_at=now - timedelta(days=1, hours=i),
-                categories=["AI"],
+                topics=["AI"],
             )
             entries.append(entry)
 
         # Day 3: 8 AI articles
         for i in range(8):
-            entry = FeedEntry(
+            entry = ArticleEntry(
                 id=i + 23,
                 feed_id="test-feed",
                 guid=f"d3-article-{i}",
@@ -147,7 +147,7 @@ class TestTrendingDetector:
                 title=f"Day 3 Article {i}",
                 pub_date=now - timedelta(hours=i),
                 discovered_at=now - timedelta(hours=i),
-                categories=["AI"],
+                topics=["AI"],
             )
             entries.append(entry)
 
@@ -162,7 +162,7 @@ class TestTrendingDetector:
         start = now - timedelta(days=3)
         stats = await detector._get_baseline_stats(start, now)
 
-        # Verify stats for "AI" category
+        # Verify stats for the "AI" topic
         assert "AI" in stats
         mean, std_dev = stats["AI"]
         assert mean == pytest.approx(10.0, rel=0.1)  # Mean of [10, 12, 8]
@@ -180,12 +180,12 @@ class TestTrendingDetector:
 
         detector.db.get_session = MagicMock(return_value=mock_session)
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         start = now - timedelta(hours=1)
 
         article_ids = await detector._get_representative_articles("AI", start, now, limit=3)
 
-        # Should return up to 3 article IDs with "AI" category
+        # Should return up to 3 article IDs with the "AI" topic
         assert len(article_ids) <= 3
         assert len(article_ids) > 0
 

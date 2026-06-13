@@ -59,24 +59,25 @@ lda_config = {
 #### Run Topic Modeling
 
 ```bash
-aiwebfeeds nlp topics
+ai-web-feeds nlp topics
 ```
 
 **Options**:
 
 - `--parent-topic`: Parent topic to model (default: all)
-- `--num-topics`: Number of subtopics to discover (default: 10)
-- `--min-articles`: Minimum articles required (default: 100)
+- `--topic`: Topic ID to model (default: all)
+- `--min-articles`: Minimum articles required (default: 10)
+- `--force`: Reprocess existing topic-modeling records
 
 ```bash
-# Discover 5 subtopics in "NLP" with minimum 50 articles
-aiwebfeeds nlp topics --parent-topic "NLP" --num-topics 5 --min-articles 50
+# Discover subtopics in NLP with minimum 50 articles
+ai-web-feeds nlp topics --topic "nlp" --min-articles 50
 ```
 
-#### Review Unapproved Subtopics
+#### Review Processing Stats
 
 ```bash
-aiwebfeeds nlp review-subtopics
+ai-web-feeds nlp stats
 ```
 
 **Interactive Workflow**:
@@ -96,30 +97,17 @@ Unapproved Subtopics (3)
 ✓ Approved: Transformer Architectures
 ```
 
-#### Approve Subtopic
+#### Search Topic Mentions
 
 ```bash
-aiwebfeeds nlp approve-subtopic <subtopic-id>
+# Search articles and source metadata by topic language
+ai-web-feeds search query "AI Safety"
 ```
 
-#### Rename Subtopic
+#### Reprocess Topic Modeling
 
 ```bash
-aiwebfeeds nlp rename-subtopic <subtopic-id> "New Name"
-```
-
-#### List Subtopics
-
-```bash
-# List all approved subtopics for "AI Safety"
-aiwebfeeds nlp list-subtopics "AI Safety"
-```
-
-#### View Topic Evolution
-
-```bash
-# Show topic evolution events (splits, merges, etc.)
-aiwebfeeds nlp topic-evolution --days 30
+ai-web-feeds nlp topics --force --min-articles 20
 ```
 
 **Output**:
@@ -146,8 +134,8 @@ storage = Storage()
 articles = storage.get_articles_by_topic("NLP", limit=1000)
 
 # Train LDA model
-subtopics = modeler.extract_subtopics(
-    parent_topic="NLP",
+subtopics = modeler.discover_subtopics(
+    topic="NLP",
     articles=articles,
     num_topics=10
 )
@@ -166,7 +154,7 @@ subtopics = modeler.extract_subtopics(
 # Store subtopics
 for subtopic_data in subtopics:
     storage.create_subtopic(
-        parent_topic="NLP",
+        topic="NLP",
         name=subtopic_data["name"],
         keywords=subtopic_data["keywords"],
         description=subtopic_data["description"],
@@ -250,7 +238,7 @@ GANs → (declining mention frequency)
 ### Detection Algorithm
 
 ```python
-def detect_evolution(
+def detect_subtopic_set_changes(
     current_topics: List[Subtopic],
     previous_topics: List[Subtopic]
 ) -> List[EvolutionEvent]:
@@ -339,39 +327,19 @@ PHASE5_NLP_WORKERS=4
 ### 1. Run Topic Modeling
 
 ```bash
-aiwebfeeds nlp topics --parent-topic "AI Safety"
+ai-web-feeds nlp topics --topic "ai-safety"
 ```
 
-### 2. Review Unapproved Subtopics
+### 2. Review Processing Stats
 
 ```bash
-aiwebfeeds nlp review-subtopics
+ai-web-feeds nlp stats
 ```
 
-### 3. Approve/Rename/Delete
-
-**Approve**:
+### 3. Search Discovered Topic Language
 
 ```bash
-aiwebfeeds nlp approve-subtopic <id>
-```
-
-**Rename**:
-
-```bash
-aiwebfeeds nlp rename-subtopic <id> "Better Name"
-```
-
-**Delete** (low coherence):
-
-```bash
-aiwebfeeds nlp delete-subtopic <id>
-```
-
-### 4. Verify Approved Subtopics
-
-```bash
-aiwebfeeds nlp list-subtopics "AI Safety" --approved-only
+ai-web-feeds search query "AI Safety"
 ```
 
 ## Use Cases
@@ -382,8 +350,8 @@ Monitor new research areas:
 
 ```bash
 # Monthly check for new subtopics in "AI"
-aiwebfeeds nlp topics --parent-topic "AI"
-aiwebfeeds nlp topic-evolution --event-type emergence
+ai-web-feeds nlp topics --topic "ai"
+ai-web-feeds nlp stats
 ```
 
 ### Track Topic Fragmentation
@@ -392,7 +360,7 @@ Identify when broad topics split:
 
 ```bash
 # Check if "Deep Learning" has fragmented
-aiwebfeeds nlp topic-evolution --event-type split --source "Deep Learning"
+ai-web-feeds nlp topics --topic "deep-learning" --force
 ```
 
 ### Content Organization
@@ -401,7 +369,7 @@ Use subtopics for navigation and filtering:
 
 ```bash
 # Show articles in specific subtopic
-aiwebfeeds articles list --subtopic "Transformer Architectures"
+ai-web-feeds search query "Transformer Architectures"
 ```
 
 ## Troubleshooting
@@ -420,10 +388,10 @@ aiwebfeeds articles list --subtopic "Transformer Architectures"
 
 ```bash
 # Reduce number of topics
-aiwebfeeds nlp topics --num-topics 5
+ai-web-feeds nlp topics --num-topics 5
 
 # Increase minimum articles
-aiwebfeeds nlp topics --min-articles 200
+ai-web-feeds nlp topics --min-articles 200
 ```
 
 ### Topics Too Broad
@@ -433,7 +401,7 @@ aiwebfeeds nlp topics --min-articles 200
 **Solution**: Increase `num_topics` parameter to get more specific clusters:
 
 ```bash
-aiwebfeeds nlp topics --num-topics 15
+ai-web-feeds nlp topics --num-topics 15
 ```
 
 ### Model Training Fails
@@ -455,7 +423,7 @@ Alternative to LDA using transformer embeddings:
 ```python
 # Planned: BERTopic support
 modeler = TopicModeler(algorithm="bertopic")
-subtopics = modeler.extract_subtopics(parent_topic="NLP", articles=articles)
+subtopics = modeler.discover_subtopics(topic="NLP", articles=articles)
 ```
 
 **Advantages**:

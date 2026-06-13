@@ -8,10 +8,10 @@ export interface CachedFeedPost {
   published_at: string | null;
   summary: string | null;
   author: string | null;
-  categories: string[];
+  rawCategories: string[];
 }
 
-export interface CachedFeedEntry {
+export interface CachedFeedPostBatch {
   feed_id: string;
   feed_title: string;
   source_url: string;
@@ -23,7 +23,7 @@ export interface CachedFeedEntry {
 
 const FEED_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-export async function getCachedFeedPosts(feedId: string): Promise<CachedFeedEntry | null> {
+export async function getCachedFeedPosts(feedId: string): Promise<CachedFeedPostBatch | null> {
   try {
     const rows = await sql`
       SELECT feed_id, feed_title, source_url, resolved_feed_url, posts, fetched_at, expires_at
@@ -52,7 +52,7 @@ export async function getCachedFeedPosts(feedId: string): Promise<CachedFeedEntr
   }
 }
 
-export async function setCachedFeedPosts(entry: CachedFeedEntry): Promise<void> {
+export async function setCachedFeedPosts(entry: CachedFeedPostBatch): Promise<void> {
   try {
     await sql`
       INSERT INTO cached_feed_posts (feed_id, feed_title, source_url, resolved_feed_url, posts, fetched_at, expires_at)
@@ -80,8 +80,8 @@ export async function setCachedFeedPosts(entry: CachedFeedEntry): Promise<void> 
 
 export async function getCachedFeedsByIds(
   feedIds: string[],
-): Promise<Map<string, CachedFeedEntry>> {
-  const result = new Map<string, CachedFeedEntry>();
+): Promise<Map<string, CachedFeedPostBatch>> {
+  const result = new Map<string, CachedFeedPostBatch>();
   if (feedIds.length === 0) return result;
 
   try {

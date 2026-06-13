@@ -1,11 +1,32 @@
 """Unit tests for CLI commands."""
 
+import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import yaml
 from typer.testing import CliRunner
+
+
+def _write_catalog(path: Path) -> None:
+    path.write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": "feeds-3.0.0",
+                "sources": [
+                    {
+                        "id": "test-feed",
+                        "url": "https://example.com/feed.xml",
+                        "title": "Test Feed",
+                        "topics": ["testing"],
+                        "tags": ["cli"],
+                    }
+                ],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
 
 
 @pytest.mark.unit
@@ -14,43 +35,61 @@ class TestCLIValidateCommand:
 
     def test_validate_command_exists(self):
         """Test that validate command can be imported."""
-        try:
-            from ai_web_feeds.cli.commands import validate
+        from ai_web_feeds.cli.commands import validate
 
-            assert validate is not None
-        except ImportError:
-            pytest.skip("CLI commands not yet implemented")
+        assert validate.app is not None
 
-    @pytest.mark.skip(reason="CLI validate command not fully functional")
-    @patch("ai_web_feeds.cli.commands.validate.validate_feeds")
-    def test_validate_feeds_file(self, mock_validate):
+    def test_validate_feeds_file(self):
         """Test validating feeds from file."""
         from ai_web_feeds.cli.commands.validate import app as validate_app
 
         runner = CliRunner()
         with runner.isolated_filesystem():
-            # Create a test file
             test_file = Path("test_feeds.yaml")
-            test_file.write_text("feeds: []")
+            schema_file = Path("feeds.schema.json")
+            _write_catalog(test_file)
+            schema_file.write_text(
+                json.dumps(
+                    {
+                        "type": "object",
+                        "required": ["schema_version", "sources"],
+                        "properties": {
+                            "schema_version": {"const": "feeds-3.0.0"},
+                            "sources": {"type": "array"},
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
 
-            result = runner.invoke(validate_app, ["test_feeds.yaml"])
-            assert result.exit_code == 0
+            result = runner.invoke(
+                validate_app,
+                ["feeds", "--file", str(test_file), "--schema", str(schema_file)],
+            )
+
+            assert result.exit_code == 0, result.output
 
 
 @pytest.mark.unit
 class TestCLIFetchCommand:
-    """Test fetch CLI command - SKIPPED until fetcher is implemented."""
+    """Test fetch CLI command."""
 
-    @pytest.mark.skip(reason="Fetcher module not yet implemented")
     def test_fetch_command_exists(self):
         """Test that fetch command can be imported."""
         from ai_web_feeds.cli.commands import fetch
 
-        assert fetch is not None
+        assert fetch.app is not None
 
-    @pytest.mark.skip(reason="Fetcher module not yet implemented")
-    def test_fetch_single_feed(self):
-        """Test fetching a single feed."""
+    def test_fetch_help_lists_supported_commands(self):
+        """Test fetch command help without network access."""
+        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+
+        runner = CliRunner()
+        result = runner.invoke(fetch_app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "one" in result.output
+        assert "all" in result.output
 
 
 @pytest.mark.unit
@@ -59,16 +98,48 @@ class TestCLIExportCommand:
 
     def test_export_command_exists(self):
         """Test that export command can be imported."""
-        try:
-            from ai_web_feeds.cli.commands import export
+        from ai_web_feeds.cli.commands import export
 
-            assert export is not None
-        except ImportError:
-            pytest.skip("CLI commands not yet implemented")
+        assert export.app is not None
 
-    @pytest.mark.skip(reason="Export command needs integration testing")
     def test_export_to_opml(self):
         """Test exporting feeds to OPML."""
+        from ai_web_feeds.cli.commands.export import app as export_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            input_file = Path("feeds.yaml")
+            output_file = Path("feeds.opml")
+            _write_catalog(input_file)
+
+            result = runner.invoke(
+                export_app,
+                ["opml", "--input", str(input_file), "--output", str(output_file)],
+            )
+
+            assert result.exit_code == 0, result.output
+            assert output_file.exists()
+            assert "<opml" in output_file.read_text(encoding="utf-8")
+
+    def test_export_to_csv(self):
+        """Test exporting feeds to CSV."""
+        from ai_web_feeds.cli.commands.export import app as export_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            input_file = Path("feeds.yaml")
+            output_file = Path("feeds.csv")
+            _write_catalog(input_file)
+
+            result = runner.invoke(
+                export_app,
+                ["csv", "--input", str(input_file), "--output", str(output_file)],
+            )
+
+            assert result.exit_code == 0, result.output
+            csv_text = output_file.read_text(encoding="utf-8")
+            assert "id,title,url" in csv_text
+            assert "test-feed" in csv_text
 
 
 @pytest.mark.unit
@@ -79,7 +150,7 @@ class TestCLICorpusCommand:
         """Test that corpus command can be imported."""
         from ai_web_feeds.cli.commands import corpus
 
-        assert corpus is not None
+        assert corpus.app is not None
 
     def test_corpus_command_help(self):
         """Test corpus command help output."""
@@ -99,12 +170,9 @@ class TestCLIEnrichCommand:
 
     def test_enrich_command_exists(self):
         """Test that enrich command can be imported."""
-        try:
-            from ai_web_feeds.cli.commands import enrich
+        from ai_web_feeds.cli.commands import enrich
 
-            assert enrich is not None
-        except ImportError:
-            pytest.skip("CLI commands not yet implemented")
+        assert enrich.app is not None
 
 
 @pytest.mark.unit
@@ -123,7 +191,7 @@ class TestCLIProcessCommand:
             input_file.write_text(
                 yaml.safe_dump(
                     {
-                        "schema_version": "feeds-2.1.0",
+                        "schema_version": "feeds-3.0.0",
                         "sources": [
                             {
                                 "url": "https://www.youtube.com/feeds/videos.xml?channel_id=test",
@@ -169,7 +237,7 @@ class TestCLIProcessCommand:
             input_file.write_text(
                 yaml.safe_dump(
                     {
-                        "schema_version": "feeds-2.1.0",
+                        "schema_version": "feeds-3.0.0",
                         "sources": [
                             {
                                 "url": feed_url,
@@ -184,7 +252,7 @@ class TestCLIProcessCommand:
             output_file.write_text(
                 yaml.safe_dump(
                     {
-                        "schema_version": "feeds-2.1.0",
+                        "schema_version": "feeds-3.0.0",
                         "sources": [
                             {
                                 "url": feed_url,
@@ -235,12 +303,9 @@ class TestCLIStatsCommand:
 
     def test_stats_command_exists(self):
         """Test that stats command can be imported."""
-        try:
-            from ai_web_feeds.cli.commands import stats
+        from ai_web_feeds.cli.commands import stats
 
-            assert stats is not None
-        except ImportError:
-            pytest.skip("CLI commands not yet implemented")
+        assert stats.app is not None
 
 
 @pytest.mark.unit
@@ -249,12 +314,9 @@ class TestCLIOPMLCommand:
 
     def test_opml_command_exists(self):
         """Test that OPML command can be imported."""
-        try:
-            from ai_web_feeds.cli.commands import opml
+        from ai_web_feeds.cli.commands import opml
 
-            assert opml is not None
-        except ImportError:
-            pytest.skip("CLI commands not yet implemented")
+        assert opml.app is not None
 
     def test_opml_command_registered_on_main_app(self):
         """Test that the top-level CLI exposes OPML management."""
@@ -266,17 +328,17 @@ class TestCLIOPMLCommand:
         assert result.exit_code == 0
         assert "opml" in result.output
 
-    def test_opml_import(self, temp_opml_file):
-        """Test importing OPML file."""
-        try:
-            from ai_web_feeds.cli.commands.opml import cli as opml_cli
+    def test_opml_command_help(self):
+        """Test OPML command help output."""
+        from ai_web_feeds.cli.commands.opml import app as opml_app
 
-            runner = CliRunner()
-            result = runner.invoke(opml_cli, ["import", str(temp_opml_file)])
+        runner = CliRunner()
+        result = runner.invoke(opml_app, ["--help"])
 
-            assert result is not None
-        except ImportError:
-            pytest.skip("OPML command not yet implemented")
+        assert result.exit_code == 0
+        assert "all" in result.output
+        assert "categorized" in result.output
+        assert "filtered" in result.output
 
 
 @pytest.mark.integration
@@ -285,27 +347,24 @@ class TestCLIIntegration:
 
     def test_cli_help(self):
         """Test CLI help output."""
-        try:
-            from ai_web_feeds.cli import cli
+        from ai_web_feeds.cli import app
 
-            runner = CliRunner()
-            result = runner.invoke(cli, ["--help"])
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
 
-            assert result.exit_code == 0
-            assert "Usage:" in result.output or result.output != ""
-            assert "corpus" in result.output
-        except ImportError:
-            pytest.skip("CLI not yet implemented")
+        assert result.exit_code == 0
+        assert "Usage:" in result.output or result.output != ""
+        assert "corpus" in result.output
+        assert "export" in result.output
 
-    def test_cli_version(self):
-        """Test CLI version output."""
-        try:
-            from ai_web_feeds.cli import cli
+    def test_cli_export_group_help(self):
+        """Test top-level export command group output."""
+        from ai_web_feeds.cli import app
 
-            runner = CliRunner()
-            result = runner.invoke(cli, ["--version"])
+        runner = CliRunner()
+        result = runner.invoke(app, ["export", "--help"])
 
-            # Version command should work
-            assert result is not None
-        except ImportError:
-            pytest.skip("CLI not yet implemented")
+        assert result.exit_code == 0
+        assert "json" in result.output
+        assert "opml" in result.output
+        assert "csv" in result.output

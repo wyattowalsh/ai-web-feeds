@@ -64,7 +64,7 @@ describe("FeedCatalog", () => {
         sourceTypes={["blog", "newsletter"]}
         initialQuery="agent"
         initialSourceType="blog"
-        initialTopic={null}
+        initialTopics={[]}
         initialVerified={true}
       />,
     );
@@ -106,7 +106,10 @@ describe("FeedCatalog", () => {
       "href",
       "/reader?feed=feed-1&q=agent&source_type=blog&verified=true",
     );
-    expect(screen.queryByRole("link", { name: /OPML/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Export OPML/i })).toHaveAttribute(
+      "href",
+      "/api/exports/opml?format=filtered&feed=feed-1",
+    );
   });
 
   it("carries the exact visible feed slice into reader and article mode links", () => {
@@ -119,7 +122,7 @@ describe("FeedCatalog", () => {
         sourceTypes={["blog", "newsletter"]}
         initialQuery="feed"
         initialSourceType={null}
-        initialTopic={null}
+        initialTopics={[]}
         initialVerified={null}
       />,
     );
@@ -137,6 +140,24 @@ describe("FeedCatalog", () => {
     expect(matchingFeedsSearchUrl.searchParams.getAll("feed")).toEqual(["feed-1", "feed-2"]);
   });
 
+  it("exports the full catalog OPML when no filters narrow the feed list", () => {
+    render(
+      <FeedCatalog
+        feeds={feeds}
+        sourceTypes={["blog", "newsletter"]}
+        initialQuery=""
+        initialSourceType={null}
+        initialTopics={[]}
+        initialVerified={null}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Export OPML" })).toHaveAttribute(
+      "href",
+      "/api/exports/opml",
+    );
+  });
+
   it("keeps q/source_type/topic/verified in URL state as filters change", () => {
     render(
       <FeedCatalog
@@ -144,7 +165,7 @@ describe("FeedCatalog", () => {
         sourceTypes={["blog", "newsletter"]}
         initialQuery=""
         initialSourceType={null}
-        initialTopic={null}
+        initialTopics={[]}
         initialVerified={null}
       />,
     );
@@ -159,7 +180,9 @@ describe("FeedCatalog", () => {
       scroll: false,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "agents" }));
+    fireEvent.change(screen.getByLabelText("Topic filter"), {
+      target: { value: "agents" },
+    });
     expect(replaceMock).toHaveBeenLastCalledWith(
       "/sources?q=agents&source_type=blog&topics=agents",
       {
@@ -167,9 +190,19 @@ describe("FeedCatalog", () => {
       },
     );
 
+    fireEvent.change(screen.getByLabelText("Topic filter"), {
+      target: { value: "ml" },
+    });
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/sources?q=agents&source_type=blog&topics=agents%2Cml",
+      {
+        scroll: false,
+      },
+    );
+
     fireEvent.click(screen.getByRole("button", { name: "Verified" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
-      "/sources?q=agents&source_type=blog&topics=agents&verified=true",
+      "/sources?q=agents&source_type=blog&topics=agents%2Cml&verified=true",
       { scroll: false },
     );
   });
@@ -184,7 +217,7 @@ describe("FeedCatalog", () => {
         sourceTypes={["blog", "newsletter"]}
         initialQuery="nonexistent"
         initialSourceType="blog"
-        initialTopic={null}
+        initialTopics={[]}
         initialVerified={null}
       />,
     );
@@ -198,5 +231,6 @@ describe("FeedCatalog", () => {
       "href",
       "/reader?q=nonexistent",
     );
+    expect(screen.queryByRole("link", { name: "Export OPML" })).not.toBeInTheDocument();
   });
 });

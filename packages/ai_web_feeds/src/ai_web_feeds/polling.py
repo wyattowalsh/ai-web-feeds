@@ -14,7 +14,7 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import CurationStatus, FeedEntry, FeedPollJob, FeedSource, PollStatus
+from ai_web_feeds.models import ArticleEntry, CurationStatus, FeedPollJob, FeedSource, PollStatus
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -90,8 +90,8 @@ class FeedPoller:
             articles_count = 0
             for entry in parsed_feed.entries:
                 feed_entry = self._parse_entry(entry, feed_id)
-                if await self._is_new_entry(feed_entry.guid, feed_entry.link):
-                    self.db.add_feed_entry(feed_entry)
+                if await self._is_new_entry(feed_entry.guid, feed_entry.link, feed_id):
+                    self.db.add_article(feed_entry)
                     articles_count += 1
 
             # Update job success
@@ -138,7 +138,7 @@ class FeedPoller:
         }
 
         for feed_source in feed_sources:
-            feed_url = feed_source.feed or feed_source.site
+            feed_url = feed_source.feed
             if not feed_url:
                 summary["failed_feeds"] += 1
                 summary["failed_feed_ids"].append(feed_source.id)
@@ -173,32 +173,38 @@ class FeedPoller:
 
         return summary
 
-    async def _is_new_entry(self, guid: str | None, link: str | None = None) -> bool:
+    async def _is_new_entry(
+        self,
+        guid: str | None,
+        link: str | None = None,
+        feed_id: str | None = None,
+    ) -> bool:
         """Check if entry identity is new (not in database).
 
         Args:
             guid: Article GUID
-            link: Fallback link identity
+            link: Link identity used when a feed item has no GUID
+            feed_id: Feed/source ID used to scope article identity
 
         Returns:
             True if new entry, False if exists
         """
-        if not guid and not link:
+        if (not guid and not link) or not feed_id:
             return False
 
-        return self.db.get_feed_entry_by_identity(guid, link) is None
+        return self.db.get_article_by_identity(guid, link, feed_id) is None
 
-    def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> FeedEntry:
-        """Parse feedparser entry into FeedEntry model.
+    def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> ArticleEntry:
+        """Parse feedparser entry into ArticleEntry model.
 
         Args:
             entry: Feedparser entry dict
             feed_id: Feed ID
 
         Returns:
-            FeedEntry model instance
+            ArticleEntry model instance
         """
-        return FeedEntry(
+        return ArticleEntry(
             feed_id=feed_id,
             guid=entry.get("id") or entry.get("link"),
             link=entry.get("link", ""),
@@ -209,7 +215,8 @@ class FeedPoller:
             else None,
             pub_date=self._parse_date(entry.get("published") or entry.get("updated")),
             author=entry.get("author"),
-            categories=[tag.get("term", "") for tag in entry.get("tags", [])],
+            topics=[],
+            raw_categories=[tag.get("term", "") for tag in entry.get("tags", [])],
         )
 
     def _parse_date(self, date_str: str | None) -> datetime:

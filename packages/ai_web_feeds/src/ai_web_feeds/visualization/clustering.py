@@ -1,11 +1,11 @@
 """
-Topic clustering algorithms for 3D visualization.
+TopicNode clustering algorithms for 3D visualization.
 
 Implements Phase 4 (US2): T039-T041
 - Force-directed graph layout
 - K-means clustering
 - DBSCAN clustering
-- Topic similarity calculation
+- TopicNode similarity calculation
 """
 
 from dataclasses import dataclass
@@ -113,8 +113,8 @@ class TopicClusteringService:
         Force-directed graph layout (Fruchterman-Reingold).
 
         Args:
-            embeddings: Topic embedding vectors
-            topic_ids: Topic identifiers
+            embeddings: TopicNode embedding vectors
+            topic_ids: TopicNode identifiers
             iterations: Number of iterations
 
         Returns:
@@ -179,7 +179,7 @@ class TopicClusteringService:
         K-means clustering with PCA for 3D positioning.
 
         Args:
-            embeddings: Topic embedding vectors
+            embeddings: TopicNode embedding vectors
             n_clusters: Number of clusters
 
         Returns:
@@ -206,7 +206,7 @@ class TopicClusteringService:
         DBSCAN clustering with PCA for 3D positioning.
 
         Args:
-            embeddings: Topic embedding vectors
+            embeddings: TopicNode embedding vectors
 
         Returns:
             List of 3D positions
@@ -232,7 +232,7 @@ class TopicClusteringService:
         PCA dimensionality reduction to 3D.
 
         Args:
-            embeddings: Topic embedding vectors
+            embeddings: TopicNode embedding vectors
 
         Returns:
             List of 3D positions
@@ -255,8 +255,8 @@ class TopicClusteringService:
         Calculate topic similarity links.
 
         Args:
-            topic_ids: Topic identifiers
-            embeddings: Topic embedding vectors
+            topic_ids: TopicNode identifiers
+            embeddings: TopicNode embedding vectors
             threshold: Minimum similarity threshold
 
         Returns:

@@ -8,13 +8,13 @@ from unittest.mock import Mock
 
 import pytest
 from ai_web_feeds.models import (
+    ArticleEntry,
     CurationStatus,
     FeedFetchLog,
-    FeedItem,
     FeedSource,
     Medium,
     SourceType,
-    Topic,
+    TopicNode,
 )
 from sqlalchemy import create_engine
 from sqlmodel import Session, SQLModel
@@ -132,49 +132,49 @@ def sample_feed_sources() -> list[FeedSource]:
 
 
 @pytest.fixture
-def sample_feed_item() -> FeedItem:
-    """Create a sample feed item."""
-    return FeedItem(
-        feed_source_id="test-blog-ai",
+def sample_article_entry() -> ArticleEntry:
+    """Create a sample article entry."""
+    return ArticleEntry(
+        feed_id="test-blog-ai",
         guid="item-123",
         title="Introduction to Neural Networks",
         link="https://example.com/neural-networks",
-        published=datetime(2024, 1, 15, 10, 30, tzinfo=UTC),
-        updated=datetime(2024, 1, 15, 11, 0, tzinfo=UTC),
+        pub_date=datetime(2024, 1, 15, 10, 30, tzinfo=UTC),
         author="Test Author",
-        description="A comprehensive introduction to neural networks",
-        content="Full article content here...",
-        tags=["neural-networks", "deep-learning"],
-        enclosures=[],
+        summary="A comprehensive introduction to neural networks",
+        content_html="Full article content here...",
+        topics=["neural-networks", "deep-learning"],
+        raw_categories=["Neural Networks", "Deep Learning"],
     )
 
 
 @pytest.fixture
-def sample_feed_items() -> list[FeedItem]:
-    """Create multiple sample feed items."""
+def sample_article_entries() -> list[ArticleEntry]:
+    """Create multiple sample article entries."""
     base_time = datetime(2024, 1, 1, 12, 0, tzinfo=UTC)
     return [
-        FeedItem(
-            feed_source_id="blog-1",
+        ArticleEntry(
+            feed_id="blog-1",
             guid=f"item-{i}",
             title=f"Article {i}",
             link=f"https://blog1.com/article-{i}",
-            published=base_time,
-            description=f"Summary of article {i}",
+            pub_date=base_time,
+            summary=f"Summary of article {i}",
         )
         for i in range(5)
     ]
 
 
 @pytest.fixture
-def sample_topic() -> Topic:
+def sample_topic() -> TopicNode:
     """Create a sample topic."""
-    return Topic(
+    return TopicNode(
         id="artificial-intelligence",
-        name="Artificial Intelligence",
+        label="Artificial Intelligence",
+        facet="domain",
         description="AI and machine learning research and applications",
         aliases=["ai", "ml"],
-        parent_id=None,
+        parents=[],
     )
 
 

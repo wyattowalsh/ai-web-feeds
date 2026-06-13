@@ -19,7 +19,7 @@ body:
         3. Test the CLI command locally that's failing in CI:
            ```bash
            # Example: If validate workflow fails
-           uv run aiwebfeeds validate --all --strict
+           uv run ai-web-feeds validate all --strict
            ```
         4. Review [workflow documentation](https://aiwebfeeds.com/docs/development/workflows)
 
@@ -90,7 +90,7 @@ body:
         Exit code: 1
 
         Error:
-        Run uv run aiwebfeeds validate --all --strict
+        Run uv run ai-web-feeds validate all --strict
         [2025-01-15 10:30:00] ERROR: Validation failed
         ...
       render: shell
@@ -106,7 +106,7 @@ body:
 
         Copy from the workflow logs or the YAML file.
       placeholder: |
-        uv run aiwebfeeds validate --all --strict
+        uv run ai-web-feeds validate all --strict
 
         # Or
         uv run ruff check .
@@ -126,7 +126,7 @@ body:
 
         ```bash
         # Run the exact command from the workflow
-        uv run aiwebfeeds validate --all --strict
+        uv run ai-web-feeds validate all --strict
         ```
       placeholder: |
         ✅ Works locally / ❌ Fails locally
@@ -248,7 +248,7 @@ body:
         ```yaml
         # Add timeout to prevent hanging
         - name: Validate feeds
-          run: uv run aiwebfeeds validate --all --timeout 60
+          run: uv run ai-web-feeds validate all --strict
           timeout-minutes: 5
         ```
       render: markdown

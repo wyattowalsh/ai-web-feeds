@@ -11,32 +11,40 @@ export type ArticleCorpusArticle = {
   feed_title: string;
   title: string;
   link: string;
+  canonical_url: string | null;
   summary: string | null;
   content_html: string | null;
   author: string | null;
   published_at: string | null;
-  categories: string[];
+  discovered_at: string | null;
   topics: string[];
+  raw_categories: string[];
+  source_topics: string[];
   source_type: string;
   verified: boolean;
   is_active: boolean;
+  ingest_meta: Record<string, unknown>;
 };
 
 export type ArticleCorpusMetadata = {
+  schema_version: string;
   generated_at: string | null;
   source_db: string;
   article_count: number;
   feed_count: number;
   latest_published_at: string | null;
+  freshness_watermark: string | null;
   is_empty: boolean;
 };
 
 type ExtractedCorpusMetadata = {
+  schema_version: string | null;
   generated_at: string | null;
   source_db: string;
   article_count: number | undefined;
   feed_count: number | undefined;
   latest_published_at: string | null;
+  freshness_watermark: string | null;
 };
 
 export type ArticleCorpus = {
@@ -155,10 +163,13 @@ export type AutocompleteResponse = {
   limit: number;
 };
 
+const ARTICLE_CORPUS_ENV_PATH = process.env.AI_WEB_FEEDS_ARTICLE_CORPUS_PATH?.trim();
 const ARTICLE_CORPUS_PATHS = [
+  ...(ARTICLE_CORPUS_ENV_PATH ? [path.resolve(ARTICLE_CORPUS_ENV_PATH)] : []),
   path.join(process.cwd(), "data", "articles.generated.json"),
   path.resolve(process.cwd(), "..", "..", "data", "articles.generated.json"),
 ];
+const ARTICLE_CORPUS_SCHEMA_VERSION = "articles-3.0.0";
 const CANONICAL_DATABASE_PATH = "data/ai-web-feeds.db";
 const AUTOCOMPLETE_MIN_PREFIX_LENGTH = 2;
 const DEFAULT_AUTOCOMPLETE_LIMIT = 8;
@@ -180,7 +191,7 @@ export async function loadArticleCorpus(
 ): Promise<ArticleCorpus> {
   const resolvedCorpus = await resolveArticleCorpusPath();
   if (!resolvedCorpus) {
-    return createEmptyCorpus();
+    throw new Error("Article corpus asset not found: data/articles.generated.json");
   }
 
   const { articleCorpusPath, fileInfo } = resolvedCorpus;
@@ -199,16 +210,18 @@ export async function loadArticleCorpus(
   }
 
   const loader = (async () => {
-    const raw = await readFile(articleCorpusPath, "utf8").catch(() => "");
+    const raw = await readFile(articleCorpusPath, "utf8");
     if (!raw.trim()) {
-      return createEmptyCorpus(fileMtimeMs);
+      throw new Error(`Article corpus asset is empty: ${articleCorpusPath}`);
     }
 
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw) as unknown;
-    } catch {
-      return createEmptyCorpus(fileMtimeMs);
+    } catch (error) {
+      throw new Error(`Article corpus asset is invalid JSON: ${articleCorpusPath}`, {
+        cause: error,
+      });
     }
 
     const payload = normalizeCorpusPayload(parsed, fileMtimeMs);
@@ -292,7 +305,7 @@ export async function searchArticlesInCorpus(
         title: article.title,
         description: article.summary || `From ${article.feed_title}`,
         url: article.link,
-        topics: article.topics.length > 0 ? article.topics : article.categories,
+        topics: article.topics,
         source_type: article.source_type,
         verified: article.verified,
         is_active: article.is_active,
@@ -414,11 +427,8 @@ export async function buildAutocompleteSuggestions(
         scoreText(normalizedPrefix, article.summary, 4) +
         scoreText(normalizedPrefix, article.feed_title, 4) +
         scoreText(normalizedPrefix, article.author, 2) +
-        scoreList(
-          normalizedPrefix,
-          article.topics.length > 0 ? article.topics : article.categories,
-          4,
-        );
+        scoreList(normalizedPrefix, article.topics, 4) +
+        scoreList(normalizedPrefix, article.raw_categories, 1);
 
       return {
         type: "article" as const,
@@ -472,9 +482,7 @@ function buildTopicSuggestions(
   }
 
   for (const article of corpus.articles) {
-    for (const topic of normalizeStringList(
-      article.topics.length > 0 ? article.topics : article.categories,
-    )) {
+    for (const topic of normalizeStringList(article.topics)) {
       if (!topic.includes(prefix)) {
         continue;
       }
@@ -498,8 +506,16 @@ function buildTopicSuggestions(
 }
 
 function normalizeCorpusPayload(raw: unknown, fileMtimeMs: number): ArticleCorpus {
-  const payload = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("Article corpus payload must be a v3 object");
+  }
+
+  const payload = raw as Record<string, unknown>;
   const metadata = extractCorpusMetadata(payload, fileMtimeMs);
+  if (metadata.schema_version !== ARTICLE_CORPUS_SCHEMA_VERSION) {
+    throw new Error(`Unsupported article corpus schema: ${metadata.schema_version ?? "missing"}`);
+  }
+
   const sourceArticles = extractArticleRecords(payload);
   const articles = dedupeArticles(sourceArticles.map(normalizeCorpusArticle));
   const uniqueFeedIds = new Set(articles.map((article) => article.feed_id));
@@ -508,11 +524,13 @@ function normalizeCorpusPayload(raw: unknown, fileMtimeMs: number): ArticleCorpu
 
   return {
     metadata: {
+      schema_version: ARTICLE_CORPUS_SCHEMA_VERSION,
       generated_at: metadata.generated_at ?? null,
       source_db: metadata.source_db ?? CANONICAL_DATABASE_PATH,
       article_count: metadata.article_count ?? articles.length,
       feed_count: metadata.feed_count ?? uniqueFeedIds.size,
       latest_published_at: latestPublishedAt,
+      freshness_watermark: metadata.freshness_watermark ?? latestPublishedAt,
       is_empty: articles.length === 0,
     },
     articles,
@@ -523,66 +541,65 @@ function extractCorpusMetadata(
   payload: Record<string, unknown>,
   fileMtimeMs: number,
 ): ExtractedCorpusMetadata {
-  const meta =
-    (payload.metadata && typeof payload.metadata === "object" ? payload.metadata : null) ??
-    (payload.meta && typeof payload.meta === "object" ? payload.meta : null) ??
-    {};
+  if (
+    !payload.metadata ||
+    typeof payload.metadata !== "object" ||
+    Array.isArray(payload.metadata)
+  ) {
+    throw new Error("Article corpus metadata must be a v3 metadata object");
+  }
+
+  const meta = payload.metadata;
   const metaRecord = meta as Record<string, unknown>;
 
   return {
-    generated_at:
-      readString(metaRecord.generated_at ?? metaRecord.generatedAt) ??
-      timestampFromMtime(fileMtimeMs),
-    source_db: readString(metaRecord.source_db ?? metaRecord.sourceDb) ?? CANONICAL_DATABASE_PATH,
-    article_count: readNumber(metaRecord.article_count ?? metaRecord.articleCount),
-    feed_count: readNumber(metaRecord.feed_count ?? metaRecord.feedCount),
-    latest_published_at:
-      readString(metaRecord.latest_published_at ?? metaRecord.latestPublishedAt) ?? null,
+    schema_version: readString(metaRecord.schema_version),
+    generated_at: readString(metaRecord.generated_at) ?? timestampFromMtime(fileMtimeMs),
+    source_db: readString(metaRecord.source_db) ?? CANONICAL_DATABASE_PATH,
+    article_count: readNumber(metaRecord.article_count),
+    feed_count: readNumber(metaRecord.feed_count),
+    latest_published_at: readString(metaRecord.latest_published_at) ?? null,
+    freshness_watermark: readString(metaRecord.freshness_watermark) ?? null,
   };
 }
 
 function extractArticleRecords(payload: Record<string, unknown>): unknown[] {
-  if (Array.isArray(payload.articles)) {
-    return payload.articles;
+  if (!Array.isArray(payload.articles)) {
+    throw new Error("Article corpus payload must include a v3 articles array");
   }
 
-  if (Array.isArray(payload.items)) {
-    return payload.items;
-  }
-
-  if (Array.isArray(payload.records)) {
-    return payload.records;
-  }
-
-  return [];
+  return payload.articles;
 }
 
 function normalizeCorpusArticle(record: unknown): ArticleCorpusArticle {
   const entry = record && typeof record === "object" ? (record as Record<string, unknown>) : {};
-  const feedId = readString(entry.feed_id ?? entry.feedId) ?? "";
+  const feedId = readString(entry.feed_id) ?? "";
   const title = readString(entry.title) ?? "Untitled";
   const link = readString(entry.link) ?? "";
-  const publishedAt = readString(entry.published_at ?? entry.publishedAt);
+  const publishedAt = readString(entry.published_at);
 
   return {
-    id:
-      readString(entry.id) ??
-      readString(entry.guid) ??
-      readString(entry.link) ??
-      `${feedId || "feed"}:${title}`,
+    id: readString(entry.id) ?? `${feedId || "feed"}:${title}`,
     feed_id: feedId,
-    feed_title: readString(entry.feed_title ?? entry.feedTitle) ?? feedId,
+    feed_title: readString(entry.feed_title) ?? feedId,
     title,
     link,
+    canonical_url: readString(entry.canonical_url) ?? (link || null),
     summary: readString(entry.summary) ?? null,
-    content_html: readString(entry.content_html ?? entry.contentHtml) ?? null,
+    content_html: readString(entry.content_html) ?? null,
     author: readString(entry.author) ?? null,
     published_at: publishedAt ?? null,
-    categories: normalizeStringList(readStringList(entry.categories)),
-    topics: normalizeStringList(readStringList(entry.topics ?? entry.categories)),
-    source_type: readString(entry.source_type ?? entry.sourceType) ?? "feed",
+    discovered_at: readString(entry.discovered_at) ?? null,
+    topics: normalizeStringList(readStringList(entry.topics)),
+    raw_categories: normalizeStringList(readStringList(entry.raw_categories)),
+    source_topics: normalizeStringList(readStringList(entry.source_topics)),
+    source_type: readString(entry.source_type) ?? "feed",
     verified: readBoolean(entry.verified),
     is_active: readBoolean(entry.is_active, true),
+    ingest_meta:
+      entry.ingest_meta && typeof entry.ingest_meta === "object"
+        ? (entry.ingest_meta as Record<string, unknown>)
+        : {},
   };
 }
 
@@ -629,7 +646,6 @@ function matchesArticle(
   if (filters.topics && filters.topics.length > 0) {
     const topicPool = new Set([
       ...normalizeStringList(article.topics),
-      ...normalizeStringList(article.categories),
       ...normalizeStringList(feed?.topics ?? []),
       ...normalizeStringList(feed?.tags ?? []),
     ]);
@@ -656,7 +672,6 @@ function scoreArticle(
     return 0;
   }
 
-  const categories = article.topics.length > 0 ? article.topics : article.categories;
   return (
     scoreText(normalizedQuery, article.title, 10) +
     scoreText(normalizedQuery, article.summary, 5) +
@@ -664,7 +679,8 @@ function scoreArticle(
     scoreText(normalizedQuery, article.author, 2) +
     scoreText(normalizedQuery, article.feed_title, 4) +
     scoreText(normalizedQuery, feed?.title, 2) +
-    scoreList(normalizedQuery, categories, 4)
+    scoreList(normalizedQuery, article.topics, 4) +
+    scoreList(normalizedQuery, article.raw_categories, 1)
   );
 }
 
@@ -831,20 +847,6 @@ function buildUnboundedSearchMeta(candidateSources: number): SearchResponseMeta 
   };
 }
 
-function createEmptyCorpus(fileMtimeMs?: number): ArticleCorpus {
-  return {
-    metadata: {
-      generated_at: timestampFromMtime(fileMtimeMs),
-      source_db: CANONICAL_DATABASE_PATH,
-      article_count: 0,
-      feed_count: 0,
-      latest_published_at: null,
-      is_empty: true,
-    },
-    articles: [],
-  };
-}
-
 function dedupeArticles(articles: ArticleCorpusArticle[]): ArticleCorpusArticle[] {
   const seen = new Set<string>();
   const deduped: ArticleCorpusArticle[] = [];
@@ -926,7 +928,7 @@ function readNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-function readBoolean(value: unknown, fallback = false): boolean {
+function readBoolean(value: unknown, defaultValue = false): boolean {
   if (typeof value === "boolean") {
     return value;
   }
@@ -942,7 +944,7 @@ function readBoolean(value: unknown, fallback = false): boolean {
     }
   }
 
-  return fallback;
+  return defaultValue;
 }
 
 function normalizeText(value: string | null | undefined): string {

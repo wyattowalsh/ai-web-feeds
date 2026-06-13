@@ -9,15 +9,15 @@ Python CLI, and a Fumadocs-powered documentation site.
 
 - Curated feed library
 
-  - Organized by multiple categories (e.g., research, news, company blogs, podcasts,
-    newsletters)
+  - Organized by canonical topics and source types (e.g., research, news, company blogs,
+    podcasts, newsletters)
   - Deduplication and canonicalization of sources
   - Clear naming and consistent metadata
 
-- OPML import/export
+- OPML export
 
   - One master OPML combining all feeds
-  - Per‑category OPML files for selective import
+  - Topic-grouped OPML files for selective import
   - Clean titles and folder hierarchy for readers
 
 - Validation and quality checks
@@ -25,8 +25,9 @@ Python CLI, and a Fumadocs-powered documentation site.
   - HTTP reachability and content-type validation
   - RSS/Atom auto-discovery from site URLs when needed
   - Robust retries and backoff for flaky endpoints
-  - Basic analytics and summaries (counts by category, validation stats)
-  - RSSHub fallback for sites without native feeds (public or self-hosted instances)
+  - Basic analytics and summaries (topic coverage, source-type counts, validation stats)
+  - Explicit RSSHub feed generation for platforms without native feeds (public or
+    self-hosted instances)
   - Docling-based parsing for PDFs/unstructured documents linked from feeds (optional)
 
 - Advanced AI/NLP (Phase 5)
@@ -42,9 +43,9 @@ Python CLI, and a Fumadocs-powered documentation site.
 
 - Developer-friendly CLI (Typer)
 
-  - Add/remove/list/search feeds and categories
+  - Validate, enrich, search, fetch, and export feed sources
   - Validate feeds and produce reports
-  - Export master and per‑category OPML
+  - Export master and topic-grouped OPML
   - Quick stats for health and coverage
   - Optional local SQLite cache/metadata via SQLModel (e.g., validation results, feed
     health)
@@ -69,15 +70,15 @@ Python CLI, and a Fumadocs-powered documentation site.
 
 - Data modeling and validation
 
-  - Pydantic v2 models for feeds, categories, and metadata + SQLModel for typed
-    persistence (SQLite) and caching
+  - Pydantic v2 models for feeds, topics, and metadata + SQLModel for typed persistence
+    (SQLite) and caching
 
 - Networking and crawling
 
   - httpx for fast, async-friendly HTTP requests
   - tenacity for resilient retries and backoff
   - crawlee-python for anonymous browsing and robust fetching when sites need it
-  - RSSHub as a feed generator/fallback when sites lack RSS/Atom
+  - RSSHub as an explicit feed generator when sites lack RSS/Atom
   - Docling for robust parsing of PDFs and unstructured documents referenced by feeds
 
 - CLI and tooling

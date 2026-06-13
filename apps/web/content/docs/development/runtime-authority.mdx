@@ -19,15 +19,15 @@ This page explains which data source owns each part of the product. Not every fi
 
 ## What Each Layer Owns
 
-| Tier                      | Canonical assets                                                                                                             | Used for                                                                       |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas                                                                          | contributor-edited catalog and taxonomy                                        |
-| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML                                                                               | checked-in outputs generated from authored inputs                              |
-| Runtime article store     | `feed_entries` in `data/ai-web-feeds.db` canonical; fallback to `data/aiwebfeeds.db` only when the canonical file is missing | polled article rows and feed refresh state                                     |
-| Generated web corpus      | `data/articles.generated.json`                                                                                               | self-contained article browse/search/read payload for the Next.js app          |
-| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/`                                                              | corpus-backed reading/search plus catalog-backed source discovery              |
-| Browser-local runtime     | IndexedDB, localStorage, reader-local state                                                                                  | anonymous on-device reader preferences and article state                       |
-| External backend proxy    | `BACKEND_URL`-backed Python service                                                                                          | optional analytics logging, saved searches, and backend-proxied runtime routes |
+| Tier                      | Canonical assets                                                | Used for                                                                       |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Authored repository truth | `data/feeds.yaml`, `data/topics.yaml`, JSON schemas             | contributor-edited catalog and taxonomy                                        |
+| Derived repository assets | `data/feeds.enriched.yaml`, exported JSON/OPML                  | checked-in outputs generated from authored inputs                              |
+| Runtime article store     | `articles` in `data/ai-web-feeds.db`                            | polled article rows and feed refresh state                                     |
+| Generated web corpus      | `data/articles.generated.json`                                  | self-contained article browse/search/read payload for the Next.js app          |
+| Web APIs and workspace    | `/api/articles`, `/api/search`, `/api/search/autocomplete`, `/` | corpus-backed reading/search plus catalog-backed source discovery              |
+| Browser-local runtime     | IndexedDB, localStorage, reader-local state                     | anonymous on-device reader preferences and article state                       |
+| External backend proxy    | `BACKEND_URL`-backed Python service                             | optional analytics logging, saved searches, and backend-proxied runtime routes |
 
 Use the YAML catalog and topic files when you are changing the source list itself.
 
@@ -102,14 +102,13 @@ The web app prefers `data/articles.generated.json` for article browse/search.
 
 - If the corpus exists, `/`, `/api/articles`, article search, and
   autocomplete article suggestions use it.
-- If the corpus is missing or empty, the feeds workspace uses
-  `/api/feeds/posts/aggregate` as a live fallback across the current source
-  slice.
+- If the corpus is missing or empty, the feeds workspace shows corpus health and
+  can load a bounded live sample for the current source slice.
 - Live fetches from `/api/feeds/posts/aggregate` also remain available as a
   freshness overlay when a generated corpus is present.
 
 <Callout type="info" title="Practical rule">
-  Edit YAML when you are changing the catalog itself. Use the runtime database when you are inspecting operational behavior or populating `feed_entries`. Use the generated corpus when you are validating the reader/search experience that ships in the standalone web app.
+  Edit YAML when you are changing the catalog itself. Use the runtime database when you are inspecting operational behavior or populating `articles`. Use the generated corpus when you are validating the reader/search experience that ships in the standalone web app.
 </Callout>
 
 ## Related documentation

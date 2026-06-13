@@ -34,8 +34,9 @@ export type FeedsWorkspaceInitialBrowse = {
     content_html: string | null;
     author: string | null;
     published_at: string | null;
-    categories: string[];
     topics: string[];
+    source_topics: string[];
+    raw_categories: string[];
     source_type: string;
     verified: boolean;
     is_active: boolean;
@@ -48,10 +49,12 @@ export type FeedsWorkspaceInitialBrowse = {
   applied_sort: "latest" | "oldest" | "source";
   corpus: {
     generated_at: string | null;
+    schema_version: string;
     source_db: string;
     article_count: number;
     feed_count: number;
     latest_published_at: string | null;
+    freshness_watermark: string | null;
     is_empty: boolean;
   };
 };
@@ -75,7 +78,7 @@ export async function loadReaderRouteData(
   const initialBrowse =
     mode === "catalog"
       ? null
-      : ((await browseArticleCorpus({
+      : await browseArticleCorpus({
           q: initialState.query,
           feedIds: initialState.feedIds,
           sourceType: initialState.sourceType ?? undefined,
@@ -84,7 +87,7 @@ export async function loadReaderRouteData(
           sort: initialState.sort,
           cursor: initialState.cursor,
           limit: initialState.limit,
-        })) as FeedsWorkspaceInitialBrowse);
+        }).catch(() => null);
 
   return {
     mode,
@@ -129,10 +132,7 @@ function parseMode(searchParams: URLSearchParams): FeedsWorkspaceMode {
 }
 
 function parseSort(searchParams: URLSearchParams): FeedsWorkspaceInitialState["sort"] {
-  const rawSort =
-    searchParams.get("sort")?.trim().toLowerCase() ??
-    searchParams.get("reader_sort")?.trim().toLowerCase() ??
-    "";
+  const rawSort = searchParams.get("sort")?.trim().toLowerCase() ?? "";
 
   if (rawSort === "oldest" || rawSort === "source") {
     return rawSort;

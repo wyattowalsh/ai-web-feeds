@@ -1,11 +1,11 @@
 """Unit tests for ai_web_feeds.notifications module"""
 
-from datetime import datetime
-from unittest.mock import MagicMock
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, Notification, NotificationType, TrendingTopic
+from ai_web_feeds.models import ArticleEntry, Notification, NotificationType, TrendingTopic
 from ai_web_feeds.notifications import NotificationManager
 from ai_web_feeds.storage import DatabaseManager
 
@@ -14,8 +14,9 @@ from ai_web_feeds.storage import DatabaseManager
 def mock_db():
     """Mock database manager"""
     db = MagicMock(spec=DatabaseManager)
-    db.get_feed_followers = MagicMock(return_value=["user-1", "user-2"])
+    db.get_source_followers = MagicMock(return_value=["user-1", "user-2"])
     db.create_notification = MagicMock()
+    db.delete_notifications_before = MagicMock(return_value=2)
     return db
 
 
@@ -36,16 +37,16 @@ def notifier(mock_db, mock_settings):
 
 @pytest.fixture
 def sample_articles():
-    """Sample feed entries"""
+    """Sample articles"""
     return [
-        FeedEntry(
+        ArticleEntry(
             id=i,
             feed_id="test-feed",
             guid=f"article-{i}",
             link=f"http://example.com/article-{i}",
             title=f"Article {i}",
             summary=f"Summary {i}",
-            pub_date=datetime.utcnow(),
+            pub_date=datetime.now(UTC),
         )
         for i in range(1, 6)
     ]
@@ -88,7 +89,7 @@ class TestNotificationManager:
     @pytest.mark.asyncio
     async def test_notify_new_articles_no_followers(self, notifier, mock_db, sample_articles):
         """Test notification when no followers"""
-        mock_db.get_feed_followers.return_value = []
+        mock_db.get_source_followers.return_value = []
 
         await notifier.notify_new_articles("test-feed", sample_articles)
 
@@ -109,8 +110,8 @@ class TestNotificationManager:
         topic = TrendingTopic(
             id=1,
             topic_id="artificial-intelligence",
-            period_start=datetime.utcnow(),
-            period_end=datetime.utcnow(),
+            period_start=datetime.now(UTC),
+            period_end=datetime.now(UTC),
             article_count=50,
             baseline_mean=10.0,
             baseline_std=2.0,
@@ -135,23 +136,26 @@ class TestNotificationManager:
         assert notification.context_data["z_score"] == 2.5
 
     @pytest.mark.asyncio
-    async def test_broadcast_notification(self, notifier):
-        """Test WebSocket broadcast (placeholder)"""
+    async def test_broadcast_notification(self, mock_db, mock_settings):
+        """Test live broadcaster delivery."""
+        broadcaster = MagicMock()
+        broadcaster.broadcast_notification = AsyncMock()
+        notifier = NotificationManager(mock_db, mock_settings, broadcaster=broadcaster)
         notification = Notification(
             id=1,
             user_id="user-1",
             type=NotificationType.NEW_ARTICLE,
             title="Test",
             message="Test message",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
-        # Should not raise exception (currently just logs)
         await notifier._broadcast_notification(notification)
+        broadcaster.broadcast_notification.assert_awaited_once_with("user-1", notification)
 
-    def test_cleanup_old_notifications(self, notifier, mock_settings):
+    def test_cleanup_old_notifications(self, notifier, mock_db):
         """Test notification cleanup"""
         result = notifier.cleanup_old_notifications()
 
-        # Currently returns 0 (placeholder)
-        assert result == 0
+        assert result == 2
+        mock_db.delete_notifications_before.assert_called_once()

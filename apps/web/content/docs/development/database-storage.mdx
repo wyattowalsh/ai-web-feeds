@@ -16,9 +16,9 @@ The database schema consists of 7 primary tables that store all possible data:
 ```python
 # Core data models
 FeedSource          # Feed definitions and metadata
-FeedItem            # Individual feed entries
+ArticleEntry        # Individual articles from feed polling
 FeedFetchLog        # Fetch history and logs
-Topic               # Topic taxonomy
+TopicNode           # v3 topic taxonomy
 
 # Enrichment and analytics
 FeedEnrichmentData  # Comprehensive enrichment metadata
@@ -240,8 +240,9 @@ The `DatabaseManager` class provides all storage operations:
 from ai_web_feeds import DatabaseManager
 
 # Initialize
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
-db.create_db_and_tables()
+database_url = "sqlite:///data/ai-web-feeds.db"
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 
 # Feed sources
 db.add_feed_source(feed_source)
@@ -277,8 +278,8 @@ The enrichment process automatically stores data to the database:
 from ai_web_feeds import enrich_all_feeds, DatabaseManager
 
 # Initialize database
+upgrade_database_to_head()
 db = DatabaseManager()
-db.create_db_and_tables()
 
 # Enrich and persist
 feeds_data = load_feeds("data/feeds.yaml")
@@ -299,7 +300,7 @@ data = db.get_feed_complete_data("feed-id")
 #     "enrichment": FeedEnrichmentData,
 #     "validation": FeedValidationResult,
 #     "analytics": [FeedAnalytics],
-#     "recent_items": [FeedItem]
+#     "recent_articles": [ArticleEntry]
 # }
 ```
 
@@ -345,10 +346,10 @@ The CLI automatically handles database storage:
 
 ```bash
 # Process with database persistence
-aiwebfeeds process \
+ai-web-feeds process \
   --input data/feeds.yaml \
   --output data/feeds.enriched.yaml \
-  --database sqlite:///data/aiwebfeeds.db
+  --database sqlite:///data/ai-web-feeds.db
 
 # Database is automatically populated with:
 # - FeedSource records (from YAML)
@@ -394,8 +395,8 @@ FeedValidationResult.feed_source_id
 FeedAnalytics.feed_source_id
 
 # Custom indexes
-FeedItem.published_at  # For time-based queries
-Topic.parent_id        # For hierarchical queries
+ArticleEntry.pub_date  # For time-based queries
+TopicNode.parents      # For taxonomy DAG queries
 ```
 
 ### Query Optimization

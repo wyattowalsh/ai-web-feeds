@@ -7,7 +7,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { fetchBackend, formatBackendErrorResponse, clampNumber } from "@/lib/backend";
+import {
+  BackendConfigurationError,
+  clampNumber,
+  createFeatureUnavailableResponse,
+  fetchBackend,
+  formatBackendErrorResponse,
+  getBackendErrorStatus,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +34,19 @@ const GETHandler = async (request: NextRequest) => {
       updated_at: new Date().toISOString(),
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    if (error instanceof BackendConfigurationError) {
+      return NextResponse.json(
+        createFeatureUnavailableResponse(
+          "Trending",
+          "Trending topics are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
+        ),
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

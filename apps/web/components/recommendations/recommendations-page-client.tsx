@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
+import { ensureAnonymousUserId, fetchWithAnonymousIdentity } from "@/lib/user-identity";
 import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
 
 interface Recommendation {
@@ -49,6 +50,8 @@ export function RecommendationsPageClient({
   const [loading, setLoading] = useState(true);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [userId, setUserId] = useState<string>("");
+  const [busyFeedId, setBusyFeedId] = useState<string | null>(null);
+  const [interactionMessage, setInteractionMessage] = useState<string | null>(null);
   const [unavailableMessage, setUnavailableMessage] = useState<string | null>(
     backendConfigured ? null : "Recommendations require the optional ai-web-feeds backend service.",
   );
@@ -86,7 +89,9 @@ export function RecommendationsPageClient({
         }
         params.set("limit", "20");
 
-        const response = await fetch(`/api/recommendations?${params.toString()}`);
+        const response = await fetchWithAnonymousIdentity(
+          `/api/recommendations?${params.toString()}`,
+        );
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as {
             error?: string;
@@ -120,19 +125,34 @@ export function RecommendationsPageClient({
   );
 
   useEffect(() => {
-    let id = localStorage.getItem("recommendation_user_id");
-    if (!id) {
-      id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-      localStorage.setItem("recommendation_user_id", id);
-    }
-    setUserId(id);
+    let cancelled = false;
 
-    if (!backendConfigured) {
-      setLoading(false);
-      return;
-    }
+    void ensureAnonymousUserId()
+      .then((id) => {
+        if (cancelled) {
+          return;
+        }
 
-    void loadRecommendations(id, []);
+        setUserId(id);
+
+        if (!backendConfigured) {
+          setLoading(false);
+          return;
+        }
+
+        void loadRecommendations(id, []);
+      })
+      .catch((error) => {
+        console.error("Anonymous identity bootstrap error:", error);
+        if (!cancelled) {
+          setLoading(false);
+          setUnavailableMessage("Could not establish a local reader identity for recommendations.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [backendConfigured, loadRecommendations]);
 
   const handleTopicToggle = (topic: string) => {
@@ -141,12 +161,18 @@ export function RecommendationsPageClient({
       : [...selectedTopics, topic];
 
     setSelectedTopics(newTopics);
-    void loadRecommendations(userId, newTopics);
+    if (userId) {
+      void loadRecommendations(userId, newTopics);
+    }
   };
 
   const handleInteraction = async (feedId: string, interactionType: string, reason: string) => {
+    if (!userId) {
+      return;
+    }
+
     try {
-      await fetch("/api/recommendations", {
+      await fetchWithAnonymousIdentity("/api/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -166,9 +192,47 @@ export function RecommendationsPageClient({
     router.push(buildCatalogHref(rec, selectedTopics));
   };
 
-  const handleSubscribe = (rec: Recommendation) => {
-    void handleInteraction(rec.feed.id, "subscribe", rec.reason);
-    alert(`Subscribed to ${rec.feed.title}!`);
+  const handleSubscribe = async (rec: Recommendation) => {
+    if (!userId) {
+      setInteractionMessage("Local reader identity is still loading.");
+      return;
+    }
+
+    setBusyFeedId(rec.feed.id);
+    setInteractionMessage(null);
+
+    try {
+      const response = await fetchWithAnonymousIdentity("/api/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          feed_id: rec.feed.id,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        code?: string;
+      } | null;
+
+      if (!response.ok) {
+        setInteractionMessage(
+          response.status === 503 || payload?.code === "FEATURE_UNAVAILABLE"
+            ? "Following needs the optional backend service in this deployment."
+            : payload?.error || "Could not follow this source.",
+        );
+        return;
+      }
+
+      await handleInteraction(rec.feed.id, "subscribe", rec.reason);
+      setInteractionMessage(`Following ${rec.feed.title}.`);
+    } catch (error) {
+      console.error("Follow recommendation error:", error);
+      setInteractionMessage("Could not follow this source.");
+    } finally {
+      setBusyFeedId(null);
+    }
   };
 
   const handleDismiss = (rec: Recommendation) => {
@@ -318,6 +382,11 @@ export function RecommendationsPageClient({
                   </div>
                 </div>
               )}
+              {interactionMessage ? (
+                <p className="rounded-lg border border-(--line) bg-(--surface-muted) px-3 py-2 text-sm text-(--ink-muted)">
+                  {interactionMessage}
+                </p>
+              ) : null}
             </>
           ) : null}
         </div>
@@ -400,9 +469,10 @@ export function RecommendationsPageClient({
                         type="button"
                         onClick={() => handleSubscribe(rec)}
                         variant="secondary"
+                        disabled={busyFeedId === rec.feed.id}
                       >
                         <BookmarkPlus className="size-4" />
-                        Subscribe
+                        {busyFeedId === rec.feed.id ? "Following..." : "Follow source"}
                       </Button>
                       <Button type="button" onClick={() => handleDismiss(rec)} variant="ghost">
                         <Trash2 className="size-4" />

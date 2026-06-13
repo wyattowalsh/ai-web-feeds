@@ -1,9 +1,9 @@
 /**
- * Feed follows API
+ * Source follows API
  *
- * GET /api/follows - Get feeds followed by user
- * POST /api/follows - Follow a feed
- * DELETE /api/follows - Unfollow a feed
+ * GET /api/follows - Get sources followed by user
+ * POST /api/follows - Follow a source
+ * DELETE /api/follows - Unfollow a source
  *
  * Anonymous browser features use a stable client-generated UUID as user_id.
  */
@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
+import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -45,18 +45,20 @@ const GETHandler = async (request: NextRequest) => {
       count: Array.isArray(data) ? data.length : 0,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
 const POSTHandler = async (request: NextRequest) => {
-  let body: { user_id?: string; feed_id?: string } | undefined;
+  let body: { user_id?: string; source_id?: string } | undefined;
   let identity = getUserIdentity(request);
 
   try {
-    body = (await request.json()) as { user_id?: string; feed_id?: string };
+    body = (await request.json()) as { user_id?: string; source_id?: string };
     identity = getUserIdentity(request, body.user_id ?? null);
-    const { feed_id } = body;
+    const { source_id } = body;
 
     if (body.user_id && identity.source === "anonymous") {
       return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
@@ -73,15 +75,15 @@ const POSTHandler = async (request: NextRequest) => {
       return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
     }
 
-    if (!feed_id) {
-      return NextResponse.json({ error: "Missing required field: feed_id" }, { status: 400 });
+    if (!source_id) {
+      return NextResponse.json({ error: "Missing required field: source_id" }, { status: 400 });
     }
 
     const data = await fetchBackend("/storage/follows", {
       method: "POST",
       body: {
         user_id: identity.user_id,
-        feed_id,
+        source_id,
       },
     });
 
@@ -95,17 +97,19 @@ const POSTHandler = async (request: NextRequest) => {
         success: true,
         already_following: true,
         user_id: identity.user_id,
-        feed_id: body?.feed_id,
+        source_id: body?.source_id,
       });
     }
 
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 
 const DELETEHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
-  const feedId = searchParams.get("feed_id");
+  const sourceId = searchParams.get("source_id");
   const requestedUserId = searchParams.get("user_id");
   const identity = getUserIdentity(request, requestedUserId);
 
@@ -121,8 +125,8 @@ const DELETEHandler = async (request: NextRequest) => {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
-  if (!feedId) {
-    return NextResponse.json({ error: "Missing required parameter: feed_id" }, { status: 400 });
+  if (!sourceId) {
+    return NextResponse.json({ error: "Missing required parameter: source_id" }, { status: 400 });
   }
 
   try {
@@ -130,17 +134,19 @@ const DELETEHandler = async (request: NextRequest) => {
       method: "DELETE",
       params: {
         user_id: identity.user_id,
-        feed_id: feedId,
+        source_id: sourceId,
       },
     });
 
     return NextResponse.json({
       success: true,
       user_id: identity.user_id,
-      feed_id: feedId,
+      source_id: sourceId,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

@@ -43,9 +43,9 @@ class TestCacheKeyGeneration:
 
 
 class TestCacheLayerLRU:
-    """Test CacheLayer behavior with the in-memory fallback."""
+    """Test CacheLayer behavior with the in-memory cache."""
 
-    def test_lru_fallback_round_trip(self):
+    def test_memory_cache_round_trip(self):
         """Stored data should be retrievable when Redis is disabled."""
         cache = CacheLayer(enable_redis=False)
         filters = {"topic": "llm"}
@@ -83,7 +83,7 @@ class TestCacheLayerLRU:
         assert result is None
 
     def test_lru_respects_max_size(self):
-        """The fallback cache should evict the oldest entry when full."""
+        """The in-memory cache should evict the oldest entry when full."""
         cache = CacheLayer(enable_redis=False)
         cache.LRU_MAX_SIZE = 2
 
@@ -97,7 +97,7 @@ class TestCacheLayerLRU:
         assert cache.get("topic_metrics", {"topic": "c"}, base_range, "device-1") == {"value": "c"}
 
     def test_cache_stats_track_hits_and_misses(self):
-        """Cache statistics should reflect fallback usage."""
+        """Cache statistics should reflect memory usage."""
         cache = CacheLayer(enable_redis=False)
         filters = {"topic": "llm"}
         date_range = {"start": "2024-01-01", "end": "2024-01-31"}
@@ -107,7 +107,7 @@ class TestCacheLayerLRU:
         cache.get("topic_metrics", filters, date_range, "device-1")
 
         stats = cache.get_stats()
-        assert stats["cache_type"] == "lru"
+        assert stats["cache_type"] == "memory"
         assert stats["hits"] == 1
         assert stats["misses"] == 1
         assert stats["total_requests"] == 2

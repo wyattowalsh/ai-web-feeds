@@ -108,6 +108,13 @@ export function formatBackendErrorResponse(error: unknown): {
     };
   }
 
+  if (error instanceof BackendConfigurationError) {
+    return {
+      error: error.message,
+      code: FEATURE_UNAVAILABLE_CODE,
+    };
+  }
+
   if (error instanceof Error) {
     return {
       error: error.message,

@@ -32,7 +32,7 @@ ______________________________________________________________________
 ## Overview
 
 This prompt guides AI agents in discovering, curating, and adding high-quality RSS/Atom
-feeds to the `feeds.yaml` file following the AIWebFeeds schema v2.1.0.
+feeds to the `feeds.yaml` file following the AIWebFeeds schema v3.0.0.
 
 ______________________________________________________________________
 
@@ -151,7 +151,7 @@ The system auto-detects these patterns:
 | **YouTube**   | `https://www.youtube.com/channel/UCxxxxx`                 | Channel RSS         |
 | **Reddit**    | `https://www.reddit.com/r/MachineLearning`                | `.rss` suffix       |
 | **Medium**    | `https://towardsdatascience.com`                          | `/feed` suffix      |
-| **Twitter/X** | `https://x.com/username`                                  | RSSHub fallback     |
+| **Twitter/X** | `https://x.com/username`                                  | RSSHub generation   |
 | **Substack**  | `https://newsletter.substack.com`                         | `/feed` suffix      |
 | **Dev.to**    | `https://dev.to/t/machinelearning`                        | Feed URL            |
 
@@ -357,4 +357,4 @@ Before submitting output, verify:
 
 ______________________________________________________________________
 
-**Version**: 2.1.0 | **Updated**: October 2025 | **Schema**: feeds-2.1.0
+**Version**: 3.0.0 | **Updated**: June 2026 | **Schema**: feeds-3.0.0

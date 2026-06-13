@@ -21,7 +21,7 @@ class TestTopicClusteringService:
         embeddings = generate_sample_embeddings(n_topics=10, dim=64)
         metadata = {
             topic_id: {
-                "label": f"Topic {i}",
+                "label": f"TopicNode {i}",
                 "size": float(10 + i * 5),
                 "category": f"Category {i % 3}",
             }
@@ -98,7 +98,7 @@ class TestTopicClusteringService:
 
         for node in nodes:
             assert node.id in embeddings
-            assert node.label.startswith("Topic")
+            assert node.label.startswith("TopicNode")
             assert node.size >= 10
             assert node.category is not None
             assert len(node.position) == 3

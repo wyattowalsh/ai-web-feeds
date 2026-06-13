@@ -1,5 +1,5 @@
 {
-  "schema_version": "feeds-2.1.0",
+  "schema_version": "feeds.enriched-3.0.0",
   "document_meta": {
     "created": "2025-10-15",
     "updated": "2025-10-15",
@@ -257,7 +257,7 @@
         "ml",
         "research"
       ],
-      "notes": "Custom title; uses RSSHub for Twitter feed",
+      "notes": "Custom title; uses explicit Twitter feed bridge",
       "id": "src-5f50d1e28e8251",
       "title": "Andrej Karpathy",
       "feed": "https://nitter.net/karpathy/rss",

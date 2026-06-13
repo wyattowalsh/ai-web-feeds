@@ -2,7 +2,7 @@
 
 Implements FR-011 through FR-011g:
 - Direct database queries to Phase 002 analytics tables
-- 5-minute cache layer with Redis/LRU fallback
+- 5-minute cache layer with explicit Redis or in-memory mode
 - Input validation and sanitization
 - Error recovery with exponential backoff
 """
@@ -281,7 +281,7 @@ class DataService:
         """Get topic graph data for 3D visualization.
 
         Args:
-            topic_ids: Topic IDs to include (None = all)
+            topic_ids: TopicNode IDs to include (None = all)
             device_id: Device identifier for caching
 
         Returns:
@@ -332,9 +332,36 @@ class DataService:
                     for row in topics
                 ]
 
-                # Query relationships (simplified - from topics.yaml in production)
-                # This is a placeholder for Phase 002 topic relationship data
-                edges = []  # Would be populated from topic_relations table
+                edge_query = text(
+                    """
+                    SELECT
+                        topic_edge.topic_id,
+                        topic_edge.related_topic_id,
+                        topic_edge.relation_type,
+                        topic_edge.weight
+                    FROM topic_edges topic_edge
+                    WHERE (
+                        :topic_ids IS NULL
+                        OR topic_edge.topic_id = ANY(:topic_ids)
+                        OR topic_edge.related_topic_id = ANY(:topic_ids)
+                    )
+                    """
+                )
+
+                topic_edges = session.execute(
+                    edge_query,
+                    {"topic_ids": topic_ids},
+                )
+
+                edges = [
+                    {
+                        "source": row.topic_id,
+                        "target": row.related_topic_id,
+                        "type": row.relation_type,
+                        "weight": row.weight,
+                    }
+                    for row in topic_edges
+                ]
 
                 graph_data = {
                     "nodes": nodes,

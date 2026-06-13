@@ -27,11 +27,12 @@ body:
         cd ai-web-feeds
         uv sync
 
-        # Validate your feed
-        uv run aiwebfeeds validate --feeds "YOUR_FEED_URL"
+        # After adding the source to data/feeds.yaml, validate the catalog
+        uv run ai-web-feeds validate feeds
+        uv run ai-web-feeds validate references
 
-        # Fetch and preview metadata
-        uv run aiwebfeeds fetch --url "YOUR_FEED_URL" --metadata-only
+        # Fetch by catalog feed ID and preview stored articles
+        uv run ai-web-feeds fetch one "YOUR_FEED_ID"
         ```
 
         This helps ensure faster approval! 🚀
@@ -71,7 +72,8 @@ body:
 
         **How to find**: Look for RSS/feed icons, `/feed`, `/rss`, or `/atom.xml` in the site.
 
-        **Validation**: Run `uv run aiwebfeeds validate --feeds "URL"` to test locally.
+        **Validation**: Add the source to `data/feeds.yaml`, then run
+        `uv run ai-web-feeds validate feeds`.
       placeholder: "https://example.com/feed.xml"
     validations:
       required: false
@@ -264,23 +266,23 @@ body:
         1. **Automated Validation** - Our GitHub Actions workflow will:
            ```bash
            # Schema validation
-           uv run aiwebfeeds validate --schema --strict
+           uv run ai-web-feeds validate feeds --strict
 
            # URL accessibility check
-           uv run aiwebfeeds validate --check-urls --feeds "YOUR_URL"
+           uv run ai-web-feeds validate http --feed-id "YOUR_FEED_ID"
 
            # Feed parsing test
-           uv run aiwebfeeds validate --parse-feeds --feeds "YOUR_URL"
+           uv run ai-web-feeds fetch one "YOUR_FEED_ID"
            ```
 
         2. **Manual Review** - A maintainer will review the feed for:
            - Content quality and relevance to AI/ML
            - Feed reliability and update frequency
-           - Proper categorization
+           - Proper topic assignment
 
         3. **Enrichment** - If approved, the feed will be enriched:
            ```bash
-           uv run aiwebfeeds enrich --url "YOUR_URL" --output data/feeds.yaml
+           uv run ai-web-feeds enrich all --input data/feeds.yaml --output data/feeds.enriched.yaml
            ```
 
         4. **Automation** - The feed will be:

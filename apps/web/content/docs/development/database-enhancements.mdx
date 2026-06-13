@@ -77,7 +77,7 @@ packages/ai_web_feeds/src/ai_web_feeds/analytics/
 **Capabilities**:
 
 - **Predictive Health**: Linear regression for 7-day health forecasts
-- **Pattern Detection**: Temporal, content length, title, category analysis
+- **Pattern Detection**: Temporal, content length, title, and topic analysis
 - **Similarity Computation**: Multi-dimensional feed similarity (Jaccard)
 - **Clustering**: BFS-based feed clustering by similarity
 - **ML Insights**: Comprehensive ML-powered reports
@@ -157,10 +157,11 @@ packages/ai_web_feeds/
 ### Initialize Database
 
 ```python
-from ai_web_feeds import DatabaseManager
+from ai_web_feeds import DatabaseManager, upgrade_database_to_head
 
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
-db.create_db_and_tables()
+database_url = "sqlite:///data/ai-web-feeds.db"
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 ```
 
 ### Load Data from YAML

@@ -81,7 +81,7 @@ ai-web-feeds/
 │   ├── topics.yaml           # Topic taxonomy (graph structure)
 │   ├── *.schema.json         # JSON Schema validation
 │   ├── *.opml                # Feed reader imports
-│   └── ai-web-feeds.db       # SQLite cache (legacy aiwebfeeds.db also supported)
+│   └── ai-web-feeds.db       # SQLite cache
 └── .github/                   # GitHub templates & workflows
 ```
 

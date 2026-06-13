@@ -28,6 +28,7 @@ from ai_web_feeds.models import (
     FeedSource,
     RecommendationInteraction,
     UserProfile,
+    UserSourceFollow,
 )
 
 EMBEDDING_NORM_EPSILON = 1e-8
@@ -38,6 +39,12 @@ _random = SystemRandom()
 def get_settings() -> Settings:
     """Get or create shared settings instance."""
     return Settings()
+
+
+def _get_user_followed_source_ids(session: Session, user_id: str) -> list[str]:
+    """Return normalized source follows for a user."""
+    statement = select(UserSourceFollow.source_id).where(UserSourceFollow.user_id == user_id)
+    return list(session.exec(statement).all())
 
 
 # ============================================================================
@@ -331,11 +338,11 @@ def generate_recommendations(
     # Exclude seed feeds
     exclude_ids = list(seed_feed_ids or [])
 
-    # Get user profile for interaction history
+    # Get user profile for interaction history; follows live in user_source_follows.
     if user_id:
+        exclude_ids.extend(_get_user_followed_source_ids(session, user_id))
         user_profile = session.get(UserProfile, user_id)
         if user_profile:
-            exclude_ids.extend(user_profile.followed_feeds)
             exclude_ids.extend((user_profile.interaction_history or {}).keys())
 
     # Calculate recommendation counts
@@ -348,15 +355,14 @@ def generate_recommendations(
     # 1. Content-based recommendations
     if content_count > 0 and (seed_feed_ids or seed_topics):
         if seed_topics:
-            # Topic-based similarity
+            # TopicNode-based similarity
             content_recs = get_similar_feeds_by_topic(
                 session, seed_topics, exclude_ids, content_count
             )
             for feed in content_recs:
                 recommendations.append((feed, content_weight, "similar_topics"))
         elif seed_feed_ids:
-            # Embedding-based similarity (requires embeddings)
-            # For MVP, fallback to topic-based
+            # Topic similarity from the seed feed's canonical topics.
             seed_feed = session.get(FeedSource, seed_feed_ids[0])
             if seed_feed and seed_feed.topics:
                 content_recs = get_similar_feeds_by_topic(
@@ -428,10 +434,14 @@ def track_recommendation_interaction(
     feed = session.get(FeedSource, feed_id)
 
     if interaction_type == "subscribe":
-        followed_feeds = list(user_profile.followed_feeds or [])
-        if feed_id not in followed_feeds:
-            followed_feeds.append(feed_id)
-            user_profile.followed_feeds = followed_feeds
+        existing_follow = session.exec(
+            select(UserSourceFollow).where(
+                UserSourceFollow.user_id == user_id,
+                UserSourceFollow.source_id == feed_id,
+            )
+        ).first()
+        if existing_follow is None:
+            session.add(UserSourceFollow(user_id=user_id, source_id=feed_id))
 
     if interaction_type in {"view", "click", "subscribe"} and feed is not None:
         preferred_topics = set(user_profile.preferred_topics or [])
@@ -473,15 +483,15 @@ def get_user_recommendations(
     seed_feed_ids = None
     seed_topics = None
 
-    if user_profile:
-        # Use followed feeds as seeds
-        if user_profile.followed_feeds:
-            seed_feed_ids = user_profile.followed_feeds[:5]  # Top 5
+    followed_source_ids = _get_user_followed_source_ids(session, user_id)
+    if followed_source_ids:
+        seed_feed_ids = followed_source_ids[:5]
 
+    if user_profile:
         if user_profile.preferred_topics:
             seed_topics = user_profile.preferred_topics[:5]
 
-        # Extract topics from followed feeds when no explicit topic preference exists
+        # Extract topics from followed sources when no explicit topic preference exists.
         if seed_feed_ids:
             feeds = session.exec(
                 select(FeedSource).where(cast(Any, FeedSource.id).in_(seed_feed_ids))

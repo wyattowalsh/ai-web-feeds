@@ -187,11 +187,6 @@ class EntityExtractor:
 
         return self.ENTITY_TYPE_MAP.get(label)
 
-    def _compute_confidence(self, ent: spacy.tokens.Span) -> float:
-        """Compatibility wrapper for older helper naming."""
-
-        return self._calculate_confidence(ent)
-
     def _extract_context(self, ent: spacy.tokens.Span, doc, window: int = 50) -> str:
         """Extract a short text window around an entity span."""
 

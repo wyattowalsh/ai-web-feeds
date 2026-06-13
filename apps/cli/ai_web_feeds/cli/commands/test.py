@@ -36,7 +36,7 @@ def get_project_root() -> Path:
                         return parent
             except (OSError, tomllib.TOMLDecodeError):
                 continue
-        # Fallback: if we find a tests directory at this level
+        # Secondary workspace marker for source checkouts without uv workspace metadata.
         if (parent / "tests").exists() and (parent / "packages").exists():
             return parent
     return Path.cwd()

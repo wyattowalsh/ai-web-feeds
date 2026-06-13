@@ -1,7 +1,7 @@
 /**
- * FollowButton - Toggle feed follow status
+ * FollowButton - Toggle source follow status
  *
- * Allows users to follow/unfollow feeds to receive notifications.
+ * Allows users to follow/unfollow sources to receive notifications.
  */
 
 "use client";
@@ -55,7 +55,7 @@ export function FollowButton({
 
       if (isFollowing) {
         // Unfollow
-        const response = await fetch(`/api/follows?user_id=${userId}&feed_id=${feedId}`, {
+        const response = await fetch(`/api/follows?user_id=${userId}&source_id=${feedId}`, {
           method: "DELETE",
         });
 
@@ -68,7 +68,7 @@ export function FollowButton({
         const response = await fetch("/api/follows", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, feed_id: feedId }),
+          body: JSON.stringify({ user_id: userId, source_id: feedId }),
         });
 
         if (!response.ok) throw new Error("Failed to follow");

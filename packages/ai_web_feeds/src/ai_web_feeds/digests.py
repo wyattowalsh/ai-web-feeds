@@ -14,7 +14,7 @@ from croniter import croniter  # type: ignore[import-untyped]
 from loguru import logger
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import EmailDigest, FeedEntry
+from ai_web_feeds.models import ArticleEntry, EmailDigest
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -43,7 +43,7 @@ class DigestManager:
 
     @staticmethod
     def _ensure_utc(value: datetime) -> datetime:
-        """Normalize datetime values to UTC while tolerating legacy naive rows."""
+        """Normalize datetime values to UTC."""
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
         return value.astimezone(UTC)
@@ -91,10 +91,10 @@ class DigestManager:
         Args:
             digest: EmailDigest instance
         """
-        # Get user's followed feeds
-        user_feeds = self.db.get_user_follows(digest.user_id)
+        # Get user's followed sources.
+        user_feeds = self.db.get_user_followed_sources(digest.user_id)
 
-        # Get recent articles from followed feeds
+        # Get recent articles from followed sources.
         since = (
             self._ensure_utc(digest.last_sent_at)
             if digest.last_sent_at
@@ -102,7 +102,7 @@ class DigestManager:
         )
         articles = []
         for feed_id in user_feeds:
-            feed_articles = self.db.get_feed_entries(feed_id, limit=self.max_articles)
+            feed_articles = self.db.get_articles(feed_id, limit=self.max_articles)
             articles.extend([a for a in feed_articles if self._ensure_utc(a.pub_date) >= since])
 
         # Sort by pub_date (most recent first)
@@ -136,12 +136,12 @@ class DigestManager:
 
         logger.info(f"Sent digest {digest.id} with {len(articles)} articles to {digest.email}")
 
-    def _generate_html(self, _digest: EmailDigest, articles: list[FeedEntry]) -> str:
+    def _generate_html(self, _digest: EmailDigest, articles: list[ArticleEntry]) -> str:
         """Generate HTML email content.
 
         Args:
             _digest: EmailDigest instance
-            articles: List of FeedEntry objects
+            articles: List of ArticleEntry objects
 
         Returns:
             HTML email string
@@ -163,7 +163,7 @@ class DigestManager:
         </head>
         <body>
             <h1>Your AI Web Feeds Digest</h1>
-            <p>Here are the latest {len(articles)} articles from your followed feeds:</p>
+            <p>Here are the latest {len(articles)} articles from your followed sources:</p>
         """
 
         for article in articles:

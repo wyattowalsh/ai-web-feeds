@@ -44,8 +44,8 @@ git push origin feat/your-feature
 
 **CRITICAL: You MUST use the correct package managers:**
 
-- **Python:** ONLY `uv` ✅ (NEVER `pip`, `pip install`, `python -m pip`) ❌
-- **Node.js:** ONLY `pnpm` ✅ (NEVER `npm install`, `yarn`) ❌
+- **Python:** ONLY `uv`; do not use pip-based installers.
+- **Node.js:** ONLY `pnpm`; do not use npm or Yarn commands.
 
 **Why?**
 
@@ -64,14 +64,7 @@ pnpm install              # Install Node dependencies
 pnpm add package          # Add Node package
 ```
 
-❌ **FORBIDDEN:**
-
-```bash
-pip install package       # NEVER
-npm install               # NEVER
-yarn add package          # NEVER
-python -m pip install     # NEVER
-```
+Avoid Python installers outside `uv` and Node package-manager commands outside `pnpm`.
 
 ### Initial Setup
 
@@ -124,7 +117,7 @@ ai-web-feeds/
 │   ├── feeds.yaml            # Feed definitions
 │   ├── topics.yaml           # Topic taxonomy
 │   ├── *.schema.json         # JSON schemas
-│   └── ai-web-feeds.db       # SQLite database (legacy aiwebfeeds.db still supported)
+│   └── ai-web-feeds.db       # Canonical SQLite database
 ├── tests/                     # Integration tests
 └── .github/                   # GitHub workflows
 ```
@@ -210,9 +203,9 @@ cd apps/cli
 uv run ai-web-feeds --help
 
 # Test commands
-uv run ai-web-feeds fetch --url https://example.com/feed
-uv run ai-web-feeds validate --all
-uv run ai-web-feeds export --format json
+uv run ai-web-feeds fetch one openai-blog
+uv run ai-web-feeds validate all
+uv run ai-web-feeds export json --output feeds.json
 ```
 
 ### 3. Testing

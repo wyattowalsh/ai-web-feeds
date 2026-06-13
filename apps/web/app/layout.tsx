@@ -147,7 +147,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
     >
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} nonce={nonce} />
-        <RootProvider>{children}</RootProvider>
+        <RootProvider search={{ options: { api: "/api/docs/search" } }} theme={{ nonce }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

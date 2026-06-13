@@ -39,7 +39,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const { articleId } = await params;
   const article = await getArticleBySlug(articleId);
   if (!article) {
-    notFound();
+    return createPageMetadata({
+      title: "Article not found",
+      description: "This article reference is not available in the public AI Web Feeds corpus.",
+      path: `/articles/${articleId}`,
+      type: "article",
+      robots: noIndexFollowRobots,
+    });
   }
 
   return createPageMetadata({

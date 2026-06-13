@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
+import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
 
 const PATCHHandler = async (
@@ -66,7 +66,9 @@ const PATCHHandler = async (
       action,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

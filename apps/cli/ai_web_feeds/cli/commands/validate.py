@@ -40,7 +40,7 @@ def validate_feeds(
     try:
         import jsonschema
     except ImportError:
-        console.print("[red]Error: jsonschema not installed. Run: uv pip install jsonschema[/red]")
+        console.print("[red]Error: jsonschema not installed. Run: uv sync[/red]")
         sys.exit(1)
 
     data_dir = get_data_dir()
@@ -103,7 +103,7 @@ def validate_topics(
     try:
         import jsonschema
     except ImportError:
-        console.print("[red]Error: jsonschema not installed. Run: uv pip install jsonschema[/red]")
+        console.print("[red]Error: jsonschema not installed. Run: uv sync[/red]")
         sys.exit(1)
 
     data_dir = get_data_dir()
@@ -160,10 +160,11 @@ def validate_topic_references() -> None:
         feeds_data = yaml.safe_load(f)
 
     # Get all valid topic IDs
-    valid_topics = set()
-    for category in topics_data.get("categories", []):
-        for topic in category.get("topics", []):
-            valid_topics.add(topic["id"])
+    valid_topics = {
+        topic["id"]
+        for topic in topics_data.get("topics", [])
+        if isinstance(topic, dict) and isinstance(topic.get("id"), str)
+    }
 
     console.print(f"📚 Found {len(valid_topics)} valid topics")
 
@@ -181,7 +182,7 @@ def validate_topic_references() -> None:
         console.print(f"\n[red]❌ Found {len(errors)} invalid topic references:[/red]")
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Feed ID")
-        table.add_column("Invalid Topic")
+        table.add_column("Invalid TopicNode")
 
         for feed_id, topic in errors:
             table.add_row(feed_id, topic)
@@ -293,7 +294,7 @@ def validate_http_feeds(
     console.print("\n[bold]Validation Report[/bold]")
     console.print("═" * 60)
 
-    success_count = sum(1 for r in validation_results if r.success)
+    success_count = sum(1 for r in validation_results if r.is_valid)
     failure_count = len(validation_results) - success_count
     success_rate = (success_count / len(validation_results)) * 100 if validation_results else 0
 
@@ -312,8 +313,8 @@ def validate_http_feeds(
         console.print("\n[bold]Top Errors:[/bold]")
         error_counts: dict[str, int] = {}
         for result in validation_results:
-            if not result.success and result.error_message:
-                error = result.error_message.split(":")[0]  # Get error type
+            if not result.is_valid and result.warnings:
+                error = result.warnings[0].split(":")[0]  # Get error type
                 error_counts[error] = error_counts.get(error, 0) + 1
 
         for error, count in sorted(error_counts.items(), key=lambda x: -x[1])[:5]:
@@ -362,7 +363,7 @@ def validation_report(
         history = db.get_validation_history(feed.id, limit=recent)
         if history:
             health_score = calculate_health_score(history, max_results=recent)
-            success_count = sum(1 for r in history if r.success)
+            success_count = sum(1 for r in history if r.is_valid)
             success_rate = (success_count / len(history)) * 100
 
             health_data.append(

@@ -275,14 +275,13 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
     Returns:
         FeedValidationResult model
     """
-    # Use feed URL, fallback to site URL
-    url_to_validate = feed_source.feed or feed_source.site
+    url_to_validate = feed_source.feed
 
     if not url_to_validate:
         return FeedValidationResult(
             feed_source_id=feed_source.id,
-            success=False,
-            error_message="No feed or site URL provided",
+            is_valid=False,
+            warnings=["No feed URL provided"],
             validated_at=datetime.now(),
         )
 
@@ -292,12 +291,13 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
     # Convert to FeedValidationResult model
     return FeedValidationResult(
         feed_source_id=feed_source.id,
-        success=result_dict["success"],
-        status_code=result_dict["status_code"],
+        is_valid=result_dict["success"],
+        is_accessible=result_dict["status_code"] == 200,
+        http_status=result_dict["status_code"],
         response_time_ms=result_dict["response_time_ms"],
-        error_message=result_dict["error_message"],
-        feed_format=result_dict["feed_format"],
-        entry_count=result_dict["entry_count"],
+        warnings=[result_dict["error_message"]] if result_dict["error_message"] else [],
+        item_count=result_dict["entry_count"],
+        has_items=result_dict["entry_count"] > 0,
         validated_at=result_dict["validated_at"],
     )
 
@@ -359,7 +359,7 @@ def calculate_health_score(
     recent_results = validation_results[:max_results]
 
     # Calculate success rate
-    success_count = sum(1 for r in recent_results if r.success)
+    success_count = sum(1 for r in recent_results if r.is_valid)
     success_rate = success_count / len(recent_results)
 
     # Calculate average response time factor (lower is better)
@@ -405,7 +405,7 @@ def mark_inactive_feeds(
 
         # Check if any recent validation was successful
         recent_success = any(
-            result.success and result.validated_at >= cutoff_date for result in history
+            result.is_valid and result.validated_at >= cutoff_date for result in history
         )
 
         if not recent_success:

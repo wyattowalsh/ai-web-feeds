@@ -121,6 +121,11 @@ def canonicalize_catalog(data: dict[str, Any], *, enriched: bool = False) -> dic
     """
 
     canonical = deepcopy(data)
+    if enriched:
+        canonical["schema_version"] = "feeds.enriched-3.0.0"
+    else:
+        canonical["schema_version"] = "feeds-3.0.0"
+
     canonical["sources"] = [
         _canonicalize_source(source, enriched=enriched)
         for source in data.get("sources", [])

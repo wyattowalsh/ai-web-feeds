@@ -49,7 +49,7 @@ export async function openDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      createDatabase(db);
+      createDatabase(db, request.transaction);
     };
   });
 }

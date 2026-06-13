@@ -125,8 +125,12 @@ export function normalizeSearchQuery(value: string | null | undefined): string |
 
 export function parseSearchType(value: string | null | undefined): SearchType {
   const normalized = value?.trim().toLowerCase();
-  if (normalized === "articles" || normalized === "semantic") {
+  if (normalized === "articles") {
     return "articles";
+  }
+
+  if (normalized === "sources") {
+    return "sources";
   }
 
   return DEFAULT_SEARCH_SCOPE;

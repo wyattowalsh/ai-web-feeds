@@ -7,6 +7,7 @@ from ai_web_feeds.models import (
     FeedSource,
     RecommendationInteraction,
     UserProfile,
+    UserSourceFollow,
 )
 from ai_web_feeds.recommendations import (
     calculate_content_similarity,
@@ -349,9 +350,13 @@ class TestUserInteractions:
             recommendation_reason="similar_topics",
         )
 
-        # User profile should track subscription
+        # Normalized source follows should track subscription.
         user_profile = test_session.get(UserProfile, user_id)
-        assert feed_id in user_profile.followed_feeds
+        follow = test_session.exec(select(UserSourceFollow)).first()
+        assert user_profile is not None
+        assert follow is not None
+        assert follow.user_id == user_id
+        assert follow.source_id == feed_id
 
 
 class TestPersonalizedRecommendations:
@@ -370,10 +375,9 @@ class TestPersonalizedRecommendations:
         """Test personalized recommendations based on user history."""
         user_id = "test_user"
 
-        # Create user profile with subscriptions
+        # Create user profile with history plus a normalized source follow.
         user_profile = UserProfile(
             user_id=user_id,
-            followed_feeds=["feed1"],
             preferred_topics=["llm", "research"],
             interaction_history={
                 "feed1": {"interaction_type": "view"},
@@ -381,6 +385,7 @@ class TestPersonalizedRecommendations:
             },
         )
         test_session.add(user_profile)
+        test_session.add(UserSourceFollow(user_id=user_id, source_id="feed1"))
         test_session.commit()
 
         recommendations = get_user_recommendations(test_session, user_id, limit=5)
@@ -396,13 +401,13 @@ class TestPersonalizedRecommendations:
         """Test recommendations use topics from subscribed feeds."""
         user_id = "test_user"
 
-        # Create user profile with subscription to feed1 (topics: llm, research)
+        # Create user profile with a normalized source follow to feed1.
         user_profile = UserProfile(
             user_id=user_id,
-            followed_feeds=["feed1"],
             interaction_history={"feed1": {"interaction_type": "view"}},
         )
         test_session.add(user_profile)
+        test_session.add(UserSourceFollow(user_id=user_id, source_id="feed1"))
         test_session.commit()
 
         recommendations = get_user_recommendations(test_session, user_id, limit=10)

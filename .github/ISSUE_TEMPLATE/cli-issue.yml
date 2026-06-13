@@ -1,5 +1,5 @@
 name: 🛠️ CLI Issue
-description: Report an issue with the aiwebfeeds CLI tool
+description: Report an issue with the ai-web-feeds CLI tool
 title: "[CLI]: "
 labels: ["cli", "needs-triage"]
 assignees: []
@@ -9,7 +9,7 @@ body:
       value: |
         ## CLI Issue Report
 
-        Report bugs, feature requests, or issues with the `aiwebfeeds` command-line tool.
+        Report bugs, feature requests, or issues with the `ai-web-feeds` command-line tool.
 
         ### 🔍 Before Reporting
 
@@ -21,13 +21,13 @@ body:
 
         2. **Test with debug logging**:
            ```bash
-           AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
+           AIWEBFEEDS_LOG_LEVEL=DEBUG uv run ai-web-feeds <command> --verbose
            ```
 
         3. **Check CLI help**:
            ```bash
-           uv run aiwebfeeds --help
-           uv run aiwebfeeds <command> --help
+           uv run ai-web-feeds --help
+           uv run ai-web-feeds <command> --help
            ```
 
         4. **Review [CLI documentation](https://aiwebfeeds.com/docs/development/cli)**
@@ -80,7 +80,7 @@ body:
         - Working directory (if relevant)
       placeholder: |
         $ cd /path/to/ai-web-feeds
-        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all --strict --verbose
+        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run ai-web-feeds validate all --strict
       render: bash
     validations:
       required: true
@@ -233,10 +233,10 @@ body:
       placeholder: |
         **Proposed command**:
         ```bash
-        uv run aiwebfeeds validate --feeds <url> --output-format json
+        uv run ai-web-feeds validate report
         ```
 
-        **Use case**: I want to validate a feed and get structured JSON output
+        **Use case**: I want to validate the catalog and inspect a health report
         for integration with other tools.
 
         **Example output**:
@@ -275,7 +275,7 @@ body:
         ```bash
         export AIWEBFEEDS_LOG_LEVEL=DEBUG
         export AIWEBFEEDS_LOG_FILE=debug.log
-        uv run aiwebfeeds <command> --verbose 2>&1 | tee output.log
+        uv run ai-web-feeds <command> --verbose 2>&1 | tee output.log
         ```
 
         **Test individual components**:
@@ -284,13 +284,13 @@ body:
         uv run python -c "from ai_web_feeds import validate_feeds; validate_feeds('data/feeds.yaml')"
 
         # Test CLI entry point
-        uv run python -m ai_web_feeds.cli validate --help
+        uv run python -m ai_web_feeds.cli --help
         ```
 
         **Check installation**:
         ```bash
-        uv pip list | grep ai-web-feeds
-        which aiwebfeeds
+        uv tree | grep ai-web-feeds
+        uv run ai-web-feeds --help
         uv run which python
         ```
 

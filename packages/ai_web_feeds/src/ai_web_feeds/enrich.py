@@ -57,7 +57,7 @@ class FeedEnrichment:
         self.response_time_ms: float = 0.0
         self.availability_score: float = 1.0
 
-        # Topic suggestions
+        # TopicNode suggestions
         self.suggested_topics: list[str] = []
         self.topic_confidence: dict[str, float] = {}
 
@@ -274,7 +274,7 @@ class AdvancedEnricher:
                     # Update frequency analysis
                     await self._analyze_update_frequency(entries, enrichment)
 
-                    # Topic suggestion
+                    # TopicNode suggestion
                     await self._suggest_topics(entries, enrichment)
 
                 # Check for extensions

@@ -3,7 +3,6 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import {
   filterBySourceType,
-  filterByTopic,
   filterByVerified,
   loadFeedCatalog,
   type FeedSource,
@@ -21,7 +20,7 @@ const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") || "all"; // all, categorized, filtered
   const sourceType = searchParams.get("type");
-  const topic = searchParams.get("topic");
+  const topics = parseTopicFilters(searchParams);
   const verified = parseBooleanQuery(searchParams.get("verified"));
   const explicitFeedIds = searchParams
     .getAll("feed")
@@ -35,16 +34,16 @@ const GETHandler = async (request: Request) => {
 
     // Determine which OPML file to serve
     if (format === "categorized") {
-      opmlPath = join(dataDir, "categorized.opml");
+      opmlPath = join(dataDir, "feeds.categorized.opml");
       filename = "ai-ml-feeds-categorized.opml";
     } else if (
       format === "filtered" &&
-      (explicitFeedIds.length > 0 || sourceType || topic || verified !== null)
+      (explicitFeedIds.length > 0 || sourceType || topics.length > 0 || verified !== null)
     ) {
       const filteredFeeds = resolveFilteredFeeds({
         explicitFeedIds,
         sourceType,
-        topic,
+        topics,
         verified,
       });
       const opmlContent = wrapOpmlDocument(
@@ -59,7 +58,7 @@ const GETHandler = async (request: Request) => {
         },
       });
     } else {
-      opmlPath = join(dataDir, "all.opml");
+      opmlPath = join(dataDir, "feeds.opml");
       filename = "ai-ml-feeds-all.opml";
     }
 
@@ -84,12 +83,12 @@ export const GET = withRouteTelemetry("exports.opml", GETHandler);
 function resolveFilteredFeeds({
   explicitFeedIds,
   sourceType,
-  topic,
+  topics,
   verified,
 }: {
   explicitFeedIds: string[];
   sourceType: string | null;
-  topic: string | null;
+  topics: string[];
   verified: boolean | null;
 }): FeedSource[] {
   const catalog = loadFeedCatalog().sources;
@@ -112,10 +111,37 @@ function resolveFilteredFeeds({
 
   let filtered = catalog;
   filtered = filterBySourceType(filtered, sourceType);
-  filtered = filterByTopic(filtered, topic);
+  filtered = filterByTopics(filtered, topics);
   filtered = filterByVerified(filtered, verified);
 
   return filtered;
+}
+
+function parseTopicFilters(searchParams: URLSearchParams): string[] {
+  const topics = new Set<string>();
+  for (const value of searchParams.getAll("topics")) {
+    for (const topic of value.split(",")) {
+      const normalized = topic.trim().toLowerCase();
+      if (normalized) {
+        topics.add(normalized);
+      }
+    }
+  }
+
+  return Array.from(topics);
+}
+
+function filterByTopics(feeds: FeedSource[], topics: string[]): FeedSource[] {
+  if (topics.length === 0) {
+    return feeds;
+  }
+
+  return feeds.filter((feed) => {
+    const feedTopics = new Set(
+      [...(feed.topics ?? []), ...(feed.tags ?? [])].map((topic) => topic.toLowerCase()),
+    );
+    return topics.every((topic) => feedTopics.has(topic));
+  });
 }
 
 function generateOpml(feeds: FeedSource[], title: string): string {

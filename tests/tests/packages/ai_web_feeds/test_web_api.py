@@ -8,6 +8,7 @@ from ai_web_feeds.models import (
     FeedValidationResult,
     RecommendationInteraction,
     UserProfile,
+    UserSourceFollow,
 )
 from ai_web_feeds.web_api import create_app, get_db_session
 from fastapi.testclient import TestClient
@@ -196,7 +197,7 @@ def test_recommendations_endpoint_returns_feed_payloads(client: TestClient):
 
 
 def test_recommendation_interactions_update_user_profile(client: TestClient, test_session: Session):
-    """Interaction tracking should persist feedback and followed feeds."""
+    """Interaction tracking should persist feedback and normalized source follows."""
     response = client.post(
         "/recommendations/interactions",
         json={
@@ -212,9 +213,12 @@ def test_recommendation_interactions_update_user_profile(client: TestClient, tes
 
     test_session.expire_all()
     profile = test_session.get(UserProfile, "user-2")
+    follow = test_session.exec(select(UserSourceFollow)).first()
     interactions = list(test_session.exec(select(RecommendationInteraction)).all())
 
     assert profile is not None
-    assert "feed-1" in profile.followed_feeds
+    assert follow is not None
+    assert follow.user_id == "user-2"
+    assert follow.source_id == "feed-1"
     assert "agents" in profile.preferred_topics
     assert interactions

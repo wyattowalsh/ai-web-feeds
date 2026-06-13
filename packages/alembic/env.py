@@ -28,6 +28,13 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = SQLModel.metadata
 
+
+def _migration_database_url() -> str:
+    """Return the configured migration URL, allowing test-time x-arg overrides."""
+    x_args = context.get_x_argument(as_dictionary=True)
+    return x_args.get("db_url") or config.get_main_option("sqlalchemy.url")
+
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -46,7 +53,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = _migration_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -65,8 +72,10 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = _migration_database_url()
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

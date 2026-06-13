@@ -74,7 +74,7 @@ When adding GitHub Agentic Workflows assets here:
 - Use sanitized issue or PR context rather than raw event bodies in prompts.
 - Keep agentic workflows read-only unless the mutation path is intentionally configured
   through safe outputs.
-- Document the relationship between a `.md` workflow source and any legacy `.yml`
+- Document the relationship between a `.md` workflow source and any existing `.yml`
   workflow it may eventually replace.
 
 ## Current Direction

@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from ai_web_feeds.models import FeedEntry, FeedSource, Topic
+from ai_web_feeds.models import ArticleEntry, FeedSource, TopicNode
 from ai_web_feeds.storage import DatabaseManager
 from sqlalchemy import text
 
@@ -130,50 +130,8 @@ class TestFeedSourceOperations:
 
 
 @pytest.mark.unit
-class TestFeedItemOperations:
-    """Test FeedItem CRUD operations."""
-
-    def test_add_feed_item(self, temp_db_path, sample_feed_source, sample_feed_item):
-        """Test adding a feed item."""
-        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
-        db.create_db_and_tables()
-
-        # Add feed source first
-        db.add_feed_source(sample_feed_source)
-
-        result = db.add_feed_item(sample_feed_item)
-        assert result.guid == sample_feed_item.guid
-        assert result.title == sample_feed_item.title
-
-    def test_get_feed_items(self, temp_db_path, sample_feed_source, sample_feed_items):
-        """Test retrieving feed items for a feed."""
-        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
-        db.create_db_and_tables()
-
-        # Add feed source first
-        db.add_feed_source(sample_feed_source)
-
-        # Add items
-        for item in sample_feed_items:
-            item.feed_source_id = sample_feed_source.id
-            db.add_feed_item(item)
-
-        items = db.get_feed_items(sample_feed_source.id)
-        assert len(items) == len(sample_feed_items)
-
-    def test_get_feed_items_empty(self, temp_db_path, sample_feed_source):
-        """Test retrieving items from feed with no items."""
-        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
-        db.create_db_and_tables()
-
-        db.add_feed_source(sample_feed_source)
-        items = db.get_feed_items(sample_feed_source.id)
-        assert items == []
-
-
-@pytest.mark.unit
 class TestTopicOperations:
-    """Test Topic CRUD operations."""
+    """Test TopicNode CRUD operations."""
 
     def test_add_topic(self, temp_db_path, sample_topic):
         """Test adding a topic."""
@@ -182,7 +140,7 @@ class TestTopicOperations:
 
         result = db.add_topic(sample_topic)
         assert result.id == sample_topic.id
-        assert result.name == sample_topic.name
+        assert result.label == sample_topic.label
 
     def test_get_topic(self, temp_db_path, sample_topic):
         """Test retrieving a topic."""
@@ -201,9 +159,9 @@ class TestTopicOperations:
         db.create_db_and_tables()
 
         topics = [
-            Topic(id="topic1", name="Topic 1"),
-            Topic(id="topic2", name="Topic 2"),
-            Topic(id="topic3", name="Topic 3"),
+            TopicNode(id="topic1", label="TopicNode 1", facet="domain"),
+            TopicNode(id="topic2", label="TopicNode 2", facet="domain"),
+            TopicNode(id="topic3", label="TopicNode 3", facet="domain"),
         ]
 
         for topic in topics:
@@ -222,7 +180,7 @@ class TestFetchLogOperations:
         db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
 
-        result = db.add_fetch_log(sample_fetch_log)
+        result = db.add_feed_fetch_log(sample_fetch_log)
         assert result.feed_source_id == sample_fetch_log.feed_source_id
         assert result.status_code == sample_fetch_log.status_code
 
@@ -249,7 +207,7 @@ class TestFetchLogOperations:
                 items_new=i,
                 fetch_duration_ms=1000 + i * 100,
             )
-            db.add_fetch_log(log)
+            db.add_feed_fetch_log(log)
 
         logs = db.get_fetch_logs(sample_feed_source.id)
         assert len(logs) == 3
@@ -303,23 +261,23 @@ class TestDatabaseManagerEdgeCases:
 
 
 @pytest.mark.unit
-class TestFeedEntryCorpusOperations:
-    """Test feed entry dedupe and corpus export helpers."""
+class TestArticleCorpusOperations:
+    """Test article dedupe and corpus export helpers."""
 
-    def test_add_feed_entry_dedupes_by_link_fallback(self, temp_db_path, sample_feed_source):
-        """Feed entry writes should skip duplicates by link when GUIDs differ."""
+    def test_add_article_dedupes_by_scoped_link_hash(self, temp_db_path, sample_feed_source):
+        """Article writes should skip duplicates by per-source link hash when GUIDs differ."""
         db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
         db.add_feed_source(sample_feed_source)
 
-        first_entry = FeedEntry(
+        first_entry = ArticleEntry(
             feed_id=sample_feed_source.id,
             guid="guid-1",
             link="https://example.com/article",
             title="First Title",
             pub_date=datetime(2024, 1, 1, 12, 0, tzinfo=UTC),
         )
-        duplicate_entry = FeedEntry(
+        duplicate_entry = ArticleEntry(
             feed_id=sample_feed_source.id,
             guid="guid-2",
             link="https://example.com/article",
@@ -327,12 +285,12 @@ class TestFeedEntryCorpusOperations:
             pub_date=datetime(2024, 1, 2, 12, 0, tzinfo=UTC),
         )
 
-        stored_first = db.add_feed_entry(first_entry)
-        stored_duplicate = db.add_feed_entry(duplicate_entry)
+        stored_first = db.add_article(first_entry)
+        stored_duplicate = db.add_article(duplicate_entry)
 
         assert stored_first.guid == "guid-1"
         assert stored_duplicate.guid == "guid-1"
-        assert len(db.get_all_feed_entries()) == 1
+        assert len(db.get_all_articles()) == 1
 
     def test_build_articles_corpus_payload_includes_truthful_metadata(
         self, temp_db_path, sample_feed_source
@@ -343,7 +301,7 @@ class TestFeedEntryCorpusOperations:
         sample_feed_source.verified = True
         db.add_feed_source(sample_feed_source)
 
-        entry = FeedEntry(
+        entry = ArticleEntry(
             feed_id=sample_feed_source.id,
             guid="article-1",
             link="https://example.com/article-1",
@@ -352,9 +310,10 @@ class TestFeedEntryCorpusOperations:
             content_html="<p>Content</p>",
             pub_date=datetime(2024, 1, 3, 12, 0, tzinfo=UTC),
             author="Test Author",
-            categories=["ai", "corpus"],
+            topics=["ai", "corpus"],
+            raw_categories=["AI", "Corpus"],
         )
-        db.add_feed_entry(entry)
+        db.add_article(entry)
 
         payload = db.build_articles_corpus_payload(
             partial_coverage={
@@ -377,7 +336,9 @@ class TestFeedEntryCorpusOperations:
         assert metadata["partial_coverage"]["status"] == "partial"
         assert article["id"] == "article-1"
         assert article["feed_title"] == sample_feed_source.title
-        assert article["topics"] == sample_feed_source.topics
+        assert article["topics"] == entry.topics
+        assert article["source_topics"] == sample_feed_source.topics
+        assert article["raw_categories"] == entry.raw_categories
         assert article["source_type"] == sample_feed_source.source_type.value
         assert article["verified"] is True
         assert article["is_active"] is True
@@ -389,14 +350,14 @@ class TestFeedEntryCorpusOperations:
         db.create_db_and_tables()
         db.add_feed_source(sample_feed_source)
 
-        first_entry = FeedEntry(
+        first_entry = ArticleEntry(
             feed_id=sample_feed_source.id,
             guid="guid-1",
             link="https://example.com/article",
             title="First Title",
             pub_date=datetime(2024, 1, 1, 12, 0, tzinfo=UTC),
         )
-        duplicate_entry = FeedEntry(
+        duplicate_entry = ArticleEntry(
             feed_id=sample_feed_source.id,
             guid="guid-2",
             link="https://example.com/article",

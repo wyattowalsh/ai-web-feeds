@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from ai_web_feeds.visualization.auth import get_current_device_id
 from ai_web_feeds.visualization.rate_limiter import check_rate_limit
-from ai_web_feeds.visualization.validators import validate_query_limit, validate_table_name
+from ai_web_feeds.visualization.validators import QueryValidator
 
 router = APIRouter(prefix="/api/v1/export", tags=["export"])
 
@@ -63,7 +63,7 @@ async def list_exportable_tables(
 
     tables = {
         "topic_metrics": {
-            "description": "Topic mention frequency and trends",
+            "description": "TopicNode mention frequency and trends",
             "columns": ["topic_id", "date", "mention_count", "sentiment_score"],
         },
         "feed_health": {
@@ -112,8 +112,8 @@ async def export_data(
     await check_rate_limit(device_id)
 
     # Validate inputs
-    table = validate_table_name(table)
-    limit = validate_query_limit(limit, max_limit=10000)
+    table = QueryValidator.validate_table_name(table)
+    limit = QueryValidator.validate_result_limit(limit)
 
     logger.info(f"Device {device_id[:8]} exporting {table} as {format}")
 
@@ -174,7 +174,7 @@ async def stream_export(
     """
     await check_rate_limit(device_id)
 
-    table = validate_table_name(table)
+    table = QueryValidator.validate_table_name(table)
 
     logger.info(f"Device {device_id[:8]} streaming {table} export")
 
@@ -221,7 +221,7 @@ async def bulk_export(
     await check_rate_limit(device_id)
 
     # Validate all tables
-    validated_tables = [validate_table_name(table) for table in tables]
+    validated_tables = [QueryValidator.validate_table_name(table) for table in tables]
 
     if len(validated_tables) > 10:
         msg = "Maximum 10 tables per bulk export"

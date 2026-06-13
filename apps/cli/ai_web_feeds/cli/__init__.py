@@ -17,12 +17,17 @@ from ai_web_feeds import (
     export_all_formats,
     load_feeds,
     save_feeds,
+    upgrade_database_to_head,
     validate_feeds,
 )
 from ai_web_feeds.load import canonicalize_catalog
 
 # Import command modules
-from ai_web_feeds.cli.commands import analytics, corpus, monitor, opml, recommend, search
+from ai_web_feeds.cli.commands import analytics, corpus, enrich as enrich_commands
+from ai_web_feeds.cli.commands import export as export_commands
+from ai_web_feeds.cli.commands import fetch, monitor, test, visualize
+from ai_web_feeds.cli.commands import nlp, opml
+from ai_web_feeds.cli.commands import recommend, search, stats, validate as validate_commands
 
 app = typer.Typer(
     name="ai-web-feeds",
@@ -33,19 +38,17 @@ app = typer.Typer(
 # Register command modules
 app.add_typer(analytics.app, name="analytics")
 app.add_typer(corpus.app, name="corpus")
+app.add_typer(enrich_commands.app, name="enrich")
+app.add_typer(export_commands.app, name="export")
+app.add_typer(fetch.app, name="fetch")
 app.add_typer(opml.app, name="opml")
 app.add_typer(search.app, name="search")
 app.add_typer(recommend.app, name="recommend")
 app.add_typer(monitor.app, name="monitor")
-
-# Optionally register NLP commands (may fail if heavy dependencies not installed)
-try:
-    from ai_web_feeds.cli.commands import nlp
-
-    if nlp is not None:
-        app.add_typer(nlp.app, name="nlp")
-except (ImportError, AttributeError) as e:
-    logger.warning(f"NLP commands not available: {e}")
+app.add_typer(stats.app, name="stats")
+app.add_typer(test.app, name="test")
+app.add_typer(visualize.app, name="visualize")
+app.add_typer(nlp.app, name="nlp")
 
 console = Console()
 
@@ -206,7 +209,7 @@ def process(
             if url and not source.get("feed"):
                 source["feed"] = url
 
-            # Use URL as fallback title if missing
+            # Ensure every source has a title before enrichment.
             if not source.get("title"):
                 source["title"] = url or "Untitled"
 
@@ -230,9 +233,9 @@ def process(
     if not skip_enrichment:
         console.print("[bold]Step 3:[/bold] Enriching feeds...")
         try:
-            # Initialize database for enrichment persistence
+            # Apply reviewed migrations before enrichment persistence.
+            upgrade_database_to_head(database_url)
             db = DatabaseManager(database_url)
-            db.create_db_and_tables()
 
             feeds_data = enrich_all_feeds(feeds_data, db=db)
             console.print("[green]✓ Enrichment complete[/green]\n")
@@ -274,8 +277,8 @@ def process(
     # Step 6: Store in database
     console.print("\n[bold]Step 6:[/bold] Storing in database...")
     try:
+        upgrade_database_to_head(database_url)
         db = DatabaseManager(database_url)
-        db.create_db_and_tables()
 
         # Store feed sources
         from ai_web_feeds.models import FeedSource
@@ -286,8 +289,10 @@ def process(
         errors = []
         for source_data in sources:
             try:
-                # Use URL as fallback ID if no explicit ID provided
+                # Canonicalization guarantees an ID; keep a defensive error for invalid inputs.
                 source_id = source_data.get("id", source_data.get("url", ""))
+                if not source_id:
+                    raise ValueError("source is missing id")
 
                 feed_source = FeedSource(
                     id=source_id,
@@ -356,93 +361,7 @@ def load(
         raise typer.Exit(1) from e
 
 
-@app.command()
-def validate(
-    input_file: Path = typer.Argument(..., help="Input feeds YAML file"),
-    schema_file: Path = typer.Option(None, "--schema", "-s", help="JSON schema file"),
-) -> None:
-    """Validate feeds against schema."""
-
-    def exit_on_validation_failure(errors: list[str]) -> None:
-        """Exit with error message on validation failure."""
-        console.print("[red]✗ Validation failed:[/red]")
-        for error in errors:
-            console.print(f"  - {error}")
-        raise typer.Exit(1)
-
-    try:
-        feeds_data = load_feeds(input_file)
-        result = validate_feeds(feeds_data, schema_file)
-
-        if result.valid:
-            console.print("[green]✓ Validation passed![/green]")
-        else:
-            exit_on_validation_failure(result.errors)
-
-    except Exception as e:
-        console.print(f"[red]✗ Error: {e}[/red]")
-        raise typer.Exit(1) from e
-
-
-@app.command()
-def enrich(
-    input_file: Path = typer.Argument(..., help="Input feeds YAML file"),
-    output_file: Path = typer.Option(
-        None,
-        "--output",
-        "-o",
-        help="Output enriched YAML file (default: <input>.enriched.yaml)",
-    ),
-) -> None:
-    """Enrich feeds with metadata."""
-    try:
-        feeds_data = load_feeds(input_file)
-        enriched_data = enrich_all_feeds(feeds_data)
-
-        if output_file is None:
-            output_file = input_file.parent / f"{input_file.stem}.enriched.yaml"
-
-        save_feeds(enriched_data, output_file)
-        console.print(f"[green]✓ Enriched feeds saved to {output_file}[/green]")
-
-    except Exception as e:
-        console.print(f"[red]✗ Error: {e}[/red]")
-        logger.exception("Enrichment error")
-        raise typer.Exit(1) from e
-
-
-@app.command()
-def export(
-    input_file: Path = typer.Argument(..., help="Input feeds YAML file"),
-    output_dir: Path = typer.Option(
-        None,
-        "--output-dir",
-        "-o",
-        help="Output directory (default: same as input)",
-    ),
-    prefix: str = typer.Option(
-        None,
-        "--prefix",
-        "-p",
-        help="Output filename prefix (default: input filename)",
-    ),
-) -> None:
-    """Export feeds to various formats (JSON, OPML)."""
-    try:
-        feeds_data = load_feeds(input_file)
-
-        if output_dir is None:
-            output_dir = input_file.parent
-
-        if prefix is None:
-            prefix = input_file.stem
-
-        export_all_formats(feeds_data, output_dir, prefix)
-        console.print(f"[green]✓ Exported to {output_dir}/{prefix}.*[/green]")
-
-    except Exception as e:
-        console.print(f"[red]✗ Error: {e}[/red]")
-        raise typer.Exit(1) from e
+app.add_typer(validate_commands.app, name="validate")
 
 
 @app.callback()

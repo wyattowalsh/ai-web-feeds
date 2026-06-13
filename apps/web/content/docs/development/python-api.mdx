@@ -10,7 +10,7 @@ AI Web Feeds can be used as a Python library for custom integrations and automat
 ## Installation
 
 ```bash
-uv pip install -e packages/ai_web_feeds
+uv sync --package ai-web-feeds
 ```
 
 ## Feed Enrichment
@@ -70,12 +70,12 @@ from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.utils import generate_opml, save_opml
 
 # Get feeds from database
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 feeds = db.get_all_feed_sources()
 
 # Generate OPML
 opml_xml = generate_opml(feeds, title="AI Web Feeds - All")
-save_opml(opml_xml, "data/all.opml")
+save_opml(opml_xml, "data/feeds.opml")
 ```
 
 ### Generate Categorized OPML
@@ -85,7 +85,7 @@ from ai_web_feeds.utils import generate_categorized_opml
 
 # Generate categorized OPML (by source type)
 opml_xml = generate_categorized_opml(feeds, title="AI Web Feeds - By Type")
-save_opml(opml_xml, "data/categorized.opml")
+save_opml(opml_xml, "data/feeds.categorized.opml")
 ```
 
 ### Generate Filtered OPML
@@ -136,7 +136,7 @@ sources = feeds_data.get("sources", [])
 from ai_web_feeds.utils import save_feeds_yaml
 
 enriched_data = {
-    "schema_version": "feeds-enriched-1.0.0",
+    "schema_version": "feeds.enriched-3.0.0",
     "document_meta": {
         "enriched_at": datetime.utcnow().isoformat(),
         "total_sources": len(sources),
@@ -152,10 +152,11 @@ save_feeds_yaml(enriched_data, "data/feeds.enriched.yaml")
 ### Initialize Database
 
 ```python
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds import DatabaseManager, upgrade_database_to_head
 
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
-db.create_db_and_tables()
+database_url = "sqlite:///data/ai-web-feeds.db"
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 ```
 
 ### Add Feed Sources
@@ -233,7 +234,7 @@ async def main():
 
     # 3. Save enriched YAML
     enriched_data = {
-        "schema_version": "feeds-enriched-1.0.0",
+        "schema_version": "feeds.enriched-3.0.0",
         "document_meta": {
             "enriched_at": datetime.utcnow().isoformat(),
             "total_sources": len(enriched_sources),
@@ -247,8 +248,9 @@ async def main():
     save_json_schema(schema, "data/feeds.enriched.schema.json")
 
     # 5. Save to database
-    db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
-    db.create_db_and_tables()
+    database_url = "sqlite:///data/ai-web-feeds.db"
+    upgrade_database_to_head(database_url)
+    db = DatabaseManager(database_url)
 
     from ai_web_feeds.models import FeedSource
     for source_data in enriched_sources:
@@ -266,11 +268,11 @@ async def main():
 
     # All feeds
     opml_all = generate_opml(feeds, "AI Web Feeds - All")
-    save_opml(opml_all, "data/all.opml")
+    save_opml(opml_all, "data/feeds.opml")
 
     # Categorized
     opml_cat = generate_categorized_opml(feeds, "AI Web Feeds - Categorized")
-    save_opml(opml_cat, "data/categorized.opml")
+    save_opml(opml_cat, "data/feeds.categorized.opml")
 
     print("✓ Complete!")
 

@@ -1,23 +1,17 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { replaceMock, useSearchParamsMock, useArticleStateMock, useReaderPreferencesMock } =
-  vi.hoisted(() => ({
-    replaceMock: vi.fn(),
-    useSearchParamsMock: vi.fn(() => new URLSearchParams()),
-    useArticleStateMock: vi.fn(),
-    useReaderPreferencesMock: vi.fn(),
-  }));
+const { replaceMock, useSearchParamsMock, useReaderPreferencesMock } = vi.hoisted(() => ({
+  replaceMock: vi.fn(),
+  useSearchParamsMock: vi.fn(() => new URLSearchParams()),
+  useReaderPreferencesMock: vi.fn(),
+}));
 
 let currentSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock }),
   useSearchParams: () => useSearchParamsMock(),
-}));
-
-vi.mock("@/lib/use-reader-article-state", () => ({
-  useArticleState: (...args: unknown[]) => useArticleStateMock(...args),
 }));
 
 vi.mock("@/lib/use-reader-preferences", () => ({
@@ -63,8 +57,9 @@ const initialBrowse = {
       content_html: "<p>Fresh research notes</p>",
       author: "Wyatt",
       published_at: "2026-04-05T12:00:00.000Z",
-      categories: ["agents"],
       topics: ["agents"],
+      source_topics: ["agents"],
+      raw_categories: ["agents"],
       source_type: "blog",
       verified: true,
       is_active: true,
@@ -77,11 +72,13 @@ const initialBrowse = {
   applied_query: null,
   applied_sort: "latest",
   corpus: {
+    schema_version: "articles-3.0.0",
     generated_at: "2026-04-12T00:00:00.000Z",
     source_db: "data/ai-web-feeds.db",
     article_count: 1,
     feed_count: 1,
     latest_published_at: "2026-04-05T12:00:00.000Z",
+    freshness_watermark: "2026-04-05T12:00:00.000Z",
     is_empty: false,
   },
 };
@@ -113,7 +110,6 @@ describe("FeedsWorkspaceClient", () => {
     );
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
     replaceMock.mockReset();
-    useArticleStateMock.mockReset();
     useReaderPreferencesMock.mockReset();
     if (typeof window.localStorage?.clear === "function") {
       window.localStorage.clear();
@@ -133,26 +129,6 @@ describe("FeedsWorkspaceClient", () => {
       loading: false,
       update: vi.fn(async () => undefined),
     });
-
-    useArticleStateMock.mockImplementation(
-      (
-        _articleId: string,
-        article?: { read?: boolean; starred?: boolean; archived?: boolean; bookmarked?: boolean },
-      ) => ({
-        state: {
-          read: article?.read ?? false,
-          starred: article?.starred ?? false,
-          archived: article?.archived ?? false,
-          bookmarked: article?.bookmarked ?? false,
-        },
-        loading: false,
-        markRead: vi.fn(async () => undefined),
-        markUnread: vi.fn(async () => undefined),
-        toggleStar: vi.fn(async () => undefined),
-        toggleArchive: vi.fn(async () => undefined),
-        toggleBookmark: vi.fn(async () => undefined),
-      }),
-    );
   });
 
   it("renders the reader corpus workspace from the seeded browse snapshot", async () => {
@@ -205,7 +181,7 @@ describe("FeedsWorkspaceClient", () => {
               sourceUrl: "https://example.com/feed-1",
               author: "Wyatt",
               publishedAt: "2026-04-05T12:00:00.000Z",
-              categories: ["agents"],
+              rawCategories: ["agents"],
             },
             {
               id: "article-2",
@@ -217,7 +193,7 @@ describe("FeedsWorkspaceClient", () => {
               sourceUrl: "https://example.com/feed-2",
               author: "Mina",
               publishedAt: "2026-04-06T12:00:00.000Z",
-              categories: ["ml"],
+              rawCategories: ["ml"],
             },
           ],
           fetchedAt: "2026-04-13T12:00:00.000Z",
@@ -349,7 +325,7 @@ describe("FeedsWorkspaceClient", () => {
     });
   });
 
-  it("loads live posts from all matching feeds when the article snapshot is missing", async () => {
+  it("loads live posts from a bounded sample after an explicit corpus recovery action", async () => {
     currentSearchParams = new URLSearchParams();
     useSearchParamsMock.mockImplementation(() => currentSearchParams);
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
@@ -367,7 +343,7 @@ describe("FeedsWorkspaceClient", () => {
               sourceUrl: "https://example.com/feed-2",
               author: "Mina",
               publishedAt: "2026-04-06T12:00:00.000Z",
-              categories: ["ml"],
+              rawCategories: ["ml"],
             },
           ],
           fetchedAt: "2026-04-13T12:00:00.000Z",
@@ -403,9 +379,10 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Read AI writing across the open web" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "No prepared article corpus" })).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Load live sample" }));
 
     await waitFor(() => {
       expect(screen.getByText("Live model update")).toBeInTheDocument();
@@ -419,7 +396,7 @@ describe("FeedsWorkspaceClient", () => {
           feedIds: ["feed-1", "feed-2"],
           limit: 48,
           perFeedLimit: 3,
-          refresh: false,
+          refresh: true,
           q: null,
           sort: "latest",
         }),
@@ -449,6 +426,13 @@ describe("FeedsWorkspaceClient", () => {
         initialBrowse={null}
       />,
     );
+
+    expect(screen.getByRole("heading", { name: "No prepared article corpus" })).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some((call) => call[0] === "/api/feeds/posts/aggregate/stream"),
+    ).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Load live sample" }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Live posts unavailable" })).toBeInTheDocument();
@@ -510,6 +494,68 @@ describe("FeedsWorkspaceClient", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset" })[0]);
     expect(replaceMock).toHaveBeenLastCalledWith("/reader", { scroll: false });
+  });
+
+  it("applies the mobile filter controls without losing query state", () => {
+    currentSearchParams = new URLSearchParams();
+    useSearchParamsMock.mockImplementation(() => currentSearchParams);
+    vi.stubGlobal("fetch", vi.fn());
+
+    render(
+      <FeedsWorkspaceClient
+        mode="reader"
+        feeds={feeds}
+        stats={{
+          total: 2,
+          sourceTypeCount: 2,
+          topicCount: 2,
+          verified: 1,
+          active: 2,
+          hasVerificationMetadata: true,
+          hasActivityMetadata: true,
+        }}
+        initialState={{
+          ...initialState,
+          query: "",
+          feedIds: [],
+          sourceType: null,
+          topics: [],
+          verified: null,
+        }}
+        initialBrowse={initialBrowse as never}
+      />,
+    );
+
+    const mobilePanel = screen.getByText("Filters and view").closest("details");
+    expect(mobilePanel).not.toBeNull();
+    fireEvent.click(within(mobilePanel as HTMLElement).getByText("Filters and view"));
+
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Search posts mobile"), {
+      target: { value: "models" },
+    });
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Source type mobile"), {
+      target: { value: "newsletter" },
+    });
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Add topic focus mobile"), {
+      target: { value: "ml" },
+    });
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Verification mobile"), {
+      target: { value: "false" },
+    });
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Reader view mobile"), {
+      target: { value: "starred" },
+    });
+    fireEvent.change(within(mobilePanel as HTMLElement).getByLabelText("Sort articles mobile"), {
+      target: { value: "source" },
+    });
+    fireEvent.click(
+      within(mobilePanel as HTMLElement).getByRole("button", { name: "Apply filters" }),
+    );
+
+    expect(replaceMock).toHaveBeenLastCalledWith(
+      "/reader?q=models&source_type=newsletter&topics=ml&verified=false&reader_view=starred&sort=source",
+      { scroll: false },
+    );
   });
 
   it("adds recovery links when the current filters return no visible posts", async () => {

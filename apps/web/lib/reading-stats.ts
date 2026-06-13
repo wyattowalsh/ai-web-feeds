@@ -242,7 +242,7 @@ class ReadingStatsTracker {
     history.forEach((entry) => {
       const article = allArticles.find((a) => a.id === entry.articleId);
       if (article) {
-        article.categories.forEach((topic) => {
+        article.topics.forEach((topic) => {
           topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
         });
       }

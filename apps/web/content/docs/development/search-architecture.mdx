@@ -35,7 +35,7 @@ The public web app uses two local data sources for search:
 ```mermaid
 flowchart LR
     authored[data/feeds.yaml + data/topics.yaml] --> enriched[data/feeds.enriched.yaml]
-    runtime[(feed_entries in data/ai-web-feeds.db)] --> corpus[data/articles.generated.json]
+    runtime[(articles in data/ai-web-feeds.db)] --> corpus[data/articles.generated.json]
     enriched --> sourceSearch[/api/search?scope=sources]
     corpus --> articleBrowse[/api/articles]
     corpus --> articleSearch[/api/search?scope=articles]

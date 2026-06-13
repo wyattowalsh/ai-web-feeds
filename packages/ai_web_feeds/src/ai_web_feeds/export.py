@@ -15,7 +15,7 @@ def build_export_data(catalog: dict[str, Any]) -> dict[str, Any]:
     """Build the export payload expected by data validation and generated assets.
 
     The current catalog shape is already export-ready, so this remains a thin
-    compatibility wrapper around the canonical data structure.
+    named boundary around the canonical data structure.
     """
 
     return catalog
@@ -81,7 +81,7 @@ def export_to_opml(
     Args:
         data: Feed data dictionary
         output_path: Output file path
-        categorized: Whether to organize by categories/topics
+        categorized: Whether to organize OPML category outlines from canonical topics
     """
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)

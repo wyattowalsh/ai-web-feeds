@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 import pytest
-from ai_web_feeds.models import Topic
+from ai_web_feeds.models import TopicNode
 from ai_web_feeds.visualization.models import (
     APIKey,
     APIUsage,
@@ -30,6 +30,7 @@ def db_session():
 
     with Session(engine) as session:
         yield session
+    engine.dispose()
 
 
 class TestVisualizationModel:
@@ -114,7 +115,7 @@ class TestForecastModel:
 
     def test_create_forecast(self, db_session):
         """Forecasts should persist with prediction metadata."""
-        topic = Topic(id="llm", name="LLM")
+        topic = TopicNode(id="llm", label="LLM", facet="domain")
         db_session.add(topic)
         db_session.commit()
 

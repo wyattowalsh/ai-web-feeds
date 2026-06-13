@@ -83,9 +83,8 @@ Automatically merges similar entities using Levenshtein distance:
 SQLite FTS5 virtual table enables fast entity search:
 
 ```bash
-# Search entities by name, aliases, or description
-aiwebfeeds nlp search-entities "hinton"
-# Returns: Geoffrey Hinton, Geoff Hinton (alias)
+# Search the indexed corpus for entity mentions
+ai-web-feeds search query "hinton"
 ```
 
 ## Usage
@@ -95,7 +94,7 @@ aiwebfeeds nlp search-entities "hinton"
 #### Extract Entities
 
 ```bash
-aiwebfeeds nlp entities
+ai-web-feeds nlp entities
 ```
 
 **Options**:
@@ -105,46 +104,31 @@ aiwebfeeds nlp entities
 
 ```bash
 # Process 25 articles
-aiwebfeeds nlp entities --batch-size 25
+ai-web-feeds nlp entities --batch-size 25
 ```
 
-#### List Entities
+#### NLP Processing Stats
 
 ```bash
-# List top 10 entities by frequency
-aiwebfeeds nlp list-entities --limit 10
+ai-web-feeds nlp stats
 ```
 
-#### Show Entity Details
+#### Search Entity Mentions
 
 ```bash
-aiwebfeeds nlp show-entity "Geoffrey Hinton"
+ai-web-feeds search query "Geoffrey Hinton"
 ```
 
-Shows:
+Search results include:
 
-- Entity metadata (type, aliases, frequency)
-- Recent article mentions
-- Related entities
+- matching feed or article text
+- source metadata
+- relevance ranking
 
-#### Manage Entities
-
-**Add Alias**:
+#### Reprocess Entity Extraction
 
 ```bash
-aiwebfeeds nlp add-alias "Geoffrey Hinton" "G. Hinton"
-```
-
-**Merge Duplicate Entities**:
-
-```bash
-aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
-```
-
-**Search Entities (FTS5)**:
-
-```bash
-aiwebfeeds nlp search-entities "transformer attention"
+ai-web-feeds nlp entities --force
 ```
 
 ### Python API
@@ -230,7 +214,7 @@ CREATE TABLE entity_mentions (
     context TEXT,  -- Surrounding text snippet
     mentioned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (entity_id) REFERENCES entities(id),
-    FOREIGN KEY (article_id) REFERENCES feed_entries(id)
+    FOREIGN KEY (article_id) REFERENCES articles(id)
 );
 ```
 
@@ -291,14 +275,14 @@ PHASE5_SPACY_MODEL=en_core_web_sm
 
 ```bash
 # Find top AI researchers by mention frequency
-aiwebfeeds nlp list-entities --type person --limit 20
+ai-web-feeds search query "AI researcher"
 ```
 
 ### Discover Emerging Techniques
 
 ```bash
 # Find recently mentioned techniques
-aiwebfeeds nlp list-entities --type technique --sort recent
+ai-web-feeds search query "technique"
 ```
 
 ### Build Knowledge Graphs
@@ -320,7 +304,7 @@ storage.get_articles_mentioning_entities(["GPT-4", "RLHF"])
 
 1. Use larger spaCy model: `en_core_web_lg` (40MB, better accuracy)
 2. Add domain-specific rules for AI terminology
-3. Manual curation: Add aliases for common variations
+3. Re-run extraction with `ai-web-feeds nlp entities --force`
 
 ### Duplicate Entities
 
@@ -329,11 +313,8 @@ storage.get_articles_mentioning_entities(["GPT-4", "RLHF"])
 **Solution**:
 
 ```bash
-# Merge duplicates
-aiwebfeeds nlp merge-entities "Geoff Hinton" "Geoffrey Hinton"
-
-# Add alias
-aiwebfeeds nlp add-alias "Geoffrey Hinton" "Geoff Hinton"
+# Reprocess entity records after curation data changes
+ai-web-feeds nlp entities --force
 ```
 
 ### spaCy Model Not Found

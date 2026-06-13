@@ -1,19 +1,19 @@
-"""ai_web_feeds.cli.commands.fetch -- Fetch feeds with enhanced metadata extraction"""
+"""ai_web_feeds.cli.commands.fetch -- Fetch feeds through the current polling pipeline."""
 
 import asyncio
 
 import typer
-from ai_web_feeds.config import DEFAULT_DATABASE_URL
-from ai_web_feeds.fetcher import AdvancedFeedFetcher
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.config import DEFAULT_DATABASE_URL, Settings
+from ai_web_feeds.models import CurationStatus, FeedSource
+from ai_web_feeds.polling import FeedPoller
+from ai_web_feeds.storage import DatabaseManager, upgrade_database_to_head
 from loguru import logger
 from rich import box
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-from sqlalchemy.exc import IntegrityError
 
-app = typer.Typer(help="Fetch feeds with enhanced metadata extraction")
+app = typer.Typer(help="Fetch feeds and publish discovered articles")
 console = Console()
 
 
@@ -26,17 +26,10 @@ def fetch_one(
         "-d",
         help="Database URL",
     ),
-    show_metadata: bool = typer.Option(
-        False,
-        "--metadata",
-        "-m",
-        help="Show detailed metadata",
-    ),
-):
-    """Fetch a single feed and extract metadata."""
+) -> None:
+    """Fetch a single feed and store discovered articles."""
+    upgrade_database_to_head(db_path)
     db = DatabaseManager(db_path)
-
-    # Get feed source
     feed = db.get_feed_source(feed_id)
     if not feed:
         console.print(f"[red]Error: Feed '{feed_id}' not found[/red]")
@@ -46,105 +39,23 @@ def fetch_one(
         console.print(f"[red]Error: Feed '{feed_id}' has no feed URL[/red]")
         raise typer.Exit(1)
 
-    console.print(f"\n[bold cyan]🔄 Fetching feed: {feed.title}[/bold cyan]")
-    console.print(f"[dim]URL: {feed.feed}[/dim]\n")
+    try:
+        job = asyncio.run(_poll_one(db, feed))
+    except Exception as exc:
+        console.print(f"[red]✗ Fetch failed: {exc}[/red]")
+        logger.exception("Single feed fetch failed")
+        raise typer.Exit(1) from exc
 
-    # Fetch with progress
-    fetcher = AdvancedFeedFetcher()
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Fetching and analyzing...", total=None)
-
-        try:
-            fetch_log, metadata, items = asyncio.run(fetcher.fetch_feed(feed.feed))
-            progress.update(task, completed=True)
-
-        except Exception as e:
-            progress.update(task, completed=True)
-            console.print(f"[red]✗ Error: {e}[/red]")
-            raise typer.Exit(1)
-
-    # Display results
-    if fetch_log.success:
-        console.print("[green]✓ Fetch successful[/green]\n")
-
-        # Summary table
-        summary_table = Table(title="Fetch Summary", box=box.ROUNDED)
-        summary_table.add_column("Metric", style="cyan")
-        summary_table.add_column("Value", style="green", justify="right")
-
-        summary_table.add_row("Status Code", str(fetch_log.status_code))
-        summary_table.add_row("Content Type", fetch_log.content_type or "N/A")
-        summary_table.add_row(
-            "Content Size",
-            f"{fetch_log.content_length:,} bytes" if fetch_log.content_length else "N/A",
-        )
-        summary_table.add_row("Duration", f"{fetch_log.fetch_duration_ms} ms")
-        summary_table.add_row("Items Found", str(len(items)))
-
-        console.print(summary_table)
-
-        # Metadata summary
-        metadata_table = Table(title="Feed Metadata", box=box.ROUNDED)
-        metadata_table.add_column("Field", style="cyan")
-        metadata_table.add_column("Value", style="yellow")
-
-        metadata_table.add_row("Title", metadata.title or "N/A")
-        metadata_table.add_row(
-            "Description",
-            (metadata.description[:100] + "...")
-            if metadata.description and len(metadata.description) > 100
-            else (metadata.description or "N/A"),
-        )
-        metadata_table.add_row("Language", metadata.language or "N/A")
-        metadata_table.add_row("Author", metadata.author or "N/A")
-        metadata_table.add_row("Total Items", str(metadata.total_items))
-        metadata_table.add_row("Update Frequency", metadata.estimated_update_frequency or "N/A")
-
-        console.print(metadata_table)
-
-        # Quality scores
-        quality_table = Table(title="Quality Scores", box=box.ROUNDED)
-        quality_table.add_column("Metric", style="cyan")
-        quality_table.add_column("Score", style="magenta", justify="right")
-
-        quality_table.add_row("Completeness", f"{metadata.completeness_score:.3f}")
-        quality_table.add_row("Richness", f"{metadata.richness_score:.3f}")
-        quality_table.add_row("Structure", f"{metadata.structure_score:.3f}")
-
-        console.print(quality_table)
-
-        # Show detailed metadata if requested
-        if show_metadata:
-            console.print("\n[bold cyan]📊 Detailed Metadata:[/bold cyan]\n")
-            import json
-
-            console.print(json.dumps(metadata.to_dict(), indent=2, default=str))
-
-        # Save to database
-        fetch_log.feed_source_id = feed_id
-        db.add_feed_fetch_log(fetch_log)
-
-        # Save items
-        saved_count = 0
-        for item in items:
-            item.feed_source_id = feed_id
-            try:
-                db.add_feed_item(item)
-                saved_count += 1
-            except Exception as e:
-                logger.warning(f"Could not save item: {e}")
-
-        console.print(f"\n[green]✓ Saved {saved_count} items to database[/green]")
-
-    else:
-        console.print("[red]✗ Fetch failed[/red]\n")
-        console.print(f"[red]Error: {fetch_log.error_message}[/red]")
-        console.print(f"[dim]Type: {fetch_log.error_type}[/dim]")
+    console.print("[green]✓ Fetch successful[/green]\n")
+    _print_job_summary(
+        "Fetch Summary",
+        {
+            "Feed ID": feed.id,
+            "Status": job.status.value,
+            "Articles Discovered": str(job.articles_discovered),
+            "Response Time": f"{job.response_time_ms or 0} ms",
+        },
+    )
 
 
 @app.command("all")
@@ -155,7 +66,7 @@ def fetch_all(
         "-d",
         help="Database URL",
     ),
-    limit: int = typer.Option(
+    limit: int | None = typer.Option(
         None,
         "--limit",
         "-l",
@@ -166,22 +77,58 @@ def fetch_all(
         "--verified-only",
         help="Only fetch verified feeds",
     ),
-):
-    """Fetch all feeds and extract metadata."""
+) -> None:
+    """Fetch feed sources and store discovered articles."""
+    upgrade_database_to_head(db_path)
     db = DatabaseManager(db_path)
+    feeds = _select_feeds(db.get_all_feed_sources(), limit=limit, verified_only=verified_only)
 
-    feeds = db.get_all_feed_sources()
+    if not feeds:
+        console.print("[yellow]No feed sources matched the fetch criteria[/yellow]")
+        return
 
+    results = asyncio.run(_poll_many(db, feeds))
+    console.print("\n[bold cyan]Fetch Results[/bold cyan]\n")
+    _print_job_summary(
+        "Fetch Results",
+        {
+            "Total Feeds": str(len(feeds)),
+            "Successful": str(results["success"]),
+            "Failed": str(results["failed"]),
+            "Success Rate": (f"{results['success'] / len(feeds) * 100:.1f}%" if feeds else "0%"),
+            "Articles Discovered": str(results["articles_discovered"]),
+        },
+    )
+
+
+def _select_feeds(
+    feeds: list[FeedSource],
+    *,
+    limit: int | None,
+    verified_only: bool,
+) -> list[FeedSource]:
+    selected = [
+        feed
+        for feed in feeds
+        if feed.feed
+        and feed.curation_status not in {CurationStatus.ARCHIVED, CurationStatus.INACTIVE}
+    ]
     if verified_only:
-        feeds = [f for f in feeds if f.verified]
+        selected = [feed for feed in selected if feed.verified]
+    selected = sorted(selected, key=lambda feed: feed.id)
+    return selected[:limit] if limit else selected
 
-    if limit:
-        feeds = feeds[:limit]
 
-    console.print(f"\n[bold cyan]🔄 Fetching {len(feeds)} feeds...[/bold cyan]\n")
+async def _poll_one(db: DatabaseManager, feed: FeedSource):
+    settings = Settings()
+    poller = FeedPoller(db, settings)
+    return await poller.poll_feed(feed.id, feed.feed or "")
 
-    fetcher = AdvancedFeedFetcher()
-    results = {"success": 0, "failed": 0, "total_items": 0}
+
+async def _poll_many(db: DatabaseManager, feeds: list[FeedSource]) -> dict[str, int]:
+    settings = Settings()
+    poller = FeedPoller(db, settings)
+    results = {"success": 0, "failed": 0, "articles_discovered": 0}
 
     with Progress(
         SpinnerColumn(),
@@ -189,52 +136,25 @@ def fetch_all(
         console=console,
     ) as progress:
         for feed in feeds:
-            if not feed.feed:
-                continue
-
             task = progress.add_task(f"Fetching {feed.title}...", total=None)
-
             try:
-                fetch_log, metadata, items = asyncio.run(fetcher.fetch_feed(feed.feed))
-
-                if fetch_log.success:
-                    results["success"] += 1
-                    results["total_items"] += len(items)
-
-                    # Save to database
-                    fetch_log.feed_source_id = feed.id
-                    db.add_feed_fetch_log(fetch_log)
-
-                    # Save items
-                    for item in items:
-                        item.feed_source_id = feed.id
-                        try:
-                            db.add_feed_item(item)
-                        except IntegrityError:
-                            logger.debug(f"Skipping duplicate item for feed {feed.id}")
-
-                else:
-                    results["failed"] += 1
-
-            except Exception as e:
+                job = await poller.poll_feed(feed.id, feed.feed or "")
+            except Exception as exc:
                 results["failed"] += 1
-                logger.error(f"Error fetching {feed.title}: {e}")
+                logger.warning("Feed fetch failed for {}: {}", feed.id, exc)
+            else:
+                results["success"] += 1
+                results["articles_discovered"] += job.articles_discovered
+            finally:
+                progress.update(task, completed=True)
 
-            progress.update(task, completed=True)
+    return results
 
-    # Results summary
-    console.print("\n[bold cyan]📊 Fetch Results:[/bold cyan]\n")
 
-    results_table = Table(box=box.ROUNDED)
-    results_table.add_column("Metric", style="cyan")
-    results_table.add_column("Value", style="green", justify="right")
-
-    results_table.add_row("Total Feeds", str(len(feeds)))
-    results_table.add_row("Successful", str(results["success"]))
-    results_table.add_row("Failed", str(results["failed"]))
-    results_table.add_row(
-        "Success Rate", f"{results['success'] / len(feeds) * 100:.1f}%" if feeds else "0%"
-    )
-    results_table.add_row("Total Items Fetched", str(results["total_items"]))
-
-    console.print(results_table)
+def _print_job_summary(title: str, rows: dict[str, str]) -> None:
+    table = Table(title=title, box=box.ROUNDED)
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green", justify="right")
+    for metric, value in rows.items():
+        table.add_row(metric, value)
+    console.print(table)

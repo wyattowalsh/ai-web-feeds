@@ -10,7 +10,7 @@ from loguru import logger
 
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.models import FeedSource
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.storage import DatabaseManager, upgrade_database_to_head
 from ai_web_feeds.utils import (
     enrich_feed_source,
     generate_enriched_schema,
@@ -70,7 +70,7 @@ def enrich_all(
             enriched_sources.append(source)  # Keep original
 
     enriched_data = {
-        "schema_version": "feeds-enriched-1.0.0",
+        "schema_version": "feeds.enriched-3.0.0",
         "document_meta": {
             **feeds_data.get("document_meta", {}),
             "enriched_at": datetime.now(UTC).isoformat(),
@@ -89,8 +89,8 @@ def enrich_all(
     logger.info(f"Saved enriched schema to {schema_path}")
 
     # Save to database
+    upgrade_database_to_head(db_path)
     db = DatabaseManager(db_path)
-    db.create_db_and_tables()
 
     for source_data in enriched_sources:
         try:

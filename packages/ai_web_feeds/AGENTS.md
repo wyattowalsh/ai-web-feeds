@@ -357,15 +357,17 @@ class Feed(SQLModel, table=True):
         return v.lower().strip()
 
 
-class FeedItem(SQLModel, table=True):
-    """Individual feed entry/article."""
+class ArticleEntry(SQLModel, table=True):
+    """Individual feed article."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    feed_id: int = Field(foreign_key="feed.id", index=True)
-    title: Optional[str] = None
-    link: Optional[str] = None
-    published: Optional[datetime] = None
-    content: Optional[str] = None
+    feed_id: str = Field(foreign_key="sources.id", index=True)
+    title: str
+    link: str
+    pub_date: datetime
+    topics: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    raw_categories: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    summary: Optional[str] = None
     author: Optional[str] = None
     guid: str = Field(unique=True, index=True)
 ```
@@ -396,7 +398,7 @@ from loguru import logger
 class FeedStorage:
     """Database operations for feed management."""
 
-    def __init__(self, database_url: str = "sqlite:///data/aiwebfeeds.db"):
+    def __init__(self, database_url: str = "sqlite:///data/ai-web-feeds.db"):
         """Initialize storage with database connection."""
         self.engine = create_engine(
             database_url, echo=False, connect_args={"check_same_thread": False}
@@ -474,7 +476,7 @@ class FeedAnalytics:
         return FeedStats(
             total_feeds=len(feeds),
             active_feeds=len(active),
-            total_items=0,  # Calculate from FeedItem table
+            total_items=0,  # Calculate from ArticleEntry table
             items_per_feed=0.0,
             most_recent_update=None,
             most_active_feeds=[],
@@ -500,7 +502,7 @@ class Settings(BaseSettings):
     )
 
     # Database
-    database_url: str = "sqlite:///data/aiwebfeeds.db"
+    database_url: str = "sqlite:///data/ai-web-feeds.db"
 
     # Logging
     log_level: str = "INFO"

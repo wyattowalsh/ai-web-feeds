@@ -35,13 +35,7 @@ uv sync --dev
 ### 2. Install fumadocs-python CLI
 
 ```bash
-pip install fumadocs-python
-```
-
-Or using uv:
-
-```bash
-uv pip install fumadocs-python
+uv tool install fumadocs-python
 ```
 
 ## Generating Documentation
@@ -94,7 +88,7 @@ fumadocs-python supports standard Python docstring formats. Use type hints and d
 
 ````python
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class Feed(BaseModel):
     """
@@ -103,11 +97,11 @@ class Feed(BaseModel):
     Attributes:
         url: The feed URL
         title: Feed title
-        category: Optional category classification
+        topics: Canonical topic classifications
     """
     url: str
     title: str
-    category: Optional[str] = None
+    topics: List[str] = Field(default_factory=list)
 
 def fetch_feed(url: str, timeout: int = 30) -> Feed:
     """
@@ -296,7 +290,7 @@ pnpm install
 **Check**:
 
 1. Are your Python files properly documented?
-2. Is the package installed? (`pip install -e packages/ai_web_feeds`)
+2. Is the package installed? (`uv sync --package ai-web-feeds`)
 3. Are docstrings using standard format?
 
 ## Best Practices

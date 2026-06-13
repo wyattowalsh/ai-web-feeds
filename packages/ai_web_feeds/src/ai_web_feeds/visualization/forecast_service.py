@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from prophet import Prophet
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ai_web_feeds.visualization.models import Forecast
@@ -207,14 +208,12 @@ class ForecastService:
         Returns:
             Forecast object or None
         """
-        return (
-            self.session.query(Forecast)
-            .filter(
+        return self.session.execute(
+            select(Forecast).filter(
                 Forecast.id == forecast_id,
                 Forecast.device_id == device_id,
             )
-            .first()
-        )
+        ).scalar_one_or_none()
 
     async def list_forecasts(
         self,
@@ -233,12 +232,15 @@ class ForecastService:
         Returns:
             List of forecasts
         """
-        return (
-            self.session.query(Forecast)
-            .filter(Forecast.device_id == device_id)
-            .order_by(Forecast.created_at.desc())
-            .limit(limit)
-            .offset(offset)
+        return list(
+            self.session.execute(
+                select(Forecast)
+                .filter(Forecast.device_id == device_id)
+                .order_by(Forecast.created_at.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+            .scalars()
             .all()
         )
 

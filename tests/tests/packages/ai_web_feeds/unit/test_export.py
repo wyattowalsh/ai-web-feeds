@@ -326,7 +326,7 @@ class TestAddFeedOutline:
         assert "xmlUrl" not in outline.attrib
         assert "htmlUrl" not in outline.attrib
 
-    def test_add_feed_outline_uses_url_as_feed_fallback(self):
+    def test_add_feed_outline_uses_url_as_xml_source(self):
         """Test adding feed outline from minimal contributor source shape."""
         parent = ET.Element("body")
         source = {"title": "Minimal Feed", "url": "https://example.com/feed.xml"}

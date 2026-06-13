@@ -12,23 +12,23 @@ All test execution logic is now centralized in the CLI
 
 ```bash
 # From project root
-uv run aiwebfeeds test all              # Run all tests
-uv run aiwebfeeds test unit             # Run unit tests
-uv run aiwebfeeds test unit --fast      # Run unit tests, skip slow ones
-uv run aiwebfeeds test integration      # Run integration tests
-uv run aiwebfeeds test e2e              # Run end-to-end tests
-uv run aiwebfeeds test coverage         # Run with coverage report
-uv run aiwebfeeds test coverage --open  # Run coverage and open in browser
-uv run aiwebfeeds test quick            # Quick run (unit, no slow, fail fast)
-uv run aiwebfeeds test debug            # Debug mode with pdb
-uv run aiwebfeeds test watch            # Watch mode (re-run on changes)
-uv run aiwebfeeds test file <path>      # Run specific test file
-uv run aiwebfeeds test markers          # List available test markers
+uv run ai-web-feeds test all              # Run all tests
+uv run ai-web-feeds test unit             # Run unit tests
+uv run ai-web-feeds test unit --fast      # Run unit tests, skip slow ones
+uv run ai-web-feeds test integration      # Run integration tests
+uv run ai-web-feeds test e2e              # Run end-to-end tests
+uv run ai-web-feeds test coverage         # Run with coverage report
+uv run ai-web-feeds test coverage --open  # Run coverage and open in browser
+uv run ai-web-feeds test quick            # Quick run (unit, no slow, fail fast)
+uv run ai-web-feeds test debug            # Debug mode with pdb
+uv run ai-web-feeds test watch            # Watch mode (re-run on changes)
+uv run ai-web-feeds test file <path>      # Run specific test file
+uv run ai-web-feeds test markers          # List available test markers
 ```
 
 ### Alternative: Use run_tests.py
 
-The `run_tests.py` script delegates to the CLI for backward compatibility:
+The `run_tests.py` script delegates to the CLI:
 
 ```bash
 # From tests directory
@@ -304,12 +304,12 @@ Tests run automatically on:
 Run tests before committing:
 
 ```bash
-# Install pre-commit
-pip install pre-commit
-pre-commit install
+# Install and activate pre-commit
+uv sync --extra dev
+uv run pre-commit install
 
 # Run manually
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ## Writing New Tests
@@ -361,8 +361,7 @@ class TestComponentIntegration:
 1. **Import Errors**: Ensure `ai_web_feeds` package is installed:
 
    ```bash
-   cd packages/ai_web_feeds
-   pip install -e .
+   uv sync
    ```
 
 1. **Database Errors**: Clear test database:
@@ -374,7 +373,7 @@ class TestComponentIntegration:
 1. **Coverage Not Working**: Reinstall coverage:
 
    ```bash
-   pip install --upgrade pytest-cov
+   uv sync --extra dev
    ```
 
 1. **Slow Tests**: Run only unit tests:

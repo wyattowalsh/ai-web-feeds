@@ -62,7 +62,7 @@ groups:
 
 ## Required Properties
 
-Every feed entry **must** include one of:
+Every source record **must** include one of:
 
 | Property   | Type           | Description                       |
 | ---------- | -------------- | --------------------------------- |
@@ -167,9 +167,6 @@ discover:
   strategy_detail: "Optional hint for tuning"
   hints: ["rss", "atom", "blog"]
   limit: 3
-  fallbacks:
-    - "https://example.com/backup-feed.xml"
-    - "example/alias"
 ```
 
 **Properties:**
@@ -181,7 +178,6 @@ discover:
 | `strategy_detail` | String  | Freeform hint (max 160 chars) |
 | `hints`           | Array   | Search keywords (max 8)       |
 | `limit`           | Integer | Max feeds to find (1-10)      |
-| `fallbacks`       | Array   | Backup feed URLs (max 5)      |
 
 ### Topics and Classification
 
@@ -234,7 +230,7 @@ topic_weights:
 
 #### `source_type`
 
-Primary source category.
+Primary source type.
 
 ```yaml
 source_type: "blog"
@@ -461,7 +457,7 @@ relations:
 | `mirror_of`     | String | Feed is a mirror/copy of another    |
 | `derived_from`  | String | Feed is derived from another source |
 | `syndicates`    | Array  | Syndicated to these feeds (max 8)   |
-| `related_feeds` | Array  | Related feeds (max 8, legacy)       |
+| `related_feeds` | Array  | Related feeds (max 8)               |
 
 ### Provenance
 
@@ -621,8 +617,8 @@ notes: "Official blog with weekly ML research summaries"
 ### Schema Validation
 
 ```bash
-# Validate with Python
-python -c "
+# Validate with Python through uv
+uv run python -c "
 import json, yaml
 from jsonschema import validate
 

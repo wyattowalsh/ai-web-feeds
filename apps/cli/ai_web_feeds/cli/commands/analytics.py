@@ -110,13 +110,13 @@ def analytics_trending(
 
         if not topics:
             console.print(
-                "[yellow]No topic stats found. Run 'aiwebfeeds analytics snapshot' first.[/yellow]"
+                "[yellow]No topic stats found. Run 'ai-web-feeds analytics snapshot' first.[/yellow]"
             )
             raise typer.Exit(1)
 
         table = Table(show_header=True)
         table.add_column("Rank", style="dim")
-        table.add_column("Topic", style="cyan")
+        table.add_column("TopicNode", style="cyan")
         table.add_column("Feeds", style="green", justify="right")
         table.add_column("Validation Freq", style="yellow", justify="right")
         table.add_column("Avg Health", style="magenta", justify="right")

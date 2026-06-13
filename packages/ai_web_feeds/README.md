@@ -29,8 +29,8 @@ OPML generation.
 
 ### 4. **OPML Generation**
 
-- **All feeds** (`all.opml`) - Flat list of all feeds
-- **Categorized** (`categorized.opml`) - Organized by source type
+- **All feeds** (`feeds.opml`) - Flat list of all feeds
+- **Categorized** (`feeds.categorized.opml`) - Organized by source type
 - **Filtered** - Custom filters by topic, type, tag, verification status
 
 ## Installation
@@ -41,10 +41,10 @@ uv sync
 
 # Install packages
 cd packages/ai_web_feeds
-uv pip install -e .
+uv sync
 
 cd ../../apps/cli
-uv pip install -e .
+uv sync
 ```
 
 ## CLI Usage
@@ -71,11 +71,11 @@ ai-web-feeds enrich one huggingface-blog
 ### Generate OPML Files
 
 ```bash
-# Generate all.opml
-ai-web-feeds opml all --output data/all.opml
+# Generate feeds.opml
+ai-web-feeds opml all --output data/feeds.opml
 
-# Generate categorized.opml
-ai-web-feeds opml categorized --output data/categorized.opml
+# Generate feeds.categorized.opml
+ai-web-feeds opml categorized --output data/feeds.categorized.opml
 
 # Generate filtered OPML by topic
 ai-web-feeds opml filtered data/topic-nlp.opml --topic nlp
@@ -126,12 +126,13 @@ Verified: 120 (80.0%)
 ### Database Operations
 
 ```python
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds import DatabaseManager, upgrade_database_to_head
 from ai_web_feeds.models import FeedSource, SourceType
 
 # Initialize database
-db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
-db.create_db_and_tables()
+database_url = "sqlite:///data/ai-web-feeds.db"
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 
 # Add a feed source
 feed = FeedSource(
@@ -189,13 +190,13 @@ from ai_web_feeds.utils import (
 db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 feeds = db.get_all_feed_sources()
 
-# Generate all.opml
+# Generate feeds.opml
 opml_xml = generate_opml(feeds, title="AI Web Feeds - All")
-save_opml(opml_xml, "data/all.opml")
+save_opml(opml_xml, "data/feeds.opml")
 
-# Generate categorized.opml
+# Generate feeds.categorized.opml
 opml_xml = generate_categorized_opml(feeds, title="AI Web Feeds - By Type")
-save_opml(opml_xml, "data/categorized.opml")
+save_opml(opml_xml, "data/feeds.categorized.opml")
 
 
 # Generate filtered OPML
@@ -232,12 +233,12 @@ feeds.yaml (source)
     ↓
     ├→ feeds.enriched.yaml (enriched YAML)
     ├→ feeds.enriched.schema.json (JSON schema)
-    └→ ai-web-feeds.db (SQLModel database; legacy aiwebfeeds.db is still detected)
+    └→ ai-web-feeds.db (SQLModel database)
             ↓
             ↓ [opml commands]
             ↓
-            ├→ all.opml (all feeds)
-            ├→ categorized.opml (by source type)
+            ├→ feeds.opml (all feeds)
+            ├→ feeds.categorized.opml (by source type)
             └→ custom-filter.opml (filtered)
 ```
 

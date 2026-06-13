@@ -177,7 +177,7 @@ def show_weights(
     table.add_row(
         "Content Similarity",
         f"{settings.recommendation.content_weight:.0%}",
-        "Topic overlap and semantic similarity",
+        "TopicNode overlap and semantic similarity",
     )
     table.add_row(
         "Popularity",

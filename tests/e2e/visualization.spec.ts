@@ -131,7 +131,7 @@ test.describe("3D Topic Clustering", () => {
     await page.goto("/analytics/3d-topics");
 
     await expect(page.locator("h1")).toContainText("3D Topic Clustering");
-    await expect(page.locator('text="2D Fallback Mode"')).toBeVisible();
+    await expect(page.locator('text="2D Static View"')).toBeVisible();
     await expect(page.locator("text=WebGL is not available in this browser")).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(0);
   });

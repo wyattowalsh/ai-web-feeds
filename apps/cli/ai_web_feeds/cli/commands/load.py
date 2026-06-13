@@ -8,7 +8,7 @@ from loguru import logger
 from rich.console import Console
 from tqdm import tqdm
 
-from ai_web_feeds import DatabaseManager, load_feeds
+from ai_web_feeds import DatabaseManager, load_feeds, upgrade_database_to_head
 
 app = typer.Typer(help="Load feeds from YAML into database")
 console = Console()
@@ -38,9 +38,9 @@ def from_yaml(
     try:
         console.print("[bold]Loading feeds into database[/bold]\n")
 
-        # Initialize database
+        # Apply reviewed migrations before opening the runtime database.
+        upgrade_database_to_head(database_url)
         db = DatabaseManager(database_url)
-        db.create_db_and_tables()
 
         # Load YAML data
         console.print(f"[dim]Reading {input_file}...[/dim]")

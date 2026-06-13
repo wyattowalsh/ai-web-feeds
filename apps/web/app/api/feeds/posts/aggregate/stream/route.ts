@@ -4,6 +4,7 @@ import { normalizeSearchQuery } from "@/lib/search";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 
 export const dynamic = "force-dynamic";
+const MAX_STREAM_FEED_IDS = 48;
 
 type StreamBody = {
   feedIds?: string[];
@@ -52,6 +53,15 @@ function streamResponse({
 }) {
   if (feedIds.length === 0) {
     return NextResponse.json({ error: "feedIds is required" }, { status: 400 });
+  }
+
+  if (feedIds.length > MAX_STREAM_FEED_IDS) {
+    return NextResponse.json(
+      {
+        error: `Live stream requests are limited to ${MAX_STREAM_FEED_IDS} feed IDs. Narrow filters or use the generated article corpus.`,
+      },
+      { status: 413 },
+    );
   }
 
   const query = normalizeSearchQuery(q);
@@ -124,7 +134,7 @@ function clampNumber(
   value: number | string | null | undefined,
   min: number,
   max: number,
-  fallback: number,
+  defaultValue: number,
 ): number {
   const parsed =
     typeof value === "number"
@@ -134,7 +144,7 @@ function clampNumber(
         : Number.NaN;
 
   if (!Number.isFinite(parsed)) {
-    return fallback;
+    return defaultValue;
   }
 
   return Math.min(Math.max(Math.trunc(parsed), min), max);
@@ -156,7 +166,7 @@ function postMatchesQuery(
     feedTitle: string;
     summary: string | null;
     author: string | null;
-    categories: string[];
+    rawCategories: string[];
   },
   query: string,
 ): boolean {
@@ -166,7 +176,7 @@ function postMatchesQuery(
     post.feedTitle,
     post.summary ?? "",
     post.author ?? "",
-    post.categories.join(" "),
+    post.rawCategories.join(" "),
   ]
     .join(" ")
     .toLowerCase();

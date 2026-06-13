@@ -107,7 +107,9 @@ repos:
   rev: v2.4.2
   hooks:
   - id: codespell
-    args: [--ignore-words-list=crate, nd, sav, ba, als, datas, socio, ser, oint, asent, lod, mape, afterAll]
+    args:
+    - --ignore-words-list
+    - crate,nd,sav,ba,als,datas,socio,ser,oint,asent,lod,mape,afterAll
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================
@@ -137,11 +139,11 @@ repos:
   - id: sqlfluff-lint
     args: [--dialect, sqlite]
     files: \.sql$
-    exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+    exclude: ^$
   - id: sqlfluff-fix
     args: [--dialect, sqlite, --force]
     files: \.sql$
-    exclude: ^(data/init_aiwebfeeds_db\.sql|packages/ai_web_feeds/src/ai_web_feeds/migrations/005_add_nlp_tables\.sql)$
+    exclude: ^$
 
   # ============================================================================
   # Secrets detection

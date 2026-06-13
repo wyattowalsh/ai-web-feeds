@@ -51,9 +51,9 @@ Use these files as the source of truth before making any recommendation:
    then, produce a gap-only report rather than inventing leads.
 1. If you surface candidate leads, cap the list at 5 and prefer authoritative,
    feed-likely publishers over broad aggregators.
-1. Because legacy issue-based feed automation still assumes an older submission shape,
-   never recommend `approved`, `feed-submission`, `validated`, or `validation-failed` in
-   this workflow.
+1. Because the previous issue-based feed automation still assumes an older submission
+   shape, never recommend `approved`, `feed-submission`, `validated`, or
+   `validation-failed` in this workflow.
 1. Keep candidate references at the domain level with optional feed-path hints. Avoid
    raw URLs in the final issue body.
 1. The handoff for any promising lead is a human-reviewed PR into `data/feeds.yaml`,

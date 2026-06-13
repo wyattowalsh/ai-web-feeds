@@ -12,8 +12,8 @@ from ai_web_feeds.storage import DatabaseManager
 def mock_db():
     """Mock database manager"""
     db = MagicMock(spec=DatabaseManager)
-    db.get_user_follows = MagicMock(return_value=["feed-1", "feed-2"])
-    db.get_feed_entries = MagicMock(return_value=[])
+    db.get_user_followed_sources = MagicMock(return_value=["feed-1", "feed-2"])
+    db.get_articles = MagicMock(return_value=[])
     db.get_due_digests = MagicMock(return_value=[])
     return db
 
@@ -128,13 +128,19 @@ class TestSchedulerManager:
     @pytest.mark.asyncio
     async def test_poll_all_feeds(self, scheduler, mock_db):
         """Test _poll_all_feeds job"""
-        mock_feeds = [
-            {"id": "feed-1", "feed": "http://example.com/feed1.xml", "active": True},
-            {"id": "feed-2", "feed": "http://example.com/feed2.xml", "active": True},
-            {"id": "feed-3", "feed": "http://example.com/feed3.xml", "active": False},
-        ]
+        mock_catalog = {
+            "sources": [
+                {"id": "feed-1", "feed": "http://example.com/feed1.xml"},
+                {"id": "feed-2", "feed": "http://example.com/feed2.xml"},
+                {
+                    "id": "feed-3",
+                    "feed": "http://example.com/feed3.xml",
+                    "curation": {"status": "inactive"},
+                },
+            ]
+        }
 
-        with patch("ai_web_feeds.scheduler.load_feeds", return_value=mock_feeds):
+        with patch("ai_web_feeds.scheduler.load_feeds", return_value=mock_catalog):
             with patch.object(scheduler.poller, "poll_feed", new_callable=AsyncMock) as mock_poll:
                 mock_poll.return_value.articles_discovered = 2
 

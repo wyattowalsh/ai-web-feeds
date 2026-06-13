@@ -94,7 +94,7 @@ uv run ai-web-feeds enrich all \
 - [Search and Discovery](/docs/features/search)
 - [Deployment](/docs/guides/deployment)
 - [Workflow reference](/docs/guides/workflow-reference)
-- [Data Explorer](/docs/guides/data-explorer)
+- [Source Catalog and Reader](/docs/guides/data-explorer)
 - [Contributing](/docs/development/contributing)
 
 ## Working With `data/feeds.yaml`
@@ -125,7 +125,7 @@ If `uv` or `pnpm` is missing, install them before continuing. The repository pol
 bash scripts/setup.sh
 ```
 
-If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The codebase still recognizes the legacy `data/aiwebfeeds.db` filename if an older local install already exists.
+If you need a completely fresh local cache, remove `data/ai-web-feeds.db` and run the setup script again. The canonical local SQLite asset is `data/ai-web-feeds.db`.
 
 # YouTube channel
 
@@ -152,13 +152,13 @@ Set up regular health checks:
 
 ```bash
 # Check all feeds
-ai-web-feeds fetch all --verified-only
+uv run ai-web-feeds fetch all --verified-only
 
 # Review performance
-ai-web-feeds analytics performance --days 7
+uv run ai-web-feeds analytics summary --date-range 7d
 
 # Check specific feed health
-ai-web-feeds analytics health <feed-id>
+uv run ai-web-feeds validate http --feed-id <feed-id>
 ````
 
 ### Exporting Data
@@ -167,13 +167,13 @@ Export to different formats:
 
 ```bash
 # OPML for feed readers
-ai-web-feeds opml generate --output feeds.opml
+uv run ai-web-feeds opml all --output feeds.opml
 
 # Categorized OPML
-ai-web-feeds opml categorize --output feeds-categorized.opml
+uv run ai-web-feeds opml categorized --output feeds.categorized.opml
 
-# JSON analytics report
-ai-web-feeds analytics report --output analytics.json
+# Analytics CSV report
+uv run ai-web-feeds analytics export --output analytics.csv
 ```
 
 ## Configuration
@@ -183,7 +183,7 @@ ai-web-feeds analytics report --output analytics.json
 By default, SQLite is used. To use a different database:
 
 ```bash
-ai-web-feeds fetch all --database "postgresql://user:pass@localhost/dbname"
+uv run ai-web-feeds fetch all --database "postgresql://user:pass@localhost/dbname"
 ```
 
 Or set an environment variable:
@@ -209,31 +209,32 @@ AI_WEB_FEEDS_USER_AGENT="MyApp/1.0"
 
 ```bash
 # Verify feed exists in database
-ai-web-feeds stats show
+uv run ai-web-feeds stats show
 
 # Check feeds.yaml for typos
-cat data/feeds.yaml | grep "id:"
+rg "id:" data/feeds.yaml
 ```
 
 **Fetch Failures**
 
 ```bash
 # Check error details
-ai-web-feeds analytics performance
+uv run ai-web-feeds analytics summary
 
-# Test single feed with verbose output
-ai-web-feeds fetch one <feed-id> --metadata
+# Test single feed polling
+uv run ai-web-feeds fetch one <feed-id>
 ```
 
 **Database Issues**
 
 ```bash
 # Reinitialize database
-rm data/aiwebfeeds.db
-python3 -c "
-from ai_web_feeds.storage import DatabaseManager
-db = DatabaseManager('sqlite:///data/aiwebfeeds.db')
-db.create_db_and_tables()
+rm data/ai-web-feeds.db
+uv run python -c "
+from ai_web_feeds import DatabaseManager, upgrade_database_to_head
+database_url = 'sqlite:///data/ai-web-feeds.db'
+upgrade_database_to_head(database_url)
+db = DatabaseManager(database_url)
 "
 ```
 
@@ -265,19 +266,19 @@ ai-web-feeds enrich all
 ai-web-feeds fetch all --limit 10
 
 # 5. View analytics
-ai-web-feeds analytics overview
-ai-web-feeds analytics distributions
-ai-web-feeds analytics quality
+ai-web-feeds analytics summary
+ai-web-feeds analytics trending
+ai-web-feeds analytics velocity
 
 # 6. Check a specific feed
-ai-web-feeds analytics health huggingface-blog
+ai-web-feeds validate http --feed-id huggingface-blog
 
 # 7. Generate reports
-ai-web-feeds analytics report --output report.json
-ai-web-feeds opml generate --output feeds.opml
+ai-web-feeds analytics export --output report.csv
+uv run ai-web-feeds opml all --output feeds.opml
 
 # 8. View trends
-ai-web-feeds analytics trends --days 30
+ai-web-feeds analytics trending --date-range 30d
 ```
 
 ## What's Next?

@@ -10,7 +10,7 @@ from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, TrendingTopic
+from ai_web_feeds.models import ArticleEntry, TrendingTopic
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -120,20 +120,17 @@ class TrendingDetector:
         Returns:
             Dict mapping topic_id -> article_count
         """
-        # TODO: This requires topic extraction from articles
-        # For Phase 3B MVP, we'll use article categories as proxy for topics
         with self.db.get_session() as session:
-            statement = select(FeedEntry).where(
-                FeedEntry.discovered_at >= start,
-                FeedEntry.discovered_at < end,
+            statement = select(ArticleEntry).where(
+                ArticleEntry.discovered_at >= start,
+                ArticleEntry.discovered_at < end,
             )
             entries = session.exec(statement).all()
 
-            # Count by category (proxy for topic)
             topic_counts: dict[str, int] = {}
             for entry in entries:
-                for category in entry.categories:
-                    topic_counts[category] = topic_counts.get(category, 0) + 1
+                for topic in entry.topics:
+                    topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
             return topic_counts
 
@@ -153,9 +150,9 @@ class TrendingDetector:
         # end of the window instead of by calendar day. This keeps the baseline
         # stable even when the current time is mid-day.
         with self.db.get_session() as session:
-            statement = select(FeedEntry).where(
-                FeedEntry.discovered_at >= start,
-                FeedEntry.discovered_at < end,
+            statement = select(ArticleEntry).where(
+                ArticleEntry.discovered_at >= start,
+                ArticleEntry.discovered_at < end,
             )
             entries = session.exec(statement).all()
 
@@ -163,8 +160,8 @@ class TrendingDetector:
             bucketed_counts: dict[str, dict[int, int]] = {}
             for entry in entries:
                 bucket_index = int((end - entry.discovered_at).total_seconds() // 86400)
-                for category in entry.categories:
-                    topic_buckets = bucketed_counts.setdefault(category, {})
+                for topic in entry.topics:
+                    topic_buckets = bucketed_counts.setdefault(topic, {})
                     topic_buckets[bucket_index] = topic_buckets.get(bucket_index, 0) + 1
 
             # Calculate mean and std dev per topic
@@ -184,7 +181,7 @@ class TrendingDetector:
         """Get top N article IDs for a topic.
 
         Args:
-            topic_id: Topic ID
+            topic_id: TopicNode ID
             start: Period start
             end: Period end
             limit: Max articles to return
@@ -193,23 +190,21 @@ class TrendingDetector:
             List of article IDs
         """
         with self.db.get_session() as session:
-            # Find articles with this category (proxy for topic)
             statement = (
-                select(FeedEntry.id)
+                select(ArticleEntry.id)
                 .where(
-                    FeedEntry.discovered_at >= start,
-                    FeedEntry.discovered_at < end,
+                    ArticleEntry.discovered_at >= start,
+                    ArticleEntry.discovered_at < end,
                 )
-                .order_by(FeedEntry.pub_date.desc())
+                .order_by(ArticleEntry.pub_date.desc())
                 .limit(limit)
             )
             entries = session.exec(statement).all()
 
-            # Filter by category
             article_ids = []
             for entry_id in entries:
-                entry = session.get(FeedEntry, entry_id)
-                if entry and topic_id in entry.categories:
+                entry = session.get(ArticleEntry, entry_id)
+                if entry and topic_id in entry.topics:
                     article_ids.append(entry_id)
                     if len(article_ids) >= limit:
                         break

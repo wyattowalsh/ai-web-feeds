@@ -28,12 +28,12 @@ questions from one workspace:
 ## Article browse and search
 
 Article browse and article search are backed by `data/articles.generated.json`,
-which is exported from `feed_entries` in the runtime database.
+which is exported from `articles` in the runtime database.
 
 That means the reader workspace can:
 
-- search titles, summaries, feed titles, authors, categories, and topics across
-  the exported corpus
+- search titles, summaries, feed titles, authors, canonical topics, and raw feed
+  labels across the exported corpus
 - filter by `feed`, `topics`, `source_type`, and `verified`
 - page through results with cursor-based pagination
 - sort by `latest`, `oldest`, or `source`

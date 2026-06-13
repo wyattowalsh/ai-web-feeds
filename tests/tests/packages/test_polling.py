@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import FeedEntry, FeedPollJob, FeedSource, PollStatus
+from ai_web_feeds.models import ArticleEntry, FeedPollJob, FeedSource, PollStatus
 from ai_web_feeds.polling import FeedPoller
 from ai_web_feeds.storage import DatabaseManager
 
@@ -25,8 +25,8 @@ def mock_db():
         )
     )
     db.update_poll_job = MagicMock()
-    db.add_feed_entry = MagicMock()
-    db.get_feed_entry_by_identity = MagicMock(return_value=None)
+    db.add_article = MagicMock()
+    db.get_article_by_identity = MagicMock(return_value=None)
     db.get_all_feed_sources = MagicMock(return_value=[])
     return db
 
@@ -114,7 +114,7 @@ class TestFeedPoller:
 
                 assert job.status == PollStatus.SUCCESS
                 assert job.articles_discovered == 1
-                assert mock_db.add_feed_entry.called
+                assert mock_db.add_article.called
 
     @pytest.mark.asyncio
     async def test_poll_feed_failure(self, poller, mock_db):
@@ -144,14 +144,14 @@ class TestFeedPoller:
 
         entry = poller._parse_entry(entry_data, "test-feed")
 
-        assert isinstance(entry, FeedEntry)
+        assert isinstance(entry, ArticleEntry)
         assert entry.feed_id == "test-feed"
         assert entry.guid == "article-1"
         assert entry.link == "http://example.com/article"
         assert entry.title == "Test Article"
         assert entry.summary == "Test summary"
         assert entry.author == "Test Author"
-        assert entry.categories == ["AI", "ML"]
+        assert entry.raw_categories == ["AI", "ML"]
         assert entry.content_html == "<p>Test content</p>"
 
     def test_parse_entry_minimal(self, poller):
@@ -166,7 +166,7 @@ class TestFeedPoller:
         assert entry.title == "Untitled"
         assert entry.summary is None
         assert entry.author is None
-        assert entry.categories == []
+        assert entry.raw_categories == []
 
     def test_parse_date_valid(self, poller):
         """Test date parsing with valid date"""
@@ -195,12 +195,20 @@ class TestFeedPoller:
     @pytest.mark.asyncio
     async def test_is_new_entry_queries_existing_guid(self, poller, mock_db):
         """Test GUID lookup skips entries already present in storage."""
-        mock_db.get_feed_entry_by_identity.return_value = object()
+        mock_db.get_article_by_identity.return_value = object()
 
-        assert await poller._is_new_entry("article-1", "https://example.com/article") is False
-        mock_db.get_feed_entry_by_identity.assert_called_once_with(
+        assert (
+            await poller._is_new_entry(
+                "article-1",
+                "https://example.com/article",
+                "test-feed",
+            )
+            is False
+        )
+        mock_db.get_article_by_identity.assert_called_once_with(
             "article-1",
             "https://example.com/article",
+            "test-feed",
         )
 
     @pytest.mark.asyncio
@@ -209,14 +217,15 @@ class TestFeedPoller:
         assert await poller._is_new_entry(None) is False
 
     @pytest.mark.asyncio
-    async def test_is_new_entry_falls_back_to_link_identity(self, poller, mock_db):
-        """Test link fallback is used when GUID is absent."""
-        mock_db.get_feed_entry_by_identity.return_value = object()
+    async def test_is_new_entry_uses_link_identity_without_guid(self, poller, mock_db):
+        """Test link identity is used when GUID is absent."""
+        mock_db.get_article_by_identity.return_value = object()
 
-        assert await poller._is_new_entry(None, "https://example.com/article") is False
-        mock_db.get_feed_entry_by_identity.assert_called_once_with(
+        assert await poller._is_new_entry(None, "https://example.com/article", "test-feed") is False
+        mock_db.get_article_by_identity.assert_called_once_with(
             None,
             "https://example.com/article",
+            "test-feed",
         )
 
     @pytest.mark.asyncio

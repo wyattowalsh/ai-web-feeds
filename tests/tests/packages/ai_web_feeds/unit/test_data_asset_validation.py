@@ -78,11 +78,11 @@ def test_validate_sample_analytics_data_accepts_current_consumer_shape(tmp_path:
 
 
 @pytest.mark.unit
-def test_validate_sample_analytics_data_rejects_legacy_snapshot_topic_shape(
+def test_validate_sample_analytics_data_rejects_unsupported_snapshot_topic_shape(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ):
-    """Legacy z-score snapshot payloads should fail the current consumer contract check."""
+    """Z-score snapshot payloads should fail the current consumer contract check."""
     payload = {
         "sample_analytics_snapshots": [
             {
@@ -137,11 +137,15 @@ def test_validate_sqlite_asset_inventory_rejects_unexpected_db_files(
 
 
 @pytest.mark.unit
-def test_validate_sqlite_asset_inventory_accepts_legacy_fallback(tmp_path: Path):
-    """The legacy sqlite filename remains valid until the canonical file exists."""
-    (tmp_path / data_validator.LEGACY_DATABASE_FILENAME).write_bytes(b"")
+def test_validate_sqlite_asset_inventory_rejects_unsupported_filename(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+):
+    """The old sqlite filename is not accepted as a data asset."""
+    (tmp_path / "aiwebfeeds.db").write_bytes(b"")
 
-    assert data_validator.validate_sqlite_asset_inventory(tmp_path)
+    assert not data_validator.validate_sqlite_asset_inventory(tmp_path)
+    assert "Unexpected database file: aiwebfeeds.db" in capsys.readouterr().out
 
 
 @pytest.mark.unit

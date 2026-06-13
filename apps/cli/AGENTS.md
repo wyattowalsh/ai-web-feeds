@@ -86,7 +86,7 @@ apps/cli/ai_web_feeds/cli/
     └── validate.py     # Feed validation
 ```
 
-**Entry point**: `pyproject.toml` → `ai-web-feeds` command (`aiwebfeeds` alias retained)
+**Entry point**: `pyproject.toml` → `ai-web-feeds` command
 
 **See**: [llms-full.txt#cli](https://aiwebfeeds.vercel.app/llms-full.txt#cli) for
 command reference
@@ -237,13 +237,8 @@ ______________________________________________________________________
 
 ### Topic Taxonomy Support (October 2025)
 
-The CLI now includes commands for managing the topic taxonomy graph
-(`data/topics.yaml`):
-
-- **List Topics**: `aiwebfeeds topics list` - Display all topics with facets
-- **Search Topics**: `aiwebfeeds topics search <query>` - Find topics by keyword
-- **Show Graph**: `aiwebfeeds topics graph` - Visualize topic relationships
-- **Validate**: `aiwebfeeds topics validate` - Check schema compliance
+The CLI validates `data/topics.yaml` through `ai-web-feeds validate topics` and exposes
+graph exports through `ai-web-feeds visualize`.
 
 ### Enrichment Workflow (October 2025)
 
@@ -263,25 +258,29 @@ ______________________________________________________________________
 ```python
 from ai_web_feeds.cli.commands import (
     analytics,
+    corpus,
     enrich,
     export,
     fetch,
+    monitor,
     opml,
+    recommend,
+    search,
     stats,
-    topics,  # NEW
-    validate,
     test,
+    validate,
+    visualize,
 )
 
 app.add_typer(fetch.app, name="fetch")
 app.add_typer(enrich.app, name="enrich")
 app.add_typer(export.app, name="export")
-app.add_typer(topics.app, name="topics")  # NEW
 app.add_typer(analytics.app, name="analytics")
 app.add_typer(stats.app, name="stats")
 app.add_typer(validate.app, name="validate")
 app.add_typer(opml.app, name="opml")
 app.add_typer(test.app, name="test")
+app.add_typer(visualize.app, name="visualize")
 
 
 def main() -> None:
@@ -304,9 +303,9 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds fetch --url https://example.com/feed.xml
-aiwebfeeds fetch --url https://example.com/feed.xml --save
-aiwebfeeds fetch --file urls.txt --save-all
+ai-web-feeds fetch one https://example.com/feed.xml --database sqlite:///data/ai-web-feeds.db
+ai-web-feeds fetch all --limit 25
+ai-web-feeds fetch all --source-type blog --topic machine-learning
 ```
 
 **Implementation** (`commands/fetch.py`):
@@ -379,9 +378,9 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds analytics
-aiwebfeeds analytics --top 20
-aiwebfeeds analytics --export report.json
+ai-web-feeds analytics
+ai-web-feeds analytics --top 20
+ai-web-feeds analytics --export report.json
 ```
 
 **Implementation** (`commands/analytics.py`):
@@ -448,8 +447,8 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds stats
-aiwebfeeds stats --json
+ai-web-feeds stats
+ai-web-feeds stats --json
 ```
 
 ______________________________________________________________________
@@ -461,9 +460,9 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds validate --url https://example.com/feed.xml
-aiwebfeeds validate --all
-aiwebfeeds validate --fix
+ai-web-feeds validate feeds
+ai-web-feeds validate topics
+ai-web-feeds validate all --strict
 ```
 
 ______________________________________________________________________
@@ -475,8 +474,8 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds enrich --url https://example.com/feed.xml
-aiwebfeeds enrich --all --categories --tags
+ai-web-feeds enrich one https://example.com/feed.xml
+ai-web-feeds enrich all --input data/feeds.yaml --output data/feeds.enriched.yaml
 ```
 
 ______________________________________________________________________
@@ -488,15 +487,14 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds export --format json --output feeds.json
-aiwebfeeds export --format yaml --output feeds.yaml
-aiwebfeeds export --format opml --output feeds.opml
+ai-web-feeds export json --output feeds.json
+ai-web-feeds export opml --output feeds.opml
+ai-web-feeds export csv --output feeds.csv
 ```
 
 **Supported Formats**:
 
 - JSON
-- YAML
 - OPML
 - CSV
 
@@ -504,14 +502,14 @@ ______________________________________________________________________
 
 ### `opml` - OPML Operations
 
-**Purpose**: Import/export OPML feed lists
+**Purpose**: Generate OPML feed lists
 
 **Usage**:
 
 ```bash
-aiwebfeeds opml import feeds.opml
-aiwebfeeds opml export feeds.opml
-aiwebfeeds opml import feeds.opml --category "Tech"
+ai-web-feeds opml all --output feeds.opml
+ai-web-feeds opml categorized --output feeds.categorized.opml
+ai-web-feeds opml filtered feeds.filtered.opml --topic machine-learning
 ```
 
 ______________________________________________________________________
@@ -523,8 +521,9 @@ ______________________________________________________________________
 **Usage**:
 
 ```bash
-aiwebfeeds test
-aiwebfeeds test --command fetch
+ai-web-feeds test all
+ai-web-feeds test unit --fast
+ai-web-feeds test coverage --open
 ```
 
 ______________________________________________________________________
@@ -740,7 +739,7 @@ app.add_typer(mycommand.app, name="mycommand")
 1. **Test manually**:
 
 ```bash
-uv run aiwebfeeds mycommand --help
+uv run ai-web-feeds mycommand --help
 ```
 
 ### Adding Command Options
@@ -788,7 +787,7 @@ cd apps/cli
 uv sync --reinstall
 
 # Verify installation
-uv run aiwebfeeds --version
+uv run ai-web-feeds --version
 ```
 
 ### Import Errors

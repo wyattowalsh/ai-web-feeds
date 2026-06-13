@@ -4,9 +4,8 @@ import pytest
 from ai_web_feeds.config import (
     DEFAULT_DATABASE_FILENAME,
     DEFAULT_DATABASE_URL,
-    LEGACY_DATABASE_FILENAME,
     Settings,
-    resolve_database_url,
+    default_database_url,
 )
 
 
@@ -48,29 +47,7 @@ class TestSettings:
         with pytest.raises(Exception):
             settings.some_new_field = "value"
 
-    def test_resolve_database_url_prefers_canonical_when_available(self, tmp_path, monkeypatch):
-        """Canonical sqlite paths should win when both database files exist."""
-        data_dir = tmp_path / "data"
-        data_dir.mkdir()
-        (data_dir / DEFAULT_DATABASE_FILENAME).write_bytes(b"")
-        (data_dir / LEGACY_DATABASE_FILENAME).write_bytes(b"")
-        monkeypatch.chdir(tmp_path)
-
-        assert (
-            resolve_database_url(DEFAULT_DATABASE_URL)
-            == f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
-        )
-
-    def test_resolve_database_url_falls_back_to_legacy_when_canonical_missing(
-        self, tmp_path, monkeypatch
-    ):
-        """Legacy sqlite paths remain readable while the canonical file is absent."""
-        data_dir = tmp_path / "data"
-        data_dir.mkdir()
-        (data_dir / LEGACY_DATABASE_FILENAME).write_bytes(b"")
-        monkeypatch.chdir(tmp_path)
-
-        assert (
-            resolve_database_url(DEFAULT_DATABASE_URL)
-            == f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
-        )
+    def test_default_database_url_is_canonical(self):
+        """The default SQLite asset path is the canonical production database."""
+        assert default_database_url() == f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
+        assert default_database_url() == DEFAULT_DATABASE_URL

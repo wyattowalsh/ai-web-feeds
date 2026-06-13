@@ -6,39 +6,14 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_DATABASE_FILENAME = "ai-web-feeds.db"
-LEGACY_DATABASE_FILENAME = "aiwebfeeds.db"
 DEFAULT_DATABASE_URL = f"sqlite:///data/{DEFAULT_DATABASE_FILENAME}"
-LEGACY_DATABASE_URL = f"sqlite:///data/{LEGACY_DATABASE_FILENAME}"
 DEFAULT_ARTICLE_CORPUS_FILENAME = "articles.generated.json"
 DEFAULT_ARTICLE_CORPUS_PATH = Path("data") / DEFAULT_ARTICLE_CORPUS_FILENAME
 
 
-def _sqlite_path_from_url(database_url: str) -> Path | None:
-    """Return a local filesystem path for SQLite URLs."""
-    prefix = "sqlite:///"
-    if not database_url.startswith(prefix):
-        return None
-    return Path(database_url.removeprefix(prefix))
-
-
-def resolve_database_url(database_url: str) -> str:
-    """Prefer the canonical SQLite filename while preserving legacy installs."""
-    if database_url != DEFAULT_DATABASE_URL:
-        return database_url
-
-    default_db_path = _sqlite_path_from_url(DEFAULT_DATABASE_URL)
-    legacy_db_path = _sqlite_path_from_url(LEGACY_DATABASE_URL)
-    if default_db_path is None or legacy_db_path is None:
-        return database_url
-
-    if not default_db_path.exists() and legacy_db_path.exists():
-        return LEGACY_DATABASE_URL
-    return DEFAULT_DATABASE_URL
-
-
 def default_database_url() -> str:
-    """Return the canonical default database URL with legacy fallback."""
-    return resolve_database_url(DEFAULT_DATABASE_URL)
+    """Return the canonical default database URL."""
+    return DEFAULT_DATABASE_URL
 
 
 class LoggingConfig(BaseSettings):
@@ -193,7 +168,7 @@ class Phase5Settings(BaseSettings):
     entity_cron: str = Field("0 * * * *", description="Entity extraction schedule (hourly)")
     sentiment_cron: str = Field("0 * * * *", description="Sentiment analysis schedule (hourly)")
     topic_modeling_cron: str = Field(
-        "0 3 1 * *", description="Topic modeling schedule (monthly, 1st at 3 AM)"
+        "0 3 1 * *", description="TopicNode modeling schedule (monthly, 1st at 3 AM)"
     )
 
     # Models
@@ -202,7 +177,7 @@ class Phase5Settings(BaseSettings):
         "distilbert-base-uncased-finetuned-sst-2-english",
         description="Hugging Face sentiment model",
     )
-    topic_model: str = Field("lda", description="Topic modeling algorithm: 'lda' or 'bertopic'")
+    topic_model: str = Field("lda", description="TopicNode modeling algorithm: 'lda' or 'bertopic'")
 
     # Thresholds
     quality_min_words: int = Field(100, description="Minimum words for quality scoring")
@@ -265,5 +240,5 @@ class Settings(BaseSettings):
     )
 
 
-# Global settings instance for backward compatibility
+# Global settings instance for shared runtime configuration
 settings = Settings()

@@ -21,7 +21,7 @@ AIWebFeeds Phase 006 adds powerful visualization and analytics capabilities for 
 - **WebGL Rendering**: Smooth 60fps 3D topic graphs using Three.js
 - **Force-Directed Layout**: Topics spatially clustered by relationships
 - **Interactive Navigation**: Orbit, pan, zoom with mouse/keyboard
-- **Automatic Fallback**: 2D network view on performance degradation
+- **Automatic Static View**: 2D network view on performance degradation
 
 ### Custom Dashboards
 
@@ -58,7 +58,7 @@ AIWebFeeds Phase 006 adds powerful visualization and analytics capabilities for 
 - **FastAPI**: REST API with async support
 - **SQLAlchemy**: Database ORM with 7 new tables
 - **Prophet**: Time-series forecasting
-- **Redis**: 5-minute cache layer with LRU fallback
+- **Redis**: 5-minute cache layer when explicitly configured
 
 ### Frontend (TypeScript/React)
 
@@ -76,7 +76,7 @@ Device ID (localStorage)
     ↓
 FastAPI Router (auth)
     ↓
-Cache Layer (Redis/LRU) ← 5min TTL
+Cache Layer (Redis or memory) ← 5min TTL
     ↓
 Data Service (validation)
     ↓
@@ -91,7 +91,7 @@ PostgreSQL/SQLite
 
 - Python 3.13+ with uv package manager
 - Node.js 20+ with pnpm
-- Redis (optional, uses LRU fallback)
+- Redis (optional; leave unset for explicit in-memory cache mode)
 - Phase 002 analytics data
 
 ### Installation
@@ -100,7 +100,7 @@ PostgreSQL/SQLite
 
 ```bash
 cd packages/ai_web_feeds
-python -m pip install fastapi sqlalchemy pandas prophet redis-py bcrypt pyjwt
+uv sync --package ai-web-feeds --extra ml
 ```
 
 **Frontend Dependencies:**
@@ -169,12 +169,13 @@ importDeviceData(exportedData);
 
 ## Cache Layer
 
-5-minute cache with Redis primary and LRU fallback:
+5-minute cache with explicit Redis or in-memory mode:
 
 - **Cache Key**: SHA-256 hash of (query_type + filters + date_range + device_id)
 - **TTL**: 300 seconds (5 minutes) for queries, 3600 seconds (1 hour) for topic graph
 - **Invalidation**: Automatic on TTL expiry, manual on data writes
-- **Fallback**: In-memory LRU cache (100 entries) when Redis unavailable
+- **Memory mode**: In-memory cache when Redis is not configured
+- **Redis mode**: Redis is required when `REDIS_URL` and Redis caching are enabled
 
 **Cache Statistics:**
 

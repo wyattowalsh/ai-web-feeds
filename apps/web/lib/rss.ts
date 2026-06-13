@@ -3,7 +3,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { source } from "@/lib/source";
 
 const currentYear = new Date().getFullYear();
-const fallbackFeedDate = new Date("2025-01-01T00:00:00.000Z");
+const defaultFeedDate = new Date("2025-01-01T00:00:00.000Z");
 
 function resolvePageDate(page: ReturnType<typeof source.getPages>[number]) {
   const pageData = page.data as unknown as Record<string, unknown>;
@@ -20,7 +20,7 @@ function resolvePageDate(page: ReturnType<typeof source.getPages>[number]) {
     }
   }
 
-  return fallbackFeedDate;
+  return defaultFeedDate;
 }
 
 function resolvePageCategory(pageUrl: string) {

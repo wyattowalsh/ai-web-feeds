@@ -162,7 +162,7 @@ ignore = ["ANN401", "PLC0415", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0
     "E501",      # line too long (test output strings)
     "B017",      # pytest.raises(Exception) (test patterns)
     "C401",      # unnecessary generator (test clarity)
-    "NPY002",    # numpy legacy (test compatibility)
+    "NPY002",    # numpy random API allowed in tests
     "PTH123",    # open() usage (test files)
     "RET504",    # unnecessary assignment (test clarity)
     "S110",      # try-except-pass (test patterns)

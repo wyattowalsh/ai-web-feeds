@@ -39,7 +39,7 @@ Fixes # Relates to #
 
 - [ ] I have tested these changes locally
 - [ ] I have added/updated tests for these changes
-- [ ] All tests pass locally (`uv run aiwebfeeds test`)
+- [ ] All tests pass locally (`uv run ai-web-feeds test all`)
 - [ ] I have tested on multiple platforms/browsers (if applicable)
 
 ### Test Commands Run
@@ -57,13 +57,13 @@ uv run ruff format --check .
 make type-check
 
 # Tests with coverage
-uv run aiwebfeeds test --coverage
+uv run ai-web-feeds test coverage
 
 # Feed validation (if feeds changed)
-uv run aiwebfeeds validate --all
+uv run ai-web-feeds validate all
 
 # CLI smoke test
-uv run aiwebfeeds --help
+uv run ai-web-feeds --help
 ```
 
 ### Test Cases
@@ -92,9 +92,9 @@ uv run aiwebfeeds --help
 - [ ] Topics are from canonical `topics.yaml` list
 - [ ] Platform configuration is correct (if applicable)
 - [ ] Feed URL is accessible and working (tested with
-  `uv run aiwebfeeds validate --feeds <url>`)
+  `uv run ai-web-feeds validate http --feed-id <feed-id>`)
 - [ ] Feed ID is unique and follows naming conventions
-- [ ] Feed parsing succeeds (`uv run aiwebfeeds fetch --url <url>`)
+- [ ] Feed parsing succeeds (`uv run ai-web-feeds fetch one <feed-id>`)
 
 ### Feed Validation Output
 
@@ -102,7 +102,7 @@ uv run aiwebfeeds --help
 
 ```bash
 # Validation command:
-uv run aiwebfeeds validate --feeds "your-feed-url"
+uv run ai-web-feeds validate http --feed-id "your-feed-id"
 
 # Output:
 # (paste here)
@@ -115,7 +115,7 @@ uv run aiwebfeeds validate --feeds "your-feed-url"
 - [ ] Ruff linting passes (`uv run ruff check .`)
 - [ ] Ruff formatting passes (`uv run ruff format --check .`)
 - [ ] ty smoke type checking passes (`make type-check`)
-- [ ] All tests pass with ≥90% coverage (`uv run aiwebfeeds test --coverage`)
+- [ ] All tests pass with ≥90% coverage (`uv run ai-web-feeds test coverage`)
 - [ ] No new linting warnings introduced
 - [ ] My code follows the project's style guidelines
 
@@ -124,7 +124,7 @@ uv run aiwebfeeds validate --feeds "your-feed-url"
 <!-- If you modified CLI commands or added new ones -->
 
 - [ ] CLI command works as expected
-- [ ] CLI help text is clear and accurate (`uv run aiwebfeeds <command> --help`)
+- [ ] CLI help text is clear and accurate (`uv run ai-web-feeds <command> --help`)
 - [ ] CLI has proper error handling
 - [ ] CLI output is well-formatted
 - [ ] CLI tests added/updated
@@ -135,7 +135,7 @@ uv run aiwebfeeds validate --feeds "your-feed-url"
 
 ```bash
 # Command:
-uv run aiwebfeeds <command>
+uv run ai-web-feeds <command>
 
 # Output:
 # (paste here)

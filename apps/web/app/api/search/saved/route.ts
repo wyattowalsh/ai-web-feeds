@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { BackendError, fetchBackend, formatBackendErrorResponse } from "@/lib/backend";
+import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
-
-function getBackendErrorStatus(error: unknown): number {
-  return error instanceof BackendError ? error.status : 500;
-}
 
 const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);

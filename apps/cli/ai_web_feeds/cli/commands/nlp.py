@@ -31,9 +31,9 @@ def run_quality_scoring(
     """Run quality scoring batch job on unprocessed articles.
 
     Examples:
-        aiwebfeeds nlp quality
-        aiwebfeeds nlp quality --batch-size 50
-        aiwebfeeds nlp quality --force
+        ai-web-feeds nlp quality
+        ai-web-feeds nlp quality --batch-size 50
+        ai-web-feeds nlp quality --force
     """
     console.print("[bold blue]Quality Scoring Batch Job[/bold blue]")
     console.print()
@@ -81,9 +81,9 @@ def run_entity_extraction(
     """Run entity extraction batch job using spaCy NER (Phase 5B).
 
     Examples:
-        aiwebfeeds nlp entities
-        aiwebfeeds nlp entities --batch-size 25
-        aiwebfeeds nlp entities --force
+        ai-web-feeds nlp entities
+        ai-web-feeds nlp entities --batch-size 25
+        ai-web-feeds nlp entities --force
     """
     console.print("[bold blue]Entity Extraction Batch Job[/bold blue]")
     console.print()
@@ -131,9 +131,9 @@ def run_sentiment_analysis(
     """Run sentiment analysis batch job using DistilBERT (Phase 5C).
 
     Examples:
-        aiwebfeeds nlp sentiment
-        aiwebfeeds nlp sentiment --batch-size 50
-        aiwebfeeds nlp sentiment --force
+        ai-web-feeds nlp sentiment
+        ai-web-feeds nlp sentiment --batch-size 50
+        ai-web-feeds nlp sentiment --force
     """
     console.print("[bold blue]Sentiment Analysis Batch Job[/bold blue]")
     console.print()
@@ -176,7 +176,7 @@ def run_sentiment_analysis(
 @app.command("topics")
 def run_topic_modeling(
     topic: Optional[str] = typer.Option(
-        None, "--topic", "-t", help="Topic to model (default: all)"
+        None, "--topic", "-t", help="TopicNode to model (default: all)"
     ),
     force: bool = typer.Option(False, "--force", "-f", help="Reprocess all topics"),
     min_articles: int = typer.Option(10, "--min-articles", "-m", help="Minimum articles per topic"),
@@ -186,11 +186,11 @@ def run_topic_modeling(
     Discovers subtopics within parent topics and tracks evolution.
 
     Examples:
-        aiwebfeeds nlp topics
-        aiwebfeeds nlp topics --topic "Machine Learning"
-        aiwebfeeds nlp topics --force --min-articles 20
+        ai-web-feeds nlp topics
+        ai-web-feeds nlp topics --topic "Machine Learning"
+        ai-web-feeds nlp topics --force --min-articles 20
     """
-    console.print("[bold blue]Topic Modeling Batch Job[/bold blue]")
+    console.print("[bold blue]TopicNode Modeling Batch Job[/bold blue]")
     console.print()
 
     try:
@@ -203,7 +203,7 @@ def run_topic_modeling(
         stats = job.run(topic=topic, force=force, min_articles=min_articles)
 
         # Display results
-        table = Table(title="Topic Modeling Results")
+        table = Table(title="TopicNode Modeling Results")
         table.add_column("Metric", style="cyan")
         table.add_column("Count", style="magenta")
 
@@ -218,12 +218,12 @@ def run_topic_modeling(
         if stats["failed"] > 0:
             console.print(f"\n[yellow]⚠ {stats['failed']} topics failed to process[/yellow]")
         else:
-            console.print("\n[green]✓ Topic modeling completed successfully[/green]")
+            console.print("\n[green]✓ TopicNode modeling completed successfully[/green]")
             console.print("\n[dim]Note: Discovered subtopics require manual approval[/dim]")
 
     except Exception as e:
-        console.print(f"[red]✗ Topic modeling failed: {e}[/red]")
-        logger.error(f"Topic modeling error: {e}")
+        console.print(f"[red]✗ TopicNode modeling failed: {e}[/red]")
+        logger.error(f"TopicNode modeling error: {e}")
         raise typer.Exit(code=1)
 
 
@@ -237,12 +237,12 @@ def manage_scheduler(
     - Quality scoring: every 30 minutes (default)
     - Entity extraction: hourly (default)
     - Sentiment analysis: hourly (default)
-    - Topic modeling: monthly (default)
+    - TopicNode modeling: monthly (default)
 
     Examples:
-        aiwebfeeds nlp scheduler start
-        aiwebfeeds nlp scheduler stop
-        aiwebfeeds nlp scheduler status
+        ai-web-feeds nlp scheduler start
+        ai-web-feeds nlp scheduler stop
+        ai-web-feeds nlp scheduler status
     """
     if action not in ["start", "stop", "status"]:
         console.print(f"[red]Invalid action: {action}. Use: start, stop, status[/red]")
@@ -261,7 +261,7 @@ def manage_scheduler(
             console.print(f"  • Quality scoring: {settings.phase5.quality_cron}")
             console.print(f"  • Entity extraction: {settings.phase5.entity_cron}")
             console.print(f"  • Sentiment analysis: {settings.phase5.sentiment_cron}")
-            console.print(f"  • Topic modeling: {settings.phase5.topic_modeling_cron}")
+            console.print(f"  • TopicNode modeling: {settings.phase5.topic_modeling_cron}")
 
         elif action == "stop":
             scheduler.shutdown()
@@ -288,10 +288,10 @@ def show_nlp_stats() -> None:
     - Quality score distribution
     - Entity extraction coverage
     - Sentiment analysis coverage
-    - Topic modeling status
+    - TopicNode modeling status
 
     Examples:
-        aiwebfeeds nlp stats
+        ai-web-feeds nlp stats
     """
     console.print("[bold blue]NLP Processing Statistics[/bold blue]")
     console.print()
@@ -299,35 +299,37 @@ def show_nlp_stats() -> None:
     try:
         from sqlmodel import Session, func, select
         from ai_web_feeds.database import get_engine
-        from ai_web_feeds.models import ArticleQualityScore, FeedEntry
+        from ai_web_feeds.models import ArticleQualityScore, ArticleEntry
 
         settings = Settings()
         engine = get_engine(settings)
 
         with Session(engine) as session:
             # Total articles
-            total = session.exec(select(func.count(FeedEntry.id))).one()
+            total = session.exec(select(func.count(ArticleEntry.id))).one()
 
             # Quality scoring stats
             quality_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.quality_processed.is_(True))
+                select(func.count(ArticleEntry.id)).where(ArticleEntry.quality_processed.is_(True))
             ).one()
 
             avg_quality = session.exec(select(func.avg(ArticleQualityScore.overall_score))).one()
 
             # Entity extraction stats
             entities_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.entities_processed.is_(True))
+                select(func.count(ArticleEntry.id)).where(ArticleEntry.entities_processed.is_(True))
             ).one()
 
             # Sentiment analysis stats
             sentiment_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.sentiment_processed.is_(True))
+                select(func.count(ArticleEntry.id)).where(
+                    ArticleEntry.sentiment_processed.is_(True)
+                )
             ).one()
 
-            # Topic modeling stats
+            # TopicNode modeling stats
             topics_processed = session.exec(
-                select(func.count(FeedEntry.id)).where(FeedEntry.topics_processed.is_(True))
+                select(func.count(ArticleEntry.id)).where(ArticleEntry.topics_processed.is_(True))
             ).one()
 
         # Display results
@@ -361,7 +363,7 @@ def show_nlp_stats() -> None:
             "N/A",
         )
         table.add_row(
-            "Topic Modeling",
+            "TopicNode Modeling",
             f"{topics_processed}/{total}",
             coverage(topics_processed, total),
             "N/A",

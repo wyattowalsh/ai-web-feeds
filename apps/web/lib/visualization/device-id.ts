@@ -28,7 +28,7 @@ function createDeviceId(): string {
       return globalThis.crypto.randomUUID();
     }
   } catch {
-    // Ignore crypto failures and use fallback ID.
+    // Ignore crypto failures and use a generated device ID.
   }
 
   return `device-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -48,7 +48,7 @@ export function getDeviceId(): string {
       storage.setItem(DEVICE_ID_KEY, nextId);
       return nextId;
     } catch {
-      // Fall through to in-memory fallback.
+      // Fall through to an in-memory device ID.
     }
   }
 

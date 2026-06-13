@@ -4,7 +4,11 @@ import { getRequestNonce } from "@/lib/nonce";
 import { FeedCatalog } from "../../feeds/feed-catalog";
 import { getSourceTypes, loadFeedCatalog } from "@/lib/feeds";
 import { getSourcePath, getSourceTitle } from "@/lib/public-content";
-import { normalizeSearchQuery, parseVerifiedSearchFilter } from "@/lib/search";
+import {
+  normalizeSearchQuery,
+  parseSearchTopicsParam,
+  parseVerifiedSearchFilter,
+} from "@/lib/search";
 import { createPageMetadata } from "@/lib/seo";
 import { collectionPageJsonLd } from "@/lib/structured-data";
 import type { ReaderPageSearchParams } from "@/lib/reader-route";
@@ -46,11 +50,15 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
         sourceTypes={getSourceTypes(feedsData.sources)}
         initialQuery={normalizeSearchQuery(params.get("q")) ?? ""}
         initialSourceType={params.get("source_type")?.trim() || null}
-        initialTopic={params.get("topics")?.split(",")[0]?.trim() || null}
+        initialTopics={parseInitialTopics(params)}
         initialVerified={parseVerifiedSearchFilter(params.get("verified")) ?? null}
       />
     </div>
   );
+}
+
+function parseInitialTopics(params: URLSearchParams): string[] {
+  return parseSearchTopicsParam([...params.getAll("topics"), ...params.getAll("topic")].join(","));
 }
 
 function toURLSearchParams(searchParams: ReaderPageSearchParams): URLSearchParams {

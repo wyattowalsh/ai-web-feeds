@@ -7,7 +7,7 @@
  * - GPU-accelerated rendering with WebGL
  * - Interactive camera controls
  * - Topic node interactions (hover, click, select)
- * - 2D fallback for low-performance devices
+ * - 2D static view for low-performance devices
  */
 
 "use client";
@@ -314,18 +314,18 @@ function PerformanceMonitor({
  * Main 3D Topic Cluster Component.
  */
 export function TopicCluster3D({ nodes, links, onNodeClick, onNodeHover }: TopicCluster3DProps) {
-  const [use2DFallback, setUse2DFallback] = useState(false);
+  const [use2DStaticView, setUse2DStaticView] = useState(false);
   const [fps, setFps] = useState(60);
   const [showStats, setShowStats] = useState(false);
-  const [fallbackReason, setFallbackReason] = useState<"performance" | "webgl">("webgl");
+  const [staticViewReason, setStaticViewReason] = useState<"performance" | "webgl">("webgl");
 
-  // Monitor performance and fall back to 2D if FPS is too low
+  // Monitor performance and switch to a static 2D view if FPS is too low
   useEffect(() => {
-    if (fps < 20 && !use2DFallback) {
-      setFallbackReason("performance");
-      setUse2DFallback(true);
+    if (fps < 20 && !use2DStaticView) {
+      setStaticViewReason("performance");
+      setUse2DStaticView(true);
     }
-  }, [fps, use2DFallback]);
+  }, [fps, use2DStaticView]);
 
   // Check WebGL support
   useEffect(() => {
@@ -333,23 +333,23 @@ export function TopicCluster3D({ nodes, links, onNodeClick, onNodeHover }: Topic
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
     if (!gl) {
-      setFallbackReason("webgl");
-      setUse2DFallback(true);
+      setStaticViewReason("webgl");
+      setUse2DStaticView(true);
     }
   }, []);
 
-  if (use2DFallback) {
+  if (use2DStaticView) {
     return (
       <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg p-8">
         <div className="text-center">
           <div className="text-4xl mb-4">📊</div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            2D Fallback Mode
+            2D Static View
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {fallbackReason === "performance"
-              ? "Rendering performance is too low for the 3D graph, so a fallback view is being used."
-              : "WebGL is not available in this browser, so a fallback view is being used."}
+            {staticViewReason === "performance"
+              ? "Rendering performance is too low for the 3D graph, so a static 2D view is being used."
+              : "WebGL is not available in this browser, so a static 2D view is being used."}
           </p>
           {/* TODO: Render 2D graph using D3.js or Canvas */}
         </div>

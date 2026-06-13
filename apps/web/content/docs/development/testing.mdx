@@ -28,7 +28,7 @@ uv scripts (workspace pyproject.toml)
     pytest (test execution)
 ```
 
-**Alternative entry point for backward compatibility:**
+**Alternative script entry point:**
 
 ```
 tests/run_tests.py → uv scripts → CLI → pytest
@@ -38,7 +38,7 @@ tests/run_tests.py → uv scripts → CLI → pytest
 
 You can run tests using any of these methods:
 
-<Tabs items={['uv Scripts (Recommended)', 'CLI Direct', 'Legacy Wrapper']}>
+<Tabs items={['uv Scripts (Recommended)', 'CLI Direct', 'Script Wrapper']}>
   <Tab value="uv Scripts (Recommended)">
     ```bash
     # Run all tests
@@ -71,19 +71,19 @@ You can run tests using any of these methods:
   <Tab value="CLI Direct">
     ```bash
     # Run all tests
-    uv run aiwebfeeds test all
+    uv run ai-web-feeds test all
 
     # Run unit tests with options
-    uv run aiwebfeeds test unit --fast
+    uv run ai-web-feeds test unit --fast
 
     # Run with coverage
-    uv run aiwebfeeds test coverage --open
+    uv run ai-web-feeds test coverage --open
 
     # E2E tests only
-    uv run aiwebfeeds test e2e
+    uv run ai-web-feeds test e2e
 
     # Get help
-    uv run aiwebfeeds test --help
+    uv run ai-web-feeds test --help
     ```
 
   </Tab>
@@ -156,10 +156,10 @@ You can run tests using any of these methods:
     uv run test-debug
 
     # Or use CLI directly with specific test
-    uv run aiwebfeeds test file test_models.py -k "twitter"
+    uv run ai-web-feeds test file test_models.py -k "twitter"
 
     # Show local variables
-    uv run aiwebfeeds test all --verbose
+    uv run ai-web-feeds test all --verbose
     ```
 
   </Tab>
@@ -272,7 +272,7 @@ Available markers for filtering:
 
 ```bash
 # List all markers
-aiwebfeeds test markers
+ai-web-feeds test markers
 
 # Run specific markers
 uv run --directory tests pytest -m "unit and not slow"
@@ -284,10 +284,10 @@ Generate comprehensive coverage reports:
 
 ```bash
 # HTML + terminal report
-aiwebfeeds test coverage
+ai-web-feeds test coverage
 
 # Open in browser
-aiwebfeeds test coverage --open
+ai-web-feeds test coverage --open
 
 # Coverage reports saved to: tests/reports/coverage/
 ```
@@ -358,18 +358,18 @@ The workspace `pyproject.toml` defines test scripts for convenience:
 ```toml
 [tool.uv.scripts]
 # Test execution commands (delegates to CLI)
-test = "aiwebfeeds test all"
-test-all = "aiwebfeeds test all"
-test-unit = "aiwebfeeds test unit"
-test-unit-fast = "aiwebfeeds test unit --fast"
-test-integration = "aiwebfeeds test integration"
-test-e2e = "aiwebfeeds test e2e"
-test-coverage = "aiwebfeeds test coverage"
-test-coverage-open = "aiwebfeeds test coverage --open"
-test-quick = "aiwebfeeds test quick"
-test-debug = "aiwebfeeds test debug"
-test-watch = "aiwebfeeds test watch"
-test-markers = "aiwebfeeds test markers"
+test = "ai-web-feeds test all"
+test-all = "ai-web-feeds test all"
+test-unit = "ai-web-feeds test unit"
+test-unit-fast = "ai-web-feeds test unit --fast"
+test-integration = "ai-web-feeds test integration"
+test-e2e = "ai-web-feeds test e2e"
+test-coverage = "ai-web-feeds test coverage"
+test-coverage-open = "ai-web-feeds test coverage --open"
+test-quick = "ai-web-feeds test quick"
+test-debug = "ai-web-feeds test debug"
+test-watch = "ai-web-feeds test watch"
+test-markers = "ai-web-feeds test markers"
 ```
 
 ### UV Integration
@@ -408,9 +408,9 @@ uv run test-coverage-open        # Full test with coverage
 uv run test-watch                # Watch mode for TDD
 
 # Alternative: Use CLI directly
-uv run aiwebfeeds test all --verbose --coverage
-uv run aiwebfeeds test unit --fast
-uv run aiwebfeeds test debug packages/ai_web_feeds/unit/test_models.py
+uv run ai-web-feeds test all --verbose --coverage
+uv run ai-web-feeds test unit --fast
+uv run ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
 
 # Legacy: Use run_tests.py wrapper
 cd tests
@@ -474,18 +474,18 @@ If you're updating CI/CD pipelines:
 **Alternative:**
 
 ```yaml
-- run: uv run aiwebfeeds test coverage
+- run: uv run ai-web-feeds test coverage
 ```
 
 ### Docker Testing
 
 ```dockerfile
 FROM python:3.13-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 COPY . .
 
-RUN pip install uv
 RUN cd tests && uv sync
 
 CMD ["uv", "run", "--directory", "tests", "pytest", "-v"]
@@ -556,7 +556,7 @@ uv run --directory tests python -c "import ai_web_feeds"
 
 ```bash
 # Skip slow tests
-aiwebfeeds test unit --fast
+ai-web-feeds test unit --fast
 
 # Show slowest tests
 uv run --directory tests pytest --durations=10
@@ -569,7 +569,7 @@ uv run --directory tests pytest --durations=10
 rm -rf tests/reports/.coverage tests/reports/coverage
 
 # Regenerate
-aiwebfeeds test coverage
+ai-web-feeds test coverage
 ```
 
 ## Documentation

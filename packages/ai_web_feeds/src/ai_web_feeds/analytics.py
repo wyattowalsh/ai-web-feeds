@@ -315,33 +315,11 @@ def get_health_distribution(session: Session) -> dict[str, int]:
     return health_distribution
 
 
-def calculate_trending_topics(
-    session: Session,
-    date_range_days: int = 30,
-    limit: int = 10,
-) -> list[dict[str, Any]]:
-    """Compatibility wrapper for trending topic calculations."""
-    return get_trending_topics(session, limit=limit, date_range_days=date_range_days)
-
-
-def calculate_validation_velocity(
-    session: Session,
-    date_range_days: int = 30,
-    granularity: str = "daily",
-) -> list[dict[str, Any]]:
-    """Compatibility wrapper that returns only velocity datapoints."""
-    return get_publication_velocity(
-        session,
-        granularity=granularity,
-        date_range_days=date_range_days,
-    )["data_points"]
-
-
-def calculate_health_distribution(
+def get_validation_health_distribution(
     session: Session,
     date_range_days: int = 30,
 ) -> dict[str, int]:
-    """Compatibility wrapper for validation-derived health distribution."""
+    """Return validation-derived feed health buckets for the requested range."""
     cutoff_date = datetime.now(UTC) - timedelta(days=date_range_days)
     validations = session.exec(
         select(FeedValidationResult).where(FeedValidationResult.validated_at >= cutoff_date)
@@ -378,19 +356,11 @@ def calculate_health_distribution(
     return distribution
 
 
-def generate_analytics_csv_report(
-    session: Session,
-    date_range_days: int = 30,
-) -> str:
-    """Compatibility wrapper for CSV export."""
-    return export_analytics_csv(session, date_range=f"{date_range_days}d")
-
-
 def resolve_date_range(
     date_range: str = "30d",
     date_range_days: int | None = None,
 ) -> tuple[str, int]:
-    """Resolve legacy day-based inputs into the canonical range format."""
+    """Resolve analytics date range inputs into a normalized range label and day count."""
     if date_range_days is not None:
         return f"{date_range_days}d", date_range_days
 
@@ -620,7 +590,7 @@ def export_analytics_csv(
 
     # Trending topics
     writer.writerow(["Most Active Topics"])
-    writer.writerow(["Topic", "Feed Count", "Validation Frequency", "Avg Health Score"])
+    writer.writerow(["TopicNode", "Feed Count", "Validation Frequency", "Avg Health Score"])
     for topic in trending:
         writer.writerow(
             [

@@ -22,7 +22,7 @@ body:
 
         **For CLI issues**, run with debug logging:
         ```bash
-        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose
+        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run ai-web-feeds <command> --verbose
         ```
 
         **For workflow issues**, check the workflow logs in GitHub Actions.
@@ -94,7 +94,7 @@ body:
 
         **Tip**: Run with debug logging for more details:
         ```bash
-        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds <command> --verbose 2>&1 | tee error.log
+        AIWEBFEEDS_LOG_LEVEL=DEBUG uv run ai-web-feeds <command> --verbose 2>&1 | tee error.log
         ```
       render: shell
     validations:
@@ -130,7 +130,7 @@ body:
         python --version
 
         # Package versions
-        uv pip list | grep -E "(ai-web-feeds|ruff|mypy)"
+        uv tree | grep -E "(ai-web-feeds|ruff|mypy)"
 
         # For web issues
         node --version
@@ -159,7 +159,7 @@ body:
         - Full output (including stack trace)
         - Any relevant environment variables
       placeholder: |
-        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run aiwebfeeds validate --all --verbose
+        $ AIWEBFEEDS_LOG_LEVEL=DEBUG uv run ai-web-feeds validate all --strict
         [2025-01-15 10:30:00] DEBUG: Loading config...
         [2025-01-15 10:30:01] ERROR: ...
         Traceback (most recent call last):
@@ -228,7 +228,7 @@ body:
         3. **Fix**: PR will be created to address the bug
         4. **Validation**: Fix will be tested in CI/CD:
            ```bash
-           uv run aiwebfeeds test --coverage
+           uv run ai-web-feeds test coverage
            uv run ruff check .
            uv run mypy .
            ```

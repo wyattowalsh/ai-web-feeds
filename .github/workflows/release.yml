@@ -152,11 +152,11 @@ jobs:
           ## Installation
 
           \`\`\`bash
-          # Core library
-          uv pip install ai-web-feeds==$VERSION
+          # Add the core library to a uv-managed project
+          uv add ai-web-feeds==$VERSION
 
-          # CLI
-          uv pip install ai-web-feeds-cli==$VERSION
+          # Install the CLI as a uv-managed tool
+          uv tool install ai-web-feeds-cli==$VERSION
           \`\`\`
 
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${VERSION}

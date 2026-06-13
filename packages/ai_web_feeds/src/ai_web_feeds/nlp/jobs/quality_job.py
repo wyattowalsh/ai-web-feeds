@@ -6,7 +6,7 @@ from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import ArticleQualityScore, FeedEntry
+from ai_web_feeds.models import ArticleEntry, ArticleQualityScore
 from ai_web_feeds.nlp.quality_scorer import QualityScorer
 from ai_web_feeds.storage import DatabaseManager
 
@@ -65,9 +65,9 @@ class QualityBatchJob:
 
         with self.db_manager.get_session() as session:
             # Query unprocessed articles
-            query = select(FeedEntry)
+            query = select(ArticleEntry)
             if not force:
-                query = query.where(FeedEntry.quality_processed.is_(False))
+                query = query.where(ArticleEntry.quality_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()
@@ -86,7 +86,7 @@ class QualityBatchJob:
                     article_dict = {
                         "id": article.id,
                         "title": article.title,
-                        "content": article.content or article.summary or "",
+                        "content": article.content_html or article.summary or "",
                         "summary": article.summary,
                         "author": getattr(article, "author", None),
                         "author_detail": None,  # TODO: Extract from feed metadata

@@ -6,7 +6,7 @@ from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import ArticleSentiment, FeedEntry
+from ai_web_feeds.models import ArticleEntry, ArticleSentiment
 from ai_web_feeds.nlp.sentiment_analyzer import SentimentAnalyzer
 from ai_web_feeds.storage import DatabaseManager
 
@@ -71,9 +71,9 @@ class SentimentBatchJob:
 
         with self.db_manager.get_session() as session:
             # Query unprocessed articles
-            query = select(FeedEntry)
+            query = select(ArticleEntry)
             if not force:
-                query = query.where(FeedEntry.sentiment_processed.is_(False))
+                query = query.where(ArticleEntry.sentiment_processed.is_(False))
             query = query.limit(batch_size)
 
             articles = session.exec(query).all()
@@ -92,7 +92,7 @@ class SentimentBatchJob:
                     article_dict = {
                         "id": article.id,
                         "title": article.title,
-                        "content": article.content or article.summary or "",
+                        "content": article.content_html or article.summary or "",
                         "summary": article.summary,
                     }
 

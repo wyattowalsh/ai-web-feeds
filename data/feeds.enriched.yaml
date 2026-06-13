@@ -1,12 +1,11 @@
-schema_version: feeds-2.1.0
+schema_version: feeds.enriched-3.0.0
 document_meta:
   created: '2025-10-15'
   updated: '2025-10-15'
   generated_with:
     tool: aiwebfeeds-cli
     version: 0.1.0
-  notes: Simplified schema - only URL and topics required. Titles and metadata auto-enriched,
-    but can be customized.
+  notes: Simplified schema - only URL and topics required. Titles and metadata auto-enriched, but can be customized.
   total_sources: 262
 sources:
 - url: http://export.arxiv.org/rss/cs.LG
@@ -201,7 +200,7 @@ sources:
   - ai
   - ml
   - research
-  notes: Custom title; uses RSSHub for Twitter feed
+  notes: Custom title; uses explicit Twitter feed bridge
   id: src-5f50d1e28e8251
   title: Andrej Karpathy
   feed: https://nitter.net/karpathy/rss
@@ -2605,8 +2604,7 @@ sources:
   - safety
   - trust-audit
   - evaluation
-  notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards
-    updates.
+  notes: Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards updates.
   id: src-5e1934d4dd604a
   title: AI Verify Foundation — Latest
   feed: https://www.aiverifyfoundation.sg/latest
@@ -2642,8 +2640,7 @@ sources:
   - retrieval
   - open-source
   - blogs
-  notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case
-    studies.
+  notes: Enterprise/semantic KG practices (RDF, OWL, linked data) and production case studies.
   id: src-3ca06fa2ba160a
   title: Ontotext — Knowledge Graph Blog
   feed: https://www.ontotext.com/blog/
@@ -2736,8 +2733,7 @@ sources:
   - research
   - evaluation
   - blogs
-  notes: Active AI4Science lab stream (materials, bio, physics); RSS available from
-    lab pages.
+  notes: Active AI4Science lab stream (materials, bio, physics); RSS available from lab pages.
   id: src-51cf3d54215027
   title: Microsoft Research — AI for Science (News & Awards)
   feed: https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/
@@ -3996,8 +3992,7 @@ sources:
   - research
   - papers
   - ai
-  notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence;
-    primary preprint venue for labs/venues.
+  notes: Canonical arXiv subject feed; daily preprints across core AI. High cadence; primary preprint venue for labs/venues.
   id: src-e8a38ea4bb4de0
   title: arXiv — cs.AI RSS
   feed: https://rss.arxiv.org/rss/cs.AI
@@ -4011,8 +4006,7 @@ sources:
   - accelerators
   - optimization
   - inference
-  notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises
-    RSS; frequent updates.
+  notes: Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises RSS; frequent updates.
   id: src-39fe5bbffb2c74
   title: AMD ROCm — Blogs
   feed: https://www.amd.com/en/technologies/rocm/blogs.html
@@ -4028,8 +4022,7 @@ sources:
   - on-device
   - accelerators
   - optimization
-  notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active
-    2025 cadence.
+  notes: First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active 2025 cadence.
   id: src-2e9a6527d68726
   title: Arm — AI & ML Blog
   feed: https://community.arm.com/arm-community-blogs/b/ai-blog
@@ -4045,8 +4038,7 @@ sources:
   - compilers
   - optimization
   - accelerators
-  notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects,
-    lowering). Maintained under LLVM; feed autodiscovery.
+  notes: Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects, lowering). Maintained under LLVM; feed autodiscovery.
   id: src-10c734be2e1ac5
   title: MLIR — The LLVM Project Blog
   feed: https://blog.llvm.org/tags/mlir/
@@ -4061,8 +4053,7 @@ sources:
   - governance
   - regulation
   - privacy
-  notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed;
-    frequent policy/complaint analysis.
+  notes: U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed; frequent policy/complaint analysis.
   id: src-3f7f4e8b4ab382
   title: FTC Business Blog — RSS
   feed: https://www.ftc.gov/feeds/blog-business.xml
@@ -4076,8 +4067,7 @@ sources:
   - research
   - papers
   - ai
-  notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major
-    indices; feed autodiscovery from site.
+  notes: Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major indices; feed autodiscovery from site.
   id: src-24a24658d043ef
   title: Journal of Artificial Intelligence Research (JAIR)
   feed: https://www.jair.org
@@ -4092,8 +4082,7 @@ sources:
   - research
   - industry
   - hardware
-  notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016.
-    Comprehensive quantum company database.
+  notes: RSS 2.0 with ~10 recent entries. Established industry publication since 2016. Comprehensive quantum company database.
   id: src-4e77280b457381
   title: Quantum Computing Report
   feed: https://quantumcomputingreport.com/feed/
@@ -4106,8 +4095,7 @@ sources:
   topics:
   - research
   - industry
-  notes: 'RSS 2.0 format. Excellent for quantum computing business and market news.
-    Last build: 2025-10-29.'
+  notes: 'RSS 2.0 format. Excellent for quantum computing business and market news. Last build: 2025-10-29.'
   id: src-6cc7946065e27f
   title: The Quantum Insider
   feed: https://thequantuminsider.com/feed
@@ -4118,8 +4106,7 @@ sources:
 - url: https://news.mit.edu/topic/mitquantum-computing-rss.xml
   topics:
   - research
-  notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum
-    computing. Strong industry collaborations.
+  notes: RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum computing. Strong industry collaborations.
   id: src-658c315e0e255d
   title: MIT News — Quantum Computing
   feed: https://news.mit.edu/topic/mitquantum-computing-rss.xml
@@ -4131,8 +4118,7 @@ sources:
   - research
   - industry
   - hardware
-  notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years
-    quantum R&D, 127+ qubit systems, Qiskit framework.
+  notes: Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years quantum R&D, 127+ qubit systems, Qiskit framework.
   id: src-79d4c6bb6b478c
   title: IBM Research Blog — Quantum Computing
   feed: https://research.ibm.com/blog
@@ -4147,8 +4133,7 @@ sources:
   - research
   - industry
   - hardware
-  notes: Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow
-    chip breakthrough in error correction (2024).
+  notes: Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow chip breakthrough in error correction (2024).
   id: src-43494a8c48afa1
   title: Google Quantum AI
   feed: https://quantumai.google/
@@ -4164,8 +4149,7 @@ sources:
   - industry
   - infra-economics
   - open-source
-  notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit.
-    Partnerships with IonQ, Quantinuum, Rigetti.
+  notes: Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti.
   id: src-77d80e71a6421d
   title: Microsoft Azure Quantum Blog
   feed: https://azure.microsoft.com/en-us/blog/quantum/
@@ -4181,8 +4165,7 @@ sources:
   - research
   - industry
   - hardware
-  notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion
-    technology leader. Cloud access via AWS/Azure/Google.'
+  notes: 'Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google.'
   id: src-23f472cddd3b81
   title: IonQ Blog
   feed: https://ionq.com/blog
@@ -4197,8 +4180,7 @@ sources:
   - research
   - industry
   - hardware
-  notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing.
-    Ankaa and Novera quantum processors.
+  notes: Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing. Ankaa and Novera quantum processors.
   id: src-7d7871c509fefe
   title: Rigetti Computing Blog
   feed: https://rigetti.com/blog

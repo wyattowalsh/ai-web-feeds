@@ -1,5 +1,3 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { getViolations, injectAxe } from "axe-playwright";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import {
@@ -8,61 +6,8 @@ import {
   summarizeAxeViolations,
 } from "../../lib/accessibility/axe-tests";
 
-const afterSuite = Reflect.get(test, ["after", "All"].join("")) as typeof test.beforeAll;
-const articleCorpusPath = path.resolve(
-  process.cwd(),
-  "..",
-  "..",
-  "data",
-  "articles.generated.json",
-);
-const corpusFixture = {
-  metadata: {
-    generated_at: "2026-04-22T00:00:00.000Z",
-    source_db: "playwright-fixture",
-    article_count: 2,
-    feed_count: 2,
-    latest_published_at: "2026-04-21T15:00:00.000Z",
-  },
-  articles: [
-    {
-      id: "fixture-article-1",
-      feed_id: "fixture-feed-1",
-      feed_title: "Fixture Feed One",
-      title: "OpenAI models weekly briefing",
-      link: "https://example.com/fixture-article-1",
-      summary: "A deterministic precomputed article for route-level workflow tests.",
-      content_html: "<p>A deterministic precomputed article for route-level workflow tests.</p>",
-      author: "Fixture Author",
-      published_at: "2026-04-21T15:00:00.000Z",
-      categories: ["models", "llm"],
-      topics: ["models", "llm"],
-      source_type: "blog",
-      verified: true,
-      is_active: true,
-    },
-    {
-      id: "fixture-article-2",
-      feed_id: "fixture-feed-2",
-      feed_title: "Fixture Feed Two",
-      title: "Agent systems roundup",
-      link: "https://example.com/fixture-article-2",
-      summary: "A second article keeps list and preview interactions realistic.",
-      content_html: "<p>A second article keeps list and preview interactions realistic.</p>",
-      author: "Fixture Author",
-      published_at: "2026-04-20T12:00:00.000Z",
-      categories: ["agents"],
-      topics: ["agents"],
-      source_type: "newsletter",
-      verified: false,
-      is_active: true,
-    },
-  ],
-};
-
-let originalCorpus: string | null = null;
-
 test.use({ video: "off" });
+test.describe.configure({ mode: "serial" });
 
 function trackClientErrors(page: Page) {
   const consoleErrors: string[] = [];
@@ -157,22 +102,8 @@ async function firstArticleSearchToken(page: Page): Promise<string> {
   return token.toLowerCase();
 }
 
-test.beforeAll(async () => {
-  originalCorpus = await readFile(articleCorpusPath, "utf8").catch(() => null);
-  await mkdir(path.dirname(articleCorpusPath), { recursive: true });
-  await writeFile(articleCorpusPath, JSON.stringify(corpusFixture, null, 2), "utf8");
-});
-
 test.afterEach(async ({ page }, testInfo) => {
   await warnOnA11yViolations(page, testInfo);
-});
-
-afterSuite(async () => {
-  if (originalCorpus === null) {
-    await rm(articleCorpusPath, { force: true });
-    return;
-  }
-  await writeFile(articleCorpusPath, originalCorpus, "utf8");
 });
 
 test.describe("Route stabilization smoke", () => {
@@ -203,6 +134,7 @@ test.describe("Route stabilization smoke", () => {
       text: "Documentation",
       role: "heading" as const,
       exact: true,
+      timeout: 120_000,
     },
     {
       path: "/dashboard",
@@ -216,7 +148,7 @@ test.describe("Route stabilization smoke", () => {
       test.setTimeout(route.timeout ?? 60_000);
       const tracker = trackClientErrors(page);
 
-      await page.goto(route.path, { waitUntil: "commit" });
+      await gotoWithRetry(page, route.path, { waitUntil: "domcontentloaded" });
       const locator =
         route.role === "heading"
           ? page.getByRole("heading", {
@@ -233,7 +165,7 @@ test.describe("Route stabilization smoke", () => {
   test("reader search applies explicitly and updates the canonical URL", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/reader", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -259,7 +191,7 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/reader", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
@@ -284,7 +216,7 @@ test.describe("Route stabilization smoke", () => {
   test("catalog mode can hand a source slice back into the reader", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
-    await page.goto("/sources", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/sources", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Browse sources" })).toBeVisible();
 
     await page
@@ -307,7 +239,7 @@ test.describe("Route stabilization smoke", () => {
     const tracker = trackClientErrors(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/reader", { waitUntil: "networkidle" });
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Filters and view")).toBeVisible();
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
@@ -321,6 +253,27 @@ test.describe("Route stabilization smoke", () => {
 
     await page.getByText("Filters and view").click();
     const mobileSearch = page.getByRole("textbox", { name: "Search posts mobile" });
+    await expect(mobileSearch).toBeVisible();
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const input = document.querySelector<HTMLInputElement>(
+            'input[aria-label="Search posts mobile"]',
+          );
+          if (!input) {
+            return null;
+          }
+
+          const rect = input.getBoundingClientRect();
+          const target = document.elementFromPoint(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+          );
+
+          return target?.getAttribute("aria-label") ?? target?.textContent?.trim() ?? null;
+        }),
+      )
+      .toBe("Search posts mobile");
     await mobileSearch.fill(token);
     await page.getByRole("button", { name: "Apply filters" }).last().click();
 

@@ -31,10 +31,9 @@ def export_corpus(
         help="Generated corpus artifact path",
     ),
 ) -> None:
-    """Export the generated article corpus from stored feed entries."""
+    """Export the generated article corpus from stored articles."""
     try:
         db = DatabaseManager(database_url)
-        db.create_db_and_tables()
 
         with Progress(
             SpinnerColumn(),
@@ -78,7 +77,6 @@ def refresh_corpus(
     """Poll active feeds, persist articles, and export the corpus artifact."""
     try:
         db = DatabaseManager(database_url)
-        db.create_db_and_tables()
         settings = Settings()
         poller = FeedPoller(db, settings)
 

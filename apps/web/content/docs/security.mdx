@@ -175,10 +175,11 @@ When contributing to AI Web Feeds, follow these security best practices:
 
     ```bash
     # Check for vulnerabilities
-    pip-audit
+    uv run --with pip-audit pip-audit
 
     # Update dependencies safely
-    pip install --upgrade package-name
+    uv lock --upgrade-package package-name
+    uv sync
     ```
 
   </Tab>

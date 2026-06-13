@@ -86,7 +86,9 @@ describe("GET /api/exports/opml", () => {
 
   it("filters catalog exports by query params when explicit feed ids are absent", async () => {
     const response = await GET(
-      new Request("http://localhost/api/exports/opml?format=filtered&type=newsletter&topic=agents"),
+      new Request(
+        "http://localhost/api/exports/opml?format=filtered&type=newsletter&topics=agents",
+      ),
     );
 
     expect(response.status).toBe(200);
@@ -94,6 +96,19 @@ describe("GET /api/exports/opml", () => {
     const body = await response.text();
     expect(body).toContain('title="Reader Signals"');
     expect(body).not.toContain('title="Agent Feed"');
+    expect(body).not.toContain('title="MLOps Weekly"');
+  });
+
+  it("filters catalog exports by repeated and comma-separated topics", async () => {
+    const response = await GET(
+      new Request("http://localhost/api/exports/opml?format=filtered&topics=agents,ml"),
+    );
+
+    expect(response.status).toBe(200);
+
+    const body = await response.text();
+    expect(body).toContain('title="Agent Feed"');
+    expect(body).not.toContain('title="Reader Signals"');
     expect(body).not.toContain('title="MLOps Weekly"');
   });
 });

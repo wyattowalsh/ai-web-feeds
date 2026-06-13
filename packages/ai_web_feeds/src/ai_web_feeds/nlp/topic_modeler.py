@@ -1,4 +1,4 @@
-"""Topic modeling using LDA/BERTopic (Phase 5D)."""
+"""TopicNode modeling using LDA/BERTopic (Phase 5D)."""
 
 import re
 
@@ -15,7 +15,7 @@ class DiscoveredSubtopic(BaseModel):
 
     name: str = Field(description="Generated subtopic name")
     keywords: list[str] = Field(description="Representative keywords")
-    coherence_score: float = Field(ge=0.0, le=1.0, description="Topic coherence score")
+    coherence_score: float = Field(ge=0.0, le=1.0, description="TopicNode coherence score")
     article_count: int = Field(ge=0, description="Number of articles in this subtopic")
 
 
@@ -465,29 +465,13 @@ class TopicModeler:
 
         return similarity >= threshold
 
-    def extract_subtopics(
-        self,
-        parent_topic: str,
-        articles: list[dict],
-        num_topics: int = 5,
-        min_articles: int = 10,
-    ) -> list[DiscoveredSubtopic]:
-        """Compatibility wrapper for the older extract_subtopics API."""
-
-        return self.discover_subtopics(
-            topic=parent_topic,
-            articles=articles,
-            num_topics=num_topics,
-            min_articles=min_articles,
-        )
-
-    def detect_evolution(
+    def detect_subtopic_set_changes(
         self,
         current_topics: list[dict],
         previous_topics: list[dict],
         threshold: float = 0.5,
     ) -> list[dict]:
-        """Compatibility wrapper for direct topic-to-topic evolution checks."""
+        """Detect evolution events between two explicit subtopic snapshots."""
 
         previous = [
             DiscoveredSubtopic(

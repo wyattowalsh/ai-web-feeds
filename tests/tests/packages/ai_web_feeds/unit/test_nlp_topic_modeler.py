@@ -1,4 +1,4 @@
-"""Unit tests for Topic Modeler (Phase 5D)"""
+"""Unit tests for TopicNode Modeler (Phase 5D)"""
 
 from unittest.mock import MagicMock, patch
 
@@ -112,7 +112,7 @@ class TestTopicModeler:
 
         # Mock LDA model
         mock_model = MagicMock()
-        mock_model.get_topics.return_value = [[0.1, 0.2, 0.05]]  # Topic-word matrix
+        mock_model.get_topics.return_value = [[0.1, 0.2, 0.05]]  # TopicNode-word matrix
         mock_model.show_topic.return_value = [
             ("transformer", 0.15),
             ("attention", 0.12),
@@ -124,8 +124,8 @@ class TestTopicModeler:
 
         # Mock coherence
         with patch.object(modeler, "_compute_coherence", return_value=0.65):
-            subtopics = modeler.extract_subtopics(
-                parent_topic="NLP", articles=sample_articles, num_topics=2
+            subtopics = modeler.discover_subtopics(
+                topic="NLP", articles=sample_articles, num_topics=2
             )
 
         assert isinstance(subtopics, list)
@@ -139,14 +139,14 @@ class TestTopicModeler:
             {"id": 2, "content": "Short article two."},
         ]
 
-        subtopics = modeler.extract_subtopics(parent_topic="Test", articles=articles, num_topics=5)
+        subtopics = modeler.discover_subtopics(topic="Test", articles=articles, num_topics=5)
 
         # Should return empty list if not enough articles
         assert subtopics == []
 
     def test_extract_subtopics_empty_articles(self, modeler):
         """Test extraction with empty articles list"""
-        subtopics = modeler.extract_subtopics(parent_topic="Test", articles=[], num_topics=5)
+        subtopics = modeler.discover_subtopics(topic="Test", articles=[], num_topics=5)
 
         assert subtopics == []
 
@@ -195,7 +195,7 @@ class TestTopicModeler:
             {"name": "Topic2", "keywords": ["c", "d"]},
         ]
 
-        events = modeler.detect_evolution(current_topics, previous_topics=[])
+        events = modeler.detect_subtopic_set_changes(current_topics, previous_topics=[])
 
         # All current topics are emergent
         assert len(events) >= 1
@@ -212,7 +212,7 @@ class TestTopicModeler:
             {"name": "NewTopic", "keywords": ["new", "topic"], "article_count": 25},
         ]
 
-        events = modeler.detect_evolution(current_topics, previous_topics)
+        events = modeler.detect_subtopic_set_changes(current_topics, previous_topics)
 
         # Should detect NewTopic as emergence
         emergence_events = [e for e in events if e["type"] == "emergence"]
@@ -228,7 +228,7 @@ class TestTopicModeler:
             {"name": "DecliningTopic", "keywords": ["declining"], "article_count": 30}
         ]
 
-        events = modeler.detect_evolution(current_topics, previous_topics)
+        events = modeler.detect_subtopic_set_changes(current_topics, previous_topics)
 
         # Should detect decline
         decline_events = [e for e in events if e["type"] == "decline"]
@@ -302,9 +302,7 @@ class TestTopicModelingEdgeCases:
 
         # Should not crash
         try:
-            subtopics = modeler.extract_subtopics(
-                parent_topic="Test", articles=articles, num_topics=2
-            )
+            subtopics = modeler.discover_subtopics(topic="Test", articles=articles, num_topics=2)
             # If it succeeds, that's fine
             assert isinstance(subtopics, list)
         except Exception:
@@ -329,7 +327,7 @@ class TestTopicModelingEdgeCases:
         """Test evolution detection with identical topics"""
         topics = [{"name": "Topic1", "keywords": ["a", "b"], "article_count": 10}]
 
-        events = modeler.detect_evolution(topics, topics)
+        events = modeler.detect_subtopic_set_changes(topics, topics)
 
         # Should detect no significant changes
         assert isinstance(events, list)

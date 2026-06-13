@@ -12,9 +12,9 @@ from ai_web_feeds.models import (
     FeedEnrichmentData,
     FeedSource,
     FeedValidationResult,
-    Topic,
+    TopicNode,
 )
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.storage import DatabaseManager, upgrade_database_to_head
 from ai_web_feeds.validate import ValidationResult, validate_feeds, validate_topics
 
 __all__ = [
@@ -24,7 +24,7 @@ __all__ = [
     "FeedSource",
     "FeedValidationResult",
     "Settings",
-    "Topic",
+    "TopicNode",
     "ValidationResult",
     "enrich_all_feeds",
     "enrich_feed_source",
@@ -35,6 +35,7 @@ __all__ = [
     "load_topics",
     "save_feeds",
     "save_topics",
+    "upgrade_database_to_head",
     "validate_feeds",
     "validate_topics",
 ]

@@ -4,14 +4,14 @@ from datetime import datetime
 
 import pytest
 from ai_web_feeds.models import (
+    ArticleEntry,
     CurationStatus,
     FeedFetchLog,
     FeedFormat,
-    FeedItem,
     FeedSource,
     Medium,
     SourceType,
-    Topic,
+    TopicNode,
 )
 from hypothesis import given
 from hypothesis import strategies as st
@@ -119,107 +119,101 @@ class TestFeedSource:
 
 
 @pytest.mark.unit
-class TestFeedItem:
-    """Test FeedItem model."""
+class TestArticleEntry:
+    """Test ArticleEntry model."""
 
-    def test_feed_item_creation(self, sample_feed_item):
-        """Test creating a FeedItem instance."""
-        assert sample_feed_item.feed_source_id == "test-blog-ai"
-        assert sample_feed_item.guid == "item-123"
-        assert sample_feed_item.title == "Introduction to Neural Networks"
-        assert isinstance(sample_feed_item.published, datetime)
+    def test_article_entry_creation(self, sample_article_entry):
+        """Test creating an ArticleEntry instance."""
+        assert sample_article_entry.feed_id == "test-blog-ai"
+        assert sample_article_entry.guid == "item-123"
+        assert sample_article_entry.title == "Introduction to Neural Networks"
+        assert isinstance(sample_article_entry.pub_date, datetime)
+        assert sample_article_entry.topics == ["neural-networks", "deep-learning"]
+        assert sample_article_entry.raw_categories == ["Neural Networks", "Deep Learning"]
 
-    def test_feed_item_minimal(self):
-        """Test creating FeedItem with minimal fields."""
-        item = FeedItem(
-            feed_source_id="test-feed",
+    def test_article_entry_minimal(self):
+        """Test creating ArticleEntry with minimal fields."""
+        item = ArticleEntry(
+            feed_id="test-feed",
             guid="item-1",
             title="Test Item",
+            link="https://example.com/item-1",
+            pub_date=datetime.now(),
         )
-        assert item.feed_source_id == "test-feed"
+        assert item.feed_id == "test-feed"
         assert item.guid == "item-1"
-        assert item.link is None
-        assert item.tags == []
+        assert item.topics == []
+        assert item.raw_categories == []
 
-    def test_feed_item_timestamps(self):
-        """Test FeedItem timestamp handling."""
+    def test_article_entry_timestamps(self):
+        """Test ArticleEntry publication timestamp handling."""
         from datetime import UTC
 
         now = datetime.now(UTC)
-        item = FeedItem(
-            feed_source_id="test",
+        item = ArticleEntry(
+            feed_id="test",
             guid="test-item",
             title="Test",
-            published=now,
-            updated=now,
+            link="https://example.com/test",
+            pub_date=now,
         )
-        assert item.published == now
-        assert item.updated == now
-
-    def test_feed_item_with_enclosures(self):
-        """Test FeedItem with media enclosures."""
-        item = FeedItem(
-            feed_source_id="test",
-            guid="test-item",
-            title="Test",
-            enclosures=[
-                {
-                    "url": "https://example.com/audio.mp3",
-                    "type": "audio/mpeg",
-                    "length": "12345",
-                }
-            ],
-        )
-        assert len(item.enclosures) == 1
-        assert item.enclosures[0]["url"] == "https://example.com/audio.mp3"
+        assert item.pub_date == now
 
     @given(
-        feed_source_id=st.text(min_size=1, max_size=100),
+        feed_id=st.text(min_size=1, max_size=100),
         guid=st.text(min_size=1, max_size=100),
         title=st.text(min_size=1, max_size=200),
     )
-    def test_feed_item_property_based(self, feed_source_id, guid, title):
-        """Property-based test for FeedItem."""
-        feed_source_id = "".join(c for c in feed_source_id if c.isprintable()).strip()
+    def test_article_entry_property_based(self, feed_id, guid, title):
+        """Property-based test for ArticleEntry."""
+        feed_id = "".join(c for c in feed_id if c.isprintable()).strip()
         guid = "".join(c for c in guid if c.isprintable()).strip()
         title = "".join(c for c in title if c.isprintable()).strip()
 
-        if feed_source_id and guid and title:
-            item = FeedItem(feed_source_id=feed_source_id, guid=guid, title=title)
-            assert item.feed_source_id == feed_source_id
+        if feed_id and guid and title:
+            item = ArticleEntry(
+                feed_id=feed_id,
+                guid=guid,
+                title=title,
+                link="https://example.com/article",
+                pub_date=datetime.now(),
+            )
+            assert item.feed_id == feed_id
             assert item.guid == guid
             assert item.title == title
 
 
 @pytest.mark.unit
 class TestTopic:
-    """Test Topic model."""
+    """Test TopicNode model."""
 
     def test_topic_creation(self, sample_topic):
-        """Test creating a Topic instance."""
+        """Test creating a TopicNode instance."""
         assert sample_topic.id == "artificial-intelligence"
-        assert sample_topic.name == "Artificial Intelligence"
+        assert sample_topic.label == "Artificial Intelligence"
         assert "ai" in sample_topic.aliases
 
     def test_topic_minimal(self):
-        """Test creating Topic with minimal fields."""
-        topic = Topic(
+        """Test creating TopicNode with minimal fields."""
+        topic = TopicNode(
             id="test-topic",
-            name="Test Topic",
+            label="Test TopicNode",
+            facet="domain",
         )
         assert topic.id == "test-topic"
-        assert topic.name == "Test Topic"
+        assert topic.label == "Test TopicNode"
         assert topic.aliases == []
 
     def test_topic_hierarchy(self):
-        """Test Topic parent-child relationship."""
-        _parent = Topic(id="parent", name="Parent Topic")
-        child = Topic(
+        """Test TopicNode parent-child relationship."""
+        _parent = TopicNode(id="parent", label="Parent TopicNode", facet="domain")
+        child = TopicNode(
             id="child",
-            name="Child Topic",
-            parent_id="parent",
+            label="Child TopicNode",
+            facet="subfield",
+            parents=["parent"],
         )
-        assert child.parent_id == "parent"
+        assert child.parents == ["parent"]
 
 
 @pytest.mark.unit

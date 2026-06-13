@@ -43,12 +43,12 @@ ______________________________________________________________________
 
 1. **enforce-testing**: Verifies test coverage ≥90%
 
-   - CLI: `uv run aiwebfeeds test coverage --html`
+   - CLI: `uv run ai-web-feeds test coverage --html`
    - Standard: 90% minimum coverage
 
 1. **enforce-data-validation**: Validates data files
 
-   - CLI: `uv run aiwebfeeds validate all --strict`
+   - CLI: `uv run ai-web-feeds validate all --strict`
    - Standard: JSON Schema compliance
 
 1. **quality-gate**: Final gate requiring all checks to pass
@@ -91,7 +91,7 @@ ______________________________________________________________________
 
 1. **test**: Cross-platform testing (Ubuntu, macOS, Windows)
 
-   - CLI: `uv run aiwebfeeds test coverage --html`
+   - CLI: `uv run ai-web-feeds test coverage --html`
    - Coverage uploaded to Codecov
    - Enforces 90% threshold
 
@@ -112,7 +112,7 @@ ______________________________________________________________________
 
 **CLI Commands**:
 
-- `uv run aiwebfeeds test coverage --html`
+- `uv run ai-web-feeds test coverage --html`
 
 **Features**:
 
@@ -136,7 +136,7 @@ ______________________________________________________________________
 
 1. **validate-data**: Validate YAML data files
 
-   - CLI: `uv run aiwebfeeds validate all --strict`
+   - CLI: `uv run ai-web-feeds validate all --strict`
    - Checks feeds.yaml, topics.yaml schemas
    - Validates topic references
    - Checks for duplicate IDs
@@ -148,7 +148,7 @@ ______________________________________________________________________
 
 1. **test-check**: Quick test validation
 
-   - CLI: `uv run aiwebfeeds test quick`
+   - CLI: `uv run ai-web-feeds test quick`
    - Fast unit tests only
    - Fails fast on errors
 
@@ -167,8 +167,8 @@ ______________________________________________________________________
 
 **CLI Commands**:
 
-- `uv run aiwebfeeds validate all --strict` (or `--lenient`)
-- `uv run aiwebfeeds stats --output json`
+- `uv run ai-web-feeds validate all --strict` (or `--lenient`)
+- `uv run ai-web-feeds stats --output json`
 
 **Workflow Inputs**:
 
@@ -251,27 +251,27 @@ ______________________________________________________________________
 
 ## 🔧 CLI Integration
 
-All enhanced workflows utilize the `aiwebfeeds` CLI for consistency.
+All enhanced workflows utilize the `ai-web-feeds` CLI for consistency.
 
 ### Test Commands
 
 ```bash
-uv run aiwebfeeds test all              # All tests
-uv run aiwebfeeds test unit             # Unit tests only
-uv run aiwebfeeds test integration      # Integration tests
-uv run aiwebfeeds test e2e              # E2E tests
-uv run aiwebfeeds test coverage --html  # With coverage
-uv run aiwebfeeds test quick            # Fast unit tests
+uv run ai-web-feeds test all              # All tests
+uv run ai-web-feeds test unit             # Unit tests only
+uv run ai-web-feeds test integration      # Integration tests
+uv run ai-web-feeds test e2e              # E2E tests
+uv run ai-web-feeds test coverage --html  # With coverage
+uv run ai-web-feeds test quick            # Fast unit tests
 ```
 
 ### Validation Commands
 
 ```bash
-uv run aiwebfeeds validate feeds        # Validate feeds.yaml
-uv run aiwebfeeds validate topics       # Validate topics.yaml
-uv run aiwebfeeds validate references   # Validate topic refs
-uv run aiwebfeeds validate all          # All validations
-uv run aiwebfeeds validate all --strict # Strict mode
+uv run ai-web-feeds validate feeds        # Validate feeds.yaml
+uv run ai-web-feeds validate topics       # Validate topics.yaml
+uv run ai-web-feeds validate references   # Validate topic refs
+uv run ai-web-feeds validate all          # All validations
+uv run ai-web-feeds validate all --strict # Strict mode
 ```
 
 ### Quality Commands (via uv scripts)
@@ -289,8 +289,8 @@ uv run fix                              # Auto-fix all
 ### Stats Commands
 
 ```bash
-uv run aiwebfeeds stats                 # Display stats
-uv run aiwebfeeds stats --output json   # JSON output
+uv run ai-web-feeds stats                 # Display stats
+uv run ai-web-feeds stats --output json   # JSON output
 ```
 
 ______________________________________________________________________
@@ -333,10 +333,10 @@ uv run check
 uv run fix
 
 # Run tests
-uv run aiwebfeeds test all
+uv run ai-web-feeds test all
 
 # Validate data
-uv run aiwebfeeds validate all
+uv run ai-web-feeds validate all
 ```
 
 ### Pre-commit Hook (Recommended)
@@ -403,7 +403,7 @@ ______________________________________________________________________
 
 **Issue**: Data validation fails
 
-- **Solution**: Run `uv run aiwebfeeds validate all` locally
+- **Solution**: Run `uv run ai-web-feeds validate all` locally
 
 **Issue**: Formatting/linting fails
 

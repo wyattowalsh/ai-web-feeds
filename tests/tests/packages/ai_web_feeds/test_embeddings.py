@@ -45,7 +45,8 @@ def test_engine():
     """Create in-memory SQLite engine for testing."""
     engine = create_engine("sqlite:///:memory:")
     SQLModel.metadata.create_all(engine)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 @pytest.fixture
@@ -240,10 +241,10 @@ class TestHybridEmbeddings:
     @patch("ai_web_feeds.embeddings.generate_embeddings_hf")
     @patch("ai_web_feeds.embeddings.get_settings")
     @patch("ai_web_feeds.embeddings.os.getenv")
-    def test_generate_embeddings_fallback_to_local(
+    def test_generate_embeddings_uses_local_provider_after_api_failure(
         self, mock_getenv, mock_get_settings, mock_gen_hf, mock_gen_local
     ):
-        """Test hybrid mode falls back to local on API failure."""
+        """Test hybrid mode uses the local provider on API failure."""
         mock_get_settings.return_value = _mock_settings(
             provider="huggingface",
             hf_api_token=TEST_HF_API_TOKEN,
@@ -260,7 +261,7 @@ class TestHybridEmbeddings:
         texts = ["text 1", "text 2"]
         embeddings = generate_embeddings(texts, use_api=True, show_progress=False)
 
-        # Verify fallback to local
+        # Verify local provider was used
         mock_gen_local.assert_called_once()
         np.testing.assert_array_equal(embeddings, mock_embeddings)
 

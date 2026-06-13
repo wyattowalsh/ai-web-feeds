@@ -18,7 +18,7 @@ class NLPScheduler:
     - Quality scoring (configurable cron)
     - Entity extraction (configurable cron)
     - Sentiment analysis (configurable cron)
-    - Topic modeling (configurable cron)
+    - TopicNode modeling (configurable cron)
     """
 
     def __init__(self, settings: Settings | None = None):
@@ -64,12 +64,12 @@ class NLPScheduler:
         )
         logger.info(f"Registered sentiment analysis job: {self.config.sentiment_cron}")
 
-        # Topic modeling job (Phase 5D)
+        # TopicNode modeling job (Phase 5D)
         self.scheduler.add_job(
             func=self._run_topic_job,
             trigger=CronTrigger.from_crontab(self.config.topic_modeling_cron),
             id="topic_modeling",
-            name="Topic Modeling Batch Job",
+            name="TopicNode Modeling Batch Job",
             replace_existing=True,
         )
         logger.info(f"Registered topic modeling job: {self.config.topic_modeling_cron}")
@@ -133,6 +133,6 @@ class NLPScheduler:
             logger.info("Starting scheduled topic modeling job")
             job = TopicModelingJob(self.settings)
             stats = job.run()
-            logger.info(f"Topic modeling job completed: {stats}")
+            logger.info(f"TopicNode modeling job completed: {stats}")
         except Exception as e:
-            logger.error(f"Topic modeling job failed: {e}")
+            logger.error(f"TopicNode modeling job failed: {e}")

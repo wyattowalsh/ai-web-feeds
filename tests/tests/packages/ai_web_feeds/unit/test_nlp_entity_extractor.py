@@ -122,12 +122,12 @@ class TestEntityExtractor:
         assert extractor._map_spacy_label("DATE") is None
         assert extractor._map_spacy_label("NORP") == "concept"
 
-    def test_compute_confidence(self, extractor):
+    def test_calculate_confidence(self, extractor):
         """Test confidence computation"""
         mock_ent = Mock()
         mock_ent.text = "Geoffrey Hinton"
 
-        confidence = extractor._compute_confidence(mock_ent)
+        confidence = extractor._calculate_confidence(mock_ent)
 
         assert 0.0 <= confidence <= 1.0
         assert confidence >= 0.75  # Base confidence

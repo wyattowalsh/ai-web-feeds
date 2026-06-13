@@ -62,7 +62,6 @@ jobs:
         run: |
           uv run python - <<'PY'
           from pathlib import Path
-          import re
           import sys
           import yaml
 
@@ -74,8 +73,8 @@ jobs:
               feeds = {}
 
           schema_version = feeds.get('schema_version')
-          if not isinstance(schema_version, str) or not re.match(r'^feeds-2\.[0-9]+\.[0-9]+$', schema_version):
-              errors.append("schema_version must match feeds-2.x.y")
+          if schema_version != 'feeds-3.0.0':
+              errors.append("schema_version must be feeds-3.0.0")
 
           sources = feeds.get('sources')
           if not isinstance(sources, list) or not sources:

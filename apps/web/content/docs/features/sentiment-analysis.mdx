@@ -65,7 +65,7 @@ else:
 #### Analyze Sentiment
 
 ```bash
-aiwebfeeds nlp sentiment
+ai-web-feeds nlp sentiment
 ```
 
 **Options**:
@@ -75,14 +75,14 @@ aiwebfeeds nlp sentiment
 
 ```bash
 # Process 50 articles
-aiwebfeeds nlp sentiment --batch-size 50
+ai-web-feeds nlp sentiment --batch-size 50
 ```
 
 #### View Sentiment Trends
 
 ```bash
 # 30-day sentiment trend for "AI Safety"
-aiwebfeeds nlp sentiment-trend "AI Safety" --days 30
+ai-web-feeds nlp sentiment-trend "AI Safety" --days 30
 ```
 
 **Output**:
@@ -100,7 +100,7 @@ Date       Avg Sentiment  Articles  Positive  Neutral  Negative
 
 ```bash
 # Show topics with sentiment shifts (>0.3 change in 7-day MA)
-aiwebfeeds nlp sentiment-shifts
+ai-web-feeds nlp sentiment-shifts
 ```
 
 **Output**:
@@ -116,7 +116,7 @@ AI Regulation    -0.10    +0.35    +0.45   🟢 Improving
 #### Compare Topics
 
 ```bash
-aiwebfeeds nlp sentiment-compare "AI Safety" "AI Capabilities"
+ai-web-feeds nlp sentiment-compare "AI Safety" "AI Capabilities"
 ```
 
 Shows side-by-side sentiment trends for two topics.
@@ -170,7 +170,7 @@ CREATE TABLE article_sentiment (
     model_name TEXT NOT NULL,
     confidence REAL NOT NULL CHECK(confidence BETWEEN 0 AND 1),
     computed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (article_id) REFERENCES feed_entries(id)
+    FOREIGN KEY (article_id) REFERENCES articles(id)
 );
 ```
 
@@ -270,7 +270,7 @@ Track sentiment for specific topics:
 
 ```bash
 # Daily check for "AI Safety" sentiment
-aiwebfeeds nlp sentiment-trend "AI Safety" --days 7
+ai-web-feeds nlp sentiment-trend "AI Safety" --days 7
 ```
 
 ### Detect Controversies
@@ -279,14 +279,14 @@ Identify topics with negative sentiment spikes:
 
 ```bash
 # Topics with sentiment < -0.5 in last 7 days
-aiwebfeeds nlp sentiment-shifts --threshold -0.5
+ai-web-feeds nlp sentiment-shifts --threshold -0.5
 ```
 
 ### Compare Competing Approaches
 
 ```bash
 # Compare sentiment for competing techniques
-aiwebfeeds nlp sentiment-compare "RLHF" "Constitutional AI"
+ai-web-feeds nlp sentiment-compare "RLHF" "Constitutional AI"
 ```
 
 ## Model Details
@@ -326,7 +326,7 @@ aiwebfeeds nlp sentiment-compare "RLHF" "Constitutional AI"
 # Ensure internet connection and disk space (~67MB)
 
 # Manual download:
-python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='distilbert-base-uncased-finetuned-sst-2-english')"
+uv run python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='distilbert-base-uncased-finetuned-sst-2-english')"
 ```
 
 ### Sentiment Shifts Not Detected

@@ -43,7 +43,7 @@ A sophisticated feed fetching system that extracts **exhaustive metadata** from 
   <Tab value="Metadata Extraction">
     ### 100+ Metadata Fields
 
-    The fetcher extracts comprehensive metadata organized in categories:
+    The fetcher extracts comprehensive metadata organized in groups:
 
     **Basic Feed Information:**
     - Title, subtitle, description
@@ -91,7 +91,7 @@ A sophisticated feed fetching system that extracts **exhaustive metadata** from 
     - ✅ Has language
     - ✅ Has timestamps
     - ✅ Has author/publisher
-    - ✅ Has categories
+    - ✅ Has canonical topics and raw feed labels
     - ✅ Has image/logo
 
     ```python
@@ -165,7 +165,7 @@ A sophisticated feed fetching system that extracts **exhaustive metadata** from 
     Full support for popular RSS extensions:
 
     **iTunes Podcast Metadata:**
-    - Author, owner, categories
+    - Author, owner, genre labels
     - Explicit flag
     - Episode information
     - Artwork URLs
@@ -197,7 +197,7 @@ from ai_web_feeds.fetcher import AdvancedFeedFetcher
 from ai_web_feeds.storage import DatabaseManager
 
 # Initialize
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 fetcher = AdvancedFeedFetcher()
 
 # Fetch feed
@@ -366,7 +366,7 @@ Comprehensive analytics engine providing 8 different analytical views of feed da
   </Accordion>
 
   <Accordion title="5. Content Statistics">
-    Analyze content coverage and categories:
+    Analyze content coverage and topics:
 
     ```python
     content = analytics.get_content_statistics()
@@ -380,7 +380,7 @@ Comprehensive analytics engine providing 8 different analytical views of feed da
         "content_coverage": 0.90,
         "author_coverage": 0.79,
         "enclosure_coverage": 0.19,
-        "top_categories": [
+        "top_topics": [
             ("research", 2341),
             ("tutorial", 1876),
             ("news", 1543)
@@ -480,47 +480,44 @@ with open("analytics.json", "w") as f:
   <Tab value="Fetch Commands">
     ### Fetch Commands
 
-    **Location:** `apps/cli/ai_web_feeds/cli/commands/fetch.py` (200 lines)
+    **Location:** `apps/cli/ai_web_feeds/cli/commands/fetch.py`
 
     #### Fetch Single Feed
 
     ```bash
-    ai-web-feeds fetch one <feed-id> [--metadata]
+    uv run ai-web-feeds fetch one <feed-id>
     ```
 
-    Fetches a single feed with optional metadata display:
+    Fetches a single feed through the current polling pipeline:
 
     ```bash
     # Basic fetch
-    ai-web-feeds fetch one openai-blog
-
-    # With detailed metadata
-    ai-web-feeds fetch one openai-blog --metadata
+    uv run ai-web-feeds fetch one openai-blog
     ```
 
     **Features:**
     - Progress indicator
     - Error reporting
-    - Quality scores display
-    - Metadata summary table
+    - Article storage through the v3 `articles` table
+    - Response-time and discovered-article summary
 
     #### Fetch All Feeds
 
     ```bash
-    ai-web-feeds fetch all [--limit N] [--verified-only]
+    uv run ai-web-feeds fetch all [--limit N] [--verified-only]
     ```
 
     Batch fetch with progress tracking:
 
     ```bash
     # Fetch all feeds
-    ai-web-feeds fetch all
+    uv run ai-web-feeds fetch all
 
     # Fetch first 10 feeds
-    ai-web-feeds fetch all --limit 10
+    uv run ai-web-feeds fetch all --limit 10
 
     # Fetch only verified feeds
-    ai-web-feeds fetch all --verified-only
+    uv run ai-web-feeds fetch all --verified-only
     ```
 
     **Features:**
@@ -536,98 +533,56 @@ with open("analytics.json", "w") as f:
 
     **Location:** `apps/cli/ai_web_feeds/cli/commands/analytics.py` (400 lines)
 
-    #### Overview Dashboard
+    #### Summary Metrics
 
     ```bash
-    ai-web-feeds analytics overview
+    ai-web-feeds analytics summary --date-range 30d
     ```
 
-    Displays comprehensive dashboard with:
-    - Total counts (feeds, items, topics)
-    - Status distribution
-    - Recent activity (24h)
+    Displays summary metrics:
+    - Total feeds and active feeds
+    - Validation success rate
+    - Average response time
+    - Feed health distribution
 
-    #### Distributions
+    #### Trending Topics
 
     ```bash
-    ai-web-feeds analytics distributions [--limit N]
+    ai-web-feeds analytics trending --limit 10 --date-range 30d
     ```
 
-    Shows distributions across:
-    - Source types
-    - Content mediums
-    - Topics
-    - Languages
+    Shows topic activity:
+    - Topic IDs
+    - Feed counts
+    - Validation frequency
+    - Average health score
 
-    #### Quality Metrics
+    #### Publication Velocity
 
     ```bash
-    ai-web-feeds analytics quality
+    ai-web-feeds analytics velocity --date-range 30d
     ```
 
-    Quality assessment with:
-    - Average scores
-    - Quality distribution
-    - High/low quality counts
+    Publishing metrics:
+    - Total article count
+    - Average articles per day
+    - Daily publication buckets
 
-    #### Performance Tracking
+    #### Daily Snapshot
 
     ```bash
-    ai-web-feeds analytics performance [--days N]
+    ai-web-feeds analytics snapshot
     ```
 
-    Fetch performance metrics:
-    - Success/failure rates
-    - Average durations
-    - Error distribution
-    - HTTP status codes
+    Stores summary and trending-topic records for historical analytics.
 
-    #### Content Statistics
+    #### CSV Export
 
     ```bash
-    ai-web-feeds analytics content
+    ai-web-feeds analytics export --output reports/analytics.csv
     ```
 
-    Content analysis:
-    - Total items
-    - Coverage metrics
-    - Top categories
-
-    #### Publishing Trends
-
-    ```bash
-    ai-web-feeds analytics trends [--days N]
-    ```
-
-    Publishing patterns:
-    - Items per day
-    - Hourly distribution
-    - Weekday patterns
-    - Peak times
-
-    #### Feed Health
-
-    ```bash
-    ai-web-feeds analytics health <feed-id>
-    ```
-
-    Per-feed health report with diagnostics and recommendations.
-
-    #### Top Contributors
-
-    ```bash
-    ai-web-feeds analytics contributors [--limit N]
-    ```
-
-    Contributor leaderboard with verification rates.
-
-    #### Generate Report
-
-    ```bash
-    ai-web-feeds analytics report [--output FILE]
-    ```
-
-    Export comprehensive JSON report.
+    Export analytics records for reports and dashboards.
 
   </Tab>
 </Tabs>
@@ -655,25 +610,31 @@ class FeedFetchLog(SQLModel, table=True):
     # - Extension metadata
 ```
 
-### FeedItem Enhancements
+### ArticleEntry Enhancements
 
 ```python
-class FeedItem(SQLModel, table=True):
-    # ... existing fields ...
+class ArticleEntry(SQLModel, table=True):
+    __tablename__ = "articles"
 
-    # Enhanced usage of extra_data
-    extra_data: Optional[Dict[str, Any]] = Field(
-        default=None,
+    topics: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(JSON)
+    )
+    raw_categories: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(JSON)
+    )
+    nlp_failures: dict[str, int] = Field(
+        default_factory=dict,
         sa_column=Column(JSON)
     )
     # Now stores:
-    # - Extension metadata (iTunes, Media RSS, etc.)
-    # - Multiple categories
-    # - Enclosure metadata
-    # - Author details
+    # - Canonical topic IDs
+    # - Raw feed category labels as ingress metadata
+    # - NLP retry/failure accounting
 ```
 
-<Callout type="info">**No migration required** - The system leverages existing flexible JSON columns for maximum compatibility.</Callout>
+<Callout type="info">The v3 contract is applied through reviewed Alembic migrations; JSON columns remain only where the public model needs structured metadata.</Callout>
 
 ## Dependencies
 
@@ -819,10 +780,10 @@ Check feed health scores to identify issues:
 
 ```bash
 # Daily health check
-ai-web-feeds analytics health openai-blog
+ai-web-feeds analytics summary --topic ai
 
-# Weekly full report
-ai-web-feeds analytics report --output weekly-report.json
+# Weekly CSV report
+ai-web-feeds analytics export --output weekly-report.csv
 ```
 
 ### Track Trends
@@ -831,10 +792,10 @@ Use analytics to identify patterns:
 
 ```bash
 # Monthly trend analysis
-ai-web-feeds analytics trends --days 30
+ai-web-feeds analytics trending --date-range 30d
 
 # Quality monitoring
-ai-web-feeds analytics quality
+ai-web-feeds analytics velocity --date-range 30d
 ```
 
 ### Generate Periodic Reports
@@ -843,7 +804,7 @@ Export analytics for monitoring:
 
 ```bash
 # Weekly reports
-ai-web-feeds analytics report --output reports/week-$(date +%U).json
+ai-web-feeds analytics export --output reports/week-$(date +%U).csv
 
 # Archive for historical analysis
 ```
@@ -880,15 +841,10 @@ ai-web-feeds analytics report --output reports/week-$(date +%U).json
     Install each component separately:
 
     ```bash
-    # 1. Install core library
-    cd packages/ai_web_feeds
-    pip install -e .
+    # 1. Install workspace packages
+    uv sync
 
-    # 2. Install CLI tool
-    cd ../../apps/cli
-    pip install -e .
-
-    # 3. Verify installation
+    # 2. Verify installation
     ai-web-feeds --version
     ai-web-feeds fetch --help
     ai-web-feeds analytics --help

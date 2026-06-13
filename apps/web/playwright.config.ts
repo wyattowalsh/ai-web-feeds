@@ -1,9 +1,16 @@
-import { defineConfig, devices } from "@playwright/test";
+import path from "node:path";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
+const articleCorpusFixturePath = path.resolve(
+  process.cwd(),
+  "tests",
+  "fixtures",
+  "articles.generated.json",
+);
 
-const reporters: any[] = [ // eslint-disable-line @typescript-eslint/no-explicit-any
+const reporters: ReporterDescription[] = [
   ["list"],
   ["html", { open: "never" }],
   ["json", { outputFile: "test-results/results.json" }],
@@ -33,16 +40,14 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       NEXT_TELEMETRY_DISABLED: "1",
-      DATABASE_URL:
-        process.env.DATABASE_URL ||
-        // pragma: allowlist secret - test placeholder for local Playwright runs
-        "postgresql://user:pass@localhost:5432/test?sslmode=require",
+      DATABASE_URL: process.env.DATABASE_URL || "postgresql://localhost:5432/test?sslmode=require",
       BETTER_AUTH_SECRET:
         process.env.BETTER_AUTH_SECRET || "test-better-auth-secret-key-for-playwright",
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "test-google-client-id",
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "test-google-client-secret",
       GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID || "test-github-client-id",
       GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "test-github-client-secret",
+      AI_WEB_FEEDS_ARTICLE_CORPUS_PATH: articleCorpusFixturePath,
     },
   },
   projects: [

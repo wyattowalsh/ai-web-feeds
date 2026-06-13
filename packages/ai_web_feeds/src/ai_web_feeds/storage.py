@@ -1,35 +1,56 @@
 """ai_web_feeds.storage -- Database and storage management"""
 
+import hashlib
 import json
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from alembic import command
+from alembic.config import Config
 from loguru import logger
-from sqlalchemy import MetaData, Table, create_engine, desc, inspect, literal
+from sqlalchemy import create_engine, desc
+from sqlalchemy.engine import make_url
 from sqlmodel import Session, SQLModel, select
 
-from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
+from ai_web_feeds.config import DEFAULT_DATABASE_URL
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
+    ArticleEntry,
     CurationStatus,
     EmailDigest,
     FeedAnalytics,
     FeedEnrichmentData,
-    FeedEntry,
     FeedFetchLog,
-    FeedItem,
     FeedPollJob,
     FeedSource,
     FeedValidationResult,
     Notification,
     NotificationPreference,
     SavedSearch,
-    Topic,
+    TopicNode,
     TopicStats,
     TrendingTopic,
-    UserFeedFollow,
+    UserSourceFollow,
 )
+
+
+def upgrade_database_to_head(database_url: str = DEFAULT_DATABASE_URL) -> None:
+    """Apply reviewed Alembic migrations to the configured database."""
+    url = make_url(database_url)
+    if url.drivername.startswith("sqlite") and url.database and url.database != ":memory:":
+        Path(url.database).parent.mkdir(parents=True, exist_ok=True)
+
+    packages_dir = Path(__file__).resolve().parents[3]
+    config_path = packages_dir / "alembic.ini"
+    if not config_path.exists():
+        raise FileNotFoundError(f"Alembic config not found: {config_path}")
+
+    alembic_config = Config(str(config_path))
+    alembic_config.set_main_option("sqlalchemy.url", database_url)
+    command.upgrade(alembic_config, "head")
+    logger.info("Database migrations applied to head")
 
 
 class DatabaseManager:
@@ -41,7 +62,7 @@ class DatabaseManager:
         Args:
             database_url: SQLAlchemy database URL
         """
-        self.database_url = resolve_database_url(database_url)
+        self.database_url = database_url
         self.engine = create_engine(
             self.database_url,
             echo=False,  # Set to True for SQL debugging
@@ -52,7 +73,7 @@ class DatabaseManager:
         logger.info(f"Database initialized: {self.database_url}")
 
     def create_db_and_tables(self) -> None:
-        """Create all tables in the database."""
+        """Create tables directly for isolated tests and local fixtures."""
         # Ensure the data directory exists for SQLite
         if self.database_url.startswith("sqlite"):
             db_path = self.database_url.replace("sqlite:///", "")
@@ -68,6 +89,23 @@ class DatabaseManager:
             Database session
         """
         return Session(self.engine)
+
+    def close(self) -> None:
+        """Dispose pooled database connections owned by this manager."""
+        self.engine.dispose()
+
+    def __enter__(self) -> "DatabaseManager":
+        """Return this manager for context-managed use."""
+        return self
+
+    def __exit__(self, *_exc_info: object) -> None:
+        """Dispose pooled connections when leaving a context manager."""
+        self.close()
+
+    def __del__(self) -> None:
+        """Best-effort cleanup for tests and short-lived CLI commands."""
+        with suppress(Exception):
+            self.close()
 
     def add_feed_source(self, feed_source: FeedSource) -> FeedSource:
         """Add or update a feed source.
@@ -119,21 +157,6 @@ class DatabaseManager:
         """
         return self.add_feed_source(feed_source)  # SQLModel merge handles updates
 
-    def add_feed_item(self, feed_item: FeedItem) -> FeedItem:
-        """Add a feed item.
-
-        Args:
-            feed_item: FeedItem to add
-
-        Returns:
-            Added FeedItem
-        """
-        with self.get_session() as session:
-            session.add(feed_item)
-            session.commit()
-            session.refresh(feed_item)
-            return feed_item
-
     def add_feed_fetch_log(self, log: FeedFetchLog) -> FeedFetchLog:
         """Add a feed fetch log entry.
 
@@ -149,31 +172,6 @@ class DatabaseManager:
             session.refresh(log)
             return log
 
-    # Alias for backwards compatibility
-    def add_fetch_log(self, log: FeedFetchLog) -> FeedFetchLog:
-        """Add a feed fetch log entry (alias).
-
-        Args:
-            log: FeedFetchLog to add
-
-        Returns:
-            Added FeedFetchLog
-        """
-        return self.add_feed_fetch_log(log)
-
-    def get_feed_items(self, feed_source_id: str) -> list[FeedItem]:
-        """Get all feed items for a feed source.
-
-        Args:
-            feed_source_id: Feed source ID
-
-        Returns:
-            List of FeedItem objects
-        """
-        with self.get_session() as session:
-            statement = select(FeedItem).where(FeedItem.feed_source_id == feed_source_id)
-            return list(session.exec(statement).all())
-
     def get_fetch_logs(self, feed_source_id: str) -> list[FeedFetchLog]:
         """Get fetch logs for a feed source.
 
@@ -187,14 +185,14 @@ class DatabaseManager:
             statement = select(FeedFetchLog).where(FeedFetchLog.feed_source_id == feed_source_id)
             return list(session.exec(statement).all())
 
-    def add_topic(self, topic: Topic) -> Topic:
+    def add_topic(self, topic: TopicNode) -> TopicNode:
         """Add or update a topic.
 
         Args:
-            topic: Topic to add
+            topic: TopicNode to add
 
         Returns:
-            Added/updated Topic
+            Added/updated TopicNode
         """
         with self.get_session() as session:
             session.add(topic)
@@ -203,27 +201,27 @@ class DatabaseManager:
             logger.info(f"Added/updated topic: {topic.id}")
             return topic
 
-    def get_all_topics(self) -> list[Topic]:
+    def get_all_topics(self) -> list[TopicNode]:
         """Get all topics.
 
         Returns:
-            List of all Topic objects
+            List of all TopicNode objects
         """
         with self.get_session() as session:
-            statement = select(Topic)
+            statement = select(TopicNode)
             return list(session.exec(statement).all())
 
-    def get_topic(self, topic_id: str) -> Topic | None:
+    def get_topic(self, topic_id: str) -> TopicNode | None:
         """Get a topic by ID.
 
         Args:
-            topic_id: Topic ID
+            topic_id: TopicNode ID
 
         Returns:
-            Topic or None if not found
+            TopicNode or None if not found
         """
         with self.get_session() as session:
-            statement = select(Topic).where(Topic.id == topic_id)
+            statement = select(TopicNode).where(TopicNode.id == topic_id)
             return session.exec(statement).first()
 
     def bulk_insert_feed_sources(self, feed_sources: list[FeedSource]) -> None:
@@ -237,11 +235,11 @@ class DatabaseManager:
             session.commit()
             logger.info(f"Bulk inserted {len(feed_sources)} feed sources")
 
-    def bulk_insert_topics(self, topics: list[Topic]) -> None:
+    def bulk_insert_topics(self, topics: list[TopicNode]) -> None:
         """Bulk insert topics.
 
         Args:
-            topics: List of Topic objects to insert
+            topics: List of TopicNode objects to insert
         """
         with self.get_session() as session:
             session.add_all(topics)
@@ -513,27 +511,8 @@ class DatabaseManager:
             "enrichment": self.get_enrichment_data(feed_source_id),
             "validation": self.get_validation_result(feed_source_id),
             "analytics": self.get_analytics(feed_source_id, limit=1),
-            "recent_items": self.get_recent_feed_items(feed_source_id, limit=10),
+            "recent_articles": self.get_articles(feed_source_id, limit=10),
         }
-
-    def get_recent_feed_items(self, feed_source_id: str, limit: int = 10) -> list[FeedItem]:
-        """Get recent feed items for a source.
-
-        Args:
-            feed_source_id: Feed source ID
-            limit: Maximum number of items
-
-        Returns:
-            List of recent FeedItems
-        """
-        with self.get_session() as session:
-            statement = (
-                select(FeedItem)
-                .where(FeedItem.feed_source_id == feed_source_id)
-                .order_by(FeedItem.published_at.desc())
-                .limit(limit)
-            )
-            return list(session.exec(statement).all())
 
     def get_health_summary(self) -> dict[str, Any]:
         """Get overall health summary of all feeds.
@@ -906,55 +885,81 @@ class DatabaseManager:
             )
 
     # ========================================================================
-    # Phase 3B: Real-Time Monitoring Storage Methods
+    # Article storage methods
     # ========================================================================
 
-    # T015: Feed Entries
-    def _find_feed_entry(
+    def _find_article(
         self,
         session: Session,
         guid: str | None,
         link: str | None = None,
-    ) -> FeedEntry | None:
-        """Find an existing feed entry by GUID first, then link fallback."""
-        if guid:
-            statement = select(FeedEntry).where(FeedEntry.guid == guid).limit(1)
+        feed_id: str = "",
+    ) -> ArticleEntry | None:
+        """Find an existing article by deterministic per-feed identity hashes."""
+        if not feed_id:
+            return None
+
+        normalized_guid_hash = self._identity_hash(guid)
+        normalized_link_hash = self._identity_hash(link)
+
+        if normalized_guid_hash:
+            statement = (
+                select(ArticleEntry)
+                .where(ArticleEntry.feed_id == feed_id)
+                .where(ArticleEntry.guid_hash == normalized_guid_hash)
+                .limit(1)
+            )
             existing = session.exec(statement).first()
             if existing is not None:
                 return existing
 
-        if link:
+        if normalized_link_hash:
             statement = (
-                select(FeedEntry)
-                .where(FeedEntry.link == link)
-                .order_by(desc(FeedEntry.pub_date), desc(FeedEntry.created_at))
+                select(ArticleEntry)
+                .where(ArticleEntry.feed_id == feed_id)
+                .where(ArticleEntry.link_hash == normalized_link_hash)
                 .limit(1)
             )
-            return session.exec(statement).first()
+            existing = session.exec(statement).first()
+            if existing is not None:
+                return existing
 
         return None
 
-    def get_feed_entry_by_identity(
+    def get_article_by_identity(
         self,
         guid: str | None,
-        link: str | None = None,
-    ) -> FeedEntry | None:
-        """Return a feed entry using the deterministic GUID/link identity."""
+        link: str | None,
+        feed_id: str,
+    ) -> ArticleEntry | None:
+        """Return an article using the canonical per-source GUID/link hash identity."""
         with self.get_session() as session:
-            return self._find_feed_entry(session, guid, link)
+            return self._find_article(session, guid, link, feed_id)
 
-    def add_feed_entry(self, entry: FeedEntry) -> FeedEntry:
-        """Add new feed entry (article) from polling.
+    def add_article(self, entry: ArticleEntry) -> ArticleEntry:
+        """Add a new article from polling.
 
         Args:
-            entry: FeedEntry to add
+            entry: ArticleEntry to add
 
         Returns:
-            Added FeedEntry with ID, or the existing deduplicated entry
+            Added ArticleEntry with ID, or the existing deduplicated entry
         """
         with self.get_session() as session:
-            existing = self._find_feed_entry(session, entry.guid, entry.link)
+            entry.canonical_url = entry.canonical_url or entry.link
+            entry.guid_hash = entry.guid_hash or self._identity_hash(entry.guid)
+            entry.link_hash = entry.link_hash or self._identity_hash(
+                entry.canonical_url or entry.link
+            )
+            entry.first_seen_at = entry.first_seen_at or entry.discovered_at
+            entry.last_seen_at = datetime.now(UTC)
+
+            existing = self._find_article(session, entry.guid, entry.link, entry.feed_id)
             if existing is not None:
+                existing.last_seen_at = datetime.now(UTC)
+                session.add(existing)
+                session.commit()
+                session.refresh(existing)
                 return existing
 
             session.add(entry)
@@ -962,74 +967,62 @@ class DatabaseManager:
             session.refresh(entry)
             return entry
 
-    def get_feed_entries(self, feed_id: str, limit: int = 20, offset: int = 0) -> list[FeedEntry]:
-        """Get recent entries for a feed.
+    def get_articles(
+        self,
+        feed_id: str,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> list[ArticleEntry]:
+        """Get recent articles for a feed.
 
         Args:
             feed_id: Feed ID
-            limit: Max entries to return
+            limit: Max articles to return
             offset: Pagination offset
 
         Returns:
-            List of FeedEntry objects
+            List of ArticleEntry objects
         """
         with self.get_session() as session:
             statement = (
-                select(FeedEntry)
-                .where(FeedEntry.feed_id == feed_id)
-                .order_by(desc(FeedEntry.pub_date))
+                select(ArticleEntry)
+                .where(ArticleEntry.feed_id == feed_id)
+                .order_by(desc(ArticleEntry.pub_date))
                 .limit(limit)
                 .offset(offset)
             )
             return list(session.exec(statement).all())
 
-    def get_recent_entries(self, since: datetime, limit: int = 100) -> list[FeedEntry]:
-        """Get entries discovered since a timestamp.
+    def get_recent_articles(self, since: datetime, limit: int = 100) -> list[ArticleEntry]:
+        """Get articles discovered since a timestamp.
 
         Args:
             since: Timestamp to filter from
-            limit: Max entries to return
+            limit: Max articles to return
 
         Returns:
-            List of recent FeedEntry objects
+            List of recent ArticleEntry objects
         """
         with self.get_session() as session:
             statement = (
-                select(FeedEntry)
-                .where(FeedEntry.discovered_at >= since)
-                .order_by(desc(FeedEntry.discovered_at))
+                select(ArticleEntry)
+                .where(ArticleEntry.discovered_at >= since)
+                .order_by(desc(ArticleEntry.discovered_at))
                 .limit(limit)
             )
             return list(session.exec(statement).all())
 
-    def get_all_feed_entries(
+    def get_all_articles(
         self,
         limit: int | None = None,
         offset: int = 0,
-    ) -> list[FeedEntry]:
-        """Get all feed entries ordered for deterministic corpus export."""
-        available_columns = self._get_table_columns("feed_entries")
-        required_columns = {
-            "summary",
-            "content_html",
-            "pub_date",
-            "author",
-            "categories",
-            "discovered_at",
-            "created_at",
-        }
-        if not required_columns.issubset(available_columns):
-            return self._get_legacy_feed_entries(
-                available_columns=available_columns,
-                limit=limit,
-                offset=offset,
-            )
-
+    ) -> list[ArticleEntry]:
+        """Get canonical article entries ordered for deterministic corpus export."""
         with self.get_session() as session:
-            statement = select(FeedEntry).order_by(
-                desc(FeedEntry.pub_date),
-                desc(FeedEntry.created_at),
-                FeedEntry.guid,
+            statement = select(ArticleEntry).order_by(
+                desc(ArticleEntry.pub_date),
+                desc(ArticleEntry.created_at),
+                ArticleEntry.guid,
             )
             if offset:
                 statement = statement.offset(offset)
@@ -1037,156 +1030,22 @@ class DatabaseManager:
                 statement = statement.limit(limit)
             return list(session.exec(statement).all())
 
-    def _get_table_columns(self, table_name: str) -> set[str]:
-        """Return the concrete column names for a table in the current database."""
-        try:
-            inspector = inspect(self.engine)
-            return {column["name"] for column in inspector.get_columns(table_name)}
-        except Exception:
-            return set()
-
-    def _get_legacy_feed_entries(
-        self,
-        *,
-        available_columns: set[str],
-        limit: int | None,
-        offset: int,
-    ) -> list[FeedEntry]:
-        """Read feed entries from older SQLite schemas and normalize them for corpus export."""
-
-        def select_expr(*candidates: str) -> str:
-            for candidate in candidates:
-                if candidate in available_columns:
-                    return candidate
-            return "NULL"
-
-        published_expr = select_expr("pub_date", "published_at", "created_at", "discovered_at")
-        created_expr = select_expr("created_at", "published_at", "discovered_at")
-        discovered_expr = select_expr("discovered_at", "created_at", "published_at")
-        metadata = MetaData()
-        legacy_feed_entries = Table("feed_entries", metadata, autoload_with=self.engine)
-
-        def aliased_column(alias: str, *candidates: str):
-            for candidate in candidates:
-                if candidate in available_columns:
-                    return legacy_feed_entries.c[candidate].label(alias)
-            return literal(None).label(alias)
-
-        published_order = (
-            legacy_feed_entries.c[published_expr].desc()
-            if published_expr in available_columns
-            else legacy_feed_entries.c.id.desc()
-        )
-
-        statement = (
-            select(
-                legacy_feed_entries.c.id,
-                legacy_feed_entries.c.feed_id,
-                legacy_feed_entries.c.guid,
-                legacy_feed_entries.c.link,
-                legacy_feed_entries.c.title,
-                aliased_column("summary", "summary"),
-                aliased_column("content_html", "content_html", "content"),
-                aliased_column("pub_date", published_expr),
-                aliased_column("author", "author"),
-                aliased_column("categories", "categories"),
-                aliased_column("discovered_at", discovered_expr),
-                aliased_column("created_at", created_expr),
-            )
-            .select_from(legacy_feed_entries)
-            .order_by(published_order, legacy_feed_entries.c.id.desc())
-        )
-        if limit is not None:
-            statement = statement.limit(limit)
-        if offset:
-            statement = statement.offset(offset)
-
-        with self.get_session() as session:
-            rows = session.exec(statement).mappings().all()
-
-        now = datetime.now(UTC)
-        entries: list[FeedEntry] = []
-        for row in rows:
-            pub_date = self._coerce_datetime(row.get("pub_date")) or now
-            created_at = self._coerce_datetime(row.get("created_at")) or pub_date
-            discovered_at = self._coerce_datetime(row.get("discovered_at")) or created_at
-            guid = str(row.get("guid") or row.get("link") or f"legacy-entry-{row.get('id')}")
-
-            entries.append(
-                FeedEntry(
-                    id=row.get("id"),
-                    feed_id=str(row.get("feed_id") or ""),
-                    guid=guid,
-                    link=str(row.get("link") or ""),
-                    title=str(row.get("title") or row.get("link") or guid),
-                    summary=self._coerce_optional_text(row.get("summary")),
-                    content_html=self._coerce_optional_text(row.get("content_html")),
-                    pub_date=pub_date,
-                    author=self._coerce_optional_text(row.get("author")),
-                    categories=self._coerce_categories(row.get("categories")),
-                    discovered_at=discovered_at,
-                    created_at=created_at,
-                )
-            )
-
-        logger.warning(
-            "Using legacy feed_entries schema fallback for corpus export: {}",
-            sorted(available_columns),
-        )
-        return entries
-
     @staticmethod
-    def _coerce_optional_text(value: Any) -> str | None:
-        if value is None:
+    def _identity_hash(value: str | None) -> str | None:
+        """Hash normalized article identity values for per-feed uniqueness."""
+        normalized = value.strip().lower() if isinstance(value, str) else ""
+        if not normalized:
             return None
-        if isinstance(value, str):
-            stripped = value.strip()
-            return stripped or None
-        return str(value)
-
-    @staticmethod
-    def _coerce_datetime(value: Any) -> datetime | None:
-        if value is None:
-            return None
-        if isinstance(value, datetime):
-            return value if value.tzinfo else value.replace(tzinfo=UTC)
-        if isinstance(value, str):
-            normalized = value.strip()
-            if not normalized:
-                return None
-            try:
-                parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
-                return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
-            except ValueError:
-                return None
-        return None
-
-    @staticmethod
-    def _coerce_categories(value: Any) -> list[str]:
-        if value is None:
-            return []
-        if isinstance(value, list):
-            return [str(entry) for entry in value if str(entry).strip()]
-        if isinstance(value, str):
-            stripped = value.strip()
-            if not stripped:
-                return []
-            try:
-                parsed = json.loads(stripped)
-            except json.JSONDecodeError:
-                return [part.strip() for part in stripped.split(",") if part.strip()]
-            if isinstance(parsed, list):
-                return [str(entry) for entry in parsed if str(entry).strip()]
-        return []
+        return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
     def build_articles_corpus_payload(
         self,
         partial_coverage: dict[str, Any] | None = None,
         source_db: str | None = None,
     ) -> dict[str, Any]:
-        """Build the generated article corpus payload from stored feed entries."""
+        """Build the generated article corpus payload from stored articles."""
         feed_sources = {feed.id: feed for feed in self.get_all_feed_sources()}
-        feed_entries = self.get_all_feed_entries()
+        entries = self.get_all_articles()
 
         articles: list[dict[str, Any]] = []
         seen_guids: set[str] = set()
@@ -1194,7 +1053,7 @@ class DatabaseManager:
         latest_published_at: datetime | None = None
         feed_ids: set[str] = set()
 
-        for entry in feed_entries:
+        for entry in entries:
             if entry.guid and entry.guid in seen_guids:
                 continue
             if entry.link and entry.link in seen_links:
@@ -1207,14 +1066,14 @@ class DatabaseManager:
 
             feed_source = feed_sources.get(entry.feed_id)
             feed_title = entry.feed_id
-            topics: list[str] = []
+            source_topics: list[str] = []
             source_type = None
             verified = False
             is_active = True
 
             if feed_source is not None:
                 feed_title = feed_source.title
-                topics = list(feed_source.topics)
+                source_topics = list(feed_source.topics)
                 verified = bool(feed_source.verified)
                 if feed_source.source_type is not None:
                     source_type = feed_source.source_type.value
@@ -1235,24 +1094,35 @@ class DatabaseManager:
                     "feed_title": feed_title,
                     "title": entry.title,
                     "link": entry.link,
+                    "canonical_url": entry.canonical_url or entry.link,
                     "summary": entry.summary,
                     "content_html": entry.content_html,
                     "author": entry.author,
                     "published_at": published_at.isoformat(),
-                    "categories": list(entry.categories),
-                    "topics": topics,
+                    "discovered_at": entry.discovered_at.isoformat(),
+                    "topics": list(entry.topics or source_topics),
+                    "raw_categories": list(entry.raw_categories),
+                    "source_topics": source_topics,
                     "source_type": source_type,
                     "verified": verified,
                     "is_active": is_active,
+                    "ingest_meta": {
+                        "first_seen_at": entry.first_seen_at.isoformat(),
+                        "last_seen_at": entry.last_seen_at.isoformat(),
+                        "guid_hash": entry.guid_hash,
+                        "link_hash": entry.link_hash,
+                    },
                 }
             )
 
         metadata: dict[str, Any] = {
+            "schema_version": "articles-3.0.0",
             "generated_at": datetime.now(UTC).isoformat(),
             "source_db": source_db or self.database_url,
             "article_count": len(articles),
             "feed_count": len(feed_ids),
             "latest_published_at": latest_published_at.isoformat() if latest_published_at else None,
+            "freshness_watermark": latest_published_at.isoformat() if latest_published_at else None,
         }
         if partial_coverage is not None:
             metadata["partial_coverage"] = partial_coverage
@@ -1397,6 +1267,23 @@ class DatabaseManager:
                 session.add(notification)
                 session.commit()
 
+    def delete_notifications_before(self, cutoff_date: datetime) -> int:
+        """Delete notifications created before the cutoff date.
+
+        Args:
+            cutoff_date: Exclusive created_at cutoff.
+
+        Returns:
+            Number of deleted notification records.
+        """
+        with self.get_session() as session:
+            statement = select(Notification).where(Notification.created_at < cutoff_date)
+            notifications = list(session.exec(statement).all())
+            for notification in notifications:
+                session.delete(notification)
+            session.commit()
+            return len(notifications)
+
     # T018: Trending Topics
     def save_trending_topics(self, topics: list[TrendingTopic]) -> None:
         """Bulk save trending topics.
@@ -1528,65 +1415,69 @@ class DatabaseManager:
             )
             return list(session.exec(statement).all())
 
-    # T020b: User Feed Follows
-    def follow_feed(self, user_id: str, feed_id: str) -> UserFeedFollow:
-        """Create user-feed follow relationship.
+    # T020b: User Source Follows
+    def follow_source(self, user_id: str, source_id: str) -> UserSourceFollow:
+        """Create user-source follow relationship.
 
         Args:
             user_id: User ID (localStorage UUID)
-            feed_id: Feed ID
+            source_id: Source ID
 
         Returns:
-            Created UserFeedFollow
+            Created UserSourceFollow
         """
         with self.get_session() as session:
-            follow = UserFeedFollow(user_id=user_id, feed_id=feed_id)
+            follow = UserSourceFollow(user_id=user_id, source_id=source_id)
             session.add(follow)
             session.commit()
             session.refresh(follow)
             return follow
 
-    def unfollow_feed(self, user_id: str, feed_id: str) -> None:
-        """Remove user-feed follow relationship.
+    def unfollow_source(self, user_id: str, source_id: str) -> None:
+        """Remove user-source follow relationship.
 
         Args:
             user_id: User ID (localStorage UUID)
-            feed_id: Feed ID
+            source_id: Source ID
         """
         with self.get_session() as session:
-            statement = select(UserFeedFollow).where(
-                UserFeedFollow.user_id == user_id,
-                UserFeedFollow.feed_id == feed_id,
+            statement = select(UserSourceFollow).where(
+                UserSourceFollow.user_id == user_id,
+                UserSourceFollow.source_id == source_id,
             )
             follow = session.exec(statement).first()
             if follow:
                 session.delete(follow)
                 session.commit()
 
-    def get_feed_followers(self, feed_id: str) -> list[str]:
-        """Get user IDs following a feed.
+    def get_source_followers(self, source_id: str) -> list[str]:
+        """Get user IDs following a source.
 
         Args:
-            feed_id: Feed ID
+            source_id: Source ID
 
         Returns:
             List of user IDs
         """
         with self.get_session() as session:
-            statement = select(UserFeedFollow.user_id).where(UserFeedFollow.feed_id == feed_id)
+            statement = select(UserSourceFollow.user_id).where(
+                UserSourceFollow.source_id == source_id
+            )
             return list(session.exec(statement).all())
 
-    def get_user_follows(self, user_id: str) -> list[str]:
-        """Get feed IDs a user follows.
+    def get_user_followed_sources(self, user_id: str) -> list[str]:
+        """Get source IDs a user follows.
 
         Args:
             user_id: User ID (localStorage UUID)
 
         Returns:
-            List of feed IDs
+            List of source IDs
         """
         with self.get_session() as session:
-            statement = select(UserFeedFollow.feed_id).where(UserFeedFollow.user_id == user_id)
+            statement = select(UserSourceFollow.source_id).where(
+                UserSourceFollow.user_id == user_id
+            )
             return list(session.exec(statement).all())
 
 

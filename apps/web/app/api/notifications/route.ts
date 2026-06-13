@@ -11,7 +11,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, clampNumber } from "@/lib/backend";
+import {
+  clampNumber,
+  fetchBackend,
+  formatBackendErrorResponse,
+  getBackendErrorStatus,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +55,9 @@ const GETHandler = async (request: NextRequest) => {
       count: Array.isArray(data) ? data.length : 0,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), { status: 500 });
+    return NextResponse.json(formatBackendErrorResponse(error), {
+      status: getBackendErrorStatus(error),
+    });
   }
 };
 

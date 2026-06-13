@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schema_version": "articles-3.0.0",
+    "generated_at": "2026-06-13T00:00:00.000Z",
+    "source_db": "data/ai-web-feeds.db",
+    "article_count": 0,
+    "feed_count": 0,
+    "latest_published_at": null,
+    "freshness_watermark": null,
+    "is_empty": true
+  },
+  "articles": []
+}

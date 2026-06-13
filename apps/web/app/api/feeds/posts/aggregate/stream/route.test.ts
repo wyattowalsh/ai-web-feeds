@@ -61,7 +61,7 @@ describe("/api/feeds/posts/aggregate/stream", () => {
             link: "https://example.com/post-1",
             summary: "Streaming result",
             author: "Ari",
-            categories: ["agents"],
+            rawCategories: ["agents"],
             publishedAt: "2026-04-13T12:00:00.000Z",
           },
         ],

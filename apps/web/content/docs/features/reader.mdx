@@ -46,7 +46,7 @@ The current query and filters are stored in the URL. That means you can:
 ```mermaid
 flowchart LR
     catalog["feeds.enriched.yaml / feeds.yaml"] --> route["/reader"]
-    runtime["feed_entries in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
+    runtime["articles in ai-web-feeds.db"] --> corpus["data/articles.generated.json"]
     corpus --> browse["/api/articles"]
     route --> ui["FeedsWorkspaceClient"]
     browse --> ui
@@ -60,7 +60,7 @@ provides the default article list. The live aggregation API is only used when
 the user explicitly refreshes the current slice. The canonical reader lives at
 `/reader`.
 
-- the catalog comes from `data/feeds.enriched.yaml` or the fallback source files
+- the catalog comes from `data/feeds.enriched.yaml`
 - the article library comes from `data/articles.generated.json`
 - live refreshes use `/api/feeds/posts/aggregate` as an overlay on top of the generated article library
 
@@ -89,7 +89,7 @@ directly; the server route handles feed requests, normalization, caching, and
 partial failures.
 
 - the generated corpus remains the preferred fast path when available
-- the live fallback checks all matching sources for the current slice
+- live refresh starts with a bounded sample of matching sources for the current slice
 - refresh requests use `/api/feeds/posts/aggregate`
 - live results are deduped by article identity before being merged
 - new live-only rows are marked with a freshness badge
@@ -97,8 +97,8 @@ partial failures.
 
 ## Empty states
 
-If both the generated corpus and live feed fallback are unavailable, the reader
-shows a compact recovery state with source browsing and retry actions.
+If the generated corpus is unavailable and a bounded live refresh fails, the
+reader shows a compact recovery state with source browsing and retry actions.
 
 ## Related
 

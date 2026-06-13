@@ -1,9 +1,9 @@
-"""Cache layer for visualization data with Redis and LRU fallback.
+"""Cache layer for visualization data with explicit Redis or memory modes.
 
 Implements FR-011a through FR-011c:
 - Cache invalidation rules with 5-minute TTL
 - Cache key generation using SHA-256 hashing
-- Cache failure handling with Redis → LRU fallback
+- Redis cache for configured shared deployments
 """
 
 import hashlib
@@ -23,16 +23,15 @@ try:
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
-    logger.warning("redis-py not installed, using LRU cache fallback")
 
 
 class CacheLayer:
-    """Cache layer with Redis (production) or LRU (development) fallback.
+    """Cache layer with Redis for configured deployments or memory for local mode.
 
     Provides:
     - 5-minute TTL for analytics queries
     - Consistent cache key generation (SHA-256)
-    - Automatic fallback to in-memory cache on Redis failure
+    - Explicit memory cache mode when Redis is not configured
     - Cache versioning for schema changes
     """
 
@@ -54,8 +53,9 @@ class CacheLayer:
         self.redis_client: redis.Redis | None = None
         self.redis_enabled = False
 
-        # Try to connect to Redis if available and enabled
-        if REDIS_AVAILABLE and enable_redis and redis_url:
+        if enable_redis and redis_url:
+            if not REDIS_AVAILABLE:
+                raise RuntimeError("Redis cache requested but redis-py is not installed")
             try:
                 self.redis_client = redis.from_url(
                     redis_url,
@@ -67,11 +67,10 @@ class CacheLayer:
                 self.redis_enabled = True
                 logger.info("Redis cache initialized successfully")
             except (RedisConnectionError, RedisError) as e:
-                logger.warning(f"Failed to connect to Redis: {e}")
-                logger.info("Falling back to LRU cache")
                 self.redis_client = None
+                raise RuntimeError(f"Failed to connect to Redis cache: {e}") from e
         else:
-            logger.info("Using LRU cache (Redis not configured)")
+            logger.info("Using in-memory cache (Redis not configured)")
 
         # Initialize in-memory cache statistics
         self._cache_hits = 0
@@ -148,10 +147,9 @@ class CacheLayer:
                     logger.debug(f"Cache hit (Redis): {cache_key[:16]}...")
                     return json.loads(cast(str | bytes | bytearray, cached_data))
             except RedisError as e:
-                logger.warning(f"Redis get error: {e}, falling back to LRU")
-                # Don't disable Redis, just skip this operation
+                raise RuntimeError(f"Redis get error: {e}") from e
 
-        # Fallback to LRU cache
+        # Explicit in-memory cache mode
         cached_data = self._lru_get(cache_key)
         if cached_data is not None:
             self._cache_hits += 1
@@ -202,9 +200,9 @@ class CacheLayer:
                 logger.debug(f"Cached to Redis: {cache_key[:16]}... (TTL: {ttl}s)")
                 return True
             except RedisError as e:
-                logger.warning(f"Redis set error: {e}, falling back to LRU")
+                raise RuntimeError(f"Redis set error: {e}") from e
 
-        # Fallback to LRU cache
+        # Explicit in-memory cache mode
         self._lru_set(cache_key, data)
         logger.debug(f"Cached to LRU: {cache_key[:16]}...")
         return True
@@ -243,11 +241,11 @@ class CacheLayer:
                     count = deleted_count if isinstance(deleted_count, int) else 0
                     logger.info(f"Invalidated {count} cache entries from Redis")
             except RedisError as e:
-                logger.error(f"Redis invalidation error: {e}")
+                raise RuntimeError(f"Redis invalidation error: {e}") from e
 
-        # Clear LRU cache (no partial clearing available)
-        self._lru_clear()
-        logger.info("Cleared LRU cache")
+        if not self.redis_enabled:
+            self._lru_clear()
+            logger.info("Cleared in-memory cache")
 
         return count
 
@@ -261,7 +259,7 @@ class CacheLayer:
         hit_rate = (self._cache_hits / total_requests * 100) if total_requests > 0 else 0.0
 
         stats = {
-            "cache_type": "redis" if self.redis_enabled else "lru",
+            "cache_type": "redis" if self.redis_enabled else "memory",
             "hits": self._cache_hits,
             "misses": self._cache_misses,
             "hit_rate": round(hit_rate, 2),
@@ -279,7 +277,7 @@ class CacheLayer:
 
         return stats
 
-    # LRU cache methods (fallback implementation)
+    # In-memory cache methods
 
     def _lru_get(self, key: str) -> Any | None:
         """Retrieve data from the in-memory LRU cache."""

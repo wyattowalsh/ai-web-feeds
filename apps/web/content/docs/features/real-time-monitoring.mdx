@@ -74,7 +74,7 @@ graph TB
 
 ```bash
 # Start backend monitoring (WebSocket + scheduler)
-uv run aiwebfeeds monitor start
+uv run ai-web-feeds monitor start
 
 # Output:
 # ✓ Background scheduler started
@@ -94,16 +94,16 @@ uv run aiwebfeeds monitor start
 # (automatically generated on first visit)
 
 # Follow a feed to receive notifications
-uv run aiwebfeeds monitor follow <user-id> <feed-id>
+uv run ai-web-feeds monitor follow <user-id> <feed-id>
 
 # Example:
-uv run aiwebfeeds monitor follow a1b2c3d4-... ai-news
+uv run ai-web-feeds monitor follow a1b2c3d4-... ai-news
 
 # List your follows
-uv run aiwebfeeds monitor list-follows <user-id>
+uv run ai-web-feeds monitor list-follows <user-id>
 
 # Unfollow
-uv run aiwebfeeds monitor unfollow <user-id> <feed-id>
+uv run ai-web-feeds monitor unfollow <user-id> <feed-id>
 ```
 
 ### 3. Frontend Integration
@@ -259,22 +259,22 @@ await fetch("/api/digests", {
 });
 ```
 
-### Feed Follows
+### Source Follows
 
-User-feed relationships for notification targeting:
+User-source relationships for notification targeting:
 
 ```typescript
-// Follow a feed
+// Follow a source
 await fetch("/api/follows", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     user_id: "user-uuid",
-    feed_id: "ai-news",
+    source_id: "ai-news",
   }),
 });
 
-// Get followed feeds
+// Get followed sources
 const response = await fetch(`/api/follows?user_id=${userId}`);
 const { follows } = await response.json();
 ```
@@ -317,7 +317,7 @@ Mark notification as read or dismissed.
 
 **GET /api/follows**
 
-List followed feeds.
+List followed sources.
 
 ```typescript
 ?user_id=<uuid>
@@ -325,12 +325,12 @@ List followed feeds.
 
 **POST /api/follows**
 
-Follow a feed.
+Follow a source.
 
 ```typescript
 {
   "user_id": "...",
-  "feed_id": "..."
+  "source_id": "..."
 }
 ```
 
@@ -477,10 +477,10 @@ AIWF_DIGEST_MAX_ARTICLES=20
 
 **7 New Tables**:
 
-1. `feed_entries` - Article metadata from polling
+1. `articles` - Article metadata from polling
 2. `feed_poll_jobs` - Polling job tracking
 3. `notifications` - User notifications
-4. `user_feed_follows` - Feed follow relationships
+4. `user_source_follows` - Source follow relationships
 5. `trending_topics` - Trending topic calculations
 6. `notification_preferences` - User preferences
 7. `email_digests` - Digest subscriptions
@@ -550,13 +550,13 @@ Display top trending topics.
 **Start server**:
 
 ```bash
-uv run aiwebfeeds monitor start [--port 8000]
+uv run ai-web-feeds monitor start [--port 8000]
 ```
 
 **Check status**:
 
 ```bash
-uv run aiwebfeeds monitor status
+uv run ai-web-feeds monitor status
 ```
 
 **Stop server**:
@@ -570,19 +570,19 @@ uv run aiwebfeeds monitor status
 **Follow a feed**:
 
 ```bash
-uv run aiwebfeeds monitor follow <user-id> <feed-id>
+uv run ai-web-feeds monitor follow <user-id> <feed-id>
 ```
 
 **Unfollow a feed**:
 
 ```bash
-uv run aiwebfeeds monitor unfollow <user-id> <feed-id>
+uv run ai-web-feeds monitor unfollow <user-id> <feed-id>
 ```
 
 **List follows**:
 
 ```bash
-uv run aiwebfeeds monitor list-follows <user-id>
+uv run ai-web-feeds monitor list-follows <user-id>
 ```
 
 ## Testing
@@ -610,7 +610,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 
 **Solution**:
 
-1. Check server is running: `uv run aiwebfeeds monitor status`
+1. Check server is running: `uv run ai-web-feeds monitor status`
 2. Verify CORS origins in `.env`: `AIWF_WEBSOCKET_CORS_ORIGINS`
 3. Check browser console for connection errors
 4. Set `NEXT_PUBLIC_WEBSOCKET_URL` when the monitor/WebSocket server is on a different origin than the web app
@@ -622,7 +622,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 **Solution**:
 
 1. Verify feed is being polled: Check scheduler status
-2. Confirm follow relationship: `aiwebfeeds monitor list-follows <user-id>`
+2. Confirm follow relationship: `ai-web-feeds monitor list-follows <user-id>`
 3. Check notification creation: Query database for recent notifications
 4. Verify WebSocket authentication: Browser should emit `authenticate` event
 
@@ -632,7 +632,7 @@ uv run pytest --cov=ai_web_feeds --cov-report=html
 
 **Solution**:
 
-1. Check scheduler: `aiwebfeeds monitor status`
+1. Check scheduler: `ai-web-feeds monitor status`
 2. Verify trending job next run time
 3. Ensure sufficient baseline data (>= 3 days of articles)
 4. Check Z-score threshold configuration

@@ -9,6 +9,7 @@ from ai_web_feeds.embeddings import save_feed_embedding
 from ai_web_feeds.models import FeedEmbedding, FeedSource
 from ai_web_feeds.search import autocomplete, build_trie_index
 from ai_web_feeds.storage import DatabaseManager
+from sqlmodel import select
 
 
 @pytest.fixture
@@ -16,7 +17,8 @@ def integration_db(tmp_path):
     """Create temporary database for integration tests."""
     db = DatabaseManager(f"sqlite:///{tmp_path / 'integration-search.db'}")
     db.create_db_and_tables()
-    return db
+    yield db
+    db.close()
 
 
 @pytest.fixture
@@ -85,7 +87,7 @@ class TestEmbeddingSearchIntegration:
         """Test generating embeddings and searching with them."""
         with populated_db.get_session() as session:
             # Get feeds
-            feeds = list(session.query(FeedSource).all())
+            feeds = list(session.exec(select(FeedSource)).all())
 
             # Generate embeddings (mocked in unit tests, here we test real flow)
             for feed in feeds:
@@ -97,7 +99,7 @@ class TestEmbeddingSearchIntegration:
                     pytest.skip(f"Model not available: {e}")
 
             # Verify embeddings were saved
-            embeddings = list(session.query(FeedEmbedding).all())
+            embeddings = list(session.exec(select(FeedEmbedding)).all())
             assert len(embeddings) == len(feeds)
 
 

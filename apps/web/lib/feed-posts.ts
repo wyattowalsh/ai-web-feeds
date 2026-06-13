@@ -1,11 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 
 import { loadFeeds, type FeedSource } from "@/lib/feeds";
-import {
-  getCachedFeedPosts,
-  setCachedFeedPosts,
-  createCacheExpiresAt,
-} from "@/lib/feed-cache";
+import { getCachedFeedPosts, setCachedFeedPosts, createCacheExpiresAt } from "@/lib/feed-cache";
 
 export interface FeedPost {
   id: string;
@@ -14,7 +10,7 @@ export interface FeedPost {
   publishedAt: string | null;
   summary: string | null;
   author: string | null;
-  categories: string[];
+  rawCategories: string[];
 }
 
 export interface FeedPostsResponse {
@@ -143,11 +139,7 @@ export async function loadAggregatedFeedPostsByIds(
           .filter((value): value is { feed: FeedSource; requestedId: string } => value !== null);
 
         if (resolvedFeeds.length > 0) {
-          const refreshPromise = buildAggregatedFeedPosts(
-            resolvedFeeds,
-            totalLimit,
-            perFeedLimit,
-          )
+          const refreshPromise = buildAggregatedFeedPosts(resolvedFeeds, totalLimit, perFeedLimit)
             .then((payload) => {
               writeAggregateCache(cacheKey, payload);
               return payload;
@@ -426,7 +418,7 @@ async function loadFeedPostsForSource(
         publishedAt: post.published_at,
         summary: post.summary,
         author: post.author,
-        categories: post.categories,
+        rawCategories: post.rawCategories,
       })),
       fetchedAt: cached.fetched_at,
     };
@@ -462,7 +454,7 @@ async function loadFeedPostsForSource(
       published_at: post.publishedAt,
       summary: post.summary,
       author: post.author,
-      categories: post.categories,
+      rawCategories: post.rawCategories,
     })),
     fetched_at: response.fetchedAt,
     expires_at: createCacheExpiresAt(),
@@ -605,7 +597,7 @@ function normalizeRssItems(items: unknown, limit: number): FeedPost[] {
         publishedAt: readText(item.pubDate) || readText(item.published) || readText(item.updated),
         summary,
         author: readText(item.creator) || readText(item.author) || null,
-        categories: toArray(item.category)
+        rawCategories: toArray(item.category)
           .map((category) => readText(category))
           .filter(Boolean) as string[],
       };
@@ -630,7 +622,7 @@ function normalizeAtomEntries(entries: unknown, limit: number): FeedPost[] {
         publishedAt: readText(entry.published) || readText(entry.updated) || null,
         summary,
         author: readAtomAuthor(entry.author),
-        categories: toArray(entry.category)
+        rawCategories: toArray(entry.category)
           .map((category) => {
             if (typeof category === "string") return category;
             if (category && typeof category === "object" && "@_term" in category) {

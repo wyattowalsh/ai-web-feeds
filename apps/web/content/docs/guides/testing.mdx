@@ -20,16 +20,16 @@ AI Web Feeds includes a comprehensive test suite with 100+ tests covering unit, 
   <Tab value="CLI">
     ```bash
     # Quick test (recommended during development)
-    aiwebfeeds test quick
+    ai-web-feeds test quick
 
     # All tests
-    aiwebfeeds test all
+    ai-web-feeds test all
 
     # With coverage
-    aiwebfeeds test coverage --open
+    ai-web-feeds test coverage --open
 
     # Unit tests only
-    aiwebfeeds test unit
+    ai-web-feeds test unit
     ```
 
   </Tab>
@@ -52,7 +52,7 @@ AI Web Feeds includes a comprehensive test suite with 100+ tests covering unit, 
   <Tab value="Watch Mode">
     ```bash
     # Auto-rerun tests on file changes
-    aiwebfeeds test watch
+    ai-web-feeds test watch
     ```
   </Tab>
 </Tabs>
@@ -78,19 +78,19 @@ AI Web Feeds includes a comprehensive test suite with 100+ tests covering unit, 
 
 ```bash
 # Verbose output
-aiwebfeeds test all --verbose
+ai-web-feeds test all --verbose
 
 # Parallel execution
-aiwebfeeds test all --parallel
+ai-web-feeds test all --parallel
 
 # Coverage with HTML report
-aiwebfeeds test coverage --open
+ai-web-feeds test coverage --open
 
 # Skip slow tests
-aiwebfeeds test unit --fast
+ai-web-feeds test unit --fast
 
 # Filter by keyword
-aiwebfeeds test file test_utils.py -k "twitter"
+ai-web-feeds test file test_utils.py -k "twitter"
 ```
 
 ## Test Structure
@@ -133,10 +133,10 @@ Fast, isolated tests with no external dependencies:
 
 ```bash
 # Run unit tests
-aiwebfeeds test unit
+ai-web-feeds test unit
 
 # Skip slow unit tests
-aiwebfeeds test unit --fast
+ai-web-feeds test unit --fast
 ```
 
 ### Integration Tests (`@pytest.mark.integration`)
@@ -150,7 +150,7 @@ Multi-component workflows:
 
 ```bash
 # Run integration tests
-aiwebfeeds test integration
+ai-web-feeds test integration
 ```
 
 ### E2E Tests (`@pytest.mark.e2e`)
@@ -165,7 +165,7 @@ Complete user workflows:
 
 ```bash
 # Run E2E tests
-aiwebfeeds test e2e
+ai-web-feeds test e2e
 ```
 
 ## Advanced Features
@@ -196,7 +196,7 @@ Available markers for filtering tests:
 
 ```bash
 # List all markers
-aiwebfeeds test markers
+ai-web-feeds test markers
 
 # Run specific markers
 uv run --directory tests pytest -m "unit and not slow"
@@ -208,10 +208,10 @@ Generate coverage reports:
 
 ```bash
 # HTML + terminal report
-aiwebfeeds test coverage
+ai-web-feeds test coverage
 
 # Open in browser
-aiwebfeeds test coverage --open
+ai-web-feeds test coverage --open
 
 # Coverage reports are saved to tests/reports/coverage/
 ```
@@ -239,7 +239,7 @@ For continuous integration:
 
 ```bash
 # Comprehensive CI test
-aiwebfeeds test all --coverage --parallel
+ai-web-feeds test all --coverage --parallel
 
 # Or directly with pytest
 uv run --directory tests pytest -v --cov=ai_web_feeds --cov-report=html
@@ -253,17 +253,17 @@ Run tests with pdb debugger:
 
 ```bash
 # Debug all tests
-aiwebfeeds test debug
+ai-web-feeds test debug
 
 # Debug specific file
-aiwebfeeds test debug packages/ai_web_feeds/unit/test_models.py
+ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
 ```
 
 ### Verbose Output
 
 ```bash
 # Very verbose
-aiwebfeeds test all -vv
+ai-web-feeds test all -vv
 
 # Show local variables
 uv run --directory tests pytest --showlocals

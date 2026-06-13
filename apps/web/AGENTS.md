@@ -20,7 +20,8 @@ Next.js 15 documentation site providing:
 
 - **Documentation**: FumaDocs-powered MDX content
 - **LLM Formats**: `/llms-full.txt`, `/llms.txt`, `/llms.md`, `/llms.mdx`
-- **Data Explorer**: Interactive feeds/topics browser (`/explorer`)
+- **Catalog + Reader**: Source/topic browsing at `/sources` and focused article reading
+  at `/reader`
 - **Feeds**: RSS, Atom, JSON Feed
 - **APIs**: Search, feeds, topics endpoints
 - **Features**: Search, dark mode, OG images, Mermaid diagrams, math (KaTeX)
@@ -41,13 +42,13 @@ apps/web/
 │   ├── docs/                 # Documentation routes
 │   │   ├── [[...slug]]/      # Dynamic MDX pages
 │   │   └── layout.tsx        # Docs layout
-│   ├── explorer/             # Data explorer (NEW)
-│   │   ├── page.tsx          # Interactive feeds/topics browser
-│   │   └── layout.tsx        # Explorer layout
+│   ├── (home)/sources/       # Source catalog route
+│   ├── (home)/topics/        # Topic catalog/detail routes
+│   ├── feeds/                # Shared reader/catalog client components
 │   ├── api/                  # API routes
 │   │   ├── search/           # Search API
-│   │   ├── feeds/            # Feeds API (NEW)
-│   │   └── topics/           # Topics API (NEW)
+│   │   ├── feeds/            # Feeds API
+│   │   └── topics/           # Topics API
 │   ├── llms-full.txt/        # Full LLM docs
 │   └── llms.txt/             # Concise LLM docs
 ├── content/docs/             # MDX documentation
@@ -266,14 +267,14 @@ _Updated: October 15, 2025 · Version: 0.1.0_
 
 ## 🆕 Recent Updates
 
-### Data Explorer (October 2025)
+### Source Catalog and Reader (Current)
 
-New interactive explorer at `/explorer`:
+Interactive source and article workflows:
 
-- Browse all feeds with filters and search
-- Visualize topic taxonomy as graph
-- Explore feed-topic relationships
-- Real-time data from YAML files
+- Browse all sources with filters, search, topic slices, and OPML export at `/sources`
+- Read prepared or live-fetched article streams at `/reader`
+- Use source detail pages under `/sources/[sourceId]`
+- Use topic routes under `/topics` and `/topics/[topic]`
 
 **Implementation**: React 19, Tailwind 4, responsive design
 
@@ -281,10 +282,10 @@ New interactive explorer at `/explorer`:
 
 New REST APIs:
 
-- `GET /api/feeds` - List all feeds with pagination
-- `GET /api/feeds/[id]` - Get feed details
+- `GET /api/feeds` - List feed catalog entries
+- `GET /api/feeds/posts` - List prepared article posts
+- `POST /api/feeds/posts/aggregate` - Fetch posts from selected feeds
 - `GET /api/topics` - Topic taxonomy with graph structure
-- `GET /api/topics/[id]` - Topic details and relations
 
 **Data Source**: `data/feeds.yaml`, `data/topics.yaml`, `data/feeds.enriched.yaml`
 
@@ -444,8 +445,7 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
   <Card title="Card 2" description="Description" href="/link" />
 </Cards>
 
-<Tabs items={["npm", "pnpm", "yarn"]}>
-  <Tab value="npm">```bash npm install package ```</Tab>
+<Tabs items={["pnpm"]}>
   <Tab value="pnpm">```bash pnpm add package ```</Tab>
 </Tabs>
 ````
@@ -606,7 +606,7 @@ sequenceDiagram
     participant Fetcher
     participant Database
 
-    User->>CLI: aiwebfeeds fetch
+    User->>CLI: ai-web-feeds fetch
     CLI->>Fetcher: fetch_feed(url)
     Fetcher->>Database: store_feed()
     Database-->>User: Success

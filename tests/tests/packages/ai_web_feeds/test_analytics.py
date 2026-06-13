@@ -4,12 +4,12 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from ai_web_feeds.analytics import (
-    calculate_health_distribution,
     calculate_summary_metrics,
-    calculate_trending_topics,
-    calculate_validation_velocity,
-    generate_analytics_csv_report,
+    export_analytics_csv,
     generate_analytics_snapshot,
+    get_publication_velocity,
+    get_trending_topics,
+    get_validation_health_distribution,
 )
 from ai_web_feeds.models import AnalyticsSnapshot, FeedSource, FeedValidationResult
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -20,7 +20,8 @@ def test_engine():
     """Create an in-memory SQLite engine for testing."""
     engine = create_engine("sqlite:///:memory:")
     SQLModel.metadata.create_all(engine)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 @pytest.fixture
@@ -161,7 +162,7 @@ class TestSummaryMetrics:
         assert metrics["avg_response_time"] > 0
 
     def test_calculate_summary_metrics_topic_filter(self, test_session, sample_feeds):
-        """Topic filtering should narrow the counted feed set."""
+        """TopicNode filtering should narrow the counted feed set."""
         metrics = calculate_summary_metrics(test_session, date_range_days=30, topic="llm")
 
         assert metrics["total_feeds"] == 2
@@ -171,26 +172,24 @@ class TestSummaryMetrics:
 class TestTrendingTopics:
     """Tests for trending topics calculation."""
 
-    def test_calculate_trending_topics(self, test_session, sample_feeds, sample_validations):
+    def test_get_trending_topics(self, test_session, sample_feeds, sample_validations):
         """Trending topics should aggregate feed and validation activity."""
-        trending = calculate_trending_topics(test_session, date_range_days=30, limit=10)
+        trending = get_trending_topics(test_session, date_range_days=30, limit=10)
 
         assert isinstance(trending, list)
         assert len(trending) > 0
         assert {"topic", "feed_count", "validation_count"} <= trending[0].keys()
 
-    def test_calculate_trending_topics_ordering(
-        self, test_session, sample_feeds, sample_validations
-    ):
+    def test_get_trending_topics_ordering(self, test_session, sample_feeds, sample_validations):
         """Trending topics should be sorted by activity."""
-        trending = calculate_trending_topics(test_session, date_range_days=30, limit=10)
+        trending = get_trending_topics(test_session, date_range_days=30, limit=10)
 
         if len(trending) >= 2:
             assert trending[0]["validation_count"] >= trending[1]["validation_count"]
 
-    def test_calculate_trending_topics_limit(self, test_session, sample_feeds, sample_validations):
+    def test_get_trending_topics_limit(self, test_session, sample_feeds, sample_validations):
         """Trending topics should respect the requested limit."""
-        trending = calculate_trending_topics(test_session, date_range_days=30, limit=2)
+        trending = get_trending_topics(test_session, date_range_days=30, limit=2)
 
         assert len(trending) <= 2
 
@@ -198,25 +197,23 @@ class TestTrendingTopics:
 class TestValidationVelocity:
     """Tests for validation velocity calculation."""
 
-    def test_calculate_validation_velocity_daily(
-        self, test_session, sample_feeds, sample_validations
-    ):
+    def test_get_publication_velocity_daily(self, test_session, sample_feeds, sample_validations):
         """Daily validation velocity should return dated datapoints."""
-        velocity = calculate_validation_velocity(
+        velocity_payload = get_publication_velocity(
             test_session, date_range_days=7, granularity="daily"
         )
+        velocity = velocity_payload["data_points"]
 
         assert isinstance(velocity, list)
         assert len(velocity) > 0
         assert {"date", "count"} <= velocity[0].keys()
 
-    def test_calculate_validation_velocity_monthly(
-        self, test_session, sample_feeds, sample_validations
-    ):
+    def test_get_publication_velocity_monthly(self, test_session, sample_feeds, sample_validations):
         """Monthly velocity should coalesce points into fewer buckets."""
-        velocity = calculate_validation_velocity(
+        velocity_payload = get_publication_velocity(
             test_session, date_range_days=90, granularity="monthly"
         )
+        velocity = velocity_payload["data_points"]
 
         assert isinstance(velocity, list)
         assert len(velocity) <= 3
@@ -225,17 +222,19 @@ class TestValidationVelocity:
 class TestHealthDistribution:
     """Tests for health distribution calculation."""
 
-    def test_calculate_health_distribution(self, test_session, sample_feeds, sample_validations):
+    def test_get_validation_health_distribution(
+        self, test_session, sample_feeds, sample_validations
+    ):
         """Health buckets should include healthy, moderate, and unhealthy counts."""
-        distribution = calculate_health_distribution(test_session, date_range_days=30)
+        distribution = get_validation_health_distribution(test_session, date_range_days=30)
 
         assert distribution["healthy"] >= 1
         assert distribution["moderate"] >= 1
         assert distribution["unhealthy"] >= 1
 
-    def test_calculate_health_distribution_no_validations(self, test_session, sample_feeds):
+    def test_get_validation_health_distribution_no_validations(self, test_session, sample_feeds):
         """Quality scores should still drive a distribution without validations."""
-        distribution = calculate_health_distribution(test_session, date_range_days=30)
+        distribution = get_validation_health_distribution(test_session, date_range_days=30)
 
         assert sum(distribution.values()) == len(sample_feeds)
 
@@ -243,9 +242,9 @@ class TestHealthDistribution:
 class TestCSVReportGeneration:
     """Tests for CSV report generation."""
 
-    def test_generate_analytics_csv_report(self, test_session, sample_feeds, sample_validations):
+    def test_export_analytics_csv(self, test_session, sample_feeds, sample_validations):
         """CSV export should include the major sections."""
-        csv_content = generate_analytics_csv_report(test_session, date_range_days=30)
+        csv_content = export_analytics_csv(test_session, date_range="30d")
 
         assert isinstance(csv_content, str)
         assert "Analytics Summary" in csv_content
@@ -287,9 +286,10 @@ def test_velocity_various_granularities(
     test_session, sample_feeds, sample_validations, granularity
 ):
     """Velocity calculation should work for all supported granularities."""
-    velocity = calculate_validation_velocity(
+    velocity_payload = get_publication_velocity(
         test_session, date_range_days=30, granularity=granularity
     )
+    velocity = velocity_payload["data_points"]
 
     assert isinstance(velocity, list)
     for point in velocity:
@@ -299,6 +299,6 @@ def test_velocity_various_granularities(
 @pytest.mark.parametrize("limit", [5, 10, 20])
 def test_trending_topics_various_limits(test_session, sample_feeds, sample_validations, limit):
     """Trending topics should respect multiple limit values."""
-    trending = calculate_trending_topics(test_session, date_range_days=30, limit=limit)
+    trending = get_trending_topics(test_session, date_range_days=30, limit=limit)
 
     assert len(trending) <= limit

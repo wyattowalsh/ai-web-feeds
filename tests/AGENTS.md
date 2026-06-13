@@ -271,7 +271,7 @@ ______________________________________________________________________
 - ✅ Unit tests: load, validate, export, enrich, logger, models, storage, config, utils
 - ✅ Property-based tests for robust edge case handling
 - ✅ Mock/patch patterns for external dependencies
-- 🎯 Target: ≥90% coverage (run `uv run aiwebfeeds test coverage`)
+- 🎯 Target: ≥90% coverage (run `uv run ai-web-feeds test coverage`)
 
 ### Data Validation Tests (October 2025)
 

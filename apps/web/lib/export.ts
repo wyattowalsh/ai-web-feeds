@@ -67,7 +67,7 @@ export async function exportCSV(): Promise<Blob> {
     "Link",
     "Author",
     "Published Date",
-    "Categories",
+    "Topics",
     "Read",
     "Starred",
     "Archived",
@@ -82,7 +82,7 @@ export async function exportCSV(): Promise<Blob> {
     escapeCsv(article.link),
     escapeCsv(article.author || ""),
     new Date(article.pubDate).toISOString(),
-    escapeCsv(article.categories.join(", ")),
+    escapeCsv(article.topics.join(", ")),
     article.read ? "Yes" : "No",
     article.starred ? "Yes" : "No",
     article.archived ? "Yes" : "No",
@@ -192,8 +192,8 @@ export async function exportHTML(): Promise<Blob> {
     "    .badge-starred { background: #fff3cd; color: #856404; }",
     "    .badge-archived { background: #f8d7da; color: #721c24; }",
     "    .article-content { color: #495057; margin-top: 10px; }",
-    "    .categories { margin-top: 10px; }",
-    "    .category { display: inline-block; background: #e9ecef; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-right: 6px; }",
+    "    .topics { margin-top: 10px; }",
+    "    .topic { display: inline-block; background: #e9ecef; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-right: 6px; }",
     "    footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e9ecef; text-align: center; color: #6c757d; font-size: 14px; }",
     "  </style>",
     "</head>",
@@ -259,10 +259,10 @@ export async function exportHTML(): Promise<Blob> {
         html.push(`      <div class="article-content">${escapeHtml(article.summary)}</div>`);
       }
 
-      if (article.categories.length > 0) {
-        html.push('      <div class="categories">');
-        article.categories.forEach((cat) => {
-          html.push(`        <span class="category">${escapeHtml(cat)}</span>`);
+      if (article.topics.length > 0) {
+        html.push('      <div class="topics">');
+        article.topics.forEach((topic) => {
+          html.push(`        <span class="topic">${escapeHtml(topic)}</span>`);
         });
         html.push("      </div>");
       }

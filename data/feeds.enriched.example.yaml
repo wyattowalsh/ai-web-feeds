@@ -1,4 +1,4 @@
-schema_version: feeds-2.1.0
+schema_version: feeds.enriched-3.0.0
 document_meta:
   created: '2025-11-02'
   updated: '2025-11-02'

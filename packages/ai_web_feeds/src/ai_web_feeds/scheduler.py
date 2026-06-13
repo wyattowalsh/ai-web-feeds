@@ -3,6 +3,8 @@
 This module manages APScheduler for feed polling, trending detection, and digest delivery.
 """
 
+from pathlib import Path
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -102,24 +104,32 @@ class SchedulerManager:
     async def _poll_all_feeds(self) -> None:
         """Poll all active feeds and create notifications."""
         try:
-            # Load feeds from YAML
-            feeds = load_feeds()
+            # Load the canonical catalog shape used by the CLI and data validators.
+            catalog = load_feeds(Path("data/feeds.yaml"))
+            feeds = [feed for feed in catalog.get("sources", []) if isinstance(feed, dict)]
             logger.info(f"Polling {len(feeds)} feeds...")
 
             # Poll each feed
             for feed in feeds:
-                if not feed.get("active", True):
+                curation = feed.get("curation") if isinstance(feed.get("curation"), dict) else {}
+                if feed.get("is_active") is False or curation.get("status") == "inactive":
                     continue
 
-                feed_id = feed["id"]
-                feed_url = feed["feed"]
+                feed_id = feed.get("id")
+                feed_url = feed.get("feed") or feed.get("url") or feed.get("site")
+                if not isinstance(feed_id, str) or not feed_id:
+                    logger.warning("Skipping feed without canonical id")
+                    continue
+                if not isinstance(feed_url, str) or not feed_url:
+                    logger.warning(f"Skipping feed without pollable URL: {feed_id}")
+                    continue
 
                 try:
                     job = await self.poller.poll_feed(feed_id, feed_url)
 
                     # If new articles discovered, send notifications
                     if job.articles_discovered > 0:
-                        articles = self.db.get_feed_entries(feed_id, limit=job.articles_discovered)
+                        articles = self.db.get_articles(feed_id, limit=job.articles_discovered)
                         await self.notifier.notify_new_articles(feed_id, articles)
 
                 except Exception as e:

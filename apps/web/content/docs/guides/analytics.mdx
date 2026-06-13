@@ -13,57 +13,57 @@ AI Web Feeds provides robust analytics and monitoring capabilities to track feed
 
 The analytics system provides:
 
-- **8 Different Analytics Views** - Overview, distributions, quality, performance, content, trends, health, contributors
-- **Real-time Health Monitoring** - Track each feed's status and performance
-- **Performance Metrics** - Success rates, durations, error analysis
-- **Publishing Trends** - Analyze content patterns over time
-- **Quality Scoring** - 3-dimensional quality assessment
-- **JSON Export** - Generate comprehensive reports
+- **Summary Metrics** - Feed counts, active feed counts, validation success rate, and response times
+- **Trending Topics** - Topic activity ranked by feed count and validation frequency
+- **Publication Velocity** - Daily publication volume and average articles per day
+- **Snapshots** - Daily analytics snapshots stored in the runtime database
+- **CSV Export** - Portable analytics extracts for reports and dashboards
 
 ## Analytics Commands
 
-### Overview Dashboard
+### Summary Metrics
 
 Get a high-level view of all your feeds:
 
 ```bash
-ai-web-feeds analytics overview
+ai-web-feeds analytics summary --date-range 30d
 ```
 
 **Provides:**
 
-- Total feeds, items, and topics
-- Feed status distribution (verified, active, inactive)
-- Recent activity (last 24 hours)
+- Total feeds and active feeds
+- Validation success rate
+- Average response time
+- Feed health distribution
 
-### Distributions
+### Trending Topics
 
-Analyze how feeds are distributed across different dimensions:
+Rank active topics by feed activity:
 
 ```bash
-ai-web-feeds analytics distributions [--limit N]
+ai-web-feeds analytics trending --limit 10 --date-range 30d
 ```
 
 **Shows:**
 
-- Source type distribution (blog, newsletter, podcast, etc.)
-- Topic distribution across feeds
-- Language distribution
-- Content medium distribution
+- Topic IDs
+- Feed counts
+- Validation frequency
+- Average health score
 
-### Quality Metrics
+### Publication Velocity
 
-View quality scores and distributions:
+Track publishing volume over a date range:
 
 ```bash
-ai-web-feeds analytics quality
+ai-web-feeds analytics velocity --date-range 30d
 ```
 
 **Displays:**
 
-- Average and median quality scores
-- Quality distribution (excellent/good/fair/poor)
-- High/low quality feed counts
+- Total article count
+- Average articles per day
+- Daily publication buckets
 
 <Callout type="info" title="Quality Scoring">
 
@@ -75,102 +75,33 @@ Each feed receives three scores (0-1):
 
 </Callout>
 
-### Performance Tracking
+### Daily Snapshot
 
-Monitor fetch performance over time:
+Persist the current analytics snapshot:
 
 ```bash
-ai-web-feeds analytics performance [--days N]
+ai-web-feeds analytics snapshot
 ```
 
 **Metrics:**
 
-- Total fetches and success rate
-- Average fetch duration
-- Error type distribution
-- HTTP status code analysis
+- Summary metrics
+- Trending topic records
+- Validation aggregates
 
-### Content Statistics
+### CSV Export
 
-Analyze content across all feeds:
+Export analytics for reports:
 
 ```bash
-ai-web-feeds analytics content
+ai-web-feeds analytics export --output reports/analytics.csv
 ```
 
 **Provides:**
 
-- Total items and content coverage
-- Author attribution rates
-- Enclosure/media usage
-- Top categories
-
-### Publishing Trends
-
-Understand publishing patterns:
-
-```bash
-ai-web-feeds analytics trends [--days N]
-```
-
-**Shows:**
-
-- Items per day
-- Publishing patterns by hour
-- Publishing patterns by weekday
-- Peak publishing times
-
-### Feed Health Reports
-
-Get detailed health metrics for a specific feed:
-
-```bash
-ai-web-feeds analytics health <feed-id>
-```
-
-**Includes:**
-
-- Overall health score and status
-- Fetch statistics and success rate
-- Content quality metrics
-- Publishing frequency
-
-**Health Status Levels:**
-
-- **Excellent** (0.8-1.0) - Feed is performing optimally
-- **Good** (0.6-0.8) - Feed is healthy with minor issues
-- **Fair** (0.4-0.6) - Feed has some problems
-- **Poor** (0.2-0.4) - Feed needs attention
-- **Critical** (0.0-0.2) - Feed is failing
-
-### Contributor Analytics
-
-View top contributors:
-
-```bash
-ai-web-feeds analytics contributors [--limit N]
-```
-
-**Shows:**
-
-- Contributors ranked by feed count
-- Verification rates per contributor
-- Quality benchmarks
-
-### Full Report Generation
-
-Generate comprehensive JSON reports:
-
-```bash
-ai-web-feeds analytics report [--output FILE]
-```
-
-Exports all analytics data in JSON format for:
-
-- Custom analysis
-- Integration with other tools
-- Long-term tracking
-- Data visualization
+- One row per analytics record
+- Feed and validation metrics
+- Spreadsheet-friendly CSV output
 
 ## Quality Scoring System
 
@@ -184,7 +115,7 @@ Measures how complete the feed metadata is:
 ✓ Has language
 ✓ Has timestamps
 ✓ Has author/publisher
-✓ Has categories
+✓ Has canonical topics and raw feed labels
 ✓ Has image/logo
 
 ### Richness Score (0-1)
@@ -218,15 +149,15 @@ Set up a daily monitoring routine:
 #!/bin/bash
 # daily-health-check.sh
 
-# Fetch all verified feeds
-ai-web-feeds fetch all --verified-only
+# Fetch active catalog sources
+ai-web-feeds fetch all --limit 100
 
 # Generate health report
-ai-web-feeds analytics overview > daily-overview.txt
-ai-web-feeds analytics performance --days 1 > daily-performance.txt
+ai-web-feeds analytics summary --date-range 30d > daily-summary.txt
+ai-web-feeds analytics velocity --date-range 7d > daily-velocity.txt
 
-# Check for critical feeds
-ai-web-feeds analytics quality | grep -i "poor\|critical"
+# Persist a daily snapshot
+ai-web-feeds analytics snapshot
 ```
 
 ### Weekly Analytics Review
@@ -239,15 +170,12 @@ Generate weekly analytics:
 
 DATE=$(date +%Y-%m-%d)
 
-# Generate comprehensive report
-ai-web-feeds analytics report --output "reports/analytics-${DATE}.json"
+# Generate CSV report
+ai-web-feeds analytics export --output "reports/analytics-${DATE}.csv"
 
 # View trends
-ai-web-feeds analytics trends --days 7
-ai-web-feeds analytics distributions
-
-# Top contributors
-ai-web-feeds analytics contributors --limit 10
+ai-web-feeds analytics trending --date-range 7d
+ai-web-feeds analytics velocity --date-range 7d
 ```
 
 ### Alert on Feed Failures
@@ -258,8 +186,8 @@ Monitor for failing feeds:
 #!/bin/bash
 # check-failures.sh
 
-# Get performance stats
-STATS=$(ai-web-feeds analytics performance --days 1)
+# Get summary stats
+STATS=$(ai-web-feeds analytics summary --date-range 7d)
 
 # Extract success rate
 SUCCESS_RATE=$(echo "$STATS" | grep "Success Rate" | awk '{print $3}' | tr -d '%')
@@ -281,7 +209,7 @@ from ai_web_feeds.analytics import FeedAnalytics
 from ai_web_feeds.storage import DatabaseManager
 
 # Initialize
-db = DatabaseManager("sqlite:///data/aiwebfeeds.db")
+db = DatabaseManager("sqlite:///data/ai-web-feeds.db")
 analytics = FeedAnalytics(db.get_session())
 
 # Custom query: Find all feeds with quality < 0.5
@@ -319,14 +247,14 @@ Direct SQL queries for advanced analysis:
 
 ```python
 from sqlalchemy import select, func
-from ai_web_feeds.models import FeedSource, FeedItem
+from ai_web_feeds.models import ArticleEntry, FeedSource
 
-# Get feeds with most items
+# Get sources with most articles
 stmt = (
-    select(FeedSource.id, FeedSource.title, func.count(FeedItem.id))
-    .join(FeedItem)
+    select(FeedSource.id, FeedSource.title, func.count(ArticleEntry.id))
+    .join(ArticleEntry, ArticleEntry.feed_id == FeedSource.id)
     .group_by(FeedSource.id)
-    .order_by(func.count(FeedItem.id).desc())
+    .order_by(func.count(ArticleEntry.id).desc())
     .limit(10)
 )
 

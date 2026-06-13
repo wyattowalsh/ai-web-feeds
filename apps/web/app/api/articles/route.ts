@@ -64,10 +64,10 @@ function parseArticleSort(value: string | null): ArticleSort {
   }
 }
 
-function clampNumber(value: string | null, min: number, max: number, fallback: number): number {
+function clampNumber(value: string | null, min: number, max: number, defaultValue: number): number {
   const parsed = value ? Number.parseInt(value, 10) : Number.NaN;
   if (!Number.isFinite(parsed)) {
-    return fallback;
+    return defaultValue;
   }
 
   return Math.min(Math.max(Math.trunc(parsed), min), max);

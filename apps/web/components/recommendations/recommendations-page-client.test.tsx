@@ -3,6 +3,7 @@ import { fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const pushMock = vi.fn();
+const testUserId = "00000000-0000-4000-8000-000000000001";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -34,6 +35,15 @@ describe("RecommendationsPageClient", () => {
 
         if (init?.method === "POST") {
           return new Response(null, { status: 204 });
+        }
+
+        if (url === "/api/identity") {
+          return new Response(JSON.stringify({ user_id: testUserId }), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
         }
 
         if (url.startsWith("/api/recommendations")) {
@@ -83,7 +93,18 @@ describe("RecommendationsPageClient", () => {
   });
 
   it("shows the unavailable state without fetching when the backend is not configured", async () => {
-    const fetchMock = vi.fn();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) === "/api/identity") {
+        return new Response(JSON.stringify({ user_id: testUserId }), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      }
+
+      return new Response(null, { status: 404 });
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const { RecommendationsPageClient } = await import("./recommendations-page-client");
@@ -91,6 +112,12 @@ describe("RecommendationsPageClient", () => {
     render(<RecommendationsPageClient backendConfigured={false} />);
 
     expect(await screen.findByText("Recommendations backend unavailable")).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/identity",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(
+      fetchMock.mock.calls.some((call) => String(call[0]).startsWith("/api/recommendations")),
+    ).toBe(false);
   });
 });

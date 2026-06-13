@@ -20,7 +20,7 @@ app = typer.Typer(help="Generate OPML files from feed sources")
 @app.command("all")
 def generate_all_opml(
     output_path: Path = typer.Option(
-        Path("data/all.opml"),
+        Path("data/feeds.opml"),
         "--output",
         "-o",
         help="Output OPML file",
@@ -52,7 +52,7 @@ def generate_all_opml(
 @app.command("categorized")
 def generate_categorized_opml_cmd(
     output_path: Path = typer.Option(
-        Path("data/categorized.opml"),
+        Path("data/feeds.categorized.opml"),
         "--output",
         "-o",
         help="Output OPML file",
@@ -64,7 +64,7 @@ def generate_categorized_opml_cmd(
         help="Database URL",
     ),
 ):
-    """Generate categorized OPML file (by source type)."""
+    """Generate categorized OPML file grouped by canonical topics."""
     db = DatabaseManager(db_path)
     feed_sources = db.get_all_feed_sources()
 
@@ -118,7 +118,7 @@ def generate_filtered_opml_cmd(
     # Generate title
     title_parts = ["AI Web Feeds"]
     if topic:
-        title_parts.append(f"Topic: {topic}")
+        title_parts.append(f"TopicNode: {topic}")
     if source_type:
         title_parts.append(f"Type: {source_type}")
     if tag:

@@ -96,8 +96,11 @@ export function getSourceTitle(source: FeedSource): string {
   return source.title?.trim() || source.id || source.url;
 }
 
-export function truncateDescription(value: string | null | undefined, fallback: string): string {
-  const normalized = normalizeWhitespace(value ?? fallback);
+export function truncateDescription(
+  value: string | null | undefined,
+  defaultDescription: string,
+): string {
+  const normalized = normalizeWhitespace(value ?? defaultDescription);
   if (normalized.length <= 155) {
     return normalized;
   }

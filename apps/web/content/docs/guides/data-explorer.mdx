@@ -1,256 +1,30 @@
 ---
-title: Data Explorer
-description: Legacy taxonomy map reference; the public explorer route has been removed.
+title: Source Catalog and Reader
+description: Current source, topic, reader, and removed explorer route reference.
 ---
 
-# Data Explorer
+# Source Catalog and Reader
 
-The former Data Explorer at `/explorer` has been removed from the public UI.
-Use `/reader` for the reader, `/sources` for source refinement, and repo data
-files or docs when you need taxonomy details.
+The former public Data Explorer route at `/explorer` has been removed. Use the current public
+surfaces instead:
 
-## Features
+- [`/reader`](/reader) for recent posts across the source registry
+- [`/sources`](/sources) for source search, type filters, topic filters, and OPML export
+- [`/topics`](/topics) for public topic landing pages
+- [`/dashboard`](/dashboard) for compact catalog health
 
-### Default posture
+## Current Data Surfaces
 
-- Combined graph remains the calm default view
-- Search and one group filter stay visible on first load
-- Layout selection and graph tuning live behind **Advanced controls**
-- Node details prioritize **Open in reader** and **Open matching sources**
+The same repository data remains available through the web app and source files:
 
-### Tabbed Interface
-
-- ✅ **Topics View**: Browse and search all available topics
-- ✅ **Feeds View**: Explore the complete catalog of RSS/Atom feeds
-- Switch seamlessly between views
-
-### Advanced Search
-
-- **Full-text search** across titles, URLs, descriptions, and IDs
-- **Real-time filtering** as you type
-- Search works across both Topics and Feeds tabs
-- Instant results with optimized performance
-
-### Topics Browser
-
-- View all available topics with their IDs, names, and descriptions
-- Sort by name or ID in ascending/descending order
-- Quick search to find specific topics
-- Hierarchical topic display
-
-### Feeds Browser
-
-- Browse the complete catalog of RSS/Atom feeds
-- Filter by tags with one-click tag selection
-- Sort by title or URL
-- Direct links to feed URLs
-- Visual tag badges for easy identification
-
-### Tag Filtering
-
-- **Visual tag cloud** showing all available tags
-- **Multi-select filtering** - click multiple tags to narrow results
-- **Active tag highlighting** shows selected filters
-- Clear all filters with one click
-- Smart tag counting and sorting
-
-### Sorting Options
-
-- Sort by multiple fields (name, ID, title, URL)
-- Toggle between ascending and descending order
-- Maintains sort preferences while filtering
-- Persistent sort state
-
-### Performance Features
-
-- ✅ **Real-Time Updates**: Instant filtering and sorting with React hooks
-- ✅ **Performance Optimized**: Uses `useMemo` for efficient re-rendering
-- ✅ **Error Handling**: Graceful error states and loading indicators
-- ✅ **Responsive Design**: Mobile-friendly UI with Tailwind CSS
-
-## Usage
-
-### Accessing the Explorer
-
-1. Open `/dashboard` for collection health.
-2. Inspect `data/topics.yaml` and `data/feeds.yaml` for taxonomy details.
-
-### Searching
-
-**Example: Search for feeds**
-
-1. Select the **Feeds** tab
-2. Enter "AI" in search box
-3. Click tags like "machine-learning" or "nlp"
-4. Results update instantly
-
-**Example: Search for topics**
-
-1. Select the **Topics** tab
-2. Enter topic name or ID
-3. Sort by name or ID
-4. Browse filtered results
-
-### Filtering by Tags (Feeds Only)
-
-1. Switch to the **Feeds** tab
-2. Click on one or more tags in the tag filter section
-3. Only feeds with selected tags will be displayed
-4. Click "Clear tag filters" to reset
-
-### Sorting Results
-
-1. Select your preferred sort field from the dropdown
-2. Click the sort order button (↑ Asc / ↓ Desc) to toggle
-3. Results update immediately
-4. Sort preferences maintained while filtering
-
-## API Endpoints
-
-The explorer uses the following API endpoints:
-
-### Topics API
-
-- **Endpoint**: `GET /api/topics`
-- **Source**: `topics.yaml`
-- **Returns**: JSON array of all topics
-
-### Feeds API
-
-- **Endpoint**: `GET /api/feeds`
-- **Source**: `feeds.enriched.yaml` (fallback to `feeds.yaml`)
-- **Returns**: JSON array of all feeds
-
-Both endpoints include:
-
-- Static generation for performance
-- Cache headers (3600s max-age, 86400s stale-while-revalidate)
-- Error handling with proper status codes
-- CORS support for external access
-
-### API Usage Examples
-
-```bash
-# Fetch topics
-curl http://localhost:3000/api/topics
-
-# Fetch feeds
-curl http://localhost:3000/api/feeds
-```
-
-## Implementation Details
-
-### Technology Stack
-
-- **React 19** with hooks for state management
-- **Next.js 15** App Router
-- **Client-side rendering** for instant interactivity
-- **Responsive design** with Tailwind CSS
-- **Optimized performance** with useMemo for filtering/sorting
-
-### Components
-
-- `ExplorerPage`: Main page component with search and filter controls
-- `TopicsTable`: Displays topics in a sortable table
-- `FeedsTable`: Displays feeds with clickable URLs and tag badges
-- `useExplorerData`: Custom hook for fetching data from API routes
-
-### UI Layout
-
-```
-┌─────────────────────────────────────────┐
-│ Data Explorer                           │
-│ Browse and filter AI Web Feeds...      │
-├─────────────────────────────────────────┤
-│ [Topics (50)] [Feeds (200)]            │
-├─────────────────────────────────────────┤
-│ [Search...] [Sort by ▼] [↑ Asc]       │
-│ Tags: [ai] [ml] [nlp] [research]...    │
-├─────────────────────────────────────────┤
-│ ┌────────────────────────────────────┐ │
-│ │ Title         URL            Tags  │ │
-│ ├────────────────────────────────────┤ │
-│ │ Feed 1        example.com    ai,ml │ │
-│ │ Feed 2        test.com       nlp   │ │
-│ └────────────────────────────────────┘ │
-└─────────────────────────────────────────┘
-```
-
-### Performance Considerations
-
-1. **Static Generation**: API routes use `force-static` for build-time generation
-2. **Memoization**: Filter/sort operations use `useMemo` to prevent unnecessary recalculations
-3. **Cache Headers**: Aggressive caching (1 hour fresh, 24 hour stale-while-revalidate)
-4. **Client-Side Filtering**: All filtering happens client-side for instant responsiveness
-
-### Type Safety
-
-All components use TypeScript with proper type annotations:
-
-- Event handlers have explicit types
-- Data structures are typed
-- API responses are validated
-
-### Accessibility
-
-- Semantic HTML elements (`<table>`, `<button>`, etc.)
-- Keyboard navigation support
-- Focus states on interactive elements
-- ARIA labels where appropriate
-
-## File Structure
-
-```
-apps/web/
-├── app/
-│   └── api/
-│       ├── topics/
-│       │   └── route.ts          # Topics API endpoint
-│       └── feeds/
-│           └── route.ts          # Feeds API endpoint
-├── content/docs/guides/
-│   └── data-explorer.mdx         # This documentation
-├── lib/
-│   └── layout.shared.tsx         # Navigation config
-└── package.json                   # Dependencies
-```
-
-## Testing
-
-Tests can be added to:
-
-- `/tests/tests/apps/web/api/` - API route tests
-
-Example test structure:
-
-```python
-def test_explorer_search():
-    """Test search functionality"""
-    # Test implementation
-    pass
-
-def test_tag_filtering():
-    """Test multi-select tag filtering"""
-    # Test implementation
-    pass
-```
-
-## Future Enhancements
-
-Potential improvements:
-
-- [ ] Export filtered results to CSV/JSON
-- [ ] Saved filter presets
-- [ ] Advanced query builder
-- [ ] Feed preview modal
-- [ ] Topic hierarchy visualization
-- [ ] Feed statistics dashboard
-- [ ] Dark mode support
-- [ ] Keyboard shortcuts
-- [ ] Bulk actions (add to collection, etc.)
+- `data/feeds.yaml` and `data/feeds.enriched.yaml` define the source catalog
+- `data/topics.yaml` defines the topic taxonomy
+- `data/articles.generated.json` powers the standalone reader and article search
+- `GET /api/feeds`, `GET /api/topics`, and `GET /api/exports/opml` expose catalog data to the web app
 
 ## Related Pages
 
+- [Reader](/docs/features/reader)
+- [Search & Discovery](/docs/features/search)
 - [Feed Schema](/docs/guides/feed-schema)
-- [Database Quick Start](/docs/guides/database-quick-start)
-- [Python API](/docs/development/python-api)
+- [Runtime Authority](/docs/development/runtime-authority)

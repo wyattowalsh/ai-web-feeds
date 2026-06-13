@@ -6,7 +6,7 @@
  */
 
 export const DB_NAME = "aiwebfeeds";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 /**
  * Database Store Names
@@ -36,7 +36,9 @@ export interface Article {
   summary?: string;
   author?: string;
   pubDate: number; // Unix timestamp
-  categories: string[];
+  topics: string[];
+  rawCategories: string[];
+  sourceTopics: string[];
   enclosures: Enclosure[];
   read: boolean;
   starred: boolean;
@@ -64,7 +66,8 @@ export interface Feed {
   description?: string;
   link?: string;
   imageUrl?: string;
-  category?: string;
+  topics: string[];
+  tags: string[];
   folderId?: string;
   lastSync: number;
   syncInterval: number; // Minutes
@@ -168,16 +171,21 @@ export interface SyncQueueItem {
 /**
  * Create IndexedDB database with all stores
  */
-export function createDatabase(db: IDBDatabase): void {
+export function createDatabase(db: IDBDatabase, transaction?: IDBTransaction | null): void {
   // Articles store
-  if (!db.objectStoreNames.contains(STORES.ARTICLES)) {
-    const articlesStore = db.createObjectStore(STORES.ARTICLES, { keyPath: "id" });
-    articlesStore.createIndex("feedId", "feedId", { unique: false });
-    articlesStore.createIndex("pubDate", "pubDate", { unique: false });
-    articlesStore.createIndex("read", "read", { unique: false });
-    articlesStore.createIndex("starred", "starred", { unique: false });
-    articlesStore.createIndex("tags", "tags", { unique: false, multiEntry: true });
-    articlesStore.createIndex("cachedAt", "cachedAt", { unique: false });
+  const articlesStore = db.objectStoreNames.contains(STORES.ARTICLES)
+    ? transaction?.objectStore(STORES.ARTICLES)
+    : db.createObjectStore(STORES.ARTICLES, { keyPath: "id" });
+  if (articlesStore) {
+    ensureIndex(articlesStore, "feedId", "feedId");
+    ensureIndex(articlesStore, "pubDate", "pubDate");
+    ensureIndex(articlesStore, "read", "read");
+    ensureIndex(articlesStore, "starred", "starred");
+    ensureIndex(articlesStore, "topics", "topics", { multiEntry: true });
+    ensureIndex(articlesStore, "sourceTopics", "sourceTopics", { multiEntry: true });
+    ensureIndex(articlesStore, "rawCategories", "rawCategories", { multiEntry: true });
+    ensureIndex(articlesStore, "tags", "tags", { multiEntry: true });
+    ensureIndex(articlesStore, "cachedAt", "cachedAt");
   }
 
   // Feeds store
@@ -185,7 +193,8 @@ export function createDatabase(db: IDBDatabase): void {
     const feedsStore = db.createObjectStore(STORES.FEEDS, { keyPath: "id" });
     feedsStore.createIndex("folderId", "folderId", { unique: false });
     feedsStore.createIndex("lastSync", "lastSync", { unique: false });
-    feedsStore.createIndex("category", "category", { unique: false });
+    feedsStore.createIndex("topics", "topics", { unique: false, multiEntry: true });
+    feedsStore.createIndex("tags", "tags", { unique: false, multiEntry: true });
     feedsStore.createIndex("enabled", "enabled", { unique: false });
   }
 
@@ -229,6 +238,17 @@ export function createDatabase(db: IDBDatabase): void {
     syncStore.createIndex("synced", "synced", { unique: false });
     syncStore.createIndex("timestamp", "timestamp", { unique: false });
     syncStore.createIndex("type", "type", { unique: false });
+  }
+}
+
+function ensureIndex(
+  store: IDBObjectStore,
+  name: string,
+  keyPath: string,
+  options: IDBIndexParameters = {},
+): void {
+  if (!store.indexNames.contains(name)) {
+    store.createIndex(name, keyPath, { unique: false, ...options });
   }
 }
 

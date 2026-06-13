@@ -5,7 +5,7 @@ import asyncio
 import typer
 from ai_web_feeds.config import DEFAULT_DATABASE_URL, Settings
 from ai_web_feeds.scheduler import SchedulerManager
-from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.storage import DatabaseManager, upgrade_database_to_head
 from ai_web_feeds.websocket_server import WebSocketServer
 from rich.console import Console
 from rich.table import Table
@@ -22,12 +22,6 @@ def start_monitoring(
         "-p",
         help="WebSocket server port (default from config)",
     ),
-    background: bool = typer.Option(
-        False,
-        "--background",
-        "-b",
-        help="Run in background (daemonize)",
-    ),
 ):
     """Start real-time feed monitoring server.
 
@@ -41,10 +35,11 @@ def start_monitoring(
 
     # Initialize components
     settings = Settings()
-    db = DatabaseManager(
+    database_url = (
         settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
-    db.create_db_and_tables()
+    upgrade_database_to_head(database_url)
+    db = DatabaseManager(database_url)
 
     # Override WebSocket port if provided
     if websocket_port:
@@ -53,9 +48,6 @@ def start_monitoring(
     # Create scheduler and WebSocket server
     scheduler = SchedulerManager(db, settings)
     websocket_server = WebSocketServer(db, settings)
-
-    if background:
-        console.print("[yellow]Background mode not implemented yet. Running in foreground.[/]")
 
     # Run async event loop
     try:
@@ -90,14 +82,6 @@ async def _run_monitoring(scheduler: SchedulerManager, websocket: WebSocketServe
         scheduler.stop()
 
 
-@app.command("stop")
-def stop_monitoring():
-    """Stop real-time feed monitoring server."""
-    console.print("[yellow]Stop command not implemented yet.[/]")
-    console.print("Use Ctrl+C to stop the monitoring server.")
-    raise typer.Exit(1)
-
-
 @app.command("status")
 def monitoring_status():
     """Show monitoring server status."""
@@ -117,8 +101,9 @@ def monitoring_status():
     else:
         console.print("[red]✗ Scheduler: Stopped[/]")
 
-    # WebSocket server status (TODO: implement proper status check)
-    console.print("\n[yellow]✗ WebSocket: Status check not implemented[/]")
+    websocket_port = settings.phase3b.websocket_port
+    console.print(f"\n[cyan]WebSocket:[/] configured on port {websocket_port}")
+    console.print("[dim]Start `ai-web-feeds monitor start` to serve live monitoring events.[/]")
 
 
 def _print_job_status(scheduler: SchedulerManager):
@@ -147,42 +132,42 @@ def _print_job_status(scheduler: SchedulerManager):
 
 
 @app.command("follow")
-def follow_feed(
+def follow_source(
     user_id: str = typer.Argument(..., help="User ID (localStorage UUID)"),
-    feed_id: str = typer.Argument(..., help="Feed ID to follow"),
+    source_id: str = typer.Argument(..., help="Source ID to follow"),
 ):
-    """Follow a feed to receive notifications."""
+    """Follow a source to receive notifications."""
     settings = Settings()
     db = DatabaseManager(
         settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
-        follow = db.follow_feed(user_id, feed_id)
-        console.print(f"[green]✓ Now following feed: {feed_id}[/]")
+        follow = db.follow_source(user_id, source_id)
+        console.print(f"[green]✓ Now following source: {source_id}[/]")
         console.print(f"User: {user_id}")
         console.print(f"Followed at: {follow.followed_at}")
     except Exception as e:
-        console.print(f"[red]✗ Failed to follow feed: {e}[/]")
+        console.print(f"[red]✗ Failed to follow source: {e}[/]")
         raise typer.Exit(1)
 
 
 @app.command("unfollow")
-def unfollow_feed(
+def unfollow_source(
     user_id: str = typer.Argument(..., help="User ID (localStorage UUID)"),
-    feed_id: str = typer.Argument(..., help="Feed ID to unfollow"),
+    source_id: str = typer.Argument(..., help="Source ID to unfollow"),
 ):
-    """Unfollow a feed to stop receiving notifications."""
+    """Unfollow a source to stop receiving notifications."""
     settings = Settings()
     db = DatabaseManager(
         settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
-        db.unfollow_feed(user_id, feed_id)
-        console.print(f"[green]✓ Unfollowed feed: {feed_id}[/]")
+        db.unfollow_source(user_id, source_id)
+        console.print(f"[green]✓ Unfollowed source: {source_id}[/]")
     except Exception as e:
-        console.print(f"[red]✗ Failed to unfollow feed: {e}[/]")
+        console.print(f"[red]✗ Failed to unfollow source: {e}[/]")
         raise typer.Exit(1)
 
 
@@ -190,22 +175,22 @@ def unfollow_feed(
 def list_follows(
     user_id: str = typer.Argument(..., help="User ID (localStorage UUID)"),
 ):
-    """List feeds followed by a user."""
+    """List sources followed by a user."""
     settings = Settings()
     db = DatabaseManager(
         settings.database_url if hasattr(settings, "database_url") else DEFAULT_DATABASE_URL
     )
 
     try:
-        follows = db.get_user_follows(user_id)
+        follows = db.get_user_followed_sources(user_id)
 
         if not follows:
-            console.print("[yellow]No followed feeds found[/]")
+            console.print("[yellow]No followed sources found[/]")
             return
 
-        console.print(f"\n[bold]Followed Feeds ({len(follows)})[/]\n")
-        for feed_id in follows:
-            console.print(f"  • {feed_id}")
+        console.print(f"\n[bold]Followed Sources ({len(follows)})[/]\n")
+        for source_id in follows:
+            console.print(f"  • {source_id}")
 
     except Exception as e:
         console.print(f"[red]✗ Failed to list follows: {e}[/]")
@@ -220,7 +205,7 @@ def subscribe_digest(
     timezone: str = typer.Option("UTC", help="Timezone (e.g., 'America/New_York')"),
 ):
     """Subscribe to email digests."""
-    from datetime import datetime, timedelta
+    from datetime import UTC, datetime, timedelta
 
     from ai_web_feeds.models import EmailDigest
 
@@ -247,7 +232,7 @@ def subscribe_digest(
             schedule_type=schedule,
             schedule_cron=cron_map[schedule],
             timezone=timezone,
-            next_send_at=datetime.utcnow() + timedelta(days=1),
+            next_send_at=datetime.now(UTC) + timedelta(days=1),
             is_active=True,
         )
 
@@ -268,7 +253,7 @@ def unsubscribe_digest(
     digest_id: int = typer.Argument(..., help="Digest subscription ID"),
 ):
     """Unsubscribe from email digests."""
-    from datetime import datetime
+    from datetime import UTC, datetime
 
     settings = Settings()
     db = DatabaseManager(
@@ -282,7 +267,7 @@ def unsubscribe_digest(
             console.print(f"[red]✗ Digest {digest_id} not found[/]")
             raise typer.Exit(1)
 
-        digest.unsubscribed_at = datetime.utcnow()
+        digest.unsubscribed_at = datetime.now(UTC)
         digest.is_active = False
         db.update_email_digest(digest)
 

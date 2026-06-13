@@ -5,31 +5,31 @@ description: Command-line interface for managing feeds
 
 # CLI Usage
 
-The `aiwebfeeds` CLI provides commands for enrichment, OPML generation, and statistics.
+The `ai-web-feeds` CLI provides commands for enrichment, OPML generation, and statistics.
 
 ## Installation
 
 ```bash
 # From project root
 uv sync
-uv pip install -e apps/cli
+uv sync
 ```
 
 ## Quick Start
 
 ```bash
 # 1. Enrich feeds from feeds.yaml
-uv run aiwebfeeds enrich all
+uv run ai-web-feeds enrich all
 
 # 2. Generate OPML files
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
+uv run ai-web-feeds opml all
+uv run ai-web-feeds opml categorized
 
 # 3. View statistics
-uv run aiwebfeeds stats show
+uv run ai-web-feeds stats show
 
 # 4. Generate filtered OPML
-uv run aiwebfeeds opml filtered data/nlp-feeds.opml --topic nlp --verified
+uv run ai-web-feeds opml filtered data/nlp-feeds.opml --topic nlp --verified
 ```
 
 ## Commands
@@ -40,17 +40,17 @@ Enrich feeds with metadata, discover feed URLs, validate formats, and save to da
 
 ```bash
 # Enrich all feeds
-uv run aiwebfeeds enrich all
+uv run ai-web-feeds enrich all
 
 # Custom paths
-uv run aiwebfeeds enrich all \
+uv run ai-web-feeds enrich all \
   --input data/feeds.yaml \
   --output data/feeds.enriched.yaml \
   --schema data/feeds.enriched.schema.json \
-  --database sqlite:///data/aiwebfeeds.db
+  --database sqlite:///data/ai-web-feeds.db
 
 # Preview enrichment for one feed
-uv run aiwebfeeds enrich one <feed-id>
+uv run ai-web-feeds enrich one <feed-id>
 ```
 
 **What it does:**
@@ -61,7 +61,7 @@ uv run aiwebfeeds enrich one <feed-id>
 - Saves to:
   - `feeds.enriched.yaml` - Enriched YAML with all metadata
   - `feeds.enriched.schema.json` - JSON schema for validation
-  - `aiwebfeeds.db` - SQLite database
+  - `ai-web-feeds.db` - SQLite database
 
 ### `opml` - Generate OPML Files
 
@@ -69,13 +69,13 @@ Generate OPML files for feed readers.
 
 ```bash
 # All feeds (flat list)
-uv run aiwebfeeds opml all --output data/all.opml
+uv run ai-web-feeds opml all --output data/feeds.opml
 
 # Categorized by source type
-uv run aiwebfeeds opml categorized --output data/categorized.opml
+uv run ai-web-feeds opml categorized --output data/feeds.categorized.opml
 
 # Filtered OPML
-uv run aiwebfeeds opml filtered <output-file> [OPTIONS]
+uv run ai-web-feeds opml filtered <output-file> [OPTIONS]
 ```
 
 **Filter Options:**
@@ -89,15 +89,15 @@ uv run aiwebfeeds opml filtered <output-file> [OPTIONS]
 
 ```bash
 # NLP-related feeds only
-uv run aiwebfeeds opml filtered data/nlp.opml --topic nlp
+uv run ai-web-feeds opml filtered data/nlp.opml --topic nlp
 
 # Official blogs
-uv run aiwebfeeds opml filtered data/official-blogs.opml \
+uv run ai-web-feeds opml filtered data/official-blogs.opml \
   --type blog \
   --tag official
 
 # Verified ML podcasts
-uv run aiwebfeeds opml filtered data/ml-podcasts.opml \
+uv run ai-web-feeds opml filtered data/ml-podcasts.opml \
   --topic ml \
   --type podcast \
   --verified
@@ -108,7 +108,7 @@ uv run aiwebfeeds opml filtered data/ml-podcasts.opml \
 Display feed statistics and summaries.
 
 ```bash
-uv run aiwebfeeds stats show
+uv run ai-web-feeds stats show
 ```
 
 **Example output:**
@@ -135,19 +135,19 @@ Verified: 120 (80.0%)
 
 ### `export` - Export Data
 
-Export feed data in various formats (coming soon).
+Export feed data in current generated formats.
 
 ```bash
-uv run aiwebfeeds export json    # Export as JSON
-uv run aiwebfeeds export csv     # Export as CSV
+uv run ai-web-feeds export json    # Export as JSON
+uv run ai-web-feeds export csv     # Export as CSV
 ```
 
 ### `validate` - Validate Data
 
-Validate feed data against schemas (coming soon).
+Validate feed data against schemas.
 
 ```bash
-uv run aiwebfeeds validate       # Validate feeds.yaml
+uv run ai-web-feeds validate feeds # Validate feeds.yaml
 ```
 
 ## Workflows
@@ -157,45 +157,45 @@ uv run aiwebfeeds validate       # Validate feeds.yaml
 ```bash
 # 1. Create or edit data/feeds.yaml with your feed sources
 # 2. Enrich the feeds
-uv run aiwebfeeds enrich all
+uv run ai-web-feeds enrich all
 
 # 3. Generate OPML files for your feed reader
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
+uv run ai-web-feeds opml all
+uv run ai-web-feeds opml categorized
 
 # 4. Check the results
-uv run aiwebfeeds stats show
+uv run ai-web-feeds stats show
 ```
 
 ### Adding New Feeds
 
 ```bash
-# 1. Add feed entries to data/feeds.yaml
+# 1. Add articles to data/feeds.yaml
 # 2. Re-enrich
-uv run aiwebfeeds enrich all
+uv run ai-web-feeds enrich all
 
 # 3. Regenerate OPML files
-uv run aiwebfeeds opml all
-uv run aiwebfeeds opml categorized
+uv run ai-web-feeds opml all
+uv run ai-web-feeds opml categorized
 ```
 
 ### Creating Custom Feed Collections
 
 ```bash
 # Create topic-specific OPML files
-uv run aiwebfeeds opml filtered data/nlp.opml --topic nlp
-uv run aiwebfeeds opml filtered data/mlops.opml --topic mlops
-uv run aiwebfeeds opml filtered data/research.opml --topic research
+uv run ai-web-feeds opml filtered data/nlp.opml --topic nlp
+uv run ai-web-feeds opml filtered data/mlops.opml --topic mlops
+uv run ai-web-feeds opml filtered data/research.opml --topic research
 
 # Create type-specific collections
-uv run aiwebfeeds opml filtered data/podcasts.opml --type podcast
-uv run aiwebfeeds opml filtered data/blogs.opml --type blog
+uv run ai-web-feeds opml filtered data/podcasts.opml --type podcast
+uv run ai-web-feeds opml filtered data/blogs.opml --type blog
 
 # Verified feeds only
-uv run aiwebfeeds opml filtered data/verified.opml --verified
+uv run ai-web-feeds opml filtered data/verified.opml --verified
 
 # Combine filters for precise collections
-uv run aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
+uv run ai-web-feeds opml filtered data/verified-nlp-blogs.opml \
   --topic nlp \
   --type blog \
   --verified
@@ -207,7 +207,7 @@ uv run aiwebfeeds opml filtered data/verified-nlp-blogs.opml \
 
 ```bash
 # Database location
-export AIWF_DATABASE_URL=sqlite:///data/aiwebfeeds.db
+export AIWF_DATABASE_URL=sqlite:///data/ai-web-feeds.db
 
 # Logging
 export AIWF_LOGGING__LEVEL=INFO
@@ -220,7 +220,7 @@ export AIWF_LOGGING__FILE_PATH=logs/aiwebfeeds.log
 - Input: `data/feeds.yaml`
 - Output: `data/feeds.enriched.yaml`
 - Schema: `data/feeds.enriched.schema.json`
-- Database: `data/aiwebfeeds.db`
+- Database: `data/ai-web-feeds.db`
 - OPML: `data/*.opml`
 
 Override with command options (`--input`, `--output`, `--database`, etc.)
@@ -231,10 +231,10 @@ Get help for any command:
 
 ```bash
 # General help
-uv run aiwebfeeds --help
+uv run ai-web-feeds --help
 
 # Command-specific help
-uv run aiwebfeeds enrich --help
-uv run aiwebfeeds opml --help
-uv run aiwebfeeds opml filtered --help
+uv run ai-web-feeds enrich --help
+uv run ai-web-feeds opml --help
+uv run ai-web-feeds opml filtered --help
 ```

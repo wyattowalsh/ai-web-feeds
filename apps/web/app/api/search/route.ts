@@ -34,9 +34,18 @@ const GETHandler = async (request: Request) => {
     return NextResponse.json({ error: 'Query parameter "q" is required' }, { status: 400 });
   }
 
-  const scope = searchParams.get("scope")
-    ? parseSearchScope(searchParams.get("scope"))
-    : parseSearchType(searchParams.get("type")) === "articles"
+  const rawScope = searchParams.get("scope");
+  const rawType = searchParams.get("type");
+  if (rawScope && !isPublicSearchType(rawScope)) {
+    return NextResponse.json({ error: "Invalid search scope" }, { status: 400 });
+  }
+  if (!rawScope && rawType && !isPublicSearchType(rawType)) {
+    return NextResponse.json({ error: "Invalid search type" }, { status: 400 });
+  }
+
+  const scope = rawScope
+    ? parseSearchScope(rawScope)
+    : parseSearchType(rawType) === "articles"
       ? "articles"
       : "sources";
   const limit = clampNumber(parseInt(searchParams.get("limit") || "20", 10), 1, 100);
@@ -107,6 +116,9 @@ const POSTHandler = async (request: Request) => {
     resolvedIdentity = resolveUserIdentity(request, body.user_id ?? null);
     const identity = resolvedIdentity.identity;
     const query = normalizeSearchQuery(body.query);
+    if (body.type && !isPublicSearchType(body.type)) {
+      return NextResponse.json({ error: "Invalid search type" }, { status: 400 });
+    }
     const searchType = parseSearchType(body.type);
     const filters = normalizeSearchFilters(body.filters);
     const { clicked_results } = body;
@@ -168,3 +180,8 @@ export const GET = withRouteTelemetry("search.query", GETHandler, {
 export const POST = withRouteTelemetry("search.log", POSTHandler, {
   backendTarget: "python-backend",
 });
+
+function isPublicSearchType(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized === "sources" || normalized === "articles";
+}

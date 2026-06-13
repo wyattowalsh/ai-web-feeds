@@ -2,7 +2,7 @@
 
 Command-line interface for managing AI/ML feed sources.
 
-Preferred command: `ai-web-feeds`. Legacy alias: `aiwebfeeds`.
+Preferred command: `ai-web-feeds`.
 
 ## Installation
 
@@ -10,8 +10,9 @@ Preferred command: `ai-web-feeds`. Legacy alias: `aiwebfeeds`.
 # From project root
 uv sync
 
-# Or install directly
-uv pip install -e apps/cli
+# Or sync the CLI workspace directly
+cd apps/cli
+uv sync
 ```
 
 ## Quick Start
@@ -60,7 +61,7 @@ ai-web-feeds enrich one <feed-id>
 - Saves to:
   - `feeds.enriched.yaml` - Enriched YAML with all metadata
   - `feeds.enriched.schema.json` - JSON schema for validation
-  - `ai-web-feeds.db` - SQLite database (legacy `aiwebfeeds.db` also works)
+  - `ai-web-feeds.db` - canonical SQLite database
 
 ### `opml` - Generate OPML Files
 
@@ -68,10 +69,10 @@ Generate OPML files for feed readers.
 
 ```bash
 # All feeds (flat list)
-ai-web-feeds opml all --output data/all.opml
+ai-web-feeds opml all --output data/feeds.opml
 
 # Categorized by source type
-ai-web-feeds opml categorized --output data/categorized.opml
+ai-web-feeds opml categorized --output data/feeds.categorized.opml
 
 # Filtered OPML
 ai-web-feeds opml filtered <output-file> [OPTIONS]
@@ -133,19 +134,19 @@ Verified: 120 (80.0%)
 
 ### `export` - Export Data
 
-Export feed data in various formats (coming soon).
+Export feed data in current generated formats.
 
 ```bash
-ai-web-feeds export json    # Export as JSON
-ai-web-feeds export csv     # Export as CSV
+uv run ai-web-feeds export json    # Export as JSON
+uv run ai-web-feeds export csv     # Export as CSV
 ```
 
 ### `validate` - Validate Data
 
-Validate feed data against schemas (coming soon).
+Validate feed data against schemas.
 
 ```bash
-ai-web-feeds validate       # Validate feeds.yaml
+uv run ai-web-feeds validate feeds # Validate feeds.yaml
 ```
 
 ## Workflow
@@ -168,7 +169,7 @@ ai-web-feeds stats show
 ### Adding New Feeds
 
 ```bash
-# 1. Add feed entries to data/feeds.yaml
+# 1. Add articles to data/feeds.yaml
 # 2. Re-enrich
 ai-web-feeds enrich all
 

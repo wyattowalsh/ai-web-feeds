@@ -89,7 +89,7 @@ overall_score = (
 Run quality scoring manually on unprocessed articles:
 
 ```bash
-aiwebfeeds nlp quality
+ai-web-feeds nlp quality
 ```
 
 **Options**:
@@ -99,16 +99,16 @@ aiwebfeeds nlp quality
 
 ```bash
 # Process 50 articles
-aiwebfeeds nlp quality --batch-size 50
+ai-web-feeds nlp quality --batch-size 50
 
 # Reprocess all articles
-aiwebfeeds nlp quality --force
+ai-web-feeds nlp quality --force
 ```
 
 #### View Statistics
 
 ```bash
-aiwebfeeds nlp stats
+ai-web-feeds nlp stats
 ```
 
 Shows processing status for all NLP operations including quality scoring.
@@ -167,7 +167,7 @@ CREATE TABLE article_quality_scores (
     domain_score INTEGER CHECK(domain_score BETWEEN 0 AND 100),
     engagement_score INTEGER CHECK(engagement_score BETWEEN 0 AND 100),
     computed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (article_id) REFERENCES feed_entries(id) ON DELETE CASCADE
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
 ```
 
@@ -176,8 +176,8 @@ CREATE TABLE article_quality_scores (
 Feed entries track processing status:
 
 ```sql
-ALTER TABLE feed_entries ADD COLUMN quality_processed BOOLEAN DEFAULT FALSE;
-ALTER TABLE feed_entries ADD COLUMN quality_processed_at DATETIME;
+ALTER TABLE articles ADD COLUMN quality_processed BOOLEAN DEFAULT FALSE;
+ALTER TABLE articles ADD COLUMN quality_processed_at DATETIME;
 ```
 
 ## Configuration
@@ -217,16 +217,16 @@ Planned improvements for quality scoring:
 
 ### No Articles Being Scored
 
-**Symptom**: `aiwebfeeds nlp stats` shows 0 quality processed.
+**Symptom**: `ai-web-feeds nlp stats` shows 0 quality processed.
 
 **Solution**:
 
 ```bash
 # Check if articles exist
-aiwebfeeds feeds list
+ai-web-feeds stats show
 
 # Manually trigger scoring
-aiwebfeeds nlp quality --batch-size 10
+ai-web-feeds nlp quality --batch-size 10
 ```
 
 ### Low Scores for Good Articles

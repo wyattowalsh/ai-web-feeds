@@ -12,7 +12,6 @@ dependencies = [
 
 [project.scripts]
 ai-web-feeds = "ai_web_feeds.cli:main"
-aiwebfeeds = "ai_web_feeds.cli:main"
 
 [tool.uv.sources]
 "ai-web-feeds" = { workspace = true }
