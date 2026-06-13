@@ -496,12 +496,16 @@ export function FeedCatalog({
               <div className="flex flex-col gap-2">
                 <div className="grid gap-2 sm:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)]">
                   <Input
+                    id="source-topic-search"
+                    name="topic_query"
                     aria-label="Search topics"
                     value={topicQuery}
                     onChange={(event) => setTopicQuery(event.target.value)}
                     placeholder="Search all topics"
                   />
                   <Select
+                    id="source-topic-filter"
+                    name="topic"
                     aria-label="Topic filter"
                     value=""
                     onChange={(event) => {

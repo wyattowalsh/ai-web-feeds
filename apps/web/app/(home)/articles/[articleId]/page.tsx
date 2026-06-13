@@ -24,6 +24,8 @@ type ArticlePageProps = {
   params: Promise<{ articleId: string }>;
 };
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const corpus = await loadArticleCorpus();
   if (corpus.metadata.is_empty) {
@@ -58,13 +60,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  const nonce = await getRequestNonce();
   const { articleId } = await params;
   const article = await getArticleBySlug(articleId);
   if (!article) {
     notFound();
   }
 
+  const nonce = await getRequestNonce();
   const source = loadFeedCatalog().sources.find((feed) => feed.id === article.feed_id);
   const sourceName = source ? getSourceTitle(source) : article.feed_title;
   const excerpt = articleExcerpt(article);

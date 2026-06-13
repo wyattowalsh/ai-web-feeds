@@ -201,6 +201,8 @@ export function SearchBar({
             </span>
             <Input
               ref={inputRef}
+              id="feed-search-input"
+              name="q"
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

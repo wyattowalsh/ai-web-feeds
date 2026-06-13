@@ -1,3 +1,5 @@
+import { render, screen } from "@testing-library/react";
+import { createElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { getArticleBySlugMock, notFoundMock } = vi.hoisted(() => ({
@@ -107,5 +109,20 @@ describe("article attribution page metadata", () => {
       ArticlePage({ params: Promise.resolve({ articleId: "example" }) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders the route-local recovery UI for missing article references", async () => {
+    const { default: ArticleNotFound } = await import("./not-found");
+
+    render(createElement(ArticleNotFound));
+
+    expect(
+      screen.getByRole("heading", { name: "Article reference not found" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open reader/i })).toHaveAttribute("href", "/reader");
+    expect(screen.getByRole("link", { name: /Browse sources/i })).toHaveAttribute(
+      "href",
+      "/sources",
+    );
   });
 });

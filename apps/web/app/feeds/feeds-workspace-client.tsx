@@ -1546,6 +1546,8 @@ function ReaderWorkspace({
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
                   <Input
+                    id="reader-search"
+                    name="q"
                     aria-label="Search posts"
                     placeholder="Search titles, summaries, authors"
                     value={queryDraft}
@@ -1558,6 +1560,8 @@ function ReaderWorkspace({
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Source type</span>
                 <Select
+                  id="reader-source-type"
+                  name="source_type"
                   aria-label="Source type"
                   value={sourceTypeDraft}
                   onChange={(event) => setSourceTypeDraft(event.target.value)}
@@ -1575,6 +1579,8 @@ function ReaderWorkspace({
                 <div className="space-y-1.5 text-sm">
                   <span className="small-note">Topic focus</span>
                   <Select
+                    id="reader-topic-focus"
+                    name="topic"
                     aria-label="Add topic focus"
                     value=""
                     onChange={(event) => {
@@ -1638,6 +1644,8 @@ function ReaderWorkspace({
                 <label className="space-y-1.5 text-sm">
                   <span className="small-note">Verification</span>
                   <Select
+                    id="reader-verification"
+                    name="verified"
                     aria-label="Verification"
                     value={verifiedDraft}
                     onChange={(event) => setVerifiedDraft(event.target.value as VerifiedDraftValue)}
@@ -1652,6 +1660,8 @@ function ReaderWorkspace({
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Reader view</span>
                 <Select
+                  id="reader-view"
+                  name="view"
                   aria-label="Reader view"
                   value={readerViewDraft}
                   onChange={(event) => setReaderViewDraft(event.target.value as ReaderView)}
@@ -1667,6 +1677,8 @@ function ReaderWorkspace({
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Sort</span>
                 <Select
+                  id="reader-sort"
+                  name="sort"
                   aria-label="Sort articles"
                   value={sortDraft}
                   onChange={(event) => setSortDraft(event.target.value as ArticleSort)}
@@ -1756,6 +1768,8 @@ function ReaderWorkspace({
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
                   <Input
+                    id="reader-search-mobile"
+                    name="q"
                     aria-label="Search posts mobile"
                     placeholder="Search titles, summaries, authors"
                     value={queryDraft}
@@ -1767,6 +1781,8 @@ function ReaderWorkspace({
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Source type</span>
                 <Select
+                  id="reader-source-type-mobile"
+                  name="source_type"
                   aria-label="Source type mobile"
                   value={sourceTypeDraft}
                   onChange={(event) => setSourceTypeDraft(event.target.value)}
@@ -1782,6 +1798,8 @@ function ReaderWorkspace({
               <div className="space-y-2">
                 <span className="small-note">Topic focus</span>
                 <Select
+                  id="reader-topic-focus-mobile"
+                  name="topic"
                   aria-label="Add topic focus mobile"
                   value=""
                   onChange={(event) => {
@@ -1839,6 +1857,8 @@ function ReaderWorkspace({
                   <label className="space-y-1.5 text-sm">
                     <span className="small-note">Verification</span>
                     <Select
+                      id="reader-verification-mobile"
+                      name="verified"
                       aria-label="Verification mobile"
                       value={verifiedDraft}
                       onChange={(event) =>
@@ -1854,6 +1874,8 @@ function ReaderWorkspace({
                 <label className="space-y-1.5 text-sm">
                   <span className="small-note">View</span>
                   <Select
+                    id="reader-view-mobile"
+                    name="view"
                     aria-label="Reader view mobile"
                     value={readerViewDraft}
                     onChange={(event) => setReaderViewDraft(event.target.value as ReaderView)}
@@ -1869,6 +1891,8 @@ function ReaderWorkspace({
               <label className="space-y-1.5 text-sm">
                 <span className="small-note">Sort</span>
                 <Select
+                  id="reader-sort-mobile"
+                  name="sort"
                   aria-label="Sort articles mobile"
                   value={sortDraft}
                   onChange={(event) => setSortDraft(event.target.value as ArticleSort)}
@@ -2150,25 +2174,25 @@ function ReaderWorkspace({
             </div>
           </section>
         </section>
-      </div>
 
-      {selectedArticle ? (
-        <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
-          <PreviewPane
-            article={selectedArticle}
-            source={selectedArticleSource}
-            state={selectedArticleState}
-            variant="panel"
-            onClose={() => setPreviewArticleId(null)}
-            onToggleState={(partial) => {
-              if (!selectedArticle) {
-                return;
-              }
-              updateState(selectedArticle.id, partial);
-            }}
-          />
-        </div>
-      ) : null}
+        {selectedArticle ? (
+          <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
+            <PreviewPane
+              article={selectedArticle}
+              source={selectedArticleSource}
+              state={selectedArticleState}
+              variant="panel"
+              onClose={() => setPreviewArticleId(null)}
+              onToggleState={(partial) => {
+                if (!selectedArticle) {
+                  return;
+                }
+                updateState(selectedArticle.id, partial);
+              }}
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
