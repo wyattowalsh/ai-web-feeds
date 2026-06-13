@@ -1,8 +1,10 @@
 """Unit tests for CLI commands."""
 
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 from typer.testing import CliRunner
 
 
@@ -103,6 +105,128 @@ class TestCLIEnrichCommand:
             assert enrich is not None
         except ImportError:
             pytest.skip("CLI commands not yet implemented")
+
+
+@pytest.mark.unit
+class TestCLIProcessCommand:
+    """Test the top-level process command."""
+
+    def test_process_skip_enrichment_writes_schema_valid_source_type(self):
+        """Skipped enrichment still writes generated enriched catalog fields."""
+        from ai_web_feeds.cli import app
+
+        runner = CliRunner()
+
+        with runner.isolated_filesystem():
+            input_file = Path("feeds.yaml")
+            output_file = Path("feeds.enriched.yaml")
+            input_file.write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": "feeds-2.1.0",
+                        "sources": [
+                            {
+                                "url": "https://www.youtube.com/feeds/videos.xml?channel_id=test",
+                                "topics": ["video"],
+                            }
+                        ],
+                    },
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "--input",
+                    str(input_file),
+                    "--output",
+                    str(output_file),
+                    "--database",
+                    "sqlite:///feeds.db",
+                    "--skip-enrichment",
+                    "--no-export",
+                ],
+            )
+
+            assert result.exit_code == 0, result.output
+            output = yaml.safe_load(output_file.read_text(encoding="utf-8"))
+            assert output["document_meta"]["total_sources"] == 1
+            assert output["sources"][0]["source_type"] == "youtube"
+
+    def test_process_skip_enrichment_preserves_existing_generated_metadata(self):
+        """Skipped enrichment reuses existing output-only generated metadata."""
+        from ai_web_feeds.cli import app
+
+        runner = CliRunner()
+
+        with runner.isolated_filesystem():
+            input_file = Path("feeds.yaml")
+            output_file = Path("feeds.enriched.yaml")
+            feed_url = "https://example.com/feed.xml"
+            input_file.write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": "feeds-2.1.0",
+                        "sources": [
+                            {
+                                "url": feed_url,
+                                "topics": ["research"],
+                            }
+                        ],
+                    },
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+            output_file.write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": "feeds-2.1.0",
+                        "sources": [
+                            {
+                                "url": feed_url,
+                                "topics": ["old-topic"],
+                                "id": "src-stable",
+                                "title": "Example Research Feed",
+                                "feed": "https://feeds.example.com/rss.xml",
+                                "source_type": "newsletter",
+                                "tags": ["curated"],
+                            }
+                        ],
+                    },
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "--input",
+                    str(input_file),
+                    "--output",
+                    str(output_file),
+                    "--database",
+                    "sqlite:///feeds.db",
+                    "--skip-enrichment",
+                    "--no-export",
+                ],
+            )
+
+            assert result.exit_code == 0, result.output
+            output = yaml.safe_load(output_file.read_text(encoding="utf-8"))
+            source = output["sources"][0]
+            assert source["url"] == feed_url
+            assert source["topics"] == ["research"]
+            assert source["id"] == "src-stable"
+            assert source["title"] == "Example Research Feed"
+            assert source["feed"] == "https://feeds.example.com/rss.xml"
+            assert source["source_type"] == "newsletter"
+            assert source["tags"] == ["curated"]
 
 
 @pytest.mark.unit

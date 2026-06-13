@@ -164,6 +164,8 @@ jobs:
             echo "✓ ai-web-feeds.db: $SIZE bytes"
           fi
 
+          uv run --project . python data/validate_data_assets.py
+
       - name: Check database content
         run: |
           echo "🔍 Checking database content..."

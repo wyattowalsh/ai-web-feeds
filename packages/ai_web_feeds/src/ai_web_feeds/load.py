@@ -189,7 +189,7 @@ def _canonicalize_source(source: dict[str, Any], *, enriched: bool) -> dict[str,
     canonical["topics"] = topics
 
     tags = _string_list(canonical.get("tags"))
-    canonical["tags"] = tags or topics
+    canonical["tags"] = tags or list(topics)
 
     if enriched:
         canonical["source_type"] = infer_source_type(canonical)

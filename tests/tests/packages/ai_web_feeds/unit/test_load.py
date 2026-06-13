@@ -221,6 +221,8 @@ class TestCanonicalizeCatalog:
 
         assert canonical["document_meta"]["total_sources"] == 1
         assert canonical["sources"][0]["source_type"] == "youtube"
+        assert canonical["sources"][0]["tags"] == ["research", "videos"]
+        assert canonical["sources"][0]["tags"] is not canonical["sources"][0]["topics"]
 
     @pytest.mark.parametrize(
         ("source", "expected"),

@@ -4,6 +4,7 @@ Main workflow: load → validate → enrich → validate → export + store + lo
 """
 
 from pathlib import Path
+from typing import Any
 
 import typer
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
@@ -18,6 +19,7 @@ from ai_web_feeds import (
     save_feeds,
     validate_feeds,
 )
+from ai_web_feeds.load import canonicalize_catalog
 
 # Import command modules
 from ai_web_feeds.cli.commands import analytics, corpus, monitor, opml, recommend, search
@@ -46,6 +48,96 @@ except (ImportError, AttributeError) as e:
     logger.warning(f"NLP commands not available: {e}")
 
 console = Console()
+
+_PRESERVED_ENRICHMENT_FIELDS = (
+    "id",
+    "title",
+    "feed",
+    "site",
+    "source_type",
+    "mediums",
+    "language",
+    "description",
+    "curation_status",
+    "tags",
+    "topic_weights",
+    "meta",
+)
+_URL_TITLE_PREFIXES = ("http://", "https://")
+
+
+def _source_keys(source: dict[str, Any]) -> list[str]:
+    keys: list[str] = []
+    for field in ("url", "feed", "site"):
+        value = source.get(field)
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized and normalized not in keys:
+                keys.append(normalized)
+    return keys
+
+
+def _looks_like_url_title(value: object) -> bool:
+    return isinstance(value, str) and value.strip().lower().startswith(_URL_TITLE_PREFIXES)
+
+
+def _load_existing_enriched_sources(output_file: Path) -> dict[str, dict[str, Any]]:
+    if not output_file.exists():
+        return {}
+
+    try:
+        existing_catalog = load_feeds(output_file)
+    except Exception as exc:
+        logger.warning("Unable to reuse existing enriched output metadata: {}", exc)
+        return {}
+
+    existing_sources: dict[str, dict[str, Any]] = {}
+    for existing_source in existing_catalog.get("sources", []):
+        if not isinstance(existing_source, dict):
+            continue
+        for key in _source_keys(existing_source):
+            existing_sources.setdefault(key, existing_source)
+
+    return existing_sources
+
+
+def _reuse_existing_enrichment(feeds_data: dict[str, Any], output_file: Path) -> dict[str, Any]:
+    existing_sources = _load_existing_enriched_sources(output_file)
+    if not existing_sources:
+        return feeds_data
+
+    reused_count = 0
+    for source in feeds_data.get("sources", []):
+        if not isinstance(source, dict):
+            continue
+
+        existing_source = next(
+            (existing_sources[key] for key in _source_keys(source) if key in existing_sources),
+            None,
+        )
+        if existing_source is None:
+            continue
+
+        reused = False
+        for field in _PRESERVED_ENRICHMENT_FIELDS:
+            if field not in existing_source:
+                continue
+            value = existing_source[field]
+            if field == "title" and (
+                not isinstance(value, str) or not value.strip() or _looks_like_url_title(value)
+            ):
+                continue
+
+            source[field] = value
+            reused = True
+
+        if reused:
+            reused_count += 1
+
+    if reused_count:
+        logger.info("Reused existing enriched metadata for {} sources", reused_count)
+
+    return feeds_data
 
 
 @app.command()
@@ -149,6 +241,11 @@ def process(
             logger.exception("Enrichment error")
             raise typer.Exit(1) from e
 
+    if skip_enrichment:
+        feeds_data = _reuse_existing_enrichment(feeds_data, output_file)
+
+    feeds_data = canonicalize_catalog(feeds_data, enriched=True)
+
     # Step 4: Validate (post-enrichment)
     if not skip_validation:
         console.print("[bold]Step 4:[/bold] Validating enriched feeds...")
@@ -231,9 +328,12 @@ def process(
     console.print("\n[bold]Outputs:[/bold]")
     console.print(f"  • Enriched YAML: {output_file}")
     if export_formats:
-        console.print(f"  • JSON: {output_file.parent}/feeds.json")
-        console.print(f"  • OPML (flat): {output_file.parent}/feeds.opml")
-        console.print(f"  • OPML (categorized): {output_file.parent}/feeds.categorized.opml")
+        output_prefix = output_file.stem
+        console.print(f"  • JSON: {output_file.parent}/{output_prefix}.json")
+        console.print(f"  • OPML (flat): {output_file.parent}/{output_prefix}.opml")
+        console.print(
+            f"  • OPML (categorized): {output_file.parent}/{output_prefix}.categorized.opml"
+        )
     console.print(f"  • Database: {database_url}")
     console.print("\n[bold]Statistics:[/bold]")
     console.print(f"  • Sources processed: {len(sources)}")
