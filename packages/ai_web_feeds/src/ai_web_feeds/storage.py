@@ -79,7 +79,7 @@ class DatabaseManager:
             Added/updated FeedSource
         """
         with self.get_session() as session:
-            session.add(feed_source)
+            feed_source = session.merge(feed_source)
             session.commit()
             session.refresh(feed_source)
             logger.info(f"Added/updated feed source: {feed_source.id}")

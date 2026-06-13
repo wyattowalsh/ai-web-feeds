@@ -104,6 +104,30 @@ class TestFeedSourceOperations:
         retrieved = db.get_feed_source(sample_feed_source.id)
         assert retrieved.title == "Updated Title"
 
+    def test_add_feed_source_upserts_detached_source_with_same_id(self, temp_db_path):
+        """Test adding a fresh object with an existing ID updates the source."""
+        db = DatabaseManager(database_url=f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+
+        db.add_feed_source(
+            FeedSource(
+                id="feed-1",
+                feed="https://example.com/feed.xml",
+                title="Original Title",
+            )
+        )
+
+        updated = db.add_feed_source(
+            FeedSource(
+                id="feed-1",
+                feed="https://example.com/feed.xml",
+                title="Updated Title",
+            )
+        )
+
+        assert updated.title == "Updated Title"
+        assert len(db.get_all_feed_sources()) == 1
+
 
 @pytest.mark.unit
 class TestFeedItemOperations:
