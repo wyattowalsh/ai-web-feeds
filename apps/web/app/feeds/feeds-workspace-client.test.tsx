@@ -295,7 +295,7 @@ describe("FeedsWorkspaceClient", () => {
       vi.fn(async () => makeResponse(initialBrowse)),
     );
 
-    render(
+    const { container } = render(
       <FeedsWorkspaceClient
         mode="reader"
         feeds={feeds}
@@ -317,6 +317,9 @@ describe("FeedsWorkspaceClient", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Preview" }));
     expect(screen.getAllByRole("button", { name: "Close preview" }).length).toBeGreaterThan(0);
+    expect(container.querySelector('[data-testid="reader-workspace-grid"]')).toHaveClass(
+      "xl:grid-cols-[18rem_minmax(0,1fr)_22rem]",
+    );
 
     fireEvent.keyDown(window, { key: "Escape" });
 
