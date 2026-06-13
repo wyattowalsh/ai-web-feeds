@@ -90,7 +90,7 @@ export function loadFeedCatalog(): FeedsData {
   const dataDir = getDataDirectory();
 
   try {
-    const jsonPath = join(dataDir, "feeds.json");
+    const jsonPath = join(dataDir, "feeds.enriched.json");
     const jsonContent = readFileSync(jsonPath, "utf-8");
     return normalizeFeedsData(JSON.parse(jsonContent));
   } catch {
@@ -102,7 +102,15 @@ export function loadFeedCatalog(): FeedsData {
     const yamlContent = readFileSync(yamlPath, "utf-8");
     return normalizeFeedsData(parse(yamlContent));
   } catch {
-    // Fall through to the baseline catalog.
+    // Fall through to the baseline catalog exports.
+  }
+
+  try {
+    const jsonPath = join(dataDir, "feeds.json");
+    const jsonContent = readFileSync(jsonPath, "utf-8");
+    return normalizeFeedsData(JSON.parse(jsonContent));
+  } catch {
+    // Fall through to the authored baseline catalog.
   }
 
   try {
@@ -116,7 +124,7 @@ export function loadFeedCatalog(): FeedsData {
 
 /**
  * Load feeds from JSON/YAML files
- * Tries multiple sources in order: feeds.json, feeds.enriched.yaml, feeds.yaml
+ * Tries multiple sources in order: feeds.enriched.json, feeds.enriched.yaml, feeds.json, feeds.yaml
  */
 export async function loadFeeds(): Promise<FeedsData> {
   return loadFeedCatalog();

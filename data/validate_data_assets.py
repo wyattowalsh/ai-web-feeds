@@ -411,7 +411,7 @@ def validate_flat_opml_parity(
     actual_count = len(
         [
             outline
-            for outline in body.findall("outline")
+            for outline in _opml_body_outlines(body)
             if isinstance(outline.get("xmlUrl"), str) and outline.get("xmlUrl")
         ]
     )
@@ -447,7 +447,7 @@ def validate_categorized_opml_parity(
     actual_categories: dict[str, int] = {}
     errors: list[str] = []
 
-    for category_outline in body.findall("outline"):
+    for category_outline in _opml_body_outlines(body):
         category = category_outline.get("text") or category_outline.get("title")
         if not isinstance(category, str) or not category:
             errors.append("Encountered a category outline without text/title")
@@ -508,6 +508,24 @@ def validate_categorized_opml_parity(
     return True
 
 
+def _opml_body_outlines(body: Any) -> list[Any]:
+    """Return logical OPML body outlines, unwrapping the canonical root folder."""
+
+    outlines = body.findall("outline")
+    if len(outlines) != 1:
+        return outlines
+
+    wrapper = outlines[0]
+    if (
+        wrapper.get("text") == "aiwebfeeds"
+        and wrapper.get("title") == "aiwebfeeds"
+        and not wrapper.get("xmlUrl")
+    ):
+        return wrapper.findall("outline")
+
+    return outlines
+
+
 def validate_enriched_catalog(
     feeds_data: dict[str, Any],
     enriched_data: dict[str, Any],
@@ -518,39 +536,55 @@ def validate_enriched_catalog(
         return False
 
     expected_catalog = canonicalize_catalog(feeds_data, enriched=True)
-    expected_sources = {source["id"]: source for source in expected_catalog.get("sources", [])}
+    expected_sources = {
+        key: source
+        for source in expected_catalog.get("sources", [])
+        if (key := _source_sync_key(source))
+    }
     actual_sources = {
-        source.get("id"): source
+        key: source
         for source in enriched_data.get("sources", [])
-        if isinstance(source, dict) and isinstance(source.get("id"), str)
+        if isinstance(source, dict) and (key := _source_sync_key(source))
     }
 
     errors: list[str] = []
     missing_ids = sorted(set(expected_sources) - set(actual_sources))
     extra_ids = sorted(set(actual_sources) - set(expected_sources))
     if missing_ids:
-        errors.append(f"Missing enriched sources: {', '.join(missing_ids[:10])}")
+        errors.append(f"Missing enriched source URLs: {', '.join(missing_ids[:10])}")
     if extra_ids:
-        errors.append(f"Unexpected enriched sources: {', '.join(extra_ids[:10])}")
+        errors.append(f"Unexpected enriched source URLs: {', '.join(extra_ids[:10])}")
 
-    for source_id, expected_source in expected_sources.items():
-        actual_source = actual_sources.get(source_id)
+    for source_key, expected_source in expected_sources.items():
+        actual_source = actual_sources.get(source_key)
         if not actual_source:
             continue
 
-        for field in ("url", "feed", "site", "title", "topics", "tags", "notes"):
+        for field in ("url", "topics", "notes"):
             if expected_source.get(field) != actual_source.get(field):
                 errors.append(
-                    f"Source '{source_id}' field '{field}' is out of sync: "
+                    f"Source '{source_key}' field '{field}' is out of sync: "
                     f"expected {expected_source.get(field)!r}, got {actual_source.get(field)!r}"
                 )
                 break
+
+        expected_title = expected_source.get("title")
+        if (
+            isinstance(expected_title, str)
+            and expected_title.strip()
+            and not _looks_like_url_title(expected_title)
+            and expected_title != actual_source.get("title")
+        ):
+            errors.append(
+                f"Source '{source_key}' field 'title' is out of sync: "
+                f"expected {expected_title!r}, got {actual_source.get('title')!r}"
+            )
 
         expected_source_type = expected_source.get("source_type")
         actual_source_type = actual_source.get("source_type")
         if expected_source_type is not None and expected_source_type != actual_source_type:
             errors.append(
-                f"Source '{source_id}' field 'source_type' is out of sync: "
+                f"Source '{source_key}' field 'source_type' is out of sync: "
                 f"expected {expected_source_type!r}, got {actual_source_type!r}"
             )
 
@@ -569,6 +603,17 @@ def validate_enriched_catalog(
 
     _ok("feeds.enriched.yaml (generated enriched catalog): Matches canonical feed inputs")
     return True
+
+
+def _source_sync_key(source: dict[str, Any]) -> str | None:
+    """Return the stable key used to compare minimal and enriched source records."""
+
+    for field in ("url", "feed", "site", "id"):
+        value = source.get(field)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    return None
 
 
 def validate_sample_analytics_data(

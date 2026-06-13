@@ -76,9 +76,17 @@ def from_yaml(
                     # Convert source_data to FeedSource model and add to DB
                     from ai_web_feeds.models import FeedSource, SourceType
 
-                    # Map source_type string to enum
-                    source_type_str = source_data.get("source_type", "other")
-                    source_type = SourceType(source_type_str) if source_type_str else None
+                    # Map source_type string to enum when present.
+                    source_type_str = source_data.get("source_type")
+                    try:
+                        source_type = SourceType(source_type_str) if source_type_str else None
+                    except ValueError:
+                        logger.warning(
+                            "Ignoring invalid source_type {!r} for {}",
+                            source_type_str,
+                            source_data.get("id", source_data.get("url", "unknown")),
+                        )
+                        source_type = None
 
                     feed_source = FeedSource(
                         url=source_data["url"],

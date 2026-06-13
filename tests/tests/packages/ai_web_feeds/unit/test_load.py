@@ -5,7 +5,14 @@ from pathlib import Path
 
 import pytest
 import yaml
-from ai_web_feeds.load import load_feeds, load_topics, save_feeds, save_topics
+from ai_web_feeds.load import (
+    canonicalize_catalog,
+    infer_source_type,
+    load_feeds,
+    load_topics,
+    save_feeds,
+    save_topics,
+)
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -173,6 +180,60 @@ topics:
             assert data["topics"] == []
         finally:
             temp_path.unlink()
+
+
+@pytest.mark.unit
+class TestCanonicalizeCatalog:
+    """Test canonical catalog normalization helpers."""
+
+    def test_canonicalize_catalog_adds_stable_minimal_fields_without_mutation(self):
+        catalog = {
+            "sources": [
+                {
+                    "url": "https://example.com/feed.xml",
+                    "title": "Example Feed",
+                    "topics": ["agents", "agents", "ml"],
+                }
+            ]
+        }
+
+        canonical = canonicalize_catalog(catalog)
+
+        assert canonical["sources"][0]["id"] == "7a775db75c1d6d17"
+        assert canonical["sources"][0]["feed"] == "https://example.com/feed.xml"
+        assert canonical["sources"][0]["tags"] == ["agents", "ml"]
+        assert canonical["sources"][0]["topics"] == ["agents", "ml"]
+        assert "id" not in catalog["sources"][0]
+
+    def test_canonicalize_catalog_enriched_infers_source_type_and_total(self):
+        catalog = {
+            "document_meta": {"created": "2025-10-15"},
+            "sources": [
+                {
+                    "url": "https://www.youtube.com/channel/example",
+                    "title": "Research Videos",
+                    "topics": ["research", "videos"],
+                }
+            ],
+        }
+
+        canonical = canonicalize_catalog(catalog, enriched=True)
+
+        assert canonical["document_meta"]["total_sources"] == 1
+        assert canonical["sources"][0]["source_type"] == "youtube"
+
+    @pytest.mark.parametrize(
+        ("source", "expected"),
+        [
+            ({"url": "https://importai.substack.com/feed", "topics": []}, "substack"),
+            ({"url": "https://github.com/pytorch/pytorch", "topics": []}, "github"),
+            ({"url": "https://example.com/podcast.xml", "topics": ["podcasts"]}, "podcast"),
+            ({"url": "https://example.com", "topics": ["industry", "product"]}, "organization"),
+            ({"url": "https://example.com", "topics": ["blogs"]}, "blog"),
+        ],
+    )
+    def test_infer_source_type_uses_url_and_topic_hints(self, source, expected):
+        assert infer_source_type(source) == expected
 
 
 @pytest.mark.unit

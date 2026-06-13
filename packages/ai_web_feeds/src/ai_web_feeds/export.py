@@ -68,6 +68,7 @@ def export_to_json(data: dict[str, Any], output_path: Path | str) -> None:
 
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
 
     logger.info(f"Exported {len(data.get('sources', []))} sources to {output_path}")
 
@@ -108,10 +109,12 @@ def _add_feed_outline(parent: Element, source: dict[str, Any]) -> None:
         "title": source.get("title", ""),
     }
 
-    if source.get("feed"):
-        attrs["xmlUrl"] = source["feed"]
-    if source.get("site"):
-        attrs["htmlUrl"] = source["site"]
+    feed_url = source.get("feed") or source.get("url")
+    site_url = source.get("site") or source.get("website_url")
+    if feed_url:
+        attrs["xmlUrl"] = feed_url
+    if site_url:
+        attrs["htmlUrl"] = site_url
     if source.get("description"):
         attrs["description"] = source["description"]
 
@@ -158,7 +161,7 @@ def _serialize_xml(root: Element) -> str:
 
     indent(root, space="  ")
     xml_bytes = cast(bytes, tostring(root, encoding="utf-8", xml_declaration=True))
-    return xml_bytes.decode("utf-8")
+    return f"{xml_bytes.decode('utf-8')}\n"
 
 
 def export_all_formats(

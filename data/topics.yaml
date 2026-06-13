@@ -635,6 +635,26 @@ topics:
   - content
   mappings:
     huggingface: task/code-generation
+- id: devtools
+  label: Developer Tools
+  facet: devtools
+  facet_group: operational
+  parents:
+  - ai-for-code
+  relations:
+    related_to:
+    - product
+    - open-source
+    - tool-use
+  examples:
+  - editors
+  - cli-tools
+  - developer-workflows
+  rank_hint: 0.8
+  tags:
+  - embed:title
+  - summary
+  - content
 - id: simulation
   label: Simulation
   facet: methodology
@@ -783,6 +803,24 @@ topics:
   tags:
   - no-embed
   notes: Abstract normative node; excluded from centroiding.
+- id: fairness
+  label: Fairness
+  facet: ethics
+  facet_group: governance
+  parents:
+  - ethics
+  relations:
+    related_to:
+    - data-governance
+    - evaluation
+  examples:
+  - bias-mitigation
+  - subgroup-evaluation
+  - accountability
+  rank_hint: 0.72
+  tags:
+  - embed:title
+  - summary
 - id: privacy
   label: Privacy
   facet: privacy
@@ -849,6 +887,24 @@ topics:
   - embed:title
   - summary
   - content
+- id: supply-chain
+  label: Supply Chain Security
+  facet: security
+  facet_group: governance
+  parents:
+  - security
+  relations:
+    related_to:
+    - open-source
+    - devtools
+  examples:
+  - dependency-risk
+  - model-provenance
+  - artifact-signing
+  rank_hint: 0.76
+  tags:
+  - embed:title
+  - summary
 - id: governance
   label: Governance
   facet: governance
@@ -1066,6 +1122,26 @@ topics:
   - embed:title
   - summary
   - content
+- id: active-learning
+  label: Active Learning
+  facet: methodology
+  facet_group: operational
+  parents:
+  - labeling
+  - ml
+  relations:
+    related_to:
+    - data-centric-ai
+    - evaluation
+  examples:
+  - uncertainty-sampling
+  - human-in-the-loop
+  - annotation-prioritization
+  rank_hint: 0.74
+  tags:
+  - embed:title
+  - summary
+  - content
 - id: data
   label: Data Engineering
   facet: data
@@ -1087,6 +1163,26 @@ topics:
   - pipelines
   - storage
   rank_hint: 0.82
+  tags:
+  - embed:title
+  - summary
+  - content
+- id: infra
+  label: Infrastructure
+  facet: infra
+  facet_group: operational
+  parents:
+  - ai
+  relations:
+    related_to:
+    - ai-infra-stacks
+    - workflows
+    - data
+  examples:
+  - serving-platforms
+  - orchestration
+  - storage-compute
+  rank_hint: 0.8
   tags:
   - embed:title
   - summary
@@ -1929,6 +2025,25 @@ topics:
   - tutorials
   - livestreams
   rank_hint: 0.64
+  tags:
+  - embed:title
+  - summary
+- id: conferences
+  label: Conferences
+  facet: media
+  facet_group: communicative
+  parents:
+  - community
+  - research
+  relations:
+    related_to:
+    - videos
+    - education
+  examples:
+  - talks
+  - workshops
+  - proceedings
+  rank_hint: 0.6
   tags:
   - embed:title
   - summary

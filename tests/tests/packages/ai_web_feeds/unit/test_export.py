@@ -326,6 +326,17 @@ class TestAddFeedOutline:
         assert "xmlUrl" not in outline.attrib
         assert "htmlUrl" not in outline.attrib
 
+    def test_add_feed_outline_uses_url_as_feed_fallback(self):
+        """Test adding feed outline from minimal contributor source shape."""
+        parent = ET.Element("body")
+        source = {"title": "Minimal Feed", "url": "https://example.com/feed.xml"}
+
+        _add_feed_outline(parent, source)
+
+        outline = parent.find("outline")
+        assert outline is not None
+        assert outline.attrib["xmlUrl"] == "https://example.com/feed.xml"
+
 
 @pytest.mark.unit
 class TestExportAllFormats:
