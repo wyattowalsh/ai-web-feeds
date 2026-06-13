@@ -50,7 +50,7 @@ jobs:
       - name: Check for issues
         id: check_feeds
         run: |
-          python3 << 'EOF'
+          uv run python - << 'EOF'
           import yaml
           import sys
           import json
@@ -160,7 +160,7 @@ jobs:
       - name: Check feed accessibility (optional)
         if: github.event.inputs.check_accessibility == 'true'
         run: |
-          python3 << 'EOF'
+          uv run python - << 'EOF'
           import yaml
           import requests
           import feedparser

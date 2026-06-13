@@ -153,10 +153,10 @@ jobs:
 
           \`\`\`bash
           # Core library
-          pip install ai-web-feeds==$VERSION
+          uv pip install ai-web-feeds==$VERSION
 
           # CLI
-          pip install ai-web-feeds-cli==$VERSION
+          uv pip install ai-web-feeds-cli==$VERSION
           \`\`\`
 
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${VERSION}

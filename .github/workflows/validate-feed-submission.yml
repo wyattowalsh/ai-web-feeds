@@ -12,14 +12,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install pyyaml jsonschema requests feedparser
+          python-version: '3.13'
 
       - name: Parse issue and validate
         id: validate
@@ -107,7 +108,7 @@ jobs:
 
       - name: Validate against schema
         run: |
-          python3 << 'EOF'
+          uv run --with jsonschema python - << 'EOF'
           import json
           import jsonschema
           import sys
@@ -144,7 +145,7 @@ jobs:
 
       - name: Test feed accessibility
         run: |
-          python3 << 'EOF'
+          uv run --with requests --with feedparser python - << 'EOF'
           import json
           import requests
           import feedparser
