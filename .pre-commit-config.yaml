@@ -151,7 +151,7 @@ repos:
   hooks:
   - id: detect-secrets
     args: [--baseline, .secrets.baseline]
-    exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds\.enriched\.json)$
+    exclude: ^(\.git/|\.venv/|node_modules/|\.next/|htmlcov/|data/feeds(\.enriched)?\.json)$
 
   # ============================================================================
   # Conventional Commits
