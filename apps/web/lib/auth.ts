@@ -1,20 +1,14 @@
 import { betterAuth } from "better-auth";
 import { neon } from "@neondatabase/serverless";
 
-function getDatabaseUrl(): string {
+function getDatabaseUrl(): string | null {
   const url = process.env.DATABASE_URL;
   if (url) {
     return url;
   }
 
-  // During static generation/build, we may not have the database URL.
-  // Return a placeholder that will fail gracefully if actually used.
-  if (
-    process.env.NEXT_PHASE === "phase-production-build" ||
-    process.env.NODE_ENV === "production"
-  ) {
-    // pragma: allowlist secret - build-time placeholder, never used at runtime
-    return "postgresql://user:pass@localhost:5432/placeholder?sslmode=require";
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return null;
   }
 
   throw new Error(
@@ -32,14 +26,19 @@ function getBaseUrl(): string {
   return "http://localhost:3000";
 }
 
-const sql = neon(getDatabaseUrl());
+const databaseUrl = getDatabaseUrl();
+const sql = databaseUrl ? neon(databaseUrl) : null;
 
 export const auth = betterAuth({
   baseURL: getBaseUrl(),
-  database: {
-    provider: "pg",
-    url: getDatabaseUrl(),
-  },
+  ...(databaseUrl
+    ? {
+        database: {
+          provider: "pg" as const,
+          url: databaseUrl,
+        },
+      }
+    : {}),
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -58,17 +57,21 @@ export const auth = betterAuth({
       },
     },
   },
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          if (user.email === "wyattowalsh@gmail.com") {
-            await sql`UPDATE "user" SET role = 'admin' WHERE id = ${user.id}`;
-          }
+  ...(sql
+    ? {
+        databaseHooks: {
+          user: {
+            create: {
+              after: async (user) => {
+                if (user.email === "wyattowalsh@gmail.com") {
+                  await sql`UPDATE "user" SET role = 'admin' WHERE id = ${user.id}`;
+                }
+              },
+            },
+          },
         },
-      },
-    },
-  },
+      }
+    : {}),
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day

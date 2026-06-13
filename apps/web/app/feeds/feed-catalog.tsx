@@ -338,14 +338,12 @@ export function FeedCatalog({
   );
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm xl:sticky xl:top-20 xl:z-10">
+    <div className="flex flex-col gap-6">
+      <div className="rounded-lg border border-border bg-card p-4 shadow-sm xl:sticky xl:top-20">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="metric-label">Source catalog</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-              Browse sources
-            </h1>
+            <h1 className="mt-2 text-2xl font-semibold text-foreground">Browse sources</h1>
             <p className="small-note mt-2 max-w-3xl">
               Search the feed list, then jump into the reader for any source or slice.
             </p>
@@ -385,6 +383,7 @@ export function FeedCatalog({
               <Button
                 variant={selectedType === null ? "default" : "outline"}
                 size="sm"
+                aria-pressed={selectedType === null}
                 onClick={() => {
                   setSelectedType(null);
                   setParam("source_type", null);
@@ -399,6 +398,7 @@ export function FeedCatalog({
                     key={type}
                     variant={selectedType === type ? "default" : "outline"}
                     size="sm"
+                    aria-pressed={selectedType === type}
                     onClick={() => {
                       setSelectedType(type);
                       setParam("source_type", type);
@@ -420,6 +420,7 @@ export function FeedCatalog({
                 <Button
                   variant={selectedTopic === null ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={selectedTopic === null}
                   onClick={() => {
                     setSelectedTopic(null);
                     setParam("topics", null);
@@ -432,6 +433,7 @@ export function FeedCatalog({
                     key={topic}
                     variant={selectedTopic === topic ? "default" : "outline"}
                     size="sm"
+                    aria-pressed={selectedTopic === topic}
                     onClick={() => {
                       setSelectedTopic(topic);
                       setParam("topics", topic);
@@ -451,6 +453,7 @@ export function FeedCatalog({
                 <Button
                   variant={verifiedFilter === null ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={verifiedFilter === null}
                   onClick={() => {
                     setVerifiedFilter(null);
                     setParam("verified", null);
@@ -461,6 +464,7 @@ export function FeedCatalog({
                 <Button
                   variant={verifiedFilter === true ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={verifiedFilter === true}
                   onClick={() => {
                     setVerifiedFilter(true);
                     setParam("verified", "true");
@@ -471,6 +475,7 @@ export function FeedCatalog({
                 <Button
                   variant={verifiedFilter === false ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={verifiedFilter === false}
                   onClick={() => {
                     setVerifiedFilter(false);
                     setParam("verified", "false");
@@ -485,7 +490,7 @@ export function FeedCatalog({
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1 text-sm text-(--ink-muted)">
+        <div className="flex flex-col gap-1 text-sm text-(--ink-muted)">
           <p>
             Showing <strong>{filteredFeeds.length}</strong> of <strong>{feeds.length}</strong> feeds
           </p>
@@ -532,7 +537,7 @@ export function FeedCatalog({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="flex flex-col gap-4 text-sm">
               {feed.description && (
                 <p className="line-clamp-2 text-sm text-muted-foreground">{feed.description}</p>
               )}
@@ -552,7 +557,7 @@ export function FeedCatalog({
                     <Link
                       key={topic}
                       href={getTopicPath(topic)}
-                      className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
+                      className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-(--brand-strong)"
                     >
                       {topic}
                     </Link>
@@ -570,13 +575,14 @@ export function FeedCatalog({
                   <Link
                     href={getSourcePath(feed)}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                    aria-label={`View details for ${feed.title}`}
                   >
                     <RadioTower className="size-3.5" />
                     Details
                   </Link>
                 ) : null}
                 {feed.id ? (
-                  <Link
+                  <a
                     href={buildFeedReaderHref({
                       feedId: feed.id,
                       query: searchQuery,
@@ -584,14 +590,16 @@ export function FeedCatalog({
                       verified: effectiveVerifiedFilter,
                     })}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                    aria-label={`Read ${feed.title} in the reader`}
                   >
                     <RadioTower className="size-3.5" />
                     Read source
-                  </Link>
+                  </a>
                 ) : null}
                 <Link
                   href={buildFeedArticleSearchHref(feed)}
                   className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                  aria-label={`Search recent posts from ${feed.title}`}
                 >
                   <SearchIcon className="size-3.5" />
                   Search posts
@@ -601,6 +609,7 @@ export function FeedCatalog({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                  aria-label={`Open feed URL for ${feed.title}`}
                 >
                   <ExternalLink className="size-3.5" />
                   Feed URL
@@ -611,6 +620,7 @@ export function FeedCatalog({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-(--brand-strong) hover:underline"
+                    aria-label={`Open website for ${feed.title}`}
                   >
                     <ExternalLink className="size-3.5" />
                     Website

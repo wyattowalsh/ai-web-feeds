@@ -62,6 +62,8 @@ const corpusFixture = {
 
 let originalCorpus: string | null = null;
 
+test.use({ video: "off" });
+
 function trackClientErrors(page: Page) {
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
@@ -188,7 +190,7 @@ test.describe("Route stabilization smoke", () => {
     },
     {
       path: "/reader",
-      text: "Latest AI posts from across the open web",
+      text: "Read AI writing across the open web",
       role: "heading" as const,
     },
     {
@@ -285,12 +287,15 @@ test.describe("Route stabilization smoke", () => {
     await page.goto("/sources", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Browse sources" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Read source" }).first().click();
+    await page
+      .getByRole("link", { name: /Read .+ in the reader/ })
+      .first()
+      .click();
 
     await expect(page).not.toHaveURL(/mode=catalog/);
     await expect(page).toHaveURL(/feed=/);
     await expect(
-      page.getByRole("heading", { name: "Latest AI posts from across the open web" }),
+      page.getByRole("heading", { name: "Read AI writing across the open web" }),
     ).toBeVisible();
 
     await expectNoClientErrors(page, tracker);

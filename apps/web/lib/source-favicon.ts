@@ -20,28 +20,20 @@ export function deriveSourceFaviconUrl(
 ): string | null {
   const explicitIcon = source.favicon_url || source.icon_url || source.icon || source.logo_url;
   if (explicitIcon) {
-    return normalizeUrl(explicitIcon);
+    return normalizeSecureImageUrl(explicitIcon);
   }
 
-  const originUrl = normalizeUrl(source.website_url || source.site || source.url);
-  if (!originUrl) {
-    return null;
-  }
-
-  try {
-    return `${new URL(originUrl).origin}/favicon.ico`;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
-function normalizeUrl(value: string | null | undefined): string | null {
+function normalizeSecureImageUrl(value: string | null | undefined): string | null {
   if (!value) {
     return null;
   }
 
   try {
-    return new URL(value).toString();
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
   } catch {
     return null;
   }

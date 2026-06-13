@@ -11,6 +11,7 @@ export function JsonLd({ data, nonce }: JsonLdProps) {
     <script
       type="application/ld+json"
       nonce={nonce}
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data).replace(/</g, "\\u003c"),
       }}

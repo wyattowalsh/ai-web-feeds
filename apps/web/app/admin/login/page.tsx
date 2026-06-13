@@ -1,9 +1,10 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 
 export const dynamic = "force-dynamic";
+
+const ADMIN_SESSION_COOKIE = "aiwf_session_token";
 
 function sanitizeAdminNextPath(next?: string): string {
   if (!next) {
@@ -18,15 +19,31 @@ function sanitizeAdminNextPath(next?: string): string {
   return next;
 }
 
+function hasAdminSessionCookie(cookieHeader: string | null): boolean {
+  if (!cookieHeader) {
+    return false;
+  }
+
+  return cookieHeader
+    .split(";")
+    .some((segment) => segment.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
+}
+
 export default async function AdminLoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
   const requestHeaders = await headers();
-  const session = await auth.api.getSession({
-    headers: requestHeaders,
-  });
+  let session = null;
+  if (hasAdminSessionCookie(requestHeaders.get("cookie"))) {
+    const { auth } = await import("@/lib/auth");
+    session = await auth.api
+      .getSession({
+        headers: requestHeaders,
+      })
+      .catch(() => null);
+  }
 
   if (session?.user) {
     redirect("/admin");

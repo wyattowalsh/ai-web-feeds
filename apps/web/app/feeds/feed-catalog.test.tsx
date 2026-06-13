@@ -76,7 +76,9 @@ describe("FeedCatalog", () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Query "agent" · Type blog · Verified only')).toBeInTheDocument();
 
-    const directReaderLink = screen.getAllByRole("link", { name: "Read source" })[0];
+    const directReaderLink = screen.getByRole("link", {
+      name: "Read Agent Feed in the reader",
+    });
     const matchingFeedsReaderLink = screen.getByRole("link", { name: "Read matching feeds" });
     const directReaderUrl = new URL(
       directReaderLink.getAttribute("href") ?? "",

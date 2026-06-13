@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <main className="min-h-screen">{children}</main>;
 }

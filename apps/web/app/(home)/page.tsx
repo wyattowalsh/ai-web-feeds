@@ -56,15 +56,15 @@ export default async function HomePage() {
           ],
         })}
       />
-      <section className="grid gap-8 rounded-lg border border-border bg-card p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:p-6">
-        <div className="space-y-5">
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-end">
+        <div className="flex flex-col gap-5">
           <div className="flex flex-wrap gap-2">
             <Badge className="h-7 rounded-md bg-primary/10 text-primary">AI Web Feeds</Badge>
             <Badge variant="outline" className="h-7 rounded-md">
               Open web reader
             </Badge>
           </div>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <h1 className="max-w-4xl text-4xl font-semibold leading-none text-(--ink) sm:text-5xl">
               Read AI writing across the open web
             </h1>
@@ -76,26 +76,26 @@ export default async function HomePage() {
           <div className="flex flex-wrap gap-3">
             <Link href="/reader" className={cn(buttonVariants({ variant: "default" }))}>
               Open reader
-              <ArrowRight className="size-4" />
+              <ArrowRight />
             </Link>
             <Link href="/sources" className={cn(buttonVariants({ variant: "secondary" }))}>
               Browse sources
             </Link>
             <Link href="/topics" className={cn(buttonVariants({ variant: "outline" }))}>
-              <Tags className="size-4" />
+              <Tags />
               Topics
             </Link>
           </div>
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-3 border-t border-(--line) pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
           {statsCards.map(({ label, value, icon: Icon }) => (
             <div
               key={label}
-              className="flex items-center justify-between rounded-lg border border-(--line) bg-(--surface-muted) p-4"
+              className="flex min-h-24 items-center justify-between rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm"
             >
               <div>
                 <p className="metric-label">{label}</p>
-                <p className="text-2xl font-semibold text-(--ink)">{value}</p>
+                <p className="text-2xl font-semibold tabular-nums text-(--ink)">{value}</p>
               </div>
               <span className="flex size-10 items-center justify-center rounded-lg border border-(--line) bg-(--surface) text-(--brand-strong)">
                 <Icon className="size-5" />

@@ -12,17 +12,20 @@ describe("source favicon helpers", () => {
     ).toBe("https://example.com/icon.png");
   });
 
-  it("derives host favicons from website or feed URLs", () => {
+  it("does not synthesize remote host favicons from feed URLs", () => {
     expect(
       deriveSourceFaviconUrl({
         website_url: "https://example.com/articles",
         url: "https://feeds.example.net/rss.xml",
       }),
-    ).toBe("https://example.com/favicon.ico");
+    ).toBeNull();
 
-    expect(deriveSourceFaviconUrl({ url: "https://feeds.example.net/rss.xml" })).toBe(
-      "https://feeds.example.net/favicon.ico",
-    );
+    expect(deriveSourceFaviconUrl({ url: "https://feeds.example.net/rss.xml" })).toBeNull();
+  });
+
+  it("ignores non-secure favicon URLs", () => {
+    expect(deriveSourceFaviconUrl({ favicon_url: "http://example.com/icon.png" })).toBeNull();
+    expect(deriveSourceFaviconUrl({ url: "http://feeds.example.net/rss.xml" })).toBeNull();
   });
 
   it("falls back to readable source initials", () => {

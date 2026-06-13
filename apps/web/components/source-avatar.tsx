@@ -48,7 +48,7 @@ export function SourceAvatar({ source, className, imageClassName }: SourceAvatar
           onError={() => setFailed(true)}
         />
       ) : null}
-      <AvatarFallback className="rounded-lg bg-muted text-[0.68rem] font-semibold text-primary">
+      <AvatarFallback className="rounded-lg bg-muted text-[0.68rem] font-semibold text-(--brand-strong)">
         {getSourceInitials(source.title)}
       </AvatarFallback>
     </Avatar>

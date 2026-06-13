@@ -83,7 +83,7 @@ The **Refresh latest** action fetches recent posts for the current source list a
 ## When the Article Library Is Missing
 
 If `data/articles.generated.json` is missing or empty, the reader asks the web
-app server to fetch recent posts from the current source slice through
+app server to fetch recent posts from the current filters through
 `/api/feeds/posts/aggregate`. The browser does not fetch arbitrary RSS origins
 directly; the server route handles feed requests, normalization, caching, and
 partial failures.

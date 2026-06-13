@@ -1,9 +1,8 @@
-import { auth } from "@/lib/auth";
-
 export async function withBetterAuthAdminGuard(
   request: Request,
 ): Promise<{ user: { id: string; email: string; role: string } | null }> {
   try {
+    const { auth } = await import("@/lib/auth");
     const session = await auth.api.getSession({
       headers: request.headers,
     });

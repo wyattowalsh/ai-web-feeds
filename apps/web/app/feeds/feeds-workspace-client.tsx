@@ -268,7 +268,7 @@ function Pill({
       variant={variant}
       className={cn(
         "min-h-6 px-2.5 text-[0.68rem] uppercase tracking-[0.08em]",
-        tone === "brand" && "border-primary/20 bg-primary/10 text-primary",
+        tone === "brand" && "border-primary/20 bg-primary/10 text-(--brand-strong)",
         tone === "success" &&
           "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
         tone === "warning" &&
@@ -1527,7 +1527,7 @@ function ReaderWorkspace({
           selectedArticle && "2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
         )}
       >
-        <aside className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
+        <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
           <div className="rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm">
             <div className="space-y-2">
               <p className="metric-label">Focus</p>
@@ -1704,7 +1704,7 @@ function ReaderWorkspace({
               </div>
             </div>
           </div>
-        </aside>
+        </div>
 
         <section className="space-y-5">
           <details
@@ -2094,7 +2094,7 @@ function ReaderWorkspace({
       </div>
 
       {selectedArticle ? (
-        <aside className="hidden 2xl:block 2xl:sticky 2xl:top-24 2xl:self-start">
+        <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
           <PreviewPane
             article={selectedArticle}
             source={selectedArticleSource}
@@ -2108,7 +2108,7 @@ function ReaderWorkspace({
               updateState(selectedArticle.id, partial);
             }}
           />
-        </aside>
+        </div>
       ) : null}
     </div>
   );

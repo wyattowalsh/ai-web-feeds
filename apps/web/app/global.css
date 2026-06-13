@@ -56,7 +56,8 @@
     --fd-accent-foreground: var(--brand-strong);
     --fd-secondary: var(--surface-muted);
     --fd-secondary-foreground: var(--ink);
-    --fd-muted-foreground: var(--ink-muted);
+    --fd-muted-foreground: oklch(0.45 0.026 255);
+    --color-fd-muted-foreground: var(--fd-muted-foreground);
     --fd-background: var(--paper);
     --fd-popover-foreground: var(--ink);
     --fd-ring: var(--brand);
@@ -97,6 +98,8 @@
     --surface-shadow-soft: 0 22px 60px -40px rgba(0, 0, 0, 0.54);
     --focus-ring: color-mix(in oklab, var(--brand) 34%, white);
     --fd-primary-foreground: oklch(0.16 0.018 255);
+    --fd-muted-foreground: var(--ink-muted);
+    --color-fd-muted-foreground: var(--fd-muted-foreground);
   }
 
   * {

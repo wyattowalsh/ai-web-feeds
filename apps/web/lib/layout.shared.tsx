@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import { SearchToggle } from "fumadocs-ui/components/layout/search-toggle";
 
 /**
  * Shared layout configurations
@@ -24,6 +25,15 @@ export function baseOptions(): BaseLayoutProps {
           </span>
         </span>
       ),
+    },
+    searchToggle: {
+      components: {
+        sm: (
+          <li>
+            <SearchToggle className="p-2" hideIfDisabled />
+          </li>
+        ),
+      },
     },
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [

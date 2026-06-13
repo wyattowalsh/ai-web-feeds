@@ -20,6 +20,12 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const hasAdminSession = hasAdminSessionCookie(request);
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const nonce = btoa(crypto.randomUUID());
+  const requestHeaders = new Headers(request.headers);
+  if (!isDevelopment) {
+    requestHeaders.set("x-nonce", nonce);
+  }
 
   let response: NextResponse;
 
@@ -30,26 +36,30 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set("next", pathname);
       response = NextResponse.redirect(loginUrl);
     } else {
-      response = NextResponse.next();
+      response = NextResponse.next({ request: { headers: requestHeaders } });
     }
   } else if (pathname === "/admin/login" && hasAdminSession) {
     response = NextResponse.redirect(new URL("/admin", request.url));
   } else if (isMarkdownPreferred(request)) {
     const result = rewriteLLM(request.nextUrl.pathname);
     if (result) {
-      response = NextResponse.rewrite(new URL(result, request.nextUrl));
+      response = NextResponse.rewrite(new URL(result, request.nextUrl), {
+        request: { headers: requestHeaders },
+      });
     } else {
-      response = NextResponse.next();
+      response = NextResponse.next({ request: { headers: requestHeaders } });
     }
   } else {
-    response = NextResponse.next();
+    response = NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  // Canonical nonce-based CSP for Next.js 15 App Router.
+  // Canonical nonce-based CSP for Next.js 15 App Router in production.
   // This allows our dynamic inline JsonLd <script type="application/ld+json"> without
   // 'unsafe-inline' or 'unsafe-eval' on script-src.
   // Nonce is generated per-request (only possible in middleware) and exposed to Server
   // Components via the 'x-nonce' header so they can forward it to <JsonLd nonce={...} />.
+  // Next dev still emits inline/eval bootstrap scripts, so local dev keeps the script policy
+  // permissive while production stays nonce-only.
   //
   // style-src still requires 'unsafe-inline' because Tailwind 4, Fumadocs UI, shadcn/ui,
   // katex, and tw-animate-css emit style rules that are not practical to nonce at this time.
@@ -59,11 +69,11 @@ export async function middleware(request: NextRequest) {
   // reader real-time and any additional third-party origins are finalized.
   //
   // img-src allows https: because article content comes from arbitrary external feeds.
-  const nonce = btoa(crypto.randomUUID());
-
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    isDevelopment
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
@@ -74,7 +84,9 @@ export async function middleware(request: NextRequest) {
   ].join("; ");
 
   response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("x-nonce", nonce);
+  if (!isDevelopment) {
+    response.headers.set("x-nonce", nonce);
+  }
 
   // Static security headers (also set here so they apply to redirects/rewrites).
   response.headers.set("X-Content-Type-Options", "nosniff");

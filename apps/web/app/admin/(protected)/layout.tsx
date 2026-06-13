@@ -2,13 +2,13 @@ import Link from "next/link";
 import { ActivitySquare } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { isAdminUser } from "@/lib/admin-auth-new";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
+  const { auth } = await import("@/lib/auth");
   const requestHeaders = await headers();
   const session = await auth.api.getSession({
     headers: requestHeaders,

@@ -1,4 +1,6 @@
-import { auth } from "@/lib/auth";
+async function handler(request: Request) {
+  const { auth } = await import("@/lib/auth");
+  return auth.handler(request);
+}
 
-const handler = auth.handler;
 export { handler as GET, handler as POST };
