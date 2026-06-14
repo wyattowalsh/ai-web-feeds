@@ -93,6 +93,16 @@ class TestCLIValidateCommand:
 
             assert result.exit_code == 0, result.output
 
+    def test_validate_all_uses_default_data_paths(self):
+        """Test aggregate validation invokes subcommands with real defaults."""
+        from ai_web_feeds.cli.commands.validate import app as validate_app
+
+        runner = CliRunner()
+        result = runner.invoke(validate_app, ["all", "--strict"])
+
+        assert result.exit_code == 0, result.output
+        assert "All validations passed" in result.output
+
 
 @pytest.mark.unit
 class TestCLIFetchCommand:

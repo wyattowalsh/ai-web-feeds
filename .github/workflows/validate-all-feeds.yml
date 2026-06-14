@@ -42,9 +42,10 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.strict_mode }}" = "false" ]; then
             uv run python data/validate_data_assets.py
+            uv run ai-web-feeds validate all --lenient
           else
             uv run python data/validate_data_assets.py
-            uv run ai-web-feeds validate data/feeds.enriched.example.yaml --schema data/feeds.enriched.schema.json
+            uv run ai-web-feeds validate all --strict
           fi
 
       - name: Check for issues
@@ -63,11 +64,12 @@ jobs:
           with open('data/topics.yaml', 'r') as f:
               topics_data = yaml.safe_load(f)
 
-          # Get valid topics
-          valid_topics = set()
-          for category in topics_data.get('categories', []):
-              for topic in category.get('topics', []):
-                  valid_topics.add(topic['id'])
+          # Get valid v3 topic IDs.
+          valid_topics = {
+              topic['id']
+              for topic in topics_data.get('topics', [])
+              if isinstance(topic, dict) and isinstance(topic.get('id'), str)
+          }
 
           sources = feeds_data.get('sources', [])
           issues = []
@@ -93,9 +95,10 @@ jobs:
               if not source.get('topics'):
                   warnings.append(f"{feed_id}: missing 'topics'")
 
-              # Check feed or site
-              if not source.get('feed') and not source.get('site'):
-                  issues.append(f"{feed_id}: must have 'feed' or 'site'")
+              # Check v3 source URL fields. Authoring feeds.yaml uses url;
+              # enriched serving assets may use feed/site.
+              if not source.get('url') and not source.get('feed') and not source.get('site'):
+                  issues.append(f"{feed_id}: must have 'url', 'feed', or 'site'")
 
               # Validate topics
               for topic in source.get('topics', []):

@@ -205,14 +205,14 @@ def validate_all(
     # Validate feeds schema
     try:
         console.print("1. Validating feeds.yaml schema...")
-        validate_feeds(strict=strict)
+        validate_feeds(feeds_file=None, schema_file=None, strict=strict)
     except SystemExit as e:
         exit_code = cast(int, e.code or 1)
 
     # Validate topics schema
     try:
         console.print("\n2. Validating topics.yaml schema...")
-        validate_topics()
+        validate_topics(topics_file=None, schema_file=None)
     except SystemExit as e:
         exit_code = cast(int, e.code or 1)
 
