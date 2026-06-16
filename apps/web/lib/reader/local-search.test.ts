@@ -90,9 +90,33 @@ describe("local-search", () => {
   describe("searchArticlesLocal filters", () => {
     it("respects unreadOnly, starredOnly, feedIds, topics", async () => {
       await seedArticles([
-        makeArticle({ id: "a1", read: false, starred: false, feedId: "f1", topics: ["ai"], title: "Alpha", content: "x" }),
-        makeArticle({ id: "a2", read: true, starred: true, feedId: "f1", topics: ["ml"], title: "Beta", content: "y" }),
-        makeArticle({ id: "a3", read: false, starred: false, feedId: "f2", topics: ["ai", "ml"], title: "Gamma", content: "z" }),
+        makeArticle({
+          id: "a1",
+          read: false,
+          starred: false,
+          feedId: "f1",
+          topics: ["ai"],
+          title: "Alpha",
+          content: "x",
+        }),
+        makeArticle({
+          id: "a2",
+          read: true,
+          starred: true,
+          feedId: "f1",
+          topics: ["ml"],
+          title: "Beta",
+          content: "y",
+        }),
+        makeArticle({
+          id: "a3",
+          read: false,
+          starred: false,
+          feedId: "f2",
+          topics: ["ai", "ml"],
+          title: "Gamma",
+          content: "z",
+        }),
       ]);
 
       const unread = await searchArticlesLocal("", { unreadOnly: true });
@@ -108,14 +132,30 @@ describe("local-search", () => {
       expect(topicAi.map((r) => r.article.id).sort()).toEqual(["a1", "a3"]);
     });
 
-    it("bookmarkedOnly returns empty array (overlay-only filter)", async () => {
+    it("bookmarkedOnly returns empty without overlay predicate", async () => {
       await seedArticles([makeArticle({ id: "a1", title: "Bm", content: "bm" })]);
       const res = await searchArticlesLocal("bm", { bookmarkedOnly: true });
       expect(res).toEqual([]);
     });
 
+    it("bookmarkedOnly filters with isBookmarked overlay predicate", async () => {
+      await seedArticles([
+        makeArticle({ id: "saved", title: "Saved bm", content: "bm" }),
+        makeArticle({ id: "other", title: "Other bm", content: "bm" }),
+      ]);
+      const res = await searchArticlesLocal("bm", {
+        bookmarkedOnly: true,
+        isBookmarked: (id) => id === "saved",
+      });
+      expect(res.map((entry) => entry.article.id)).toEqual(["saved"]);
+    });
+
     it("returns recent sorted results when no query terms", async () => {
-      const old = makeArticle({ id: "old", pubDate: Date.now() - 1000 * 86400 * 100, title: "Old" });
+      const old = makeArticle({
+        id: "old",
+        pubDate: Date.now() - 1000 * 86400 * 100,
+        title: "Old",
+      });
       const recent = makeArticle({ id: "recent1", pubDate: Date.now(), title: "New" });
       await seedArticles([old, recent]);
       const res = await searchArticlesLocal("", { limit: 10 });
@@ -186,8 +226,18 @@ describe("local-search", () => {
     });
 
     it("applies freshness bonus for recent articles", async () => {
-      const fresh = makeArticle({ id: "fresh", pubDate: Date.now() - 1000 * 86400 * 5, title: "Fresh ai news", content: "ai" });
-      const old = makeArticle({ id: "old", pubDate: Date.now() - 1000 * 86400 * 400, title: "Old ai news", content: "ai" });
+      const fresh = makeArticle({
+        id: "fresh",
+        pubDate: Date.now() - 1000 * 86400 * 5,
+        title: "Fresh ai news",
+        content: "ai",
+      });
+      const old = makeArticle({
+        id: "old",
+        pubDate: Date.now() - 1000 * 86400 * 400,
+        title: "Old ai news",
+        content: "ai",
+      });
       await seedArticles([fresh, old]);
       const res = await searchArticlesLocal("ai", { limit: 2 });
       expect(res[0].article.id).toBe("fresh");
@@ -220,7 +270,14 @@ describe("local-search", () => {
     expect(idx.articles.length).toBeGreaterThanOrEqual(2);
     const hits = idx.search("vector", { feedIds: ["fidx"] });
     expect(hits.map((h) => h.article.id)).toContain("i1");
-    // bookmarked filter still suppresses
     expect(idx.search("vector", { bookmarkedOnly: true })).toEqual([]);
+    expect(
+      idx
+        .search("vector", {
+          bookmarkedOnly: true,
+          isBookmarked: (id) => id === "i1",
+        })
+        .map((hit) => hit.article.id),
+    ).toEqual(["i1"]);
   });
 });

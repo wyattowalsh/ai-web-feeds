@@ -17,8 +17,10 @@ export interface LocalSearchOptions {
   unreadOnly?: boolean;
   /** Include only starred articles */
   starredOnly?: boolean;
-  /** Include only bookmarked/saved articles (note: bookmarked is a reader overlay, not on Article) */
+  /** Include only bookmarked/saved articles (overlay state; requires isBookmarked) */
   bookmarkedOnly?: boolean;
+  /** Overlay predicate used when bookmarkedOnly is true */
+  isBookmarked?: (articleId: string) => boolean;
   /** Restrict to specific feed IDs */
   feedIds?: string[];
   /** Restrict to articles with any of these topics (matches topics or sourceTopics) */
@@ -136,6 +138,7 @@ export async function searchArticlesLocal(
     unreadOnly = false,
     starredOnly = false,
     bookmarkedOnly = false,
+    isBookmarked,
     feedIds,
     topics,
   } = options;
@@ -146,6 +149,10 @@ export async function searchArticlesLocal(
   const candidates = all.filter((a) => {
     if (unreadOnly && a.read) return false;
     if (starredOnly && !a.starred) return false;
+    if (bookmarkedOnly) {
+      if (!isBookmarked) return false;
+      if (!isBookmarked(a.id)) return false;
+    }
     if (feedIds && feedIds.length > 0 && !feedIds.includes(a.feedId)) return false;
     if (topics && topics.length > 0) {
       const aTopics = new Set([
@@ -186,17 +193,7 @@ export async function searchArticlesLocal(
     return (b.article.pubDate || 0) - (a.article.pubDate || 0);
   });
 
-  // Note: bookmarkedOnly is a reader overlay state (not present on Article records).
-  // Callers that need bookmarked-only semantics should layer an additional
-  // filter using reader article states (e.g., from hydrate-article-state or localStorage).
-  let results = scored;
-  if (bookmarkedOnly) {
-    // Without an overlay map here, we conservatively return nothing for this filter
-    // to avoid false positives. Consumers should intersect with overlay states.
-    results = [];
-  }
-
-  return results.slice(0, limit);
+  return scored.slice(0, limit);
 }
 
 /**
@@ -228,6 +225,7 @@ export async function buildLocalSearchIndex(): Promise<{
         unreadOnly = false,
         starredOnly = false,
         bookmarkedOnly = false,
+        isBookmarked,
         feedIds,
         topics,
       } = opts;
@@ -235,6 +233,10 @@ export async function buildLocalSearchIndex(): Promise<{
       const candidates = all.filter((a) => {
         if (unreadOnly && a.read) return false;
         if (starredOnly && !a.starred) return false;
+        if (bookmarkedOnly) {
+          if (!isBookmarked) return false;
+          if (!isBookmarked(a.id)) return false;
+        }
         if (feedIds && feedIds.length > 0 && !feedIds.includes(a.feedId)) return false;
         if (topics && topics.length > 0) {
           const aTopics = new Set([
@@ -266,8 +268,6 @@ export async function buildLocalSearchIndex(): Promise<{
         if (b.score !== a.score) return b.score - a.score;
         return (b.article.pubDate || 0) - (a.article.pubDate || 0);
       });
-
-      if (bookmarkedOnly) return [];
 
       return scored.slice(0, limit);
     },
