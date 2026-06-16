@@ -108,13 +108,13 @@ test.afterEach(async ({ page }, testInfo) => {
 
 test.describe("Route stabilization smoke", () => {
   const VIEWPORTS = [
-  { name: "mobile", width: 390, height: 844 },
-  { name: "tablet", width: 768, height: 1024 },
-  { name: "desktop", width: 1280, height: 800 },
-  { name: "wide", width: 1440, height: 900 },
-] as const;
+    { name: "mobile", width: 390, height: 844 },
+    { name: "tablet", width: 768, height: 1024 },
+    { name: "desktop", width: 1280, height: 800 },
+    { name: "wide", width: 1440, height: 900 },
+  ] as const;
 
-const publicRoutes: Array<{
+  const publicRoutes: Array<{
     path: string;
     text: string;
     role: "heading";
@@ -171,7 +171,7 @@ const publicRoutes: Array<{
     },
   ];
 
-  // Matrix: each public route exercised at each target viewport (playwright-best-practices: role selectors, expect visibility, no ad-hoc waits)
+  // Matrix: each public route exercised at each target viewport (playwright-best-practices: role selectors, expect visibility, no ad-hoc waits; 390/768/1280/1440)
   for (const vp of VIEWPORTS) {
     for (const route of publicRoutes) {
       test(`loads ${route.path} @ ${vp.name} ${vp.width}x${vp.height}`, async ({ page }) => {
