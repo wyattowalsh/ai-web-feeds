@@ -1,0 +1,87 @@
+"use client";
+
+import { SlidersHorizontal } from "lucide-react";
+
+import {
+  ReaderFiltersForm,
+  type ReaderFiltersFormProps,
+} from "@/components/reader/reader-filters-form";
+
+export type ReaderFilterRailProps = {
+  variant: "desktop" | "mobile";
+  filters: Omit<ReaderFiltersFormProps, "variant">;
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
+  activeFilterCount?: number;
+  filterSummary?: string;
+  visibleArticleCountLabel?: string;
+  visibleCount?: number;
+  corpusArticleCount?: number;
+  corpusFeedCount?: number;
+  catalogTotal?: number;
+  catalogTopicCount?: number;
+};
+
+export function ReaderFilterRail({
+  variant,
+  filters,
+  mobileOpen = false,
+  onMobileOpenChange,
+  activeFilterCount = 0,
+  filterSummary = "",
+  visibleArticleCountLabel = "",
+  visibleCount = 0,
+  corpusArticleCount = 0,
+  corpusFeedCount = 0,
+  catalogTotal = 0,
+  catalogTopicCount = 0,
+}: ReaderFilterRailProps) {
+  if (variant === "desktop") {
+    return (
+      <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
+        <div className="surface-card border-(--line) bg-(--surface) p-4">
+          <div className="space-y-2">
+            <p className="metric-label">Focus</p>
+            <p className="small-note">Narrow the stream without leaving the reader.</p>
+          </div>
+          <ReaderFiltersForm variant="desktop" {...filters} />
+
+          <div className="surface-card-soft mt-5 border-(--line) p-4">
+            <p className="metric-label">Current view</p>
+            <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
+              <p>{filterSummary}</p>
+              <p>
+                {visibleArticleCountLabel} · {visibleCount} visible on this page
+              </p>
+              <p>
+                Prepared: {corpusArticleCount} articles from {corpusFeedCount} sources
+              </p>
+              <p>
+                Catalog: {catalogTotal} tracked sources · {catalogTopicCount} topics
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <details
+      className="surface-card relative isolate z-20 border-(--line) bg-(--surface) p-4 xl:hidden"
+      open={mobileOpen}
+      onToggle={(event) => onMobileOpenChange?.((event.currentTarget as HTMLDetailsElement).open)}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="size-4 text-(--ink-muted)" />
+          <span className="text-sm font-semibold text-(--ink)">Filters and view</span>
+        </div>
+        <span className="small-note">
+          {activeFilterCount > 0 ? `${activeFilterCount} active` : "All posts"}
+        </span>
+      </summary>
+      <ReaderFiltersForm variant="mobile" {...filters} />
+    </details>
+  );
+}
