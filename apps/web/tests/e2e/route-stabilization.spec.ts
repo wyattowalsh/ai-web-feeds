@@ -375,7 +375,7 @@ test.describe("Route stabilization smoke", () => {
         }),
       )
       .toBe("Search posts mobile");
-    await mobileSearch.fill(token);
+    await typeIntoControlledInput(mobileSearch, token);
     // Enter submit for the mobile filters form (last Apply is inside closed details on desktop).
     await mobileSearch.press("Enter");
 
