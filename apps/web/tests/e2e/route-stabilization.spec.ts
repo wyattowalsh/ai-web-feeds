@@ -222,8 +222,10 @@ test.describe("Route stabilization smoke", () => {
 
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill(token);
-    // Submit via Enter (form implicit submit) -- more reliable across orchestration timing
-    // than waiting on hasPending/Apply button disabled state (which can lag draft vs currentState).
+    await expect(desktopSearch).toHaveValue(token);
+    // Ensure React has re-rendered with updated queryDraft (so applyDrafts closure + hasPending
+    // see the change) before submitting via Enter. The viewport guarantee + this wait avoids
+    // stale-draft submits that leave URL without ?q= (observed on webkit/firefox).
     await desktopSearch.press("Enter");
 
     await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
@@ -252,7 +254,9 @@ test.describe("Route stabilization smoke", () => {
 
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill("agent");
-    // Use Enter + explicit desktop viewport for reliable submit under reader shell orchestration.
+    await expect(desktopSearch).toHaveValue("agent");
+    // Use Enter + explicit desktop viewport + value wait for reliable submit (avoids stale
+    // draft closure in applyDrafts during concurrent re-renders/orchestration).
     await desktopSearch.press("Enter");
 
     await expect(page).toHaveURL(/\/reader\?q=agent$/);
