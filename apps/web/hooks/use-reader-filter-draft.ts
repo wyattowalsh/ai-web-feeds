@@ -19,6 +19,11 @@ import {
 
 export type ReaderFilterFormProps = Omit<ReaderFiltersFormProps, "variant">;
 
+export type ReaderFilterMobileRail = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
 export interface UseReaderFilterDraftParams {
   currentState: FeedsWorkspaceInitialState;
   feeds: FeedSource[];
@@ -28,11 +33,11 @@ export interface UseReaderFilterDraftParams {
   onLayoutChange: (layout: "cards" | "list" | "compact") => void;
   queryInputRef: RefObject<HTMLInputElement | null>;
   onBeforeNavigate?: () => void;
-  onCloseMobileControls?: () => void;
 }
 
 export interface UseReaderFilterDraftResult {
   filterFormProps: ReaderFilterFormProps;
+  mobileRail: ReaderFilterMobileRail;
   applyDrafts: () => void;
   resetDrafts: () => void;
 }
@@ -49,8 +54,8 @@ export function useReaderFilterDraft({
   onLayoutChange,
   queryInputRef,
   onBeforeNavigate,
-  onCloseMobileControls,
 }: UseReaderFilterDraftParams): UseReaderFilterDraftResult {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [queryDraft, setQueryDraft] = useState(currentState.query);
   const [sourceTypeDraft, setSourceTypeDraft] = useState(currentState.sourceType ?? "");
   const [topicsDraft, setTopicsDraft] = useState(currentState.topics);
@@ -120,10 +125,9 @@ export function useReaderFilterDraft({
       sort: sortDraft === "latest" ? null : sortDraft,
       cursor: null,
     });
-    onCloseMobileControls?.();
+    setMobileOpen(false);
   }, [
     onBeforeNavigate,
-    onCloseMobileControls,
     queryDraft,
     readerViewDraft,
     sortDraft,
@@ -150,8 +154,8 @@ export function useReaderFilterDraft({
       sort: null,
       cursor: null,
     });
-    onCloseMobileControls?.();
-  }, [onBeforeNavigate, onCloseMobileControls, updateUrl]);
+    setMobileOpen(false);
+  }, [onBeforeNavigate, updateUrl]);
 
   const filterFormProps = useMemo<ReaderFilterFormProps>(
     () => ({
@@ -188,5 +192,13 @@ export function useReaderFilterDraft({
     ],
   );
 
-  return { filterFormProps, applyDrafts, resetDrafts };
+  const mobileRail = useMemo<ReaderFilterMobileRail>(
+    () => ({
+      open: mobileOpen,
+      onOpenChange: setMobileOpen,
+    }),
+    [mobileOpen],
+  );
+
+  return { filterFormProps, mobileRail, applyDrafts, resetDrafts };
 }
