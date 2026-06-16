@@ -1,0 +1,30 @@
+---
+title: Reader Utility
+description: Toast notifications, sharing, import/export, keyboard shortcuts, service worker, and onboarding
+---
+
+The reader utility layer adds polish and offline-capable workflows on top of the hub and reader surfaces.
+
+## Keyboard shortcuts
+
+Press `?` to view shortcuts. Defaults include `j`/`k` for article navigation, `m` to mark read, `s` to star, and `/` to focus search. Bindings load from IndexedDB preferences via `lib/keyboard-shortcuts.ts`.
+
+## Share
+
+Use the share button on article toolbars. The app prefers the Web Share API and falls back to clipboard copy.
+
+## Import and export
+
+The import/export sheet exports full reader data or a compact reader-states payload. Imports merge article triage state into IndexedDB and can hydrate from legacy localStorage keys.
+
+## Service worker and offline
+
+`public/sw.js` registers on hub pages. When the network is unavailable, visit `/offline` for recovery links back to the reader.
+
+## Command palette
+
+Press `Cmd+K` (or `Ctrl+K`) to jump to Reader, Search, For You, Sources, Topics, Blog, Dashboard, or Docs.
+
+## Onboarding
+
+First-time visitors see a dismissible coach on the home page. Dismissal is stored in `localStorage` under `aiwebfeeds.onboarding.dismissed`.
