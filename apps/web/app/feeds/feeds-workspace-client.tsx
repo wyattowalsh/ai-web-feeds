@@ -1,36 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { FeedCatalog } from "./feed-catalog";
 
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
-import { getTopics } from "@/lib/feeds-filters";
-import { CANONICAL_CATALOG_PATH, CANONICAL_READER_PATH } from "@/lib/reader-routes";
-import { parseInitialState } from "@/lib/reader-route-parse";
 import type {
   FeedsWorkspaceInitialBrowse,
   FeedsWorkspaceInitialState,
   FeedsWorkspaceMode,
 } from "@/lib/reader-route-types";
 import {
-  DEFAULT_ARTICLE_STATE,
   DEFAULT_PAGE_LIMIT,
-  buildCurrentFilterChips,
   buildLiveStatusText,
-  buildReaderHref,
   buildReaderShellStats,
+  buildReaderWorkspaceChrome,
   getSourceTypesFromFeeds,
-  matchesDraftState,
   matchesFeedSlice,
-  normalizeQueryDraft,
-  normalizeTopicsValue,
-  toVerifiedDraftValue,
   type FeedStats,
-  type ReaderDraftState,
-  type VerifiedDraftValue,
   type WorkspaceArticle,
 } from "@/lib/reader";
 import { ReaderArticleStream } from "@/components/reader/reader-article-stream";
@@ -41,7 +30,10 @@ import { ReaderShellHeader } from "@/components/reader/reader-shell-header";
 import { useLocalSearchIndex } from "@/hooks/use-local-search-index";
 import { useReaderArticleStream } from "@/hooks/use-reader-article-stream";
 import { useReaderCorpusBrowse } from "@/hooks/use-reader-corpus-browse";
+import { useReaderFilterDraft } from "@/hooks/use-reader-filter-draft";
 import { useReaderLiveRefresh } from "@/hooks/use-reader-live-refresh";
+import { useReaderPreview } from "@/hooks/use-reader-preview";
+import { useReaderRouteState } from "@/hooks/use-reader-route-state";
 import { useReaderShortcutHandlers } from "@/hooks/use-reader-shortcut-handlers";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 
@@ -65,65 +57,17 @@ export function ReaderShell({
   initialBrowse: FeedsWorkspaceInitialBrowse;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { preferences, update } = useReaderPreferences();
-  const initialParamsString = useMemo(
-    () =>
-      buildReaderHref(
-        {
-          query: initialState.query,
-          sourceType: initialState.sourceType,
-          topics: initialState.topics,
-          verified: initialState.verified,
-          feedIds: initialState.feedIds,
-          sort: initialState.sort,
-          readerView: initialState.readerView,
-          cursor: initialState.cursor,
-        },
-        {},
-      ),
-    [initialState],
-  );
+  const { currentState, updateUrl, initialParamsString, searchParamsString } = useReaderRouteState({
+    initialState,
+    stats,
+  });
 
-  const [queryDraft, setQueryDraft] = useState(initialState.query);
-  const [sourceTypeDraft, setSourceTypeDraft] = useState(initialState.sourceType ?? "");
-  const [topicsDraft, setTopicsDraft] = useState(initialState.topics);
-  const [verifiedDraft, setVerifiedDraft] = useState<VerifiedDraftValue>(
-    toVerifiedDraftValue(initialState.verified),
-  );
-  const [readerViewDraft, setReaderViewDraft] = useState(initialState.readerView);
-  const [sortDraft, setSortDraft] = useState(initialState.sort);
   const { ready: localIndexReady, search: searchLocal } = useLocalSearchIndex();
-  const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
   const overlayClearRef = useRef<(() => void) | null>(null);
   const mergedArticlesRef = useRef<WorkspaceArticle[]>([]);
   const queryInputRef = useRef<HTMLInputElement>(null);
-  const searchParamsString = searchParams.toString();
-
-  const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
-    const parsed = parseInitialState(searchParams);
-    return {
-      ...parsed,
-      verified: stats.hasVerificationMetadata ? parsed.verified : null,
-    };
-  }, [searchParams, stats.hasVerificationMetadata]);
-
-  useEffect(() => {
-    setQueryDraft(currentState.query);
-    setSourceTypeDraft(currentState.sourceType ?? "");
-    setTopicsDraft(currentState.topics);
-    setVerifiedDraft(toVerifiedDraftValue(currentState.verified));
-    setReaderViewDraft(currentState.readerView);
-    setSortDraft(currentState.sort);
-  }, [
-    currentState.query,
-    currentState.readerView,
-    currentState.sort,
-    currentState.sourceType,
-    currentState.topics,
-    currentState.verified,
-  ]);
 
   const candidateFeeds = useMemo(
     () =>
@@ -190,89 +134,37 @@ export function ReaderShell({
 
   mergedArticlesRef.current = mergedArticles;
 
-  useEffect(() => {
-    if (previewArticleId && !visibleArticles.some((article) => article.id === previewArticleId)) {
-      setPreviewArticleId(null);
-    }
-  }, [previewArticleId, visibleArticles]);
+  const {
+    previewArticleId,
+    setPreviewArticleId,
+    selectedArticle,
+    selectedArticleState,
+    clearPreview,
+  } = useReaderPreview({ visibleArticles, articleStateMap });
 
-  const selectedArticle =
-    visibleArticles.find((article) => article.id === previewArticleId) ?? null;
-
-  const selectedArticleState = selectedArticle
-    ? articleStateMap[selectedArticle.id] ?? DEFAULT_ARTICLE_STATE
-    : DEFAULT_ARTICLE_STATE;
-
-  const updateUrl = useCallback(
-    (overrides: Record<string, string | string[] | null | undefined>) => {
-      const nextHref = buildReaderHref(currentState, overrides);
-      router.replace(nextHref, { scroll: false });
-    },
-    [currentState, router],
-  );
-
-  const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
-  const topicOptions = useMemo(() => getTopics(feeds), [feeds]);
-  const topicCounts = useMemo(
-    () =>
-      topicOptions
-        .map((topic) => ({
-          topic,
-          count: feeds.filter((feed) =>
-            new Set([...(feed.topics ?? []), ...(feed.tags ?? [])]).has(topic),
-          ).length,
-        }))
-        .sort((left, right) => right.count - left.count || left.topic.localeCompare(right.topic))
-        .slice(0, 12),
-    [feeds, topicOptions],
-  );
-  const availableTopicOptions = useMemo(
-    () => topicOptions.filter((topic) => !topicsDraft.includes(topic)),
-    [topicOptions, topicsDraft],
-  );
-  const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
-  const corpusEmpty = browse.corpus.is_empty;
-  const canClearArticleFilters =
-    Boolean(currentState.query) || currentState.readerView !== "latest" || currentState.cursor > 0;
-  const canResetWorkspace =
-    canClearArticleFilters ||
-    Boolean(currentState.sourceType) ||
-    currentState.topics.length > 0 ||
-    currentState.feedIds.length > 0 ||
-    currentState.verified !== null ||
-    currentState.sort !== "latest";
-  const clearArticleFiltersHref = buildReaderHref(currentState, {
-    q: null,
-    reader_view: null,
-    cursor: null,
+  const { filterFormProps, resetDrafts } = useReaderFilterDraft({
+    currentState,
+    feeds,
+    stats,
+    updateUrl,
+    layout: preferences.layout,
+    onLayoutChange: (next) => update({ layout: next }),
+    queryInputRef,
+    onBeforeNavigate: clearPreview,
+    onCloseMobileControls: () => setMobileControlsOpen(false),
   });
-  const resetWorkspaceHref = CANONICAL_READER_PATH;
-  const catalogRecoveryHref = CANONICAL_CATALOG_PATH;
-  const filterSummary =
-    currentState.feedIds.length > 0
-      ? `${currentState.feedIds.length} pinned feed${currentState.feedIds.length === 1 ? "" : "s"}`
-      : `${candidateFeeds.length} ${stats.hasActivityMetadata ? "active" : "tracked"} source${
-          candidateFeeds.length === 1 ? "" : "s"
-        } matching these filters`;
-  const visibleArticleCountLabel = corpusEmpty
-    ? `${overlayArticles.length} live post${overlayArticles.length === 1 ? "" : "s"} loaded`
-    : `${browse.total_matched} article match${browse.total_matched === 1 ? "" : "es"}`;
-  const activeFilterChips = useMemo(
-    () => buildCurrentFilterChips(currentState, feedLookup),
-    [currentState, feedLookup],
-  );
-  const draftState: ReaderDraftState = useMemo(
-    () => ({
-      query: queryDraft,
-      sourceType: sourceTypeDraft,
-      topics: topicsDraft,
-      verified: verifiedDraft,
-      readerView: readerViewDraft,
-      sort: sortDraft,
-    }),
-    [queryDraft, readerViewDraft, sortDraft, sourceTypeDraft, topicsDraft, verifiedDraft],
-  );
-  const hasPendingDraftChanges = !matchesDraftState(draftState, currentState);
+
+  const corpusEmpty = browse.corpus.is_empty;
+  const workspaceChrome = buildReaderWorkspaceChrome({
+    currentState,
+    feedLookup,
+    candidateFeedCount: candidateFeeds.length,
+    stats,
+    corpusEmpty,
+    overlayCount: overlayArticles.length,
+    totalMatched: browse.total_matched,
+  });
+
   const readerStats = buildReaderShellStats({
     corpusEmpty,
     corpusGeneratedAt: browse.corpus.generated_at,
@@ -288,81 +180,7 @@ export function ReaderShell({
     visibleCount: visibleArticles.length,
   });
 
-  const applyDrafts = useCallback(() => {
-    setPreviewArticleId(null);
-    updateUrl({
-      q: normalizeQueryDraft(queryDraft) || null,
-      source_type: sourceTypeDraft || null,
-      topics: topicsDraft.length > 0 ? normalizeTopicsValue(topicsDraft) : null,
-      verified: verifiedDraft || null,
-      reader_view: readerViewDraft === "latest" ? null : readerViewDraft,
-      sort: sortDraft === "latest" ? null : sortDraft,
-      cursor: null,
-    });
-    setMobileControlsOpen(false);
-  }, [
-    queryDraft,
-    readerViewDraft,
-    sortDraft,
-    sourceTypeDraft,
-    topicsDraft,
-    updateUrl,
-    verifiedDraft,
-  ]);
-
-  const resetDrafts = useCallback(() => {
-    setPreviewArticleId(null);
-    setQueryDraft("");
-    setSourceTypeDraft("");
-    setTopicsDraft([]);
-    setVerifiedDraft("");
-    setReaderViewDraft("latest");
-    setSortDraft("latest");
-    updateUrl({
-      q: null,
-      source_type: null,
-      topics: null,
-      verified: null,
-      reader_view: null,
-      sort: null,
-      cursor: null,
-    });
-    setMobileControlsOpen(false);
-  }, [updateUrl]);
-
-  const filterFormProps = useMemo(
-    () => ({
-      draftState,
-      setQuery: setQueryDraft,
-      setSourceType: setSourceTypeDraft,
-      setTopics: setTopicsDraft,
-      setVerified: setVerifiedDraft,
-      setReaderView: setReaderViewDraft,
-      setSort: setSortDraft,
-      applyDrafts,
-      resetDrafts,
-      topicCounts,
-      hasVerificationMetadata: stats.hasVerificationMetadata,
-      layout: preferences.layout,
-      onLayoutChange: (next: "cards" | "list" | "compact") => update({ layout: next }),
-      sourceTypes,
-      availableTopicOptions,
-      queryInputRef,
-      hasPendingDraftChanges,
-    }),
-    [
-      applyDrafts,
-      availableTopicOptions,
-      draftState,
-      hasPendingDraftChanges,
-      preferences.layout,
-      resetDrafts,
-      sourceTypes,
-      stats.hasVerificationMetadata,
-      topicCounts,
-      update,
-    ],
-  );
+  const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
 
   const { handleSelectArticle } = useReaderShortcutHandlers({
     visibleArticles,
@@ -376,23 +194,6 @@ export function ReaderShell({
     router,
     updateUrl,
   });
-
-  useEffect(() => {
-    if (!previewArticleId) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setPreviewArticleId(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [previewArticleId]);
 
   if (corpusEmpty && overlayArticles.length === 0 && !refreshing) {
     return (
@@ -427,8 +228,8 @@ export function ReaderShell({
         <ReaderFilterRail
           variant="desktop"
           filters={filterFormProps}
-          filterSummary={filterSummary}
-          visibleArticleCountLabel={visibleArticleCountLabel}
+          filterSummary={workspaceChrome.filterSummary}
+          visibleArticleCountLabel={workspaceChrome.visibleArticleCountLabel}
           visibleCount={visibleArticles.length}
           corpusArticleCount={browse.corpus.article_count}
           corpusFeedCount={browse.corpus.feed_count}
@@ -442,15 +243,15 @@ export function ReaderShell({
             filters={filterFormProps}
             mobileOpen={mobileControlsOpen}
             onMobileOpenChange={setMobileControlsOpen}
-            activeFilterCount={activeFilterChips.length}
+            activeFilterCount={workspaceChrome.activeFilterChips.length}
           />
 
           <ReaderArticleStream
             query={currentState.query}
-            filterSummary={filterSummary}
+            filterSummary={workspaceChrome.filterSummary}
             refreshError={refreshError}
             error={error}
-            activeFilterChips={activeFilterChips}
+            activeFilterChips={workspaceChrome.activeFilterChips}
             loading={loading}
             refreshing={refreshing}
             visibleArticles={visibleArticles}
@@ -462,14 +263,14 @@ export function ReaderShell({
             browseCursor={browse.cursor}
             browseLimit={browse.limit}
             browseNextCursor={browse.next_cursor}
-            canClearArticleFilters={canClearArticleFilters}
-            canResetWorkspace={canResetWorkspace}
-            clearArticleFiltersHref={clearArticleFiltersHref}
-            resetWorkspaceHref={resetWorkspaceHref}
-            catalogRecoveryHref={catalogRecoveryHref}
+            canClearArticleFilters={workspaceChrome.canClearArticleFilters}
+            canResetWorkspace={workspaceChrome.canResetWorkspace}
+            clearArticleFiltersHref={workspaceChrome.clearArticleFiltersHref}
+            resetWorkspaceHref={workspaceChrome.resetWorkspaceHref}
+            catalogRecoveryHref={workspaceChrome.catalogRecoveryHref}
             onSelectArticle={handleSelectArticle}
             onUpdateState={updateState}
-            onClosePreview={() => setPreviewArticleId(null)}
+            onClosePreview={clearPreview}
             onFilterChip={updateUrl}
             onResetDrafts={resetDrafts}
             onPaginate={(cursor) => updateUrl({ cursor })}
@@ -483,7 +284,7 @@ export function ReaderShell({
               source={selectedArticleSource}
               state={selectedArticleState}
               variant="panel"
-              onClose={() => setPreviewArticleId(null)}
+              onClose={clearPreview}
               onToggleState={(partial) => {
                 if (!selectedArticle) {
                   return;
