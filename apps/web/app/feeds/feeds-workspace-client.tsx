@@ -4,19 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Archive,
-  ArrowUpRight,
-  Bookmark,
-  BookOpenText,
   CheckCheck,
   Clock3,
-  Copy,
   Eye,
   Filter,
   Newspaper,
   RefreshCcw,
   SlidersHorizontal,
-  Star,
   X,
 } from "lucide-react";
 
@@ -26,7 +20,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceAvatar } from "@/components/source-avatar";
-import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { getTopics } from "@/lib/feeds-filters";
@@ -38,6 +31,7 @@ import type {
   FeedsWorkspaceMode,
 } from "@/lib/reader-route-types";
 import {
+  compareByPublishedDesc,
   DEFAULT_ARTICLE_STATE,
   DEFAULT_PAGE_LIMIT,
   LIVE_BOOTSTRAP_PER_FEED_LIMIT,
@@ -46,7 +40,6 @@ import {
   buildCurrentFilterChips,
   buildReaderHref,
   formatArticleDate,
-  formatArticleDateTime,
   formatSnapshotTimestamp,
   getArticleTopics,
   getSourceTypesFromFeeds,
@@ -54,6 +47,7 @@ import {
   matchesFeedSlice,
   matchesReaderView,
   normalizeArticle,
+  normalizeCachedArticle,
   normalizeLiveArticle,
   normalizeQueryDraft,
   normalizeTopicsValue,
@@ -68,18 +62,19 @@ import {
   type VerifiedDraftValue,
   type WorkspaceArticle,
 } from "@/lib/reader";
+import { ReaderCorpusEmpty } from "@/components/reader/reader-corpus-empty";
 import { ReaderFiltersForm } from "@/components/reader/reader-filters-form";
 import { ReaderPill } from "@/components/reader/reader-pill";
-import { AggregatorBadge } from "@/components/hub/aggregator-badge";
-import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
+import { ReaderPreviewPane } from "@/components/reader/reader-preview-pane";
+import { ReaderShellHeader } from "@/components/reader/reader-shell-header";
 import {
   hydrateArticleStates,
   loadArticleStatesFromIDB,
   syncArticleState,
 } from "@/lib/reader/hydrate-article-state";
+import { useLocalSearchIndex } from "@/hooks/use-local-search-index";
 import { useReaderShortcuts } from "@/hooks/use-reader-shortcuts";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
-import { ImportExportSheet } from "@/components/utility/import-export-sheet";
 
 type FeedsWorkspaceClientProps = {
   mode: FeedsWorkspaceMode;
@@ -88,190 +83,6 @@ type FeedsWorkspaceClientProps = {
   initialState: FeedsWorkspaceInitialState;
   initialBrowse: FeedsWorkspaceInitialBrowse | null;
 };
-
-function compareByPublishedDesc(
-  left: { published_at_ms: number | null },
-  right: { published_at_ms: number | null },
-): number {
-  return (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0);
-}
-
-function PreviewPane({
-  article,
-  source,
-  state,
-  onToggleState,
-  onClose,
-  variant = "panel",
-}: {
-  article: WorkspaceArticle | null;
-  source?: FeedSource | null;
-  state: ReaderArticleState;
-  onToggleState: (partial: Partial<ReaderArticleState>) => void;
-  onClose?: () => void;
-  variant?: "panel" | "inline";
-}) {
-  const [summaryMarkup, setSummaryMarkup] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSummaryMarkup(
-      article ? sanitizeArticlePreviewHtml(article.content_html, article.link) : null,
-    );
-  }, [article]);
-
-  if (!article) {
-    return (
-      <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm">
-        <p className="metric-label">Inspector</p>
-        <EmptyState
-          icon={BookOpenText}
-          title="Select an article"
-          description="Choose a post to read the summary, source context, and quick actions."
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "rounded-lg border border-border bg-card p-5 shadow-sm",
-        variant === "panel" &&
-          "flex h-full max-h-[calc(100vh-3rem)] flex-col overflow-hidden border-primary/20",
-      )}
-    >
-      <div className="space-y-4 border-b border-(--line) pb-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <SourceAvatar
-              source={
-                source ?? { title: article.feed_title, url: article.source_url ?? article.link }
-              }
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-(--ink)">{article.feed_title}</p>
-              <p className="small-note">{formatArticleDateTime(article.published_at)}</p>
-            </div>
-          </div>
-          {onClose ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={onClose}
-              aria-label="Close preview"
-            >
-              <X className="size-4" />
-            </Button>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {article.freshness === "live" ? <ReaderPill tone="brand">New</ReaderPill> : null}
-          {article.verified ? <ReaderPill tone="success">Verified</ReaderPill> : null}
-          {state.read ? (
-            <ReaderPill tone="success">Read</ReaderPill>
-          ) : (
-            <ReaderPill tone="warning">Unread</ReaderPill>
-          )}
-          {state.bookmarked ? <ReaderPill tone="info">Saved</ReaderPill> : null}
-          {state.starred ? <ReaderPill tone="warning">Starred</ReaderPill> : null}
-        </div>
-        <div className="space-y-2">
-          <h2 className="break-words text-xl font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] sm:text-2xl">
-            {article.title}
-          </h2>
-          {article.author ? <p className="small-note">By {article.author}</p> : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={buildImmersiveReaderHref(article)}
-            className={cn(buttonVariants({ variant: "default" }))}
-          >
-            <BookOpenText className="size-4" />
-            Immersive read
-          </Link>
-          <Link
-            href={article.link}
-            target="_blank"
-            rel="noreferrer"
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
-            Read original
-            <ArrowUpRight className="size-4" />
-          </Link>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void navigator.clipboard?.writeText(article.link)}
-          >
-            <Copy className="size-4" />
-            Copy link
-          </Button>
-          <Button
-            type="button"
-            variant={state.read ? "secondary" : "outline"}
-            onClick={() => onToggleState({ read: !state.read })}
-          >
-            {state.read ? "Marked read" : "Mark read"}
-          </Button>
-          <Button
-            type="button"
-            variant={state.starred ? "secondary" : "outline"}
-            onClick={() => onToggleState({ starred: !state.starred })}
-          >
-            <Star className="size-4" />
-            {state.starred ? "Starred" : "Star"}
-          </Button>
-          <Button
-            type="button"
-            variant={state.bookmarked ? "secondary" : "outline"}
-            onClick={() => onToggleState({ bookmarked: !state.bookmarked })}
-          >
-            <Bookmark className="size-4" />
-            {state.bookmarked ? "Saved" : "Save"}
-          </Button>
-          <Button
-            type="button"
-            variant={state.archived ? "secondary" : "outline"}
-            onClick={() => onToggleState({ archived: !state.archived })}
-          >
-            <Archive className="size-4" />
-            {state.archived ? "Archived" : "Archive"}
-          </Button>
-        </div>
-      </div>
-
-      <div className={cn("space-y-4", variant === "panel" && "overflow-y-auto pr-1")}>
-        {article.summary ? (
-          <div className="rounded-lg border border-(--line) bg-(--surface-muted) p-4 text-sm leading-6 text-(--ink-muted)">
-            {article.summary}
-          </div>
-        ) : null}
-
-        {summaryMarkup ? (
-          <article
-            className="prose prose-sm max-w-none text-(--ink)"
-            dangerouslySetInnerHTML={{ __html: summaryMarkup }}
-          />
-        ) : null}
-
-        <div className="space-y-2">
-          <p className="metric-label">Topics</p>
-          <div className="flex flex-wrap gap-2">
-            {getArticleTopics(article).map((topic) => (
-              <span
-                key={`${article.id}-${topic}`}
-                className="rounded-md border border-(--line) bg-(--surface) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)"
-              >
-                {topic}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function ReaderShell({
   feeds,
@@ -320,7 +131,9 @@ export function ReaderShell({
   const [refreshing, setRefreshing] = useState(false);
   const [liveProgress, setLiveProgress] = useState<LiveStreamProgress | null>(null);
   const [overlayArticles, setOverlayArticles] = useState<WorkspaceArticle[]>([]);
+  const [cachedArticles, setCachedArticles] = useState<WorkspaceArticle[]>([]);
   const [articleStates, setArticleStates] = useState<Record<string, ReaderArticleState>>({});
+  const { ready: localIndexReady, search: searchLocal } = useLocalSearchIndex();
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
   const firstLoadRef = useRef(true);
@@ -461,18 +274,20 @@ export function ReaderShell({
 
   const articleStateMap = useMemo(() => {
     const nextStateMap: Record<string, ReaderArticleState> = {};
-    for (const article of [...overlayArticles, ...browse.items].map(normalizeArticle)) {
+    const corpusArticles = browse.items.map(normalizeArticle);
+    for (const article of [...overlayArticles, ...cachedArticles, ...corpusArticles]) {
       nextStateMap[article.id] = articleStates[article.id] ?? readArticleState(article.id);
     }
     return nextStateMap;
-  }, [articleStates, browse.items, overlayArticles]);
+  }, [articleStates, browse.items, cachedArticles, overlayArticles]);
 
   useEffect(() => {
     setArticleStates((current) => {
       const nextState = { ...current };
       let changed = false;
 
-      for (const article of [...overlayArticles, ...browse.items].map(normalizeArticle)) {
+      const corpusArticles = browse.items.map(normalizeArticle);
+      for (const article of [...overlayArticles, ...cachedArticles, ...corpusArticles]) {
         if (!nextState[article.id]) {
           nextState[article.id] = readArticleState(article.id);
           changed = true;
@@ -481,11 +296,11 @@ export function ReaderShell({
 
       return changed ? nextState : current;
     });
-  }, [browse.items, overlayArticles]);
+  }, [browse.items, cachedArticles, overlayArticles]);
 
   const mergedArticles = useMemo(() => {
     const seen = new Set<string>();
-    const ordered = [...overlayArticles, ...browse.items.map(normalizeArticle)];
+    const ordered = [...overlayArticles, ...cachedArticles, ...browse.items.map(normalizeArticle)];
     return ordered.filter((article) => {
       const dedupeKey = article.id || `${article.feed_id}:${article.link}`;
       if (seen.has(dedupeKey)) {
@@ -494,7 +309,7 @@ export function ReaderShell({
       seen.add(dedupeKey);
       return true;
     });
-  }, [browse.items, overlayArticles]);
+  }, [browse.items, cachedArticles, overlayArticles]);
 
   const visibleArticles = useMemo(() => {
     return mergedArticles.filter((article) =>
@@ -760,6 +575,51 @@ export function ReaderShell({
       ),
     [feeds],
   );
+
+  useEffect(() => {
+    if (!localIndexReady) {
+      setCachedArticles((current) => (current.length === 0 ? current : []));
+      return;
+    }
+
+    const query = currentState.query.trim();
+    if (!query) {
+      setCachedArticles((current) => (current.length === 0 ? current : []));
+      return;
+    }
+
+    const results = searchLocal(query, {
+      limit: 24,
+      feedIds: currentState.feedIds.length > 0 ? currentState.feedIds : undefined,
+      topics: currentState.topics.length > 0 ? currentState.topics : undefined,
+      unreadOnly: currentState.readerView === "unread",
+      starredOnly: currentState.readerView === "starred",
+    });
+
+    const knownIds = new Set([
+      ...browse.items.map((item) => item.id),
+      ...overlayArticles.map((item) => item.id),
+    ]);
+
+    setCachedArticles(
+      results
+        .filter((result) => !knownIds.has(result.article.id))
+        .map((result) =>
+          normalizeCachedArticle(result.article, feedLookup.get(result.article.feedId)?.title),
+        ),
+    );
+  }, [
+    browse.items,
+    currentState.feedIds,
+    currentState.query,
+    currentState.readerView,
+    currentState.topics,
+    feedLookup,
+    localIndexReady,
+    overlayArticles,
+    searchLocal,
+  ]);
+
   const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
   const corpusEmpty = browse.corpus.is_empty;
   const canClearArticleFilters =
@@ -1000,120 +860,25 @@ export function ReaderShell({
 
   if (corpusEmpty && overlayArticles.length === 0 && !refreshing) {
     return (
-      <div className="reader-shell space-y-4">
-        <div className="rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
-              <p className="metric-label">AI Web Feeds</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {refreshError ? "Live posts unavailable" : "No prepared article corpus"}
-              </h1>
-              <p className="small-note max-w-3xl">
-                {refreshError
-                  ? `${refreshError} You can browse sources or retry.`
-                  : `The generated article corpus is empty or missing. Load a bounded live sample from up to ${Math.min(
-                      candidateFeeds.length,
-                      LIVE_REFRESH_SAMPLE_FEED_LIMIT,
-                    )} matching sources, or browse the catalog while the corpus is regenerated.`}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={CANONICAL_CATALOG_PATH}
-                className={cn(buttonVariants({ variant: "outline" }))}
-              >
-                Browse sources
-              </Link>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void refreshLatest(true)}
-                disabled={refreshing}
-              >
-                {refreshError ? "Try again" : "Load live sample"}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <EmptyState
-          icon={Newspaper}
-          title={refreshError ? "Could not fetch live posts" : "Prepared posts are unavailable"}
-          description={
-            refreshError
-              ? "The source catalog is still available while live fetching recovers."
-              : "Live fetching is available as an explicit sample so the first page load does not crawl the full catalog."
-          }
-          className="text-left"
-        />
-      </div>
+      <ReaderCorpusEmpty
+        refreshError={refreshError}
+        refreshing={refreshing}
+        candidateFeedCount={candidateFeeds.length}
+        onLoadLiveSample={() => void refreshLatest(true)}
+      />
     );
   }
 
   return (
     <div className="reader-shell space-y-5">
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end sm:p-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <ReaderPill tone="brand">Reader</ReaderPill>
-              <AggregatorBadge
-                variant={overlayArticles.length > 0 ? "mixed" : corpusEmpty ? "live" : "corpus"}
-              />
-              {corpusEmpty ? (
-                <ReaderPill tone="info">Live</ReaderPill>
-              ) : (
-                <ReaderPill>Prepared posts</ReaderPill>
-              )}
-              {refreshing ? <ReaderPill tone="warning">Refreshing</ReaderPill> : null}
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
-                Read AI writing across the open web
-              </h1>
-              <p className="small-note max-w-3xl">
-                A clean reading desk for open AI writing, with local read, save, and focus state.
-              </p>
-              {liveStatusText ? <p className="small-note">{liveStatusText}</p> : null}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2 lg:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void refreshLatest(true)}
-              disabled={refreshing}
-            >
-              <RefreshCcw className={cn("size-4", refreshing && "animate-spin")} />
-              {refreshing ? "Checking..." : "Refresh latest"}
-            </Button>
-            <Link
-              href={CANONICAL_CATALOG_PATH}
-              className={cn(buttonVariants({ variant: "secondary" }))}
-            >
-              Sources
-            </Link>
-            <ImportExportSheet />
-          </div>
-        </div>
-        <div className="hidden border-t border-border bg-muted/55 md:grid md:grid-cols-4">
-          {readerStats.map(({ label, value, note, icon: Icon }) => (
-            <div
-              key={label}
-              className="flex min-h-24 items-center gap-3 border-b border-(--line) px-5 py-4 last:border-b-0 md:border-r md:border-b-0 md:last:border-r-0"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-(--line) bg-(--surface) text-(--brand-strong)">
-                <Icon className="size-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="metric-label">{label}</p>
-                <p className="truncate text-base font-semibold text-(--ink)">{value}</p>
-                <p className="truncate text-xs text-(--ink-muted)">{note}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ReaderShellHeader
+        corpusEmpty={corpusEmpty}
+        overlayCount={overlayArticles.length}
+        refreshing={refreshing}
+        liveStatusText={liveStatusText}
+        readerStats={readerStats}
+        onRefreshLatest={() => void refreshLatest(true)}
+      />
 
       <div
         data-testid="reader-workspace-grid"
@@ -1124,7 +889,7 @@ export function ReaderShell({
         )}
       >
         <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
-          <div className="rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm">
+          <div className="surface-card border-(--line) bg-(--surface) p-4">
             <div className="space-y-2">
               <p className="metric-label">Focus</p>
               <p className="small-note">Narrow the stream without leaving the reader.</p>
@@ -1150,7 +915,7 @@ export function ReaderShell({
               hasPendingDraftChanges={hasPendingDraftChanges}
             />
 
-            <div className="mt-5 rounded-lg border border-(--line) bg-(--surface-muted) p-4">
+            <div className="surface-card-soft mt-5 border-(--line) p-4">
               <p className="metric-label">Current view</p>
               <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
                 <p>{filterSummary}</p>
@@ -1171,7 +936,7 @@ export function ReaderShell({
 
         <section className="space-y-5">
           <details
-            className="relative isolate z-20 rounded-lg border border-(--line) bg-(--surface) p-4 shadow-sm xl:hidden"
+            className="surface-card relative isolate z-20 border-(--line) bg-(--surface) p-4 xl:hidden"
             open={mobileControlsOpen}
             onToggle={(event) =>
               setMobileControlsOpen((event.currentTarget as HTMLDetailsElement).open)
@@ -1209,7 +974,7 @@ export function ReaderShell({
 
           <section
             id="article-list"
-            className="relative z-0 rounded-lg border border-(--line) bg-(--surface) shadow-sm"
+            className="surface-card relative z-0 border-(--line) bg-(--surface) p-0"
           >
             <div className="space-y-4 border-b border-(--line) p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1339,6 +1104,9 @@ export function ReaderShell({
                               {article.freshness === "live" ? (
                                 <ReaderPill tone="brand">New</ReaderPill>
                               ) : null}
+                              {article.freshness === "cached" ? (
+                                <ReaderPill tone="info">Cached</ReaderPill>
+                              ) : null}
                               {state.read ? <ReaderPill tone="success">Read</ReaderPill> : null}
                               {state.bookmarked ? <ReaderPill tone="info">Saved</ReaderPill> : null}
                               {state.starred ? (
@@ -1402,7 +1170,7 @@ export function ReaderShell({
 
                       {isSelected ? (
                         <div className="mt-4 xl:hidden">
-                          <PreviewPane
+                          <ReaderPreviewPane
                             article={article}
                             source={feedLookup.get(article.feed_id)}
                             state={state}
@@ -1455,7 +1223,7 @@ export function ReaderShell({
 
         {selectedArticle ? (
           <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
-            <PreviewPane
+            <ReaderPreviewPane
               article={selectedArticle}
               source={selectedArticleSource}
               state={selectedArticleState}

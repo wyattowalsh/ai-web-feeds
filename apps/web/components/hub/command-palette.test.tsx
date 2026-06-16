@@ -125,6 +125,20 @@ describe("CommandPalette", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("traps Tab focus within the dialog panel", () => {
+    renderPalette({ open: true });
+    const input = screen.getByPlaceholderText(/type a command or search routes/i);
+    const escButton = screen.getByRole("button", { name: /esc to close/i });
+
+    escButton.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(document.activeElement).toBe(input);
+
+    input.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(escButton);
+  });
+
   it("global Cmd/Ctrl+K toggles open via onOpenChange (controlled)", async () => {
     const onOpenChange = vi.fn();
     render(<CommandPalette open={false} onOpenChange={onOpenChange} />);

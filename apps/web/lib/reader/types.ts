@@ -12,7 +12,7 @@ export type ReaderArticleState = {
 };
 
 export type WorkspaceArticle = FeedsWorkspaceInitialBrowse["items"][number] & {
-  freshness: "corpus" | "live";
+  freshness: "corpus" | "live" | "cached";
   published_at_ms: number | null;
   source_url?: string | null;
   resolved_feed_url?: string | null;
