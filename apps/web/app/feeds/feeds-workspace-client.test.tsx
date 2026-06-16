@@ -18,6 +18,18 @@ vi.mock("@/lib/use-reader-preferences", () => ({
   useReaderPreferences: () => useReaderPreferencesMock(),
 }));
 
+vi.mock("@/lib/reader/hydrate-article-state", () => ({
+  hydrateArticleStates: vi.fn(async () => ({
+    migratedCount: 0,
+    clearedCount: 0,
+    totalInIDB: 0,
+  })),
+}));
+
+vi.mock("@/hooks/use-reader-shortcuts", () => ({
+  useReaderShortcuts: vi.fn(),
+}));
+
 import { FeedsWorkspaceClient } from "./feeds-workspace-client";
 
 const feeds = [

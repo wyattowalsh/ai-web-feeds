@@ -49,6 +49,16 @@ describe("HomePage", () => {
       screen.getByRole("heading", { name: "Read AI writing across the open web" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open reader/i })).toHaveAttribute("href", "/reader");
+    expect(
+      screen
+        .getAllByRole("link", { name: /^Search$/i })
+        .some((link) => link.getAttribute("href") === "/search"),
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: /For You/i })
+        .some((link) => link.getAttribute("href") === "/for-you"),
+    ).toBe(true);
     expect(screen.getByRole("link", { name: /Browse sources/i })).toHaveAttribute(
       "href",
       "/sources",
