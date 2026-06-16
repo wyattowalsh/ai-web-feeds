@@ -213,10 +213,10 @@ export function CommandPalette({
     >
       <div
         ref={panelRef}
-        className="w-full max-w-[640px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+        className="surface-card w-full max-w-[640px] overflow-hidden border-(--line) bg-(--surface) p-0 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+        <div className="flex items-center gap-2 border-b border-(--line) px-3 py-2">
           <Search className="size-4 text-muted-foreground" aria-hidden />
           <input
             id="hub-command-input"
@@ -277,7 +277,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-between border-t border-(--line) px-3 py-2 text-[11px] text-muted-foreground">
           <div>
             Navigate with <span className="font-medium">↑</span>{" "}
             <span className="font-medium">↓</span>, select with{" "}

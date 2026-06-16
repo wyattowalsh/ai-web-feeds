@@ -1,25 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  CheckCheck,
-  Clock3,
-  Eye,
-  Filter,
-  Newspaper,
-  RefreshCcw,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { Clock3, Filter, Newspaper, RefreshCcw, SlidersHorizontal } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SourceAvatar } from "@/components/source-avatar";
 import { cn } from "@/lib/cn";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { getTopics } from "@/lib/feeds-filters";
@@ -39,9 +25,7 @@ import {
   LIVE_REFRESH_SAMPLE_FEED_LIMIT,
   buildCurrentFilterChips,
   buildReaderHref,
-  formatArticleDate,
   formatSnapshotTimestamp,
-  getArticleTopics,
   getSourceTypesFromFeeds,
   matchesDraftState,
   matchesFeedSlice,
@@ -62,9 +46,9 @@ import {
   type VerifiedDraftValue,
   type WorkspaceArticle,
 } from "@/lib/reader";
+import { ReaderArticleStream } from "@/components/reader/reader-article-stream";
 import { ReaderCorpusEmpty } from "@/components/reader/reader-corpus-empty";
 import { ReaderFiltersForm } from "@/components/reader/reader-filters-form";
-import { ReaderPill } from "@/components/reader/reader-pill";
 import { ReaderPreviewPane } from "@/components/reader/reader-preview-pane";
 import { ReaderShellHeader } from "@/components/reader/reader-shell-header";
 import {
@@ -594,6 +578,9 @@ export function ReaderShell({
       topics: currentState.topics.length > 0 ? currentState.topics : undefined,
       unreadOnly: currentState.readerView === "unread",
       starredOnly: currentState.readerView === "starred",
+      bookmarkedOnly: currentState.readerView === "saved",
+      isBookmarked: (articleId) =>
+        (articleStates[articleId] ?? readArticleState(articleId)).bookmarked,
     });
 
     const knownIds = new Set([
@@ -609,6 +596,7 @@ export function ReaderShell({
         ),
     );
   }, [
+    articleStates,
     browse.items,
     currentState.feedIds,
     currentState.query,
@@ -972,253 +960,35 @@ export function ReaderShell({
             />
           </details>
 
-          <section
-            id="article-list"
-            className="surface-card relative z-0 border-(--line) bg-(--surface) p-0"
-          >
-            <div className="space-y-4 border-b border-(--line) p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="metric-label">Stream</p>
-                  <h2 className="text-xl font-semibold tracking-tight text-(--ink) sm:text-2xl">
-                    {currentState.query ? `Results for “${currentState.query}”` : "Latest posts"}
-                  </h2>
-                  <p className="small-note">
-                    {filterSummary}. Refresh latest keeps your current reading state.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {refreshError ? <p className="text-sm text-amber-700">{refreshError}</p> : null}
-                  {error ? <p className="text-sm text-rose-700">{error}</p> : null}
-                </div>
-              </div>
-
-              {activeFilterChips.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {activeFilterChips.map((chip) => (
-                    <button
-                      key={chip.key}
-                      type="button"
-                      onClick={() => updateUrl(chip.overrides)}
-                      className="inline-flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1.5 text-xs font-semibold text-(--ink)"
-                    >
-                      {chip.label}
-                      <X className="size-3.5 text-(--ink-muted)" />
-                    </button>
-                  ))}
-                  <Button type="button" variant="ghost" size="sm" onClick={resetDrafts}>
-                    Clear all
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-
-            {loading || (refreshing && visibleArticles.length === 0) ? (
-              <div className="grid gap-3 p-5">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <div
-                    key={`loading-${index}`}
-                    className="rounded-lg border border-border bg-card p-4"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Skeleton className="size-9 rounded-lg" />
-                      <div className="flex-1 space-y-3">
-                        <Skeleton className="h-4 w-40" />
-                        <Skeleton className="h-5 w-5/6" />
-                        <Skeleton className="h-4 w-2/3" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : visibleArticles.length === 0 ? (
-              <EmptyState
-                icon={Newspaper}
-                title="No posts match these filters"
-                description="Clear filters, reset the page, or browse sources instead."
-              >
-                <div className="flex flex-wrap justify-center gap-3">
-                  {canClearArticleFilters ? (
-                    <Link
-                      href={clearArticleFiltersHref}
-                      className={cn(buttonVariants({ variant: "default" }))}
-                    >
-                      Clear article filters
-                    </Link>
-                  ) : null}
-                  {canResetWorkspace ? (
-                    <Link
-                      href={resetWorkspaceHref}
-                      className={cn(buttonVariants({ variant: "outline" }))}
-                    >
-                      Reset all filters
-                    </Link>
-                  ) : null}
-                  <Link
-                    href={catalogRecoveryHref}
-                    className={cn(buttonVariants({ variant: "secondary" }))}
-                  >
-                    Browse sources
-                  </Link>
-                </div>
-              </EmptyState>
-            ) : (
-              <div className="divide-y divide-(--line)">
-                {visibleArticles.map((article) => {
-                  const state = articleStateMap[article.id] ?? DEFAULT_ARTICLE_STATE;
-                  const isSelected = article.id === selectedArticle?.id;
-                  const articleTopics = getArticleTopics(article);
-
-                  return (
-                    <article
-                      key={article.id}
-                      className={cn(
-                        "group w-full p-5 text-left transition duration-150",
-                        isSelected
-                          ? "bg-(--brand-soft)"
-                          : "bg-(--surface) hover:bg-[color-mix(in_oklab,var(--brand-soft)_45%,var(--surface))]",
-                        preferences.layout === "list" && "py-4",
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleSelectArticle(article.id)}
-                        className="w-full text-left"
-                        aria-pressed={isSelected}
-                      >
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,12rem)]">
-                          <div className="min-w-0 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <SourceAvatar
-                                source={
-                                  feedLookup.get(article.feed_id) ?? {
-                                    title: article.feed_title,
-                                    url: article.source_url ?? article.link,
-                                  }
-                                }
-                                className="size-8"
-                              />
-                              <span className="truncate text-sm font-semibold text-(--ink-muted)">
-                                {article.feed_title}
-                              </span>
-                              {article.freshness === "live" ? (
-                                <ReaderPill tone="brand">New</ReaderPill>
-                              ) : null}
-                              {article.freshness === "cached" ? (
-                                <ReaderPill tone="info">Cached</ReaderPill>
-                              ) : null}
-                              {state.read ? <ReaderPill tone="success">Read</ReaderPill> : null}
-                              {state.bookmarked ? <ReaderPill tone="info">Saved</ReaderPill> : null}
-                              {state.starred ? (
-                                <ReaderPill tone="warning">Starred</ReaderPill>
-                              ) : null}
-                            </div>
-                            <h3 className="break-words text-lg font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] group-hover:text-(--brand-strong)">
-                              {article.title}
-                            </h3>
-                            {preferences.showSummaries && article.summary ? (
-                              <p className="small-note max-w-3xl">{article.summary}</p>
-                            ) : null}
-                          </div>
-
-                          <div className="min-w-0 space-y-2 text-sm text-(--ink-muted) lg:text-right">
-                            <div>{formatArticleDate(article.published_at)}</div>
-                            <div className="flex flex-wrap gap-2 lg:justify-end">
-                              {state.archived ? <ReaderPill>Archived</ReaderPill> : null}
-                              {article.author ? (
-                                <span className="min-w-0 break-words [overflow-wrap:anywhere]">
-                                  {article.author}
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap gap-2">
-                          {articleTopics.slice(0, 4).map((topic) => (
-                            <span
-                              key={`${article.id}-${topic}`}
-                              className="rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1 text-xs font-semibold text-(--ink-muted)"
-                            >
-                              {topic}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={isSelected ? "secondary" : "outline"}
-                            onClick={() => handleSelectArticle(article.id)}
-                          >
-                            <Eye className="size-4" />
-                            {isSelected ? "Hide details" : "Preview"}
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={state.read ? "secondary" : "ghost"}
-                            onClick={() => updateState(article.id, { read: !state.read })}
-                          >
-                            <CheckCheck className="size-4" />
-                            {state.read ? "Marked read" : "Mark read"}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {isSelected ? (
-                        <div className="mt-4 xl:hidden">
-                          <ReaderPreviewPane
-                            article={article}
-                            source={feedLookup.get(article.feed_id)}
-                            state={state}
-                            variant="inline"
-                            onClose={() => setPreviewArticleId(null)}
-                            onToggleState={(partial) => updateState(article.id, partial)}
-                          />
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--line) p-5">
-              <p className="small-note">
-                Page offset {browse.cursor} · showing up to {browse.limit} results per page
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={browse.cursor === 0}
-                  onClick={() =>
-                    updateUrl({
-                      cursor:
-                        browse.cursor > browse.limit ? String(browse.cursor - browse.limit) : null,
-                    })
-                  }
-                >
-                  Previous
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={browse.next_cursor === null}
-                  onClick={() =>
-                    updateUrl({
-                      cursor: browse.next_cursor === null ? null : String(browse.next_cursor),
-                    })
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </section>
+          <ReaderArticleStream
+            query={currentState.query}
+            filterSummary={filterSummary}
+            refreshError={refreshError}
+            error={error}
+            activeFilterChips={activeFilterChips}
+            loading={loading}
+            refreshing={refreshing}
+            visibleArticles={visibleArticles}
+            articleStateMap={articleStateMap}
+            selectedArticleId={selectedArticle?.id ?? null}
+            feedLookup={feedLookup}
+            layout={preferences.layout}
+            showSummaries={preferences.showSummaries}
+            browseCursor={browse.cursor}
+            browseLimit={browse.limit}
+            browseNextCursor={browse.next_cursor}
+            canClearArticleFilters={canClearArticleFilters}
+            canResetWorkspace={canResetWorkspace}
+            clearArticleFiltersHref={clearArticleFiltersHref}
+            resetWorkspaceHref={resetWorkspaceHref}
+            catalogRecoveryHref={catalogRecoveryHref}
+            onSelectArticle={handleSelectArticle}
+            onUpdateState={updateState}
+            onClosePreview={() => setPreviewArticleId(null)}
+            onFilterChip={updateUrl}
+            onResetDrafts={resetDrafts}
+            onPaginate={(cursor) => updateUrl({ cursor })}
+          />
         </section>
 
         {selectedArticle ? (
