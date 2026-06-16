@@ -67,6 +67,8 @@ export type ReaderRouteData = {
   initialBrowse: FeedsWorkspaceInitialBrowse | null;
 };
 
+export type URLSearchParamsLike = Pick<URLSearchParams, "get" | "getAll">;
+
 export async function loadReaderRouteData(
   searchParamsPromise: Promise<ReaderPageSearchParams>,
 ): Promise<ReaderRouteData> {
@@ -126,12 +128,12 @@ function toURLSearchParams(searchParams: ReaderPageSearchParams): URLSearchParam
   return params;
 }
 
-function parseMode(searchParams: URLSearchParams): FeedsWorkspaceMode {
+export function parseMode(searchParams: URLSearchParamsLike): FeedsWorkspaceMode {
   const rawMode = searchParams.get("mode")?.trim().toLowerCase();
   return rawMode === "catalog" ? "catalog" : "reader";
 }
 
-function parseSort(searchParams: URLSearchParams): FeedsWorkspaceInitialState["sort"] {
+export function parseSort(searchParams: URLSearchParamsLike): FeedsWorkspaceInitialState["sort"] {
   const rawSort = searchParams.get("sort")?.trim().toLowerCase() ?? "";
 
   if (rawSort === "oldest" || rawSort === "source") {
@@ -141,7 +143,9 @@ function parseSort(searchParams: URLSearchParams): FeedsWorkspaceInitialState["s
   return "latest";
 }
 
-function parseReaderView(searchParams: URLSearchParams): FeedsWorkspaceInitialState["readerView"] {
+export function parseReaderView(
+  searchParams: URLSearchParamsLike,
+): FeedsWorkspaceInitialState["readerView"] {
   const rawView = searchParams.get("reader_view")?.trim().toLowerCase() ?? "";
   if (
     rawView === "unread" ||
@@ -155,7 +159,7 @@ function parseReaderView(searchParams: URLSearchParams): FeedsWorkspaceInitialSt
   return "latest";
 }
 
-function parseCursor(searchParams: URLSearchParams): number {
+export function parseCursor(searchParams: URLSearchParamsLike): number {
   const rawCursor = searchParams.get("cursor");
   if (!rawCursor) {
     return 0;
@@ -169,7 +173,7 @@ function parseCursor(searchParams: URLSearchParams): number {
   return Math.trunc(parsed);
 }
 
-function parseLimit(searchParams: URLSearchParams): number {
+export function parseLimit(searchParams: URLSearchParamsLike): number {
   const rawLimit = searchParams.get("limit");
   if (!rawLimit) {
     return 24;
@@ -183,7 +187,7 @@ function parseLimit(searchParams: URLSearchParams): number {
   return Math.max(1, Math.min(100, Math.trunc(parsed)));
 }
 
-function parseInitialState(searchParams: URLSearchParams): FeedsWorkspaceInitialState {
+export function parseInitialState(searchParams: URLSearchParamsLike): FeedsWorkspaceInitialState {
   const normalizedSourceType = searchParams.get("source_type")?.trim();
   const verified = parseVerifiedSearchFilter(searchParams.get("verified"));
 
