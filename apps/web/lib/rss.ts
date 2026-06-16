@@ -1,6 +1,7 @@
 import { Feed } from "feed";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { source } from "@/lib/source";
+import { loadBlogPosts } from "@/lib/blog";
 
 const currentYear = new Date().getFullYear();
 const defaultFeedDate = new Date("2025-01-01T00:00:00.000Z");
@@ -150,9 +151,8 @@ export function getSitewideRSS() {
 
 /**
  * Generate blog RSS feed
- * Note: Set up blog content source when ready
  */
-export function getBlogRSS() {
+export async function getBlogRSS() {
   const feed = new Feed({
     title: `${SITE_NAME} - Blog`,
     id: `${SITE_URL}/blog`,
@@ -176,8 +176,25 @@ export function getBlogRSS() {
     },
   });
 
-  // TODO: Add blog posts when blog source is set up
-  // For now, return empty feed structure
+  const posts = await loadBlogPosts();
+  for (const post of posts) {
+    const postDate = new Date(post.date);
+    const safeDate = Number.isNaN(postDate.getTime()) ? defaultFeedDate : postDate;
+    feed.addItem({
+      id: `${SITE_URL}/blog/${post.slug}`,
+      title: post.title,
+      description: post.summary || `Update from the AI Web Feeds team: ${post.title}`,
+      link: `${SITE_URL}/blog/${post.slug}`,
+      date: safeDate,
+      category: [{ name: "Blog" }],
+      author: [
+        {
+          name: `${SITE_NAME} Team`,
+          link: SITE_URL,
+        },
+      ],
+    });
+  }
 
   return feed;
 }
