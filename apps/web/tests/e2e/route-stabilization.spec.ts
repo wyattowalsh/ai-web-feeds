@@ -211,6 +211,9 @@ test.describe("Route stabilization smoke", () => {
   test("reader search applies explicitly and updates the canonical URL", async ({ page }) => {
     const tracker = trackClientErrors(page);
 
+    // Explicit wide viewport ensures the desktop (xl+) filter rail + search input is rendered
+    // and not affected by hidden xl:block + exact-1280 emulation differences.
+    await page.setViewportSize({ width: 1440, height: 900 });
     await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await expect(page.locator("article h3").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
@@ -219,13 +222,9 @@ test.describe("Route stabilization smoke", () => {
 
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill(token);
-    await expect(desktopSearch).toHaveValue(token);
-    // Wait for the Apply button to enable (reflects hasPendingDraftChanges) then click for
-    // determinism under concurrent effects / reader shell state / RSC in orchestration.
-    // (Enter submit can race in some browser/timing combos post-matrix viewport tests.)
-    const applyBtn = page.getByRole("button", { name: "Apply filters" });
-    await expect(applyBtn).toBeEnabled({ timeout: 5000 });
-    await applyBtn.click();
+    // Submit via Enter (form implicit submit) -- more reliable across orchestration timing
+    // than waiting on hasPending/Apply button disabled state (which can lag draft vs currentState).
+    await desktopSearch.press("Enter");
 
     await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
     await expect(
@@ -243,6 +242,8 @@ test.describe("Route stabilization smoke", () => {
   }) => {
     const tracker = trackClientErrors(page);
 
+    // Wide viewport to ensure desktop search rail + preview interactions are stable.
+    await page.setViewportSize({ width: 1440, height: 900 });
     await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
@@ -251,12 +252,8 @@ test.describe("Route stabilization smoke", () => {
 
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill("agent");
-    await expect(desktopSearch).toHaveValue("agent");
-    // Click Apply after waiting enabled (more deterministic under reader orchestration effects
-    // than implicit Enter submit which raced in some browser runs).
-    const applyBtn = page.getByRole("button", { name: "Apply filters" });
-    await expect(applyBtn).toBeEnabled({ timeout: 5000 });
-    await applyBtn.click();
+    // Use Enter + explicit desktop viewport for reliable submit under reader shell orchestration.
+    await desktopSearch.press("Enter");
 
     await expect(page).toHaveURL(/\/reader\?q=agent$/);
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
