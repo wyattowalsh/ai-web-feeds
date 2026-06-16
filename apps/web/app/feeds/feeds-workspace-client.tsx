@@ -578,13 +578,13 @@ export function ReaderShell({
 
   useEffect(() => {
     if (!localIndexReady) {
-      setCachedArticles([]);
+      setCachedArticles((current) => (current.length === 0 ? current : []));
       return;
     }
 
     const query = currentState.query.trim();
     if (!query) {
-      setCachedArticles([]);
+      setCachedArticles((current) => (current.length === 0 ? current : []));
       return;
     }
 

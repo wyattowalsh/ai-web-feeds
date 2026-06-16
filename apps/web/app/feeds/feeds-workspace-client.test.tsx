@@ -1,11 +1,14 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { replaceMock, useSearchParamsMock, useReaderPreferencesMock } = vi.hoisted(() => ({
-  replaceMock: vi.fn(),
-  useSearchParamsMock: vi.fn(() => new URLSearchParams()),
-  useReaderPreferencesMock: vi.fn(),
-}));
+const { replaceMock, useSearchParamsMock, useReaderPreferencesMock, localSearchMock } = vi.hoisted(
+  () => ({
+    replaceMock: vi.fn(),
+    useSearchParamsMock: vi.fn(() => new URLSearchParams()),
+    useReaderPreferencesMock: vi.fn(),
+    localSearchMock: vi.fn(() => []),
+  }),
+);
 
 let currentSearchParams = new URLSearchParams();
 
@@ -33,7 +36,7 @@ vi.mock("@/hooks/use-reader-shortcuts", () => ({
 }));
 
 vi.mock("@/hooks/use-local-search-index", () => ({
-  useLocalSearchIndex: () => ({ ready: false, search: () => [] }),
+  useLocalSearchIndex: () => ({ ready: false, search: localSearchMock }),
 }));
 
 import { FeedsWorkspaceClient } from "./feeds-workspace-client";
