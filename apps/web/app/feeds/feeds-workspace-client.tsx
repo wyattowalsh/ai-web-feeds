@@ -17,11 +17,8 @@ import type {
   FeedsWorkspaceMode,
 } from "@/lib/reader-route-types";
 import {
-  compareByPublishedDesc,
   DEFAULT_ARTICLE_STATE,
   DEFAULT_PAGE_LIMIT,
-  LIVE_BOOTSTRAP_PER_FEED_LIMIT,
-  LIVE_BOOTSTRAP_POST_LIMIT,
   LIVE_REFRESH_SAMPLE_FEED_LIMIT,
   buildCurrentFilterChips,
   buildReaderHref,
@@ -32,15 +29,12 @@ import {
   matchesReaderView,
   normalizeArticle,
   normalizeCachedArticle,
-  normalizeLiveArticle,
   normalizeQueryDraft,
   normalizeTopicsValue,
   readArticleState,
   toVerifiedDraftValue,
   writeArticleState,
   type FeedStats,
-  type LiveStreamEvent,
-  type LiveStreamProgress,
   type ReaderArticleState,
   type ReaderDraftState,
   type VerifiedDraftValue,
@@ -57,6 +51,8 @@ import {
   syncArticleState,
 } from "@/lib/reader/hydrate-article-state";
 import { useLocalSearchIndex } from "@/hooks/use-local-search-index";
+import { useReaderCorpusBrowse } from "@/hooks/use-reader-corpus-browse";
+import { useReaderLiveRefresh } from "@/hooks/use-reader-live-refresh";
 import { useReaderShortcuts } from "@/hooks/use-reader-shortcuts";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 
@@ -108,19 +104,13 @@ export function ReaderShell({
   );
   const [readerViewDraft, setReaderViewDraft] = useState(initialState.readerView);
   const [sortDraft, setSortDraft] = useState(initialState.sort);
-  const [browse, setBrowse] = useState(initialBrowse);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [liveProgress, setLiveProgress] = useState<LiveStreamProgress | null>(null);
-  const [overlayArticles, setOverlayArticles] = useState<WorkspaceArticle[]>([]);
   const [cachedArticles, setCachedArticles] = useState<WorkspaceArticle[]>([]);
   const [articleStates, setArticleStates] = useState<Record<string, ReaderArticleState>>({});
   const { ready: localIndexReady, search: searchLocal } = useLocalSearchIndex();
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
-  const firstLoadRef = useRef(true);
+  const overlayClearRef = useRef<(() => void) | null>(null);
+  const mergedArticlesRef = useRef<WorkspaceArticle[]>([]);
   const queryInputRef = useRef<HTMLInputElement>(null);
   const searchParamsString = searchParams.toString();
 
@@ -164,79 +154,6 @@ export function ReaderShell({
     currentState.verified,
   ]);
 
-  useEffect(() => {
-    if (firstLoadRef.current) {
-      firstLoadRef.current = false;
-      const initialQuery = initialParamsString.split("?")[1] ?? "";
-      if (searchParamsString === initialQuery) {
-        return;
-      }
-    }
-
-    const controller = new AbortController();
-    const params = new URLSearchParams();
-    if (currentState.query) {
-      params.set("q", currentState.query);
-    }
-    if (currentState.sourceType) {
-      params.set("source_type", currentState.sourceType);
-    }
-    if (currentState.topics.length > 0) {
-      params.set("topics", normalizeTopicsValue(currentState.topics));
-    }
-    if (typeof currentState.verified === "boolean") {
-      params.set("verified", String(currentState.verified));
-    }
-    if (currentState.sort !== "latest") {
-      params.set("sort", currentState.sort);
-    }
-    if (currentState.cursor > 0) {
-      params.set("cursor", String(currentState.cursor));
-    }
-    if (currentState.limit !== DEFAULT_PAGE_LIMIT) {
-      params.set("limit", String(currentState.limit));
-    }
-    for (const feedId of currentState.feedIds) {
-      params.append("feed", feedId);
-    }
-
-    setOverlayArticles([]);
-    setLoading(true);
-    setError(null);
-
-    void fetch(`/api/articles?${params.toString()}`, {
-      signal: controller.signal,
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error || "Failed to load articles");
-        }
-
-        return (await response.json()) as FeedsWorkspaceInitialBrowse;
-      })
-      .then((payload) => {
-        setBrowse(payload);
-      })
-      .catch((nextError) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setError(nextError instanceof Error ? nextError.message : "Failed to load articles");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [currentState, initialParamsString, searchParamsString]);
-
   const candidateFeeds = useMemo(
     () =>
       feeds.filter((feed) =>
@@ -255,6 +172,46 @@ export function ReaderShell({
       feeds,
     ],
   );
+
+  const { browse, loading, error } = useReaderCorpusBrowse({
+    currentState,
+    initialParamsString,
+    searchParamsString,
+    initialBrowse,
+    onBrowseStart: () => overlayClearRef.current?.(),
+  });
+
+  const {
+    refreshing,
+    refreshError,
+    liveProgress,
+    overlayArticles,
+    setOverlayArticles,
+    refreshLatest,
+  } = useReaderLiveRefresh({
+    candidateFeeds,
+    feedIds: currentState.feedIds,
+    query: currentState.query,
+    sort: currentState.sort,
+    mergedArticles: mergedArticlesRef.current,
+  });
+
+  overlayClearRef.current = () => setOverlayArticles([]);
+
+  const mergedArticles = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered = [...overlayArticles, ...cachedArticles, ...browse.items.map(normalizeArticle)];
+    return ordered.filter((article) => {
+      const dedupeKey = article.id || `${article.feed_id}:${article.link}`;
+      if (seen.has(dedupeKey)) {
+        return false;
+      }
+      seen.add(dedupeKey);
+      return true;
+    });
+  }, [browse.items, cachedArticles, overlayArticles]);
+
+  mergedArticlesRef.current = mergedArticles;
 
   const articleStateMap = useMemo(() => {
     const nextStateMap: Record<string, ReaderArticleState> = {};
@@ -279,19 +236,6 @@ export function ReaderShell({
       }
 
       return changed ? nextState : current;
-    });
-  }, [browse.items, cachedArticles, overlayArticles]);
-
-  const mergedArticles = useMemo(() => {
-    const seen = new Set<string>();
-    const ordered = [...overlayArticles, ...cachedArticles, ...browse.items.map(normalizeArticle)];
-    return ordered.filter((article) => {
-      const dedupeKey = article.id || `${article.feed_id}:${article.link}`;
-      if (seen.has(dedupeKey)) {
-        return false;
-      }
-      seen.add(dedupeKey);
-      return true;
     });
   }, [browse.items, cachedArticles, overlayArticles]);
 
@@ -340,196 +284,6 @@ export function ReaderShell({
       };
     });
   };
-
-  const refreshLatest = useCallback(
-    async (forceRefresh = true) => {
-      const feedIds =
-        currentState.feedIds.length > 0
-          ? currentState.feedIds
-          : candidateFeeds
-              .slice(0, LIVE_REFRESH_SAMPLE_FEED_LIMIT)
-              .map((feed) => feed.id ?? "")
-              .filter(Boolean);
-
-      if (feedIds.length === 0) {
-        setRefreshError("Choose at least one source to refresh.");
-        return;
-      }
-
-      setRefreshing(true);
-      setRefreshError(null);
-      setLiveProgress({
-        totalSources: feedIds.length,
-        successfulSources: 0,
-        failedSources: 0,
-        completed: false,
-      });
-
-      try {
-        const response = await fetch("/api/feeds/posts/aggregate/stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({
-            feedIds,
-            limit: LIVE_BOOTSTRAP_POST_LIMIT,
-            perFeedLimit: LIVE_BOOTSTRAP_PER_FEED_LIMIT,
-            refresh: forceRefresh,
-            q: currentState.query || null,
-            sort: currentState.sort,
-          }),
-        });
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error || "Failed to refresh latest posts");
-        }
-
-        const existingKeys = new Set(
-          mergedArticles.map((article) => article.id || `${article.feed_id}:${article.link}`),
-        );
-        const reader = response.body?.getReader();
-        if (!reader) {
-          const payload = (await response.json()) as {
-            posts?: Array<Parameters<typeof normalizeLiveArticle>[0]>;
-          };
-          const normalizedPosts = (payload.posts ?? []).map(normalizeLiveArticle);
-          setOverlayArticles((currentOverlay) =>
-            [...normalizedPosts, ...currentOverlay]
-              .sort(compareByPublishedDesc)
-              .slice(0, LIVE_BOOTSTRAP_POST_LIMIT),
-          );
-          setLiveProgress((current) => ({
-            totalSources: current?.totalSources ?? feedIds.length,
-            successfulSources: current?.totalSources ?? feedIds.length,
-            failedSources: 0,
-            completed: true,
-          }));
-          return;
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let malformedEventCount = 0;
-
-        const handleEvent = (event: LiveStreamEvent) => {
-          if (event.type === "start") {
-            setLiveProgress({
-              totalSources: event.totalSources,
-              successfulSources: 0,
-              failedSources: 0,
-              completed: false,
-            });
-            return;
-          }
-
-          if (event.type === "feed_error") {
-            setLiveProgress((current) => ({
-              totalSources: current?.totalSources ?? feedIds.length,
-              successfulSources: event.successfulSources,
-              failedSources: event.failedSources,
-              completed: false,
-            }));
-            return;
-          }
-
-          if (event.type === "feed") {
-            setLiveProgress((current) => ({
-              totalSources: current?.totalSources ?? feedIds.length,
-              successfulSources: event.successfulSources,
-              failedSources: event.failedSources,
-              completed: false,
-            }));
-
-            const normalizedPosts = event.posts.map(normalizeLiveArticle);
-            setOverlayArticles((currentOverlay) => {
-              const keys = new Set([
-                ...existingKeys,
-                ...currentOverlay.map(
-                  (article) => article.id || `${article.feed_id}:${article.link}`,
-                ),
-              ]);
-              const nextPosts = normalizedPosts.filter((article) => {
-                const key = article.id || `${article.feed_id}:${article.link}`;
-                if (keys.has(key)) {
-                  return false;
-                }
-                keys.add(key);
-                return true;
-              });
-
-              return [...nextPosts, ...currentOverlay]
-                .sort(compareByPublishedDesc)
-                .slice(0, LIVE_BOOTSTRAP_POST_LIMIT);
-            });
-            return;
-          }
-
-          if (event.type === "done") {
-            setLiveProgress({
-              totalSources: event.totalSources,
-              successfulSources: event.successfulSources,
-              failedSources: event.failedSources,
-              completed: true,
-            });
-            return;
-          }
-
-          if (event.type === "error") {
-            throw new Error(event.message);
-          }
-        };
-        const handleEventLine = (line: string) => {
-          if (!line.trim()) {
-            return;
-          }
-
-          let event: LiveStreamEvent;
-          try {
-            event = JSON.parse(line) as LiveStreamEvent;
-          } catch {
-            malformedEventCount += 1;
-            return;
-          }
-
-          handleEvent(event);
-        };
-
-        while (true) {
-          const { value, done } = await reader.read();
-          buffer += decoder.decode(value, { stream: !done });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            handleEventLine(line);
-          }
-
-          if (done) {
-            break;
-          }
-        }
-
-        if (buffer.trim()) {
-          handleEventLine(buffer);
-        }
-
-        if (malformedEventCount > 0) {
-          setRefreshError(
-            malformedEventCount === 1
-              ? "Skipped a malformed refresh event; kept loaded posts."
-              : `Skipped ${malformedEventCount} malformed refresh events; kept loaded posts.`,
-          );
-        }
-      } catch (nextError) {
-        setRefreshError(
-          nextError instanceof Error ? nextError.message : "Failed to refresh latest posts",
-        );
-      } finally {
-        setRefreshing(false);
-      }
-    },
-    [candidateFeeds, currentState.feedIds, currentState.query, currentState.sort, mergedArticles],
-  );
 
   const sourceTypes = useMemo(() => getSourceTypesFromFeeds(feeds), [feeds]);
   const topicOptions = useMemo(() => getTopics(feeds), [feeds]);

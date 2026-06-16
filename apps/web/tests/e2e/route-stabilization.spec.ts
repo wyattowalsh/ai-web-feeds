@@ -363,6 +363,42 @@ test.describe("Route stabilization smoke", () => {
     await expectNoClientErrors(page, tracker);
   });
 
+  test("saved view with search query updates URL and filter chips", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("article h3").first()).toBeVisible();
+
+    // Bookmark first article via Preview > Save (scoped to preview pane using closePreview ancestor surface-card xpath)
+    await page.getByRole("button", { name: "Preview" }).first().click();
+    const closePreview = page.getByRole("button", { name: "Close preview" });
+    await expect(closePreview).toBeVisible();
+    const previewPane = closePreview.locator(
+      "xpath=ancestor::div[contains(@class,'surface-card')][1]",
+    );
+    await previewPane.getByRole("button", { name: "Save" }).click();
+    await expect(previewPane.getByRole("button", { name: "Saved" })).toBeVisible();
+
+    const token = await firstArticleSearchToken(page);
+
+    const desktopSearch = page.locator("#reader-search");
+    await expect(desktopSearch).toBeVisible();
+    await typeIntoControlledInput(desktopSearch, token);
+
+    await page.locator("#reader-view").selectOption("saved");
+    await page.getByRole("button", { name: "Apply filters", disabled: false }).click();
+
+    await expect(page).toHaveURL(/q=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/reader_view=saved/, { timeout: 15000 });
+    await expect(
+      page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /View: Saved/i })).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
   test("mobile keeps filters collapsed until needed and preserves URL-driven reader state", async ({
     page,
   }) => {
