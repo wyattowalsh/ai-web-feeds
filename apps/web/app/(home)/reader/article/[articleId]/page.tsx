@@ -13,7 +13,6 @@ import { loadArticleCorpus } from "@/lib/article-corpus";
 import { loadFeedCatalog } from "@/lib/feeds";
 import {
   articleExcerpt,
-  getArticleBySlug,
   getArticleSlug,
   getSourcePath,
   getSourceTitle,
@@ -43,7 +42,9 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: ImmersiveReaderPageProps): Promise<Metadata> {
   const { articleId } = await params;
-  const article = await getArticleBySlug(articleId);
+  // Use the centralized reader loader (handles slug or raw id) for consistency
+  // with the page implementation and to align with loadArticleForReader.
+  const article = await loadArticleForReader(articleId);
   if (!article) {
     return createPageMetadata({
       title: "Article not found",
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: ImmersiveReaderPageProps): Pr
   return createPageMetadata({
     title: article.title,
     description: articleExcerpt(article),
-    path: buildImmersiveReaderHref(articleId),
+    path: buildImmersiveReaderHref(article),
     type: "article",
     robots: noIndexFollowRobots,
   });
@@ -76,7 +77,7 @@ export default async function ImmersiveReaderPage({ params }: ImmersiveReaderPag
   const source = loadFeedCatalog().sources.find((feed) => feed.id === article.feed_id);
   const sourceName = source ? getSourceTitle(source) : article.feed_title;
   const excerpt = articleExcerpt(article);
-  const immersiveHref = buildImmersiveReaderHref(articleId);
+  const immersiveHref = buildImmersiveReaderHref(article);
 
   return (
     <div className="page-wrap page-stack">

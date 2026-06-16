@@ -183,7 +183,7 @@ function PreviewPane({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={buildImmersiveReaderHref(article.id)}
+            href={buildImmersiveReaderHref(article)}
             className={cn(buttonVariants({ variant: "default" }))}
           >
             <BookOpenText className="size-4" />
