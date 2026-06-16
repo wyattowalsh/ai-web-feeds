@@ -404,13 +404,9 @@ test.describe("Route stabilization smoke", () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
 
-    // Seed IDB + LS *before* loading the /reader route so that:
-    // - useLocalSearchIndex() builds its in-memory index over the seeded article
-    // - article state (bookmarked) is visible to readArticleState() on mount
-    // The article id is chosen to never collide with server corpus items, so it
-    // only surfaces via the cachedArticles path (local-search + normalizeCachedArticle)
-    // when readerView=saved + query matches.
-    await page.goto("about:blank");
+    // Seed IDB + LS on the app origin (about:blank blocks indexedDB in Firefox/WebKit),
+    // then reload so useLocalSearchIndex() rebuilds over the seeded article.
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
     await page.evaluate(async () => {
       const DB_NAME = "aiwebfeeds";
       const STORE = "articles";
@@ -472,7 +468,7 @@ test.describe("Route stabilization smoke", () => {
       });
     });
 
-    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator("article h3").first()).toBeVisible({ timeout: 15000 });
 
     const desktopSearch = page.locator("#reader-search");
