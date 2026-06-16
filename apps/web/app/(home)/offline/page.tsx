@@ -1,12 +1,12 @@
-"use client";
-
 import type { Metadata } from "next";
 import Link from "next/link";
-import { WifiOff, RefreshCw, Home, BookOpenText } from "lucide-react";
+import { WifiOff, Home, BookOpenText } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { createPageMetadata } from "@/lib/seo";
+
+import { OfflineTryAgainButton } from "./offline-actions";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Offline - AI Web Feeds",
@@ -29,15 +29,7 @@ export default function OfflinePage() {
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            title="Manually refresh the page to retry when back online"
-            className={cn(buttonVariants({ variant: "default" }))}
-            onClick={() => window.location.reload()}
-          >
-            <RefreshCw className="size-4" />
-            Try again
-          </button>
+          <OfflineTryAgainButton />
 
           <Link href="/reader" className={cn(buttonVariants({ variant: "secondary" }))}>
             <BookOpenText className="size-4" />
@@ -46,13 +38,8 @@ export default function OfflinePage() {
 
           <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
             <Home className="size-4" />
-            Go home
+            Home
           </Link>
-        </div>
-
-        <div className="mt-10 text-xs text-(--ink-muted)">
-          Tip: Articles you&apos;ve previously viewed are available offline via the service worker
-          cache and your local IndexedDB.
         </div>
       </section>
     </div>
