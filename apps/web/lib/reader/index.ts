@@ -7,3 +7,4 @@ export * from "./filters";
 export * from "./format";
 export * from "./reading-time";
 export * from "./build-reader-shell-stats";
+export * from "./build-reader-workspace-chrome";
