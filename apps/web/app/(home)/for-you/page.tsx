@@ -11,6 +11,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function ForYouPage() {
+  const backendConfigured = Boolean(process.env.BACKEND_URL?.trim());
   return (
     <div className="page-wrap page-stack">
       <HubPage
@@ -18,7 +19,7 @@ export default function ForYouPage() {
         title="For You"
         description="Recommendations and topic-steered discovery powered by the optional ai-web-feeds backend. The core reader and catalog remain fully functional without it."
       >
-        <RecommendationsPageClient backendConfigured />
+        <RecommendationsPageClient backendConfigured={backendConfigured} />
       </HubPage>
     </div>
   );

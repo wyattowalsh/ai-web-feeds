@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import {
-  shortcutManager,
-  useKeyboardShortcut,
-  type ShortcutAction,
-} from "@/lib/keyboard-shortcuts";
+import { useEffect, useRef } from "react";
+import { shortcutManager, type ShortcutAction } from "@/lib/keyboard-shortcuts";
 
 /**
  * Reader shortcut action names that this hook wires.
@@ -89,30 +85,39 @@ export function useReaderShortcuts(
     })();
   }, [loadFromPreferences]);
 
-  // Register each provided handler with the singleton manager.
-  // useKeyboardShortcut returns an unregister on unmount per action.
-  const actions = useMemo(() => Object.keys(handlers) as ReaderShortcutAction[], [handlers]);
+  // Use refs to avoid stale closures for enabled/handlers while keeping a single registration effect.
+  const enabledRef = useRef(enabled);
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
 
-  // Wire each action via the existing hook for consistent lifecycle handling.
-  for (const action of actions) {
-    const handler = handlers[action];
-    if (handler) {
-      // The internal hook registers with shortcutManager and cleans up on unmount.
-      // We call it unconditionally; when !enabled we still register but manager.setEnabled controls firing.
-      // To respect `enabled`, we wrap the handler to no-op when disabled.
-      // However, the manager also has setEnabled(); we mirror that behavior here for safety.
-      // Simpler: always register; rely on manager.setEnabled for global toggle.
-      // But to honor the local `enabled` flag without mutating global state, gate inside a stable wrapper.
-      // We create a tiny wrapper per action below via effect to avoid stale closures.
-      // For clarity and to avoid dynamic hook count issues, we instead call the hook with a guarded handler.
-      // Since the number of keys is small and stable per render, this is fine.
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useKeyboardShortcut(action as ShortcutAction, () => {
-        if (!enabled) return;
-        handler?.();
-      });
-    }
-  }
+  const handlersRef = useRef(handlers);
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
+
+  // Register all provided handlers with the singleton manager in a *single* useEffect.
+  // This fixes the Rules of Hooks violation from the previous per-action useKeyboardShortcut loop.
+  // Callers typically memoize the handlers object (see feeds-workspace-client).
+  useEffect(() => {
+    const unregisterFns: Array<() => void> = [];
+    (Object.keys(handlers) as ReaderShortcutAction[]).forEach((action) => {
+      const handler = handlers[action];
+      if (handler) {
+        const wrappedHandler = () => {
+          if (!enabledRef.current) return;
+          // Prefer the handler from ref in case of identity churn, but the provided one at register is fresh.
+          (handlersRef.current[action] ?? handler)();
+        };
+        const unregister = shortcutManager.register(action as ShortcutAction, wrappedHandler);
+        unregisterFns.push(unregister);
+      }
+    });
+
+    return () => {
+      unregisterFns.forEach((fn) => fn());
+    };
+  }, [handlers, enabled]);
 }
 
 /**

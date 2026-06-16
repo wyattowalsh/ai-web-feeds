@@ -1,3 +1,5 @@
+"use client";
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { WifiOff, RefreshCw, Home, BookOpenText } from "lucide-react";
@@ -31,6 +33,7 @@ export default function OfflinePage() {
             type="button"
             title="Manually refresh the page to retry when back online"
             className={cn(buttonVariants({ variant: "default" }))}
+            onClick={() => window.location.reload()}
           >
             <RefreshCw className="size-4" />
             Try again
