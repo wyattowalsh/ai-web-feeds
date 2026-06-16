@@ -223,10 +223,12 @@ test.describe("Route stabilization smoke", () => {
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill(token);
     await expect(desktopSearch).toHaveValue(token);
-    // Ensure React has re-rendered with updated queryDraft (so applyDrafts closure + hasPending
-    // see the change) before submitting via Enter. The viewport guarantee + this wait avoids
-    // stale-draft submits that leave URL without ?q= (observed on webkit/firefox).
-    await desktopSearch.press("Enter");
+    // After value visible (draft updated + re-render), explicitly click Apply (now enabled)
+    // rather than Enter on input. This ensures the latest onSubmit/applyDrafts closure is used
+    // and hasPending is true, fixing stale "" q on webkit/firefox in CI.
+    const applyBtn = page.getByRole("button", { name: "Apply filters" });
+    await expect(applyBtn).toBeEnabled({ timeout: 3000 });
+    await applyBtn.click();
 
     await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
     await expect(
@@ -255,9 +257,10 @@ test.describe("Route stabilization smoke", () => {
     const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
     await desktopSearch.fill("agent");
     await expect(desktopSearch).toHaveValue("agent");
-    // Use Enter + explicit desktop viewport + value wait for reliable submit (avoids stale
-    // draft closure in applyDrafts during concurrent re-renders/orchestration).
-    await desktopSearch.press("Enter");
+    // Click Apply (after enabled) using viewport+value wait to guarantee fresh applyDrafts.
+    const applyBtn = page.getByRole("button", { name: "Apply filters" });
+    await expect(applyBtn).toBeEnabled({ timeout: 3000 });
+    await applyBtn.click();
 
     await expect(page).toHaveURL(/\/reader\?q=agent$/);
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
