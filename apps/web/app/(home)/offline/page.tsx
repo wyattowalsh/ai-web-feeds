@@ -29,11 +29,7 @@ export default function OfflinePage() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                window.location.reload();
-              }
-            }}
+            title="Manually refresh the page to retry when back online"
             className={cn(buttonVariants({ variant: "default" }))}
           >
             <RefreshCw className="size-4" />
