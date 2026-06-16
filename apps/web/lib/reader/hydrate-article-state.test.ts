@@ -8,13 +8,13 @@ import {
   syncArticleState,
 } from "./hydrate-article-state";
 import { DEFAULT_ARTICLE_STATE } from "./constants";
-import {
-  articleStateStorageKey,
-  readArticleState,
-  writeArticleState,
-} from "./article-state";
-import { articles, preferences, closeDB } from "@/lib/db";
+import { articleStateStorageKey, writeArticleState } from "./article-state";
+import { articles, preferences, closeDB, type Preferences } from "@/lib/db";
 import type { ReaderArticleState } from "./types";
+
+type PreferencesWithArticleStates = Preferences & {
+  articleStates?: Record<string, ReaderArticleState>;
+};
 
 function clearLocalStorage() {
   if (typeof window !== "undefined" && window.localStorage) {
@@ -81,8 +81,18 @@ describe("hydrate-article-state", () => {
   });
 
   it("scanLocalStorageArticleStates discovers non-default states under prefix", () => {
-    const state1: ReaderArticleState = { read: true, starred: false, archived: false, bookmarked: true };
-    const state2: ReaderArticleState = { read: false, starred: true, archived: true, bookmarked: false };
+    const state1: ReaderArticleState = {
+      read: true,
+      starred: false,
+      archived: false,
+      bookmarked: true,
+    };
+    const state2: ReaderArticleState = {
+      read: false,
+      starred: true,
+      archived: true,
+      bookmarked: false,
+    };
 
     writeArticleState("art-1", state1);
     writeArticleState("art-2", state2);
@@ -99,8 +109,8 @@ describe("hydrate-article-state", () => {
 
   it("load/save roundtrip article states via IDB preferences", async () => {
     const states: Record<string, ReaderArticleState> = {
-      "s1": { read: true, starred: true, archived: false, bookmarked: false },
-      "s2": { read: false, starred: false, archived: true, bookmarked: true },
+      s1: { read: true, starred: true, archived: false, bookmarked: false },
+      s2: { read: false, starred: false, archived: true, bookmarked: true },
     };
 
     await saveArticleStatesToIDB(states);
@@ -126,17 +136,24 @@ describe("hydrate-article-state", () => {
       offlineMode: true,
       syncOnStartup: false,
       updatedAt: 123,
-    } as any);
+    });
 
-    await saveArticleStatesToIDB({ "x1": { read: true, starred: false, archived: false, bookmarked: false } });
+    await saveArticleStatesToIDB({
+      x1: { read: true, starred: false, archived: false, bookmarked: false },
+    });
 
     const prefs = await preferences.get();
     expect(prefs.theme).toBe("dark");
-    expect((prefs as any).articleStates?.x1?.read).toBe(true);
+    expect((prefs as PreferencesWithArticleStates).articleStates?.x1?.read).toBe(true);
   });
 
   it("hydrateArticleStates migrates from localStorage to IDB and clears", async () => {
-    const st: ReaderArticleState = { read: true, starred: false, archived: false, bookmarked: true };
+    const st: ReaderArticleState = {
+      read: true,
+      starred: false,
+      archived: false,
+      bookmarked: true,
+    };
     writeArticleState("mig-1", st);
     writeArticleState("mig-2", { ...DEFAULT_ARTICLE_STATE, starred: true });
 
@@ -199,7 +216,7 @@ describe("hydrate-article-state", () => {
     // bookmarked should NOT patch article (only in overlay map)
     await syncArticleState("a-sync", { bookmarked: true });
     const afterBm = await articles.get("a-sync");
-    expect(afterBm && "bookmarked" in (afterBm as any)).toBe(false); // bookmarked is overlay only, not patched to articles store
+    expect(afterBm && "bookmarked" in afterBm).toBe(false); // bookmarked is overlay only, not patched to articles store
     expect((await loadArticleStatesFromIDB())["a-sync"].bookmarked).toBe(true);
   });
 

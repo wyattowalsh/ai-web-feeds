@@ -37,7 +37,9 @@ describe("CommandPalette", () => {
 
   it("filters items by label, description, and href on query change", async () => {
     renderPalette({ open: true });
-    const input = screen.getByPlaceholderText(/type a command or search routes/i) as HTMLInputElement;
+    const input = screen.getByPlaceholderText(
+      /type a command or search routes/i,
+    ) as HTMLInputElement;
 
     fireEvent.change(input, { target: { value: "reader" } });
     await waitFor(() => {
@@ -61,7 +63,7 @@ describe("CommandPalette", () => {
     const input = screen.getByPlaceholderText(/type a command or search routes/i);
 
     // default active should be first (0)
-    let first = screen.getAllByRole("option")[0];
+    const first = screen.getAllByRole("option")[0];
     expect(first).toHaveAttribute("aria-selected", "true");
 
     fireEvent.change(input, { target: { value: "blog" } });

@@ -10,20 +10,8 @@ import {
 } from "./keyboard-shortcuts";
 
 describe("keyboard-shortcuts (lib)", () => {
-  let keyHandler: (e: KeyboardEvent) => void;
-
   beforeEach(async () => {
-    // The manager adds a global listener in ctor. We can re-capture by spying addEventListener
-    const addSpy = vi.spyOn(window, "addEventListener");
-    // force a fresh load path isn't possible (private), but we can setEnabled and register freely
     shortcutManager.setEnabled(true);
-
-    // Capture the handler installed (the one bound in ctor)
-    const calls = addSpy.mock.calls.filter((c) => c[0] === "keydown");
-    if (calls.length > 0) {
-      keyHandler = calls[calls.length - 1][1] as (e: KeyboardEvent) => void;
-    }
-    addSpy.mockRestore();
 
     // Ensure the async loadShortcuts (from prefs) has settled so default map is populated.
     // getShortcuts is sync snapshot; give the microtask/IO from fake idb a tick.
@@ -112,7 +100,8 @@ describe("keyboard-shortcuts (lib)", () => {
 
     const map = shortcutManager.getShortcuts();
     // map is key -> action
-    const hasNext = Array.from(map.values()).includes("next_article" as any) || map.get("j") === "next_article";
+    const hasNext =
+      Array.from(map.values()).includes("next_article") || map.get("j") === "next_article";
     expect(hasNext || !!nextKey).toBe(true);
   });
 

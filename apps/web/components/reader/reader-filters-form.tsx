@@ -81,7 +81,6 @@ export function ReaderFiltersForm({
   hasPendingDraftChanges,
 }: ReaderFiltersFormProps) {
   const isDesktop = variant === "desktop";
-  const isMobile = variant === "mobile";
 
   const qId = isDesktop ? "reader-search" : "reader-search-mobile";
   const qAria = isDesktop ? "Search posts" : "Search posts mobile";
@@ -345,12 +344,7 @@ export function ReaderFiltersForm({
         </Button>
       </div>
 
-      <div
-        className={cn(
-          "flex flex-wrap gap-2",
-          isDesktop && "border-t border-(--line) pt-4",
-        )}
-      >
+      <div className={cn("flex flex-wrap gap-2", isDesktop && "border-t border-(--line) pt-4")}>
         <Button type="submit" className="flex-1" disabled={!hasPendingDraftChanges}>
           Apply filters
         </Button>
