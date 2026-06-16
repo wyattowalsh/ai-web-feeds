@@ -1,5 +1,5 @@
 import { getViolations, injectAxe } from "axe-playwright";
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 import {
   PLAYWRIGHT_AXE_OPTIONS,
   buildAxeFailureMessage,
@@ -111,6 +111,14 @@ async function firstArticleSearchToken(page: Page): Promise<string> {
   return token.toLowerCase();
 }
 
+/** Fill a React-controlled input via real keystrokes (fill() alone can skip onChange in webkit CI). */
+async function typeIntoControlledInput(input: Locator, value: string) {
+  await input.click();
+  await input.fill("");
+  await input.pressSequentially(value, { delay: 30 });
+  await expect(input).toHaveValue(value, { timeout: 10_000 });
+}
+
 test.afterEach(async ({ page }, testInfo) => {
   await warnOnA11yViolations(page, testInfo);
 });
@@ -220,14 +228,10 @@ test.describe("Route stabilization smoke", () => {
 
     const token = await firstArticleSearchToken(page);
 
-    const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
-    await desktopSearch.fill(token);
-    await expect(desktopSearch).toHaveValue(token);
-    // After value visible (draft updated + re-render), explicitly click Apply (now enabled)
-    // rather than Enter on input. This ensures the latest onSubmit/applyDrafts closure is used
-    // and hasPending is true, fixing stale "" q on webkit/firefox in CI.
-    const applyBtn = page.getByRole("button", { name: "Apply filters" });
-    await expect(applyBtn).toBeEnabled({ timeout: 3000 });
+    const desktopSearch = page.locator("#reader-search");
+    await expect(desktopSearch).toBeVisible();
+    await typeIntoControlledInput(desktopSearch, token);
+    const applyBtn = page.getByRole("button", { name: "Apply filters", disabled: false });
     await applyBtn.click();
 
     // Await the results heading first (driven by currentState from applied URL); this gives the
@@ -259,13 +263,10 @@ test.describe("Route stabilization smoke", () => {
     await page.getByRole("button", { name: "Preview" }).first().click();
     await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
 
-    const desktopSearch = page.getByRole("textbox", { name: "Search posts" });
-    await desktopSearch.fill("agent");
-    await expect(desktopSearch).toHaveValue("agent");
-    // Click Apply (after enabled) using viewport+value wait to guarantee fresh applyDrafts.
-    const applyBtn = page.getByRole("button", { name: "Apply filters" });
-    await expect(applyBtn).toBeEnabled({ timeout: 3000 });
-    await applyBtn.click();
+    const desktopSearch = page.locator("#reader-search");
+    await expect(desktopSearch).toBeVisible();
+    await typeIntoControlledInput(desktopSearch, "agent");
+    await page.getByRole("button", { name: "Apply filters", disabled: false }).click();
 
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible({
       timeout: 15000,
