@@ -333,6 +333,50 @@
     @apply text-sm leading-6;
     color: var(--ink-muted);
   }
+
+  /* Reader workspace tokens */
+  .reader-shell {
+    --reader-z-fab: 40;
+    --reader-z-sheet: 50;
+    --reader-z-toast: 60;
+    --reader-prose-width: min(100%, 42rem);
+    --reader-panel-gap: 1.25rem;
+  }
+
+  .reader-prose {
+    max-width: var(--reader-prose-width);
+    color: color-mix(in oklab, var(--ink) 92%, var(--ink-muted));
+    line-height: 1.7;
+  }
+
+  .reader-prose :where(h1, h2, h3, h4) {
+    font-family: var(--font-display), serif;
+    letter-spacing: -0.02em;
+    margin-top: 1.75em;
+    margin-bottom: 0.6em;
+  }
+
+  .reader-prose :where(p, li) {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .reader-prose :where(a) {
+    color: var(--brand-strong);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .reader-paper {
+    background: color-mix(in oklab, var(--surface) 96%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--line) 90%, transparent);
+    border-radius: 1.25rem;
+    box-shadow: var(--surface-shadow-soft);
+  }
+
+  .hub-grid {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
 }
 
 /* Print styles for PDF export */
