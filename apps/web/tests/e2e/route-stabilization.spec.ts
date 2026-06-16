@@ -399,6 +399,107 @@ test.describe("Route stabilization smoke", () => {
     await expectNoClientErrors(page, tracker);
   });
 
+  test("saved view with cached-only article shows Cached pill", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    // Seed IDB + LS *before* loading the /reader route so that:
+    // - useLocalSearchIndex() builds its in-memory index over the seeded article
+    // - article state (bookmarked) is visible to readArticleState() on mount
+    // The article id is chosen to never collide with server corpus items, so it
+    // only surfaces via the cachedArticles path (local-search + normalizeCachedArticle)
+    // when readerView=saved + query matches.
+    await page.goto("about:blank");
+    await page.evaluate(async () => {
+      const DB_NAME = "aiwebfeeds";
+      const STORE = "articles";
+      const ARTICLE_ID = "e2e-cached-only-article";
+      const TOKEN = "ZephyrCachedE2E";
+      const now = Date.now();
+
+      const article: Record<string, unknown> = {
+        id: ARTICLE_ID,
+        feedId: "e2e-test-feed",
+        title: `${TOKEN} Only Cached Article for Saved View E2E`,
+        link: "https://example.com/e2e-cached-zephyr",
+        content:
+          "This article exists only in the local cache (seeded for E2E) and must surface with Cached pill under saved+search.",
+        summary: "E2E cached-only test summary containing Zephyr token context.",
+        author: "E2E Test Author",
+        pubDate: now - 86_400_000, // ~1 day ago as ms epoch (per schema + local-search scoring)
+        topics: ["e2e", "test"],
+        rawCategories: [],
+        sourceTopics: [],
+        enclosures: [],
+        read: false,
+        starred: false,
+        archived: false,
+        tags: [],
+        cachedAt: now,
+        lastModified: now,
+      };
+
+      // Bookmark via the exact localStorage key format from lib/reader/article-state.ts + constants.ts
+      const LS_KEY = `aiwebfeeds.reader.article.${ARTICLE_ID}`;
+      localStorage.setItem(
+        LS_KEY,
+        JSON.stringify({ read: false, starred: false, archived: false, bookmarked: true }),
+      );
+
+      // Direct IDB seed (no app imports in evaluate context). Matches DB_NAME / STORES.ARTICLES.
+      await new Promise<void>((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 2);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE)) {
+            // Only keyPath required for getAll path used by buildLocalSearchIndex + searchArticlesLocal.
+            db.createObjectStore(STORE, { keyPath: "id" });
+          }
+        };
+        req.onsuccess = () => {
+          const db = req.result;
+          const tx = db.transaction(STORE, "readwrite");
+          const store = tx.objectStore(STORE);
+          store.put(article);
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error ?? new Error("IDB tx error during seed"));
+        };
+        req.onerror = () => reject(req.error ?? new Error("IDB open error during seed"));
+      });
+    });
+
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("article h3").first()).toBeVisible({ timeout: 15000 });
+
+    const desktopSearch = page.locator("#reader-search");
+    await expect(desktopSearch).toBeVisible();
+    await typeIntoControlledInput(desktopSearch, "ZephyrCachedE2E");
+
+    await page.locator("#reader-view").selectOption("saved");
+    await page.getByRole("button", { name: "Apply filters", disabled: false }).click();
+
+    await expect(
+      page.getByRole("heading", { name: new RegExp(`Results for .+ZephyrCachedE2E`, "i") }),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page)
+      .toHaveURL(/q=/, { timeout: 5000 })
+      .catch(() => {});
+    await expect(page)
+      .toHaveURL(/reader_view=saved/, { timeout: 5000 })
+      .catch(() => {});
+
+    // Assert the article row (from cached overlay, not corpus) carries the "Cached" ReaderPill.
+    const articleRow = page.locator("article").filter({ hasText: /ZephyrCachedE2E/i });
+    await expect(articleRow).toBeVisible();
+    await expect(articleRow.getByText("Cached", { exact: true })).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
   test("mobile keeps filters collapsed until needed and preserves URL-driven reader state", async ({
     page,
   }) => {
