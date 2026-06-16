@@ -404,20 +404,49 @@ test.describe("Route stabilization smoke", () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
 
-    // Seed IDB + LS on the app origin (about:blank blocks indexedDB in Firefox/WebKit),
-    // then reload so useLocalSearchIndex() rebuilds over the seeded article.
+    // Seed IDB + LS on the app origin (about:blank blocks indexedDB in Firefox/WebKit).
+    // Wait for corpus render first so the app's full DB schema exists before we write.
     await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("article h3").first()).toBeVisible({ timeout: 15000 });
+
+    // Ensure the app's full IndexedDB schema (incl. preferences for keyboard shortcuts) exists
+    // before we seed — a partial onupgradeneeded would leave object stores missing.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(async () => {
+            const DB_NAME = "aiwebfeeds";
+            const REQUIRED = ["articles", "preferences"] as const;
+
+            const open = () =>
+              new Promise<IDBDatabase | null>((resolve) => {
+                const req = indexedDB.open(DB_NAME);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(null);
+              });
+
+            const db = await open();
+            if (!db) {
+              return false;
+            }
+            const ready = REQUIRED.every((store) => db.objectStoreNames.contains(store));
+            db.close();
+            return ready;
+          }),
+        { timeout: 15_000 },
+      )
+      .toBe(true);
+
     await page.evaluate(async () => {
       const DB_NAME = "aiwebfeeds";
       const STORE = "articles";
       const ARTICLE_ID = "e2e-cached-only-article";
-      const TOKEN = "ZephyrCachedE2E";
       const now = Date.now();
 
       const article: Record<string, unknown> = {
         id: ARTICLE_ID,
         feedId: "e2e-test-feed",
-        title: `${TOKEN} Only Cached Article for Saved View E2E`,
+        title: "ZephyrCachedE2E Only Cached Article for Saved View E2E",
         link: "https://example.com/e2e-cached-zephyr",
         content:
           "This article exists only in the local cache (seeded for E2E) and must surface with Cached pill under saved+search.",
@@ -443,18 +472,16 @@ test.describe("Route stabilization smoke", () => {
         JSON.stringify({ read: false, starred: false, archived: false, bookmarked: true }),
       );
 
-      // Direct IDB seed (no app imports in evaluate context). Matches DB_NAME / STORES.ARTICLES.
+      // Direct IDB seed on the existing app schema (never create partial stores here).
       await new Promise<void>((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, 2);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(STORE)) {
-            // Only keyPath required for getAll path used by buildLocalSearchIndex + searchArticlesLocal.
-            db.createObjectStore(STORE, { keyPath: "id" });
-          }
-        };
+        const req = indexedDB.open(DB_NAME);
         req.onsuccess = () => {
           const db = req.result;
+          if (!db.objectStoreNames.contains(STORE)) {
+            db.close();
+            reject(new Error("articles store missing during seed"));
+            return;
+          }
           const tx = db.transaction(STORE, "readwrite");
           const store = tx.objectStore(STORE);
           store.put(article);
