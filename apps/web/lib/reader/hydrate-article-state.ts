@@ -12,46 +12,14 @@
 import { ARTICLE_STATE_STORAGE_PREFIX, DEFAULT_ARTICLE_STATE } from "./constants";
 import type { ReaderArticleState } from "./types";
 
+import { articleStateStorageKey, canUseStorage, readArticleState } from "./article-state";
+
 import { articles, preferences as preferencesStore, type Preferences } from "@/lib/db";
 
 // Extended preferences shape that can carry article states without changing schema
 type PreferencesWithArticleStates = Preferences & {
   articleStates?: Record<string, ReaderArticleState>;
 };
-
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-}
-
-function articleStateStorageKey(articleId: string): string {
-  return `${ARTICLE_STATE_STORAGE_PREFIX}${articleId}`;
-}
-
-/**
- * Read a single article state from localStorage (source of truth during migration).
- */
-function readLocalArticleState(articleId: string): ReaderArticleState {
-  if (!canUseStorage()) {
-    return { ...DEFAULT_ARTICLE_STATE };
-  }
-
-  try {
-    const stored = window.localStorage.getItem(articleStateStorageKey(articleId));
-    if (!stored) {
-      return { ...DEFAULT_ARTICLE_STATE };
-    }
-
-    const parsed = JSON.parse(stored) as Partial<ReaderArticleState>;
-    return {
-      read: parsed.read ?? false,
-      starred: parsed.starred ?? false,
-      archived: parsed.archived ?? false,
-      bookmarked: parsed.bookmarked ?? false,
-    };
-  } catch {
-    return { ...DEFAULT_ARTICLE_STATE };
-  }
-}
 
 /**
  * Scan localStorage for all article states under the known prefix.
@@ -73,7 +41,7 @@ export function scanLocalStorageArticleStates(): Record<string, ReaderArticleSta
       const articleId = key.slice(prefix.length);
       if (!articleId) continue;
 
-      const state = readLocalArticleState(articleId);
+      const state = readArticleState(articleId);
       // Only persist non-default states to avoid bloating storage
       const isDefault = !state.read && !state.starred && !state.archived && !state.bookmarked;
       if (!isDefault) {
@@ -218,19 +186,6 @@ export async function hydrateArticleStates(options?: { clearLocalStorage?: boole
     clearedCount,
     totalInIDB,
   };
-}
-
-/**
- * Convenience: ensure an in-memory map is hydrated from IDB if empty.
- * Useful for components that may initialize from localStorage then want IDB.
- */
-export async function ensureHydratedStates(
-  current: Record<string, ReaderArticleState>,
-): Promise<Record<string, ReaderArticleState>> {
-  if (Object.keys(current).length > 0) {
-    return current;
-  }
-  return loadArticleStatesFromIDB();
 }
 
 export type { ReaderArticleState } from "./types";

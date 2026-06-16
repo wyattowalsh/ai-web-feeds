@@ -79,7 +79,11 @@ import {
 import { ReaderPill } from "@/components/reader/reader-pill";
 import { AggregatorBadge } from "@/components/hub/aggregator-badge";
 import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
-import { hydrateArticleStates } from "@/lib/reader/hydrate-article-state";
+import {
+  hydrateArticleStates,
+  loadArticleStatesFromIDB,
+  syncArticleState,
+} from "@/lib/reader/hydrate-article-state";
 import { useReaderShortcuts } from "@/hooks/use-reader-shortcuts";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 
@@ -323,7 +327,19 @@ export function ReaderShell({
   const searchParamsString = searchParams.toString();
 
   useEffect(() => {
-    void hydrateArticleStates({ clearLocalStorage: false });
+    void (async () => {
+      await hydrateArticleStates({ clearLocalStorage: false });
+      // Minimal merge: load IDB states (post-migration) into local articleStates so
+      // articleStateMap and filters see persisted triage from IDB (readArticleState remains LS fallback).
+      try {
+        const idb = await loadArticleStatesFromIDB();
+        if (Object.keys(idb).length > 0) {
+          setArticleStates((current) => ({ ...current, ...idb }));
+        }
+      } catch {
+        // non-fatal
+      }
+    })();
   }, []);
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
@@ -546,6 +562,8 @@ export function ReaderShell({
         ...partial,
       };
       writeArticleState(articleId, nextArticleState);
+      // Wire IDB persistence: fire-and-forget sync (caller keeps LS via writeArticleState as fallback)
+      void syncArticleState(articleId, partial);
       return {
         ...current,
         [articleId]: nextArticleState,

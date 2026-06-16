@@ -1,7 +1,7 @@
 import { ARTICLE_STATE_STORAGE_PREFIX, DEFAULT_ARTICLE_STATE } from "./constants";
 import type { ReaderArticleState } from "./types";
 
-function canUseStorage(): boolean {
+export function canUseStorage(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
@@ -11,13 +11,13 @@ export function articleStateStorageKey(articleId: string): string {
 
 export function readArticleState(articleId: string): ReaderArticleState {
   if (!canUseStorage()) {
-    return DEFAULT_ARTICLE_STATE;
+    return { ...DEFAULT_ARTICLE_STATE };
   }
 
   try {
     const stored = window.localStorage.getItem(articleStateStorageKey(articleId));
     if (!stored) {
-      return DEFAULT_ARTICLE_STATE;
+      return { ...DEFAULT_ARTICLE_STATE };
     }
 
     const parsed = JSON.parse(stored) as Partial<ReaderArticleState>;
@@ -28,7 +28,7 @@ export function readArticleState(articleId: string): ReaderArticleState {
       bookmarked: parsed.bookmarked ?? false,
     };
   } catch {
-    return DEFAULT_ARTICLE_STATE;
+    return { ...DEFAULT_ARTICLE_STATE };
   }
 }
 
@@ -37,5 +37,9 @@ export function writeArticleState(articleId: string, nextState: ReaderArticleSta
     return;
   }
 
-  window.localStorage.setItem(articleStateStorageKey(articleId), JSON.stringify(nextState));
+  try {
+    window.localStorage.setItem(articleStateStorageKey(articleId), JSON.stringify(nextState));
+  } catch {
+    // Non-fatal: quota, private mode, etc. Mirror hydrate pattern.
+  }
 }
