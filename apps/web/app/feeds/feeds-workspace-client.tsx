@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Archive,
@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
-import { Badge } from "@/components/ui/badge";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -41,18 +41,47 @@ import {
   type FeedsWorkspaceInitialState,
   type FeedsWorkspaceMode,
 } from "@/lib/reader-route";
+import {
+  DEFAULT_ARTICLE_STATE,
+  DEFAULT_PAGE_LIMIT,
+  LIVE_BOOTSTRAP_PER_FEED_LIMIT,
+  LIVE_BOOTSTRAP_POST_LIMIT,
+  LIVE_REFRESH_SAMPLE_FEED_LIMIT,
+  buildCurrentFilterChips,
+  buildReaderHref,
+  formatArticleDate,
+  formatArticleDateTime,
+  formatSnapshotTimestamp,
+  getArticleTopics,
+  getSourceTypesFromFeeds,
+  matchesDraftState,
+  matchesFeedSlice,
+  matchesReaderView,
+  normalizeArticle,
+  normalizeLiveArticle,
+  normalizeQueryDraft,
+  normalizeTopicsValue,
+  parseTopicsValue,
+  readArticleState,
+  toVerifiedDraftValue,
+  toggleTopic,
+  writeArticleState,
+  type ArticleSort,
+  type FeedStats,
+  type LiveStreamEvent,
+  type LiveStreamProgress,
+  type ReaderArticleState,
+  type ReaderDraftState,
+  type ReaderView,
+  type VerifiedDraftValue,
+  type WorkspaceArticle,
+} from "@/lib/reader";
+import { ReaderPill } from "@/components/reader/reader-pill";
+import { AggregatorBadge } from "@/components/hub/aggregator-badge";
+import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
+import { hydrateArticleStates } from "@/lib/reader/hydrate-article-state";
+import { useReaderShortcuts } from "@/hooks/use-reader-shortcuts";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
-
-type FeedStats = {
-  total: number;
-  verified: number;
-  active: number;
-  hasVerificationMetadata: boolean;
-  hasActivityMetadata: boolean;
-  sourceTypeCount: number;
-  byType: Record<string, number>;
-  topicCount: number;
-};
 
 type FeedsWorkspaceClientProps = {
   mode: FeedsWorkspaceMode;
@@ -61,526 +90,6 @@ type FeedsWorkspaceClientProps = {
   initialState: FeedsWorkspaceInitialState;
   initialBrowse: FeedsWorkspaceInitialBrowse | null;
 };
-
-type ReaderView = FeedsWorkspaceInitialState["readerView"];
-type ArticleSort = FeedsWorkspaceInitialState["sort"];
-type VerifiedDraftValue = "" | "true" | "false";
-type ReaderArticleState = {
-  read: boolean;
-  starred: boolean;
-  archived: boolean;
-  bookmarked: boolean;
-};
-
-type WorkspaceArticle = FeedsWorkspaceInitialBrowse["items"][number] & {
-  freshness: "corpus" | "live";
-  published_at_ms: number | null;
-  source_url?: string | null;
-  resolved_feed_url?: string | null;
-};
-
-type LiveStreamEvent =
-  | {
-      type: "start";
-      totalSources: number;
-      limit: number;
-      perFeedLimit: number;
-      fetchedAt: string;
-    }
-  | {
-      type: "feed";
-      feedId: string;
-      feedTitle: string;
-      posts: Array<{
-        id: string;
-        feedId: string;
-        feedTitle: string;
-        title: string;
-        link: string;
-        summary: string | null;
-        sourceUrl: string;
-        resolvedFeedUrl: string;
-        author: string | null;
-        rawCategories: string[];
-        publishedAt: string | null;
-      }>;
-      successfulSources: number;
-      failedSources: number;
-    }
-  | {
-      type: "feed_error";
-      feedId: string;
-      feedTitle: string;
-      message: string;
-      successfulSources: number;
-      failedSources: number;
-    }
-  | {
-      type: "done";
-      totalSources: number;
-      successfulSources: number;
-      failedSources: number;
-      totalMatchedPosts: number;
-      fetchedAt: string;
-    }
-  | {
-      type: "error";
-      message: string;
-    };
-
-type LiveStreamProgress = {
-  totalSources: number;
-  successfulSources: number;
-  failedSources: number;
-  completed: boolean;
-};
-
-const ARTICLE_STATE_STORAGE_PREFIX = "aiwebfeeds.reader.article.";
-const DEFAULT_ARTICLE_STATE: ReaderArticleState = {
-  read: false,
-  starred: false,
-  archived: false,
-  bookmarked: false,
-};
-const DEFAULT_PAGE_LIMIT = 24;
-const LIVE_REFRESH_SAMPLE_FEED_LIMIT = 18;
-const LIVE_BOOTSTRAP_POST_LIMIT = 48;
-const LIVE_BOOTSTRAP_PER_FEED_LIMIT = 3;
-
-type ReaderDraftState = {
-  query: string;
-  sourceType: string;
-  topics: string[];
-  verified: VerifiedDraftValue;
-  readerView: ReaderView;
-  sort: ArticleSort;
-};
-
-function getSourceTypesFromFeeds(feeds: FeedSource[]): string[] {
-  return Array.from(
-    new Set(
-      feeds
-        .map((feed) => feed.source_type)
-        .filter((sourceType): sourceType is string => typeof sourceType === "string"),
-    ),
-  ).sort();
-}
-
-function normalizeTopicsValue(topics: string[]): string {
-  return topics.join(",");
-}
-
-function parseTopicsValue(value: string): string[] {
-  return Array.from(
-    new Set(
-      value
-        .split(",")
-        .map((topic) => topic.trim())
-        .filter(Boolean),
-    ),
-  );
-}
-
-function arraysEqual(left: string[], right: string[]): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  return left.every((value, index) => value === right[index]);
-}
-
-function toVerifiedDraftValue(value: boolean | null): VerifiedDraftValue {
-  if (value === true) {
-    return "true";
-  }
-
-  if (value === false) {
-    return "false";
-  }
-
-  return "";
-}
-
-function normalizeQueryDraft(value: string): string {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function matchesDraftState(drafts: ReaderDraftState, state: FeedsWorkspaceInitialState): boolean {
-  return (
-    normalizeQueryDraft(drafts.query) === state.query &&
-    (drafts.sourceType || null) === state.sourceType &&
-    arraysEqual(drafts.topics, state.topics) &&
-    toVerifiedDraftValue(state.verified) === drafts.verified &&
-    drafts.readerView === state.readerView &&
-    drafts.sort === state.sort
-  );
-}
-
-function getArticleTopics(article: WorkspaceArticle): string[] {
-  return article.topics;
-}
-
-function formatSnapshotTimestamp(value: string | null): string {
-  if (!value) {
-    return "Waiting for posts";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function formatArticleDate(value: string | null): string {
-  if (!value) {
-    return "Unknown date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatArticleDateTime(value: string | null): string {
-  if (!value) {
-    return "Unknown publish date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function Pill({
-  children,
-  tone = "neutral",
-}: {
-  children: ReactNode;
-  tone?: "neutral" | "brand" | "success" | "warning" | "info";
-}) {
-  const variant = tone === "neutral" ? "outline" : tone === "brand" ? "default" : "secondary";
-
-  return (
-    <Badge
-      variant={variant}
-      className={cn(
-        "min-h-6 px-2.5 text-[0.68rem] uppercase tracking-[0.08em]",
-        tone === "brand" && "border-primary/20 bg-primary/10 text-(--brand-strong)",
-        tone === "success" &&
-          "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-        tone === "warning" &&
-          "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-        tone === "info" && "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-        tone === "neutral" && "border-border bg-muted text-muted-foreground",
-      )}
-    >
-      {children}
-    </Badge>
-  );
-}
-
-function toggleTopic(topics: string[], topic: string): string[] {
-  if (topics.includes(topic)) {
-    return topics.filter((entry) => entry !== topic);
-  }
-
-  return [...topics, topic];
-}
-
-function buildCurrentFilterChips(
-  state: FeedsWorkspaceInitialState,
-  feedLookup: Map<string, FeedSource>,
-): Array<{
-  key: string;
-  label: string;
-  overrides: Record<string, string | string[] | null | undefined>;
-}> {
-  const chips: Array<{
-    key: string;
-    label: string;
-    overrides: Record<string, string | string[] | null | undefined>;
-  }> = [];
-
-  if (state.query) {
-    chips.push({
-      key: "query",
-      label: `Search: ${state.query}`,
-      overrides: { q: null, cursor: null },
-    });
-  }
-
-  if (state.sourceType) {
-    chips.push({
-      key: "sourceType",
-      label: `Type: ${state.sourceType}`,
-      overrides: { source_type: null, cursor: null },
-    });
-  }
-
-  for (const topic of state.topics) {
-    chips.push({
-      key: `topic:${topic}`,
-      label: `Topic: ${topic}`,
-      overrides: {
-        topics: normalizeTopicsValue(state.topics.filter((entry) => entry !== topic)) || null,
-        cursor: null,
-      },
-    });
-  }
-
-  if (state.verified === true) {
-    chips.push({
-      key: "verified:true",
-      label: "Verified only",
-      overrides: { verified: null, cursor: null },
-    });
-  } else if (state.verified === false) {
-    chips.push({
-      key: "verified:false",
-      label: "Unverified only",
-      overrides: { verified: null, cursor: null },
-    });
-  }
-
-  if (state.readerView !== "latest") {
-    const labels: Record<Exclude<ReaderView, "latest">, string> = {
-      unread: "Unread",
-      starred: "Starred",
-      saved: "Saved",
-      archived: "Archived",
-    };
-    chips.push({
-      key: "readerView",
-      label: `View: ${labels[state.readerView as Exclude<ReaderView, "latest">]}`,
-      overrides: { reader_view: null },
-    });
-  }
-
-  if (state.sort !== "latest") {
-    const labels: Record<Exclude<ArticleSort, "latest">, string> = {
-      oldest: "Oldest first",
-      source: "By source",
-    };
-    chips.push({
-      key: "sort",
-      label: `Sort: ${labels[state.sort as Exclude<ArticleSort, "latest">]}`,
-      overrides: { sort: null, cursor: null },
-    });
-  }
-
-  for (const feedId of state.feedIds) {
-    const feed = feedLookup.get(feedId);
-    chips.push({
-      key: `feed:${feedId}`,
-      label: `Source: ${feed?.title ?? feedId}`,
-      overrides: {
-        feed: state.feedIds.filter((entry) => entry !== feedId),
-        cursor: null,
-      },
-    });
-  }
-
-  return chips;
-}
-
-function normalizeArticle(article: FeedsWorkspaceInitialBrowse["items"][number]): WorkspaceArticle {
-  return {
-    ...article,
-    freshness: "corpus",
-    published_at_ms: article.published_at ? Date.parse(article.published_at) : null,
-  };
-}
-
-function normalizeLiveArticle(post: {
-  id: string;
-  feedId: string;
-  feedTitle: string;
-  title: string;
-  link: string;
-  summary: string | null;
-  sourceUrl?: string;
-  resolvedFeedUrl?: string;
-  author: string | null;
-  rawCategories: string[];
-  publishedAt: string | null;
-}): WorkspaceArticle {
-  return {
-    id: `${post.feedId}:${post.id}`,
-    feed_id: post.feedId,
-    feed_title: post.feedTitle,
-    title: post.title,
-    link: post.link,
-    summary: post.summary,
-    content_html: null,
-    author: post.author,
-    published_at: post.publishedAt,
-    topics: [],
-    source_topics: [],
-    raw_categories: post.rawCategories,
-    source_type: "feed",
-    verified: false,
-    is_active: true,
-    freshness: "live",
-    published_at_ms: post.publishedAt ? Date.parse(post.publishedAt) : null,
-    source_url: post.sourceUrl ?? null,
-    resolved_feed_url: post.resolvedFeedUrl ?? null,
-  };
-}
-
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-}
-
-function articleStateStorageKey(articleId: string): string {
-  return `${ARTICLE_STATE_STORAGE_PREFIX}${articleId}`;
-}
-
-function readArticleState(articleId: string): ReaderArticleState {
-  if (!canUseStorage()) {
-    return DEFAULT_ARTICLE_STATE;
-  }
-
-  try {
-    const stored = window.localStorage.getItem(articleStateStorageKey(articleId));
-    if (!stored) {
-      return DEFAULT_ARTICLE_STATE;
-    }
-
-    const parsed = JSON.parse(stored) as Partial<ReaderArticleState>;
-    return {
-      read: parsed.read ?? false,
-      starred: parsed.starred ?? false,
-      archived: parsed.archived ?? false,
-      bookmarked: parsed.bookmarked ?? false,
-    };
-  } catch {
-    return DEFAULT_ARTICLE_STATE;
-  }
-}
-
-function writeArticleState(articleId: string, nextState: ReaderArticleState): void {
-  if (!canUseStorage()) {
-    return;
-  }
-
-  window.localStorage.setItem(articleStateStorageKey(articleId), JSON.stringify(nextState));
-}
-
-function buildReaderHref(
-  state: {
-    query: string;
-    sourceType: string | null;
-    topics: string[];
-    verified: boolean | null;
-    feedIds: string[];
-    sort: ArticleSort;
-    readerView: ReaderView;
-    cursor: number;
-  },
-  overrides: Record<string, string | string[] | null | undefined> = {},
-): string {
-  const params = new URLSearchParams();
-
-  if (state.query) {
-    params.set("q", state.query);
-  }
-  if (state.sourceType) {
-    params.set("source_type", state.sourceType);
-  }
-  if (state.topics.length > 0) {
-    params.set("topics", normalizeTopicsValue(state.topics));
-  }
-  if (typeof state.verified === "boolean") {
-    params.set("verified", String(state.verified));
-  }
-  for (const feedId of state.feedIds) {
-    params.append("feed", feedId);
-  }
-  if (state.sort !== "latest") {
-    params.set("sort", state.sort);
-  }
-  if (state.readerView !== "latest") {
-    params.set("reader_view", state.readerView);
-  }
-  if (state.cursor > 0) {
-    params.set("cursor", String(state.cursor));
-  }
-
-  for (const [key, value] of Object.entries(overrides)) {
-    params.delete(key);
-
-    if (value == null || value === "") {
-      continue;
-    }
-
-    if (Array.isArray(value)) {
-      for (const entry of value) {
-        params.append(key, entry);
-      }
-      continue;
-    }
-
-    params.set(key, value);
-  }
-
-  const nextQuery = params.toString();
-  return nextQuery ? `${CANONICAL_READER_PATH}?${nextQuery}` : CANONICAL_READER_PATH;
-}
-
-function matchesFeedSlice(
-  feed: FeedSource,
-  filters: {
-    feedIds: string[];
-    sourceType: string | null;
-    topics: string[];
-    verified: boolean | null;
-  },
-): boolean {
-  const feedId = feed.id ?? "";
-  if (filters.feedIds.length > 0 && !filters.feedIds.includes(feedId)) {
-    return false;
-  }
-
-  if (filters.sourceType && feed.source_type !== filters.sourceType) {
-    return false;
-  }
-
-  if (typeof filters.verified === "boolean" && feed.verified !== filters.verified) {
-    return false;
-  }
-
-  if (filters.topics.length > 0) {
-    const feedTopics = new Set([...(feed.topics ?? []), ...(feed.tags ?? [])]);
-    if (!filters.topics.some((topic) => feedTopics.has(topic))) {
-      return false;
-    }
-  }
-
-  return feed.is_active !== false;
-}
-
-function matchesReaderView(view: ReaderView, state: ReaderArticleState): boolean {
-  if (view === "unread") {
-    return !state.read && !state.archived;
-  }
-
-  if (view === "starred") {
-    return state.starred && !state.archived;
-  }
-
-  if (view === "saved") {
-    return state.bookmarked && !state.archived;
-  }
-
-  if (view === "archived") {
-    return state.archived;
-  }
-
-  return !state.archived;
-}
 
 function PreviewPane({
   article,
@@ -652,11 +161,15 @@ function PreviewPane({
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          {article.freshness === "live" ? <Pill tone="brand">New</Pill> : null}
-          {article.verified ? <Pill tone="success">Verified</Pill> : null}
-          {state.read ? <Pill tone="success">Read</Pill> : <Pill tone="warning">Unread</Pill>}
-          {state.bookmarked ? <Pill tone="info">Saved</Pill> : null}
-          {state.starred ? <Pill tone="warning">Starred</Pill> : null}
+          {article.freshness === "live" ? <ReaderPill tone="brand">New</ReaderPill> : null}
+          {article.verified ? <ReaderPill tone="success">Verified</ReaderPill> : null}
+          {state.read ? (
+            <ReaderPill tone="success">Read</ReaderPill>
+          ) : (
+            <ReaderPill tone="warning">Unread</ReaderPill>
+          )}
+          {state.bookmarked ? <ReaderPill tone="info">Saved</ReaderPill> : null}
+          {state.starred ? <ReaderPill tone="warning">Starred</ReaderPill> : null}
         </div>
         <div className="space-y-2">
           <h2 className="break-words text-xl font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] sm:text-2xl">
@@ -666,10 +179,17 @@ function PreviewPane({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href={buildImmersiveReaderHref(article.id)}
+            className={cn(buttonVariants({ variant: "default" }))}
+          >
+            <BookOpenText className="size-4" />
+            Immersive read
+          </Link>
+          <Link
             href={article.link}
             target="_blank"
             rel="noreferrer"
-            className={cn(buttonVariants({ variant: "default" }))}
+            className={cn(buttonVariants({ variant: "outline" }))}
           >
             Read original
             <ArrowUpRight className="size-4" />
@@ -748,7 +268,7 @@ function PreviewPane({
   );
 }
 
-function ReaderWorkspace({
+export function ReaderShell({
   feeds,
   stats,
   initialState,
@@ -799,7 +319,12 @@ function ReaderWorkspace({
   const [previewArticleId, setPreviewArticleId] = useState<string | null>(null);
   const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
   const firstLoadRef = useRef(true);
+  const queryInputRef = useRef<HTMLInputElement>(null);
   const searchParamsString = searchParams.toString();
+
+  useEffect(() => {
+    void hydrateArticleStates({ clearLocalStorage: false });
+  }, []);
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
     const query = searchParams.get("q")?.trim().replace(/\s+/g, " ") ?? "";
@@ -1396,6 +921,77 @@ function ReaderWorkspace({
     setPreviewArticleId((current) => (current === articleId ? null : articleId));
   }, []);
 
+  const selectAdjacentArticle = useCallback(
+    (delta: number) => {
+      if (visibleArticles.length === 0) {
+        return;
+      }
+
+      const currentIndex = previewArticleId
+        ? visibleArticles.findIndex((article) => article.id === previewArticleId)
+        : -1;
+      const nextIndex =
+        currentIndex < 0
+          ? delta > 0
+            ? 0
+            : visibleArticles.length - 1
+          : Math.min(visibleArticles.length - 1, Math.max(0, currentIndex + delta));
+
+      setPreviewArticleId(visibleArticles[nextIndex]?.id ?? null);
+    },
+    [previewArticleId, visibleArticles],
+  );
+
+  const shortcutHandlers = useMemo(
+    () => ({
+      next_article: () => selectAdjacentArticle(1),
+      previous_article: () => selectAdjacentArticle(-1),
+      mark_as_read: () => {
+        if (!selectedArticle) {
+          return;
+        }
+        updateState(selectedArticle.id, { read: !selectedArticleState.read });
+      },
+      star: () => {
+        if (!selectedArticle) {
+          return;
+        }
+        updateState(selectedArticle.id, { starred: !selectedArticleState.starred });
+      },
+      archive: () => {
+        if (!selectedArticle) {
+          return;
+        }
+        updateState(selectedArticle.id, { archived: !selectedArticleState.archived });
+      },
+      open_original: () => {
+        if (!selectedArticle) {
+          return;
+        }
+        window.open(selectedArticle.link, "_blank", "noopener,noreferrer");
+      },
+      refresh: () => void refreshLatest(true),
+      focus_search: () => queryInputRef.current?.focus(),
+      close_modal: () => setPreviewArticleId(null),
+      go_home: () => router.push("/"),
+      go_unread: () => updateUrl({ reader_view: "unread", cursor: null }),
+      go_starred: () => updateUrl({ reader_view: "starred", cursor: null }),
+      go_all: () => updateUrl({ reader_view: null, cursor: null }),
+    }),
+    [
+      refreshLatest,
+      router,
+      selectAdjacentArticle,
+      selectedArticle,
+      selectedArticleState.archived,
+      selectedArticleState.read,
+      selectedArticleState.starred,
+      updateUrl,
+    ],
+  );
+
+  useReaderShortcuts(shortcutHandlers);
+
   useEffect(() => {
     if (!previewArticleId) {
       return;
@@ -1471,9 +1067,16 @@ function ReaderWorkspace({
         <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end sm:p-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="brand">Reader</Pill>
-              {corpusEmpty ? <Pill tone="info">Live</Pill> : <Pill>Prepared posts</Pill>}
-              {refreshing ? <Pill tone="warning">Refreshing</Pill> : null}
+              <ReaderPill tone="brand">Reader</ReaderPill>
+              <AggregatorBadge
+                variant={overlayArticles.length > 0 ? "mixed" : corpusEmpty ? "live" : "corpus"}
+              />
+              {corpusEmpty ? (
+                <ReaderPill tone="info">Live</ReaderPill>
+              ) : (
+                <ReaderPill>Prepared posts</ReaderPill>
+              )}
+              {refreshing ? <ReaderPill tone="warning">Refreshing</ReaderPill> : null}
             </div>
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
@@ -1548,6 +1151,7 @@ function ReaderWorkspace({
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
                   <Input
+                    ref={queryInputRef}
                     id="reader-search"
                     name="q"
                     aria-label="Search posts"
@@ -2064,10 +1668,14 @@ function ReaderWorkspace({
                               <span className="truncate text-sm font-semibold text-(--ink-muted)">
                                 {article.feed_title}
                               </span>
-                              {article.freshness === "live" ? <Pill tone="brand">New</Pill> : null}
-                              {state.read ? <Pill tone="success">Read</Pill> : null}
-                              {state.bookmarked ? <Pill tone="info">Saved</Pill> : null}
-                              {state.starred ? <Pill tone="warning">Starred</Pill> : null}
+                              {article.freshness === "live" ? (
+                                <ReaderPill tone="brand">New</ReaderPill>
+                              ) : null}
+                              {state.read ? <ReaderPill tone="success">Read</ReaderPill> : null}
+                              {state.bookmarked ? <ReaderPill tone="info">Saved</ReaderPill> : null}
+                              {state.starred ? (
+                                <ReaderPill tone="warning">Starred</ReaderPill>
+                              ) : null}
                             </div>
                             <h3 className="break-words text-lg font-semibold leading-snug text-(--ink) [overflow-wrap:anywhere] group-hover:text-(--brand-strong)">
                               {article.title}
@@ -2080,7 +1688,7 @@ function ReaderWorkspace({
                           <div className="min-w-0 space-y-2 text-sm text-(--ink-muted) lg:text-right">
                             <div>{formatArticleDate(article.published_at)}</div>
                             <div className="flex flex-wrap gap-2 lg:justify-end">
-                              {state.archived ? <Pill>Archived</Pill> : null}
+                              {state.archived ? <ReaderPill>Archived</ReaderPill> : null}
                               {article.author ? (
                                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                                   {article.author}
@@ -2222,7 +1830,7 @@ export function FeedsWorkspaceClient({
   }
 
   return (
-    <ReaderWorkspace
+    <ReaderShell
       feeds={feeds}
       stats={stats}
       initialState={initialState}
