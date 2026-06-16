@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { createPageMetadata } from "@/lib/seo";
 
+import { OfflineCachedSearch } from "./offline-cached-search";
 import { OfflineTryAgainButton } from "./offline-actions";
 
 export const metadata: Metadata = createPageMetadata({
@@ -42,6 +43,8 @@ export default function OfflinePage() {
           </Link>
         </div>
       </section>
+
+      <OfflineCachedSearch />
     </div>
   );
 }

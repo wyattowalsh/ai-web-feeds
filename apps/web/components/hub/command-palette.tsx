@@ -39,6 +39,8 @@ export function CommandPalette({
   className,
 }: CommandPaletteProps) {
   const router = useRouter();
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const previousFocusRef = React.useRef<HTMLElement | null>(null);
   const [internalOpen, setInternalOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -71,6 +73,64 @@ export function CommandPalette({
   React.useEffect(() => {
     setActiveIndex(0);
   }, [query]);
+
+  // Focus trap: keep Tab within the panel and restore focus on close.
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusInput = () => {
+      const input = document.getElementById("hub-command-input") as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    };
+    const focusTimer = window.setTimeout(focusInput, 0);
+
+    const panel = panelRef.current;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const onTabKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !panel) {
+        return;
+      }
+
+      const nodes = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (node) => !node.hasAttribute("disabled") && node.tabIndex !== -1,
+      );
+      if (nodes.length === 0) {
+        return;
+      }
+
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey) {
+        if (active === first || !panel.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+        return;
+      }
+
+      if (active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onTabKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", onTabKeyDown);
+      previousFocusRef.current?.focus();
+    };
+  }, [open]);
 
   // Global Cmd+K / Ctrl+K handler
   React.useEffect(() => {
@@ -152,6 +212,7 @@ export function CommandPalette({
       onClick={() => setOpen(false)}
     >
       <div
+        ref={panelRef}
         className="w-full max-w-[640px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
