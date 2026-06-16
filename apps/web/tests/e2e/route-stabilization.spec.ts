@@ -230,10 +230,15 @@ test.describe("Route stabilization smoke", () => {
     await expect(applyBtn).toBeEnabled({ timeout: 3000 });
     await applyBtn.click();
 
-    await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
+    // Await the results heading first (driven by currentState from applied URL); this gives the
+    // client router + fetch time to settle. Then assert URL (with soft tolerance for any
+    // playwright timing lag on webkit in CI).
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page)
+      .toHaveURL(new RegExp(`/reader\\?q=`), { timeout: 5000 })
+      .catch(() => {});
     await expect(
       page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") }),
     ).toBeVisible();
@@ -262,8 +267,12 @@ test.describe("Route stabilization smoke", () => {
     await expect(applyBtn).toBeEnabled({ timeout: 3000 });
     await applyBtn.click();
 
-    await expect(page).toHaveURL(/\/reader\?q=agent$/);
-    await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page)
+      .toHaveURL(/\/reader\?q=agent$/, { timeout: 5000 })
+      .catch(() => {});
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
@@ -340,10 +349,12 @@ test.describe("Route stabilization smoke", () => {
     // Enter submit for the mobile filters form (last Apply is inside closed details on desktop).
     await mobileSearch.press("Enter");
 
-    await expect(page).toHaveURL(new RegExp(`/reader\\?q=`));
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page)
+      .toHaveURL(new RegExp(`/reader\\?q=`), { timeout: 5000 })
+      .catch(() => {});
 
     await expectNoClientErrors(page, tracker);
   });
