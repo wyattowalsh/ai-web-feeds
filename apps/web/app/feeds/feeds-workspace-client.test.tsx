@@ -32,6 +32,10 @@ vi.mock("@/hooks/use-reader-shortcuts", () => ({
   useReaderShortcuts: vi.fn(),
 }));
 
+vi.mock("@/hooks/use-local-search-index", () => ({
+  useLocalSearchIndex: () => ({ ready: false, search: () => [] }),
+}));
+
 import { FeedsWorkspaceClient } from "./feeds-workspace-client";
 
 const feeds = [
