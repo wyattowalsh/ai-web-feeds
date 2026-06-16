@@ -346,8 +346,6 @@ export function ReaderShell({
   }, []);
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
-    // eslint-disable-next-line no-console
-    console.log("DEBUG parse typeof at call:", typeof parseInitialState, "keys on import?", Object.keys({parseInitialState}).length);
     const parsed = parseInitialState(searchParams);
     return {
       ...parsed,

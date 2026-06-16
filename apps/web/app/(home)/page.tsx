@@ -99,10 +99,7 @@ export default async function HomePage() {
                 <Search className="size-4" />
                 Search
               </Link>
-              <Link
-                href={HUB_ROUTES.forYou}
-                className={cn(buttonVariants({ variant: "outline" }))}
-              >
+              <Link href={HUB_ROUTES.forYou} className={cn(buttonVariants({ variant: "outline" }))}>
                 <Sparkles className="size-4" />
                 For You
               </Link>
