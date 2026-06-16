@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpenText, RadioTower, Tags } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpenText,
+  RadioTower,
+  Search,
+  Sparkles,
+  Tags,
+} from "lucide-react";
+import { OnboardingCoach } from "@/components/utility/onboarding-coach";
+import { HUB_ROUTES } from "@/lib/hub/links";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/json-ld";
 import { getRequestNonce } from "@/lib/nonce";
@@ -74,14 +84,22 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/reader" className={cn(buttonVariants({ variant: "default" }))}>
+            <Link href={HUB_ROUTES.reader} className={cn(buttonVariants({ variant: "default" }))}>
               Open reader
               <ArrowRight />
             </Link>
-            <Link href="/sources" className={cn(buttonVariants({ variant: "secondary" }))}>
+            <Link href={HUB_ROUTES.search} className={cn(buttonVariants({ variant: "secondary" }))}>
+              <Search className="size-4" />
+              Search
+            </Link>
+            <Link href={HUB_ROUTES.forYou} className={cn(buttonVariants({ variant: "outline" }))}>
+              <Sparkles className="size-4" />
+              For You
+            </Link>
+            <Link href={HUB_ROUTES.sources} className={cn(buttonVariants({ variant: "outline" }))}>
               Browse sources
             </Link>
-            <Link href="/topics" className={cn(buttonVariants({ variant: "outline" }))}>
+            <Link href={HUB_ROUTES.topics} className={cn(buttonVariants({ variant: "outline" }))}>
               <Tags />
               Topics
             </Link>
@@ -104,6 +122,7 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+      <OnboardingCoach />
     </div>
   );
 }
