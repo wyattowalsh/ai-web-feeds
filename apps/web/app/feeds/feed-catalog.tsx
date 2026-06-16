@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SourceAvatar } from "@/components/source-avatar";
 import { FeedContributionPanel } from "./feed-contribution-panel";
-import type { FeedSource } from "@/lib/feeds-filters";
-import { filterBySourceType, getTopics, filterByVerified } from "@/lib/feeds-filters";
+import type { FeedSource } from "@/lib/feeds";
+import { filterBySourceType, getTopics, filterByVerified } from "@/lib/feeds";
 import {
   buildReaderRouteHref,
   CANONICAL_CATALOG_PATH,

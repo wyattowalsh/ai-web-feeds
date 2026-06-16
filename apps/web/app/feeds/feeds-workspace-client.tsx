@@ -13,11 +13,8 @@ import {
   Copy,
   Eye,
   Filter,
-  LayoutGrid,
-  List,
   Newspaper,
   RefreshCcw,
-  Search,
   SlidersHorizontal,
   Star,
   X,
@@ -27,16 +24,15 @@ import { FeedCatalog } from "./feed-catalog";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceAvatar } from "@/components/source-avatar";
 import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { cn } from "@/lib/cn";
-import type { FeedSource } from "@/lib/feeds-filters";
-import { getTopics } from "@/lib/feeds-filters";
+import type { FeedSource } from "@/lib/feeds";
+import { getTopics } from "@/lib/feeds";
 import { CANONICAL_CATALOG_PATH, CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import {
+  parseInitialState,
   type FeedsWorkspaceInitialBrowse,
   type FeedsWorkspaceInitialState,
   type FeedsWorkspaceMode,
@@ -61,10 +57,8 @@ import {
   normalizeLiveArticle,
   normalizeQueryDraft,
   normalizeTopicsValue,
-  parseTopicsValue,
   readArticleState,
   toVerifiedDraftValue,
-  toggleTopic,
   writeArticleState,
   type ArticleSort,
   type FeedStats,
@@ -76,6 +70,7 @@ import {
   type VerifiedDraftValue,
   type WorkspaceArticle,
 } from "@/lib/reader";
+import { ReaderFiltersForm } from "@/components/reader/reader-filters-form";
 import { ReaderPill } from "@/components/reader/reader-pill";
 import { AggregatorBadge } from "@/components/hub/aggregator-badge";
 import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
@@ -86,6 +81,7 @@ import {
 } from "@/lib/reader/hydrate-article-state";
 import { useReaderShortcuts } from "@/hooks/use-reader-shortcuts";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
+import { ImportExportSheet } from "@/components/utility/import-export-sheet";
 
 type FeedsWorkspaceClientProps = {
   mode: FeedsWorkspaceMode;
@@ -94,6 +90,13 @@ type FeedsWorkspaceClientProps = {
   initialState: FeedsWorkspaceInitialState;
   initialBrowse: FeedsWorkspaceInitialBrowse | null;
 };
+
+function compareByPublishedDesc(
+  left: { published_at_ms: number | null },
+  right: { published_at_ms: number | null },
+): number {
+  return (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0);
+}
 
 function PreviewPane({
   article,
@@ -343,40 +346,10 @@ export function ReaderShell({
   }, []);
 
   const currentState = useMemo<FeedsWorkspaceInitialState>(() => {
-    const query = searchParams.get("q")?.trim().replace(/\s+/g, " ") ?? "";
-    const sourceType = searchParams.get("source_type")?.trim() || null;
-    const verifiedValue = searchParams.get("verified");
-    const verified = stats.hasVerificationMetadata
-      ? verifiedValue === "true"
-        ? true
-        : verifiedValue === "false"
-          ? false
-          : null
-      : null;
-    const cursor = Number.parseInt(searchParams.get("cursor") ?? "0", 10);
-    const limit = Number.parseInt(searchParams.get("limit") ?? `${DEFAULT_PAGE_LIMIT}`, 10);
-    const sortValue = searchParams.get("sort")?.trim().toLowerCase() ?? "";
-    const readerView = searchParams.get("reader_view")?.trim().toLowerCase() ?? "";
-
+    const parsed = parseInitialState(searchParams);
     return {
-      query,
-      feedIds: searchParams
-        .getAll("feed")
-        .map((feedId) => feedId.trim())
-        .filter(Boolean),
-      sourceType,
-      topics: parseTopicsValue(searchParams.get("topics") ?? ""),
-      verified,
-      sort: sortValue === "oldest" || sortValue === "source" ? sortValue : "latest",
-      readerView:
-        readerView === "unread" ||
-        readerView === "starred" ||
-        readerView === "saved" ||
-        readerView === "archived"
-          ? readerView
-          : "latest",
-      cursor: Number.isFinite(cursor) && cursor > 0 ? cursor : 0,
-      limit: Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : DEFAULT_PAGE_LIMIT,
+      ...parsed,
+      verified: stats.hasVerificationMetadata ? parsed.verified : null,
     };
   }, [searchParams, stats.hasVerificationMetadata]);
 
@@ -625,7 +598,7 @@ export function ReaderShell({
           const normalizedPosts = (payload.posts ?? []).map(normalizeLiveArticle);
           setOverlayArticles((currentOverlay) =>
             [...normalizedPosts, ...currentOverlay]
-              .sort((left, right) => (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0))
+              .sort(compareByPublishedDesc)
               .slice(0, LIVE_BOOTSTRAP_POST_LIMIT),
           );
           setLiveProgress((current) => ({
@@ -688,7 +661,7 @@ export function ReaderShell({
               });
 
               return [...nextPosts, ...currentOverlay]
-                .sort((left, right) => (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0))
+                .sort(compareByPublishedDesc)
                 .slice(0, LIVE_BOOTSTRAP_POST_LIMIT);
             });
             return;
@@ -1122,6 +1095,7 @@ export function ReaderShell({
             >
               Sources
             </Link>
+            <ImportExportSheet />
           </div>
         </div>
         <div className="hidden border-t border-border bg-muted/55 md:grid md:grid-cols-4">
@@ -1157,192 +1131,26 @@ export function ReaderShell({
               <p className="metric-label">Focus</p>
               <p className="small-note">Narrow the stream without leaving the reader.</p>
             </div>
-            <form
-              className="mt-4 space-y-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                applyDrafts();
-              }}
-            >
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Search posts</span>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
-                  <Input
-                    ref={queryInputRef}
-                    id="reader-search"
-                    name="q"
-                    aria-label="Search posts"
-                    placeholder="Search titles, summaries, authors"
-                    value={queryDraft}
-                    onChange={(event) => setQueryDraft(event.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </label>
-
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Source type</span>
-                <Select
-                  id="reader-source-type"
-                  name="source_type"
-                  aria-label="Source type"
-                  value={sourceTypeDraft}
-                  onChange={(event) => setSourceTypeDraft(event.target.value)}
-                >
-                  <option value="">All source types</option>
-                  {sourceTypes.map((sourceType) => (
-                    <option key={sourceType} value={sourceType}>
-                      {sourceType}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-
-              <div className="space-y-3">
-                <div className="space-y-1.5 text-sm">
-                  <span className="small-note">Topic focus</span>
-                  <Select
-                    id="reader-topic-focus"
-                    name="topic"
-                    aria-label="Add topic focus"
-                    value=""
-                    onChange={(event) => {
-                      const topic = event.target.value;
-                      if (topic) {
-                        setTopicsDraft(toggleTopic(topicsDraft, topic));
-                      }
-                    }}
-                  >
-                    <option value="">
-                      {topicsDraft.length > 0 ? "Add another topic" : "All topics"}
-                    </option>
-                    {availableTopicOptions.map((topic) => (
-                      <option key={topic} value={topic}>
-                        {topic}
-                      </option>
-                    ))}
-                  </Select>
-                  {topicsDraft.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {topicsDraft.map((topic) => (
-                        <button
-                          key={topic}
-                          type="button"
-                          onClick={() => setTopicsDraft(toggleTopic(topicsDraft, topic))}
-                          className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
-                        >
-                          {topic}
-                          <X className="size-3.5" />
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="small-note">Choose one or more topic slices.</p>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {topicCounts.map(({ topic, count }) => (
-                    <button
-                      key={topic}
-                      type="button"
-                      aria-pressed={topicsDraft.includes(topic)}
-                      onClick={() => setTopicsDraft(toggleTopic(topicsDraft, topic))}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
-                        topicsDraft.includes(topic)
-                          ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                          : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-                      )}
-                    >
-                      {topic}
-                      <span className="ml-2 text-[0.68rem] uppercase tracking-[0.12em] opacity-70">
-                        {count}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {stats.hasVerificationMetadata ? (
-                <label className="space-y-1.5 text-sm">
-                  <span className="small-note">Verification</span>
-                  <Select
-                    id="reader-verification"
-                    name="verified"
-                    aria-label="Verification"
-                    value={verifiedDraft}
-                    onChange={(event) => setVerifiedDraft(event.target.value as VerifiedDraftValue)}
-                  >
-                    <option value="">All feeds</option>
-                    <option value="true">Verified only</option>
-                    <option value="false">Unverified only</option>
-                  </Select>
-                </label>
-              ) : null}
-
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Reader view</span>
-                <Select
-                  id="reader-view"
-                  name="view"
-                  aria-label="Reader view"
-                  value={readerViewDraft}
-                  onChange={(event) => setReaderViewDraft(event.target.value as ReaderView)}
-                >
-                  <option value="latest">Latest</option>
-                  <option value="unread">Unread</option>
-                  <option value="saved">Saved</option>
-                  <option value="starred">Starred</option>
-                  <option value="archived">Archived</option>
-                </Select>
-              </label>
-
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Sort</span>
-                <Select
-                  id="reader-sort"
-                  name="sort"
-                  aria-label="Sort articles"
-                  value={sortDraft}
-                  onChange={(event) => setSortDraft(event.target.value as ArticleSort)}
-                >
-                  <option value="latest">Latest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="source">By source</option>
-                </Select>
-              </label>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={preferences.layout === "cards" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => update({ layout: "cards" })}
-                >
-                  <LayoutGrid className="size-4" />
-                  Cards
-                </Button>
-                <Button
-                  type="button"
-                  variant={preferences.layout === "list" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => update({ layout: "list" })}
-                >
-                  <List className="size-4" />
-                  List
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2 border-t border-(--line) pt-4">
-                <Button type="submit" className="flex-1" disabled={!hasPendingDraftChanges}>
-                  Apply filters
-                </Button>
-                <Button type="button" variant="outline" onClick={resetDrafts}>
-                  Reset
-                </Button>
-              </div>
-            </form>
+            <ReaderFiltersForm
+              variant="desktop"
+              draftState={draftState}
+              setQuery={setQueryDraft}
+              setSourceType={setSourceTypeDraft}
+              setTopics={setTopicsDraft}
+              setVerified={setVerifiedDraft}
+              setReaderView={setReaderViewDraft}
+              setSort={setSortDraft}
+              applyDrafts={applyDrafts}
+              resetDrafts={resetDrafts}
+              topicCounts={topicCounts}
+              hasVerificationMetadata={stats.hasVerificationMetadata}
+              layout={preferences.layout}
+              onLayoutChange={(next) => update({ layout: next })}
+              sourceTypes={sourceTypes}
+              availableTopicOptions={availableTopicOptions}
+              queryInputRef={queryInputRef}
+              hasPendingDraftChanges={hasPendingDraftChanges}
+            />
 
             <div className="mt-5 rounded-lg border border-(--line) bg-(--surface-muted) p-4">
               <p className="metric-label">Current view</p>
@@ -1380,181 +1188,25 @@ export function ReaderShell({
                 {activeFilterChips.length > 0 ? `${activeFilterChips.length} active` : "All posts"}
               </span>
             </summary>
-            <form
-              className="mt-4 space-y-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                applyDrafts();
-              }}
-            >
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Search posts</span>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
-                  <Input
-                    id="reader-search-mobile"
-                    name="q"
-                    aria-label="Search posts mobile"
-                    placeholder="Search titles, summaries, authors"
-                    value={queryDraft}
-                    onChange={(event) => setQueryDraft(event.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </label>
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Source type</span>
-                <Select
-                  id="reader-source-type-mobile"
-                  name="source_type"
-                  aria-label="Source type mobile"
-                  value={sourceTypeDraft}
-                  onChange={(event) => setSourceTypeDraft(event.target.value)}
-                >
-                  <option value="">All source types</option>
-                  {sourceTypes.map((sourceType) => (
-                    <option key={sourceType} value={sourceType}>
-                      {sourceType}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-              <div className="space-y-2">
-                <span className="small-note">Topic focus</span>
-                <Select
-                  id="reader-topic-focus-mobile"
-                  name="topic"
-                  aria-label="Add topic focus mobile"
-                  value=""
-                  onChange={(event) => {
-                    const topic = event.target.value;
-                    if (topic) {
-                      setTopicsDraft(toggleTopic(topicsDraft, topic));
-                    }
-                  }}
-                >
-                  <option value="">
-                    {topicsDraft.length > 0 ? "Add another topic" : "All topics"}
-                  </option>
-                  {availableTopicOptions.map((topic) => (
-                    <option key={topic} value={topic}>
-                      {topic}
-                    </option>
-                  ))}
-                </Select>
-                {topicsDraft.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {topicsDraft.map((topic) => (
-                      <button
-                        key={topic}
-                        type="button"
-                        onClick={() => setTopicsDraft(toggleTopic(topicsDraft, topic))}
-                        className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
-                      >
-                        {topic}
-                        <X className="size-3.5" />
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-                <div className="flex flex-wrap gap-2">
-                  {topicCounts.map(({ topic }) => (
-                    <button
-                      key={topic}
-                      type="button"
-                      aria-pressed={topicsDraft.includes(topic)}
-                      onClick={() => setTopicsDraft(toggleTopic(topicsDraft, topic))}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
-                        topicsDraft.includes(topic)
-                          ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                          : "border-(--line) bg-(--surface) text-(--ink-muted)",
-                      )}
-                    >
-                      {topic}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {stats.hasVerificationMetadata ? (
-                  <label className="space-y-1.5 text-sm">
-                    <span className="small-note">Verification</span>
-                    <Select
-                      id="reader-verification-mobile"
-                      name="verified"
-                      aria-label="Verification mobile"
-                      value={verifiedDraft}
-                      onChange={(event) =>
-                        setVerifiedDraft(event.target.value as VerifiedDraftValue)
-                      }
-                    >
-                      <option value="">All feeds</option>
-                      <option value="true">Verified only</option>
-                      <option value="false">Unverified only</option>
-                    </Select>
-                  </label>
-                ) : null}
-                <label className="space-y-1.5 text-sm">
-                  <span className="small-note">View</span>
-                  <Select
-                    id="reader-view-mobile"
-                    name="view"
-                    aria-label="Reader view mobile"
-                    value={readerViewDraft}
-                    onChange={(event) => setReaderViewDraft(event.target.value as ReaderView)}
-                  >
-                    <option value="latest">Latest</option>
-                    <option value="unread">Unread</option>
-                    <option value="saved">Saved</option>
-                    <option value="starred">Starred</option>
-                    <option value="archived">Archived</option>
-                  </Select>
-                </label>
-              </div>
-              <label className="space-y-1.5 text-sm">
-                <span className="small-note">Sort</span>
-                <Select
-                  id="reader-sort-mobile"
-                  name="sort"
-                  aria-label="Sort articles mobile"
-                  value={sortDraft}
-                  onChange={(event) => setSortDraft(event.target.value as ArticleSort)}
-                >
-                  <option value="latest">Latest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="source">By source</option>
-                </Select>
-              </label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={preferences.layout === "cards" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => update({ layout: "cards" })}
-                >
-                  <LayoutGrid className="size-4" />
-                  Cards
-                </Button>
-                <Button
-                  type="button"
-                  variant={preferences.layout === "list" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => update({ layout: "list" })}
-                >
-                  <List className="size-4" />
-                  List
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button type="submit" className="flex-1" disabled={!hasPendingDraftChanges}>
-                  Apply filters
-                </Button>
-                <Button type="button" variant="outline" onClick={resetDrafts}>
-                  Reset
-                </Button>
-              </div>
-            </form>
+            <ReaderFiltersForm
+              variant="mobile"
+              draftState={draftState}
+              setQuery={setQueryDraft}
+              setSourceType={setSourceTypeDraft}
+              setTopics={setTopicsDraft}
+              setVerified={setVerifiedDraft}
+              setReaderView={setReaderViewDraft}
+              setSort={setSortDraft}
+              applyDrafts={applyDrafts}
+              resetDrafts={resetDrafts}
+              topicCounts={topicCounts}
+              hasVerificationMetadata={stats.hasVerificationMetadata}
+              layout={preferences.layout}
+              onLayoutChange={(next) => update({ layout: next })}
+              sourceTypes={sourceTypes}
+              availableTopicOptions={availableTopicOptions}
+              hasPendingDraftChanges={hasPendingDraftChanges}
+            />
           </details>
 
           <section

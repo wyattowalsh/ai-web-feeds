@@ -69,16 +69,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         }
         title="Search the corpus"
         description="Query recent articles pulled into the local corpus. Matches use title, summary, feed, and topic signals."
-        actions={
-          !query ? (
-            <span className="inline-flex items-center gap-2 rounded-md border border-(--line) bg-(--surface) px-3 py-1 text-xs font-medium text-(--ink-muted)">
-              <SearchIcon className="size-3.5" /> Use ?q=... or global search
-            </span>
-          ) : undefined
-        }
+        actions={null}
       >
+        <form
+          method="get"
+          className="surface-card flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
+          aria-label="Search the corpus"
+        >
+          <div className="relative flex-1">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
+            <input
+              type="text"
+              name="q"
+              defaultValue={query ?? ""}
+              placeholder="Search title, summary, feed, or topic"
+              className="w-full rounded-xl border border-(--line) bg-(--surface) py-2 pl-10 pr-3 text-sm placeholder:text-(--ink-muted) focus:outline-none focus:ring-2 focus:ring-(--brand)"
+              aria-label="Search query"
+            />
+          </div>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+          >
+            Search
+          </button>
+        </form>
+
         {query ? (
-          <p className="text-sm text-(--ink-muted) -mt-4">
+          <p className="text-sm text-(--ink-muted)">
             Showing results for <span className="font-semibold text-(--ink)">{query}</span>
           </p>
         ) : null}

@@ -14,6 +14,7 @@ export const HUB_ROUTES = {
 } as const;
 
 export const PRIMARY_HUB_NAV: HubNavItem[] = [
+  { label: "Home", href: HUB_ROUTES.home, description: "Hub landing" },
   { label: "Reader", href: HUB_ROUTES.reader, description: "Focused article stream" },
   { label: "Search", href: HUB_ROUTES.search, description: "Search corpus and live posts" },
   { label: "For You", href: HUB_ROUTES.forYou, description: "Recommendations and digests" },

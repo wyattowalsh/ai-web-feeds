@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { HUB_ROUTES, PRIMARY_HUB_NAV } from "@/lib/hub/links";
+import { PRIMARY_HUB_NAV } from "@/lib/hub/links";
 import type { HubNavItem } from "@/lib/hub/types";
 
 export type CommandPaletteProps = {
@@ -23,43 +23,14 @@ type PaletteItem = {
 };
 
 function buildItems(): PaletteItem[] {
-  const fromPrimary = PRIMARY_HUB_NAV.map((item: HubNavItem, index: number) => ({
+  // Derive directly from PRIMARY_HUB_NAV (single source of truth in lib/hub/links.ts)
+  return PRIMARY_HUB_NAV.map((item: HubNavItem, index: number) => ({
     id: `nav-${index}`,
     label: item.label,
     href: item.href,
     description: item.description,
     external: item.external ?? false,
   }));
-
-  // Ensure core routes are present even if PRIMARY_HUB_NAV is customized
-  const extra: PaletteItem[] = [];
-  const existingHrefs = new Set(fromPrimary.map((i) => i.href));
-
-  const coreRoutes: Array<{ label: string; href: string; description?: string }> = [
-    { label: "Home", href: HUB_ROUTES.home, description: "Hub landing" },
-    { label: "Reader", href: HUB_ROUTES.reader, description: "Focused article stream" },
-    { label: "Sources", href: HUB_ROUTES.sources, description: "Browse feed catalog" },
-    { label: "Topics", href: HUB_ROUTES.topics, description: "Topic taxonomy" },
-    { label: "Search", href: HUB_ROUTES.search, description: "Search corpus and live posts" },
-    { label: "For You", href: HUB_ROUTES.forYou, description: "Recommendations and digests" },
-    { label: "Dashboard", href: HUB_ROUTES.dashboard, description: "Corpus health" },
-    { label: "Blog", href: HUB_ROUTES.blog, description: "Product updates" },
-    { label: "Docs", href: HUB_ROUTES.docs, description: "Guides and API" },
-  ];
-
-  for (const r of coreRoutes) {
-    if (!existingHrefs.has(r.href)) {
-      extra.push({
-        id: `core-${r.href}`,
-        label: r.label,
-        href: r.href,
-        description: r.description,
-        external: false,
-      });
-    }
-  }
-
-  return [...fromPrimary, ...extra];
 }
 
 export function CommandPalette({

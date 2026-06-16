@@ -1,4 +1,4 @@
-import type { FeedSource } from "@/lib/feeds-filters";
+import type { FeedSource } from "@/lib/feeds";
 import type { FeedsWorkspaceInitialState } from "@/lib/reader-route";
 import type {
   ArticleSort,
@@ -203,12 +203,4 @@ export function buildCurrentFilterChips(
   return chips;
 }
 
-export function getSourceTypesFromFeeds(feeds: FeedSource[]): string[] {
-  return Array.from(
-    new Set(
-      feeds
-        .map((feed) => feed.source_type)
-        .filter((sourceType): sourceType is string => typeof sourceType === "string"),
-    ),
-  ).sort();
-}
+export { getSourceTypes as getSourceTypesFromFeeds } from "@/lib/feeds";
