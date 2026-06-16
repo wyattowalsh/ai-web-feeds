@@ -1,4 +1,4 @@
-import type { FeedSource } from "@/lib/feeds";
+import type { FeedSource } from "@/lib/feeds-filters";
 import type { FeedsWorkspaceInitialState } from "@/lib/reader-route";
 import type {
   ArticleSort,
@@ -203,4 +203,4 @@ export function buildCurrentFilterChips(
   return chips;
 }
 
-export { getSourceTypes as getSourceTypesFromFeeds } from "@/lib/feeds";
+export { getSourceTypes as getSourceTypesFromFeeds } from "@/lib/feeds-filters";
