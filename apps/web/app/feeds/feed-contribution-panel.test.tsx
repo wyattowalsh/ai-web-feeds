@@ -131,6 +131,8 @@ describe("FeedContributionPanel", () => {
         expect.stringContaining("new.example.com/feed.xml"),
       );
     });
+    // Use findBy to await the async setStatus re-render after clipboard write + state update.
+    await screen.findByText("Copied queued feed YAML.");
     expect(screen.getByText("Copied queued feed YAML.")).toBeInTheDocument();
   });
 });
