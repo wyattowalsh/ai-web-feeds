@@ -4,7 +4,7 @@ import type { HubPageVariant } from "@/lib/hub/types";
 
 type HubPageProps = {
   eyebrow?: ReactNode;
-  title: ReactNode;
+  title?: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
@@ -33,9 +33,11 @@ export function HubPage({
       <header className={cn("space-y-4", variant !== "compact" && "surface-panel")}>
         {eyebrow ? <div>{eyebrow}</div> : null}
         <div className="space-y-3">
-          <h1 className={cn(variant === "compact" ? "text-title-medium" : "section-heading")}>
-            {title}
-          </h1>
+          {title != null ? (
+            <h1 className={cn(variant === "compact" ? "text-title-medium" : "section-heading")}>
+              {title}
+            </h1>
+          ) : null}
           {description ? <p className="section-copy">{description}</p> : null}
         </div>
         {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}

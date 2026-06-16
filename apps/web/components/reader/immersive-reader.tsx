@@ -6,6 +6,7 @@ import { ArrowLeft, Copy, ExternalLink, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { sanitizeArticlePreviewHtml } from "@/lib/article-preview-html";
 import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import { DEFAULT_ARTICLE_STATE, readArticleState, writeArticleState } from "@/lib/reader";
 import type { ReaderArticleState } from "@/lib/reader/types";
@@ -29,6 +30,14 @@ export function ImmersiveReader({ article, className }: ImmersiveReaderProps) {
     const initial = readArticleState(article.id);
     setState(initial);
   }, [article.id]);
+
+  // Sanitize rich HTML for safe rendering (client-only via DOMParser inside sanitizer, same as preview pane)
+  const [proseHtml, setProseHtml] = useState<string | null>(null);
+  useEffect(() => {
+    setProseHtml(
+      sanitizeArticlePreviewHtml(article.content_html || article.summary || "", article.link),
+    );
+  }, [article.content_html, article.summary, article.link]);
 
   const persist = (next: ReaderArticleState) => {
     setState(next);
@@ -75,8 +84,6 @@ export function ImmersiveReader({ article, className }: ImmersiveReaderProps) {
     () => formatReadingTime(article.content_html || article.summary || article.title),
     [article.content_html, article.summary, article.title],
   );
-
-  const proseHtml = article.content_html || article.summary || "";
 
   return (
     <div className={cn("relative", className)}>
@@ -132,7 +139,7 @@ export function ImmersiveReader({ article, className }: ImmersiveReaderProps) {
             <Link
               href={article.link}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className={cn(
                 "inline-flex items-center gap-2 rounded-lg border border-(--line) bg-(--surface) px-3 py-1.5 text-sm font-medium text-(--ink) transition hover:bg-(--surface-muted)",
               )}
@@ -193,8 +200,8 @@ export function ImmersiveReader({ article, className }: ImmersiveReaderProps) {
       <div className="mx-auto w-full max-w-3xl px-4 pb-16">
         <article
           className="reader-prose reader-paper mx-auto w-full px-6 py-8 sm:px-10 sm:py-10"
-          // Render trusted corpus HTML (sanitized at ingest time)
-          dangerouslySetInnerHTML={{ __html: proseHtml }}
+          // Render sanitized article HTML (client-side via sanitizeArticlePreviewHtml, same as feeds preview pane)
+          dangerouslySetInnerHTML={{ __html: proseHtml ?? "" }}
         />
 
         {/* Bottom actions */}
@@ -220,7 +227,7 @@ export function ImmersiveReader({ article, className }: ImmersiveReaderProps) {
             <Link
               href={article.link}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg border border-(--line) bg-(--surface) px-3 py-1.5 font-medium text-(--ink) transition hover:bg-(--surface-muted)"
             >
               Read original

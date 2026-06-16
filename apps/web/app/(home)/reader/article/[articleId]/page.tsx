@@ -111,7 +111,7 @@ export default async function ImmersiveReaderPage({ params }: ImmersiveReaderPag
             Reader
           </Link>
         }
-        title={<span className="sr-only">{article.title}</span>}
+        title={null}
         description={null}
         actions={
           <div className="flex flex-wrap gap-2">
