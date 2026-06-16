@@ -345,9 +345,13 @@ test.describe("Route stabilization smoke", () => {
     expect(savedTitle.length).toBeGreaterThan(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
-    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
-    await page.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByRole("button", { name: "Saved" })).toBeVisible();
+    const closePreview = page.getByRole("button", { name: "Close preview" });
+    await expect(closePreview).toBeVisible();
+    const previewPane = closePreview.locator(
+      "xpath=ancestor::div[contains(@class,'surface-card')][1]",
+    );
+    await previewPane.getByRole("button", { name: "Save" }).click();
+    await expect(previewPane.getByRole("button", { name: "Saved" })).toBeVisible();
 
     await page.locator("#reader-view").selectOption("saved");
     await page.getByRole("button", { name: "Apply filters", disabled: false }).click();
