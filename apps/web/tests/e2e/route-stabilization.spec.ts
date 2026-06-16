@@ -334,6 +334,31 @@ test.describe("Route stabilization smoke", () => {
     await expectNoClientErrors(page, tracker);
   });
 
+  test("saved view keeps bookmarked article visible after explicit apply", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("article h3").first()).toBeVisible();
+
+    const savedTitle = (await page.locator("article h3").first().textContent())?.trim() ?? "";
+    expect(savedTitle.length).toBeGreaterThan(0);
+
+    await page.getByRole("button", { name: "Preview" }).first().click();
+    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("button", { name: "Saved" })).toBeVisible();
+
+    await page.locator("#reader-view").selectOption("saved");
+    await page.getByRole("button", { name: "Apply filters", disabled: false }).click();
+
+    await expect(page).toHaveURL(/reader_view=saved/, { timeout: 15000 });
+    await expect(page.getByRole("button", { name: /View: Saved/i })).toBeVisible();
+    await expect(page.locator("article h3").filter({ hasText: savedTitle })).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
   test("mobile keeps filters collapsed until needed and preserves URL-driven reader state", async ({
     page,
   }) => {

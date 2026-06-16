@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Clock3, Filter, Newspaper, RefreshCcw, SlidersHorizontal } from "lucide-react";
+import { Clock3, Filter, Newspaper, RefreshCcw } from "lucide-react";
 
 import { FeedCatalog } from "./feed-catalog";
 
@@ -48,7 +48,7 @@ import {
 } from "@/lib/reader";
 import { ReaderArticleStream } from "@/components/reader/reader-article-stream";
 import { ReaderCorpusEmpty } from "@/components/reader/reader-corpus-empty";
-import { ReaderFiltersForm } from "@/components/reader/reader-filters-form";
+import { ReaderFilterRail } from "@/components/reader/reader-filter-rail";
 import { ReaderPreviewPane } from "@/components/reader/reader-preview-pane";
 import { ReaderShellHeader } from "@/components/reader/reader-shell-header";
 import {
@@ -754,6 +754,40 @@ export function ReaderShell({
     setMobileControlsOpen(false);
   }, [updateUrl]);
 
+  const filterFormProps = useMemo(
+    () => ({
+      draftState,
+      setQuery: setQueryDraft,
+      setSourceType: setSourceTypeDraft,
+      setTopics: setTopicsDraft,
+      setVerified: setVerifiedDraft,
+      setReaderView: setReaderViewDraft,
+      setSort: setSortDraft,
+      applyDrafts,
+      resetDrafts,
+      topicCounts,
+      hasVerificationMetadata: stats.hasVerificationMetadata,
+      layout: preferences.layout,
+      onLayoutChange: (next: "cards" | "list" | "compact") => update({ layout: next }),
+      sourceTypes,
+      availableTopicOptions,
+      queryInputRef,
+      hasPendingDraftChanges,
+    }),
+    [
+      applyDrafts,
+      availableTopicOptions,
+      draftState,
+      hasPendingDraftChanges,
+      preferences.layout,
+      resetDrafts,
+      sourceTypes,
+      stats.hasVerificationMetadata,
+      topicCounts,
+      update,
+    ],
+  );
+
   const handleSelectArticle = useCallback((articleId: string) => {
     setPreviewArticleId((current) => (current === articleId ? null : articleId));
   }, []);
@@ -876,89 +910,26 @@ export function ReaderShell({
           selectedArticle && "2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
         )}
       >
-        <div className="hidden xl:block xl:sticky xl:top-24 xl:self-start">
-          <div className="surface-card border-(--line) bg-(--surface) p-4">
-            <div className="space-y-2">
-              <p className="metric-label">Focus</p>
-              <p className="small-note">Narrow the stream without leaving the reader.</p>
-            </div>
-            <ReaderFiltersForm
-              variant="desktop"
-              draftState={draftState}
-              setQuery={setQueryDraft}
-              setSourceType={setSourceTypeDraft}
-              setTopics={setTopicsDraft}
-              setVerified={setVerifiedDraft}
-              setReaderView={setReaderViewDraft}
-              setSort={setSortDraft}
-              applyDrafts={applyDrafts}
-              resetDrafts={resetDrafts}
-              topicCounts={topicCounts}
-              hasVerificationMetadata={stats.hasVerificationMetadata}
-              layout={preferences.layout}
-              onLayoutChange={(next) => update({ layout: next })}
-              sourceTypes={sourceTypes}
-              availableTopicOptions={availableTopicOptions}
-              queryInputRef={queryInputRef}
-              hasPendingDraftChanges={hasPendingDraftChanges}
-            />
-
-            <div className="surface-card-soft mt-5 border-(--line) p-4">
-              <p className="metric-label">Current view</p>
-              <div className="mt-3 space-y-2 text-sm text-(--ink-muted)">
-                <p>{filterSummary}</p>
-                <p>
-                  {visibleArticleCountLabel} · {visibleArticles.length} visible on this page
-                </p>
-                <p>
-                  Prepared: {browse.corpus.article_count} articles from {browse.corpus.feed_count}{" "}
-                  sources
-                </p>
-                <p>
-                  Catalog: {stats.total} tracked sources · {stats.topicCount} topics
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReaderFilterRail
+          variant="desktop"
+          filters={filterFormProps}
+          filterSummary={filterSummary}
+          visibleArticleCountLabel={visibleArticleCountLabel}
+          visibleCount={visibleArticles.length}
+          corpusArticleCount={browse.corpus.article_count}
+          corpusFeedCount={browse.corpus.feed_count}
+          catalogTotal={stats.total}
+          catalogTopicCount={stats.topicCount}
+        />
 
         <section className="space-y-5">
-          <details
-            className="surface-card relative isolate z-20 border-(--line) bg-(--surface) p-4 xl:hidden"
-            open={mobileControlsOpen}
-            onToggle={(event) =>
-              setMobileControlsOpen((event.currentTarget as HTMLDetailsElement).open)
-            }
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="size-4 text-(--ink-muted)" />
-                <span className="text-sm font-semibold text-(--ink)">Filters and view</span>
-              </div>
-              <span className="small-note">
-                {activeFilterChips.length > 0 ? `${activeFilterChips.length} active` : "All posts"}
-              </span>
-            </summary>
-            <ReaderFiltersForm
-              variant="mobile"
-              draftState={draftState}
-              setQuery={setQueryDraft}
-              setSourceType={setSourceTypeDraft}
-              setTopics={setTopicsDraft}
-              setVerified={setVerifiedDraft}
-              setReaderView={setReaderViewDraft}
-              setSort={setSortDraft}
-              applyDrafts={applyDrafts}
-              resetDrafts={resetDrafts}
-              topicCounts={topicCounts}
-              hasVerificationMetadata={stats.hasVerificationMetadata}
-              layout={preferences.layout}
-              onLayoutChange={(next) => update({ layout: next })}
-              sourceTypes={sourceTypes}
-              availableTopicOptions={availableTopicOptions}
-              hasPendingDraftChanges={hasPendingDraftChanges}
-            />
-          </details>
+          <ReaderFilterRail
+            variant="mobile"
+            filters={filterFormProps}
+            mobileOpen={mobileControlsOpen}
+            onMobileOpenChange={setMobileControlsOpen}
+            activeFilterCount={activeFilterChips.length}
+          />
 
           <ReaderArticleStream
             query={currentState.query}
