@@ -52,7 +52,6 @@ const stats: FeedStats = {
 describe("useReaderFilterDraft", () => {
   let updateUrl: ReturnType<typeof vi.fn>;
   let onBeforeNavigate: ReturnType<typeof vi.fn>;
-  let onCloseMobileControls: ReturnType<typeof vi.fn>;
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -61,7 +60,6 @@ describe("useReaderFilterDraft", () => {
   beforeEach(() => {
     updateUrl = vi.fn();
     onBeforeNavigate = vi.fn();
-    onCloseMobileControls = vi.fn();
   });
 
   function renderDraft(
@@ -79,7 +77,6 @@ describe("useReaderFilterDraft", () => {
           onLayoutChange: vi.fn(),
           queryInputRef: { current: null },
           onBeforeNavigate,
-          onCloseMobileControls,
           ...overrides,
         }),
       { initialProps: { appliedState: state } },
@@ -117,7 +114,7 @@ describe("useReaderFilterDraft", () => {
     });
 
     expect(onBeforeNavigate).toHaveBeenCalledTimes(1);
-    expect(onCloseMobileControls).toHaveBeenCalledTimes(1);
+    expect(result.current.mobileRail.open).toBe(false);
     expect(updateUrl).toHaveBeenCalledWith({
       q: "multi word",
       source_type: null,
@@ -164,6 +161,21 @@ describe("useReaderFilterDraft", () => {
       sort: null,
       cursor: null,
     });
+  });
+
+  it("closes mobile rail after applyDrafts", () => {
+    const { result } = renderDraft();
+
+    act(() => {
+      result.current.mobileRail.onOpenChange(true);
+    });
+    expect(result.current.mobileRail.open).toBe(true);
+
+    act(() => {
+      result.current.applyDrafts();
+    });
+
+    expect(result.current.mobileRail.open).toBe(false);
   });
 
   it("exposes pending-change detection and topic metadata", () => {
