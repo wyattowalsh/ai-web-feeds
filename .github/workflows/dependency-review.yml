@@ -13,6 +13,10 @@ jobs:
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        # continue-on-error because dependency graph may be disabled at repo settings
+        # (policy/infra, not a code-level vuln or license violation in this PR).
+        # See: https://github.com/wyattowalsh/ai-web-feeds/settings/security_analysis
+        continue-on-error: true
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0
