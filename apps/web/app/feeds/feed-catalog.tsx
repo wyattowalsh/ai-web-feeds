@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SourceAvatar } from "@/components/source-avatar";
+import { FeedContributionPanel } from "./feed-contribution-panel";
 import type { FeedSource } from "@/lib/feeds-filters";
 import { filterBySourceType, getTopics, filterByVerified } from "@/lib/feeds-filters";
 import {
@@ -606,6 +607,8 @@ export function FeedCatalog({
           )}
         </div>
       </div>
+
+      <FeedContributionPanel feeds={feeds} topics={allTopics} />
 
       <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1 text-sm text-(--ink-muted)">

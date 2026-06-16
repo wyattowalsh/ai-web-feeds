@@ -19,6 +19,17 @@ The feed schema balances contributor ergonomics with strict machine validation. 
 
 **Schema Location:** `data/feeds.schema.json`
 
+## Web Contribution Flow
+
+The source catalog at `/sources` includes a feed contribution composer for new
+source proposals. The composer validates the contributor-friendly shape locally,
+stores queued drafts in the browser, detects exact URL duplicates against the
+current catalog, and generates YAML entries that can be copied or opened as a
+GitHub issue.
+
+Accepted feeds still land in `data/feeds.yaml` through the reviewed repository
+workflow. The public web app does not write directly to the canonical catalog.
+
 ## Top-Level Structure
 
 ```yaml

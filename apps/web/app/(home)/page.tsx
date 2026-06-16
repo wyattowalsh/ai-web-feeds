@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpenText, RadioTower, Tags } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpenText,
+  RadioTower,
+  Search,
+  Sparkles,
+  Tags,
+} from "lucide-react";
+import { OnboardingCoach } from "@/components/utility/onboarding-coach";
+import { HUB_ROUTES } from "@/lib/hub/links";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/json-ld";
 import { getRequestNonce } from "@/lib/nonce";
@@ -73,18 +83,45 @@ export default async function HomePage() {
               industry sources, with a source catalog and dashboard kept separate.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/reader" className={cn(buttonVariants({ variant: "default" }))}>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Primary CTA */}
+            <Link href={HUB_ROUTES.reader} className={cn(buttonVariants({ variant: "default" }))}>
               Open reader
               <ArrowRight />
             </Link>
-            <Link href="/sources" className={cn(buttonVariants({ variant: "secondary" }))}>
-              Browse sources
-            </Link>
-            <Link href="/topics" className={cn(buttonVariants({ variant: "outline" }))}>
-              <Tags />
-              Topics
-            </Link>
+
+            {/* Secondary pair */}
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={HUB_ROUTES.search}
+                className={cn(buttonVariants({ variant: "secondary" }))}
+              >
+                <Search className="size-4" />
+                Search
+              </Link>
+              <Link href={HUB_ROUTES.forYou} className={cn(buttonVariants({ variant: "outline" }))}>
+                <Sparkles className="size-4" />
+                For You
+              </Link>
+            </div>
+
+            {/* Tertiary links */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-(--ink-muted)">
+              <Link
+                href={HUB_ROUTES.sources}
+                className="underline-offset-4 hover:text-(--ink) hover:underline"
+              >
+                Browse sources
+              </Link>
+              <Link
+                href={HUB_ROUTES.topics}
+                className="underline-offset-4 hover:text-(--ink) hover:underline"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <Tags className="size-3.5" /> Topics
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
         <div className="grid gap-3 border-t border-(--line) pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
@@ -104,6 +141,7 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+      <OnboardingCoach />
     </div>
   );
 }

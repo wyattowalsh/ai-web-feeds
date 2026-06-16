@@ -33,6 +33,20 @@ adds live feed refreshes only as an explicit overlay.
 There is no separate `/feeds` page. New docs and links should point to `/reader`,
 `/sources`, source pages, topic pages, or article reference pages.
 
+## Immersive reader
+
+Open `/reader/article/[articleId]` for a focused reading layout with scroll progress, triage toolbar, and `reader-prose` typography. Article preview panes in the workspace link here via **Immersive read**.
+
+## Hub routes
+
+- **Search** — `/search` corpus query with teaser results
+- **For You** — `/for-you` recommendations and saved searches
+- **Blog** — `/blog` product updates with RSS at `/blog/rss.xml`
+
+## Offline and client storage
+
+Article triage state hydrates from localStorage into IndexedDB. A service worker caches shell assets; use `/offline` when disconnected. See [Reader Utility](/docs/features/utility) for shortcuts, share, and import/export.
+
 ## URL parameters
 
 ## Filters and URL State

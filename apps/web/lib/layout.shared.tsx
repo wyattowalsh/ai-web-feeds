@@ -42,12 +42,24 @@ export function baseOptions(): BaseLayoutProps {
         url: "/reader",
       },
       {
+        text: "Search",
+        url: "/search",
+      },
+      {
+        text: "For You",
+        url: "/for-you",
+      },
+      {
         text: "Sources",
         url: "/sources",
       },
       {
         text: "Topics",
         url: "/topics",
+      },
+      {
+        text: "Blog",
+        url: "/blog",
       },
       {
         text: "Dashboard",
