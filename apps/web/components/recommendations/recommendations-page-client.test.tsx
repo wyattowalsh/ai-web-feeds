@@ -80,6 +80,7 @@ describe("RecommendationsPageClient", () => {
     );
   });
 
+  // client chunk import + fetch settle can exceed the default 5s budget under parallel vitest load
   it("routes feed recommendations into the feeds workspace", async () => {
     const { RecommendationsPageClient } = await import("./recommendations-page-client");
 
@@ -90,7 +91,7 @@ describe("RecommendationsPageClient", () => {
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/sources?feed=feed-1&q=Agent+Feed");
     });
-  });
+  }, 15000);
 
   it("shows the unavailable state without fetching when the backend is not configured", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {

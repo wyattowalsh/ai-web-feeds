@@ -40,6 +40,7 @@ describe("HomePage", () => {
     });
   });
 
+  // dynamic import + RSC page module can exceed the default 5s budget under parallel vitest load
   it("renders a minimal home with canonical surface links", async () => {
     const HomePage = await loadHomePage();
 
@@ -64,5 +65,5 @@ describe("HomePage", () => {
       "/sources",
     );
     expect(screen.getByRole("link", { name: /Topics/i })).toHaveAttribute("href", "/topics");
-  });
+  }, 15000);
 });
