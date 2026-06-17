@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Archive, ArrowUpRight, Bookmark, BookOpenText, Copy, Star, X } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   type ReaderArticleState,
   type WorkspaceArticle,
 } from "@/lib/reader";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
 
 export type ReaderPreviewPaneProps = {
@@ -36,7 +37,10 @@ export function ReaderPreviewPane({
   onClose,
   variant = "panel",
 }: ReaderPreviewPaneProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const [summaryMarkup, setSummaryMarkup] = useState<string | null>(null);
+
+  useFocusTrap(panelRef, variant === "panel" && Boolean(article), onClose);
 
   useEffect(() => {
     setSummaryMarkup(
@@ -59,6 +63,7 @@ export function ReaderPreviewPane({
 
   return (
     <div
+      ref={panelRef}
       className={cn(
         "surface-card border-border bg-card",
         variant === "panel" &&
@@ -136,6 +141,7 @@ export function ReaderPreviewPane({
           <Button
             type="button"
             variant={state.read ? "secondary" : "outline"}
+            aria-pressed={state.read}
             onClick={() => onToggleState({ read: !state.read })}
           >
             {state.read ? "Marked read" : "Mark read"}
@@ -143,6 +149,7 @@ export function ReaderPreviewPane({
           <Button
             type="button"
             variant={state.starred ? "secondary" : "outline"}
+            aria-pressed={state.starred}
             onClick={() => onToggleState({ starred: !state.starred })}
           >
             <Star className="size-4" />
@@ -151,6 +158,7 @@ export function ReaderPreviewPane({
           <Button
             type="button"
             variant={state.bookmarked ? "secondary" : "outline"}
+            aria-pressed={state.bookmarked}
             onClick={() => onToggleState({ bookmarked: !state.bookmarked })}
           >
             <Bookmark className="size-4" />
@@ -159,6 +167,7 @@ export function ReaderPreviewPane({
           <Button
             type="button"
             variant={state.archived ? "secondary" : "outline"}
+            aria-pressed={state.archived}
             onClick={() => onToggleState({ archived: !state.archived })}
           >
             <Archive className="size-4" />

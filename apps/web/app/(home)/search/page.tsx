@@ -11,6 +11,7 @@ import type { HubTeaserArticle } from "@/lib/hub/types";
 import type { ReaderPageSearchParams } from "@/lib/reader-route";
 import { normalizeSearchQuery } from "@/lib/search";
 import { getArticlePath } from "@/lib/public-content";
+import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Search - AI Web Feeds",
@@ -96,9 +97,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </form>
 
         {query ? (
-          <p className="text-sm text-(--ink-muted)">
-            Showing results for <span className="font-semibold text-(--ink)">{query}</span>
-          </p>
+          <div className="surface-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-(--ink-muted)">
+              Showing results for <span className="font-semibold text-(--ink)">{query}</span>
+            </p>
+            <Link
+              href={`${CANONICAL_READER_PATH}?q=${encodeURIComponent(query)}`}
+              className="inline-flex items-center justify-center rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+            >
+              Continue in reader
+            </Link>
+          </div>
         ) : null}
 
         {teasers.length === 0 ? (

@@ -249,6 +249,7 @@ export function ReaderArticleStream({
                       type="button"
                       size="sm"
                       variant={isSelected ? "secondary" : "outline"}
+                      aria-pressed={isSelected}
                       onClick={() => onSelectArticle(article.id)}
                     >
                       <Eye className="size-4" />
@@ -258,6 +259,7 @@ export function ReaderArticleStream({
                       type="button"
                       size="sm"
                       variant={state.read ? "secondary" : "ghost"}
+                      aria-pressed={state.read}
                       onClick={() => onUpdateState(article.id, { read: !state.read })}
                     >
                       <CheckCheck className="size-4" />

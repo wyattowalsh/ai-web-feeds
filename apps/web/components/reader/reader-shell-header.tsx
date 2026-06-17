@@ -57,6 +57,8 @@ export function ReaderShellHeader({
             </h1>
             <p className="small-note max-w-3xl">
               A clean reading desk for open AI writing, with local read, save, and focus state.
+              Press <kbd className="rounded border px-1 text-[0.7rem]">?</kbd> for keyboard
+              shortcuts.
             </p>
             {liveStatusText ? <p className="small-note">{liveStatusText}</p> : null}
           </div>

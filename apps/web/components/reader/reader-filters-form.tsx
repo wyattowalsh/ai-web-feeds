@@ -15,6 +15,7 @@ import {
   type ReaderView,
   type VerifiedDraftValue,
 } from "@/lib/reader";
+import { FilterFieldLabel } from "@/lib/reader/filter-field-label";
 
 export type ReaderFiltersFormProps = {
   /** Current draft filter state (unapplied) */
@@ -123,7 +124,7 @@ export function ReaderFiltersForm({
   return (
     <form className="mt-4 space-y-4" onSubmit={onSubmit}>
       <label className="space-y-1.5 text-sm">
-        <span className="small-note">Search posts</span>
+        <FilterFieldLabel>Search posts</FilterFieldLabel>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
           <Input
@@ -140,7 +141,7 @@ export function ReaderFiltersForm({
       </label>
 
       <label className="space-y-1.5 text-sm">
-        <span className="small-note">Source type</span>
+        <FilterFieldLabel>Source type</FilterFieldLabel>
         <Select
           id={stId}
           name="source_type"
@@ -159,7 +160,7 @@ export function ReaderFiltersForm({
 
       <div className={isDesktop ? "space-y-3" : "space-y-2"}>
         <div className="space-y-1.5 text-sm">
-          <span className="small-note">Topic focus</span>
+          <FilterFieldLabel>Topic focus</FilterFieldLabel>
           <Select
             id={topicSelId}
             name="topic"
@@ -223,7 +224,7 @@ export function ReaderFiltersForm({
         <>
           {hasVerificationMetadata ? (
             <label className="space-y-1.5 text-sm">
-              <span className="small-note">Verification</span>
+              <FilterFieldLabel>Verification</FilterFieldLabel>
               <Select
                 id={verifId}
                 name="verified"
@@ -239,7 +240,7 @@ export function ReaderFiltersForm({
           ) : null}
 
           <label className="space-y-1.5 text-sm">
-            <span className="small-note">Reader view</span>
+            <FilterFieldLabel>Reader view</FilterFieldLabel>
             <Select
               id={viewId}
               name="view"
@@ -256,7 +257,7 @@ export function ReaderFiltersForm({
           </label>
 
           <label className="space-y-1.5 text-sm">
-            <span className="small-note">Sort</span>
+            <FilterFieldLabel>Sort</FilterFieldLabel>
             <Select
               id={sortId}
               name="sort"
@@ -275,7 +276,7 @@ export function ReaderFiltersForm({
           <div className="grid gap-3 sm:grid-cols-2">
             {hasVerificationMetadata ? (
               <label className="space-y-1.5 text-sm">
-                <span className="small-note">Verification</span>
+                <FilterFieldLabel>Verification</FilterFieldLabel>
                 <Select
                   id={verifId}
                   name="verified"
@@ -290,7 +291,7 @@ export function ReaderFiltersForm({
               </label>
             ) : null}
             <label className="space-y-1.5 text-sm">
-              <span className="small-note">View</span>
+              <FilterFieldLabel>Reader view</FilterFieldLabel>
               <Select
                 id={viewId}
                 name="view"
@@ -307,7 +308,7 @@ export function ReaderFiltersForm({
             </label>
           </div>
           <label className="space-y-1.5 text-sm">
-            <span className="small-note">Sort</span>
+            <FilterFieldLabel>Sort</FilterFieldLabel>
             <Select
               id={sortId}
               name="sort"
@@ -376,6 +377,11 @@ export function ReaderFiltersForm({
           Reset
         </Button>
       </div>
+      <p className="small-note text-(--ink-muted)">
+        Reset clears draft filters. Clear all in the stream drops search and view filters. Pinned{" "}
+        <code className="rounded bg-(--surface-muted) px-1 py-0.5 text-[0.7rem]">feed=</code> links
+        stay until you reset the workspace.
+      </p>
     </form>
   );
 }

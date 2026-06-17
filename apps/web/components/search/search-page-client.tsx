@@ -460,6 +460,14 @@ export function SearchPageClient({
                   </p>
                 ) : null}
               </div>
+              <Link
+                href={`${readerBasePath}?q=${encodeURIComponent(query)}${
+                  readerMode ? `&mode=${readerMode}` : ""
+                }`}
+                className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-(--line) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+              >
+                Continue in reader
+              </Link>
             </div>
           )}
 

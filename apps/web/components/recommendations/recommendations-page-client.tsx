@@ -9,7 +9,7 @@ import { ContentCardSkeleton } from "@/components/ui/content-card-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
 import { ensureAnonymousUserId, fetchWithAnonymousIdentity } from "@/lib/user-identity";
-import { CANONICAL_CATALOG_PATH } from "@/lib/reader-routes";
+import { CANONICAL_CATALOG_PATH, CANONICAL_READER_PATH } from "@/lib/reader-routes";
 
 interface Recommendation {
   feed: {
@@ -24,6 +24,12 @@ interface Recommendation {
   };
   score: number;
   reason: string;
+}
+
+function buildReaderHref(feedId: string): string {
+  const params = new URLSearchParams();
+  params.set("feed", feedId);
+  return `${CANONICAL_READER_PATH}?${params.toString()}`;
 }
 
 function buildCatalogHref(rec: Recommendation, selectedTopics: string[]): string {
@@ -457,6 +463,12 @@ export function RecommendationsPageClient({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
+                      <Link
+                        href={buildReaderHref(rec.feed.id)}
+                        className={cn(buttonVariants({ variant: "default" }))}
+                      >
+                        Read in reader
+                      </Link>
                       <Button
                         type="button"
                         onClick={() => handleFeedClick(rec)}
