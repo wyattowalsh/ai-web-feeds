@@ -14,6 +14,7 @@ export type ReaderCorpusEmptyProps = {
   refreshing: boolean;
   candidateFeedCount: number;
   onLoadLiveSample: () => void;
+  headingOverride?: string | null;
 };
 
 export function ReaderCorpusEmpty({
@@ -21,7 +22,10 @@ export function ReaderCorpusEmpty({
   refreshing,
   candidateFeedCount,
   onLoadLiveSample,
+  headingOverride,
 }: ReaderCorpusEmptyProps) {
+  const defaultHeading = refreshError ? "Live posts unavailable" : "No prepared article corpus";
+  const heading = headingOverride ?? defaultHeading;
   return (
     <div className="reader-shell space-y-4">
       <div className="surface-card border-(--line) bg-(--surface)">
@@ -29,7 +33,7 @@ export function ReaderCorpusEmpty({
           <div className="space-y-2">
             <p className="metric-label">AI Web Feeds</p>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              {refreshError ? "Live posts unavailable" : "No prepared article corpus"}
+              {heading}
             </h1>
             <p className="small-note max-w-3xl">
               {refreshError
@@ -61,6 +65,7 @@ export function ReaderCorpusEmpty({
 
       <EmptyState
         icon={Newspaper}
+        iconClassName="size-6"
         title={refreshError ? "Could not fetch live posts" : "Prepared posts are unavailable"}
         description={
           refreshError

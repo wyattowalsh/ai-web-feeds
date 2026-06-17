@@ -80,7 +80,8 @@ export default async function HomePage() {
             </h1>
             <p className="hero-copy">
               A focused reader for posts from labs, researchers, newsletters, engineering blogs, and
-              industry sources, with a source catalog and dashboard kept separate.
+              industry sources. Start from the prepared corpus, or load a bounded live sample when
+              you need fresher posts—the catalog and dashboard stay separate.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 
 import type { FeedSource } from "@/lib/feeds-filters";
 import {
-  compareByPublishedDesc,
+  getArticleSortComparator,
   LIVE_BOOTSTRAP_PER_FEED_LIMIT,
   LIVE_BOOTSTRAP_POST_LIMIT,
   LIVE_REFRESH_SAMPLE_FEED_LIMIT,
@@ -52,6 +52,7 @@ export function useReaderLiveRefresh(
 
   const refreshLatest = useCallback(
     async (forceRefresh = true) => {
+      const sortArticles = getArticleSortComparator(sort);
       const feedIds =
         providedFeedIds.length > 0
           ? providedFeedIds
@@ -104,7 +105,7 @@ export function useReaderLiveRefresh(
           const normalizedPosts = (payload.posts ?? []).map(normalizeLiveArticle);
           setOverlayArticles((currentOverlay) =>
             [...normalizedPosts, ...currentOverlay]
-              .sort(compareByPublishedDesc)
+              .sort(sortArticles)
               .slice(0, LIVE_BOOTSTRAP_POST_LIMIT),
           );
           setLiveProgress((current) => ({
@@ -167,7 +168,7 @@ export function useReaderLiveRefresh(
               });
 
               return [...nextPosts, ...currentOverlay]
-                .sort(compareByPublishedDesc)
+                .sort(sortArticles)
                 .slice(0, LIVE_BOOTSTRAP_POST_LIMIT);
             });
             return;

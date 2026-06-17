@@ -72,7 +72,7 @@ export function ReaderFilterRail({
       open={mobileOpen}
       onToggle={(event) => onMobileOpenChange?.((event.currentTarget as HTMLDetailsElement).open)}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-(--ink-muted)" />
           <span className="text-sm font-semibold text-(--ink)">Filters and view</span>

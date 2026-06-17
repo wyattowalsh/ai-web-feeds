@@ -153,6 +153,7 @@ export function useReaderFilterDraft({
       reader_view: null,
       sort: null,
       cursor: null,
+      feed: null,
     });
     setMobileOpen(false);
   }, [onBeforeNavigate, updateUrl]);

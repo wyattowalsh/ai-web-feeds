@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react";
 
-import { LayoutGrid, List, Search, X } from "lucide-react";
+import { LayoutGrid, List, Rows3, Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -329,6 +329,7 @@ export function ReaderFiltersForm({
           variant={layout === "cards" ? "default" : "outline"}
           className="flex-1"
           onClick={() => onLayoutChange("cards")}
+          aria-pressed={layout === "cards"}
         >
           <LayoutGrid className="size-4" />
           Cards
@@ -338,15 +339,38 @@ export function ReaderFiltersForm({
           variant={layout === "list" ? "default" : "outline"}
           className="flex-1"
           onClick={() => onLayoutChange("list")}
+          aria-pressed={layout === "list"}
         >
           <List className="size-4" />
           List
         </Button>
+        <Button
+          type="button"
+          variant={layout === "compact" ? "default" : "outline"}
+          className="flex-1"
+          onClick={() => onLayoutChange("compact")}
+          aria-pressed={layout === "compact"}
+        >
+          <Rows3 className="size-4" />
+          Compact
+        </Button>
       </div>
 
       <div className={cn("flex flex-wrap gap-2", isDesktop && "border-t border-(--line) pt-4")}>
-        <Button type="submit" className="flex-1" disabled={!hasPendingDraftChanges}>
+        <Button
+          type="submit"
+          className="relative flex-1"
+          disabled={!hasPendingDraftChanges}
+          aria-describedby={hasPendingDraftChanges ? "reader-apply-pending" : undefined}
+        >
           Apply filters
+          {hasPendingDraftChanges ? (
+            <span
+              id="reader-apply-pending"
+              className="absolute end-2 top-2 size-2 rounded-full bg-(--brand-strong) ring-2 ring-(--surface)"
+              aria-hidden
+            />
+          ) : null}
         </Button>
         <Button type="button" variant="outline" onClick={resetDrafts}>
           Reset

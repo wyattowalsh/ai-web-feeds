@@ -141,6 +141,7 @@ export function CommandPalette({
 
       if (mod && (e.key === "k" || e.key === "K")) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         const next = !open;
         setOpen(next);
         if (next) {
@@ -160,8 +161,8 @@ export function CommandPalette({
       }
     };
 
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [open, setOpen]);
 
   const go = (href: string, external?: boolean) => {

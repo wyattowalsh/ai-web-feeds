@@ -168,17 +168,62 @@ describe("ReaderShellWorkspace", () => {
     expect(onClosePreview).toHaveBeenCalledTimes(1);
   });
 
-  it("renders corpus empty gate when snapshot is missing", () => {
+  it("renders workspace grid when corpus is empty", () => {
     render(
       <ReaderShellWorkspace
         {...baseProps({
           corpusEmpty: true,
           overlayCount: 0,
           refreshing: false,
+          visibleArticles: [],
         })}
       />,
     );
 
+    expect(screen.getByTestId("reader-workspace-grid")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "No prepared article corpus" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Load live sample" })).toBeInTheDocument();
+  });
+
+  it("shows active filter chips when corpus is empty", () => {
+    render(
+      <ReaderShellWorkspace
+        {...baseProps({
+          corpusEmpty: true,
+          overlayCount: 0,
+          refreshing: false,
+          visibleArticles: [],
+          currentState: { ...currentState, query: "agent" },
+          chrome: {
+            ...baseProps().chrome,
+            activeFilterChips: [
+              { key: "query", label: "Search: agent", overrides: { q: null, cursor: null } },
+            ],
+            canClearArticleFilters: true,
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByTestId("reader-active-filter-chips")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Search: agent/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "No prepared matches for “agent”" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps workspace grid visible while refreshing on empty corpus", () => {
+    render(
+      <ReaderShellWorkspace
+        {...baseProps({
+          corpusEmpty: true,
+          overlayCount: 0,
+          refreshing: true,
+          visibleArticles: [],
+        })}
+      />,
+    );
+
+    expect(screen.getByTestId("reader-workspace-grid")).toBeInTheDocument();
   });
 });

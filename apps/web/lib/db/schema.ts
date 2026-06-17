@@ -277,6 +277,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     "g s": "go_starred",
     "g u": "go_unread",
     escape: "close_modal",
+    "?": "show_shortcuts",
   },
   offlineMode: false,
   syncOnStartup: true,

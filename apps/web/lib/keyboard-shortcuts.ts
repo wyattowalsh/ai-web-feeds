@@ -37,8 +37,9 @@ class KeyboardShortcutManager {
 
   constructor() {
     if (typeof window !== "undefined") {
+      this.loadDefaultShortcuts();
       window.addEventListener("keydown", this.handleKeyDown.bind(this));
-      this.loadShortcuts();
+      void this.loadShortcuts();
     }
   }
 

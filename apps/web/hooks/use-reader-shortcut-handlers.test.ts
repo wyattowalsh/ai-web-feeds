@@ -243,12 +243,24 @@ describe("useReaderShortcutHandlers", () => {
     expect(updateUrl).toHaveBeenCalledWith({ reader_view: null, cursor: null });
   });
 
-  it("omitted actions (search etc) are absent / undefined (Partial contract)", () => {
-    const { result } = renderWith();
+  it("search and show_shortcuts delegate to injected callbacks", () => {
+    const focus = vi.fn();
+    const onShowShortcuts = vi.fn();
+    const onCloseShortcuts = vi.fn();
+    const queryInputRef = { current: { focus: focus } as unknown as HTMLInputElement };
+    const { result } = renderWith({ queryInputRef, onShowShortcuts, onCloseShortcuts });
     const h = result.current.shortcutHandlers;
-    // actions not provided by this surface remain undefined
-    expect(h.search).toBeUndefined();
+
+    h.search?.();
+    expect(focus).toHaveBeenCalledTimes(1);
+
+    h.show_shortcuts?.();
+    expect(onShowShortcuts).toHaveBeenCalledTimes(1);
+
+    h.close_modal?.();
+    expect(onCloseShortcuts).toHaveBeenCalledTimes(1);
+    expect(setPreviewArticleId).toHaveBeenCalledWith(null);
+
     expect(h.toggle_sidebar).toBeUndefined();
-    expect(h.show_shortcuts).toBeUndefined();
   });
 });

@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vitest";
 
-import { compareByPublishedDesc, normalizeCachedArticle } from "./article-normalize";
+import {
+  compareByPublishedAsc,
+  compareByPublishedDesc,
+  getArticleSortComparator,
+  normalizeCachedArticle,
+} from "./article-normalize";
 
 describe("article-normalize", () => {
+  it("compareByPublishedAsc orders oldest first", () => {
+    expect(compareByPublishedAsc({ published_at_ms: 100 }, { published_at_ms: 200 })).toBeLessThan(
+      0,
+    );
+    expect(
+      compareByPublishedAsc({ published_at_ms: 300 }, { published_at_ms: 200 }),
+    ).toBeGreaterThan(0);
+  });
+
+  it("getArticleSortComparator respects oldest vs latest", () => {
+    const asc = getArticleSortComparator("oldest");
+    const desc = getArticleSortComparator("latest");
+    expect(asc({ published_at_ms: 100 }, { published_at_ms: 200 })).toBeLessThan(0);
+    expect(desc({ published_at_ms: 100 }, { published_at_ms: 200 })).toBeGreaterThan(0);
+  });
+
   it("compareByPublishedDesc orders newest first", () => {
     expect(
       compareByPublishedDesc({ published_at_ms: 100 }, { published_at_ms: 200 }),

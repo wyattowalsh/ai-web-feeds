@@ -1,0 +1,36 @@
+{
+  "high_priority_gaps": [
+    {
+      "route": "/dashboard",
+      "reason": "PRIMARY_HUB_NAV but absent from route-stabilization.spec.ts publicRoutes",
+      "audit_weight": 1.5
+    },
+    {
+      "route": "/docs",
+      "reason": "PRIMARY_HUB_NAV but absent from E2E; separate FumaDocs chrome",
+      "audit_weight": 1.5
+    },
+    {
+      "surface": "theme_toggle",
+      "reason": "theme-manager exists but no hub UI toggle; dark mode unaudited in CI",
+      "audit_weight": 1.4
+    },
+    {
+      "surface": "nav_drift",
+      "reason": "PRIMARY_HUB_NAV vs layout.shared.tsx links diverge (Home, GitHub)",
+      "audit_weight": 1.3
+    },
+    {
+      "surface": "command_palette",
+      "reason": "Global ⌘K nav not covered by E2E",
+      "audit_weight": 1.2
+    }
+  ],
+  "covered_well": [
+    "/reader filter apply URL sync",
+    "/reader preview desktop",
+    "/reader mobile filters",
+    "/sources catalog to reader feed=",
+    "/reader saved view + cached pill"
+  ]
+}

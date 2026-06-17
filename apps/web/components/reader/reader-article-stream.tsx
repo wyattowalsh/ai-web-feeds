@@ -1,12 +1,14 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { CheckCheck, Eye, Newspaper, X } from "lucide-react";
+import { CheckCheck, Eye, Newspaper } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceAvatar } from "@/components/source-avatar";
+import { ReaderFilterChipBar } from "@/components/reader/reader-filter-chip-bar";
 import { ReaderPreviewPane } from "@/components/reader/reader-preview-pane";
 import { ReaderPill } from "@/components/reader/reader-pill";
 import { cn } from "@/lib/cn";
@@ -48,6 +50,7 @@ export type ReaderArticleStreamProps = {
   onFilterChip: (overrides: Record<string, string | string[] | null | undefined>) => void;
   onResetDrafts: () => void;
   onPaginate: (cursor: string | null) => void;
+  corpusEmptyPanel?: ReactNode;
 };
 
 export function ReaderArticleStream({
@@ -78,6 +81,7 @@ export function ReaderArticleStream({
   onFilterChip,
   onResetDrafts,
   onPaginate,
+  corpusEmptyPanel,
 }: ReaderArticleStreamProps) {
   const showLoading = loading || (refreshing && visibleArticles.length === 0);
 
@@ -103,24 +107,11 @@ export function ReaderArticleStream({
           </div>
         </div>
 
-        {activeFilterChips.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {activeFilterChips.map((chip) => (
-              <button
-                key={chip.key}
-                type="button"
-                onClick={() => onFilterChip(chip.overrides)}
-                className="inline-flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1.5 text-xs font-semibold text-(--ink)"
-              >
-                {chip.label}
-                <X className="size-3.5 text-(--ink-muted)" />
-              </button>
-            ))}
-            <Button type="button" variant="ghost" size="sm" onClick={onResetDrafts}>
-              Clear all
-            </Button>
-          </div>
-        ) : null}
+        <ReaderFilterChipBar
+          chips={activeFilterChips}
+          onFilterChip={onFilterChip}
+          onResetDrafts={onResetDrafts}
+        />
       </div>
 
       {showLoading ? (
@@ -138,6 +129,8 @@ export function ReaderArticleStream({
             </div>
           ))}
         </div>
+      ) : visibleArticles.length === 0 && corpusEmptyPanel ? (
+        <div className="p-5">{corpusEmptyPanel}</div>
       ) : visibleArticles.length === 0 ? (
         <EmptyState
           icon={Newspaper}

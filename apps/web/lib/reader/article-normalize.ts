@@ -1,12 +1,29 @@
 import type { Article } from "@/lib/db";
 import type { FeedsWorkspaceInitialBrowse } from "@/lib/reader-route";
-import type { WorkspaceArticle } from "./types";
+import type { ArticleSort, WorkspaceArticle } from "./types";
 
 export function compareByPublishedDesc(
   left: { published_at_ms: number | null },
   right: { published_at_ms: number | null },
 ): number {
   return (right.published_at_ms ?? 0) - (left.published_at_ms ?? 0);
+}
+
+export function compareByPublishedAsc(
+  left: { published_at_ms: number | null },
+  right: { published_at_ms: number | null },
+): number {
+  return (left.published_at_ms ?? 0) - (right.published_at_ms ?? 0);
+}
+
+export function getArticleSortComparator(
+  sort: ArticleSort,
+): (left: { published_at_ms: number | null }, right: { published_at_ms: number | null }) => number {
+  if (sort === "oldest") {
+    return compareByPublishedAsc;
+  }
+
+  return compareByPublishedDesc;
 }
 
 export function normalizeArticle(

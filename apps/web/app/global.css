@@ -137,6 +137,12 @@
       opacity 150ms ease;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    a {
+      transition: none;
+    }
+  }
+
   a:hover {
     color: var(--brand-strong);
   }

@@ -14,6 +14,7 @@ import type {
   ReaderFilterMobileRail,
 } from "@/hooks/use-reader-filter-draft";
 
+import { getFilteredEmptyHeading } from "@/lib/reader/empty-state-copy";
 import { ReaderArticleStream } from "@/components/reader/reader-article-stream";
 import { ReaderCorpusEmpty } from "@/components/reader/reader-corpus-empty";
 import { ReaderFilterRail } from "@/components/reader/reader-filter-rail";
@@ -87,17 +88,7 @@ export function ReaderShellWorkspace({
   onResetDrafts,
   onPaginate,
 }: ReaderShellWorkspaceProps) {
-  if (corpusEmpty && overlayCount === 0 && !refreshing) {
-    return (
-      <ReaderCorpusEmpty
-        refreshError={refreshError}
-        refreshing={refreshing}
-        candidateFeedCount={candidateFeedCount}
-        onLoadLiveSample={onLoadLiveSample}
-      />
-    );
-  }
-
+  const showCorpusEmptyPanel = corpusEmpty && overlayCount === 0 && !refreshing;
   const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
 
   return (
@@ -168,6 +159,17 @@ export function ReaderShellWorkspace({
             onFilterChip={onFilterChip}
             onResetDrafts={onResetDrafts}
             onPaginate={onPaginate}
+            corpusEmptyPanel={
+              showCorpusEmptyPanel ? (
+                <ReaderCorpusEmpty
+                  refreshError={refreshError}
+                  refreshing={refreshing}
+                  candidateFeedCount={candidateFeedCount}
+                  onLoadLiveSample={onLoadLiveSample}
+                  headingOverride={getFilteredEmptyHeading(currentState)}
+                />
+              ) : undefined
+            }
           />
         </section>
 

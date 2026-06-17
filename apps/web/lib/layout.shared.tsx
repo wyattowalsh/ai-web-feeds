@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { SearchToggle } from "fumadocs-ui/components/layout/search-toggle";
+import { hubLayoutLinks } from "@/lib/hub/links";
 
 /**
  * Shared layout configurations
@@ -36,44 +37,10 @@ export function baseOptions(): BaseLayoutProps {
       },
     },
     // see https://fumadocs.dev/docs/ui/navigation/links
-    links: [
-      {
-        text: "Reader",
-        url: "/reader",
-      },
-      {
-        text: "Search",
-        url: "/search",
-      },
-      {
-        text: "For You",
-        url: "/for-you",
-      },
-      {
-        text: "Sources",
-        url: "/sources",
-      },
-      {
-        text: "Topics",
-        url: "/topics",
-      },
-      {
-        text: "Blog",
-        url: "/blog",
-      },
-      {
-        text: "Dashboard",
-        url: "/dashboard",
-      },
-      {
-        text: "Docs",
-        url: "/docs",
-      },
-      {
-        text: "GitHub",
-        url: "https://github.com/wyattowalsh/ai-web-feeds",
-        external: true,
-      },
-    ],
+    links: hubLayoutLinks(),
+    themeSwitch: {
+      enabled: true,
+      mode: "light-dark-system",
+    },
   };
 }

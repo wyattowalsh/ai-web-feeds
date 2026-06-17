@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { FeedSource } from "@/lib/feeds-filters";
@@ -20,6 +20,7 @@ import { useReaderShortcutHandlers } from "@/hooks/use-reader-shortcut-handlers"
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
 
 import { ReaderShellWorkspace } from "@/components/reader/reader-shell-workspace";
+import { ReaderShortcutsSheet } from "@/components/reader/reader-shortcuts-sheet";
 
 export type ReaderShellProps = {
   feeds: FeedSource[];
@@ -38,6 +39,7 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
 
   const { ready: localIndexReady, search: searchLocal } = useLocalSearchIndex();
   const queryInputRef = useRef<HTMLInputElement>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const { candidateFeeds, feedLookup } = useReaderFeedSlice({ feeds, currentState });
 
@@ -109,41 +111,46 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
     queryInputRef,
     router,
     updateUrl,
+    onShowShortcuts: () => setShortcutsOpen(true),
+    onCloseShortcuts: () => setShortcutsOpen(false),
   });
 
   return (
-    <ReaderShellWorkspace
-      corpusEmpty={corpusEmpty}
-      overlayCount={overlayArticles.length}
-      refreshing={refreshing}
-      refreshError={refreshError}
-      candidateFeedCount={candidateFeeds.length}
-      onLoadLiveSample={() => void refreshLatest(true)}
-      liveStatusText={liveStatusText}
-      readerStats={readerStats}
-      onRefreshLatest={() => void refreshLatest(true)}
-      chrome={chrome}
-      browse={browse}
-      filterFormProps={filterFormProps}
-      mobileRail={mobileRail}
-      currentState={currentState}
-      loading={loading}
-      error={error}
-      visibleArticles={visibleArticles}
-      articleStateMap={articleStateMap}
-      selectedArticle={selectedArticle}
-      selectedArticleState={selectedArticleState}
-      feedLookup={feedLookup}
-      layout={preferences.layout}
-      showSummaries={preferences.showSummaries}
-      statsTotal={stats.total}
-      statsTopicCount={stats.topicCount}
-      onSelectArticle={handleSelectArticle}
-      onUpdateState={updateState}
-      onClosePreview={clearPreview}
-      onFilterChip={updateUrl}
-      onResetDrafts={resetDrafts}
-      onPaginate={(cursor) => updateUrl({ cursor })}
-    />
+    <>
+      <ReaderShellWorkspace
+        corpusEmpty={corpusEmpty}
+        overlayCount={overlayArticles.length}
+        refreshing={refreshing}
+        refreshError={refreshError}
+        candidateFeedCount={candidateFeeds.length}
+        onLoadLiveSample={() => void refreshLatest(true)}
+        liveStatusText={liveStatusText}
+        readerStats={readerStats}
+        onRefreshLatest={() => void refreshLatest(true)}
+        chrome={chrome}
+        browse={browse}
+        filterFormProps={filterFormProps}
+        mobileRail={mobileRail}
+        currentState={currentState}
+        loading={loading}
+        error={error}
+        visibleArticles={visibleArticles}
+        articleStateMap={articleStateMap}
+        selectedArticle={selectedArticle}
+        selectedArticleState={selectedArticleState}
+        feedLookup={feedLookup}
+        layout={preferences.layout}
+        showSummaries={preferences.showSummaries}
+        statsTotal={stats.total}
+        statsTopicCount={stats.topicCount}
+        onSelectArticle={handleSelectArticle}
+        onUpdateState={updateState}
+        onClosePreview={clearPreview}
+        onFilterChip={updateUrl}
+        onResetDrafts={resetDrafts}
+        onPaginate={(cursor) => updateUrl({ cursor })}
+      />
+      <ReaderShortcutsSheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+    </>
   );
 }

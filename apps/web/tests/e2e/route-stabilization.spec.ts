@@ -175,6 +175,17 @@ test.describe("Route stabilization smoke", () => {
       exact: true,
     },
     {
+      path: "/dashboard",
+      text: "Catalog health without the control room.",
+      role: "heading" as const,
+    },
+    {
+      path: "/docs",
+      text: "Documentation",
+      role: "heading" as const,
+      exact: true,
+    },
+    {
       path: "/offline",
       text: "You're offline",
       role: "heading" as const,
@@ -519,6 +530,49 @@ test.describe("Route stabilization smoke", () => {
     const articleRow = page.locator("article").filter({ hasText: /ZephyrCachedE2E/i });
     await expect(articleRow).toBeVisible();
     await expect(articleRow.getByText("Cached", { exact: true })).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("reader deep link surfaces source type chip without manual apply", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/reader?source_type=blog", { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByTestId("reader-workspace-grid")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Type: blog/i })).toBeVisible();
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("reader deep link surfaces active search chip without manual apply", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/reader?q=agent", { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByTestId("reader-workspace-grid")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Search: agent/i })).toBeVisible();
+    await expect(page.locator("#reader-search")).toHaveValue("agent");
+
+    await expectNoClientErrors(page, tracker);
+  });
+
+  test("docs route exposes hub command palette via keyboard shortcut", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/docs", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Documentation", exact: true })).toBeVisible();
+
+    await page.locator("body").click({ position: { x: 8, y: 8 } });
+    const paletteShortcut = process.platform === "darwin" ? "Meta+k" : "Control+k";
+    await page.keyboard.press(paletteShortcut);
+    await expect(page.getByRole("dialog", { name: "Command palette" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByPlaceholder(/type a command or search routes/i)).toBeFocused();
 
     await expectNoClientErrors(page, tracker);
   });

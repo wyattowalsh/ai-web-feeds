@@ -36,6 +36,8 @@ export interface UseReaderShortcutHandlersParams {
   queryInputRef: RefObject<HTMLInputElement | null>;
   router: ReturnType<typeof useRouter>;
   updateUrl: (overrides: Record<string, string | string[] | null | undefined>) => void;
+  onShowShortcuts?: () => void;
+  onCloseShortcuts?: () => void;
 }
 
 export interface UseReaderShortcutHandlersResult {
@@ -58,6 +60,8 @@ export function useReaderShortcutHandlers(
     queryInputRef,
     router,
     updateUrl,
+    onShowShortcuts,
+    onCloseShortcuts,
   } = params;
 
   const handleSelectArticle = useCallback(
@@ -117,8 +121,13 @@ export function useReaderShortcutHandlers(
         window.open(selectedArticle.link, "_blank", "noopener,noreferrer");
       },
       refresh: () => void refreshLatest(true),
+      search: () => queryInputRef.current?.focus(),
       focus_search: () => queryInputRef.current?.focus(),
-      close_modal: () => setPreviewArticleId(null),
+      show_shortcuts: () => onShowShortcuts?.(),
+      close_modal: () => {
+        onCloseShortcuts?.();
+        setPreviewArticleId(null);
+      },
       go_home: () => router.push("/"),
       go_unread: () => updateUrl({ reader_view: "unread", cursor: null }),
       go_starred: () => updateUrl({ reader_view: "starred", cursor: null }),
@@ -136,6 +145,8 @@ export function useReaderShortcutHandlers(
       updateState,
       setPreviewArticleId,
       queryInputRef,
+      onShowShortcuts,
+      onCloseShortcuts,
     ],
   );
 

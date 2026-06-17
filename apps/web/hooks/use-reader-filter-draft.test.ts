@@ -160,6 +160,7 @@ describe("useReaderFilterDraft", () => {
       reader_view: null,
       sort: null,
       cursor: null,
+      feed: null,
     });
   });
 

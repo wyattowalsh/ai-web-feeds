@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 
 interface EmptyStateProps {
   icon: LucideIcon;
+  iconClassName?: string;
   title: string;
   description: string;
   media?: ReactNode;
@@ -14,6 +15,7 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon: Icon,
+  iconClassName = "size-5",
   title,
   description,
   media,
@@ -25,7 +27,7 @@ export function EmptyState({
     <div className={cn("surface-card-soft text-center", className)}>
       <div className="mb-4 flex justify-center">
         <span className="flex size-14 items-center justify-center rounded-3xl bg-(--brand-soft) text-(--brand-strong)">
-          <Icon className="size-5" />
+          <Icon className={iconClassName} />
         </span>
       </div>
 

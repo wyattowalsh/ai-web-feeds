@@ -1,0 +1,18 @@
+{
+  "audited_at": "2026-06-16",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "routes": {
+    "/": 200,
+    "/reader": 200,
+    "/sources": 200,
+    "/search": 200,
+    "/for-you": 200,
+    "/topics": 200,
+    "/blog": 200,
+    "/dashboard": 200,
+    "/docs": 200,
+    "/offline": 200,
+    "/admin/login": 200
+  },
+  "blockers": []
+}

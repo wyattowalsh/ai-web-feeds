@@ -13,6 +13,15 @@ export const HUB_ROUTES = {
   docs: "/docs",
 } as const;
 
+export const EXTERNAL_HUB_LINKS: HubNavItem[] = [
+  {
+    label: "GitHub",
+    href: "https://github.com/wyattowalsh/ai-web-feeds",
+    external: true,
+    description: "Source repository",
+  },
+];
+
 export const PRIMARY_HUB_NAV: HubNavItem[] = [
   { label: "Home", href: HUB_ROUTES.home, description: "Hub landing" },
   { label: "Reader", href: HUB_ROUTES.reader, description: "Focused article stream" },
@@ -38,4 +47,20 @@ export function getSearchPath(query?: string): string {
     return HUB_ROUTES.search;
   }
   return `${HUB_ROUTES.search}?q=${encodeURIComponent(query.trim())}`;
+}
+
+/** FumaDocs header links derived from PRIMARY_HUB_NAV + external links. */
+export function hubLayoutLinks(): Array<{ text: string; url: string; external?: boolean }> {
+  return [
+    ...PRIMARY_HUB_NAV.map((item) => ({
+      text: item.label,
+      url: item.href,
+      external: item.external,
+    })),
+    ...EXTERNAL_HUB_LINKS.map((item) => ({
+      text: item.label,
+      url: item.href,
+      external: true as const,
+    })),
+  ];
 }

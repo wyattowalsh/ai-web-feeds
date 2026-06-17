@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReaderUIAuditFinding",
+  "type": "object",
+  "required": [
+    "task_id",
+    "surface",
+    "viewport",
+    "theme",
+    "category",
+    "severity",
+    "confidence",
+    "title",
+    "observation",
+    "evidence",
+    "impact",
+    "recommendation",
+    "effort",
+    "wave_suggestion"
+  ],
+  "properties": {
+    "task_id": { "type": "string" },
+    "surface": { "type": "string" },
+    "viewport": { "type": "string" },
+    "theme": { "enum": ["light", "dark", "system", "reduced"] },
+    "category": {
+      "enum": [
+        "accessibility",
+        "touch",
+        "performance",
+        "layout",
+        "typography",
+        "motion",
+        "forms",
+        "navigation",
+        "visual-polish",
+        "copy",
+        "architecture"
+      ]
+    },
+    "severity": { "enum": ["critical", "high", "medium", "low", "nit"] },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "title": { "type": "string" },
+    "observation": { "type": "string" },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "screenshot": { "type": "string" },
+        "url": { "type": "string" },
+        "selector": { "type": "string" }
+      }
+    },
+    "impact": { "type": "string" },
+    "recommendation": { "type": "string" },
+    "code_hint": { "type": "array", "items": { "type": "string" } },
+    "effort": { "enum": ["S", "M", "L"] },
+    "wave_suggestion": {
+      "enum": ["polish-wave-11", "polish-wave-12", "polish-wave-13", "quick-win", "debt"]
+    },
+    "regression_tests": { "type": "array", "items": { "type": "string" } }
+  }
+}

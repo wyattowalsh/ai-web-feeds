@@ -1,0 +1,32 @@
+{
+  "updated_at": "2026-06-17",
+  "current_batch": "W13-V",
+  "tasks": {
+    "W11-A-T009": { "state": "merged", "owner": "foreman" },
+    "W11-A-T015": { "state": "merged", "owner": "foreman" },
+    "W11-A-T016": { "state": "merged", "owner": "foreman" },
+    "W11-A-T017": { "state": "merged", "owner": "foreman" },
+    "W11-A-T018": { "state": "merged", "owner": "foreman" },
+    "W11-A-T022": { "state": "merged", "owner": "foreman" },
+    "W11-A-T023": { "state": "merged", "owner": "foreman" },
+    "W11-C-T001": { "state": "merged", "owner": "foreman" },
+    "W11-C-T002": { "state": "merged", "owner": "foreman" },
+    "W11-C-T003": { "state": "merged", "owner": "foreman" },
+    "W11-C-T006": { "state": "merged", "owner": "foreman" },
+    "W11-C-T007": { "state": "merged", "owner": "foreman" },
+    "W11-C-T028": { "state": "merged", "owner": "foreman" },
+    "W12-B-T061": { "state": "merged", "owner": "foreman" },
+    "W12-B-T063": { "state": "merged", "owner": "foreman" },
+    "W12-B-T065": { "state": "merged", "owner": "foreman" },
+    "W11-E-T042": { "state": "merged", "owner": "foreman" },
+    "W12-H-T081": { "state": "merged", "owner": "foreman" },
+    "W12-H-T082": { "state": "merged", "owner": "foreman" },
+    "W13-E-T037": { "state": "merged", "owner": "foreman" },
+    "W13-E-T038": { "state": "merged", "owner": "foreman" },
+    "W13-E-T039": { "state": "merged", "owner": "foreman" },
+    "W13-C-T027": { "state": "merged", "owner": "foreman" },
+    "W11-E-T010": { "state": "merged", "owner": "foreman" }
+  },
+  "blockers": [],
+  "next": ["V13 prod deploy + AUDIT_STRICT=1", "W12-D axe dark matrix", "W13-F flows D3-D4"]
+}
