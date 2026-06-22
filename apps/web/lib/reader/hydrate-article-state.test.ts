@@ -16,6 +16,29 @@ type PreferencesWithArticleStates = Preferences & {
   articleStates?: Record<string, ReaderArticleState>;
 };
 
+function createLocalStorageMock() {
+  const store = new Map<string, string>();
+
+  return {
+    get length() {
+      return store.size;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      store.delete(key);
+    }),
+    clear: vi.fn(() => {
+      store.clear();
+    }),
+  };
+}
+
 function clearLocalStorage() {
   if (typeof window !== "undefined" && window.localStorage) {
     window.localStorage.clear();
@@ -60,6 +83,7 @@ async function clearPreferencesAndArticles() {
 
 describe("hydrate-article-state", () => {
   beforeEach(async () => {
+    vi.stubGlobal("localStorage", createLocalStorageMock());
     clearLocalStorage();
     await clearPreferencesAndArticles();
     vi.useRealTimers();
@@ -68,6 +92,7 @@ describe("hydrate-article-state", () => {
   afterEach(async () => {
     clearLocalStorage();
     await clearPreferencesAndArticles();
+    vi.unstubAllGlobals();
     try {
       closeDB();
     } catch {

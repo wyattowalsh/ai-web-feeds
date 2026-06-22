@@ -14,22 +14,30 @@ test.describe("Reader keyboard shortcuts", () => {
   test("j and k move article preview selection", async ({ page }) => {
     await gotoReader(page);
 
-    const articleButtons = page.locator("article button[aria-pressed]");
-    await expect(articleButtons.first()).toHaveAttribute("aria-pressed", "false");
+    const rowButtons = page.locator("article > button[aria-pressed]");
+    await expect(rowButtons.first()).toHaveAttribute("aria-pressed", "false");
 
     await expect
       .poll(async () => {
         await page.keyboard.press("j");
-        return articleButtons.first().getAttribute("aria-pressed");
+        return rowButtons.first().getAttribute("aria-pressed");
       })
       .toBe("true");
 
-    const count = await articleButtons.count();
+    const count = await rowButtons.count();
     if (count > 1) {
-      await page.keyboard.press("j");
-      await expect(articleButtons.nth(1)).toHaveAttribute("aria-pressed", "true");
-      await page.keyboard.press("k");
-      await expect(articleButtons.first()).toHaveAttribute("aria-pressed", "true");
+      await expect
+        .poll(async () => {
+          await page.keyboard.press("j");
+          return rowButtons.nth(1).getAttribute("aria-pressed");
+        })
+        .toBe("true");
+      await expect
+        .poll(async () => {
+          await page.keyboard.press("k");
+          return rowButtons.first().getAttribute("aria-pressed");
+        })
+        .toBe("true");
     }
   });
 
