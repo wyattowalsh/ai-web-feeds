@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
+import { useSuspendReaderShortcuts } from "@/hooks/use-suspend-reader-shortcuts";
 import { cn } from "@/lib/utils";
 import { PRIMARY_HUB_NAV } from "@/lib/hub/links";
 import type { HubNavItem } from "@/lib/hub/types";
@@ -47,6 +48,8 @@ export function CommandPalette({
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
+
+  useSuspendReaderShortcuts("command-palette", open);
 
   const setOpen = React.useCallback(
     (next: boolean) => {

@@ -43,6 +43,7 @@ export function useReaderPreview({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setPreviewArticleId(null);
       }
     };

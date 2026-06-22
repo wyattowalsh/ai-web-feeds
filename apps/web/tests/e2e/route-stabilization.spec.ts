@@ -251,9 +251,7 @@ test.describe("Route stabilization smoke", () => {
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible({ timeout: 15000 });
-    await expect(page)
-      .toHaveURL(new RegExp(`/reader\\?q=`), { timeout: 5000 })
-      .catch(() => {});
+    await expect.poll(() => page.url(), { timeout: 15000 }).toMatch(new RegExp(`/reader\\?q=`));
     await expect(
       page.getByRole("button", { name: new RegExp(`Search: ${token}`, "i") }),
     ).toBeVisible();
@@ -282,9 +280,7 @@ test.describe("Route stabilization smoke", () => {
     await expect(page.getByRole("heading", { name: /Results for .+agent/i })).toBeVisible({
       timeout: 15000,
     });
-    await expect(page)
-      .toHaveURL(/\/reader\?q=agent$/, { timeout: 5000 })
-      .catch(() => {});
+    await expect.poll(() => page.url(), { timeout: 15000 }).toMatch(/\/reader\?q=agent$/);
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
@@ -519,12 +515,8 @@ test.describe("Route stabilization smoke", () => {
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+ZephyrCachedE2E`, "i") }),
     ).toBeVisible({ timeout: 15000 });
-    await expect(page)
-      .toHaveURL(/q=/, { timeout: 5000 })
-      .catch(() => {});
-    await expect(page)
-      .toHaveURL(/reader_view=saved/, { timeout: 5000 })
-      .catch(() => {});
+    await expect.poll(() => page.url(), { timeout: 15000 }).toMatch(/q=/);
+    await expect.poll(() => page.url(), { timeout: 15000 }).toMatch(/reader_view=saved/);
 
     // Assert the article row (from cached overlay, not corpus) carries the "Cached" ReaderPill.
     const articleRow = page.locator("article").filter({ hasText: /ZephyrCachedE2E/i });
@@ -625,9 +617,7 @@ test.describe("Route stabilization smoke", () => {
     await expect(
       page.getByRole("heading", { name: new RegExp(`Results for .+${token}`, "i") }),
     ).toBeVisible({ timeout: 15000 });
-    await expect(page)
-      .toHaveURL(new RegExp(`/reader\\?q=`), { timeout: 5000 })
-      .catch(() => {});
+    await expect.poll(() => page.url(), { timeout: 15000 }).toMatch(new RegExp(`/reader\\?q=`));
 
     await expectNoClientErrors(page, tracker);
   });

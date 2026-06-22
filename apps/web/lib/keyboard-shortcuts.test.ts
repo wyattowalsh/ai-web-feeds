@@ -12,11 +12,10 @@ import {
 describe("keyboard-shortcuts (lib)", () => {
   beforeEach(async () => {
     shortcutManager.setEnabled(true);
-
-    // Ensure the async loadShortcuts (from prefs) has settled so default map is populated.
-    // getShortcuts is sync snapshot; give the microtask/IO from fake idb a tick.
     shortcutManager.getShortcuts();
-    await new Promise((r) => setTimeout(r, 10));
+    await vi.waitUntil(() => shortcutManager.getKeyForAction("next_article") !== undefined, {
+      timeout: 1000,
+    });
   });
 
   afterEach(() => {
@@ -29,14 +28,9 @@ describe("keyboard-shortcuts (lib)", () => {
     const handler = vi.fn();
     const unregister = shortcutManager.register("next_article", handler);
 
-    // simulate keydown for 'j' which defaults to next_article (ensure settled)
-    await new Promise((r) => setTimeout(r, 5));
     const ev = new KeyboardEvent("keydown", { key: "j", bubbles: true });
     window.dispatchEvent(ev);
 
-    // allow microtask for handler
-    await new Promise((r) => setTimeout(r, 5));
-    // use poll in case of any remaining load timing
     await expect.poll(() => handler.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
 
     unregister();
@@ -84,13 +78,21 @@ describe("keyboard-shortcuts (lib)", () => {
     const homeH = vi.fn();
     shortcutManager.register("go_home", homeH);
 
-    await new Promise((r) => setTimeout(r, 5));
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "g", bubbles: true }));
-    // small sync gap for sequence buffer in handler
-    await new Promise((r) => setTimeout(r, 5));
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "h", bubbles: true }));
 
     await expect.poll(() => homeH.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
+  });
+
+  it("ignores keydown events that already called preventDefault", () => {
+    const handler = vi.fn();
+    shortcutManager.register("next_article", handler);
+
+    const ev = new KeyboardEvent("keydown", { key: "j", bubbles: true, cancelable: true });
+    ev.preventDefault();
+    window.dispatchEvent(ev);
+
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it("getKeyForAction reflects current map (wrappers in use-reader-shortcuts)", () => {
@@ -108,8 +110,6 @@ describe("keyboard-shortcuts (lib)", () => {
   it("useKeyboardShortcut registers and cleans up on unmount", async () => {
     const h = vi.fn();
     const { unmount } = renderHook(() => useKeyboardShortcut("refresh", h));
-    // trigger r
-    await new Promise((r) => setTimeout(r, 5));
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "r" }));
     await expect.poll(() => h.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
 

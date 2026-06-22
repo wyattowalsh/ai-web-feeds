@@ -26,6 +26,7 @@ export function ReaderFilterChipBar({
         <button
           key={chip.key}
           type="button"
+          aria-label={`Remove filter: ${chip.label}`}
           onClick={() => onFilterChip(chip.overrides)}
           className="inline-flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-muted) px-2.5 py-1.5 text-xs font-semibold text-(--ink)"
         >

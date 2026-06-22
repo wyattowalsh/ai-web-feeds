@@ -206,10 +206,28 @@ describe("ReaderShellWorkspace", () => {
     );
 
     expect(screen.getByTestId("reader-active-filter-chips")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Search: agent/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove filter: Search: agent" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "No prepared matches for “agent”" }),
     ).toBeInTheDocument();
+  });
+
+  it("shows live refresh error heading on empty corpus", () => {
+    render(
+      <ReaderShellWorkspace
+        {...baseProps({
+          corpusEmpty: true,
+          overlayCount: 0,
+          refreshing: false,
+          refreshError: "Network error",
+          visibleArticles: [],
+        })}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Live posts unavailable" })).toBeInTheDocument();
   });
 
   it("keeps workspace grid visible while refreshing on empty corpus", () => {

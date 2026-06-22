@@ -17,7 +17,6 @@ import {
   type ReaderArticleState,
   type WorkspaceArticle,
 } from "@/lib/reader";
-import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
 
 export type ReaderPreviewPaneProps = {
@@ -39,8 +38,6 @@ export function ReaderPreviewPane({
 }: ReaderPreviewPaneProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [summaryMarkup, setSummaryMarkup] = useState<string | null>(null);
-
-  useFocusTrap(panelRef, variant === "panel" && Boolean(article), onClose);
 
   useEffect(() => {
     setSummaryMarkup(
@@ -64,6 +61,8 @@ export function ReaderPreviewPane({
   return (
     <div
       ref={panelRef}
+      role={variant === "panel" ? "region" : undefined}
+      aria-label={variant === "panel" ? "Article preview" : undefined}
       className={cn(
         "surface-card border-border bg-card",
         variant === "panel" &&

@@ -16,7 +16,7 @@ describe("ReaderFilterChipBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Search: agent/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove filter: Search: agent" }));
     expect(onFilterChip).toHaveBeenCalledWith({ q: null });
 
     fireEvent.click(screen.getByRole("button", { name: "Clear all" }));

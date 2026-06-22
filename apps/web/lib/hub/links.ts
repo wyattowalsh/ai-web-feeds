@@ -34,21 +34,6 @@ export const PRIMARY_HUB_NAV: HubNavItem[] = [
   { label: "Docs", href: HUB_ROUTES.docs, description: "Guides and API" },
 ];
 
-export function getTopicPath(topicId: string): string {
-  return `/topics/${encodeURIComponent(topicId)}`;
-}
-
-export function getSourcePath(sourceId: string): string {
-  return `/sources/${encodeURIComponent(sourceId)}`;
-}
-
-export function getSearchPath(query?: string): string {
-  if (!query?.trim()) {
-    return HUB_ROUTES.search;
-  }
-  return `${HUB_ROUTES.search}?q=${encodeURIComponent(query.trim())}`;
-}
-
 /** FumaDocs header links derived from PRIMARY_HUB_NAV + external links. */
 export function hubLayoutLinks(): Array<{ text: string; url: string; external?: boolean }> {
   return [

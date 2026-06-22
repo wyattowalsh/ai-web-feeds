@@ -106,8 +106,8 @@ export function ReaderShellWorkspace({
         data-testid="reader-workspace-grid"
         className={cn(
           "grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]",
-          selectedArticle && "xl:grid-cols-[18rem_minmax(0,1fr)_22rem]",
-          selectedArticle && "2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
+          selectedArticle &&
+            "xl:grid-cols-[18rem_minmax(0,1fr)_22rem] 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
         )}
       >
         <ReaderFilterRail

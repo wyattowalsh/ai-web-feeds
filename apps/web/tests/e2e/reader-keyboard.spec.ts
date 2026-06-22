@@ -45,6 +45,22 @@ test.describe("Reader keyboard shortcuts", () => {
     await expect(page.getByText("Navigate to next article")).toBeVisible();
   });
 
+  test("j does not change selection while shortcuts sheet is open", async ({ page }) => {
+    await gotoReader(page);
+    await page.locator("body").click({ position: { x: 8, y: 8 } });
+
+    const articleButtons = page.locator("article button[aria-pressed]");
+    await expect(articleButtons.first()).toHaveAttribute("aria-pressed", "false");
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+    });
+    await expect(page.getByRole("heading", { name: "Keyboard shortcuts" })).toBeVisible();
+
+    await page.keyboard.press("j");
+    await expect(articleButtons.first()).toHaveAttribute("aria-pressed", "false");
+  });
+
   test("slash focuses the reader search field", async ({ page }) => {
     await gotoReader(page);
 

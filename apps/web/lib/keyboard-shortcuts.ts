@@ -94,6 +94,7 @@ class KeyboardShortcutManager {
    */
   private handleKeyDown(event: KeyboardEvent): void {
     if (!this.enabled) return;
+    if (event.defaultPrevented) return;
 
     // Ignore shortcuts when typing in inputs
     const target = event.target as HTMLElement;

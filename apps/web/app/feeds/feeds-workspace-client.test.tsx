@@ -676,13 +676,21 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Search: agents" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Type: blog" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Topic: agents" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Verified only" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Source: Agent Feed" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove filter: Search: agents" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove filter: Type: blog" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove filter: Topic: agents" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove filter: Verified only" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove filter: Source: Agent Feed" }),
+    ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Topic: agents" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove filter: Topic: agents" }));
     expect(replaceMock).toHaveBeenLastCalledWith(
       "/reader?q=agents&source_type=blog&verified=true&feed=feed-1",
       { scroll: false },

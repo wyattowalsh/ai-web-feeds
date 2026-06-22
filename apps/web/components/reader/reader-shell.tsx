@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 
 import type { FeedSource } from "@/lib/feeds-filters";
 import type { FeedStats } from "@/lib/reader";
-import { buildReaderShellPresentation } from "@/lib/reader/build-reader-shell-presentation";
+import { useSuspendReaderShortcuts } from "@/hooks/use-suspend-reader-shortcuts";
+import { buildReaderWorkspaceChrome } from "@/lib/reader/build-reader-workspace-chrome";
+import { buildLiveStatusText, buildReaderShellStats } from "@/lib/reader/build-reader-shell-stats";
 import type {
   FeedsWorkspaceInitialBrowse,
   FeedsWorkspaceInitialState,
@@ -40,6 +42,8 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
   const { ready: localIndexReady, search: searchLocal } = useLocalSearchIndex();
   const queryInputRef = useRef<HTMLInputElement>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  useSuspendReaderShortcuts("shortcuts-sheet", shortcutsOpen);
 
   const { candidateFeeds, feedLookup } = useReaderFeedSlice({ feeds, currentState });
 
@@ -86,7 +90,7 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
     onBeforeNavigate: clearPreview,
   });
 
-  const { chrome, readerStats, liveStatusText } = buildReaderShellPresentation({
+  const presentationParams = {
     currentState,
     feedLookup,
     candidateFeedCount: candidateFeeds.length,
@@ -97,7 +101,12 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
     corpusGeneratedAt: browse.corpus.generated_at,
     corpusLatestPublishedAt: browse.corpus.latest_published_at,
     visibleCount: visibleArticles.length,
+  };
+  const chrome = buildReaderWorkspaceChrome(presentationParams);
+  const readerStats = buildReaderShellStats(presentationParams);
+  const liveStatusText = buildLiveStatusText({
     liveProgress,
+    visibleCount: visibleArticles.length,
   });
 
   const { handleSelectArticle } = useReaderShortcutHandlers({

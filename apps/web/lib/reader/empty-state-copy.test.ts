@@ -32,4 +32,49 @@ describe("getFilteredEmptyHeading", () => {
       }),
     ).toBeNull();
   });
+
+  it("returns reader view heading", () => {
+    expect(
+      getFilteredEmptyHeading({
+        query: "",
+        feedIds: [],
+        sourceType: null,
+        topics: [],
+        verified: null,
+        sort: "latest",
+        readerView: "unread",
+        cursor: 0,
+      }),
+    ).toBe("No prepared articles in Unread view");
+  });
+
+  it("returns sort heading", () => {
+    expect(
+      getFilteredEmptyHeading({
+        query: "",
+        feedIds: [],
+        sourceType: null,
+        topics: [],
+        verified: null,
+        sort: "oldest",
+        readerView: "latest",
+        cursor: 0,
+      }),
+    ).toBe("No prepared articles sorted by Oldest first");
+  });
+
+  it("returns verified heading", () => {
+    expect(
+      getFilteredEmptyHeading({
+        query: "",
+        feedIds: [],
+        sourceType: null,
+        topics: [],
+        verified: true,
+        sort: "latest",
+        readerView: "latest",
+        cursor: 0,
+      }),
+    ).toBe("No prepared articles from verified sources");
+  });
 });

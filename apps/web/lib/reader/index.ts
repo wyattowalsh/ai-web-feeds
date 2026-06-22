@@ -8,7 +8,6 @@ export * from "./format";
 export * from "./reading-time";
 export * from "./build-reader-shell-stats";
 export * from "./build-reader-workspace-chrome";
-export * from "./build-reader-shell-presentation";
 export * from "./build-feed-lookup";
 export * from "./filter-candidate-feeds";
 export * from "./default-empty-browse";

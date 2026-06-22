@@ -1,5 +1,7 @@
 import type { FeedSource } from "@/lib/feeds-filters";
 import type { FeedsWorkspaceInitialState } from "@/lib/reader-route";
+
+import { readerViewChipLabel, sortChipLabel } from "./filter-labels";
 import type {
   ArticleSort,
   FeedSliceFilters,
@@ -163,27 +165,17 @@ export function buildCurrentFilterChips(
   }
 
   if (state.readerView !== "latest") {
-    const labels: Record<Exclude<ReaderView, "latest">, string> = {
-      unread: "Unread",
-      starred: "Starred",
-      saved: "Saved",
-      archived: "Archived",
-    };
     chips.push({
       key: "readerView",
-      label: `View: ${labels[state.readerView as Exclude<ReaderView, "latest">]}`,
+      label: readerViewChipLabel(state.readerView as Exclude<ReaderView, "latest">),
       overrides: { reader_view: null },
     });
   }
 
   if (state.sort !== "latest") {
-    const labels: Record<Exclude<ArticleSort, "latest">, string> = {
-      oldest: "Oldest first",
-      source: "By source",
-    };
     chips.push({
       key: "sort",
-      label: `Sort: ${labels[state.sort as Exclude<ArticleSort, "latest">]}`,
+      label: sortChipLabel(state.sort as Exclude<ArticleSort, "latest">),
       overrides: { sort: null, cursor: null },
     });
   }
