@@ -15,6 +15,10 @@ vi.mock("@/lib/nonce", () => ({
   getRequestNonce: vi.fn(async () => undefined),
 }));
 
+vi.mock("@/components/utility/onboarding-coach", () => ({
+  OnboardingCoach: () => null,
+}));
+
 async function loadHomePage() {
   const pageModule = await import("./page");
   return pageModule.default;

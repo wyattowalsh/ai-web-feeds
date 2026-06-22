@@ -33,6 +33,7 @@ vi.mock("@/lib/reader/hydrate-article-state", () => ({
 
 vi.mock("@/hooks/use-reader-shortcuts", () => ({
   useReaderShortcuts: vi.fn(),
+  listReaderShortcuts: vi.fn(() => []),
 }));
 
 vi.mock("@/hooks/use-local-search-index", () => ({
@@ -403,7 +404,9 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "No prepared article corpus" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "No prepared article corpus" }),
+    ).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "Load live sample" }));
@@ -451,7 +454,9 @@ describe("FeedsWorkspaceClient", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "No prepared article corpus" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "No prepared matches for “agents”" }),
+    ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some((call) => call[0] === "/api/feeds/posts/aggregate/stream"),
     ).toBe(false);

@@ -24,8 +24,9 @@ export function ReaderCorpusEmpty({
   onLoadLiveSample,
   headingOverride,
 }: ReaderCorpusEmptyProps) {
-  const defaultHeading = refreshError ? "Live posts unavailable" : "No prepared article corpus";
-  const heading = headingOverride ?? defaultHeading;
+  const heading = refreshError
+    ? "Live posts unavailable"
+    : headingOverride ?? "No prepared article corpus";
   return (
     <div className="reader-shell space-y-4">
       <div className="surface-card border-(--line) bg-(--surface)">
