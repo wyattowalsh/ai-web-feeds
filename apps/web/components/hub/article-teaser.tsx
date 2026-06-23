@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock3, ExternalLink, BookOpen } from "lucide-react";
+import { ArrowUpRight, Clock3, BookOpen } from "lucide-react";
 import { formatArticleDate } from "@/lib/reader/format";
 import { formatReadingTime } from "@/lib/reader/reading-time";
 import { cn } from "@/lib/cn";
@@ -46,7 +46,7 @@ export function ArticleTeaser({
           className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
         >
           Open
-          <ExternalLink className="size-3" />
+          <ArrowUpRight className="size-3" />
         </Link>
         {resolvedReaderHref ? (
           <Link

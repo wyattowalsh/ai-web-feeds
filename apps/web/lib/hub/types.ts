@@ -1,6 +1,7 @@
 export type HubPageVariant = "default" | "compact" | "immersive";
 
 export type HubNavItem = {
+  id?: string;
   label: string;
   href: string;
   external?: boolean;

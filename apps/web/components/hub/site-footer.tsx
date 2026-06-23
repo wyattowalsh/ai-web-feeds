@@ -4,7 +4,7 @@ import { EXTERNAL_HUB_LINKS } from "@/lib/hub/links";
 const year = new Date().getFullYear();
 
 export function SiteFooter() {
-  const github = EXTERNAL_HUB_LINKS.find((l) => l.label === "GitHub");
+  const github = EXTERNAL_HUB_LINKS.find((l) => l.id === "github");
   return (
     <footer className="mt-16 border-t bg-background text-foreground">
       <div className="page-wrap py-8 text-sm text-(--ink-muted)">

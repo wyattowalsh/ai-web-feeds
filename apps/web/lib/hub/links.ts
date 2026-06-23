@@ -18,6 +18,7 @@ export const HUB_ROUTES = {
 
 export const EXTERNAL_HUB_LINKS: HubNavItem[] = [
   {
+    id: "github",
     label: "GitHub",
     href: "https://github.com/wyattowalsh/ai-web-feeds",
     external: true,
