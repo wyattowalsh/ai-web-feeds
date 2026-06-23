@@ -8,7 +8,6 @@ from typing import Optional
 from urllib.parse import urlparse
 
 import typer
-import yaml  # type: ignore[import-untyped]
 from loguru import logger
 from rich.console import Console
 
@@ -198,7 +197,9 @@ def add(
                             src[k] = enriched[k]
                     break
             save_feeds(catalog, input_file)
-            console.print("[green]✓[/green] Enrichment complete (metadata may be partial without network)")
+            console.print(
+                "[green]✓[/green] Enrichment complete (metadata may be partial without network)"
+            )
         except Exception as e:
             logger.warning("Enrichment failed for add: {}", e)
             console.print(f"[yellow]Enrichment skipped: {e}[/yellow]")

@@ -10,12 +10,7 @@
  *  - syncQueue: pending offline operations to reconcile
  */
 
-import {
-  articles,
-  syncQueue,
-  type Article,
-  type SyncQueueItem,
-} from "@/lib/db";
+import { articles, syncQueue, type Article, type SyncQueueItem } from "@/lib/db";
 
 export type OfflineOperationType = "read" | "star" | "archive" | "tag" | "annotation" | "save";
 
@@ -25,7 +20,7 @@ export interface OfflineOperationInput {
   data?: Record<string, unknown>;
 }
 
-export interface QueuedOperation extends SyncQueueItem {}
+export type QueuedOperation = SyncQueueItem;
 
 export interface ConflictInfo {
   articleId: string;

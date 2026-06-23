@@ -17,11 +17,18 @@ implementation tasks with manual testing per acceptance scenarios.
 
 **Verified gaps (true remaining work, not unverifiable):**
 
-- T001-T008: Setup (deps, alembic migration 006 exists, visualization module dir, device_id util, test structure) — alembic 006 exists; visualization/ dir not confirmed; device_id.ts not found
-- T009-T016: Foundational (SQLAlchemy models, data_service, cache, validators, api, auth, base components) — models exist in migration 006; visualization package not confirmed in src
-- T017-T063: US1-US3 dashboard/3d/custom dashboards — no /analytics/visualizations or dashboard builder pages found; API routes for visualizations not found
-- T064-T104: US4-US6 forecasting/compare/export — forecasting_service not found; compare/export APIs not found; /api/export jobs not present
-- T105-T117: Polish (indexes, docs, perf, a11y, RTM) — visualization/getting-started.mdx exists; no full docs set; no RTM traceability.md found
+- T001-T008: Setup (deps, alembic migration 006 exists, visualization module dir,
+  device_id util, test structure) — alembic 006 exists; visualization/ dir not
+  confirmed; device_id.ts not found
+- T009-T016: Foundational (SQLAlchemy models, data_service, cache, validators, api,
+  auth, base components) — models exist in migration 006; visualization package not
+  confirmed in src
+- T017-T063: US1-US3 dashboard/3d/custom dashboards — no /analytics/visualizations or
+  dashboard builder pages found; API routes for visualizations not found
+- T064-T104: US4-US6 forecasting/compare/export — forecasting_service not found;
+  compare/export APIs not found; /api/export jobs not present
+- T105-T117: Polish (indexes, docs, perf, a11y, RTM) — visualization/getting-started.mdx
+  exists; no full docs set; no RTM traceability.md found
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -35,11 +42,16 @@ ______________________________________________________________________
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Install backend dependencies: FastAPI, SQLAlchemy, Pandas, Prophet, redis-py — not primary deps
-- [ ] T002 Install frontend dependencies: Three.js, @react-three/*, Chart.js, react-grid-layout — not verified
-- [x] T003 [P] Run Alembic migration to create visualization tables — packages/alembic/versions/006_add_visualization_tables.py exists
-- [ ] T004 [P] Create backend module structure: packages/ai_web_feeds/src/ai_web_feeds/visualization/ — not found
-- [ ] T005 [P] Create frontend page structure: apps/web/app/analytics/visualizations/ — not found
+- [ ] T001 Install backend dependencies: FastAPI, SQLAlchemy, Pandas, Prophet, redis-py
+  — not primary deps
+- [ ] T002 Install frontend dependencies: Three.js, @react-three/\*, Chart.js,
+  react-grid-layout — not verified
+- [x] T003 [P] Run Alembic migration to create visualization tables —
+  packages/alembic/versions/006_add_visualization_tables.py exists
+- [ ] T004 [P] Create backend module structure:
+  packages/ai_web_feeds/src/ai_web_feeds/visualization/ — not found
+- [ ] T005 [P] Create frontend page structure: apps/web/app/analytics/visualizations/ —
+  not found
 - [ ] T006 [P] Configure Redis cache in config.py — not verified for visualization
 - [ ] T007 [P] Create device_id utility in apps/web/lib/device-id.ts — not found
 - [ ] T008 [P] Setup test structure: tests/.../visualization/ — not found

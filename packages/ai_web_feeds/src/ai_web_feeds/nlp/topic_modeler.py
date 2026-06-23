@@ -1,7 +1,6 @@
 """TopicNode modeling using LDA/BERTopic (Phase 5D)."""
 
 import re
-from typing import Any
 
 from gensim import corpora, models
 from gensim.models import CoherenceModel
@@ -10,15 +9,11 @@ from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
 
-
-def _get_numpy() -> Any:
-    """Lazy import numpy (available under ml extra; gensim depends on it)."""
-    try:
-        import numpy as np
-
-        return np
-    except ImportError:
-        return None
+# Lazy numpy for ml extra (gensim dep); top-level try to satisfy linters
+try:
+    import numpy as np  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover
+    np = None  # type: ignore[assignment]
 
 
 class DiscoveredSubtopic(BaseModel):
@@ -445,7 +440,8 @@ class TopicModeler:
                     }
                 )
 
-        # 3. Basic split/merge detection using topic similarity threshold (cosine on keyword vectors)
+        # 3. Basic split/merge detection using topic similarity threshold
+        # (cosine on keyword vectors)
         self._detect_split_merge(events, prev_subtopics, current_subtopics, period, threshold)
 
         return events
@@ -484,7 +480,6 @@ class TopicModeler:
 
         Returns None if numpy unavailable (caller falls back).
         """
-        np = _get_numpy()
         if np is None:
             return None
 
@@ -537,9 +532,7 @@ class TopicModeler:
                         "event_type": "split",
                         "source_topic": prev_subtopics[prev_idx].name,
                         "target_topics": [current_subtopics[j].name for j in curr_idxs],
-                        "article_count": sum(
-                            current_subtopics[j].article_count for j in curr_idxs
-                        ),
+                        "article_count": sum(current_subtopics[j].article_count for j in curr_idxs),
                         "detected_at": period,
                     }
                 )
@@ -562,9 +555,7 @@ class TopicModeler:
                         "article_count": current_subtopics[curr_idx].article_count,
                         "detected_at": period,
                         # include sources for completeness (model allows source_topic singular)
-                        "source_topics": [
-                            prev_subtopics[i].name for i in prev_idxs
-                        ],
+                        "source_topics": [prev_subtopics[i].name for i in prev_idxs],
                     }
                 )
 

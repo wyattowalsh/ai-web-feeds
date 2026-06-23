@@ -483,7 +483,10 @@ def hybrid_search(
     """
     settings = get_settings()
     logger.info(
-        f"Hybrid search: query='{query}', ft_weight={full_text_weight}, sem_weight={semantic_weight}"
+        "Hybrid search: query='%s', ft_weight=%s, sem_weight=%s",
+        query,
+        full_text_weight,
+        semantic_weight,
     )
 
     # Validate and clamp limit

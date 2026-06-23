@@ -174,7 +174,14 @@ class TestQualityJobAuthorDetailAndJson:
 
         with patch.object(job, "scorer") as mock_scorer:
             mock_result = MagicMock()
-            for k in ["overall_score", "depth_score", "reference_score", "author_score", "domain_score", "engagement_score"]:
+            for k in [
+                "overall_score",
+                "depth_score",
+                "reference_score",
+                "author_score",
+                "domain_score",
+                "engagement_score",
+            ]:
                 setattr(mock_result, k, 60)
             mock_scorer.score_article.return_value = mock_result
 

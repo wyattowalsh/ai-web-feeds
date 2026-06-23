@@ -545,4 +545,3 @@ class TestCLIAddCommand:
             assert src["url"] == "https://example.com/feed.xml"
             assert src["title"] == "Example Feed"
             assert "ai" in src.get("topics", [])
-

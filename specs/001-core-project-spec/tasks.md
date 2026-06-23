@@ -13,18 +13,24 @@
 **Verified gaps (true remaining work, not unverifiable):**
 
 - T010/T012: Dependency install steps (environment, not code)
-- T018/T019: Initial Alembic migration files (current migrations start at 006; schema may rely on SQLModel.metadata.create_all)
-- T025/T045/T068/T086: Database migrations for core tables (migrations exist for later phases only)
+- T018/T019: Initial Alembic migration files (current migrations start at 006; schema
+  may rely on SQLModel.metadata.create_all)
+- T025/T045/T068/T086: Database migrations for core tables (migrations exist for later
+  phases only)
 - T031: OPML 2.0 schema validation using xmlschema (uses defusedxml only)
 - T041/T042: Dedicated download page and feeds.mdx docs
 - T054: is_active filter on list_feeds (uses curation_status instead)
 - T063: validation.mdx documentation
-- T065/T067/T071-T073/T075/T077/T078/T083: Topic models/storage/CLI/docs (TopicNode exists, but full TopicStorage, DAG cycle detection, dedicated topics CLI, topics.mdx not found)
+- T065/T067/T071-T073/T075/T077/T078/T083: Topic models/storage/CLI/docs (TopicNode
+  exists, but full TopicStorage, DAG cycle detection, dedicated topics CLI, topics.mdx
+  not found)
 - T093: Auto-validate on add feed
 - T094/T097: `add` CLI command and `export yaml`
 - T098a/T098b: Contributor status page and contributing.mdx status section
-- T099-T105/T107-T109/T111-T113: Explorer page, graph viz, FeedList/Detail components, search highlighting optimization
-- T115/T116/T119-T120/T122-T123/T127-T131/T131a: Pagination helper, rate limiting middleware, feed/[id] routes, topic/[id] routes, api docs, subscription feeds
+- T099-T105/T107-T109/T111-T113: Explorer page, graph viz, FeedList/Detail components,
+  search highlighting optimization
+- T115/T116/T119-T120/T122-T123/T127-T131/T131a: Pagination helper, rate limiting
+  middleware, feed/[id] routes, topic/[id] routes, api docs, subscription feeds
 - T137: Dedicated property-based tests file
 - T138: Verified ≥90% coverage run
 - T144/T145: scheduled-tasks.mdx, Lighthouse audit results
@@ -161,7 +167,8 @@ ______________________________________________________________________
 - [x] T018 Create Alembic migration configuration for reversible schema changes
   (packages/alembic.ini, packages/alembic/env.py exist)
 - [ ] T019 Write initial migration to create database schema (all tables from
-  data-model.md) — current migrations start at 006; initial schema may use SQLModel.metadata.create_all
+  data-model.md) — current migrations start at 006; initial schema may use
+  SQLModel.metadata.create_all
 
 ### Data Schemas
 
@@ -211,10 +218,13 @@ RSS reader → Verify feeds appear correctly
 - [x] T029 [P] [US1] Create OPML builder in
   packages/ai_web_feeds/src/ai_web_feeds/export.py with render_opml() function
 - [x] T030 [P] [US1] Implement categorized OPML export in
-  packages/ai_web_feeds/src/ai_web_feeds/export.py (grouped by topic via build_opml_category_map)
+  packages/ai_web_feeds/src/ai_web_feeds/export.py (grouped by topic via
+  build_opml_category_map)
 - [ ] T031 [P] [US1] Add OPML validation against OPML 2.0 spec using xmlschema in
-  packages/ai_web_feeds/src/ai_web_feeds/export.py — uses defusedxml, no xmlschema validation found
-- [x] T032 [US1] Implement filtered OPML export via API route with filters (topic, source_type, verified)
+  packages/ai_web_feeds/src/ai_web_feeds/export.py — uses defusedxml, no xmlschema
+  validation found
+- [x] T032 [US1] Implement filtered OPML export via API route with filters (topic,
+  source_type, verified)
 
 ### CLI Commands (US1)
 
@@ -230,9 +240,10 @@ RSS reader → Verify feeds appear correctly
 
 ### Web Pages (US1)
 
-- [x] T037 [P] [US1] Create feed data loader in apps/web/lib/feeds.ts (reads via loadFeedCatalog)
-- [x] T038 [P] [US1] Implement feed catalog page in apps/web/app/(home)/sources/page.tsx with
-  filtering by source_type (sources, not /feeds)
+- [x] T037 [P] [US1] Create feed data loader in apps/web/lib/feeds.ts (reads via
+  loadFeedCatalog)
+- [x] T038 [P] [US1] Implement feed catalog page in apps/web/app/(home)/sources/page.tsx
+  with filtering by source_type (sources, not /feeds)
 - [x] T039 [P] [US1] Create FeedCatalog component in apps/web/app/feeds/feed-catalog.tsx
   showing feed metadata
 - [x] T040 [P] [US1] Implement OPML download API route in
@@ -240,7 +251,8 @@ RSS reader → Verify feeds appear correctly
 - [ ] T041 [US1] Create download page in apps/web/app/downloads/page.tsx with buttons
   for all OPML formats — downloads handled via API, no dedicated /downloads page found
 - [ ] T042 [US1] Add feed catalog documentation in
-  apps/web/content/docs/getting-started/feeds.mdx with frontmatter and update meta.json — getting-started.mdx exists, no feeds.mdx found
+  apps/web/content/docs/getting-started/feeds.mdx with frontmatter and update meta.json
+  — getting-started.mdx exists, no feeds.mdx found
 
 ______________________________________________________________________
 
@@ -260,7 +272,8 @@ exports
 - [x] T043 [P] [US2] Implement FeedValidationResult model in
   packages/ai_web_feeds/src/ai_web_feeds/models.py with SQLModel (feed_source_id,
   success, status_code, error_message, response_time_ms, fetched_at)
-- [x] T044 [P] [US2] FeedSource has fetch_logs relationship (one-to-many with FeedFetchLog)
+- [x] T044 [P] [US2] FeedSource has fetch_logs relationship (one-to-many with
+  FeedFetchLog)
 - [ ] T045 [US2] Write database migration for validationresult table with indexes
   (feed_source_id, success, timestamp) — current migrations start at 006
 
@@ -279,7 +292,8 @@ exports
 
 - [x] T050 [P] [US2] Add add_feed_fetch_log() method to storage. Conflict handling via
   last-write-wins in fetch log inserts
-- [x] T051 [P] [US2] FeedSource has verified/curation_status fields updated via enrichment/validation
+- [x] T051 [P] [US2] FeedSource has verified/curation_status fields updated via
+  enrichment/validation
 - [x] T052 [US2] Create get_validation_history() method in storage returning last N
   validations for a feed
 
@@ -306,11 +320,13 @@ exports
   verified/inactive indicators via curation_status
 - [x] T060 [P] [US2] Create validation stats API route in
   apps/web/app/api/stats/validation/route.ts returning overall health metrics
-- [x] T061 [P] [US2] Implement dashboard page in apps/web/app/(home)/dashboard/page.tsx showing
-  validation metrics, success rates, health scores
-- [x] T062 [US2] Add verified filter to sources catalog in apps/web/app/(home)/sources/page.tsx
+- [x] T061 [P] [US2] Implement dashboard page in apps/web/app/(home)/dashboard/page.tsx
+  showing validation metrics, success rates, health scores
+- [x] T062 [US2] Add verified filter to sources catalog in
+  apps/web/app/(home)/sources/page.tsx
 - [ ] T063 [US2] Create validation documentation in
-  apps/web/content/docs/features/validation.mdx and update meta.json — link-validation.mdx exists, no validation.mdx found
+  apps/web/content/docs/features/validation.mdx and update meta.json —
+  link-validation.mdx exists, no validation.mdx found
 
 ______________________________________________________________________
 
@@ -340,14 +356,16 @@ included
   related_to, contrasts_with, same_as) — relation_type is free string
 - [ ] T068 [US3] Write database migrations for topic and topicrelation tables with
   indexes — schema in models, migrations start at 006
-- [x] T069 [US3] FeedSource has topics as JSON array field; SourceTopic join table exists
+- [x] T069 [US3] FeedSource has topics as JSON array field; SourceTopic join table
+  exists
 
 ### Topic Loading & Validation (US3)
 
 - [x] T070 [P] [US3] Implement topic loading in
   packages/ai_web_feeds/src/ai_web_feeds/load.py (load_topics support)
 - [ ] T071 [P] [US3] Create TopicStorage class in
-  packages/ai_web_feeds/src/ai_web_feeds/storage.py with DAG cycle detection — storage has topic methods but no dedicated TopicStorage class found
+  packages/ai_web_feeds/src/ai_web_feeds/storage.py with DAG cycle detection — storage
+  has topic methods but no dedicated TopicStorage class found
 - [ ] T072 [US3] Implement has_cycle() function in
   packages/ai_web_feeds/src/ai_web_feeds/storage.py for relationship validation
 
@@ -363,16 +381,19 @@ included
 
 - [x] T076 [P] [US3] Export supports topic filtering via API
 - [ ] T077 [P] [US3] Implement `topics list` command in
-  apps/cli/ai_web_feeds/cli/commands/topics.py showing taxonomy structure — no topics.py command found
+  apps/cli/ai_web_feeds/cli/commands/topics.py showing taxonomy structure — no topics.py
+  command found
 - [ ] T078 [US3] Create generate_topics_json() in
-  packages/ai_web_feeds/src/ai_web_feeds/export.py for Next.js consumption — topics served from data/topics.yaml directly
+  packages/ai_web_feeds/src/ai_web_feeds/export.py for Next.js consumption — topics
+  served from data/topics.yaml directly
 
 ### Web UI (US3)
 
-- [x] T079 [P] [US3] Topic loading in apps/web via loadTopicCatalog from lib/public-content
+- [x] T079 [P] [US3] Topic loading in apps/web via loadTopicCatalog from
+  lib/public-content
 - [x] T080 [P] [US3] Implement topic list page in apps/web/app/(home)/topics/page.tsx
-- [x] T081 [P] [US3] Create topic detail page in apps/web/app/(home)/topics/[topicId]/page.tsx
-  showing sources for topic
+- [x] T081 [P] [US3] Create topic detail page in
+  apps/web/app/(home)/topics/[topicId]/page.tsx showing sources for topic
 - [x] T082 [US3] Topic filter available in sources page
 - [ ] T083 [US3] Create topic taxonomy documentation in
   apps/web/content/docs/features/topics.mdx and update meta.json — no topics.mdx found
@@ -394,8 +415,8 @@ filtered OPML export → Verify feed appears in exported file
 - [x] T084 [P] [US4] Implement FeedEnrichmentData model in
   packages/ai_web_feeds/src/ai_web_feeds/models.py (suggested_topics, quality_score,
   health_score, enriched_at, etc.)
-- [x] T085 [P] [US4] Add one-to-one relationship between FeedSource and FeedEnrichmentData
-  (feed_source_id unique)
+- [x] T085 [P] [US4] Add one-to-one relationship between FeedSource and
+  FeedEnrichmentData (feed_source_id unique)
 - [ ] T086 [US4] Write database migration for enrichment table — schema in models
 
 ### Enrichment Logic (US4)
@@ -404,33 +425,39 @@ filtered OPML export → Verify feed appears in exported file
   packages/ai_web_feeds/src/ai_web_feeds/enrich.py for metadata discovery
 - [x] T088 [P] [US4] Implement enrichment scoring in
   packages/ai_web_feeds/src/ai_web_feeds/enrich.py
-- [x] T089 [P] [US4] Create enrich_feed_source() function combining discovery and scoring
-- [x] T090 [US4] Implement bulk enrichment with progress tracking using tqdm (enrich all CLI)
+- [x] T089 [P] [US4] Create enrich_feed_source() function combining discovery and
+  scoring
+- [x] T090 [US4] Implement bulk enrichment with progress tracking using tqdm (enrich all
+  CLI)
 
 ### Feed Addition (US4)
 
 - [x] T091 [P] [US4] Storage has add_feed_source(); utils has URL canonicalization
 - [x] T092 [P] [US4] Implement feed auto-discovery in
-  packages/ai_web_feeds/src/ai_web_feeds/utils.py (_FeedLinkParser finds RSS/Atom)
+  packages/ai_web_feeds/src/ai_web_feeds/utils.py (\_FeedLinkParser finds RSS/Atom)
 - [ ] T093 [US4] Add validation integration: validate new feed immediately after
   addition — not automatic in current flow
 
 ### CLI Commands (US4)
 
 - [ ] T094 [P] [US4] Implement `add` command in
-  apps/cli/ai_web_feeds/cli/commands/add.py (URL, topics, auto-validate option) — no add.py found
+  apps/cli/ai_web_feeds/cli/commands/add.py (URL, topics, auto-validate option) — no
+  add.py found
 - [x] T095 [P] [US4] Implement `enrich all` command in
   apps/cli/ai_web_feeds/cli/commands/enrich.py with progress bars
 - [x] T096 [P] [US4] Add JSON export command `export json` in
   apps/cli/ai_web_feeds/cli/commands/export.py
-- [ ] T097 [P] [US4] Add YAML export command `export yaml` for human-editable format — no yaml export command found
+- [ ] T097 [P] [US4] Add YAML export command `export yaml` for human-editable format —
+  no yaml export command found
 - [ ] T098 [US4] Create comprehensive CLI documentation in
-  apps/web/content/docs/cli/commands.mdx and update meta.json — development/cli.mdx exists
+  apps/web/content/docs/cli/commands.mdx and update meta.json — development/cli.mdx
+  exists
 
 ### Contribution Status & Tracking (US4)
 
 - [ ] T098a [P] [US4] Create contributor status page in
-  apps/web/app/contribute/status/page.tsx (FR-061) — no /contribute/status page found; feed-contribution-panel.tsx exists
+  apps/web/app/contribute/status/page.tsx (FR-061) — no /contribute/status page found;
+  feed-contribution-panel.tsx exists
 
 - [ ] T098b [US4] Update contribution documentation in
   apps/web/content/docs/guides/contributing.mdx:
@@ -484,14 +511,17 @@ responsive UI
 
 ### Search Implementation (US5)
 
-- [x] T110 [P] [US5] Implement search in apps/web via lib/search and server-side article corpus
-- [ ] T111 [P] [US5] Add search highlighting in FeedCard titles and descriptions — ArticleTeaser shows results
+- [x] T110 [P] [US5] Implement search in apps/web via lib/search and server-side article
+  corpus
+- [ ] T111 [P] [US5] Add search highlighting in FeedCard titles and descriptions —
+  ArticleTeaser shows results
 - [ ] T112 [US5] Optimize search performance with memoization and lazy loading
 
 ### Documentation (US5)
 
 - [ ] T113 [US5] Create explorer documentation in
-  apps/web/content/docs/features/explorer.mdx and update meta.json — no explorer.mdx found
+  apps/web/content/docs/features/explorer.mdx and update meta.json — no explorer.mdx
+  found
 
 ______________________________________________________________________
 
@@ -576,11 +606,13 @@ ______________________________________________________________________
 - [x] T135 [P] Write unit tests for OPML export in
   tests/packages/ai_web_feeds/unit/test_export.py
 - [x] T136 [P] Write integration tests for full workflows in
-  tests/packages/ai_web_feeds/integration/test_workflows.py and tests/packages/ai_web_feeds/e2e/
+  tests/packages/ai_web_feeds/integration/test_workflows.py and
+  tests/packages/ai_web_feeds/e2e/
 - [ ] T137 [P] Write property-based tests using Hypothesis in
   tests/packages/ai_web_feeds/unit/test_properties.py (URL canonicalization, topic cycle
   detection) — test files exist but no dedicated properties test file found
-- [ ] T138 Run full test suite with coverage report and fix any gaps to reach ≥90% — tests exist, coverage target not verified
+- [ ] T138 Run full test suite with coverage report and fix any gaps to reach ≥90% —
+  tests exist, coverage target not verified
 
 ### Performance Optimization
 
@@ -593,7 +625,8 @@ ______________________________________________________________________
 - [x] T142 [P] README.md exists in workspace root with project overview and quickstart
 - [x] T143 [P] CONTRIBUTING.md updated (exists at root, .github/CONTRIBUTING.md)
 - [ ] T144 [P] Create scheduled validation deployment documentation in
-  apps/web/content/docs/deployment/scheduled-tasks.mdx (FR-011) — deployment.mdx exists, no scheduled-tasks.mdx
+  apps/web/content/docs/deployment/scheduled-tasks.mdx (FR-011) — deployment.mdx exists,
+  no scheduled-tasks.mdx
 - [ ] T145 Run Lighthouse audit on web application and optimize to achieve Performance
   ≥90, Accessibility ≥95 — not verified in code
 

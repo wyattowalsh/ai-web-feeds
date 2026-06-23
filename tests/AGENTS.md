@@ -36,8 +36,8 @@ ______________________________________________________________________
 ## 🏗️ Architecture
 
 **Path convention:** When running from `tests/` (`cd tests && uv run pytest`), use
-`tests/cli/...` and `tests/packages/...` — the on-disk layout nests a `tests/`
-directory inside the `tests/` workspace package (`tests/tests/...` from repo root).
+`tests/cli/...` and `tests/packages/...` — the on-disk layout nests a `tests/` directory
+inside the `tests/` workspace package (`tests/tests/...` from repo root).
 
 ```
 tests/
@@ -323,18 +323,18 @@ from ai_web_feeds.config import Settings
 @pytest.fixture
 def test_db(tmp_path: Path) -> str:
     """Provide temporary test database.
-    
+
     Creates a fresh SQLite database for each test.
     """
     db_path = tmp_path / "test.db"
     database_url = f"sqlite:///{db_path}"
-    
+
     # Create tables
     engine = create_engine(database_url)
     SQLModel.metadata.create_all(engine)
-    
+
     yield database_url
-    
+
     # Cleanup
     if db_path.exists():
         db_path.unlink()
@@ -353,7 +353,7 @@ def test_settings() -> Settings:
         database_url="sqlite:///:memory:",
         log_level="DEBUG",
         fetch_timeout=5,
-        max_retries=1
+        max_retries=1,
     )
 
 
@@ -362,7 +362,7 @@ def mock_httpx(mocker):
     """Mock httpx client for HTTP requests."""
     mock = mocker.patch("httpx.AsyncClient.get")
     return mock
-````
+```
 
 ______________________________________________________________________
 

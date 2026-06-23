@@ -28,9 +28,7 @@ export function baseOptions(): BaseLayoutProps {
         </span>
       ),
       // Visible theme toggle in hub header / docs top bar (FIX-016/017)
-      children: (
-        <ThemeToggle className="ms-1.5" />
-      ),
+      children: <ThemeToggle className="ms-1.5" />,
     },
     searchToggle: {
       components: {

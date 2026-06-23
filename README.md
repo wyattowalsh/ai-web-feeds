@@ -78,7 +78,8 @@ Python CLI, and a Fumadocs-powered documentation site.
   - httpx for fast, async-friendly HTTP requests
   - tenacity for resilient retries and backoff
   - RSSHub as an explicit feed generator when sites lack RSS/Atom
-  - (Optional / planned) crawlee-python and Docling for advanced fetching and PDF parsing
+  - (Optional / planned) crawlee-python and Docling for advanced fetching and PDF
+    parsing
 
 - CLI and tooling
 

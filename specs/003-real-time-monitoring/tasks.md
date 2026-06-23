@@ -6,11 +6,14 @@
 
 ## Reconciliation Header (2026-06-23)
 
-Reconciled against `COMPLETION.md` (completed October 2025, branch `003-real-time-monitoring`).
-- All tasks matching delivered functionality (US1/US2/US3, models, storage, scheduler, polling, notifications, trending, digests, CLI monitor, frontend components, web API proxies, tests, docs, env) marked **[x]**.
+Reconciled against `COMPLETION.md` (completed October 2025, branch
+`003-real-time-monitoring`).
+
+- All tasks matching delivered functionality (US1/US2/US3, models, storage, scheduler,
+  polling, notifications, trending, digests, CLI monitor, frontend components, web API
+  proxies, tests, docs, env) marked **[x]**.
 - Remaining open items are future/polish/deployment beyond MVP scope per COMPLETION.
 - Date of this reconciliation: 2026-06-23
-
 
 ______________________________________________________________________
 
@@ -42,11 +45,13 @@ ______________________________________________________________________
 
 **Verified gaps (true remaining work, not unverifiable):**
 
-- T003-T005: Phase 3B migration files (003_*) — current migrations start at 006
+- T003-T005: Phase 3B migration files (003\_\*) — current migrations start at 006
 - T007: .env.example with Phase 3B vars — not found
-- T009-T014b: Models — most exist (ArticleEntry, FeedPollJob, Notification, etc.); verify exact table names
+- T009-T014b: Models — most exist (ArticleEntry, FeedPollJob, Notification, etc.);
+  verify exact table names
 - T015-T020b: Storage extensions — partial
-- T021-T062: US1 polling/websocket — polling.py, websocket_server.py exist; CLI commands are monitor.py (not poll.py/notify.py)
+- T021-T062: US1 polling/websocket — polling.py, websocket_server.py exist; CLI commands
+  are monitor.py (not poll.py/notify.py)
 - T063-T080: US2 trending — trending.py exists
 - T081-T102: US3 email digests — digests.py exists; CLI digest command not found
 - T103-T113: Polish (systemd, docs) — partial; real-time-monitoring.mdx exists

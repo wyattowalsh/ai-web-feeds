@@ -3,6 +3,7 @@
 This module manages APScheduler for feed polling, trending detection, and digest delivery.
 """
 
+import contextlib
 from pathlib import Path
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -14,8 +15,8 @@ from ai_web_feeds.config import Settings
 from ai_web_feeds.digests import DigestManager
 from ai_web_feeds.load import load_feeds
 from ai_web_feeds.models import NotificationFrequency
-from ai_web_feeds.notifications import NotificationManager
 from ai_web_feeds.nlp.scheduler import NLPScheduler
+from ai_web_feeds.notifications import NotificationManager
 from ai_web_feeds.polling import FeedPoller
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.trending import TrendingDetector
@@ -108,10 +109,8 @@ class SchedulerManager:
             self.scheduler.shutdown(wait=True)
             logger.info("Background scheduler stopped")
         # Stop NLP scheduler if running
-        try:
+        with contextlib.suppress(Exception):
             self.nlp_scheduler.shutdown(wait=True)
-        except Exception:
-            pass  # NLP scheduler may not have been started
 
     async def _poll_all_feeds(self) -> None:
         """Poll all active feeds and create notifications."""
@@ -188,8 +187,7 @@ class SchedulerManager:
             prefs = self.db.get_user_preferences(user_id)
             # Check global prefs (feed_id=None) for OFF
             opted_out = any(
-                (p.feed_id is None and p.frequency == NotificationFrequency.OFF)
-                for p in prefs
+                (p.feed_id is None and p.frequency == NotificationFrequency.OFF) for p in prefs
             )
             if not opted_out:
                 interested.append(user_id)

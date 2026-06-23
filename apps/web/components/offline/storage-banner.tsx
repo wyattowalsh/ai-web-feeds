@@ -90,8 +90,7 @@ export function StorageBanner({
     return null;
   }
 
-  const variant =
-    threshold >= 90 ? "critical" : threshold >= 80 ? "warning" : ("info" as const);
+  const variant = threshold >= 90 ? "critical" : threshold >= 80 ? "warning" : ("info" as const);
 
   const messages: Record<StorageBannerThreshold, string> = {
     70: "Storage usage is above 70%. Consider cleaning up old articles to keep offline reading reliable.",

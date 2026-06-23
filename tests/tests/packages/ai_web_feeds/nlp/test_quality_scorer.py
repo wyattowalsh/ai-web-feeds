@@ -134,8 +134,10 @@ class TestScoreComponents:
             "id": 11,
             "title": "Article with Links",
             "content": (
+                "This article discusses important research. "
                 "See https://arxiv.org/abs/1234 and https://github.com/org/repo "
-                "and https://scholar.google.com/paper"
+                "and https://scholar.google.com/paper for more details. "
+                "Additional analysis and discussion follows in subsequent paragraphs."
             ),
             "url": "https://example.com/links",
         }

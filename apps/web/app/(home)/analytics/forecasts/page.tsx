@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ForecastChart, ForecastMetrics, type ForecastDataPoint } from "@/components/visualizations/forecasts/ForecastChart";
+import {
+  ForecastChart,
+  ForecastMetrics,
+  type ForecastDataPoint,
+} from "@/components/visualizations/forecasts/ForecastChart";
 import { HubPage } from "@/components/hub";
 
 interface ForecastItem {
@@ -106,7 +110,9 @@ export default function ForecastsPage() {
 
           {/* Metrics */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-3">Model Performance Metrics</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">
+              Model Performance Metrics
+            </h3>
             <ForecastMetrics metrics={SAMPLE_METRICS} />
           </div>
 

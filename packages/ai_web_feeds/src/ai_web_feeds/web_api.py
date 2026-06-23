@@ -4,7 +4,8 @@ This app exposes the backend endpoints that the Next.js web layer expects when
 ``BACKEND_URL`` is configured.
 """
 
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Annotated, Any, Literal
 
@@ -12,7 +13,7 @@ from fastapi import APIRouter, Depends, FastAPI, Query, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import desc
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from ai_web_feeds.analytics import (
     calculate_summary_metrics,
@@ -253,7 +254,7 @@ def get_latest_analytics_snapshot(
 
 
 # FastAPI's decorators are dynamically typed.
-@router.get("/nlp/quality/{article_id}")  # type: ignore[misc]
+@router.get("/nlp/quality/{article_id}", response_model=None)  # type: ignore[misc]
 def get_article_quality(
     article_id: int,
     *,
@@ -285,9 +286,7 @@ def list_quality_scores(
     session: DbSession,
 ) -> dict[str, Any]:
     """List article quality scores (highest first)."""
-    statement = select(ArticleQualityScore).order_by(
-        desc(ArticleQualityScore.overall_score)
-    )
+    statement = select(ArticleQualityScore).order_by(col(ArticleQualityScore.overall_score).desc())
     if min_score is not None:
         statement = statement.where(ArticleQualityScore.overall_score >= min_score)
     statement = statement.limit(limit)
@@ -325,7 +324,7 @@ def get_entities_for_article(
         mentions = list(
             session.exec(
                 select(EntityMention, Entity)
-                .join(Entity, EntityMention.entity_id == Entity.id)
+                .join(Entity, col(EntityMention.entity_id) == col(Entity.id))
                 .where(EntityMention.article_id == article_id)
                 .limit(limit)
             ).all()
@@ -348,9 +347,7 @@ def get_entities_for_article(
 
     # Return distinct entities (most frequent first)
     entities = list(
-        session.exec(
-            select(Entity).order_by(desc(Entity.frequency_count)).limit(limit)
-        ).all()
+        session.exec(select(Entity).order_by(col(Entity.frequency_count).desc()).limit(limit)).all()
     )
     return {
         "entities": [
@@ -368,7 +365,7 @@ def get_entities_for_article(
 
 
 # FastAPI's decorators are dynamically typed.
-@router.get("/nlp/sentiment/{article_id}")  # type: ignore[misc]
+@router.get("/nlp/sentiment/{article_id}", response_model=None)  # type: ignore[misc]
 def get_article_sentiment(
     article_id: int,
     *,
@@ -401,7 +398,7 @@ def list_sentiment_scores(
     statement = select(ArticleSentiment)
     if classification:
         statement = statement.where(ArticleSentiment.classification == classification)
-    statement = statement.order_by(desc(ArticleSentiment.computed_at)).limit(limit)
+    statement = statement.order_by(col(ArticleSentiment.computed_at).desc()).limit(limit)
     sentiments = list(session.exec(statement).all())
 
     return {
@@ -435,7 +432,7 @@ def list_subtopics(
         statement = statement.where(Subtopic.parent_topic == parent_topic)
     if approved is not None:
         statement = statement.where(Subtopic.approved == approved)
-    statement = statement.order_by(desc(Subtopic.article_count)).limit(limit)
+    statement = statement.order_by(col(Subtopic.article_count).desc()).limit(limit)
     subtopics = list(session.exec(statement).all())
 
     return {
@@ -458,21 +455,25 @@ def list_subtopics(
 
 def create_app() -> FastAPI:
     """Create the backend FastAPI application."""
-    app = FastAPI(title="ai-web-feeds backend")
-    app.include_router(router)
-
-    # Mount visualization router (Spec 006)
     from ai_web_feeds.visualization.api import (
         router as visualization_router,
+    )
+    from ai_web_feeds.visualization.api import (
         shutdown_event as visualization_shutdown,
+    )
+    from ai_web_feeds.visualization.api import (
         startup_event as visualization_startup,
     )
 
-    app.include_router(visualization_router)
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        await visualization_startup()
+        yield
+        await visualization_shutdown()
 
-    # Wire visualization lifecycle events
-    app.add_event_handler("startup", visualization_startup)
-    app.add_event_handler("shutdown", visualization_shutdown)
+    app = FastAPI(title="ai-web-feeds backend", lifespan=lifespan)
+    app.include_router(router)
+    app.include_router(visualization_router)
 
     return app
 

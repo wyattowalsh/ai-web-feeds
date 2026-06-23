@@ -176,7 +176,8 @@ ______________________________________________________________________
 1. Create `commands/new_command.py`
 1. Define command with Typer decorators
 1. Register in `__init__.py`: `app.add_typer(new_command.app)`
-1. Add tests in `tests/tests/cli/unit/test_commands.py` (or a new `test_<command>.py` alongside it)
+1. Add tests in `tests/tests/cli/unit/test_commands.py` (or a new `test_<command>.py`
+   alongside it)
 1. Document in `apps/web/content/docs/cli/`
 
 ### Adding Command Options

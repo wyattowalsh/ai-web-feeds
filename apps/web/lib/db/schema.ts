@@ -161,7 +161,7 @@ export interface Preferences {
  */
 export interface SyncQueueItem {
   id: string;
-  type: "read" | "star" | "archive" | "tag" | "annotation";
+  type: "read" | "star" | "archive" | "tag" | "annotation" | "save";
   articleId: string;
   data: Record<string, unknown>;
   timestamp: number;

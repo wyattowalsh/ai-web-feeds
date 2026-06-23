@@ -25,8 +25,12 @@ independent and testable.
 **Verified gaps (true remaining work, not unverifiable):**
 
 - T001-T004: Client tooling (Dexie, Vitest, Playwright configs) — not found in web app
-- T005-T007/T009-T010: IndexedDB schema, quota monitor, worker messaging, log buffer — not found; offline page exists
-- T011-T058: All US1-US5 client features (offline sync, search worker, folders, extension, export, polish) — partial evidence (offline page, for-you page); no Dexie/IndexedDB implementation, no extension scaffold, no export service found in lib/exports
+- T005-T007/T009-T010: IndexedDB schema, quota monitor, worker messaging, log buffer —
+  not found; offline page exists
+- T011-T058: All US1-US5 client features (offline sync, search worker, folders,
+  extension, export, polish) — partial evidence (offline page, for-you page); no
+  Dexie/IndexedDB implementation, no extension scaffold, no export service found in
+  lib/exports
 
 ## Phase 1: Setup (Shared Infrastructure)
 
@@ -35,7 +39,8 @@ stories.
 
 - [ ] T001 Update client dependencies for Dexie.js, onnxruntime-web, Playwright, and
   Vitest in `apps/web/package.json` — not verified (no package.json read)
-- [ ] T002 Scaffold worker build pipeline in `apps/web/scripts/build-workers.ts` — not found
+- [ ] T002 Scaffold worker build pipeline in `apps/web/scripts/build-workers.ts` — not
+  found
 - [ ] T003 [P] Configure Vitest environment (JSDOM, setup files, coverage) in
   `apps/web/vitest.config.ts` — not found
 - [ ] T004 [P] Configure Playwright projects (Chromium, Firefox, offline context) in
@@ -50,10 +55,12 @@ messaging, diagnostics).
 
 **⚠️ CRITICAL**: Complete before starting any story phases.
 
-- [ ] T005 Implement shared Dexie database schema in `apps/web/lib/indexeddb/db.ts` — offline page exists, no Dexie schema found
+- [ ] T005 Implement shared Dexie database schema in `apps/web/lib/indexeddb/db.ts` —
+  offline page exists, no Dexie schema found
 - [ ] T006 Provide React context/provider for Dexie access — not found
 - [ ] T007 Implement storage quota monitor with 70/80/90 thresholds — not found
-- [x] T008 Implement service worker registration and lifecycle helpers — offline page and service-worker dir referenced
+- [x] T008 Implement service worker registration and lifecycle helpers — offline page
+  and service-worker dir referenced
 - [ ] T009 [P] Implement worker messaging utilities (BroadcastChannel + postMessage
   bridge) — not found
 - [ ] T010 Implement local diagnostic log buffer (500 entry ring) — not found
@@ -65,10 +72,11 @@ ______________________________________________________________________
 **Goal**: Enable users to download feeds for offline reading, preserve local edits, and
 manage storage limits without backend support.
 
-> **Implementation Note (raw IndexedDB)**: Per delivery constraints, US1 offline sync and
-> storage features use **raw IndexedDB via `apps/web/lib/db`** (index.ts + schema.ts),
-> **not Dexie**. Related plan references to `lib/indexeddb/*` and `service-worker/sw.ts`
-> were adjusted to actual locations (`lib/offline/offline-sync.ts`, `public/sw.js`).
+> **Implementation Note (raw IndexedDB)**: Per delivery constraints, US1 offline sync
+> and storage features use **raw IndexedDB via `apps/web/lib/db`** (index.ts +
+> schema.ts), **not Dexie**. Related plan references to `lib/indexeddb/*` and
+> `service-worker/sw.ts` were adjusted to actual locations
+> (`lib/offline/offline-sync.ts`, `public/sw.js`).
 
 **Independent Test**: On a fresh profile, subscribe to feeds, click "Save for Offline,"
 toggle airplane mode, and confirm cached articles render with last-sync timestamp,

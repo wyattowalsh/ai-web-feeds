@@ -581,9 +581,15 @@ test.describe("Route stabilization smoke", () => {
         await gotoWithRetry(page, route.path, { waitUntil: "domcontentloaded" });
         await forceDarkTheme(page);
         // Re-assert after theme flip in case of hydration paint
-        await expect(page.getByRole("heading", { name: route.text })).toBeVisible({ timeout: 15000 });
+        await expect(page.getByRole("heading", { name: route.text })).toBeVisible({
+          timeout: 15000,
+        });
         // Verify dark class is present for visual QA signal
-        await expect.poll(async () => page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(true);
+        await expect
+          .poll(async () =>
+            page.evaluate(() => document.documentElement.classList.contains("dark")),
+          )
+          .toBe(true);
         await expectNoClientErrors(page, tracker);
       });
     }

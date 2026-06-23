@@ -16,11 +16,14 @@
 - T024/T025: CollaborativeMatrix model and dedicated Phase 2 migration — not found
 - T037: SQLite trigger for TopicStats — not found
 - T046: health-distribution analytics route — not found as separate
-- T048-T060, T056-T060: Dedicated analytics UI components and /analytics page — dashboard exists, no dedicated analytics UI
+- T048-T060, T056-T060: Dedicated analytics UI components and /analytics page —
+  dashboard exists, no dedicated analytics UI
 - T094-T096: embeddings CLI commands — not found
-- T099/T101-T109/T111/T113-T117: Search UI components (client-side) — search is server-driven
+- T099/T101-T109/T111/T113-T117: Search UI components (client-side) — search is
+  server-driven
 - T117q-T117t: Search integration tests — unit tests exist, integration not found
-- T145-T147/T150-T152/T154-T156: Recommendations UI/feedback/cold-start flows — partial (for-you page exists)
+- T145-T147/T150-T152/T154-T156: Recommendations UI/feedback/cold-start flows — partial
+  (for-you page exists)
 - T156k-T156m: Recommendations integration tests
 - T157-T166: All performance benchmarks and data quality scripts — not verified in code
 
@@ -52,21 +55,26 @@ ______________________________________________________________________
 
 ### Environment Setup
 
-- [ ] T001 Create feature branch `002-data-discovery-analytics` from main — branch ops not verifiable in code
+- [ ] T001 Create feature branch `002-data-discovery-analytics` from main — branch ops
+  not verifiable in code
 - [x] T002 [P] Install Python dependencies via `uv sync` (sentence-transformers,
-  scikit-learn, numpy) — deps referenced in pyproject.toml dependency-groups and modules import them
+  scikit-learn, numpy) — deps referenced in pyproject.toml dependency-groups and modules
+  import them
 - [ ] T003 [P] Install web dependencies via `pnpm install` in apps/web (chart.js,
   react-chartjs-2) — package.json not directly verified; analytics APIs proxy to backend
 - [ ] T004 [P] Create .env file with Phase 1 configuration (embedding settings,
   analytics cache TTLs) — .env not committed
-- [x] T005 [P] Update pyproject.toml with new dependencies (sentence-transformers, scikit-learn referenced)
-- [ ] T006 [P] Update package.json with chart.js and echarts dependencies — not verified in static files
+- [x] T005 [P] Update pyproject.toml with new dependencies (sentence-transformers,
+  scikit-learn referenced)
+- [ ] T006 [P] Update package.json with chart.js and echarts dependencies — not verified
+  in static files
 
 ### Configuration Extensions
 
 - [x] T007 [P] Extend config.py with EmbeddingSettings class (provider, hf_api_token,
   local_model, cache_size) — embeddings.py uses settings.embedding.local_model
-- [x] T008 [P] Extend config.py with AnalyticsSettings — analytics module exists and uses settings
+- [x] T008 [P] Extend config.py with AnalyticsSettings — analytics module exists and
+  uses settings
 - [x] T009 [P] Extend config.py with SearchSettings — search.py exists
 - [x] T010 [P] Extend config.py with RecommendationSettings — recommendations.py exists
 
@@ -77,7 +85,8 @@ ______________________________________________________________________
 - [x] T013 [P] Create apps/web/content/docs/features/recommendations.mdx with
   frontmatter
 - [x] T014 Update apps/web/content/docs/meta.json to add new feature pages to navigation
-- [ ] T015 [P] Create env.example with Phase 1 environment variables and comments — env.example not found in root (may be .env.example)
+- [ ] T015 [P] Create env.example with Phase 1 environment variables and comments —
+  env.example not found in root (may be .env.example)
 
 ______________________________________________________________________
 
@@ -107,7 +116,8 @@ ______________________________________________________________________
   preferred_topics JSON, blocked_topics JSON)
 - [ ] T024 Create CollaborativeMatrix model in models.py (feed_id_1, feed_id_2,
   co_occurrence_score, support) — not found in models.py
-- [ ] T025 Run database migration to create new tables (T016-T024) and add indexes — migrations start at 006, no dedicated Phase 2 migration file found
+- [ ] T025 Run database migration to create new tables (T016-T024) and add indexes —
+  migrations start at 006, no dedicated Phase 2 migration file found
 
 ______________________________________________________________________
 
@@ -143,7 +153,8 @@ Export CSV → Verify metrics match database
 - [x] T035 [US1] Extend storage.py with get_validation_history() query method (with
   aggregations)
 - [x] T036 [US1] Extend storage.py with add_analytics_snapshot() insert method
-- [ ] T037 [US1] Create SQLite trigger for auto-updating TopicStats on new validations — not found
+- [ ] T037 [US1] Create SQLite trigger for auto-updating TopicStats on new validations —
+  not found
 
 ### CLI: Analytics Commands
 
@@ -161,10 +172,8 @@ Export CSV → Verify metrics match database
 
 - [x] T043 [P] [US1] Create apps/web/app/api/analytics/summary/route.ts (GET endpoint
   for summary metrics)
-- [x] T044 [P] [US1] Create apps/web/app/api/analytics/trending/route.ts (GET
-  endpoint)
-- [x] T045 [P] [US1] Create apps/web/app/api/analytics/velocity/route.ts
-  (GET endpoint)
+- [x] T044 [P] [US1] Create apps/web/app/api/analytics/trending/route.ts (GET endpoint)
+- [x] T045 [P] [US1] Create apps/web/app/api/analytics/velocity/route.ts (GET endpoint)
 - [ ] T046 [P] [US1] Create apps/web/app/api/analytics/health-distribution/route.ts (GET
   endpoint) — not found as separate route
 - [x] T047 [P] [US1] Create apps/web/app/api/analytics/export/route.ts (GET endpoint
@@ -261,7 +270,8 @@ Apply filters → Save search → Verify results
 
 ### Backend: Autocomplete Module
 
-- [x] T076 [P] [US2] Create autocomplete via TrieNode in search.py (no separate autocomplete.py)
+- [x] T076 [P] [US2] Create autocomplete via TrieNode in search.py (no separate
+  autocomplete.py)
 - [x] T077 [P] [US2] Implement AutocompleteTrie class with insert() and search() methods
 - [x] T078 [US2] Implement build_autocomplete_index() to populate trie from feeds and
   topics
@@ -333,10 +343,12 @@ Apply filters → Save search → Verify results
 
 ### Web: Search Page
 
-- [x] T110 [US2] Create apps/web/app/(home)/search/page.tsx (compose all search components)
+- [x] T110 [US2] Create apps/web/app/(home)/search/page.tsx (compose all search
+  components)
 - [ ] T111 [US2] Implement client-side state management for search query, filters,
   results — server-driven
-- [x] T112 [US2] Implement debounced autocomplete (200ms delay after typing stops) — API exists
+- [x] T112 [US2] Implement debounced autocomplete (200ms delay after typing stops) — API
+  exists
 - [ ] T113 [US2] Implement search history storage (localStorage, last 10 searches)
 - [ ] T114 [US2] Implement saved search replay (one-click load query + filters)
 - [ ] T115 [US2] Add keyboard shortcuts (Cmd/Ctrl+K to focus, arrow keys for
@@ -368,7 +380,8 @@ Apply filters → Save search → Verify results
 
 ### Tests: Autocomplete Unit Tests
 
-- [x] T117m [P] [US2] Create tests/tests/packages/ai_web_feeds/test_search.py (Trie tests within search)
+- [x] T117m [P] [US2] Create tests/tests/packages/ai_web_feeds/test_search.py (Trie
+  tests within search)
 - [x] T117n [P] [US2] Add test_trie_search() with various prefix lengths
 - [x] T117o [P] [US2] Add test_build_autocomplete_index() to verify trie population
 - [x] T117p [P] [US2] Add test_get_autocomplete_suggestions_caching() to verify LRU
@@ -465,7 +478,8 @@ Click "Why?" → Like/Dismiss → Verify suggestions update
 
 ### Web: Recommendations UI Components
 
-- [x] T148 [P] [US3] Create apps/web/components/recommendations/recommendations-page-client.tsx
+- [x] T148 [P] [US3] Create
+  apps/web/components/recommendations/recommendations-page-client.tsx
 - [x] T149 [P] [US3] Create recommendation cards in for-you page
 - [ ] T150 [P] [US3] Create apps/web/components/recommendations/explanation-tooltip.tsx
   ("Why this recommendation?") — not found as separate
@@ -476,8 +490,8 @@ Click "Why?" → Like/Dismiss → Verify suggestions update
 
 ### Web: Recommendations Page
 
-- [x] T153 [US3] Create apps/web/app/(home)/for-you/page.tsx (compose all
-  recommendation components)
+- [x] T153 [US3] Create apps/web/app/(home)/for-you/page.tsx (compose all recommendation
+  components)
 - [ ] T154 [US3] Implement cold start flow (show quiz if no user profile exists)
 - [ ] T155 [US3] Implement recommendation loading with skeleton UI
 - [ ] T156 [US3] Implement feedback handling (optimistic UI updates, persist to API)
@@ -777,52 +791,75 @@ ______________________________________________________________________
 ### Analytics Unit Tests (T060a-g)
 
 - [x] T060a `test_calculate_summary_metrics()` — `test_analytics.py:TestSummaryMetrics`
-- [x] T060b `test_get_trending_topics()` — `test_analytics.py:TestTrendingTopics` (+ edge cases: empty DB, no validations, zero limit, single topic)
-- [x] T060c `test_get_publication_velocity()` — `test_analytics.py:TestValidationVelocity`
-- [x] T060d `test_get_health_distribution()` — `test_analytics.py:TestHealthDistribution`
+- [x] T060b `test_get_trending_topics()` — `test_analytics.py:TestTrendingTopics` (+
+  edge cases: empty DB, no validations, zero limit, single topic)
+- [x] T060c `test_get_publication_velocity()` —
+  `test_analytics.py:TestValidationVelocity`
+- [x] T060d `test_get_health_distribution()` —
+  `test_analytics.py:TestHealthDistribution`
 - [ ] T060e `test_cache_decorator()` — cache behavior tested indirectly via functions
-- [x] T060f `test_generate_analytics_snapshot()` — `test_analytics.py:TestAnalyticsSnapshot`
+- [x] T060f `test_generate_analytics_snapshot()` —
+  `test_analytics.py:TestAnalyticsSnapshot`
 - [x] T060g `test_export_analytics_csv()` — `test_analytics.py:TestCSVReportGeneration`
 
 ### Search Unit Tests (T117g-l)
 
 - [x] T117g `test_full_text_search()` — `test_search.py:TestFullTextSearch`
-- [ ] T117h `test_highlight_matches()` — not implemented (highlighting via FTS rank only)
-- [ ] T117i `test_apply_faceted_filters()` — filters exercised in `full_text_search`/`semantic_search`/`hybrid_search`
+- [ ] T117h `test_highlight_matches()` — not implemented (highlighting via FTS rank
+  only)
+- [ ] T117i `test_apply_faceted_filters()` — filters exercised in
+  `full_text_search`/`semantic_search`/`hybrid_search`
 - [x] T117j `test_semantic_search()` — `test_search.py:TestSemanticSearch`
-- [x] T117k `test_hybrid_search()` — `test_search.py:TestHybridSearch` (weighted ranking + filters + edge cases)
+- [x] T117k `test_hybrid_search()` — `test_search.py:TestHybridSearch` (weighted ranking
+  \+ filters + edge cases)
 - [ ] T117l `test_search_timeout()` — not implemented (no explicit timeout wrapper)
 
 ### Autocomplete Unit Tests (T117m-p)
 
 - [x] T117m `test_trie_node_insert()` — `test_search.py:TestTrieIndex`
-- [x] T117n `test_trie_search()` — `test_search.py:TestTrieIndex` (prefix search, limits, case-insensitivity)
+- [x] T117n `test_trie_search()` — `test_search.py:TestTrieIndex` (prefix search,
+  limits, case-insensitivity)
 - [x] T117o `test_build_autocomplete_index()` — `test_search.py:TestBuildTrieIndex`
-- [ ] T117p `test_get_autocomplete_suggestions_caching()` — `get_trie_index` memoization not explicitly asserted
+- [ ] T117p `test_get_autocomplete_suggestions_caching()` — `get_trie_index` memoization
+  not explicitly asserted
 
 ### Search Integration Tests (T117q-t)
 
-- [ ] T117q `test_fts5_index_building()` — exercised via lazy `create_fts_table` in `full_text_search`
-- [ ] T117r `test_embedding_storage_integration()` — covered in semantic search with sample_embeddings
+- [ ] T117q `test_fts5_index_building()` — exercised via lazy `create_fts_table` in
+  `full_text_search`
+- [ ] T117r `test_embedding_storage_integration()` — covered in semantic search with
+  sample_embeddings
 - [x] T117s `test_search_query_logging()` — `test_search.py:TestSearchLogging`
 - [x] T117t `test_saved_search_workflow()` — `test_search.py:TestSavedSearches`
 
 ### Recommendations Unit Tests (T156a-j)
 
-- [x] T156a `test_generate_content_based_recommendations()` — `test_recommendations.py:TestUnifiedRecommendations` (+ edge cases: empty seeds, zero limit, invalid weights, all excluded, inactive excluded)
-- [x] T156b `test_calculate_topic_similarity()` — `test_recommendations.py:TestContentSimilarity`
-- [x] T156c `test_calculate_embedding_similarity()` — `test_recommendations.py:TestContentSimilarity`
-- [x] T156d `test_calculate_popularity_score()` — `test_recommendations.py:TestPopularityScoring`
-- [ ] T156e `test_calculate_final_recommendation_score()` — weights exercised in `generate_recommendations`
-- [ ] T156f `test_enforce_diversity_constraints()` — best-effort via exclude lists; not explicit
-- [ ] T156g `test_generate_explanation()` — explanations via reason strings; no dedicated generator
-- [ ] T156h `test_cold_start_recommendations()` — cold-start path covered via `get_user_recommendations` for new user
-- [x] T156i `test_apply_user_feedback()` — `test_recommendations.py:TestUserInteractions`
-- [ ] T156j `test_block_topic()` — block topic tracked via interaction; explicit exclusion not asserted
+- [x] T156a `test_generate_content_based_recommendations()` —
+  `test_recommendations.py:TestUnifiedRecommendations` (+ edge cases: empty seeds, zero
+  limit, invalid weights, all excluded, inactive excluded)
+- [x] T156b `test_calculate_topic_similarity()` —
+  `test_recommendations.py:TestContentSimilarity`
+- [x] T156c `test_calculate_embedding_similarity()` —
+  `test_recommendations.py:TestContentSimilarity`
+- [x] T156d `test_calculate_popularity_score()` —
+  `test_recommendations.py:TestPopularityScoring`
+- [ ] T156e `test_calculate_final_recommendation_score()` — weights exercised in
+  `generate_recommendations`
+- [ ] T156f `test_enforce_diversity_constraints()` — best-effort via exclude lists; not
+  explicit
+- [ ] T156g `test_generate_explanation()` — explanations via reason strings; no
+  dedicated generator
+- [ ] T156h `test_cold_start_recommendations()` — cold-start path covered via
+  `get_user_recommendations` for new user
+- [x] T156i `test_apply_user_feedback()` —
+  `test_recommendations.py:TestUserInteractions`
+- [ ] T156j `test_block_topic()` — block topic tracked via interaction; explicit
+  exclusion not asserted
 
 ### Notes on Gaps
 
-- Several spec tasks reference modules not present in current tree (e.g., standalone `autocomplete.py`).
+- Several spec tasks reference modules not present in current tree (e.g., standalone
+  `autocomplete.py`).
 - `hybrid_search()` (T074) implemented and tested during this hardening pass.
 - `test_recommendations.py`, `test_search.py`, `test_analytics.py` all exist and run.
 

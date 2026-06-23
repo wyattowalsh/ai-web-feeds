@@ -303,9 +303,7 @@ class TestUnifiedRecommendations:
 
     def test_generate_recommendations_zero_limit(self, test_session, sample_feeds):
         """Test recommendations with limit=0 returns empty list."""
-        recommendations = generate_recommendations(
-            test_session, seed_topics=["llm"], limit=0
-        )
+        recommendations = generate_recommendations(test_session, seed_topics=["llm"], limit=0)
 
         assert recommendations == []
 
@@ -322,7 +320,7 @@ class TestUnifiedRecommendations:
 
         # Should normalize and still return valid results or empty
         assert isinstance(recommendations, list)
-        for feed, score, reason in recommendations:
+        for _feed, score, _reason in recommendations:
             assert 0.0 <= score <= 1.0
 
     def test_generate_recommendations_all_feeds_excluded(self, test_session, sample_feeds):
@@ -339,9 +337,7 @@ class TestUnifiedRecommendations:
 
     def test_generate_recommendations_inactive_feeds_excluded(self, test_session, sample_feeds):
         """Test recommendations exclude inactive feeds."""
-        recommendations = generate_recommendations(
-            test_session, seed_topics=["old"], limit=10
-        )
+        recommendations = generate_recommendations(test_session, seed_topics=["old"], limit=10)
 
         for feed, _, _ in recommendations:
             assert feed.curation_status != "inactive"

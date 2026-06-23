@@ -84,10 +84,20 @@ class TestTopicSplitMergeDetection:
         modeler = TopicModeler()
 
         prev = [
-            DiscoveredSubtopic(name="RL", keywords=["reinforce", "agent", "reward"], coherence_score=0.7, article_count=10)
+            DiscoveredSubtopic(
+                name="RL",
+                keywords=["reinforce", "agent", "reward"],
+                coherence_score=0.7,
+                article_count=10,
+            )
         ]
         curr = [
-            DiscoveredSubtopic(name="RL", keywords=["reinforce", "agent", "reward", "policy"], coherence_score=0.71, article_count=12)
+            DiscoveredSubtopic(
+                name="RL",
+                keywords=["reinforce", "agent", "reward", "policy"],
+                coherence_score=0.71,
+                article_count=12,
+            )
         ]
 
         events = []
@@ -98,8 +108,12 @@ class TestTopicSplitMergeDetection:
     def test_cosine_similarity_used_when_available(self):
         """_cosine_keyword_similarity returns float or None (graceful)."""
         modeler = TopicModeler()
-        a = DiscoveredSubtopic(name="A", keywords=["x", "y", "z"], coherence_score=0.5, article_count=1)
-        b = DiscoveredSubtopic(name="B", keywords=["x", "y", "w"], coherence_score=0.5, article_count=1)
+        a = DiscoveredSubtopic(
+            name="A", keywords=["x", "y", "z"], coherence_score=0.5, article_count=1
+        )
+        b = DiscoveredSubtopic(
+            name="B", keywords=["x", "y", "w"], coherence_score=0.5, article_count=1
+        )
 
         sim = modeler._cosine_keyword_similarity(a, b)
         # Either float (if np) or None

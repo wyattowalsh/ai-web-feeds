@@ -530,8 +530,8 @@ def fetch_feed(url):
     return requests.get(url).content
 ````
 
-**See**: [llms-full.txt#fetcher](https://aiwebfeeds.vercel.app/llms-full.txt#fetcher) for
-implementation details
+**See**: [llms-full.txt#fetcher](https://aiwebfeeds.vercel.app/llms-full.txt#fetcher)
+for implementation details
 
 ````
 

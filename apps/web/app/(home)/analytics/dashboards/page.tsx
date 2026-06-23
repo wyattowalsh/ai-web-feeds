@@ -6,8 +6,7 @@ import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Dashboards - AI Web Feeds",
-  description:
-    "Create and manage custom analytics dashboards with drag-and-drop widget layout.",
+  description: "Create and manage custom analytics dashboards with drag-and-drop widget layout.",
   path: "/analytics/dashboards",
 });
 

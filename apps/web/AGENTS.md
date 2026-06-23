@@ -153,7 +153,9 @@ complete structure
 1. Never create them again!
 
 ### 2. Navigation
+
 Edit `content/docs/meta.json`:
+
 ```json
 {
   "title": "Section",
@@ -628,6 +630,7 @@ sequenceDiagram
     "pages": ["index", "page-1", "page-2"]
   }
 }
+```
 ````
 
 ### Adding a React Component

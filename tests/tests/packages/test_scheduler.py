@@ -161,7 +161,9 @@ class TestSchedulerManager:
         ]
 
         with patch.object(scheduler.trending, "detect_trending_topics", return_value=mock_topics):
-            with patch.object(scheduler.notifier, "notify_trending_topic", new_callable=AsyncMock) as mock_notify:
+            with patch.object(
+                scheduler.notifier, "notify_trending_topic", new_callable=AsyncMock
+            ) as mock_notify:
                 await scheduler._detect_trending()
 
                 # Should call with filtered active users (default prefs allow)

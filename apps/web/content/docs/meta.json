@@ -60,7 +60,11 @@
   "contributing": {
     "title": "Contributing",
     "icon": "Users",
-    "pages": ["development-workflow", "conventional-commits", "pre-commit-hooks"]
+    "pages": [
+      "development-workflow",
+      "conventional-commits",
+      "pre-commit-hooks"
+    ]
   },
   "---Development": {
     "type": "separator"

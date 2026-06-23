@@ -16,7 +16,25 @@ import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNo
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, select, zoom } from "d3";
+import {
+  forceCenter,
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  select,
+  zoom,
+  type SimulationNodeDatum,
+} from "d3";
+
+interface TopicCluster2DNode extends SimulationNodeDatum {
+  id: string;
+  size: number;
+  label: string;
+  color?: string;
+  x?: number;
+  y?: number;
+}
 
 export interface TopicNode {
   id: string;
@@ -444,7 +462,9 @@ function TopicCluster2D({
           target: l.target,
           strength: l.strength,
         }))
-        .filter((l) => nodes.some((n) => n.id === l.source) && nodes.some((n) => n.id === l.target)),
+        .filter(
+          (l) => nodes.some((n) => n.id === l.source) && nodes.some((n) => n.id === l.target),
+        ),
     [links, nodes],
   );
 
@@ -466,7 +486,7 @@ function TopicCluster2D({
     svg.call(zoomBehavior as never);
 
     // Prepare nodes with initial positions from projection
-    const simNodes = projected.map((p) => ({
+    const simNodes: TopicCluster2DNode[] = projected.map((p) => ({
       ...p,
       x: width / 2 + (p.x ?? 0) * 2,
       y: height / 2 + (p.y ?? 0) * 2,
@@ -482,17 +502,24 @@ function TopicCluster2D({
       }))
       .filter((l) => l.source && l.target);
 
-    const sim = forceSimulation(simNodes as never)
+    const sim = forceSimulation<TopicCluster2DNode>(simNodes)
       .force(
         "link",
-        forceLink(simLinks as never)
-          .id((d: { id: string }) => d.id)
+        forceLink<TopicCluster2DNode, { source: TopicCluster2DNode; target: TopicCluster2DNode }>(
+          simLinks,
+        )
+          .id((d) => d.id)
           .distance(60)
           .strength(0.6),
       )
-      .force("charge", forceManyBody().strength(-180))
+      .force("charge", forceManyBody<TopicCluster2DNode>().strength(-180))
       .force("center", forceCenter(width / 2, height / 2))
-      .force("collision", forceCollide().radius((d: { size?: number }) => Math.max(8, Math.min(22, ((d.size || 10) / 10) * 12 + 4))));
+      .force(
+        "collision",
+        forceCollide<TopicCluster2DNode>().radius((d) =>
+          Math.max(8, Math.min(22, ((d.size || 10) / 10) * 12 + 4)),
+        ),
+      );
 
     // Draw links
     const link = g
@@ -502,7 +529,7 @@ function TopicCluster2D({
       .join("line")
       .attr("stroke", "#94a3b8")
       .attr("stroke-opacity", 0.5)
-      .attr("stroke-width", (d: { value?: number }) => Math.max(1, Math.min(3, (d.value || 1))));
+      .attr("stroke-width", (d: { value?: number }) => Math.max(1, Math.min(3, d.value || 1)));
 
     // Draw nodes
     const node = g
@@ -566,27 +593,43 @@ function TopicCluster2D({
     };
   }, [projected, projectedLinks, nodes, onNodeClick, onNodeHover]);
 
+  const reasonText =
+    reason === "performance"
+      ? "Rendering performance is too low for the 3D graph, so a static 2D view is being used."
+      : "WebGL is not available in this browser, so a static 2D view is being used.";
+
   return (
-    <div className="relative w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-      <div className="absolute top-3 left-3 z-10 bg-white/90 dark:bg-gray-900/90 text-xs px-2 py-1 rounded border border-gray-200 dark:border-gray-700">
-        2D D3 Fallback {reason === "webgl" ? "(WebGL unavailable)" : "(low performance)"}
+    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-hidden">
+      <div className="text-center mb-3">
+        <div className="text-3xl mb-2">📊</div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+          2D Static View
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{reasonText}</p>
       </div>
-      <svg ref={svgRef} className="w-full h-full" role="img" aria-label="2D topic cluster graph" />
-      {(selectedId || hoveredId) && (
-        <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs rounded px-3 py-2">
-          {(() => {
-            const active = nodes.find((n) => n.id === (selectedId || hoveredId));
-            return active ? (
-              <>
-                <span className="font-semibold">{active.label}</span>
-                <span className="opacity-70"> · {active.size} articles</span>
-              </>
-            ) : null;
-          })()}
+      <div className="relative w-full h-[420px] bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <svg
+          ref={svgRef}
+          className="w-full h-full"
+          role="img"
+          aria-label="2D topic cluster graph"
+        />
+        {(selectedId || hoveredId) && (
+          <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs rounded px-2 py-1">
+            {(() => {
+              const active = nodes.find((n) => n.id === (selectedId || hoveredId));
+              return active ? (
+                <>
+                  <span className="font-semibold">{active.label}</span>
+                  <span className="opacity-70"> · {active.size} articles</span>
+                </>
+              ) : null;
+            })()}
+          </div>
+        )}
+        <div className="absolute bottom-2 right-2 text-[10px] text-gray-500 dark:text-gray-400 bg-white/80 dark:bg-gray-900/80 px-1 rounded">
+          Scroll to zoom • Drag to pan
         </div>
-      )}
-      <div className="absolute bottom-3 right-3 text-[10px] text-gray-500 dark:text-gray-400">
-        Scroll to zoom • Drag to pan
       </div>
     </div>
   );

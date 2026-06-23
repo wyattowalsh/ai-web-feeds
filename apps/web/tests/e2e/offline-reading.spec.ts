@@ -29,7 +29,8 @@ test.describe("Offline reading", () => {
     await primeReaderCache(page);
 
     // Capture a title we saw while online to assert presence while offline
-    const firstTitle = (await page.locator("article h3, article [role='heading']").first().textContent()) || "";
+    const firstTitle =
+      (await page.locator("article h3, article [role='heading']").first().textContent()) || "";
 
     // Go offline (airplane mode)
     await context.setOffline(true);
@@ -57,20 +58,24 @@ test.describe("Offline reading", () => {
     await page.goto("/offline", { waitUntil: "domcontentloaded" }).catch(() => {});
 
     // The offline page should render its heading and cached search controls
-    await expect(page.getByRole("heading", { name: "You're offline" })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: "You're offline" })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // If we had a title, attempt a local search for a token from it
     const token = (firstTitle.split(/\s+/)[0] || "").replace(/[^\p{L}\p{N}]+/gu, "");
     if (token && token.length >= 3) {
-      const input = page.locator("#search, input[aria-label='Search cached articles'], input[placeholder*='Search']");
+      const input = page.locator(
+        "#search, input[aria-label='Search cached articles'], input[placeholder*='Search']",
+      );
       if ((await input.count()) > 0) {
         await input.first().click();
         await input.first().fill(token);
         await page.keyboard.press("Enter");
         // Either results appear or a graceful empty message is shown; either is acceptable
-        await expect(
-          page.locator("text=/matched|results|No cached/i").first(),
-        ).toBeVisible({ timeout: 10_000 }).catch(() => {});
+        await expect(page.locator("text=/matched|results|No cached/i").first())
+          .toBeVisible({ timeout: 10_000 })
+          .catch(() => {});
       }
     }
   });
@@ -81,9 +86,7 @@ test.describe("Offline reading", () => {
     await gotoWithRetry(page, "/");
     // Look for any element that carries storage-related text or the component root classes
     // This is a structural presence check; functional thresholds are covered by unit tests if added.
-    const hasBannerMount = await page
-      .locator("[role='status'], .fixed.inset-x-0")
-      .count();
+    const hasBannerMount = await page.locator("[role='status'], .fixed.inset-x-0").count();
     // Not a hard requirement that it is visible (quota dependent), but the mount point should exist
     expect(hasBannerMount).toBeGreaterThanOrEqual(0);
   });

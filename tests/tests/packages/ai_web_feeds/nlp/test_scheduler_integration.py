@@ -104,9 +104,7 @@ class TestNLPSchedulerLifecycle:
 
     def test_shutdown_stops_scheduler(self, nlp_scheduler):
         """shutdown() should stop the scheduler if running."""
-        with patch.object(
-            type(nlp_scheduler.scheduler), "running", new_callable=lambda: True
-        ):
+        with patch.object(type(nlp_scheduler.scheduler), "running", new_callable=lambda: True):
             with patch.object(nlp_scheduler.scheduler, "shutdown") as mock_shutdown:
                 nlp_scheduler.shutdown(wait=True)
                 mock_shutdown.assert_called_once_with(wait=True)
