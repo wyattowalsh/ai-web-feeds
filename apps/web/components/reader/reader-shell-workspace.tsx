@@ -53,8 +53,6 @@ export type ReaderShellWorkspaceProps = {
   onFilterChip: (overrides: Record<string, string | string[] | null | undefined>) => void;
   onResetDrafts: () => void;
   onPaginate: (cursor: string | null) => void;
-  /** Optional explicit flag to disable filters; if omitted, derived from corpusEmpty && overlayCount===0 */
-  filtersDisabled?: boolean;
 };
 
 export function ReaderShellWorkspace({
@@ -89,11 +87,10 @@ export function ReaderShellWorkspace({
   onFilterChip,
   onResetDrafts,
   onPaginate,
-  filtersDisabled,
 }: ReaderShellWorkspaceProps) {
   const showCorpusEmptyPanel = corpusEmpty && overlayCount === 0 && !refreshing;
   const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
-  const effectiveFiltersDisabled = filtersDisabled ?? (corpusEmpty && overlayCount === 0);
+  const filtersDisabled = corpusEmpty && overlayCount === 0;
 
   return (
     <div className="reader-shell space-y-5">
@@ -124,7 +121,7 @@ export function ReaderShellWorkspace({
           corpusFeedCount={browse.corpus.feed_count}
           catalogTotal={statsTotal}
           catalogTopicCount={statsTopicCount}
-          filtersDisabled={effectiveFiltersDisabled}
+          filtersDisabled={filtersDisabled}
         />
 
         <section className="space-y-5">
@@ -134,7 +131,7 @@ export function ReaderShellWorkspace({
             mobileOpen={mobileRail.open}
             onMobileOpenChange={mobileRail.onOpenChange}
             activeFilterCount={chrome.activeFilterChips.length}
-            filtersDisabled={effectiveFiltersDisabled}
+            filtersDisabled={filtersDisabled}
           />
 
           <ReaderArticleStream

@@ -124,15 +124,12 @@ export function ReaderFiltersForm({
     applyDrafts();
   };
 
-  const formDisabled = filtersDisabled;
-  const disabledProps = formDisabled ? ({ disabled: true } as const) : {};
-
   return (
     <fieldset
-      disabled={formDisabled || undefined}
+      disabled={filtersDisabled || undefined}
       className={cn(
         "mt-4 space-y-4 border-0 p-0",
-        formDisabled && "pointer-events-none opacity-60",
+        filtersDisabled && "pointer-events-none opacity-60",
       )}
     >
       <form onSubmit={onSubmit} className="space-y-4">
@@ -149,7 +146,6 @@ export function ReaderFiltersForm({
               value={draftState.query}
               onChange={(event) => setQuery(event.target.value)}
               className="pl-10"
-              {...disabledProps}
             />
           </div>
         </label>
@@ -162,7 +158,6 @@ export function ReaderFiltersForm({
             aria-label={stAria}
             value={draftState.sourceType}
             onChange={(event) => setSourceType(event.target.value)}
-            {...disabledProps}
           >
             <option value="">All source types</option>
             {sourceTypes.map((sourceType) => (
@@ -182,7 +177,6 @@ export function ReaderFiltersForm({
               aria-label={topicSelAria}
               value=""
               onChange={handleTopicSelect}
-              {...disabledProps}
             >
               <option value="">
                 {draftState.topics.length > 0 ? "Add another topic" : "All topics"}
@@ -201,7 +195,6 @@ export function ReaderFiltersForm({
                     type="button"
                     onClick={() => handleChipRemove(topic)}
                     className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
-                    {...disabledProps}
                   >
                     {topic}
                     <X className="size-3.5" />
@@ -225,7 +218,6 @@ export function ReaderFiltersForm({
                     ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
                     : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
                 )}
-                {...disabledProps}
               >
                 {topic}
                 {isDesktop ? (
@@ -249,7 +241,6 @@ export function ReaderFiltersForm({
                   aria-label={verifAria}
                   value={draftState.verified}
                   onChange={(event) => setVerified(event.target.value as VerifiedDraftValue)}
-                  {...disabledProps}
                 >
                   <option value="">All feeds</option>
                   <option value="true">Verified only</option>
@@ -266,7 +257,6 @@ export function ReaderFiltersForm({
                 aria-label={viewAria}
                 value={draftState.readerView}
                 onChange={(event) => setReaderView(event.target.value as ReaderView)}
-                {...disabledProps}
               >
                 <option value="latest">Latest</option>
                 <option value="unread">Unread</option>
@@ -284,7 +274,6 @@ export function ReaderFiltersForm({
                 aria-label={sortAria}
                 value={draftState.sort}
                 onChange={(event) => setSort(event.target.value as ArticleSort)}
-                {...disabledProps}
               >
                 <option value="latest">Latest first</option>
                 <option value="oldest">Oldest first</option>
@@ -304,7 +293,6 @@ export function ReaderFiltersForm({
                     aria-label={verifAria}
                     value={draftState.verified}
                     onChange={(event) => setVerified(event.target.value as VerifiedDraftValue)}
-                    {...disabledProps}
                   >
                     <option value="">All feeds</option>
                     <option value="true">Verified only</option>
@@ -320,7 +308,6 @@ export function ReaderFiltersForm({
                   aria-label={viewAria}
                   value={draftState.readerView}
                   onChange={(event) => setReaderView(event.target.value as ReaderView)}
-                  {...disabledProps}
                 >
                   <option value="latest">Latest</option>
                   <option value="unread">Unread</option>
@@ -338,7 +325,6 @@ export function ReaderFiltersForm({
                 aria-label={sortAria}
                 value={draftState.sort}
                 onChange={(event) => setSort(event.target.value as ArticleSort)}
-                {...disabledProps}
               >
                 <option value="latest">Latest first</option>
                 <option value="oldest">Oldest first</option>
@@ -355,7 +341,6 @@ export function ReaderFiltersForm({
             className="flex-1"
             onClick={() => onLayoutChange("cards")}
             aria-pressed={layout === "cards"}
-            {...disabledProps}
           >
             <LayoutGrid className="size-4" />
             Cards
@@ -366,7 +351,6 @@ export function ReaderFiltersForm({
             className="flex-1"
             onClick={() => onLayoutChange("list")}
             aria-pressed={layout === "list"}
-            {...disabledProps}
           >
             <List className="size-4" />
             List
@@ -377,7 +361,6 @@ export function ReaderFiltersForm({
             className="flex-1"
             onClick={() => onLayoutChange("compact")}
             aria-pressed={layout === "compact"}
-            {...disabledProps}
           >
             <Rows3 className="size-4" />
             Compact
@@ -388,14 +371,13 @@ export function ReaderFiltersForm({
           <Button
             type="submit"
             className="relative flex-1"
-            disabled={!hasPendingDraftChanges || formDisabled}
+            disabled={!hasPendingDraftChanges || filtersDisabled}
             aria-describedby={
-              hasPendingDraftChanges && !formDisabled ? "reader-apply-pending" : undefined
+              hasPendingDraftChanges && !filtersDisabled ? "reader-apply-pending" : undefined
             }
-            {...disabledProps}
           >
             Apply filters
-            {hasPendingDraftChanges && !formDisabled ? (
+            {hasPendingDraftChanges && !filtersDisabled ? (
               <span
                 id="reader-apply-pending"
                 className="absolute end-2 top-2 size-2 rounded-full bg-(--brand-strong) ring-2 ring-(--surface)"
@@ -403,7 +385,7 @@ export function ReaderFiltersForm({
               />
             ) : null}
           </Button>
-          <Button type="button" variant="outline" onClick={resetDrafts} {...disabledProps}>
+          <Button type="button" variant="outline" onClick={resetDrafts}>
             Reset
           </Button>
         </div>
