@@ -39,6 +39,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     limit: 30,
   }).catch(() => null);
 
+  const corpusUnavailable = browse === null;
   const items = browse?.items ?? [];
   const teasers: HubTeaserArticle[] = items.map((article) => ({
     id: article.id,
@@ -120,13 +121,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
         {teasers.length === 0 ? (
           <div className="surface-card space-y-3 py-10 text-center">
-            <p className="text-lg font-semibold text-(--ink)">No matching articles found.</p>
-            <p className="text-sm text-(--ink-muted)">
-              Try a broader term like llm, agents, or evaluation. The corpus is updated periodically
-              from tracked sources.
-            </p>
+            {corpusUnavailable ? (
+              <>
+                <p className="text-lg font-semibold text-(--ink)">
+                  Search is temporarily unavailable
+                </p>
+                <p className="text-sm text-(--ink-muted)">
+                  We could not load the article index. Try again later or open the reader directly.
+                </p>
+              </>
+            ) : query ? (
+              <>
+                <p className="text-lg font-semibold text-(--ink)">No matching articles found.</p>
+                <p className="text-sm text-(--ink-muted)">
+                  Try a broader term like llm, agents, or evaluation. The corpus is updated
+                  periodically from tracked sources.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-(--ink)">No articles indexed yet</p>
+                <p className="text-sm text-(--ink-muted)">
+                  The corpus is empty or still loading. Open the reader to check the latest
+                  snapshot.
+                </p>
+              </>
+            )}
             <Link
-              href="/reader"
+              href={CANONICAL_READER_PATH}
               className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
             >
               Open the full reader

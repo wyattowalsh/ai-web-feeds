@@ -23,6 +23,15 @@ type PaletteItem = {
   external?: boolean;
 };
 
+const COMMAND_LISTBOX_ID = "hub-command-listbox";
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+}
+
 function buildItems(): PaletteItem[] {
   // Derive directly from PRIMARY_HUB_NAV (single source of truth in lib/hub/links.ts)
   return PRIMARY_HUB_NAV.map((item: HubNavItem, index: number) => ({
@@ -143,6 +152,9 @@ export function CommandPalette({
       const mod = isMac ? e.metaKey : e.ctrlKey;
 
       if (mod && (e.key === "k" || e.key === "K")) {
+        if (isEditableTarget(e.target)) {
+          return;
+        }
         e.preventDefault();
         e.stopImmediatePropagation();
         const next = !open;
@@ -204,6 +216,9 @@ export function CommandPalette({
     return null;
   }
 
+  const activeOptionId =
+    filtered[activeIndex] !== undefined ? `hub-cmd-option-${filtered[activeIndex].id}` : undefined;
+
   return (
     <div
       role="dialog"
@@ -225,6 +240,11 @@ export function CommandPalette({
           <input
             id="hub-command-input"
             type="text"
+            role="combobox"
+            aria-controls={COMMAND_LISTBOX_ID}
+            aria-expanded
+            aria-autocomplete="list"
+            aria-activedescendant={activeOptionId}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDownInput}
@@ -246,12 +266,13 @@ export function CommandPalette({
               No matching routes.
             </div>
           ) : (
-            <ul role="listbox" aria-label="Hub routes">
+            <ul id={COMMAND_LISTBOX_ID} role="listbox" aria-label="Hub routes">
               {filtered.map((item, idx) => {
                 const isActive = idx === activeIndex;
                 return (
                   <li key={item.id} role="presentation">
                     <button
+                      id={`hub-cmd-option-${item.id}`}
                       type="button"
                       role="option"
                       aria-selected={isActive}

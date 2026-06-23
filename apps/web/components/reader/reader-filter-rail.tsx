@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 
+import { cn } from "@/lib/cn";
 import {
   ReaderFiltersForm,
   type ReaderFiltersFormProps,
@@ -71,11 +72,24 @@ export function ReaderFilterRail({
 
   return (
     <details
-      className="surface-card relative isolate z-20 border-(--line) bg-(--surface) p-4 xl:hidden"
-      open={mobileOpen}
-      onToggle={(event) => onMobileOpenChange?.((event.currentTarget as HTMLDetailsElement).open)}
+      className={cn(
+        "surface-card relative isolate z-20 border-(--line) bg-(--surface) p-4 xl:hidden",
+        filtersDisabled && "pointer-events-none opacity-60",
+      )}
+      open={filtersDisabled ? false : mobileOpen}
+      onToggle={(event) => {
+        if (filtersDisabled) {
+          event.preventDefault();
+          return;
+        }
+        onMobileOpenChange?.((event.currentTarget as HTMLDetailsElement).open);
+      }}
     >
-      <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 py-3">
+      <summary
+        className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 py-3"
+        aria-disabled={filtersDisabled || undefined}
+        tabIndex={filtersDisabled ? -1 : undefined}
+      >
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-(--ink-muted)" />
           <span className="text-sm font-semibold text-(--ink)">Filters and view</span>
