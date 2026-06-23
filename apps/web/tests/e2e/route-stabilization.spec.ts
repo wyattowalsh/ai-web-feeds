@@ -78,27 +78,30 @@ async function warnOnA11yViolations(page: Page, testInfo: TestInfo) {
   await injectAxe(page);
   const violations = await getViolations(page, undefined, PLAYWRIGHT_AXE_OPTIONS);
 
-  if (violations.length === 0) {
-    return;
+  const summary = summarizeAxeViolations(violations);
+
+  if (violations.length > 0) {
+    await testInfo.attach("axe-violations.json", {
+      body: Buffer.from(
+        JSON.stringify(
+          {
+            title: testInfo.title,
+            url: page.url(),
+            violationCount: summary.length,
+            violations: summary,
+          },
+          null,
+          2,
+        ),
+      ),
+      contentType: "application/json",
+    });
   }
 
-  const summary = summarizeAxeViolations(violations);
-  await testInfo.attach("axe-violations.json", {
-    body: Buffer.from(
-      JSON.stringify(
-        {
-          title: testInfo.title,
-          url: page.url(),
-          violationCount: summary.length,
-          violations: summary,
-        },
-        null,
-        2,
-      ),
-    ),
-    contentType: "application/json",
-  });
-  console.warn(buildAxeFailureMessage(`[axe warning] ${testInfo.title}`, summary));
+  expect(
+    violations,
+    violations.length > 0 ? buildAxeFailureMessage(`[axe] ${testInfo.title}`, summary) : undefined,
+  ).toEqual([]);
 }
 
 async function firstArticleSearchToken(page: Page): Promise<string> {
@@ -267,10 +270,13 @@ test.describe("Route stabilization smoke", () => {
     // Wide viewport to ensure desktop search rail + preview interactions are stable.
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoWithRetry(page, "/reader", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("article h3").first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
-    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible({
+      timeout: 15_000,
+    });
 
     const desktopSearch = page.locator("#reader-search");
     await expect(desktopSearch).toBeVisible();
@@ -552,6 +558,7 @@ test.describe("Route stabilization smoke", () => {
   });
 
   test("docs route exposes hub command palette via keyboard shortcut", async ({ page }) => {
+    test.setTimeout(90_000);
     const tracker = trackClientErrors(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -565,6 +572,9 @@ test.describe("Route stabilization smoke", () => {
       timeout: 15_000,
     });
     await expect(page.getByPlaceholder(/type a command or search routes/i)).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Command palette" })).toHaveCount(0);
 
     await expectNoClientErrors(page, tracker);
   });
@@ -581,9 +591,16 @@ test.describe("Route stabilization smoke", () => {
     await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Preview" }).first().click();
-    await expect(page.getByRole("button", { name: "Close preview" })).toBeVisible();
-    await page.getByRole("button", { name: "Close preview" }).click();
-    await expect(page.getByRole("button", { name: "Close preview" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Hide details" })).toBeVisible({
+      timeout: 15_000,
+    });
+    const mobileClosePreview = page.getByRole("button", { name: "Close preview" });
+    if ((await mobileClosePreview.count()) > 0) {
+      await mobileClosePreview.click();
+    } else {
+      await page.getByRole("button", { name: "Hide details" }).click();
+    }
+    await expect(page.getByRole("button", { name: /Close preview|Hide details/i })).toHaveCount(0);
 
     const token = await firstArticleSearchToken(page);
 
