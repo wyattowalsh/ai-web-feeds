@@ -283,7 +283,7 @@ feeds.yaml (source)
 uv run pytest
 
 # Run specific test file
-uv run pytest tests/packages/ai_web_feeds/test_models.py
+cd tests && uv run pytest tests/packages/ai_web_feeds/unit/test_models.py
 
 # With coverage
 uv run pytest --cov=ai_web_feeds

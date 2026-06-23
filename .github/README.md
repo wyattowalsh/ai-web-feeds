@@ -4,14 +4,14 @@ All documentation for GitHub workflows, issue templates, and automation has been
 integrated into the main documentation site.
 
 📖
-**[View Full Documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure)**
+**[View Full Documentation](https://aiwebfeeds.vercel.app/docs/guides/github-infrastructure)**
 
 ## Quick Links
 
-- [Feed Submission Guide](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure#issue-templates)
-- [Feed Schema Reference](https://ai-web-feeds.vercel.app/docs/guides/feed-schema)
-- [Contributing Guide](https://ai-web-feeds.vercel.app/docs/development/contributing)
-- [Testing Guide](https://ai-web-feeds.vercel.app/docs/guides/testing)
+- [Feed Submission Guide](https://aiwebfeeds.vercel.app/docs/guides/github-infrastructure#issue-templates)
+- [Feed Schema Reference](https://aiwebfeeds.vercel.app/docs/guides/feed-schema)
+- [Contributing Guide](https://aiwebfeeds.vercel.app/docs/development/contributing)
+- [Testing Guide](https://aiwebfeeds.vercel.app/docs/guides/testing)
 
 ## Local Testing
 
@@ -27,5 +27,5 @@ python scripts/test-feed-submission.py \
 ```
 
 See the
-[full documentation](https://ai-web-feeds.vercel.app/docs/guides/github-infrastructure#helper-scripts)
+[full documentation](https://aiwebfeeds.vercel.app/docs/guides/github-infrastructure#helper-scripts)
 for more details.

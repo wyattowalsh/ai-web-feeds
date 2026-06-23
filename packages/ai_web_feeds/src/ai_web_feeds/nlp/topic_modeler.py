@@ -1,6 +1,7 @@
 """TopicNode modeling using LDA/BERTopic (Phase 5D)."""
 
 import re
+from typing import Any
 
 from gensim import corpora, models
 from gensim.models import CoherenceModel
@@ -8,6 +9,16 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
+
+
+def _get_numpy() -> Any:
+    """Lazy import numpy (available under ml extra; gensim depends on it)."""
+    try:
+        import numpy as np
+
+        return np
+    except ImportError:
+        return None
 
 
 class DiscoveredSubtopic(BaseModel):
@@ -434,7 +445,8 @@ class TopicModeler:
                     }
                 )
 
-        # TODO: Implement split/merge detection (requires more sophisticated similarity)
+        # 3. Basic split/merge detection using topic similarity threshold (cosine on keyword vectors)
+        self._detect_split_merge(events, prev_subtopics, current_subtopics, period, threshold)
 
         return events
 
@@ -451,19 +463,110 @@ class TopicModeler:
         Returns:
             True if subtopics are similar above threshold
         """
-        # Calculate Jaccard similarity on keywords
-        keywords1 = set(subtopic1.keywords[:5])  # Top 5 keywords
-        keywords2 = set(subtopic2.keywords[:5])
+        # Use cosine similarity on keyword vectors when numpy available (basic topic vectors)
+        sim = self._cosine_keyword_similarity(subtopic1, subtopic2)
+        if sim is None:
+            # Fallback to Jaccard
+            keywords1 = set(subtopic1.keywords[:5])
+            keywords2 = set(subtopic2.keywords[:5])
+            if not keywords1 or not keywords2:
+                return False
+            intersection = len(keywords1 & keywords2)
+            union = len(keywords1 | keywords2)
+            sim = intersection / union if union > 0 else 0
 
-        if not keywords1 or not keywords2:
-            return False
+        return sim >= threshold
 
-        intersection = len(keywords1 & keywords2)
-        union = len(keywords1 | keywords2)
+    def _cosine_keyword_similarity(
+        self, st1: DiscoveredSubtopic, st2: DiscoveredSubtopic
+    ) -> float | None:
+        """Compute cosine similarity using simple binary vectors over union keywords.
 
-        similarity = intersection / union if union > 0 else 0
+        Returns None if numpy unavailable (caller falls back).
+        """
+        np = _get_numpy()
+        if np is None:
+            return None
 
-        return similarity >= threshold
+        k1 = st1.keywords[:5]
+        k2 = st2.keywords[:5]
+        if not k1 or not k2:
+            return 0.0
+
+        vocab = list(set(k1 + k2))
+        if not vocab:
+            return 0.0
+
+        v1 = np.array([1.0 if kw in k1 else 0.0 for kw in vocab])
+        v2 = np.array([1.0 if kw in k2 else 0.0 for kw in vocab])
+
+        dot = float(np.dot(v1, v2))
+        norm = float(np.linalg.norm(v1) * np.linalg.norm(v2))
+        return dot / norm if norm > 0 else 0.0
+
+    def _detect_split_merge(
+        self,
+        events: list[dict],
+        prev_subtopics: list[DiscoveredSubtopic],
+        current_subtopics: list[DiscoveredSubtopic],
+        period: str,
+        threshold: float,
+    ) -> None:
+        """Detect basic split and merge events using similarity threshold.
+
+        Split: 1 prev matches >1 current
+        Merge: >1 prev match 1 current
+        Mutates events list in place.
+        """
+        if not prev_subtopics or not current_subtopics:
+            return
+
+        # Map prev -> list of matching current indices
+        prev_to_currs: dict[int, list[int]] = {}
+        for i, prev in enumerate(prev_subtopics):
+            prev_to_currs[i] = []
+            for j, curr in enumerate(current_subtopics):
+                if self._subtopics_similar(prev, curr, threshold):
+                    prev_to_currs[i].append(j)
+
+        # Splits
+        for prev_idx, curr_idxs in prev_to_currs.items():
+            if len(curr_idxs) > 1:
+                events.append(
+                    {
+                        "event_type": "split",
+                        "source_topic": prev_subtopics[prev_idx].name,
+                        "target_topics": [current_subtopics[j].name for j in curr_idxs],
+                        "article_count": sum(
+                            current_subtopics[j].article_count for j in curr_idxs
+                        ),
+                        "detected_at": period,
+                    }
+                )
+
+        # Merges: build reverse
+        curr_to_prevs: dict[int, list[int]] = {}
+        for j, curr in enumerate(current_subtopics):
+            curr_to_prevs[j] = []
+            for i, prev in enumerate(prev_subtopics):
+                if self._subtopics_similar(prev, curr, threshold):
+                    curr_to_prevs[j].append(i)
+
+        for curr_idx, prev_idxs in curr_to_prevs.items():
+            if len(prev_idxs) > 1:
+                events.append(
+                    {
+                        "event_type": "merge",
+                        "source_topic": None,
+                        "target_topics": [current_subtopics[curr_idx].name],
+                        "article_count": current_subtopics[curr_idx].article_count,
+                        "detected_at": period,
+                        # include sources for completeness (model allows source_topic singular)
+                        "source_topics": [
+                            prev_subtopics[i].name for i in prev_idxs
+                        ],
+                    }
+                )
 
     def detect_subtopic_set_changes(
         self,

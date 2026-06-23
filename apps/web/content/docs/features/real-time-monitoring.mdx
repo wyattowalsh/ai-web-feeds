@@ -17,6 +17,8 @@ The real-time monitoring system provides:
 - **Feed Follows**: Subscribe to specific feeds for targeted notifications
 - **Smart Bundling**: Automatic notification grouping to prevent spam
 
+> **Note**: The `/for-you` personalized recommendations page requires the `BACKEND_URL` environment variable to be set (pointing to a running ai-web-feeds backend). Without it, the route shows an intentional empty state / explanatory message. See [runtime-authority](/docs/development/runtime-authority) and [recommendations](/docs/features/recommendations) docs.
+
 ## Architecture
 
 ```mermaid
@@ -447,6 +449,10 @@ AIWF_WEBSOCKET_CORS_ORIGINS=http://localhost:3000,https://aiwebfeeds.w4w.dev
 # - Local dev defaults to http://localhost:8000
 # - Non-local deployments default to same-origin unless overridden
 # NEXT_PUBLIC_WEBSOCKET_URL=https://monitor.example.com
+
+# Backend proxy for web app features (required for /for-you, recommendations, analytics proxies)
+BACKEND_URL=http://localhost:8001  # or http://127.0.0.1:8001 ; without this, /for-you intentionally shows empty/intent state
+
 
 # Feed Polling
 AIWF_FEED_POLL_INTERVAL_MIN=15

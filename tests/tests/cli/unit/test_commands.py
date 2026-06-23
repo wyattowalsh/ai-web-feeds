@@ -402,3 +402,147 @@ class TestCLIIntegration:
         assert "json" in result.output
         assert "opml" in result.output
         assert "csv" in result.output
+
+
+@pytest.mark.unit
+class TestCLITopicsCommand:
+    """Test topics CLI command."""
+
+    def test_topics_command_exists(self):
+        """Test that topics command can be imported."""
+        from ai_web_feeds.cli.commands import topics
+
+        assert topics.app is not None
+
+    def test_topics_list_with_file(self, tmp_path: Path):
+        """Test topics list command against a temp topics file."""
+        from ai_web_feeds.cli.commands.topics import app as topics_app
+
+        topics_file = tmp_path / "topics.yaml"
+        topics_file.write_text(
+            yaml.safe_dump(
+                {
+                    "topics": [
+                        {
+                            "id": "ai",
+                            "label": "Artificial Intelligence",
+                            "facet": "domain",
+                            "facet_group": "conceptual",
+                            "parents": [],
+                        },
+                        {
+                            "id": "ml",
+                            "label": "Machine Learning",
+                            "facet": "domain",
+                            "facet_group": "conceptual",
+                            "parents": ["ai"],
+                        },
+                    ]
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+
+        runner = CliRunner()
+        result = runner.invoke(topics_app, ["list", "--file", str(topics_file)])
+
+        assert result.exit_code == 0, result.output
+        assert "ai" in result.output
+        assert "Machine Learning" in result.output
+
+    def test_topics_list_registered_on_main_app(self):
+        """Test that the top-level CLI exposes topics command."""
+        from ai_web_feeds.cli import app
+
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "topics" in result.output
+
+    def test_topics_show(self, tmp_path: Path):
+        """Test topics show subcommand."""
+        from ai_web_feeds.cli.commands.topics import app as topics_app
+
+        topics_file = tmp_path / "topics.yaml"
+        topics_file.write_text(
+            yaml.safe_dump(
+                {
+                    "topics": [
+                        {
+                            "id": "genai",
+                            "label": "Generative AI",
+                            "description": "Gen models",
+                            "facet": "subfield",
+                        }
+                    ]
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+
+        runner = CliRunner()
+        result = runner.invoke(topics_app, ["show", "genai", "--file", str(topics_file)])
+
+        assert result.exit_code == 0, result.output
+        assert "Generative AI" in result.output
+
+
+@pytest.mark.unit
+class TestCLIAddCommand:
+    """Test add CLI command."""
+
+    def test_add_command_exists(self):
+        """Test that add command can be imported."""
+        from ai_web_feeds.cli.commands import add
+
+        assert add.app is not None
+
+    def test_add_command_registered_on_main_app(self):
+        """Test that the top-level CLI exposes add command."""
+        from ai_web_feeds.cli import app
+
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "add" in result.output
+
+    def test_add_feed_url_to_catalog(self, tmp_path: Path):
+        """Test adding a feed URL creates an entry in feeds.yaml."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(
+                yaml.safe_dump(
+                    {"schema_version": "feeds-3.0.0", "sources": []},
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(
+                add_app,
+                [
+                    "https://example.com/feed.xml",
+                    "--title",
+                    "Example Feed",
+                    "--topics",
+                    "ai,research",
+                    "--input",
+                    str(feeds_file),
+                ],
+            )
+
+            assert result.exit_code == 0, result.output
+            data = yaml.safe_load(feeds_file.read_text(encoding="utf-8"))
+            assert len(data["sources"]) == 1
+            src = data["sources"][0]
+            assert src["url"] == "https://example.com/feed.xml"
+            assert src["title"] == "Example Feed"
+            assert "ai" in src.get("topics", [])
+

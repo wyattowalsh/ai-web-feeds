@@ -300,8 +300,8 @@ body:
 
         ### 💡 Need Help?
 
-        - 📖 [Feed Schema Documentation](https://aiwebfeeds.com/docs/guides/feed-schema)
-        - 🛠️ [CLI Validation Guide](https://aiwebfeeds.com/docs/development/cli)
+        - 📖 [Feed Schema Documentation](https://aiwebfeeds.vercel.app/docs/guides/feed-schema)
+        - 🛠️ [CLI Validation Guide](https://aiwebfeeds.vercel.app/docs/development/cli)
         - 💬 [Join our Discord](https://discord.gg/aiwebfeeds)
 
         Thank you for contributing to AI Web Feeds! 🎉

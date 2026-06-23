@@ -83,20 +83,46 @@ class QualityBatchJob:
 
                 try:
                     # Convert SQLModel to dict for scorer
+                    # Extract author_detail from feed metadata when available
+                    author_detail = None
+                    feed_dict = None
+                    try:
+                        fs = self.db_manager.get_feed_source(article.feed_id)
+                        enrich = self.db_manager.get_enrichment_data(article.feed_id)
+                        if fs and fs.contributor:
+                            author_detail = {"name": fs.contributor}
+                            site_or_url = fs.site or fs.url
+                            if site_or_url:
+                                author_detail["href"] = site_or_url
+                        elif enrich and enrich.discovered_author:
+                            author_detail = {"name": enrich.discovered_author}
+                        if fs or enrich:
+                            feed_dict = {
+                                "quality_score": (
+                                    (enrich.quality_score if enrich else None)
+                                    or (fs.quality_score if fs else None)
+                                    or 50
+                                ),
+                            }
+                    except Exception as fetch_err:
+                        logger.debug(
+                            f"Could not fetch feed metadata for {article.feed_id}: {fetch_err}"
+                        )
+
                     article_dict = {
                         "id": article.id,
                         "title": article.title,
                         "content": article.content_html or article.summary or "",
                         "summary": article.summary,
                         "author": getattr(article, "author", None),
-                        "author_detail": None,  # TODO: Extract from feed metadata
+                        "author_detail": author_detail,
                         "url": article.link,
                         "feed_id": article.feed_id,
                         "share_count": 0,  # TODO: Add social sharing metrics
                     }
 
-                    # Score article
-                    score_result = self.scorer.score_article(article_dict)
+                    # Score article (pass feed for domain scoring)
+                    score_result = self.scorer.score_article(article_dict, feed=feed_dict)
 
                     if score_result is None:
                         # Article too short or invalid
@@ -145,8 +171,10 @@ class QualityBatchJob:
 
                     # Track failure in article record
                     article.last_failure_reason = f"quality_scoring: {e!s}"
-                    # Update nlp_failures JSON (increment counter)
-                    # TODO: Implement JSON field update logic
+                    # Update nlp_failures JSON (increment counter) - merge properly by reassign
+                    failures = dict(getattr(article, "nlp_failures", None) or {})
+                    failures["quality_scoring"] = failures.get("quality_scoring", 0) + 1
+                    article.nlp_failures = failures
                     session.add(article)
 
             # Commit all changes

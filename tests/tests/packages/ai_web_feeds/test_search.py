@@ -11,6 +11,7 @@ from ai_web_feeds.search import (
     build_trie_index,
     full_text_search,
     get_saved_searches,
+    hybrid_search,
     log_search_query,
     save_search,
     semantic_search,
@@ -339,6 +340,115 @@ class TestSemanticSearch:
 
         # Low threshold should have more or equal results
         assert len(results_low) >= len(results_high)
+
+
+class TestHybridSearch:
+    """Tests for hybrid full-text + semantic search."""
+
+    @pytest.fixture
+    def sample_embeddings(self, test_session, sample_feeds):
+        """Create sample embeddings for testing."""
+        import numpy as np
+
+        embeddings = []
+        for feed in sample_feeds:
+            embedding_vector = np.random.rand(384).astype(np.float32)
+            embedding = FeedEmbedding(
+                feed_id=feed.id,
+                embedding=embedding_vector.tobytes(),
+                embedding_model="test-model",
+                embedding_provider="local",
+            )
+            test_session.add(embedding)
+            embeddings.append(embedding)
+
+        test_session.commit()
+        return embeddings
+
+    def test_hybrid_search_returns_tuples(self, test_session, sample_feeds, sample_embeddings):
+        """Hybrid search should return (FeedSource, score) tuples."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            results = hybrid_search(test_session, "machine learning", limit=10)
+
+            assert isinstance(results, list)
+            for item in results:
+                assert isinstance(item, tuple)
+                assert len(item) == 2
+                assert isinstance(item[0], FeedSource)
+                assert isinstance(item[1], (int, float))
+
+    def test_hybrid_search_respects_limit(self, test_session, sample_feeds, sample_embeddings):
+        """Hybrid search should respect the limit parameter."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            results = hybrid_search(test_session, "test", limit=2)
+
+            assert len(results) <= 2
+
+    def test_hybrid_search_weighted_combination(
+        self, test_session, sample_feeds, sample_embeddings
+    ):
+        """Hybrid search should combine FTS and semantic with weights."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            # Use custom weights
+            results = hybrid_search(
+                test_session,
+                "learning",
+                limit=10,
+                full_text_weight=0.7,
+                semantic_weight=0.3,
+            )
+
+            # Should return results (may be empty if no FTS table, but should not error)
+            assert isinstance(results, list)
+
+    def test_hybrid_search_with_filters(self, test_session, sample_feeds, sample_embeddings):
+        """Hybrid search should apply filters."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            filters = {"verified": True}
+            results = hybrid_search(test_session, "blog", limit=10, filters=filters)
+
+            # All results should be verified feeds
+            for feed, _ in results:
+                assert feed.verified is True
+
+    def test_hybrid_search_zero_weights(self, test_session, sample_feeds, sample_embeddings):
+        """Hybrid search should handle zero/negative weights gracefully."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            results = hybrid_search(
+                test_session,
+                "test",
+                limit=5,
+                full_text_weight=0,
+                semantic_weight=0,
+            )
+
+            # Should default to balanced weights and return list
+            assert isinstance(results, list)
+
+    def test_hybrid_search_empty_results(self, test_session):
+        """Hybrid search on empty database should return empty list."""
+        with patch("ai_web_feeds.search.generate_query_embedding") as mock_embed:
+            import numpy as np
+
+            mock_embed.return_value = np.random.rand(384).astype(np.float32)
+            results = hybrid_search(test_session, "nonexistent query xyz", limit=10)
+
+            assert results == []
 
 
 class TestAutocomplete:

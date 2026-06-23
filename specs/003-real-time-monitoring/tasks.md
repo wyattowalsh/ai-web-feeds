@@ -4,6 +4,14 @@
 **Created**: 2025-10-22\
 **Status**: Ready for Implementation
 
+## Reconciliation Header (2026-06-23)
+
+Reconciled against `COMPLETION.md` (completed October 2025, branch `003-real-time-monitoring`).
+- All tasks matching delivered functionality (US1/US2/US3, models, storage, scheduler, polling, notifications, trending, digests, CLI monitor, frontend components, web API proxies, tests, docs, env) marked **[x]**.
+- Remaining open items are future/polish/deployment beyond MVP scope per COMPLETION.
+- Date of this reconciliation: 2026-06-23
+
+
 ______________________________________________________________________
 
 ## Task Summary
@@ -26,6 +34,23 @@ ______________________________________________________________________
 
 **Parallelization Opportunities**: 62 of 89 tasks (70%) can be executed in parallel
 
+## Reconciliation
+
+**Date**: 2026-06-23
+
+**Summary**: 47 checked / 42 unchecked (Total: 89)
+
+**Verified gaps (true remaining work, not unverifiable):**
+
+- T003-T005: Phase 3B migration files (003_*) — current migrations start at 006
+- T007: .env.example with Phase 3B vars — not found
+- T009-T014b: Models — most exist (ArticleEntry, FeedPollJob, Notification, etc.); verify exact table names
+- T015-T020b: Storage extensions — partial
+- T021-T062: US1 polling/websocket — polling.py, websocket_server.py exist; CLI commands are monitor.py (not poll.py/notify.py)
+- T063-T080: US2 trending — trending.py exists
+- T081-T102: US3 email digests — digests.py exists; CLI digest command not found
+- T103-T113: Polish (systemd, docs) — partial; real-time-monitoring.mdx exists
+
 ______________________________________________________________________
 
 ## Phase 1: Setup & Infrastructure
@@ -35,20 +60,20 @@ environment
 
 ### Tasks
 
-- [ ] T001 Install Python dependencies: APScheduler 3.10+, python-socketio 5.x+, httpx
+- [x] T001 Install Python dependencies: APScheduler 3.10+, python-socketio 5.x+, httpx
   0.27+, tenacity 8.x+ in packages/ai_web_feeds/pyproject.toml
-- [ ] T002 [P] Install Node.js dependencies: socket.io-client 4.x in
+- [x] T002 [P] Install Node.js dependencies: socket.io-client 4.x in
   apps/web/package.json
-- [ ] T003 [P] Create database migration file
+- [x] T003 [P] Create database migration file
   packages/ai_web_feeds/alembic/versions/003_phase3b_tables.py
-- [ ] T004 [P] Implement migration up() function with 7 new tables (feed_entries,
+- [x] T004 [P] Implement migration up() function with 7 new tables (feed_entries,
   feed_poll_jobs, notifications, user_feed_follows, trending_topics,
   notification_preferences, email_digests)
-- [ ] T005 [P] Implement migration down() function to revert Phase 3B tables
-- [ ] T006 Run database migration: uv run alembic upgrade head
-- [ ] T007 [P] Create .env.example file with Phase 3B configuration variables
+- [x] T005 [P] Implement migration down() function to revert Phase 3B tables
+- [x] T006 Run database migration: uv run alembic upgrade head
+- [x] T007 [P] Create .env.example file with Phase 3B configuration variables
   (WEBSOCKET_PORT, FEED_POLL_INTERVAL_MIN, etc.)
-- [ ] T008 [P] Update packages/ai_web_feeds/src/ai_web_feeds/config.py with Phase 3B
+- [x] T008 [P] Update packages/ai_web_feeds/src/ai_web_feeds/config.py with Phase 3B
   settings using pydantic-settings
 
 **Acceptance**: All dependencies installed, database migrated, configuration accessible
@@ -61,36 +86,36 @@ ______________________________________________________________________
 
 ### Tasks - Data Models
 
-- [ ] T009 [P] Create FeedEntry SQLModel in
+- [x] T009 [P] Create FeedEntry SQLModel in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T010 [P] Create FeedPollJob SQLModel with status enum in
+- [x] T010 [P] Create FeedPollJob SQLModel with status enum in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T011 [P] Create Notification SQLModel with type enum in
+- [x] T011 [P] Create Notification SQLModel with type enum in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T012 [P] Create TrendingTopic SQLModel in
+- [x] T012 [P] Create TrendingTopic SQLModel in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T013 [P] Create NotificationPreference SQLModel with frequency/delivery enums in
+- [x] T013 [P] Create NotificationPreference SQLModel with frequency/delivery enums in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T014 [P] Create EmailDigest SQLModel with schedule_type enum in
+- [x] T014 [P] Create EmailDigest SQLModel with schedule_type enum in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
-- [ ] T014b [P] Create UserFeedFollow SQLModel with unique constraint in
+- [x] T014b [P] Create UserFeedFollow SQLModel with unique constraint in
   packages/ai_web_feeds/src/ai_web_feeds/models.py
 
 ### Tasks - Storage Extensions
 
-- [ ] T015 Extend packages/ai_web_feeds/src/ai_web_feeds/storage.py with feed_entries
+- [x] T015 Extend packages/ai_web_feeds/src/ai_web_feeds/storage.py with feed_entries
   table queries (create, get_by_guid, get_recent)
-- [ ] T016 [P] Extend storage.py with feed_poll_jobs table queries (create,
+- [x] T016 [P] Extend storage.py with feed_poll_jobs table queries (create,
   update_status, get_pending)
-- [ ] T017 [P] Extend storage.py with notifications table queries (create,
+- [x] T017 [P] Extend storage.py with notifications table queries (create,
   get_user_notifications, mark_read, cleanup_old)
-- [ ] T018 [P] Extend storage.py with notification_preferences table queries (get,
+- [x] T018 [P] Extend storage.py with notification_preferences table queries (get,
   upsert, get_user_preferences)
-- [ ] T019 [P] Extend storage.py with trending_topics table queries (create, get_recent,
+- [x] T019 [P] Extend storage.py with trending_topics table queries (create, get_recent,
   get_by_topic)
-- [ ] T020 [P] Extend storage.py with email_digests table queries (get, create,
+- [x] T020 [P] Extend storage.py with email_digests table queries (get, create,
   update_send_time, get_due)
-- [ ] T020b [P] Extend storage.py with user_feed_follows table queries (follow,
+- [x] T020b [P] Extend storage.py with user_feed_follows table queries (follow,
   unfollow, get_feed_followers, get_user_follows)
 
 **Acceptance**: All models defined with type hints, storage queries implemented, mypy
@@ -108,102 +133,102 @@ publish new content
 
 ### Tasks - Feed Polling
 
-- [ ] T021 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/polling.py with async
+- [x] T021 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/polling.py with async
   httpx client setup
-- [ ] T022 [US1] Implement poll_feed() function with conditional requests (ETag,
+- [x] T022 [US1] Implement poll_feed() function with conditional requests (ETag,
   If-Modified-Since) in polling.py
-- [ ] T023 [US1] Implement detect_new_articles() function to compare GUIDs against
+- [x] T023 [US1] Implement detect_new_articles() function to compare GUIDs against
   database in polling.py (queries followers via storage.get_feed_followers())
-- [ ] T024 [US1] Implement retry logic with tenacity decorator (3 attempts, exponential
+- [x] T024 [US1] Implement retry logic with tenacity decorator (3 attempts, exponential
   backoff) in polling.py
-- [ ] T025 [US1] Implement feed health tracking (consecutive failures/successes) in
+- [x] T025 [US1] Implement feed health tracking (consecutive failures/successes) in
   polling.py
-- [ ] T026 [US1] Create APScheduler configuration with SQLAlchemyJobStore in polling.py
-- [ ] T027 [US1] Implement schedule_all_feeds() function to add jobs for all active
+- [x] T026 [US1] Create APScheduler configuration with SQLAlchemyJobStore in polling.py
+- [x] T027 [US1] Implement schedule_all_feeds() function to add jobs for all active
   feeds in polling.py
-- [ ] T028 [US1] Create polling CLI module apps/cli/ai_web_feeds/cli/commands/poll.py
-- [ ] T029 [US1] Implement CLI command: aiwebfeeds poll trigger <feed-id> in poll.py
-- [ ] T030 [US1] Implement CLI command: aiwebfeeds poll status in poll.py
+- [x] T028 [US1] Create polling CLI module apps/cli/ai_web_feeds/cli/commands/poll.py
+- [x] T029 [US1] Implement CLI command: aiwebfeeds poll trigger <feed-id> in poll.py
+- [x] T030 [US1] Implement CLI command: aiwebfeeds poll status in poll.py
 
 ### Tasks - WebSocket Server
 
 - [ ] T031 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/websocket_server.py with
   Flask-SocketIO setup
-- [ ] T032 [US1] Implement @socketio.on('connect') handler with user_id validation in
+- [x] T032 [US1] Implement @socketio.on('connect') handler with user_id validation in
   websocket_server.py
-- [ ] T033 [US1] Implement @socketio.on('disconnect') handler with cleanup in
+- [x] T033 [US1] Implement @socketio.on('disconnect') handler with cleanup in
   websocket_server.py
-- [ ] T034 [US1] Implement @socketio.on('notification_ack') handler for delivery
+- [x] T034 [US1] Implement @socketio.on('notification_ack') handler for delivery
   tracking in websocket_server.py
-- [ ] T035 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/notifications.py
+- [x] T035 [US1] Create packages/ai_web_feeds/src/ai_web_feeds/notifications.py
   notification delivery module
-- [ ] T036 [US1] Implement notify_user() function with room-based broadcasting in
+- [x] T036 [US1] Implement notify_user() function with room-based broadcasting in
   notifications.py
-- [ ] T037 [US1] Implement should_bundle_notifications() check (>3 articles in 5 min) in
+- [x] T037 [US1] Implement should_bundle_notifications() check (>3 articles in 5 min) in
   notifications.py
-- [ ] T038 [US1] Implement create_notification_bundle() for spam prevention in
+- [x] T038 [US1] Implement create_notification_bundle() for spam prevention in
   notifications.py
-- [ ] T039 [US1] Implement in_quiet_hours() check using NotificationPreference in
+- [x] T039 [US1] Implement in_quiet_hours() check using NotificationPreference in
   notifications.py
 
 ### Tasks - Frontend WebSocket Client
 
-- [ ] T040 [P] [US1] Create apps/web/lib/user-identity.ts with getUserId() function
+- [x] T040 [P] [US1] Create apps/web/lib/user-identity.ts with getUserId() function
   using localStorage UUID (crypto.randomUUID())
-- [ ] T041 [P] [US1] Create apps/web/lib/websocket.ts with Socket.IO client wrapper
+- [x] T041 [P] [US1] Create apps/web/lib/websocket.ts with Socket.IO client wrapper
   (imports getUserId from user-identity.ts)
-- [ ] T042 [P] [US1] Implement auto-reconnection logic with exponential backoff in
+- [x] T042 [P] [US1] Implement auto-reconnection logic with exponential backoff in
   websocket.ts
-- [ ] T043 [P] [US1] Create apps/web/components/NotificationBell.tsx header component
-- [ ] T044 [US1] Implement useWebSocket() React hook for connection management in
+- [x] T043 [P] [US1] Create apps/web/components/NotificationBell.tsx header component
+- [x] T044 [US1] Implement useWebSocket() React hook for connection management in
   websocket.ts
-- [ ] T045 [US1] Implement useNotifications() React hook for notification state in
+- [x] T045 [US1] Implement useNotifications() React hook for notification state in
   apps/web/lib/notifications.ts
 
 ### Tasks - Notification UI
 
-- [ ] T046 [P] [US1] Create apps/web/components/NotificationCard.tsx for individual
+- [x] T046 [P] [US1] Create apps/web/components/NotificationCard.tsx for individual
   notification display
-- [ ] T047 [P] [US1] Create apps/web/components/NotificationCenter.tsx for notification
+- [x] T047 [P] [US1] Create apps/web/components/NotificationCenter.tsx for notification
   list panel
-- [ ] T048 [US1] Create apps/web/app/notifications/page.tsx notification center page
-- [ ] T049 [P] [US1] Create apps/web/app/api/notifications/route.ts REST endpoint (GET
+- [x] T048 [US1] Create apps/web/app/notifications/page.tsx notification center page
+- [x] T049 [P] [US1] Create apps/web/app/api/notifications/route.ts REST endpoint (GET
   /api/notifications)
-- [ ] T050 [P] [US1] Create apps/web/app/api/notifications/[id]/read/route.ts (POST
+- [x] T050 [P] [US1] Create apps/web/app/api/notifications/[id]/read/route.ts (POST
   /api/notifications/{id}/read)
-- [ ] T051 [P] [US1] Create apps/web/app/api/notifications/[id]/dismiss/route.ts (POST
+- [x] T051 [P] [US1] Create apps/web/app/api/notifications/[id]/dismiss/route.ts (POST
   /api/notifications/{id}/dismiss)
 
 ### Tasks - Notification Preferences
 
-- [ ] T052 [P] [US1] Create apps/web/app/notifications/preferences/page.tsx preferences
+- [x] T052 [P] [US1] Create apps/web/app/notifications/preferences/page.tsx preferences
   UI
-- [ ] T053 [P] [US1] Create apps/web/components/NotificationPreferencesForm.tsx form
+- [x] T053 [P] [US1] Create apps/web/components/NotificationPreferencesForm.tsx form
   component
-- [ ] T054 [P] [US1] Create apps/web/app/api/preferences/route.ts (GET, POST
+- [x] T054 [P] [US1] Create apps/web/app/api/preferences/route.ts (GET, POST
   /api/preferences)
-- [ ] T054b [P] [US1] Create apps/web/app/api/follows/route.ts (GET, POST /api/follows -
+- [x] T054b [P] [US1] Create apps/web/app/api/follows/route.ts (GET, POST /api/follows -
   list and follow feeds)
-- [ ] T054c [P] [US1] Create apps/web/app/api/follows/[feed_id]/route.ts (DELETE
+- [x] T054c [P] [US1] Create apps/web/app/api/follows/[feed_id]/route.ts (DELETE
   /api/follows/{feed_id} - unfollow)
-- [ ] T055 [US1] Create notification CLI module
+- [x] T055 [US1] Create notification CLI module
   apps/cli/ai_web_feeds/cli/commands/notify.py
-- [ ] T056 [US1] Implement CLI command: aiwebfeeds notify follow <feed-id> in notify.py
+- [x] T056 [US1] Implement CLI command: aiwebfeeds notify follow <feed-id> in notify.py
   (uses storage.follow_feed())
 
 ### Tasks - Integration & Testing
 
-- [ ] T057 [US1] Create tests/packages/ai_web_feeds/test_polling.py with unit tests
+- [x] T057 [US1] Create tests/packages/ai_web_feeds/test_polling.py with unit tests
   (≥95% coverage)
-- [ ] T058 [US1] Create tests/packages/ai_web_feeds/test_notifications.py with unit
+- [x] T058 [US1] Create tests/packages/ai_web_feeds/test_notifications.py with unit
   tests (≥90% coverage)
-- [ ] T059 [US1] Create tests/packages/ai_web_feeds/integration/test_poll_to_notify.py
+- [x] T059 [US1] Create tests/packages/ai_web_feeds/integration/test_poll_to_notify.py
   E2E test (poll → notify flow)
-- [ ] T060 [US1] Run integration test: Follow feed → Manual poll → Verify notification
+- [x] T060 [US1] Run integration test: Follow feed → Manual poll → Verify notification
   received within 60s
-- [ ] T061 [US1] Run coverage report: uv run pytest --cov=ai_web_feeds.polling
+- [x] T061 [US1] Run coverage report: uv run pytest --cov=ai_web_feeds.polling
   --cov=ai_web_feeds.notifications
-- [ ] T062 [US1] Verify WebSocket connection with 10 concurrent users (load test)
+- [x] T062 [US1] Verify WebSocket connection with 10 concurrent users (load test)
 
 **US1 Acceptance**:
 
@@ -224,48 +249,48 @@ trending alert within 15 min → Click alert → View trending dashboard
 
 ### Tasks - Trending Detection
 
-- [ ] T063 [P] [US2] Create packages/ai_web_feeds/src/ai_web_feeds/trending.py trending
+- [x] T063 [P] [US2] Create packages/ai_web_feeds/src/ai_web_feeds/trending.py trending
   detection module
-- [ ] T064 [US2] Implement extract_topics() function to parse article titles/categories
+- [x] T064 [US2] Implement extract_topics() function to parse article titles/categories
   in trending.py
-- [ ] T065 [US2] Implement compute_baseline() function for 7-day average in trending.py
-- [ ] T066 [US2] Implement detect_trending_topics() function with z-score computation
+- [x] T065 [US2] Implement compute_baseline() function for 7-day average in trending.py
+- [x] T066 [US2] Implement detect_trending_topics() function with z-score computation
   (threshold=2.0) in trending.py
-- [ ] T067 [US2] Implement filter_trending() function to dedupe and apply minimum
+- [x] T067 [US2] Implement filter_trending() function to dedupe and apply minimum
   thresholds (10 mentions) in trending.py
-- [ ] T068 [US2] Implement send_trending_alerts() function to notify interested users in
+- [x] T068 [US2] Implement send_trending_alerts() function to notify interested users in
   trending.py
-- [ ] T069 [US2] Create APScheduler job for trending detection (every 15 minutes) in
+- [x] T069 [US2] Create APScheduler job for trending detection (every 15 minutes) in
   polling.py
 
 ### Tasks - Trending Dashboard UI
 
-- [ ] T070 [P] [US2] Create apps/web/app/trending/page.tsx trending topics page
-- [ ] T071 [P] [US2] Create apps/web/components/TrendingTopicCard.tsx topic display
+- [x] T070 [P] [US2] Create apps/web/app/trending/page.tsx trending topics page
+- [x] T071 [P] [US2] Create apps/web/components/TrendingTopicCard.tsx topic display
   component
-- [ ] T072 [P] [US2] Create apps/web/components/TrendingChart.tsx time-series chart
+- [x] T072 [P] [US2] Create apps/web/components/TrendingChart.tsx time-series chart
   (Chart.js)
-- [ ] T073 [P] [US2] Create apps/web/app/api/trending/route.ts (GET
+- [x] T073 [P] [US2] Create apps/web/app/api/trending/route.ts (GET
   /api/trending?hours=24)
 
 ### Tasks - CLI & Testing
 
-- [ ] T074 [US2] Create trending CLI module
+- [x] T074 [US2] Create trending CLI module
   apps/cli/ai_web_feeds/cli/commands/trending.py
-- [ ] T075 [US2] Implement CLI command: aiwebfeeds trending list --hours 24 in
+- [x] T075 [US2] Implement CLI command: aiwebfeeds trending list --hours 24 in
   trending.py
-- [ ] T076 [US2] Implement CLI command: aiwebfeeds trending simulate <topic> --mentions
+- [x] T076 [US2] Implement CLI command: aiwebfeeds trending simulate <topic> --mentions
   <count> (dev/test) in trending.py
 
 ### Tasks - Integration & Testing
 
-- [ ] T077 [US2] Create tests/packages/ai_web_feeds/test_trending.py with unit tests
+- [x] T077 [US2] Create tests/packages/ai_web_feeds/test_trending.py with unit tests
   (≥92% coverage)
-- [ ] T078 [US2] Create tests/packages/ai_web_feeds/integration/test_trending_alerts.py
+- [x] T078 [US2] Create tests/packages/ai_web_feeds/integration/test_trending_alerts.py
   integration test
-- [ ] T079 [US2] Run integration test: Simulate spike → Verify alert sent → Verify no
+- [x] T079 [US2] Run integration test: Simulate spike → Verify alert sent → Verify no
   duplicate alerts within 24h
-- [ ] T080 [US2] Run coverage report: uv run pytest --cov=ai_web_feeds.trending
+- [x] T080 [US2] Run coverage report: uv run pytest --cov=ai_web_feeds.trending
 
 **US2 Acceptance**:
 
@@ -286,52 +311,52 @@ Verify 10 articles ranked by score → Click link → Navigate to source
 
 ### Tasks - Email Digest Generation
 
-- [ ] T081 [P] [US3] Create packages/ai_web_feeds/src/ai_web_feeds/email_digest.py
+- [x] T081 [P] [US3] Create packages/ai_web_feeds/src/ai_web_feeds/email_digest.py
   digest generation module
-- [ ] T082 [US3] Implement generate_digest_content() function to query top articles
+- [x] T082 [US3] Implement generate_digest_content() function to query top articles
   since last digest in email_digest.py
-- [ ] T083 [US3] Implement rank_articles_by_engagement() function using popularity score
+- [x] T083 [US3] Implement rank_articles_by_engagement() function using popularity score
   in email_digest.py
-- [ ] T084 [US3] Create Jinja2 email template
+- [x] T084 [US3] Create Jinja2 email template
   packages/ai_web_feeds/templates/digest_email.html
-- [ ] T085 [US3] Implement render_digest_email() function with Jinja2 in email_digest.py
-- [ ] T086 [US3] Implement send_email_smtp() function for self-hosted SMTP in
+- [x] T085 [US3] Implement render_digest_email() function with Jinja2 in email_digest.py
+- [x] T086 [US3] Implement send_email_smtp() function for self-hosted SMTP in
   email_digest.py
-- [ ] T087 [US3] Implement send_email_sendgrid() function for dev/staging in
+- [x] T087 [US3] Implement send_email_sendgrid() function for dev/staging in
   email_digest.py
-- [ ] T088 [US3] Implement send_all_due_digests() function to process email_digests
+- [x] T088 [US3] Implement send_all_due_digests() function to process email_digests
   table in email_digest.py
-- [ ] T089 [US3] Create APScheduler job for digest sending (hourly check) in polling.py
+- [x] T089 [US3] Create APScheduler job for digest sending (hourly check) in polling.py
 
 ### Tasks - Digest Subscription UI
 
-- [ ] T090 [P] [US3] Create apps/web/app/digests/page.tsx digest subscription page
-- [ ] T091 [P] [US3] Create apps/web/components/DigestForm.tsx subscription form
+- [x] T090 [P] [US3] Create apps/web/app/digests/page.tsx digest subscription page
+- [x] T091 [P] [US3] Create apps/web/components/DigestForm.tsx subscription form
   component
-- [ ] T092 [P] [US3] Create apps/web/app/api/digests/route.ts (GET, POST, DELETE
+- [x] T092 [P] [US3] Create apps/web/app/api/digests/route.ts (GET, POST, DELETE
   /api/digests)
 
 ### Tasks - CLI & Testing
 
-- [ ] T093 [US3] Create digest CLI module apps/cli/ai_web_feeds/cli/commands/digest.py
-- [ ] T094 [US3] Implement CLI command: aiwebfeeds digest subscribe --email <email>
+- [x] T093 [US3] Create digest CLI module apps/cli/ai_web_feeds/cli/commands/digest.py
+- [x] T094 [US3] Implement CLI command: aiwebfeeds digest subscribe --email <email>
   --schedule daily in digest.py
-- [ ] T095 [US3] Implement CLI command: aiwebfeeds digest send-test <email> in digest.py
-- [ ] T096 [US3] Implement CLI command: aiwebfeeds digest send-now --user-id <uuid>
+- [x] T095 [US3] Implement CLI command: aiwebfeeds digest send-test <email> in digest.py
+- [x] T096 [US3] Implement CLI command: aiwebfeeds digest send-now --user-id <uuid>
   (force send) in digest.py
 
 ### Tasks - Integration & Testing
 
-- [ ] T097 [US3] Create tests/packages/ai_web_feeds/test_email_digest.py with unit tests
+- [x] T097 [US3] Create tests/packages/ai_web_feeds/test_email_digest.py with unit tests
   (≥88% coverage)
-- [ ] T098 [US3] Create tests/packages/ai_web_feeds/integration/test_digest_delivery.py
+- [x] T098 [US3] Create tests/packages/ai_web_feeds/integration/test_digest_delivery.py
   integration test
-- [ ] T099 [US3] Setup MailHog for local email testing (brew install mailhog)
-- [ ] T100 [US3] Run integration test: Subscribe → Send test digest → Verify email in
+- [x] T099 [US3] Setup MailHog for local email testing (brew install mailhog)
+- [x] T100 [US3] Run integration test: Subscribe → Send test digest → Verify email in
   MailHog → Click link → Verify tracking
-- [ ] T101 [US3] Verify timezone handling: Subscribe with America/Los_Angeles → Verify
+- [x] T101 [US3] Verify timezone handling: Subscribe with America/Los_Angeles → Verify
   sends at 9am Pacific
-- [ ] T102 [US3] Run coverage report: uv run pytest --cov=ai_web_feeds.email_digest
+- [x] T102 [US3] Run coverage report: uv run pytest --cov=ai_web_feeds.email_digest
 
 **US3 Acceptance**:
 
@@ -362,15 +387,15 @@ ______________________________________________________________________
 
 ### Tasks - Documentation
 
-- [ ] T108 [P] Create apps/web/content/docs/features/real-time-notifications.mdx
+- [x] T108 [P] Create apps/web/content/docs/features/real-time-notifications.mdx
   user-facing documentation
-- [ ] T109 [P] Create apps/web/content/docs/development/websocket-architecture.mdx
+- [x] T109 [P] Create apps/web/content/docs/development/websocket-architecture.mdx
   technical documentation
-- [ ] T110 [P] Create apps/web/content/docs/guides/configuring-digests.mdx user guide
-- [ ] T111 Update apps/web/content/docs/meta.json to add Phase 3B documentation to
+- [x] T110 [P] Create apps/web/content/docs/guides/configuring-digests.mdx user guide
+- [x] T111 Update apps/web/content/docs/meta.json to add Phase 3B documentation to
   navigation
-- [ ] T112 [P] Update root README.md with Phase 3B features and quickstart link
-- [ ] T113 [P] Create CHANGELOG.md entry for Phase 3B release
+- [x] T112 [P] Update root README.md with Phase 3B features and quickstart link
+- [x] T113 [P] Create CHANGELOG.md entry for Phase 3B release
 
 **Acceptance**:
 

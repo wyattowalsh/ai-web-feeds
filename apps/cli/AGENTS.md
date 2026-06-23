@@ -11,9 +11,9 @@
 **If you need to document CLI usage, commands, or features:**
 
 1. ✅ Create `.mdx` file in `../../apps/web/content/docs/`
-   - CLI Guide → `apps/web/content/docs/guides/cli-usage.mdx`
-   - Commands → `apps/web/content/docs/reference/cli-commands.mdx`
-   - Tutorials → `apps/web/content/docs/guides/cli-*.mdx`
+   - CLI Guide → `apps/web/content/docs/development/cli.mdx`
+   - Workflows → `apps/web/content/docs/development/cli-workflows.mdx`
+   - Tutorials → `apps/web/content/docs/guides/*.mdx`
 1. ✅ Add frontmatter: `title` and `description`
 1. ✅ Update `../../apps/web/content/docs/meta.json`
 1. ❌ NEVER create `.md` files here!
@@ -73,17 +73,22 @@ ______________________________________________________________________
 
 ```
 apps/cli/ai_web_feeds/cli/
-├── __init__.py         # Main Typer app + entry point
+├── __init__.py         # Main Typer app + process/load + registrations
 └── commands/           # Command modules
-    ├── analytics.py    # Analytics tables/charts
-    ├── enrich.py       # AI content enrichment
-    ├── export.py       # Multi-format export
-    ├── fetch.py        # Feed fetching
-    ├── opml.py         # OPML operations
-    ├── stats.py        # Statistics display
-    ├── test.py         # CLI testing utilities
-    ├── topics.py       # Topic taxonomy management (NEW)
-    └── validate.py     # Feed validation
+    ├── analytics.py    # summary/trending/velocity/snapshot/export
+    ├── corpus.py       # export/refresh article corpus
+    ├── enrich.py       # all/one enrichment
+    ├── export.py       # json/opml/all/csv
+    ├── fetch.py        # one/all feed polling
+    ├── monitor.py      # start/status/follow/digests
+    ├── nlp.py          # quality/entities/sentiment/topics
+    ├── opml.py         # all/categorized/filtered
+    ├── recommend.py    # get/track/weights
+    ├── search.py       # query/autocomplete/embeddings
+    ├── stats.py        # show statistics
+    ├── test.py         # all/unit/integration/coverage
+    ├── validate.py     # feeds/topics/references/all/http
+    └── visualize.py    # mermaid/json/stats taxonomy exports
 ```
 
 **Entry point**: `pyproject.toml` → `ai-web-feeds` command
@@ -150,7 +155,7 @@ ______________________________________________________________________
 cd ../../tests && uv run pytest tests/cli/ -v
 
 # Test specific command
-uv run pytest tests/cli/unit/test_fetch.py -v
+uv run pytest tests/cli/unit/test_commands.py -v
 ```
 
 **Patterns**:
@@ -171,7 +176,7 @@ ______________________________________________________________________
 1. Create `commands/new_command.py`
 1. Define command with Typer decorators
 1. Register in `__init__.py`: `app.add_typer(new_command.app)`
-1. Add tests in `tests/cli/unit/test_new_command.py`
+1. Add tests in `tests/tests/cli/unit/test_commands.py` (or a new `test_<command>.py` alongside it)
 1. Document in `apps/web/content/docs/cli/`
 
 ### Adding Command Options
@@ -259,16 +264,17 @@ ______________________________________________________________________
 from ai_web_feeds.cli.commands import (
     analytics,
     corpus,
-    enrich,
-    export,
+    enrich as enrich_commands,
+    export as export_commands,
     fetch,
     monitor,
+    nlp,
     opml,
     recommend,
     search,
     stats,
     test,
-    validate,
+    validate as validate_commands,
     visualize,
 )
 

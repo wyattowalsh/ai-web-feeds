@@ -35,13 +35,16 @@ ______________________________________________________________________
 
 ## 🏗️ Architecture
 
+**Path convention:** When running from `tests/` (`cd tests && uv run pytest`), use
+`tests/cli/...` and `tests/packages/...` — the on-disk layout nests a `tests/`
+directory inside the `tests/` workspace package (`tests/tests/...` from repo root).
+
 ```
 tests/
 ├── conftest.py           # Global fixtures (enhanced with export/validate fixtures)
-├── pytest.ini            # Pytest config
-├── run_tests.py          # Test runner
+├── pyproject.toml        # Pytest + coverage config
 ├── reports/              # Coverage + HTML reports
-└── tests/
+└── tests/                # Test modules (pytest path prefix: tests/...)
     ├── packages/         # Core package tests
     │   └── ai_web_feeds/
     │       ├── unit/     # Unit tests (11 test files, 100% module coverage)
@@ -154,7 +157,7 @@ uv run pytest -n auto
 uv run pytest --html=reports/test_report.html
 ```
 
-**See**: `pytest.ini` for all options
+**See**: `pyproject.toml` (`[tool.pytest.ini_options]`) for all options
 
 ______________________________________________________________________
 
@@ -303,16 +306,7 @@ def test_topics_schema_valid():
 
 ______________________________________________________________________
 
-*Updated: October 17, 2025 · Version: 0.1.0*
-
-```
-e2e: End-to-end tests (full workflows)
-slow: Slow running tests
-network: Tests requiring network access
-database: Tests requiring database
-```
-
-````
+*Updated: June 23, 2026 · Version: 0.1.0*
 
 ### Global Fixtures
 

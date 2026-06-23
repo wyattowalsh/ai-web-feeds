@@ -455,6 +455,97 @@ def semantic_search(
     return results[:limit]
 
 
+def hybrid_search(
+    session: Session,
+    query: str,
+    limit: int = 20,
+    filters: dict[str, Any] | None = None,
+    full_text_weight: float = 0.6,
+    semantic_weight: float = 0.4,
+    semantic_threshold: float = 0.5,
+) -> list[tuple[FeedSource, float]]:
+    """Perform hybrid search combining full-text and semantic results.
+
+    Combines FTS5 full-text search with embedding-based semantic search
+    using weighted score fusion for improved relevance.
+
+    Args:
+        session: Database session
+        query: Search query
+        limit: Maximum results
+        filters: Optional filters (source_type, topics, verified, active)
+        full_text_weight: Weight for full-text results (default 0.6)
+        semantic_weight: Weight for semantic results (default 0.4)
+        semantic_threshold: Minimum similarity for semantic candidates
+
+    Returns:
+        List of (FeedSource, combined_score) tuples sorted by score descending
+    """
+    settings = get_settings()
+    logger.info(
+        f"Hybrid search: query='{query}', ft_weight={full_text_weight}, sem_weight={semantic_weight}"
+    )
+
+    # Validate and clamp limit
+    limit = max(1, min(limit, settings.search.full_text_limit))
+
+    # Normalize weights
+    total_weight = full_text_weight + semantic_weight
+    if total_weight <= 0:
+        full_text_weight, semantic_weight = 0.6, 0.4
+    else:
+        full_text_weight = full_text_weight / total_weight
+        semantic_weight = semantic_weight / total_weight
+
+    # Get full-text results (with rank info via internal scoring)
+    fts_results = full_text_search(session, query, limit=limit * 2, filters=filters)
+
+    # Build FTS rank map (earlier position = higher rank, invert to score)
+    fts_rank: dict[str, float] = {}
+    if fts_results:
+        max_rank = len(fts_results)
+        for idx, feed in enumerate(fts_results):
+            # Convert position to score: first result gets ~1.0, last gets small positive
+            fts_rank[feed.id] = (max_rank - idx) / max(1, max_rank)
+
+    # Get semantic results
+    sem_results = semantic_search(
+        session, query, threshold=semantic_threshold, limit=limit * 2, filters=filters
+    )
+
+    # Build semantic score map
+    sem_score: dict[str, float] = {feed.id: score for feed, score in sem_results}
+
+    # Collect all unique feed IDs from both sources
+    all_feed_ids = set(fts_rank.keys()) | set(sem_score.keys())
+
+    # Combine scores using weighted fusion
+    combined: list[tuple[FeedSource, float]] = []
+    feed_map: dict[str, FeedSource] = {}
+
+    # Build feed map from FTS results
+    for feed in fts_results:
+        feed_map[feed.id] = feed
+
+    # Add any feeds only in semantic results
+    for feed, _ in sem_results:
+        if feed.id not in feed_map:
+            feed_map[feed.id] = feed
+
+    for feed_id in all_feed_ids:
+        ft = fts_rank.get(feed_id, 0.0)
+        sm = sem_score.get(feed_id, 0.0)
+        combined_score = (full_text_weight * ft) + (semantic_weight * sm)
+        if feed_id in feed_map:
+            combined.append((feed_map[feed_id], float(combined_score)))
+
+    # Sort by combined score descending
+    combined.sort(key=lambda x: x[1], reverse=True)
+
+    logger.debug(f"Hybrid search returned {len(combined)} results")
+    return combined[:limit]
+
+
 # ============================================================================
 # Autocomplete
 # ============================================================================

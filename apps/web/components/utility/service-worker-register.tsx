@@ -60,3 +60,46 @@ export function ServiceWorkerRegister(): null {
 }
 
 export default ServiceWorkerRegister;
+
+/**
+ * Request a background sync for offline operations.
+ * Safe no-op when unsupported or not registered.
+ *
+ * Call this after queuing offline changes (read/star/save) to schedule
+ * reconciliation via the Service Worker's sync event.
+ */
+export async function requestOfflineSync(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  if (!("serviceWorker" in navigator)) return false;
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    // Background Sync API
+    if ("sync" in reg) {
+      // @ts-expect-error - Background Sync is not in all TS lib targets
+      await reg.sync.register("offline-sync");
+      return true;
+    }
+    // Fallback: ask active SW to process immediately if present
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "PROCESS_OFFLINE_SYNC" });
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Post a message to the active Service Worker (if any).
+ */
+export function postToServiceWorker(message: unknown): void {
+  if (typeof window === "undefined") return;
+  if (!navigator.serviceWorker?.controller) return;
+  try {
+    navigator.serviceWorker.controller.postMessage(message);
+  } catch {
+    // ignore
+  }
+}

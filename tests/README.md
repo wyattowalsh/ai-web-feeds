@@ -26,24 +26,7 @@ uv run ai-web-feeds test file <path>      # Run specific test file
 uv run ai-web-feeds test markers          # List available test markers
 ```
 
-### Alternative: Use run_tests.py
-
-The `run_tests.py` script delegates to the CLI:
-
-```bash
-# From tests directory
-./run_tests.py                  # Run all tests
-./run_tests.py unit             # Run unit tests
-./run_tests.py integration      # Run integration tests
-./run_tests.py e2e              # Run end-to-end tests
-./run_tests.py quick            # Quick run
-./run_tests.py coverage         # With coverage
-./run_tests.py debug            # Debug mode
-./run_tests.py watch            # Watch mode
-./run_tests.py help             # Show help
-```
-
-### Direct pytest (not recommended)
+### Direct pytest (advanced)
 
 For advanced pytest features not exposed by the CLI:
 
@@ -60,18 +43,15 @@ uv run pytest -k "test_name"   # Run tests matching keyword
 ```
 tests/
 ├── conftest.py                 # Shared fixtures and configuration
-├── pytest.ini                  # Pytest configuration
-├── pyproject.toml             # Test dependencies
-├── run_tests.py               # Test runner (delegates to CLI)
-├── apps/
-│   └── cli/
-│       ├── __init__.py
-│       └── unit/
-│           └── test_commands.py  # CLI command tests
-└── packages/
-    └── ai_web_feeds/
-        ├── __init__.py
-        ├── unit/                 # Unit tests (isolated components)
+├── pyproject.toml              # Pytest + coverage configuration
+└── tests/
+    ├── cli/
+    │   ├── unit/
+    │   │   └── test_commands.py
+    │   └── integration/
+    └── packages/
+        └── ai_web_feeds/
+            ├── unit/           # Unit tests (isolated components)
         │   ├── test_models.py
         │   ├── test_storage.py
         │   ├── test_fetcher.py
@@ -158,23 +138,23 @@ pytest -m "not network"
 
 ```bash
 # Test models
-pytest packages/ai_web_feeds/unit/test_models.py
+pytest tests/packages/ai_web_feeds/unit/test_models.py
 
 # Test storage
-pytest packages/ai_web_feeds/unit/test_storage.py
+pytest tests/packages/ai_web_feeds/unit/test_storage.py
 
 # Test CLI
-pytest apps/cli/unit/test_commands.py
+pytest tests/cli/unit/test_commands.py
 ```
 
 ### Run Specific Test Classes or Functions
 
 ```bash
 # Run a specific test class
-pytest packages/ai_web_feeds/unit/test_models.py::TestFeedSource
+pytest tests/packages/ai_web_feeds/unit/test_models.py::TestFeedSource
 
 # Run a specific test function
-pytest packages/ai_web_feeds/unit/test_models.py::TestFeedSource::test_feed_source_creation
+pytest tests/packages/ai_web_feeds/unit/test_models.py::TestFeedSource::test_feed_source_creation
 
 # Run tests matching a pattern
 pytest -k "feed_source"

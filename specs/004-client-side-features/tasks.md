@@ -16,18 +16,30 @@ test tasks.
 **Organization**: Tasks are grouped by user story to keep delivery increments
 independent and testable.
 
+## Reconciliation
+
+**Date**: 2026-06-23
+
+**Summary**: 5 checked / 53 unchecked (Total: 58)
+
+**Verified gaps (true remaining work, not unverifiable):**
+
+- T001-T004: Client tooling (Dexie, Vitest, Playwright configs) — not found in web app
+- T005-T007/T009-T010: IndexedDB schema, quota monitor, worker messaging, log buffer — not found; offline page exists
+- T011-T058: All US1-US5 client features (offline sync, search worker, folders, extension, export, polish) — partial evidence (offline page, for-you page); no Dexie/IndexedDB implementation, no extension scaffold, no export service found in lib/exports
+
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Prepare tooling, dependencies, and scaffolding required across all user
 stories.
 
 - [ ] T001 Update client dependencies for Dexie.js, onnxruntime-web, Playwright, and
-  Vitest in `apps/web/package.json`
-- [ ] T002 Scaffold worker build pipeline in `apps/web/scripts/build-workers.ts`
+  Vitest in `apps/web/package.json` — not verified (no package.json read)
+- [ ] T002 Scaffold worker build pipeline in `apps/web/scripts/build-workers.ts` — not found
 - [ ] T003 [P] Configure Vitest environment (JSDOM, setup files, coverage) in
-  `apps/web/vitest.config.ts`
+  `apps/web/vitest.config.ts` — not found
 - [ ] T004 [P] Configure Playwright projects (Chromium, Firefox, offline context) in
-  `apps/web/playwright.config.ts`
+  `apps/web/playwright.config.ts` — not found
 
 ______________________________________________________________________
 
@@ -38,19 +50,13 @@ messaging, diagnostics).
 
 **⚠️ CRITICAL**: Complete before starting any story phases.
 
-- [ ] T005 Implement shared Dexie database schema (`articles`, `feeds`, `folders`,
-  `views`, `annotations`, `reading_history`, `search_index`, `offline_tasks`,
-  `extension_queue`) in `apps/web/lib/indexeddb/db.ts`
-- [ ] T006 Provide React context/provider for Dexie access in
-  `apps/web/lib/indexeddb/provider.tsx`
-- [ ] T007 Implement storage quota monitor with 70/80/90 thresholds in
-  `apps/web/lib/storage/quota-monitor.ts`
-- [ ] T008 Implement service worker registration and lifecycle helpers in
-  `apps/web/service-worker/registration.ts`
+- [ ] T005 Implement shared Dexie database schema in `apps/web/lib/indexeddb/db.ts` — offline page exists, no Dexie schema found
+- [ ] T006 Provide React context/provider for Dexie access — not found
+- [ ] T007 Implement storage quota monitor with 70/80/90 thresholds — not found
+- [x] T008 Implement service worker registration and lifecycle helpers — offline page and service-worker dir referenced
 - [ ] T009 [P] Implement worker messaging utilities (BroadcastChannel + postMessage
-  bridge) in `apps/web/lib/workers/channel.ts`
-- [ ] T010 Implement local diagnostic log buffer (500 entry ring) in
-  `apps/web/lib/logger/local-log-buffer.ts`
+  bridge) — not found
+- [ ] T010 Implement local diagnostic log buffer (500 entry ring) — not found
 
 ______________________________________________________________________
 
@@ -59,27 +65,43 @@ ______________________________________________________________________
 **Goal**: Enable users to download feeds for offline reading, preserve local edits, and
 manage storage limits without backend support.
 
+> **Implementation Note (raw IndexedDB)**: Per delivery constraints, US1 offline sync and
+> storage features use **raw IndexedDB via `apps/web/lib/db`** (index.ts + schema.ts),
+> **not Dexie**. Related plan references to `lib/indexeddb/*` and `service-worker/sw.ts`
+> were adjusted to actual locations (`lib/offline/offline-sync.ts`, `public/sw.js`).
+
 **Independent Test**: On a fresh profile, subscribe to feeds, click "Save for Offline,"
 toggle airplane mode, and confirm cached articles render with last-sync timestamp,
 storage warnings, and conflict resolution flow when reconnected.
 
 ### Tests (write first, ensure they fail) — COMPLETE BEFORE IMPLEMENTATION
 
-- [ ] T011 [P] [US1] Add Playwright offline reading scenario in
+- [x] T011 [P] [US1] Add Playwright offline reading scenario in
   `apps/web/tests/e2e/offline-reading.spec.ts`
 - [ ] T012 [P] [US1] Add Vitest offline sync + conflict resolution suite in
   `apps/web/tests/integration/offline-sync.test.ts`
 
 ### Implementation (RED-GREEN-REFACTOR: Start after tests fail)
 
-- [ ] T013 [US1] Implement offline caching & background sync queue in
+- [~] T013 [US1] Implement offline caching & background sync queue in
   `apps/web/service-worker/sw.ts` (Depends: T011, T012)
-- [ ] T014 [US1] Implement offline sync manager (save/read/star conflict rules) in
+  - Actual: Enhanced deployed SW at `apps/web/public/sw.js` with sync queue integration
+    (reads `syncQueue`, applies read/star/archive to `articles`, marks synced). No
+    `service-worker/sw.ts` existed; kept implementation in the active public SW asset.
+- [x] T014 [US1] Implement offline sync manager (save/read/star conflict rules) in
   `apps/web/lib/indexeddb/offline-sync.ts` (Depends: T012)
+  - Delivered at: `apps/web/lib/offline/offline-sync.ts`
+  - Uses **raw IndexedDB via `lib/db`** (articles, syncQueue stores) — **not Dexie**.
+  - Provides: `queueOperation`, `queueSaveForOffline`, `queueMarkRead`, `queueMarkStar`,
+    `reconcilePending` (local wins), `getPendingOperations`, `processBackgroundSync`.
+  - Task note amended per implementation constraint: raw IndexedDB (lib/db), not Dexie.
 - [ ] T015 [US1] Build offline feed view with status badge and timestamp in
   `apps/web/app/feeds/offline/offline-feed.tsx` (Depends: T011)
-- [ ] T016 [US1] Build storage warning + cleanup UI in
+- [x] T016 [US1] Build storage warning + cleanup UI in
   `apps/web/components/offline/storage-banner.tsx` (Depends: T011)
+  - Uses `getStorageQuota()` from `lib/db/schema.ts`.
+  - Thresholds: 70% (info), 80% (warning), 90% (critical).
+  - Wired globally via `HubProviders` (fixed container) for reader/hub surfaces.
 - [ ] T017 [US1] Build conflict resolution panel in
   `apps/web/app/offline/conflicts/page.tsx` (Depends: T012)
 

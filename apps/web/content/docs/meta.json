@@ -17,8 +17,21 @@
       "admin-observability",
       "data-enrichment",
       "quality-scoring",
+      "entity-extraction",
+      "sentiment-analysis",
+      "topic-modeling",
+      "ai-integration",
+      "real-time-monitoring",
+      "rss-feeds",
+      "link-validation",
+      "mermaid",
+      "math",
+      "pdf-export",
+      "seo-metadata",
+      "twitter-arxiv-integration",
       "platform-integrations",
-      "llms-full-format"
+      "llms-full-format",
+      "visualization"
     ]
   },
   "---Guides": {
@@ -35,10 +48,19 @@
       "data-explorer",
       "database-quick-start",
       "testing",
+      "analytics",
       "---1",
       "feed-schema",
       "github-infrastructure"
     ]
+  },
+  "---Contributing": {
+    "type": "separator"
+  },
+  "contributing": {
+    "title": "Contributing",
+    "icon": "Users",
+    "pages": ["development-workflow", "conventional-commits", "pre-commit-hooks"]
   },
   "---Development": {
     "type": "separator"

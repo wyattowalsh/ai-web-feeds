@@ -273,7 +273,8 @@ ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
 ai-web-feeds test file test_storage.py -k "test_add_feed"
 ```
 
-See [TEST_COMMAND.md](./TEST_COMMAND.md) for detailed documentation.
+See [CLI documentation](https://aiwebfeeds.vercel.app/docs/development/cli) and
+[`ai-web-feeds test --help`](../../tests/AGENTS.md) for test command details.
 
 ### Environment Variables
 

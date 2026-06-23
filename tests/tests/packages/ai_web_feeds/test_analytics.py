@@ -193,6 +193,50 @@ class TestTrendingTopics:
 
         assert len(trending) <= 2
 
+    def test_get_trending_topics_empty_database(self, test_session):
+        """Trending topics on empty database should return empty list."""
+        trending = get_trending_topics(test_session, date_range_days=30, limit=10)
+
+        assert isinstance(trending, list)
+        assert trending == []
+
+    def test_get_trending_topics_no_validations(self, test_session, sample_feeds):
+        """Trending topics without validations should still return topics from feeds."""
+        trending = get_trending_topics(test_session, date_range_days=30, limit=10)
+
+        assert isinstance(trending, list)
+        # May be empty or have feed_count data from aggregation fallback
+        for item in trending:
+            assert "topic" in item
+            assert "feed_count" in item
+
+    def test_get_trending_topics_zero_limit(self, test_session, sample_feeds, sample_validations):
+        """Trending topics with limit=0 should return empty or minimal results."""
+        trending = get_trending_topics(test_session, date_range_days=30, limit=0)
+
+        assert isinstance(trending, list)
+        assert len(trending) == 0
+
+    def test_get_trending_topics_single_topic(self, test_session, sample_feeds, sample_validations):
+        """Trending topics should handle feeds with single topic."""
+        # Create a feed with only one topic
+        from ai_web_feeds.models import FeedSource
+
+        single_topic_feed = FeedSource(
+            id="single-topic",
+            title="Single Topic Feed",
+            topics=["unique-topic"],
+            verified=True,
+            curation_status="verified",
+        )
+        test_session.add(single_topic_feed)
+        test_session.commit()
+
+        trending = get_trending_topics(test_session, date_range_days=30, limit=20)
+
+        # Should not crash and may include the single topic
+        assert isinstance(trending, list)
+
 
 class TestValidationVelocity:
     """Tests for validation velocity calculation."""

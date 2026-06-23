@@ -118,7 +118,7 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("sync", (event) => {
   console.log("[SW] Background sync:", event.tag);
 
-  if (event.tag === "sync-articles") {
+  if (event.tag === "sync-articles" || event.tag === "offline-sync") {
     event.waitUntil(syncArticles());
   }
 
@@ -193,6 +193,10 @@ self.addEventListener("message", (event) => {
 
   if (event.data.type === "CLEAR_CACHE") {
     event.waitUntil(clearAllCaches());
+  }
+
+  if (event.data.type === "PROCESS_OFFLINE_SYNC") {
+    event.waitUntil(syncArticles());
   }
 });
 
@@ -345,18 +349,186 @@ async function clearAllCaches() {
 
 /**
  * Sync articles (background sync)
+ *
+ * Integrates with lib/db offline sync queue:
+ * - Reads pending items from syncQueue (synced=false)
+ * - Applies local read/star/archive changes to articles store (local wins)
+ * - Marks processed items as synced
  */
 async function syncArticles() {
-  console.log("[SW] Syncing articles...");
+  console.log("[SW] Syncing articles (offline queue)...");
+
+  const DB_NAME = "aiwebfeeds";
+  const SYNC_STORE = "syncQueue";
+  const ARTICLES_STORE = "articles";
 
   try {
-    // Open IndexedDB and sync pending changes
-    // This would communicate with the main app's IndexedDB
-    // For now, just log (actual implementation would query IndexedDB)
-    console.log("[SW] Articles synced successfully");
+    const db = await openIDB(DB_NAME);
+    if (!db) {
+      console.log("[SW] No DB available for sync");
+      return;
+    }
+
+    const pending = await getAllPending(db, SYNC_STORE);
+    console.log("[SW] Pending sync items:", pending.length);
+
+    let applied = 0;
+    for (const item of pending) {
+      try {
+        await applySyncItem(db, ARTICLES_STORE, item);
+        await markSynced(db, SYNC_STORE, item.id);
+        applied++;
+      } catch (e) {
+        console.warn("[SW] Failed to apply sync item", item?.id, e);
+      }
+    }
+
+    // Notify clients of sync completion
+    await notifyClients({ type: "SYNC_COMPLETE", applied, total: pending.length });
+
+    console.log("[SW] Articles sync complete. Applied:", applied);
   } catch (error) {
     console.error("[SW] Article sync failed:", error);
-    throw error;
+    // Do not throw to avoid repeated failing sync storms; clients can retry
+  }
+}
+
+/**
+ * Open IDB by name (raw IndexedDB, no external deps in SW context).
+ */
+function openIDB(name) {
+  return new Promise((resolve) => {
+    const req = indexedDB.open(name);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+function getAllPending(db, storeName) {
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(storeName, "readonly");
+      const store = tx.objectStore(storeName);
+      const idx = store.indexNames.contains("synced") ? store.index("synced") : null;
+      if (idx) {
+        const r = idx.getAll(false);
+        r.onsuccess = () => resolve(r.result || []);
+        r.onerror = () => resolve([]);
+      } else {
+        const r = store.getAll();
+        r.onsuccess = () => {
+          const all = r.result || [];
+          resolve(all.filter((x) => x && x.synced === false));
+        };
+        r.onerror = () => resolve([]);
+      }
+    } catch {
+      resolve([]);
+    }
+  });
+}
+
+function getById(db, storeName, id) {
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(storeName, "readonly");
+      const store = tx.objectStore(storeName);
+      const r = store.get(id);
+      r.onsuccess = () => resolve(r.result || null);
+      r.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+function putRecord(db, storeName, record) {
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      const r = store.put(record);
+      r.onsuccess = () => resolve(true);
+      r.onerror = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+async function applySyncItem(db, articlesStore, item) {
+  if (!item || !item.articleId) return;
+  const existing = await getById(db, articlesStore, item.articleId);
+
+  const now = Date.now();
+  if (!existing) {
+    // Minimal stub to persist offline flag state
+    const stub = {
+      id: item.articleId,
+      feedId: (item.data && item.data.feedId) || "unknown",
+      title: (item.data && item.data.title) || "",
+      link: (item.data && item.data.link) || "",
+      content: (item.data && item.data.content) || "",
+      pubDate: (item.data && item.data.pubDate) || now,
+      topics: (item.data && item.data.topics) || [],
+      rawCategories: (item.data && item.data.rawCategories) || [],
+      sourceTopics: (item.data && item.data.sourceTopics) || [],
+      enclosures: (item.data && item.data.enclosures) || [],
+      read: false,
+      starred: false,
+      archived: false,
+      tags: (item.data && item.data.tags) || [],
+      cachedAt: now,
+      lastModified: now,
+    };
+    if (item.type === "read" && typeof item.data?.read === "boolean") stub.read = item.data.read;
+    if (item.type === "star" && typeof item.data?.starred === "boolean")
+      stub.starred = item.data.starred;
+    if (item.type === "archive" && typeof item.data?.archived === "boolean")
+      stub.archived = item.data.archived;
+    await putRecord(db, articlesStore, stub);
+    return;
+  }
+
+  const patch = { ...existing, lastModified: now };
+  if (item.type === "read" && typeof item.data?.read === "boolean") patch.read = item.data.read;
+  if (item.type === "star" && typeof item.data?.starred === "boolean")
+    patch.starred = item.data.starred;
+  if (item.type === "archive" && typeof item.data?.archived === "boolean")
+    patch.archived = item.data.archived;
+  if (item.type === "save") patch.cachedAt = now;
+
+  await putRecord(db, articlesStore, patch);
+}
+
+function markSynced(db, storeName, id) {
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      const r = store.get(id);
+      r.onsuccess = () => {
+        const rec = r.result;
+        if (rec) {
+          rec.synced = true;
+          const w = store.put(rec);
+          w.onsuccess = () => resolve(true);
+          w.onerror = () => resolve(false);
+        } else {
+          resolve(false);
+        }
+      };
+      r.onerror = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+async function notifyClients(message) {
+  const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  for (const client of all) {
+    client.postMessage(message);
   }
 }
 

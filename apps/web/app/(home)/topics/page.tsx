@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Tags } from "lucide-react";
+import { Network, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
@@ -53,6 +53,13 @@ export default async function TopicsPage() {
               Topic pages group AI sources into useful reading lanes for research, products,
               infrastructure, evaluation, governance, and agent workflows.
             </p>
+            <Link
+              href="/explorer"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            >
+              <Network className="size-4" />
+              Open interactive graph explorer
+            </Link>
           </div>
         </div>
 

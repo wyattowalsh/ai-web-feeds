@@ -21,7 +21,7 @@ body:
            # Example: If validate workflow fails
            uv run ai-web-feeds validate all --strict
            ```
-        4. Review [workflow documentation](https://aiwebfeeds.com/docs/development/workflows)
+        4. Review [workflow documentation](https://aiwebfeeds.vercel.app/docs/development/workflows)
 
   - type: dropdown
     id: workflow_file
@@ -322,9 +322,9 @@ body:
 
         ### 📚 Documentation
 
-        - [Workflow Documentation](https://aiwebfeeds.com/docs/development/workflows)
-        - [CLI Integration Guide](https://aiwebfeeds.com/docs/development/cli-workflows)
-        - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+        - [Workflow Documentation](https://aiwebfeeds.vercel.app/docs/development/workflows)
+        - [CLI Integration Guide](https://aiwebfeeds.vercel.app/docs/development/cli-workflows)
+        - [Troubleshooting Guide](https://aiwebfeeds.vercel.app/docs/guides/troubleshooting)
 
         ### 🤝 Contributing a Fix
 

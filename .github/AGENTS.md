@@ -8,7 +8,7 @@
 - [Root AGENTS.md](../AGENTS.md)
 - [Contributing Guide](../CONTRIBUTING.md)
 - [Workflow README](workflows/README.md)
-- [Full Docs](https://aiwebfeeds.com/llms-full.txt)
+- [Full Docs](https://aiwebfeeds.vercel.app/llms-full.txt)
 
 ## Purpose
 

@@ -5,7 +5,7 @@ import {
   buildAxeFailureMessage,
   summarizeAxeViolations,
 } from "../../lib/accessibility/axe-tests";
-import { gotoWithRetry, typeIntoControlledInput } from "./helpers/navigation";
+import { gotoWithRetry, typeIntoControlledInput, forceDarkTheme } from "./helpers/navigation";
 
 test.use({ video: "off" });
 test.describe.configure({ mode: "serial" });
@@ -526,6 +526,24 @@ test.describe("Route stabilization smoke", () => {
     await expectNoClientErrors(page, tracker);
   });
 
+  test("/reader?q=agent shows Search chip WITHOUT clicking Load live sample", async ({ page }) => {
+    const tracker = trackClientErrors(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoWithRetry(page, "/reader?q=agent", { waitUntil: "domcontentloaded" });
+
+    // Workspace grid must render (filters not fully disabled for filtered-empty state)
+    await expect(page.getByTestId("reader-workspace-grid")).toBeVisible();
+
+    // Search chip must be present without any live sample load
+    await expect(page.getByRole("button", { name: /Search: agent/i })).toBeVisible();
+
+    // Explicitly verify Load live sample is not required (corpus-empty panel button absent or grid chrome present)
+    await expect(page.getByRole("button", { name: "Load live sample" })).toHaveCount(0);
+
+    await expectNoClientErrors(page, tracker);
+  });
+
   test("docs route exposes hub command palette via keyboard shortcut", async ({ page }) => {
     test.setTimeout(90_000);
     const tracker = trackClientErrors(page);
@@ -546,6 +564,29 @@ test.describe("Route stabilization smoke", () => {
     await expect(page.getByRole("dialog", { name: "Command palette" })).toHaveCount(0);
 
     await expectNoClientErrors(page, tracker);
+  });
+
+  // FIX-018: Dark mode stabilization for hub chrome surfaces (/, /reader, /docs)
+  test.describe("dark theme smoke", () => {
+    const DARK_ROUTES = [
+      { path: "/", text: "Read AI writing across the open web" },
+      { path: "/reader", text: "Read AI writing across the open web" },
+      { path: "/docs", text: "Documentation" },
+    ] as const;
+
+    for (const route of DARK_ROUTES) {
+      test(`loads ${route.path} in dark mode`, async ({ page }) => {
+        const tracker = trackClientErrors(page);
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await gotoWithRetry(page, route.path, { waitUntil: "domcontentloaded" });
+        await forceDarkTheme(page);
+        // Re-assert after theme flip in case of hydration paint
+        await expect(page.getByRole("heading", { name: route.text })).toBeVisible({ timeout: 15000 });
+        // Verify dark class is present for visual QA signal
+        await expect.poll(async () => page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(true);
+        await expectNoClientErrors(page, tracker);
+      });
+    }
   });
 
   test("mobile keeps filters collapsed until needed and preserves URL-driven reader state", async ({

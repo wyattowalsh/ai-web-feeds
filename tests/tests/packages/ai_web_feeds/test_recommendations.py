@@ -293,6 +293,59 @@ class TestUnifiedRecommendations:
         # Should have mix of recommendation types
         assert len(reason_counts) > 0
 
+    def test_generate_recommendations_empty_seeds(self, test_session, sample_feeds):
+        """Test recommendations with no seed topics or feeds falls back to popular/serendipity."""
+        recommendations = generate_recommendations(test_session, limit=5)
+
+        # Should still produce results via popularity/serendipity
+        assert isinstance(recommendations, list)
+        assert len(recommendations) <= 5
+
+    def test_generate_recommendations_zero_limit(self, test_session, sample_feeds):
+        """Test recommendations with limit=0 returns empty list."""
+        recommendations = generate_recommendations(
+            test_session, seed_topics=["llm"], limit=0
+        )
+
+        assert recommendations == []
+
+    def test_generate_recommendations_invalid_weights(self, test_session, sample_feeds):
+        """Test recommendations handles invalid/negative weights."""
+        recommendations = generate_recommendations(
+            test_session,
+            seed_topics=["llm"],
+            limit=5,
+            content_weight=-1,
+            popularity_weight=-1,
+            serendipity_weight=-1,
+        )
+
+        # Should normalize and still return valid results or empty
+        assert isinstance(recommendations, list)
+        for feed, score, reason in recommendations:
+            assert 0.0 <= score <= 1.0
+
+    def test_generate_recommendations_all_feeds_excluded(self, test_session, sample_feeds):
+        """Test recommendations when all feeds are excluded returns empty."""
+        all_ids = [f.id for f in sample_feeds]
+        recommendations = generate_recommendations(
+            test_session,
+            seed_feed_ids=all_ids,
+            limit=10,
+        )
+
+        # All feeds excluded; may return empty or serendipity (which also excludes)
+        assert isinstance(recommendations, list)
+
+    def test_generate_recommendations_inactive_feeds_excluded(self, test_session, sample_feeds):
+        """Test recommendations exclude inactive feeds."""
+        recommendations = generate_recommendations(
+            test_session, seed_topics=["old"], limit=10
+        )
+
+        for feed, _, _ in recommendations:
+            assert feed.curation_status != "inactive"
+
 
 class TestUserInteractions:
     """Tests for user interaction tracking."""

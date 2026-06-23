@@ -16,6 +16,7 @@ import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNo
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, select, zoom } from "d3";
 
 export interface TopicNode {
   id: string;
@@ -340,20 +341,13 @@ export function TopicCluster3D({ nodes, links, onNodeClick, onNodeHover }: Topic
 
   if (use2DStaticView) {
     return (
-      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg p-8">
-        <div className="text-center">
-          <div className="text-4xl mb-4">📊</div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            2D Static View
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {staticViewReason === "performance"
-              ? "Rendering performance is too low for the 3D graph, so a static 2D view is being used."
-              : "WebGL is not available in this browser, so a static 2D view is being used."}
-          </p>
-          {/* TODO: Render 2D graph using D3.js or Canvas */}
-        </div>
-      </div>
+      <TopicCluster2D
+        nodes={nodes}
+        links={links}
+        onNodeClick={onNodeClick}
+        onNodeHover={onNodeHover}
+        reason={staticViewReason}
+      />
     );
   }
 
@@ -408,6 +402,191 @@ export function TopicCluster3D({ nodes, links, onNodeClick, onNodeHover }: Topic
         <div>• Scroll: Zoom</div>
         <div>• Right mouse: Pan</div>
         <div>• Hover: Show topic details</div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 2D D3 fallback visualization for TopicCluster3D.
+ * Renders when WebGL is unavailable or performance is too low.
+ */
+function TopicCluster2D({
+  nodes,
+  links,
+  onNodeClick,
+  onNodeHover,
+  reason,
+}: TopicCluster3DProps & { reason: "performance" | "webgl" }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  // Project 3D positions to 2D (use x, z plane for a sensible spread)
+  const projected = useMemo(
+    () =>
+      nodes.map((n) => ({
+        id: n.id,
+        label: n.label,
+        size: n.size,
+        color: n.color,
+        x: n.position[0],
+        y: n.position[2],
+      })),
+    [nodes],
+  );
+
+  const projectedLinks = useMemo(
+    () =>
+      links
+        .map((l) => ({
+          source: l.source,
+          target: l.target,
+          strength: l.strength,
+        }))
+        .filter((l) => nodes.some((n) => n.id === l.source) && nodes.some((n) => n.id === l.target)),
+    [links, nodes],
+  );
+
+  useEffect(() => {
+    if (!svgRef.current || projected.length === 0) return;
+
+    const svg = select(svgRef.current);
+    svg.selectAll("*").remove();
+
+    const width = svgRef.current.clientWidth || 640;
+    const height = svgRef.current.clientHeight || 480;
+
+    const g = svg.append("g");
+
+    // Zoom/pan
+    const zoomBehavior = zoom<SVGSVGElement, unknown>().on("zoom", (event) => {
+      g.attr("transform", event.transform);
+    });
+    svg.call(zoomBehavior as never);
+
+    // Prepare nodes with initial positions from projection
+    const simNodes = projected.map((p) => ({
+      ...p,
+      x: width / 2 + (p.x ?? 0) * 2,
+      y: height / 2 + (p.y ?? 0) * 2,
+    }));
+
+    // Prepare links referencing node objects
+    const nodeById = new Map(simNodes.map((n) => [n.id, n]));
+    const simLinks = projectedLinks
+      .map((l) => ({
+        source: nodeById.get(l.source)!,
+        target: nodeById.get(l.target)!,
+        value: Math.max(1, (l.strength || 0.3) * 3),
+      }))
+      .filter((l) => l.source && l.target);
+
+    const sim = forceSimulation(simNodes as never)
+      .force(
+        "link",
+        forceLink(simLinks as never)
+          .id((d: { id: string }) => d.id)
+          .distance(60)
+          .strength(0.6),
+      )
+      .force("charge", forceManyBody().strength(-180))
+      .force("center", forceCenter(width / 2, height / 2))
+      .force("collision", forceCollide().radius((d: { size?: number }) => Math.max(8, Math.min(22, ((d.size || 10) / 10) * 12 + 4))));
+
+    // Draw links
+    const link = g
+      .append("g")
+      .selectAll("line")
+      .data(simLinks)
+      .join("line")
+      .attr("stroke", "#94a3b8")
+      .attr("stroke-opacity", 0.5)
+      .attr("stroke-width", (d: { value?: number }) => Math.max(1, Math.min(3, (d.value || 1))));
+
+    // Draw nodes
+    const node = g
+      .append("g")
+      .selectAll<SVGGElement, (typeof simNodes)[number]>("g")
+      .data(simNodes)
+      .join("g")
+      .style("cursor", "pointer");
+
+    node
+      .append("circle")
+      .attr("r", (d) => Math.max(6, Math.min(18, ((d.size || 10) / 10) * 10)))
+      .attr("fill", (d) => d.color ?? "#4dabf7")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5)
+      .on("mouseover", function (_e, d) {
+        select(this)
+          .transition()
+          .duration(120)
+          .attr("r", Math.max(8, Math.min(22, ((d.size || 10) / 10) * 12)));
+        setHoveredId(d.id);
+        const orig = nodes.find((n) => n.id === d.id) ?? null;
+        onNodeHover?.(orig);
+      })
+      .on("mouseout", function (_e, d) {
+        select(this)
+          .transition()
+          .duration(120)
+          .attr("r", Math.max(6, Math.min(18, ((d.size || 10) / 10) * 10)));
+        setHoveredId(null);
+        onNodeHover?.(null);
+      })
+      .on("click", (_e, d) => {
+        setSelectedId(d.id);
+        const orig = nodes.find((n) => n.id === d.id) ?? null;
+        if (orig) onNodeClick?.(orig);
+      });
+
+    // Labels
+    node
+      .append("text")
+      .text((d) => d.label)
+      .attr("x", 10)
+      .attr("y", 4)
+      .attr("font-size", 11)
+      .attr("fill", "#111827")
+      .style("pointer-events", "none");
+
+    sim.on("tick", () => {
+      link
+        .attr("x1", (d: { source: { x?: number } }) => (d.source as { x?: number }).x ?? 0)
+        .attr("y1", (d: { source: { y?: number } }) => (d.source as { y?: number }).y ?? 0)
+        .attr("x2", (d: { target: { x?: number } }) => (d.target as { x?: number }).x ?? 0)
+        .attr("y2", (d: { target: { y?: number } }) => (d.target as { y?: number }).y ?? 0);
+
+      node.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
+    });
+
+    return () => {
+      sim.stop();
+    };
+  }, [projected, projectedLinks, nodes, onNodeClick, onNodeHover]);
+
+  return (
+    <div className="relative w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+      <div className="absolute top-3 left-3 z-10 bg-white/90 dark:bg-gray-900/90 text-xs px-2 py-1 rounded border border-gray-200 dark:border-gray-700">
+        2D D3 Fallback {reason === "webgl" ? "(WebGL unavailable)" : "(low performance)"}
+      </div>
+      <svg ref={svgRef} className="w-full h-full" role="img" aria-label="2D topic cluster graph" />
+      {(selectedId || hoveredId) && (
+        <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs rounded px-3 py-2">
+          {(() => {
+            const active = nodes.find((n) => n.id === (selectedId || hoveredId));
+            return active ? (
+              <>
+                <span className="font-semibold">{active.label}</span>
+                <span className="opacity-70"> · {active.size} articles</span>
+              </>
+            ) : null;
+          })()}
+        </div>
+      )}
+      <div className="absolute bottom-3 right-3 text-[10px] text-gray-500 dark:text-gray-400">
+        Scroll to zoom • Drag to pan
       </div>
     </div>
   );

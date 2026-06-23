@@ -336,8 +336,8 @@ ______________________________________________________________________
 - **Topic Taxonomy**: `data/topics.yaml` (1146 lines, 150+ topics)
 - **Current Feeds**: `data/feeds.yaml` (check for duplicates)
 - **Contributing Guide**: `CONTRIBUTING.md`
-- **Project Docs**: `https://aiwebfeeds.com/docs`
-- **LLM-Optimized Docs**: `https://aiwebfeeds.com/llms-full.txt`
+- **Project Docs**: `https://aiwebfeeds.vercel.app/docs`
+- **LLM-Optimized Docs**: `https://aiwebfeeds.vercel.app/llms-full.txt`
 
 ______________________________________________________________________
 

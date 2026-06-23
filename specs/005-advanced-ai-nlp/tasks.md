@@ -5,6 +5,20 @@
 **Estimated Effort**: 5 weeks\
 **Last Updated**: 2025-10-27
 
+## Reconciliation
+
+**Date**: 2026-06-23
+
+**Summary**: 67 checked / 60 unchecked (Total: 127)
+
+**Verified gaps (true remaining work, not unverifiable):**
+
+- T001: pyproject.toml updates for heavy NLP deps — modules import but deps may be optional
+- T003: env.example Phase5 vars — not found
+- T004: Dedicated 005 migration SQL + runner — NLP migration exists under different rev
+- T016-T110: Core NLP modules, scheduler, CLI, docs — quality_scorer.py, entity_extractor.py, sentiment_analyzer.py, topic_modeler.py, nlp_scheduler.py, cli/commands/nlp.py exist; docs/*.mdx exist
+- T111-T127: Integration/perf tests, coverage, release steps — unit tests exist; full E2E/perf/coverage not verified
+
 ______________________________________________________________________
 
 ## Task Notation

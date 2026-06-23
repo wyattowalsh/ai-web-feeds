@@ -543,6 +543,24 @@
   color: var(--ink);
 }
 
+/* J6: Hide desktop header nav links from a11y on mobile to prevent duplicate link roles
+   FumaDocs renders PRIMARY_HUB_NAV links in the header (sm:hidden visually) and in the
+   mobile menu. Using display:none removes them from the accessibility tree on <768px. */
+@media (max-width: 767px) {
+  /* Hide the desktop-only link list rendered by FumaDocs in the header.
+     These are the items using sm:hidden that still participate in a11y, causing duplicates.
+     We target containers that look like the horizontal link bar (not the mobile popover). */
+  #nd-nav > nav,
+  /* The links container often sits next to the title as a flex row on lg+ */
+  #nd-nav nav[class*="hidden"],
+  /* Direct anchors in the top header bar (logo/title row), excluding menu/search controls */
+  #nd-nav > a[href],
+  /* Belt: any anchor directly under #nd-nav that is not inside a dialog/menu/drawer */
+  #nd-nav > a {
+    display: none !important;
+  }
+}
+
 @media (max-width: 767px) {
   /* Strengthen header presence when a menu is open on mobile */
   #nd-nav:has([data-state="open"]) {

@@ -8,6 +8,7 @@ export const HUB_ROUTES = {
   reader: CANONICAL_READER_PATH,
   sources: CANONICAL_CATALOG_PATH,
   topics: "/topics",
+  explorer: "/explorer",
   dashboard: "/dashboard",
   search: "/search",
   forYou: "/for-you",
@@ -31,6 +32,7 @@ export const PRIMARY_HUB_NAV: HubNavItem[] = [
   { label: "For You", href: HUB_ROUTES.forYou, description: "Recommendations and digests" },
   { label: "Sources", href: HUB_ROUTES.sources, description: "Browse feed catalog" },
   { label: "Topics", href: HUB_ROUTES.topics, description: "Topic taxonomy" },
+  { label: "Explorer", href: HUB_ROUTES.explorer, description: "Interactive topic graph" },
   { label: "Blog", href: HUB_ROUTES.blog, description: "Product updates" },
   { label: "Dashboard", href: HUB_ROUTES.dashboard, description: "Corpus health" },
   { label: "Docs", href: HUB_ROUTES.docs, description: "Guides and API" },
@@ -43,20 +45,12 @@ function activeFor(label: string): "url" | "nested-url" | undefined {
   return "nested-url";
 }
 
-/** FumaDocs header links derived from PRIMARY_HUB_NAV + external links. */
+/** FumaDocs header links derived from PRIMARY_HUB_NAV (SSOT for hub nav). */
 export function hubLayoutLinks(): LinkItemType[] {
-  return [
-    ...PRIMARY_HUB_NAV.map((item) => ({
-      text: item.label,
-      url: item.href,
-      external: item.external,
-      active: activeFor(item.label),
-    })),
-    ...EXTERNAL_HUB_LINKS.map((item) => ({
-      text: item.label,
-      url: item.href,
-      external: true as const,
-      active: "none" as const,
-    })),
-  ];
+  return PRIMARY_HUB_NAV.map((item) => ({
+    text: item.label,
+    url: item.href,
+    external: item.external,
+    active: activeFor(item.label),
+  }));
 }

@@ -5,15 +5,15 @@ contact_links:
     about: Ask questions, share ideas, and discuss with the community
 
   - name: 📖 Documentation
-    url: https://aiwebfeeds.com/docs
+    url: https://aiwebfeeds.vercel.app/docs
     about: Read the complete documentation on our website
 
   - name: 🛠️ CLI Reference
-    url: https://aiwebfeeds.com/docs/development/cli
+    url: https://aiwebfeeds.vercel.app/docs/development/cli
     about: Command-line tool documentation and usage examples
 
   - name: 🔄 Workflow Docs
-    url: https://aiwebfeeds.com/docs/development/workflows
+    url: https://aiwebfeeds.vercel.app/docs/development/workflows
     about: GitHub Actions workflow documentation and troubleshooting
 
   - name: 🔍 Search Existing Issues
@@ -25,5 +25,5 @@ contact_links:
     about: Propose and discuss new features with the community
 
   - name: 🆘 Troubleshooting Guide
-    url: https://aiwebfeeds.com/docs/guides/troubleshooting
+    url: https://aiwebfeeds.vercel.app/docs/guides/troubleshooting
     about: Common issues and their solutions

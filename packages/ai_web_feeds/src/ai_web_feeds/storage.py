@@ -1480,6 +1480,18 @@ class DatabaseManager:
             )
             return list(session.exec(statement).all())
 
+    def get_active_user_ids(self) -> list[str]:
+        """Get all active user IDs (users with at least one source follow).
+
+        Used for broadcasting topic-level notifications (e.g. trending).
+
+        Returns:
+            List of distinct user IDs
+        """
+        with self.get_session() as session:
+            statement = select(UserSourceFollow.user_id).distinct()
+            return list(session.exec(statement).all())
+
 
 _db_manager: DatabaseManager | None = None
 

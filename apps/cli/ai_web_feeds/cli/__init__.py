@@ -23,9 +23,9 @@ from ai_web_feeds import (
 from ai_web_feeds.load import canonicalize_catalog
 
 # Import command modules
-from ai_web_feeds.cli.commands import analytics, corpus, enrich as enrich_commands
+from ai_web_feeds.cli.commands import add, analytics, corpus, enrich as enrich_commands
 from ai_web_feeds.cli.commands import export as export_commands
-from ai_web_feeds.cli.commands import fetch, monitor, test, visualize
+from ai_web_feeds.cli.commands import fetch, monitor, test, topics, visualize
 from ai_web_feeds.cli.commands import nlp, opml
 from ai_web_feeds.cli.commands import recommend, search, stats, validate as validate_commands
 
@@ -49,6 +49,8 @@ app.add_typer(stats.app, name="stats")
 app.add_typer(test.app, name="test")
 app.add_typer(visualize.app, name="visualize")
 app.add_typer(nlp.app, name="nlp")
+app.add_typer(topics.app, name="topics")
+app.add_typer(add.app, name="add")
 
 console = Console()
 

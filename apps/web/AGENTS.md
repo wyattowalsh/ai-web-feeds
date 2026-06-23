@@ -8,7 +8,7 @@
 
 - **Full Documentation**:
   [llms-full.txt#web](https://aiwebfeeds.vercel.app/llms-full.txt#web)
-- **Web Reference**: \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)
+- **Web Docs**: [aiwebfeeds.vercel.app/docs](https://aiwebfeeds.vercel.app/docs)
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **FumaDocs**: [fumadocs.dev](https://fumadocs.dev)
 
@@ -59,7 +59,7 @@ apps/web/
 │   ├── mdx/mermaid.tsx       # Mermaid diagrams
 │   └── ui/                   # UI primitives
 └── lib/
-    ├── source.ts             # FumaDocs config
+    ├── source.ts             # FumaDocs loader (from @/.source)
     └── rss.ts                # Feed generation
 ```
 
@@ -150,9 +150,7 @@ complete structure
 1. Move its content to proper `.mdx` file in `content/docs/`
 1. Delete the `.md` file
 1. Update `meta.json`
-1. Never create them again! } }
-
-````
+1. Never create them again!
 
 ### 2. Navigation
 Edit `content/docs/meta.json`:
@@ -161,7 +159,7 @@ Edit `content/docs/meta.json`:
   "title": "Section",
   "pages": ["page-slug"]
 }
-````
+```
 
 ### 3. MDX Components
 
@@ -261,7 +259,7 @@ pnpm lint:links
 
 <hr />
 
-_Updated: October 15, 2025 · Version: 0.1.0_
+_Updated: June 23, 2026 · Version: 0.1.0_
 
 <hr />
 
@@ -611,9 +609,6 @@ sequenceDiagram
     Fetcher->>Database: store_feed()
     Database-->>User: Success
 ```
-````
-
-````
 
 <hr />
 
@@ -757,4 +752,4 @@ next dev
 
 <hr />
 
-_Last Updated: October 2025_
+_Last Updated: June 2026_

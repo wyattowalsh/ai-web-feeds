@@ -28,7 +28,7 @@ Python CLI, and a Fumadocs-powered documentation site.
   - Basic analytics and summaries (topic coverage, source-type counts, validation stats)
   - Explicit RSSHub feed generation for platforms without native feeds (public or
     self-hosted instances)
-  - Docling-based parsing for PDFs/unstructured documents linked from feeds (optional)
+  - PDF/unstructured parsing via Docling (optional; not yet in core dependencies)
 
 - Advanced AI/NLP (Phase 5)
 
@@ -43,10 +43,10 @@ Python CLI, and a Fumadocs-powered documentation site.
 
 - Developer-friendly CLI (Typer)
 
-  - Validate, enrich, search, fetch, and export feed sources
-  - Validate feeds and produce reports
-  - Export master and topic-grouped OPML
-  - Quick stats for health and coverage
+  - Commands: enrich, opml, validate, export, stats, fetch, search, load, corpus,
+    monitor, nlp, recommend, visualize, analytics, test, and process
+  - Validate feeds and produce reports; export master and topic-grouped OPML
+  - Quick stats, recommendations, corpus tools, and NLP pipelines
   - Optional local SQLite cache/metadata via SQLModel (e.g., validation results, feed
     health)
 
@@ -77,9 +77,8 @@ Python CLI, and a Fumadocs-powered documentation site.
 
   - httpx for fast, async-friendly HTTP requests
   - tenacity for resilient retries and backoff
-  - crawlee-python for anonymous browsing and robust fetching when sites need it
   - RSSHub as an explicit feed generator when sites lack RSS/Atom
-  - Docling for robust parsing of PDFs and unstructured documents referenced by feeds
+  - (Optional / planned) crawlee-python and Docling for advanced fetching and PDF parsing
 
 - CLI and tooling
 

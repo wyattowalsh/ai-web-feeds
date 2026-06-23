@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 from ai_web_feeds.config import Settings
+from ai_web_feeds.models import DeliveryMethod, NotificationFrequency, NotificationPreference
 from ai_web_feeds.scheduler import SchedulerManager
 from ai_web_feeds.storage import DatabaseManager
 
@@ -15,6 +16,8 @@ def mock_db():
     db.get_user_followed_sources = MagicMock(return_value=["feed-1", "feed-2"])
     db.get_articles = MagicMock(return_value=[])
     db.get_due_digests = MagicMock(return_value=[])
+    db.get_active_user_ids = MagicMock(return_value=["user-1", "user-2", "user-3"])
+    db.get_user_preferences = MagicMock(return_value=[])
     return db
 
 
@@ -158,11 +161,14 @@ class TestSchedulerManager:
         ]
 
         with patch.object(scheduler.trending, "detect_trending_topics", return_value=mock_topics):
-            with patch.object(scheduler.notifier, "notify_trending_topic", new_callable=AsyncMock):
+            with patch.object(scheduler.notifier, "notify_trending_topic", new_callable=AsyncMock) as mock_notify:
                 await scheduler._detect_trending()
 
-                # Should complete without error
-                # (notification sending tested separately)
+                # Should call with filtered active users (default prefs allow)
+                assert mock_notify.call_count == 2
+                # Users passed should be the active ones
+                called_users = mock_notify.call_args[0][1]
+                assert called_users == ["user-1", "user-2", "user-3"]
 
     @pytest.mark.asyncio
     async def test_send_digests(self, scheduler):
@@ -179,3 +185,71 @@ class TestSchedulerManager:
             await scheduler._cleanup_notifications()
 
             # Should complete without error
+
+
+class TestTrendingNotificationFiltering:
+    """Tests for user preference filtering on trending notifications (TBD in scheduler)."""
+
+    def test_get_interested_users_default_no_prefs(self, scheduler):
+        """Users with no preferences should receive trending (default on)."""
+        users = scheduler._get_interested_users_for_trending(["u1", "u2"])
+        assert users == ["u1", "u2"]
+
+    def test_get_interested_users_global_off(self, scheduler, mock_db):
+        """User with global OFF should be filtered out."""
+        off_pref = NotificationPreference(
+            user_id="u2",
+            feed_id=None,
+            delivery_method=DeliveryMethod.WEBSOCKET,
+            frequency=NotificationFrequency.OFF,
+        )
+        mock_db.get_user_preferences = MagicMock(
+            side_effect=lambda uid: [off_pref] if uid == "u2" else []
+        )
+        scheduler.db = mock_db
+
+        users = scheduler._get_interested_users_for_trending(["u1", "u2", "u3"])
+        assert "u2" not in users
+        assert "u1" in users and "u3" in users
+
+    def test_get_interested_users_per_feed_pref_ignored_for_trending(self, scheduler, mock_db):
+        """Per-feed prefs do not opt-out of global trending (feed_id set)."""
+        feed_pref = NotificationPreference(
+            user_id="u1",
+            feed_id="some-feed",
+            delivery_method=DeliveryMethod.IN_APP,
+            frequency=NotificationFrequency.OFF,
+        )
+        mock_db.get_user_preferences = MagicMock(return_value=[feed_pref])
+        scheduler.db = mock_db
+
+        users = scheduler._get_interested_users_for_trending(["u1"])
+        assert users == ["u1"]  # per-feed OFF does not affect trending
+
+    def test_get_interested_users_mixed_prefs(self, scheduler, mock_db):
+        """Mixed: one global OFF, one with per-feed, one none."""
+        off_global = NotificationPreference(
+            user_id="u_off",
+            feed_id=None,
+            delivery_method=DeliveryMethod.EMAIL,
+            frequency=NotificationFrequency.OFF,
+        )
+        feed_pref = NotificationPreference(
+            user_id="u_feed",
+            feed_id="f1",
+            delivery_method=DeliveryMethod.WEBSOCKET,
+            frequency=NotificationFrequency.INSTANT,
+        )
+
+        def get_prefs(uid: str):
+            if uid == "u_off":
+                return [off_global]
+            if uid == "u_feed":
+                return [feed_pref]
+            return []
+
+        mock_db.get_user_preferences = MagicMock(side_effect=get_prefs)
+        scheduler.db = mock_db
+
+        users = scheduler._get_interested_users_for_trending(["u_off", "u_feed", "u_none"])
+        assert users == ["u_feed", "u_none"]

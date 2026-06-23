@@ -1,0 +1,84 @@
+---
+title: Visualization & Analytics
+description: Interactive charts, dashboards, forecasts, and 3D topic clustering powered by the optional backend visualization APIs.
+icon: ChartBar
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+# Visualization & Analytics
+
+Advanced visualization tooling for exploring analytics, trends, and forecasts. These surfaces are available when `BACKEND_URL` points to a running `ai-web-feeds` backend that includes the Spec 006 visualization router.
+
+<Callout type="info">
+These pages proxy to backend routes under `/api/v1/*`. Without a configured backend they return a `503 FEATURE_UNAVAILABLE` response and the UI surfaces remain usable with sample or local data where applicable.
+</Callout>
+
+## Pages
+
+- `/analytics/visualizations` — Chart builder for topics, feeds, and article metrics. Supports line, bar, area, scatter, pie, and heatmap.
+- `/analytics/dashboards` — Drag-and-drop multi-widget dashboards using react-grid-layout.
+- `/analytics/forecasts` — Time-series forecasts with confidence intervals and model metrics.
+
+## Components
+
+Reusable visualization components live under `apps/web/components/visualizations/`:
+
+- `ChartBuilder`, `ChartContainer`, `ChartTypeSelector`, `DataSourceSelector`, `DateRangeFilter`, `CustomizationPanel`
+- Chart primitives: `LineChart`, `BarChart`, `AreaChart`, `ScatterChart`, `PieChart`, `HeatmapChart`
+- `DashboardBuilder` (widgets, layouts, add/remove/configure)
+- `ForecastChart` + `ForecastMetrics`
+- `TopicCluster3D` (React Three Fiber) with automatic 2D D3 fallback when WebGL is unavailable or FPS is low
+
+## API Proxy Routes
+
+Next.js API routes under `/api/visualizations/*` forward to the Python backend visualization endpoints:
+
+| Web Route                              | Backend (when mounted)          | Methods          |
+| -------------------------------------- | ------------------------------- | ---------------- |
+| `/api/visualizations`                  | `/api/v1/visualizations`        | GET, POST        |
+| `/api/visualizations/[id]`             | `/api/v1/visualizations/{id}`   | GET, PUT, DELETE |
+| `/api/visualizations/[id]/data`        | `/api/v1/visualizations/{id}/data` | POST          |
+| `/api/visualizations/dashboards`       | `/api/v1/dashboards`            | GET, POST        |
+| `/api/visualizations/dashboards/[id]`  | `/api/v1/dashboards/{id}`       | GET, PUT, DELETE |
+| `/api/visualizations/dashboards/[id]/widgets` | `/api/v1/dashboards/{id}/widgets` | POST       |
+
+All routes include telemetry wrappers and return a friendly `503` payload when `BACKEND_URL` is not set.
+
+## 3D Topic Clustering Fallback
+
+`TopicCluster3D` renders with Three.js + React Three Fiber when WebGL and performance allow. When either condition fails it seamlessly switches to a 2D force-directed graph implemented with D3 (force simulation, zoom/pan, hover/click interactions) reusing layout patterns from `graph-visualizer.tsx`.
+
+## Backend Wiring
+
+Mount the visualization router in the backend:
+
+```python
+from ai_web_feeds.web_api import create_app
+from ai_web_feeds.visualization.api import (
+    router as viz_router,
+    startup_event as viz_startup,
+    shutdown_event as viz_shutdown,
+)
+
+app = create_app()
+app.include_router(viz_router)
+app.add_event_handler("startup", viz_startup)
+app.add_event_handler("shutdown", viz_shutdown)
+```
+
+## Local Development
+
+```bash
+# Terminal 1: backend with visualization routes
+uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
+
+# Terminal 2: web app
+BACKEND_URL=http://127.0.0.1:8001 pnpm dev
+```
+
+Open:
+
+- http://localhost:3000/analytics/visualizations
+- http://localhost:3000/analytics/dashboards
+- http://localhost:3000/analytics/forecasts

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { SearchToggle } from "fumadocs-ui/components/layout/search-toggle";
+import { ThemeToggle } from "fumadocs-ui/components/layout/theme-toggle";
 import { hubLayoutLinks } from "@/lib/hub/links";
 
 /**
@@ -25,6 +26,10 @@ export function baseOptions(): BaseLayoutProps {
             <span className="text-sm font-semibold text-foreground">Open web AI reader</span>
           </span>
         </span>
+      ),
+      // Visible theme toggle in hub header / docs top bar (FIX-016/017)
+      children: (
+        <ThemeToggle className="ms-1.5" />
       ),
     },
     searchToggle: {

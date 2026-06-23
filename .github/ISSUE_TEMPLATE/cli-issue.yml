@@ -30,7 +30,7 @@ body:
            uv run ai-web-feeds <command> --help
            ```
 
-        4. **Review [CLI documentation](https://aiwebfeeds.com/docs/development/cli)**
+        4. **Review [CLI documentation](https://aiwebfeeds.vercel.app/docs/development/cli)**
 
   - type: dropdown
     id: issue_type
@@ -296,10 +296,10 @@ body:
 
         ### 📚 Resources
 
-        - [CLI Documentation](https://aiwebfeeds.com/docs/development/cli)
-        - [CLI Workflow Integration](https://aiwebfeeds.com/docs/development/cli-workflows)
-        - [Python API Docs](https://aiwebfeeds.com/docs/development/python-api)
-        - [Troubleshooting Guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+        - [CLI Documentation](https://aiwebfeeds.vercel.app/docs/development/cli)
+        - [CLI Workflow Integration](https://aiwebfeeds.vercel.app/docs/development/cli-workflows)
+        - [Python API Docs](https://aiwebfeeds.vercel.app/docs/development/python-api)
+        - [Troubleshooting Guide](https://aiwebfeeds.vercel.app/docs/guides/troubleshooting)
 
         ### 🤝 Want to Fix It?
 

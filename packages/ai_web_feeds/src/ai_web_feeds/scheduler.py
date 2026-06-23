@@ -13,7 +13,9 @@ from loguru import logger
 from ai_web_feeds.config import Settings
 from ai_web_feeds.digests import DigestManager
 from ai_web_feeds.load import load_feeds
+from ai_web_feeds.models import NotificationFrequency
 from ai_web_feeds.notifications import NotificationManager
+from ai_web_feeds.nlp.scheduler import NLPScheduler
 from ai_web_feeds.polling import FeedPoller
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.trending import TrendingDetector
@@ -40,6 +42,7 @@ class SchedulerManager:
         self.notifier = NotificationManager(db, settings)
         self.trending = TrendingDetector(db, settings)
         self.digests = DigestManager(db, settings)
+        self.nlp_scheduler = NLPScheduler(settings)
 
         logger.info("Scheduler manager initialized")
 
@@ -91,6 +94,10 @@ class SchedulerManager:
         )
         logger.info("Added notification cleanup job (daily at 3:00 AM UTC)")
 
+        # Register NLP batch jobs (Phase 5)
+        self.nlp_scheduler.register_jobs()
+        logger.info("Registered NLP scheduler jobs")
+
         # Start scheduler
         self.scheduler.start()
         logger.info("Background scheduler started")
@@ -100,6 +107,11 @@ class SchedulerManager:
         if self.scheduler.running:
             self.scheduler.shutdown(wait=True)
             logger.info("Background scheduler stopped")
+        # Stop NLP scheduler if running
+        try:
+            self.nlp_scheduler.shutdown(wait=True)
+        except Exception:
+            pass  # NLP scheduler may not have been started
 
     async def _poll_all_feeds(self) -> None:
         """Poll all active feeds and create notifications."""
@@ -145,17 +157,43 @@ class SchedulerManager:
         try:
             trending_topics = await self.trending.detect_trending_topics()
 
-            # Send notifications for each trending topic
-            # TODO: Implement user preference filtering (only notify interested users)
+            # Get active user IDs from storage (users with follows)
+            active_users = self.db.get_active_user_ids()
+
+            # Send notifications for each trending topic, filtered by user prefs
             for topic in trending_topics[:5]:  # Top 5 trending
-                # For MVP, notify all users (in production, filter by preferences)
-                all_users = []  # TODO: Get all active user IDs
-                await self.notifier.notify_trending_topic(topic, all_users)
+                interested_users = self._get_interested_users_for_trending(active_users)
+                if interested_users:
+                    await self.notifier.notify_trending_topic(topic, interested_users)
 
             logger.info(f"Trending detection complete: {len(trending_topics)} topics")
 
         except Exception as e:
             logger.error(f"Trending detection job failed: {e}")
+
+    def _get_interested_users_for_trending(self, user_ids: list[str]) -> list[str]:
+        """Filter users by NotificationPreference (global prefs apply to trending).
+
+        Notify users unless they have explicitly set global frequency to OFF.
+        Defaults to notifying active users who have not opted out.
+
+        Args:
+            user_ids: Candidate active user IDs
+
+        Returns:
+            List of user IDs to receive trending notifications
+        """
+        interested: list[str] = []
+        for user_id in user_ids:
+            prefs = self.db.get_user_preferences(user_id)
+            # Check global prefs (feed_id=None) for OFF
+            opted_out = any(
+                (p.feed_id is None and p.frequency == NotificationFrequency.OFF)
+                for p in prefs
+            )
+            if not opted_out:
+                interested.append(user_id)
+        return interested
 
     async def _send_digests(self) -> None:
         """Send due email digests."""

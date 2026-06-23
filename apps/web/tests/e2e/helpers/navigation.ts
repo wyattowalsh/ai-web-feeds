@@ -45,3 +45,24 @@ export async function typeIntoControlledInput(input: Locator, value: string) {
   await input.pressSequentially(value, { delay: 30 });
   await expect(input).toHaveValue(value, { timeout: 10_000 });
 }
+
+/**
+ * Force the app into dark theme for this page.
+ * Works with next-themes + fumadocs by toggling the 'dark' class and persisting preference.
+ */
+export async function forceDarkTheme(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    try {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      // Persist for next-themes
+      try {
+        localStorage.setItem("theme", "dark");
+      } catch {
+        // ignore
+      }
+    } catch {
+      // ignore
+    }
+  });
+}

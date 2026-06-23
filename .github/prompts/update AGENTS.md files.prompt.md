@@ -203,10 +203,10 @@ ______________________________________________________________________
 
 | Component | Path | Reference Docs |
 |-----------|------|----------------|
-| **Core Package** | [`packages/ai_web_feeds/`](packages/ai_web_feeds/) | [`AGENTS.md`](packages/ai_web_feeds/AGENTS.md) · [Full Docs](https://aiwebfeeds.com/llms-full.txt#core-package) |
-| **CLI** | [`apps/cli/`](apps/cli/) | [`AGENTS.md`](apps/cli/AGENTS.md) · [CLI Docs](https://aiwebfeeds.com/docs/cli) |
-| **Web** | [`apps/web/`](apps/web/) | [`AGENTS.md`](apps/web/AGENTS.md) · [#file:web](file:///Users/ww/dev/projects/ai-web-feeds/apps/web) |
-| **Tests** | [`tests/`](tests/) | [`AGENTS.md`](tests/AGENTS.md) · [Testing Guide](https://aiwebfeeds.com/docs/contributing/testing) |
+| **Core Package** | [`packages/ai_web_feeds/`](packages/ai_web_feeds/) | [`AGENTS.md`](packages/ai_web_feeds/AGENTS.md) · [Full Docs](https://aiwebfeeds.vercel.app/llms-full.txt#core-package) |
+| **CLI** | [`apps/cli/`](apps/cli/) | [`AGENTS.md`](apps/cli/AGENTS.md) · [CLI Docs](https://aiwebfeeds.vercel.app/docs/development/cli) |
+| **Web** | [`apps/web/`](apps/web/) | [`AGENTS.md`](apps/web/AGENTS.md) · [Web Docs](https://aiwebfeeds.vercel.app/docs) |
+| **Tests** | [`tests/`](tests/) | [`AGENTS.md`](tests/AGENTS.md) · [Testing Guide](https://aiwebfeeds.vercel.app/docs/guides/testing) |
 ````
 
 **Component AGENTS.md** must include:
@@ -214,7 +214,7 @@ ______________________________________________________________________
 ```markdown
 ## 📍 Essential Links
 
-- **Full Documentation**: [llms-full.txt#[section]](https://aiwebfeeds.com/llms-full.txt#[section])
+- **Full Documentation**: [llms-full.txt#[section]](https://aiwebfeeds.vercel.app/llms-full.txt#[section])
 - **Root Instructions**: [../../AGENTS.md](../../AGENTS.md)
 - **[Related Component]**: [../../[path]/AGENTS.md](../../[path]/AGENTS.md)
 ```
@@ -530,7 +530,7 @@ def fetch_feed(url):
     return requests.get(url).content
 ````
 
-**See**: [llms-full.txt#fetcher](https://aiwebfeeds.com/llms-full.txt#fetcher) for
+**See**: [llms-full.txt#fetcher](https://aiwebfeeds.vercel.app/llms-full.txt#fetcher) for
 implementation details
 
 ````

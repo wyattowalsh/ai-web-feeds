@@ -16,7 +16,7 @@ body:
         **Please check**:
         - [ ] Search [existing issues](https://github.com/wyattowalsh/ai-web-feeds/issues) for duplicates
         - [ ] Try the latest version (`git pull origin main && uv sync`)
-        - [ ] Review [troubleshooting guide](https://aiwebfeeds.com/docs/guides/troubleshooting)
+        - [ ] Review [troubleshooting guide](https://aiwebfeeds.vercel.app/docs/guides/troubleshooting)
 
         ### 🛠️ Debugging Tips
 

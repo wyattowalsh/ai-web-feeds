@@ -21,7 +21,15 @@ from ai_web_feeds.analytics import (
     get_publication_velocity,
     get_trending_topics,
 )
-from ai_web_feeds.models import AnalyticsSnapshot, FeedSource
+from ai_web_feeds.models import (
+    AnalyticsSnapshot,
+    ArticleQualityScore,
+    ArticleSentiment,
+    Entity,
+    EntityMention,
+    FeedSource,
+    Subtopic,
+)
 from ai_web_feeds.recommendations import (
     generate_recommendations,
     get_user_recommendations,
@@ -239,10 +247,233 @@ def get_latest_analytics_snapshot(
     return JSONResponse(serialize_snapshot(snapshot))
 
 
+# ============================================================================
+# Phase 5: NLP Read Endpoints
+# ============================================================================
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/quality/{article_id}")  # type: ignore[misc]
+def get_article_quality(
+    article_id: int,
+    *,
+    session: DbSession,
+) -> dict[str, Any] | JSONResponse:
+    """Return quality score for a specific article."""
+    quality = session.get(ArticleQualityScore, article_id)
+    if quality is None:
+        return error_response("Quality score not found", 404, "QUALITY_NOT_FOUND")
+
+    return {
+        "article_id": quality.article_id,
+        "overall_score": quality.overall_score,
+        "depth_score": quality.depth_score,
+        "reference_score": quality.reference_score,
+        "author_score": quality.author_score,
+        "domain_score": quality.domain_score,
+        "engagement_score": quality.engagement_score,
+        "computed_at": quality.computed_at.isoformat(),
+    }
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/quality")  # type: ignore[misc]
+def list_quality_scores(
+    limit: int = Query(default=50, ge=1, le=500),
+    min_score: int | None = Query(default=None, ge=0, le=100),
+    *,
+    session: DbSession,
+) -> dict[str, Any]:
+    """List article quality scores (highest first)."""
+    statement = select(ArticleQualityScore).order_by(
+        desc(ArticleQualityScore.overall_score)
+    )
+    if min_score is not None:
+        statement = statement.where(ArticleQualityScore.overall_score >= min_score)
+    statement = statement.limit(limit)
+    scores = list(session.exec(statement).all())
+
+    return {
+        "scores": [
+            {
+                "article_id": s.article_id,
+                "overall_score": s.overall_score,
+                "depth_score": s.depth_score,
+                "reference_score": s.reference_score,
+                "author_score": s.author_score,
+                "domain_score": s.domain_score,
+                "engagement_score": s.engagement_score,
+                "computed_at": s.computed_at.isoformat(),
+            }
+            for s in scores
+        ],
+        "count": len(scores),
+    }
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/entities")  # type: ignore[misc]
+def get_entities_for_article(
+    article_id: int | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    *,
+    session: DbSession,
+) -> dict[str, Any]:
+    """Return entities (with mentions) for an article, or recent entities."""
+    if article_id is not None:
+        # Get entity mentions for this article joined with entities
+        mentions = list(
+            session.exec(
+                select(EntityMention, Entity)
+                .join(Entity, EntityMention.entity_id == Entity.id)
+                .where(EntityMention.article_id == article_id)
+                .limit(limit)
+            ).all()
+        )
+        return {
+            "article_id": article_id,
+            "entities": [
+                {
+                    "entity_id": entity.id,
+                    "canonical_name": entity.canonical_name,
+                    "entity_type": entity.entity_type,
+                    "confidence": mention.confidence,
+                    "context": mention.context,
+                    "extraction_method": mention.extraction_method,
+                }
+                for mention, entity in mentions
+            ],
+            "count": len(mentions),
+        }
+
+    # Return distinct entities (most frequent first)
+    entities = list(
+        session.exec(
+            select(Entity).order_by(desc(Entity.frequency_count)).limit(limit)
+        ).all()
+    )
+    return {
+        "entities": [
+            {
+                "id": e.id,
+                "canonical_name": e.canonical_name,
+                "entity_type": e.entity_type,
+                "frequency_count": e.frequency_count,
+                "aliases": e.aliases,
+            }
+            for e in entities
+        ],
+        "count": len(entities),
+    }
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/sentiment/{article_id}")  # type: ignore[misc]
+def get_article_sentiment(
+    article_id: int,
+    *,
+    session: DbSession,
+) -> dict[str, Any] | JSONResponse:
+    """Return sentiment analysis for a specific article."""
+    sentiment = session.get(ArticleSentiment, article_id)
+    if sentiment is None:
+        return error_response("Sentiment not found", 404, "SENTIMENT_NOT_FOUND")
+
+    return {
+        "article_id": sentiment.article_id,
+        "sentiment_score": sentiment.sentiment_score,
+        "classification": sentiment.classification,
+        "model_name": sentiment.model_name,
+        "confidence": sentiment.confidence,
+        "computed_at": sentiment.computed_at.isoformat(),
+    }
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/sentiment")  # type: ignore[misc]
+def list_sentiment_scores(
+    limit: int = Query(default=50, ge=1, le=500),
+    classification: str | None = Query(default=None),
+    *,
+    session: DbSession,
+) -> dict[str, Any]:
+    """List article sentiment scores."""
+    statement = select(ArticleSentiment)
+    if classification:
+        statement = statement.where(ArticleSentiment.classification == classification)
+    statement = statement.order_by(desc(ArticleSentiment.computed_at)).limit(limit)
+    sentiments = list(session.exec(statement).all())
+
+    return {
+        "sentiments": [
+            {
+                "article_id": s.article_id,
+                "sentiment_score": s.sentiment_score,
+                "classification": s.classification,
+                "model_name": s.model_name,
+                "confidence": s.confidence,
+                "computed_at": s.computed_at.isoformat(),
+            }
+            for s in sentiments
+        ],
+        "count": len(sentiments),
+    }
+
+
+# FastAPI's decorators are dynamically typed.
+@router.get("/nlp/topics")  # type: ignore[misc]
+def list_subtopics(
+    parent_topic: str | None = Query(default=None),
+    approved: bool | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    *,
+    session: DbSession,
+) -> dict[str, Any]:
+    """List discovered subtopics."""
+    statement = select(Subtopic)
+    if parent_topic:
+        statement = statement.where(Subtopic.parent_topic == parent_topic)
+    if approved is not None:
+        statement = statement.where(Subtopic.approved == approved)
+    statement = statement.order_by(desc(Subtopic.article_count)).limit(limit)
+    subtopics = list(session.exec(statement).all())
+
+    return {
+        "subtopics": [
+            {
+                "id": s.id,
+                "parent_topic": s.parent_topic,
+                "name": s.name,
+                "keywords": s.keywords,
+                "description": s.description,
+                "article_count": s.article_count,
+                "approved": s.approved,
+                "detected_at": s.detected_at.isoformat(),
+            }
+            for s in subtopics
+        ],
+        "count": len(subtopics),
+    }
+
+
 def create_app() -> FastAPI:
     """Create the backend FastAPI application."""
     app = FastAPI(title="ai-web-feeds backend")
     app.include_router(router)
+
+    # Mount visualization router (Spec 006)
+    from ai_web_feeds.visualization.api import (
+        router as visualization_router,
+        shutdown_event as visualization_shutdown,
+        startup_event as visualization_startup,
+    )
+
+    app.include_router(visualization_router)
+
+    # Wire visualization lifecycle events
+    app.add_event_handler("startup", visualization_startup)
+    app.add_event_handler("shutdown", visualization_shutdown)
+
     return app
 
 

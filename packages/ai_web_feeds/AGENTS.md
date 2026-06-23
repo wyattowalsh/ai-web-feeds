@@ -37,7 +37,7 @@
 - Python source code: `src/ai_web_feeds/*.py`
 - Configuration: `pyproject.toml`, `.python-version`
 - This file: `AGENTS.md`
-- Tests: `../../tests/packages/ai_web_feeds/`
+- Tests: `../../tests/tests/packages/ai_web_feeds/`
 
 **NO EXCEPTIONS - NO TEMPORARY DOCS - NO SUPPLEMENTARY .md FILES!**
 
@@ -162,7 +162,7 @@ ______________________________________________________________________
 
 1. Define in `models.py` (SQLModel + Pydantic)
 1. Create migration: `alembic revision --autogenerate -m "add_model"`
-1. Add tests in `tests/packages/ai_web_feeds/test_models.py`
+1. Add tests in `tests/tests/packages/ai_web_feeds/unit/test_models.py`
 1. **REQUIRED**: Create/update `.mdx` in `apps/web/content/docs/development/` and update
    `meta.json`
 1. **FORBIDDEN**: Do NOT create `.md` files like `DATABASE.md` or `MODELS.md`

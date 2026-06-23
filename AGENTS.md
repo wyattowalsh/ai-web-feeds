@@ -52,7 +52,7 @@ yarn add package                  # NEVER use yarn
 | ---------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Core Package** | [`packages/ai_web_feeds/`](packages/ai_web_feeds/) | [`AGENTS.md`](packages/ai_web_feeds/AGENTS.md) · [Full Docs](https://aiwebfeeds.vercel.app/llms-full.txt#core-package) |
 | **CLI**          | [`apps/cli/`](apps/cli/)                           | [`AGENTS.md`](apps/cli/AGENTS.md) · [CLI Docs](https://aiwebfeeds.vercel.app/docs/development/cli)                     |
-| **Web**          | [`apps/web/`](apps/web/)                           | [`AGENTS.md`](apps/web/AGENTS.md) · \[#file:web\](file:///Users/ww/dev/projects/ai-web-feeds/apps/web)                 |
+| **Web**          | [`apps/web/`](apps/web/)                           | [`AGENTS.md`](apps/web/AGENTS.md) · [Web Docs](https://aiwebfeeds.vercel.app/docs)                                     |
 | **Tests**        | [`tests/`](tests/)                                 | [`AGENTS.md`](tests/AGENTS.md) · [Testing Guide](https://aiwebfeeds.vercel.app/docs/guides/testing)                    |
 
 ## 🔗 Essential Resources
@@ -100,8 +100,8 @@ ______________________________________________________________________
 - ❌ **NEVER EVER create `.md` files** like `DATABASE.md`, `GUIDE.md`, `QUICKSTART.md`,
   `ARCHITECTURE.md`, `TUTORIAL.md`, `HOW_TO.md`, `SUMMARY.md`, etc.
 - ❌ **FORBIDDEN LOCATIONS**: Any `.md` file in `packages/`, `apps/cli/`, `data/`,
-  workspace root (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
-  `LICENSE`, `AGENTS.md`)
+  workspace root (except `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
+  `CODE_OF_CONDUCT.md`, `LICENSE`, `AGENTS.md`)
 - ✅ **DEVELOPMENT ARTIFACT EXCEPTION**: `specs/**/*.md` are allowed for technical
   specifications, planning, and checklists. They are repository development artifacts,
   not user-facing project documentation.
@@ -227,8 +227,8 @@ If you need to document anything:
 **ABSOLUTE DOCUMENTATION RULES:**
 
 - ❌ **FORBIDDEN FILES**: `*.md` in `packages/`, `apps/cli/`, `data/`, workspace root
-  (except `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `LICENSE`, `AGENTS.md`,
-  `WARP.md`)
+  (except `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`,
+  `LICENSE`, `AGENTS.md`, `WARP.md`)
 - ✅ **EXCEPTION**: `specs/**/*.md` are allowed as development-only specification and
   planning artifacts
 - ✅ **ONLY ALLOWED**: `.mdx` files in `apps/web/content/docs/` with proper frontmatter
@@ -255,7 +255,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Version**: 0.1.0 (Beta) · **License**: Apache 2.0 · **Updated**: October 15, 2025
+**Version**: 0.1.0 (Beta) · **License**: Apache 2.0 · **Updated**: June 23, 2026
 
 ## Active Technologies
 
