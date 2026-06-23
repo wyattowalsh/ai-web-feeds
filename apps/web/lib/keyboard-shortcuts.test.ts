@@ -114,10 +114,31 @@ describe("keyboard-shortcuts (lib)", () => {
     await expect.poll(() => h.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
 
     unmount();
-    // after unmount, further events should not call (if unregistered)
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "r" }));
-    // may still be 1 or more only if other listeners; we just ensure no throw and registration path executed
-    expect(true).toBe(true);
+    expect(h).toHaveBeenCalledTimes(1);
+  });
+
+  it("reloadShortcuts drops stale custom keys not in preferences", async () => {
+    const { preferences } = await import("./db");
+    const basePrefs = await preferences.get();
+    const getSpy = vi.spyOn(preferences, "get");
+
+    getSpy.mockResolvedValueOnce({
+      ...basePrefs,
+      keyboardShortcuts: { zzz: "archive" },
+    });
+    await shortcutManager.reloadShortcuts();
+    expect(shortcutManager.getShortcuts().get("zzz")).toBe("archive");
+
+    getSpy.mockResolvedValueOnce({
+      ...basePrefs,
+      keyboardShortcuts: {},
+    });
+    await shortcutManager.reloadShortcuts();
+    expect(shortcutManager.getShortcuts().has("zzz")).toBe(false);
+    expect(shortcutManager.getShortcuts().get("j")).toBe("next_article");
+
+    getSpy.mockRestore();
   });
 
   it("useShortcutKey returns a key for known action", () => {

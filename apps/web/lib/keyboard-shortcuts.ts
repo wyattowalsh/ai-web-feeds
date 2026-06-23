@@ -64,6 +64,7 @@ class KeyboardShortcutManager {
    * Load default shortcuts
    */
   private loadDefaultShortcuts(): void {
+    this.shortcuts.clear();
     const defaults = {
       j: "next_article",
       k: "previous_article",
@@ -236,6 +237,13 @@ class KeyboardShortcutManager {
    */
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
+  }
+
+  /**
+   * Reload shortcuts from preferences (defaults first, then user overrides).
+   */
+  async reloadShortcuts(): Promise<void> {
+    await this.loadShortcuts();
   }
 
   /**
