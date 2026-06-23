@@ -1,0 +1,32 @@
+{
+  "task_id": "FX-07-verify",
+  "agent": "lead",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-23T03:20:00Z",
+  "mode": "post-fix-verify",
+  "overall_health_score": 8.2,
+  "gates": {
+    "overall_health_score_gte_8": true,
+    "P0_count_eq_0": true,
+    "vitest_270_pass": true,
+    "reader_keyboard_e2e_pass": true
+  },
+  "resolved_findings": [
+    "Pressing '?' does not open keyboard shortcuts sheet",
+    "Article deep link returns 404 on production",
+    "Nav active state incorrect on home route",
+    "No site footer present",
+    "Topic cards lack per-card Open in reader",
+    "Docs sidebar too wide on mobile",
+    "Dark mode does not apply to blog surfaces",
+    "Corpus empty state renders filter controls without guard"
+  ],
+  "remaining_partial": [
+    "Mobile menu duplicate link roles (J6) — CSS affordance only",
+    "/for-you blocked without BACKEND_URL (intentional)"
+  ],
+  "tests_run": [
+    "cd apps/web && pnpm exec vitest run → 270 passed",
+    "cd apps/web && pnpm exec playwright test tests/e2e/reader-keyboard.spec.ts --project=chromium → 4 passed"
+  ]
+}

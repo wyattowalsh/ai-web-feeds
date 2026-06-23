@@ -1,0 +1,592 @@
+{
+  "audited_at": "2026-06-22T23:00:00Z",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "mode": "report-only",
+  "overall_health_score": 6.6,
+  "surface_scores": {
+    "hub": 7,
+    "reader": 5.5,
+    "discovery": 7.6,
+    "personal": 5,
+    "docs": 6,
+    "content": 7.5,
+    "flows": 6
+  },
+  "severity_counts": {
+    "critical": 2,
+    "high": 7,
+    "medium": 16,
+    "low": 12,
+    "nit": 2
+  },
+  "deduped_findings": [
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "severity": "critical",
+      "title": "Article deep link returns 404 on production",
+      "observation": "Navigating to /reader/article/openai-models-weekly-briefing-513f843668 returns a 404 page. The deep link is documented and referenced from other surfaces.",
+      "impact": "Users following article links (from search, topics, notifications, or external) land on a dead page. Breaks core deep linking contract for the reader.",
+      "recommendation": "Restore the article route or implement a graceful fallback/redirect. If the article slug is ephemeral, surface a 'not available' state with link back to reader or search instead of a hard 404.",
+      "effort": "M",
+      "wave_suggestion": "fix-wave-12",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/reader/article/openai-models-weekly-briefing-513f843668",
+        "status": 404
+      }
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "severity": "critical",
+      "title": "Pressing '?' does not open keyboard shortcuts sheet",
+      "observation": "The reader UI advertises 'Press ? for keyboard shortcuts'. Pressing '?' triggers live refresh but does not open the ReaderShortcutsSheet. No 'Keyboard shortcuts' heading present in DOM after keypress.",
+      "impact": "Advertised discoverability feature is non-functional on production. Users cannot discover keyboard shortcuts via the documented gesture. Breaks parity with tests and documented UX.",
+      "recommendation": "Ensure useReaderShortcutHandlers is mounted for reader empty and loaded states, and that listReaderShortcuts() + Sheet render path is reached.",
+      "effort": "S",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "high",
+      "title": "Nav active state incorrect on home route",
+      "observation": "On the home page (/), the 'Reader' nav link has data-active=\"true\" while the 'Home' link has data-active=\"false\". This causes the wrong nav item to appear selected.",
+      "impact": "Users on the hub see 'Reader' highlighted as current location, creating confusion about where they are and breaking expected active-state semantics.",
+      "recommendation": "Set data-active=\"true\" on the Home link when route is exactly '/'. Ensure Reader only active on /reader and subpaths.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": ["W1-hub", "W1-personal"],
+      "surface": "hub",
+      "severity": "high",
+      "title": "No site footer present",
+      "observation": "The page uses min-h-screen flex-col layout on body but contains no <footer> element. Scrolling to bottom reveals no footer content, links, or legal text. Dashboard also lacks footer.",
+      "impact": "Missing standard site chrome: no copyright, no secondary links (privacy, about), no visual page termination. Appears incomplete. Inconsistent chrome across surfaces.",
+      "recommendation": "Add a footer component with copyright, key secondary links, and consistent presence across all routes.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "topics",
+      "severity": "high",
+      "title": "Topic cards lack per-card 'Open in reader' quick actions (wave11 gap)",
+      "observation": "On /topics index and /topics/[topicId], each topic/source card is a single Link to the topic or source detail page. There is no secondary 'Open in reader' affordance on individual cards. A single 'Read topic' button exists at the topic detail header level only.",
+      "impact": "Users exploring topics must navigate to a detail page before reaching the reader. Discovery friction; inconsistent with search-results which surfaces 'Open in reader' for sources.",
+      "recommendation": "Add a compact 'Open in reader' secondary link or icon button on each topic card (index) and on source cards within a topic page, linking to /reader?topics=<id> or /reader?feed=<id>.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "topics",
+      "severity": "high",
+      "title": "Topic detail source cards have no reader handoff; only source page navigation",
+      "observation": "On /topics/agents, the 21 source cards link exclusively to /sources/* pages. The only reader entry is the header-level 'Read topic' button. No per-source quick entry to filtered reader.",
+      "impact": "Users who arrived via topic discovery cannot directly open a specific source in the reader from the topic page; must go through source detail or global reader.",
+      "recommendation": "Add an 'Open in reader' link on each source card within topic pages (or an icon button) that constructs /reader?feed=<sourceId>.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "topics",
+      "severity": "high",
+      "title": "Topics 'Read topic' on /topics/agents leads to /docs instead of reader",
+      "observation": "Clicking the 'Read topic' link from /topics/agents navigated to /docs (documentation page) rather than /reader with topic filter. The primary CTA does not handoff to reader as expected.",
+      "impact": "User journey from Topics/agents broken; users land in docs instead of content reader, confusing discovery flow.",
+      "recommendation": "Fix 'Read topic' link to target /reader?topics=agents (or appropriate filter). Ensure consistent handoff pattern matching search 'Continue in reader'.",
+      "effort": "S",
+      "wave_suggestion": "bugfix-wave"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "severity": "high",
+      "title": "Docs sidebar too wide on mobile (331px on 390px viewport) crowding content",
+      "observation": "On 390x844 viewport, the docs sidebar (fumadocs aside) measures ~331.5px wide and remains visible or only partially overlays. Link count 13+ creates dense vertical list. Main content area is squeezed or pushed.",
+      "impact": "Mobile docs reading is impaired: insufficient space for prose, possible overlap, high tap density in sidebar. Poor mobile sidebar UX.",
+      "recommendation": "Configure fumadocs DocsLayout to use mobile drawer/overlay (sidebarOpen or collapsible). Hide sidebar by default on <768px and provide hamburger that slides in full or 80% width panel.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "content",
+      "severity": "high",
+      "title": "Dark mode does not apply to blog surfaces; content remains light",
+      "observation": "Navigating to /blog and /blog/hub-and-blog and applying dark theme via class toggle + CSS variable injection leaves the main background and content cards in light beige/white with dark text. Only the hub nav bar appears dark.",
+      "impact": "Blog section breaks dark mode parity with the rest of the hub. Users who prefer dark see a jarring light content area when arriving from dark hub surfaces.",
+      "recommendation": "Ensure blog pages consume the theme-manager CSS variables (or Tailwind dark: variants) and that the root .dark class triggers full surface restyling.",
+      "effort": "M",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "severity": "high",
+      "title": "Load live sample click has inconsistent navigation outcome",
+      "observation": "Clicking 'Load live sample' (which calls refreshLatest(true)) sometimes remains on /reader and populates live posts with full reader chrome, and other times navigates to /search showing 'No matching articles found'.",
+      "impact": "Unpredictable UX. Users may expect in-place population of the reader desk; landing on search instead is disorienting and may make them think the action failed.",
+      "recommendation": "Make refreshLatest(true) strictly in-place for the reader route. Avoid any router.push/replace that takes the user out of the reader context.",
+      "effort": "S",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "medium",
+      "title": "Command palette (⌘K) exists but discovery relies on button hint only",
+      "observation": "Pressing ⌘K opens a functional command palette dialog listing routes. However, the only visible hint is the 'Search ⌘K' button text. No other entry point or keyboard shortcut callout is prominent on the hub surface.",
+      "impact": "Power users may discover ⌘K, but casual visitors have no indication of keyboard navigation or quick route access beyond the visible nav.",
+      "recommendation": "Consider adding a subtle persistent hint (e.g., bottom-right 'Press ⌘K' toast or footer note) or ensure the command palette is mentioned in onboarding.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "medium",
+      "title": "Mobile nav uses 'Toggle Menu' chevron with no clear open state affordance on first tap",
+      "observation": "On 390px viewport, a 'Toggle Menu' button (chevron) appears in the header. Tapping it reveals additional nav items. The transition is subtle; no backdrop, label change, or expanded state indicator is immediately obvious.",
+      "impact": "Mobile users may not immediately understand the expanded state or how to dismiss the menu.",
+      "recommendation": "Add a backdrop/overlay on menu open, change chevron to X, or add aria-expanded visual change. Consider labeled 'Menu' text at smallest widths.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "medium",
+      "title": "Onboarding card overlays primary CTA area on first visit",
+      "observation": "A 'Welcome / Start reading in three steps' card with 'Got it' and 'Dismiss onboarding' appears on the hub, partially overlaying or competing with the primary 'Open reader' and secondary CTA grid.",
+      "impact": "First-time visitors see competing UI; the hero value prop and CTAs are de-emphasized until they dismiss onboarding.",
+      "recommendation": "Consider making the onboarding less intrusive (sidebar, inline steps, or collapsible) or auto-dismiss after first interaction with primary CTA.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "severity": "medium",
+      "title": "Corpus empty state renders filter controls (search, source type, topics)",
+      "observation": "On /reader with no corpus, the accessibility tree and HTML include: textbox 'Search posts', combobox 'Source type', combobox 'Add topic focus', and the 'Filters and view' group. Filters are not hidden.",
+      "impact": "Users see interactive-looking filter UI with no results and no clear indication that a 'Load live sample' step is required before filters are meaningful.",
+      "recommendation": "Either (a) keep filters visible but disable or visually de-emphasize until live sample is loaded, or (b) hide the advanced filter rail in the ReaderCorpusEmpty path.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "search",
+      "severity": "medium",
+      "title": "ArticleTeaser 'Open' link targets article page, not reader (handoff inconsistency)",
+      "observation": "Search results render ArticleTeaser components. The trailing 'Open' link navigates to getArticlePath (article detail page). There is a top-level 'Continue in reader' when a query exists, but no per-result reader entry.",
+      "impact": "Search discovery does not feed the reader directly per item. Users expecting 'search then read' must either use the coarse 'Continue in reader' or leave the search context.",
+      "recommendation": "Add a per-result 'Read in reader' action on ArticleTeaser (or search result items) that links to /reader with appropriate filters (q, source, etc.).",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "search",
+      "severity": "medium",
+      "title": "Search 'Continue in reader' CTA uses identical surface styling to Search button",
+      "observation": "Both the form submit button and the 'Continue in reader' link (when query present) use: rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium. They sit in adjacent surface-card containers.",
+      "impact": "Weak visual distinction between 'search again' and 'switch to reader'. Users may not perceive the intended handoff escalation.",
+      "recommendation": "Differentiate the handoff CTA: use primary/brand treatment, or an arrow icon, or place it as a prominent inline banner.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "severity": "medium",
+      "title": "Top nav 'Docs' link lacks active state indicator on /docs",
+      "observation": "When on /docs or /docs/*, none of the header nav items (including 'Docs') carry data-active=\"true\" or aria-current. Home correctly marks active on /. Docs layout uses fumadocs + shared hub nav but active detection is not wired for docs subtree.",
+      "impact": "Breaks hub nav parity: user on docs does not see the current section highlighted in top chrome, inconsistent with Home/Reader surfaces.",
+      "recommendation": "Extend nav active logic (or fumadocs link props) to set data-active when pathname starts with '/docs'. Ensure 'Docs' is active for all doc subroutes.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "severity": "medium",
+      "title": "Docs page uses sidebar chrome breaking top-nav parity with home/reader",
+      "observation": "Navigating via header 'Docs' link lands on /docs which renders a sidebar layout ('Collapse Sidebar', docs TOC) and altered top nav. Header is not identical to / or /reader.",
+      "impact": "Inconsistent chrome across site; docs feels like separate app section, users lose context of global nav when in docs.",
+      "recommendation": "Align docs layout to share the same header/nav component as hub/reader/search. Make sidebar additional/collapsible without replacing primary chrome.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "severity": "medium",
+      "title": "Docs index content is thin; mostly links and headings, long vertical whitespace",
+      "observation": "The /docs landing renders a prose intro plus many anchor links and sections but limited visual cards or depth before the sidebar TOC. 'On this page' and main links feel list-heavy.",
+      "impact": "First impression of docs is sparse compared to hub surfaces. May not guide users strongly.",
+      "recommendation": "Add a quick-start card grid (Reader / Sources / Dashboard / CLI) or featured guide teasers at top of index.",
+      "effort": "S",
+      "wave_suggestion": "content-wave"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "mobile",
+      "severity": "medium",
+      "title": "Mobile menu click fails with strict mode violation due to duplicate link roles/texts",
+      "observation": "After opening mobile menu, clicking nav links like Topics/Sources resolved to 2 elements (one sm:hidden in header, one in content). Click using @ref failed.",
+      "impact": "Unreliable mobile navigation in automation and potentially flaky UX if ARIA not unique.",
+      "recommendation": "Ensure unique accessible names or use more specific selectors/data attrs for mobile menu items. Add aria-hidden or distinct labels for duplicated links.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "blog",
+      "severity": "medium",
+      "title": "Home nav link click from blog post page does not navigate",
+      "observation": "On /blog/hub-and-blog post, the header 'Home' link was present in snapshot, but clicking it resulted in no navigation (stayed on post). '← Back to all posts' worked correctly to /blog.",
+      "impact": "Broken expectation for hub nav from deep blog post; users must use back link or other.",
+      "recommendation": "Ensure all header nav links (esp Home) are fully functional on blog post pages. Check event handlers or next/link usage in post layout.",
+      "effort": "S",
+      "wave_suggestion": "bugfix-wave"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "content",
+      "severity": "medium",
+      "title": "'Updates' label has low contrast on blog index header card",
+      "observation": "The small 'Updates' eyebrow label inside the first white surface card on /blog is rendered in a very light gray that has insufficient contrast against the white card background.",
+      "impact": "Low-priority label is hard to read; reduces visual hierarchy and polish.",
+      "recommendation": "Use a higher-contrast muted ink token (e.g., textSecondary or --ink-muted with sufficient contrast) for the Updates label.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "content",
+      "severity": "medium",
+      "title": "Post page immersive variant removes full hub chrome, creating visual discontinuity",
+      "observation": "The blog post page uses HubPage variant='immersive' (max-w-3xl) and renders a minimal '← Blog' back link in the header area instead of the full hub navigation.",
+      "impact": "Users experience a context shift when moving from hub or /blog index into a post; the disappearance of familiar nav chrome may feel like a different app section.",
+      "recommendation": "Consider keeping the standard hub top nav while still using a constrained reading container for content, or provide a subtle persistent nav affordance inside immersive mode.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "search",
+      "severity": "low",
+      "title": "Search page empty state lacks visual affordance for the search input",
+      "observation": "Navigating to /search shows a search input and 'Search' button, but immediately displays 'No matching articles found' with suggestions. The input is not pre-focused and no example query chips are shown inline.",
+      "impact": "Users land on search with no guidance on what to type and an immediate negative empty-state message.",
+      "recommendation": "Auto-focus the query input on load, show example chips (e.g., 'llm', 'agents'), and soften the empty message to 'Enter a query to search…' until a search is attempted.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "low",
+      "title": "Hub nav includes many secondary links (Blog, Dashboard, Docs, GitHub) with no visual grouping",
+      "observation": "Desktop nav shows: Home, Reader, Search, For You, Sources, Topics, Blog, Dashboard, Docs, GitHub in a single inline list. No separators or grouping between core product links and secondary/docs links.",
+      "impact": "Visual noise; primary user actions (Reader, Search, For You) compete with secondary destinations.",
+      "recommendation": "Group secondary links (Blog, Docs, GitHub) to the right or in a 'More' menu. Consider moving Dashboard behind auth or to a user menu.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "low",
+      "title": "Mobile topic pills are numerous and may require horizontal scroll or wrapping",
+      "observation": "On mobile, the home surface shows many topic pills (research 73, blogs 63, open-source 60, …) which wrap into multiple rows, creating a dense band before the main content.",
+      "impact": "Users must scroll past a wall of tags before reaching primary actions.",
+      "recommendation": "Collapse tags behind a 'Topics (70)' expandable, or show top N and a 'More' affordance on mobile.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-personal",
+      "surface": "for-you",
+      "severity": "low",
+      "title": "For You intentionally empty when BACKEND_URL not configured",
+      "observation": "Page renders a clear message 'Recommendations require the optional ai-web-feeds backend service.' with links to /sources and deployment docs. No recommendations list or loading state shown for unauthenticated or unconfigured backend.",
+      "impact": "Feature surface is gated; users hitting the link directly may be confused unless they read the message. Not a bug per deployment model.",
+      "recommendation": "Ensure the empty state includes a stronger visual cue or CTA to the main reader. Consider hiding 'For You' nav item entirely when backend not configured.",
+      "effort": "S",
+      "wave_suggestion": "docs-wave"
+    },
+    {
+      "task_id": "W1-personal",
+      "surface": "dashboard",
+      "severity": "medium",
+      "title": "Dashboard lacks site footer consistent with hub surfaces",
+      "observation": "Page ends after operations card with no <footer> or secondary links. Matches prior hub observation.",
+      "impact": "Inconsistent chrome across surfaces; no copyright or policy links termination.",
+      "recommendation": "Add shared footer component to all non-docs routes including dashboard and for-you.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "topics",
+      "severity": "low",
+      "title": "Topics index renders as flat list rows on mobile; no card separation or tap-target affordance",
+      "observation": "At 390x844 the /topics page shows a long vertical list of topic rows with subtle dividers. Rows are full-width, flat, without card chrome.",
+      "impact": "Slightly reduced perceived interactivity and grouping on mobile discovery. May feel like plain text navigation rather than content collections.",
+      "recommendation": "Consider subtle card or surface treatment for topic rows on narrow viewports, or at minimum ensure chevron + count are strongly right-aligned.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "topics",
+      "severity": "low",
+      "title": "All topic cards have uniform visual weight regardless of source count",
+      "observation": "On /topics desktop grid, cards for 'Research (73)' and 'Blogs (63)' look identical in size/emphasis to 'Reasoning Models (0)' or 'Fairness (0)'. The only signal is a small secondary badge.",
+      "impact": "Users scanning for high-value collections must read numbers rather than perceive density via layout. Popular topics not visually prioritized.",
+      "recommendation": "Optional: scale subtle visual weight (padding, border, or badge prominence) for high-count topics, or surface a 'Popular' section.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "content",
+      "severity": "low",
+      "title": "Mobile post header is minimal and differs from hub/mobile index patterns",
+      "observation": "On 390x844 the post page header shows a back arrow button, logo, search icon and chevron, but no full link list or theme toggle affordance in the captured state.",
+      "impact": "Small inconsistency in header treatment across blog surfaces on mobile; minor orientation cost.",
+      "recommendation": "Align mobile post header treatment with mobile hub/index patterns or document the intentional minimalism.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "content",
+      "severity": "low",
+      "title": "No RSS/Atom/JSON feed discovery links on individual post pages",
+      "observation": "The index page exposes a visible 'RSS' link in the header card pointing to /blog/rss.xml. Individual post pages have no feed links or discovery metadata surfaced in the UI.",
+      "impact": "Users who land on a post directly have no in-page cue to subscribe to the blog feed.",
+      "recommendation": "Optionally surface a small 'Subscribe' / RSS icon link on post pages, or ensure <link rel=\"alternate\"> tags are present in <head>.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "mobile",
+      "severity": "low",
+      "title": "Mobile menu 'Toggle Menu' opens but no strong visual affordance for state or dismiss",
+      "observation": "Menu toggles to show full nav items, button shows [expanded]. But no backdrop, X icon change, or tap-outside clear in initial capture.",
+      "impact": "Slight discoverability friction on mobile.",
+      "recommendation": "Enhance toggle to X on open, add scrim/backdrop, ensure escape key and outside click closes.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "severity": "low",
+      "title": "Hero uses moderate scale; subhead is lengthy",
+      "observation": "H1 reads 'Read AI writing across the open web' at ~text-2xl sm:text-3xl. The subhead paragraph is long and may wrap heavily on constrained viewports.",
+      "impact": "Moderate visual hierarchy; could be punchier.",
+      "recommendation": "Consider slightly larger hero title or tighter subhead. Test with real content width to ensure no awkward wraps.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-personal",
+      "surface": "dashboard",
+      "severity": "low",
+      "title": "Metric grid on dashboard stacks to single column on mobile with compact text",
+      "observation": "4 metric cards (Sources, Verified, Topics, Validation) collapse to vertical stack. Text and progress bars remain readable but dense.",
+      "impact": "Usable but may feel cramped on very small viewports; no major breakage.",
+      "recommendation": "Consider 2-col explicit or adjust padding for mobile metrics.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "flows",
+      "severity": "low",
+      "title": "Some journeys rely on direct /goto or query params rather than pure UI clicks for entry",
+      "observation": "For stability used direct URLs e.g. /search?q=agent, /topics/agents. Pure UI from home via search button was not fully exercised (⌘K or fill).",
+      "impact": "Lower coverage of in-app search invocation and query propagation.",
+      "recommendation": "In future audits include snapshot after opening search palette and typing query to verify end-to-end.",
+      "effort": "S",
+      "wave_suggestion": "test-improve"
+    },
+    {
+      "task_id": "W1-discovery",
+      "surface": "search",
+      "severity": "nit",
+      "title": "Search input and 'Search' button have tight padding on mobile; may benefit from larger tap targets",
+      "observation": "The search form uses py-2 on input and standard button padding. On 390px in dark, the row is compact; the submit button text 'Search' is short but the overall control height is modest.",
+      "impact": "Minor; current targets meet basic usability but are not generous.",
+      "recommendation": "Increase min-height to ~44px or add py-2.5/3 on the form row for mobile.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "severity": "nit",
+      "title": "Mobile header + sidebar affordance density on narrow docs pages",
+      "observation": "At 390px the top 'AI Web Feeds Open web AI reader' branding + Search + nav links + docs title take space; combined with persistent wide sidebar creates vertical scrolling before content.",
+      "impact": "Slight friction on very small screens for docs consumption.",
+      "recommendation": "Tighten mobile header (smaller logo/title) or collapse top branding on scroll/doc pages.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    }
+  ],
+  "top_10_findings": [
+    {
+      "rank": 1,
+      "severity": "critical",
+      "title": "Article deep link returns 404 on production",
+      "effort": "M",
+      "surface": "reader"
+    },
+    {
+      "rank": 2,
+      "severity": "critical",
+      "title": "Pressing '?' does not open keyboard shortcuts sheet",
+      "effort": "S",
+      "surface": "reader"
+    },
+    {
+      "rank": 3,
+      "severity": "high",
+      "title": "Topics 'Read topic' on /topics/agents leads to /docs instead of reader",
+      "effort": "S",
+      "surface": "topics"
+    },
+    {
+      "rank": 4,
+      "severity": "high",
+      "title": "No site footer present",
+      "effort": "M",
+      "surface": "hub"
+    },
+    {
+      "rank": 5,
+      "severity": "high",
+      "title": "Dark mode does not apply to blog surfaces; content remains light",
+      "effort": "M",
+      "surface": "content"
+    },
+    {
+      "rank": 6,
+      "severity": "high",
+      "title": "Docs sidebar too wide on mobile (331px on 390px viewport) crowding content",
+      "effort": "M",
+      "surface": "docs"
+    },
+    {
+      "rank": 7,
+      "severity": "high",
+      "title": "Topic cards lack per-card 'Open in reader' quick actions (wave11 gap)",
+      "effort": "S",
+      "surface": "topics"
+    },
+    {
+      "rank": 8,
+      "severity": "high",
+      "title": "Topic detail source cards have no reader handoff; only source page navigation",
+      "effort": "S",
+      "surface": "topics"
+    },
+    {
+      "rank": 9,
+      "severity": "high",
+      "title": "Nav active state incorrect on home route",
+      "effort": "S",
+      "surface": "hub"
+    },
+    {
+      "rank": 10,
+      "severity": "high",
+      "title": "Load live sample click has inconsistent navigation outcome",
+      "effort": "S",
+      "surface": "reader"
+    }
+  ],
+  "journey_summary": {
+    "J1": {
+      "name": "Home → Reader (CTA or nav link)",
+      "status": "pass",
+      "notes": "Home CTA to /reader works correctly."
+    },
+    "J2": {
+      "name": "Topics/agents → reader handoff",
+      "status": "partial",
+      "notes": "Clicking 'Read topic' from /topics/agents landed on /docs instead of reader. Major handoff broken."
+    },
+    "J3": {
+      "name": "Search q=agent → reader",
+      "status": "pass",
+      "notes": "Search handoff to /reader?q= works."
+    },
+    "J4": {
+      "name": "Home nav → /docs chrome parity",
+      "status": "pass",
+      "notes": "Navigation works; docs chrome differs (sidebar layout) but route reachable."
+    },
+    "J5": {
+      "name": "Dark on / then goto /reader — theme persists?",
+      "status": "pass",
+      "notes": "Dark class persists across navigation; theme state maintained."
+    },
+    "J6": {
+      "name": "Mobile 390x844 menu through 2 routes",
+      "status": "partial",
+      "notes": "Mobile menu opens; click targeting had strict mode violations due to duplicate link roles/texts. Navigation partially unreliable."
+    },
+    "J7": {
+      "name": "/blog → post → back/hub nav",
+      "status": "partial",
+      "notes": "Blog post link and back-to-posts work. Home nav link from post page did not navigate (stayed on post)."
+    }
+  },
+  "screenshot_index": {
+    "W0-scout": 3,
+    "W1-hub": 16,
+    "W1-reader": 20,
+    "W1-discovery": 12,
+    "W1-personal": 4,
+    "W1-docs": 6,
+    "W1-content": 9,
+    "W2-flows": 25,
+    "total": 95
+  },
+  "blocked_routes": [
+    "/for-you (requires BACKEND_URL for full personalization; shows intent message)",
+    "/reader/article/* (404 on production deep links; article route not wired or corpus missing)",
+    "/reader (corpus empty by default; 'Load live sample' required to populate)"
+  ],
+  "passed_highlights": [
+    "Theme toggles (light/dark/system) are present and functional on hub chrome",
+    "Command palette (⌘K) opens and lists routes correctly on hub",
+    "Primary CTAs (Open reader, Search, For You, Browse sources, Topics) are present and linked",
+    "Dark theme applies across most viewports without obvious contrast breakage (except blog surfaces)",
+    "Search page renders input controls and empty-state messaging",
+    "GitHub link present in nav (external)",
+    "Viewport responsive: desktop nav hides mobile toggle; mobile shows Toggle Menu",
+    "base_url loads / (200 via gstack)",
+    "base_url loads /reader (200)",
+    "base_url loads /topics, /topics/agents, /search, /blog, /docs (200)",
+    "RSS link present and functional on /blog index (returns valid RSS 2.0)",
+    "Post pages render title, date, summary, and body content",
+    "Blog index loads and lists seeded posts with titles, summaries, dates",
+    "Dashboard renders live catalog stats without errors",
+    "⌘K search toggle present on /docs (parity good)",
+    "J1 home-CTA to /reader works",
+    "J3 search handoff to /reader?q= works",
+    "J5 theme class persists across goto navigation"
+  ],
+  "env_notes": "Production corpus empty by default. 'Load live sample' invokes refreshLatest(true). Shortcuts sheet depends on listReaderShortcuts() and handler wiring via useReaderShortcutHandlers. Article deep link 404 persists from W0-scout. /for-you requires BACKEND_URL. Blog surfaces do not consume theme tokens for dark mode."
+}

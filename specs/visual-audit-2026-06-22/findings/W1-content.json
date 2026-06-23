@@ -1,0 +1,151 @@
+{
+  "task_id": "W1-content",
+  "agent": "visual-qa",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T12:40:00Z",
+  "routes_audited": ["/blog", "/blog/hub-and-blog"],
+  "viewports": ["390x844", "1440x900"],
+  "themes": ["light", "dark"],
+  "health_score": 7.5,
+  "deep_links": {
+    "blog_index": "/blog",
+    "blog_post": "/blog/hub-and-blog",
+    "rss": "/blog/rss.xml"
+  },
+  "findings": [
+    {
+      "task_id": "W1-content",
+      "surface": "blog",
+      "viewport": "all",
+      "theme": "dark",
+      "category": "theme",
+      "severity": "P1",
+      "confidence": "high",
+      "title": "Dark mode does not apply to blog surfaces; content remains light",
+      "observation": "Navigating to /blog and /blog/hub-and-blog and applying dark theme via class toggle + CSS variable injection leaves the main background and content cards in light beige/white with dark text. Only the hub nav bar (pre-existing dark chrome) appears dark. Hub surfaces elsewhere (e.g., home) render true dark backgrounds when toggled.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog",
+        "screenshots": [
+          "screenshots/W1-content/blog__1440x900__dark__baseline.png",
+          "screenshots/W1-content/blog__390x844__dark__baseline.png",
+          "screenshots/W1-content/hub-and-blog__1440x900__dark__baseline.png",
+          "screenshots/W1-content/hub-and-blog__390x844__dark__baseline.png"
+        ],
+        "selector": "main, .page-wrap, .surface-card"
+      },
+      "impact": "Blog section breaks dark mode parity with the rest of the hub. Users who prefer dark see a jarring light content area when arriving from dark hub surfaces.",
+      "recommendation": "Ensure blog pages consume the theme-manager CSS variables (or Tailwind dark: variants) and that the root .dark class triggers full surface restyling. Verify HubPage and surface-card components read --color-* tokens or have dark: variants for backgrounds, borders, and text.",
+      "effort": "M",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "blog",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "typography",
+      "severity": "P2",
+      "confidence": "high",
+      "title": "'Updates' label has low contrast on blog index header card",
+      "observation": "The small 'Updates' eyebrow label inside the first white surface card on /blog is rendered in a very light gray that has insufficient contrast against the white card background.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog",
+        "screenshot": "screenshots/W1-content/blog__1440x900__light__baseline.png",
+        "selector": "text with 'Updates'"
+      },
+      "impact": "Low-priority label is hard to read; reduces visual hierarchy and polish.",
+      "recommendation": "Use a higher-contrast muted ink token (e.g., textSecondary or --ink-muted with sufficient contrast) for the Updates label, or remove it if redundant with the Blog title.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "blog",
+      "viewport": "all",
+      "theme": "all",
+      "category": "navigation",
+      "severity": "P2",
+      "confidence": "medium",
+      "title": "Post page immersive variant removes full hub chrome, creating visual discontinuity",
+      "observation": "The blog post page uses HubPage variant='immersive' (max-w-3xl) and renders a minimal '← Blog' back link in the header area instead of the full hub navigation. On mobile the header is further reduced (back button, logo, search icon, chevron) compared to the hub mobile header.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog/hub-and-blog",
+        "screenshots": [
+          "screenshots/W1-content/hub-and-blog__1440x900__light__baseline.png",
+          "screenshots/W1-content/hub-and-blog__390x844__light__baseline.png"
+        ],
+        "components": ["apps/web/components/hub/hub-page.tsx", "apps/web/app/(home)/blog/[slug]/page.tsx"]
+      },
+      "impact": "Users experience a context shift when moving from hub or /blog index into a post; the disappearance of familiar nav chrome may feel like a different app section.",
+      "recommendation": "Consider keeping the standard hub top nav while still using a constrained reading container for content, or provide a subtle persistent nav affordance inside immersive mode.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "blog",
+      "viewport": "390x844",
+      "theme": "all",
+      "category": "layout",
+      "severity": "P3",
+      "confidence": "medium",
+      "title": "Mobile post header is minimal and differs from hub/mobile index patterns",
+      "observation": "On 390x844 the post page header shows a back arrow button, logo, search icon and chevron, but no full link list or theme toggle affordance in the captured state. This differs from both the desktop post header and the mobile /blog index header.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog/hub-and-blog",
+        "screenshot": "screenshots/W1-content/hub-and-blog__390x844__light__baseline.png",
+        "viewport": "390x844"
+      },
+      "impact": "Small inconsistency in header treatment across blog surfaces on mobile; minor orientation cost.",
+      "recommendation": "Align mobile post header treatment with mobile hub/index patterns or document the intentional minimalism.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-content",
+      "surface": "blog",
+      "viewport": "all",
+      "theme": "all",
+      "category": "content",
+      "severity": "P3",
+      "confidence": "low",
+      "title": "No RSS/Atom/JSON feed discovery links on individual post pages",
+      "observation": "The index page exposes a visible 'RSS' link in the header card pointing to /blog/rss.xml (which returns valid RSS 2.0). Individual post pages have no feed links or discovery metadata surfaced in the UI.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog/hub-and-blog",
+        "rss": "https://aiwebfeeds.vercel.app/blog/rss.xml",
+        "screenshots": [
+          "screenshots/W1-content/blog__1440x900__light__baseline.png",
+          "screenshots/W1-content/hub-and-blog__1440x900__light__baseline.png"
+        ]
+      },
+      "impact": "Users who land on a post directly have no in-page cue to subscribe to the blog feed.",
+      "recommendation": "Optionally surface a small 'Subscribe' / RSS icon link on post pages, or ensure <link rel=\"alternate\"> tags are present in <head>.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    }
+  ],
+  "passed_checks": [
+    "Blog index loads and lists seeded posts with titles, summaries, dates, and 'Read →' links",
+    "RSS link present and functional on /blog index (returns valid RSS 2.0)",
+    "Post pages render title, date, summary, and body content with 'Back to all posts' link",
+    "Navigation chrome on /blog index matches hub nav structure and active state",
+    "Typography hierarchy is clear (large title, smaller body, consistent date styling)",
+    "Cards use consistent rounded + shadow styling across index and post",
+    "Reading width is intentionally constrained (immersive max-w-3xl on posts; centered cards on index)",
+    "Mobile 390x844 stacks cards vertically with no obvious overflow or clipping",
+    "All required screenshots captured (min 6) at 390x844 and 1440x900, light and dark attempts"
+  ],
+  "blocked": [],
+  "screenshots": [
+    "screenshots/W1-content/blog__1440x900__light__baseline.png",
+    "screenshots/W1-content/blog__1440x900__dark__baseline.png",
+    "screenshots/W1-content/blog__390x844__light__baseline.png",
+    "screenshots/W1-content/blog__390x844__dark__baseline.png",
+    "screenshots/W1-content/hub-and-blog__1440x900__light__baseline.png",
+    "screenshots/W1-content/hub-and-blog__1440x900__dark__baseline.png",
+    "screenshots/W1-content/hub-and-blog__390x844__light__baseline.png",
+    "screenshots/W1-content/hub-and-blog__390x844__dark__baseline.png",
+    "screenshots/W1-content/home__1440x900__light__baseline.png"
+  ]
+}

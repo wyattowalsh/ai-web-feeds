@@ -1,0 +1,147 @@
+{
+  "task_id": "W1-docs",
+  "agent": "subagent",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T20:35:00.000Z",
+  "routes_audited": ["/docs", "/docs/development/cli"],
+  "viewports": ["390x844", "1440x900"],
+  "themes": ["light", "dark"],
+  "health_score": 6,
+  "findings": [
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Top nav 'Docs' link lacks active state indicator on /docs",
+      "observation": "When on /docs or /docs/*, none of the header nav items (including 'Docs') carry data-active=\"true\" or aria-current. Home correctly marks active on /. Docs layout uses fumadocs + shared hub nav but active detection is not wired for docs subtree.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W1-docs/docs__1440x900__light__baseline.png",
+        "selector": "nav a[href='/docs'], a[data-active], [aria-current]"
+      },
+      "impact": "Breaks hub nav parity: user on docs does not see the current section highlighted in top chrome, inconsistent with Home/Reader surfaces.",
+      "recommendation": "Extend nav active logic (or fumadocs link props) to set data-active when pathname starts with '/docs'. Ensure 'Docs' is active for all doc subroutes.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "layout",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Docs sidebar too wide on mobile (331px on 390px viewport) crowding content",
+      "observation": "On 390x844 viewport, the docs sidebar (fumadocs aside) measures ~331.5px wide and remains visible or only partially overlays. Link count 13+ creates dense vertical list. Main content area is squeezed or pushed.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs/development/cli",
+        "screenshot": "screenshots/W1-docs/docs-development-cli__390x844__light__baseline.png",
+        "selector": "aside, [data-sidebar], .fumadocs-sidebar"
+      },
+      "impact": "Mobile docs reading is impaired: insufficient space for prose, possible overlap, high tap density in sidebar. Poor mobile sidebar UX.",
+      "recommendation": "Configure fumadocs DocsLayout to use mobile drawer/overlay (sidebarOpen or collapsible). Hide sidebar by default on <768px and provide hamburger that slides in full or 80% width panel. Add responsive width rules.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "all",
+      "theme": "all",
+      "category": "navigation",
+      "severity": "low",
+      "confidence": "high",
+      "title": "⌘K / search toggle visible on docs (parity good)",
+      "observation": "Search⌘K affordance is rendered in header via fumadocs SearchToggle on both desktop and mobile. Text 'Search⌘K' appears. Command palette (global ⌘K) also reachable from docs.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W1-docs/docs__1440x900__light__baseline.png",
+        "selector": "button[aria-label*='Search'], .search-toggle, text containing ⌘K"
+      },
+      "impact": "Positive: consistent quick-access search entrypoint across hub and docs.",
+      "recommendation": "No action; monitor that palette results include doc pages via /api/docs/search.",
+      "effort": "S",
+      "wave_suggestion": "n/a"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "visual-polish",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Docs index content is thin; mostly links and headings, long vertical whitespace",
+      "observation": "The /docs landing renders a prose intro plus many anchor links and sections but limited visual cards or depth before the sidebar TOC. 'On this page' and main links feel list-heavy.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W1-docs/docs__1440x900__light__baseline.png",
+        "selector": ".prose, main, [data-toc]"
+      },
+      "impact": "First impression of docs is sparse compared to hub surfaces. May not guide users strongly.",
+      "recommendation": "Add a quick-start card grid (Reader / Sources / Dashboard / CLI) or featured guide teasers at top of index.",
+      "effort": "S",
+      "wave_suggestion": "content-wave"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "category": "theming",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Dark theme on docs applies correctly (fumadocs + custom vars)",
+      "observation": "Switching to dark class updates colors without breakage; text, cards, sidebar legible. Consistent with other audited surfaces.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W1-docs/docs__1440x900__dark__baseline.png",
+        "selector": "html.dark, .dark"
+      },
+      "impact": "Good consistency.",
+      "recommendation": "Continue verifying code blocks and fumadocs elements in dark.",
+      "effort": "S",
+      "wave_suggestion": "n/a"
+    },
+    {
+      "task_id": "W1-docs",
+      "surface": "docs",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "layout",
+      "severity": "nit",
+      "confidence": "medium",
+      "title": "Mobile header + sidebar affordance density on narrow docs pages",
+      "observation": "At 390px the top 'AI Web Feeds Open web AI reader' branding + Search + nav links + docs title take space; combined with persistent wide sidebar creates vertical scrolling before content.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W1-docs/docs__390x844__light__baseline.png",
+        "selector": "header, nav, aside"
+      },
+      "impact": "Slight friction on very small screens for docs consumption.",
+      "recommendation": "Tighten mobile header (smaller logo/title) or collapse top branding on scroll/doc pages.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    }
+  ],
+  "passed_checks": [
+    "⌘K search toggle present on /docs",
+    "dark theme renders without contrast loss on docs",
+    "CLI doc page content complete and scrollable",
+    "shared top nav present on docs (hub parity base)"
+  ],
+  "blocked": [],
+  "screenshots": [
+    "screenshots/W1-docs/docs__390x844__light__baseline.png",
+    "screenshots/W1-docs/docs__390x844__dark__baseline.png",
+    "screenshots/W1-docs/docs__1440x900__light__baseline.png",
+    "screenshots/W1-docs/docs__1440x900__dark__baseline.png",
+    "screenshots/W1-docs/docs-development-cli__390x844__light__baseline.png",
+    "screenshots/W1-docs/docs-development-cli__1440x900__light__baseline.png"
+  ]
+}

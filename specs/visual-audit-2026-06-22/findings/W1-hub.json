@@ -1,0 +1,221 @@
+{
+  "task_id": "W1-hub",
+  "agent": "subagent",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T12:25:00.000Z",
+  "routes_audited": ["/", "/search"],
+  "viewports": ["390x844", "1440x900"],
+  "themes": ["light", "dark"],
+  "health_score": 7,
+  "findings": [
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Nav active state incorrect on home route",
+      "observation": "On the home page (/), the 'Reader' nav link has data-active=\"true\" while the 'Home' link has data-active=\"false\". This causes the wrong nav item to appear selected.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__baseline.png",
+        "selector": "nav a[href='/'], nav a[href='/reader']"
+      },
+      "impact": "Users on the hub see 'Reader' highlighted as current location, creating confusion about where they are and breaking expected active-state semantics.",
+      "recommendation": "Set data-active=\"true\" on the Home link when route is exactly '/'. Ensure Reader only active on /reader and subpaths.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "all",
+      "theme": "all",
+      "category": "layout",
+      "severity": "high",
+      "confidence": "high",
+      "title": "No site footer present",
+      "observation": "The page uses min-h-screen flex-col layout on body but contains no <footer> element. Scrolling to bottom reveals no footer content, links, or legal text.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__footer.png",
+        "selector": "footer, body > *:last-child"
+      },
+      "impact": "Missing standard site chrome: no copyright, no secondary links (privacy, about), no visual page termination. Appears incomplete.",
+      "recommendation": "Add a footer component with copyright, key secondary links, and consistent presence across all routes.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Command palette (⌘K) exists but discovery relies on button hint only",
+      "observation": "Pressing ⌘K opens a functional command palette dialog listing routes (Home, Reader, Search, etc.). However, the only visible hint is the 'Search ⌘K' button text. No other entry point or keyboard shortcut callout is prominent on the hub surface.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__cmdk.png",
+        "selector": "button[data-search-full]"
+      },
+      "impact": "Power users may discover ⌘K, but casual visitors have no indication of keyboard navigation or quick route access beyond the visible nav.",
+      "recommendation": "Consider adding a subtle persistent hint (e.g., bottom-right 'Press ⌘K' toast or footer note) or ensure the command palette is mentioned in onboarding.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Mobile nav uses 'Toggle Menu' chevron with no clear open state affordance on first tap",
+      "observation": "On 390px viewport, a 'Toggle Menu' button (chevron) appears in the header. Tapping it reveals additional nav items. The transition is subtle; no backdrop, label change, or expanded state indicator is immediately obvious in the captured state.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__390x844__light__navopen.png",
+        "selector": "button[aria-label='Toggle Menu']"
+      },
+      "impact": "Mobile users may not immediately understand the expanded state or how to dismiss the menu.",
+      "recommendation": "Add a backdrop/overlay on menu open, change chevron to X, or add aria-expanded visual change. Consider labeled 'Menu' text at smallest widths.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "visual-polish",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Onboarding card overlays primary CTA area on first visit",
+      "observation": "A 'Welcome / Start reading in three steps' card with 'Got it' and 'Dismiss onboarding' appears on the hub, partially overlaying or competing with the primary 'Open reader' and secondary CTA grid.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__baseline.png",
+        "selector": "button:has-text('Got it'), button:has-text('Dismiss onboarding')"
+      },
+      "impact": "First-time visitors see competing UI; the hero value prop and CTAs are de-emphasized until they dismiss onboarding.",
+      "recommendation": "Consider making the onboarding less intrusive (sidebar, inline steps, or collapsible) or auto-dismiss after first interaction with primary CTA.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "search",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "forms",
+      "severity": "low",
+      "confidence": "high",
+      "title": "Search page empty state lacks visual affordance for the search input",
+      "observation": "Navigating to /search shows a search input and 'Search' button, but immediately displays 'No matching articles found' with suggestions. The input is not pre-focused and no example query chips are shown inline.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/search",
+        "screenshot": "screenshots/W1-hub/search__1440x900__light__empty.png",
+        "selector": "input[placeholder*='Search'], main"
+      },
+      "impact": "Users land on search with no guidance on what to type and an immediate negative empty-state message.",
+      "recommendation": "Auto-focus the query input on load, show example chips (e.g., 'llm', 'agents'), and soften the empty message to 'Enter a query to search…' until a search is attempted.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "all",
+      "theme": "all",
+      "category": "navigation",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Hub nav includes many secondary links (Blog, Dashboard, Docs, GitHub) with no visual grouping",
+      "observation": "Desktop nav shows: Home, Reader, Search, For You, Sources, Topics, Blog, Dashboard, Docs, GitHub in a single inline list. No separators or grouping between core product links and secondary/docs links.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__baseline.png",
+        "selector": "nav ul"
+      },
+      "impact": "Visual noise; primary user actions (Reader, Search, For You) compete with secondary destinations.",
+      "recommendation": "Group secondary links (Blog, Docs, GitHub) to the right or in a 'More' menu. Consider moving Dashboard behind auth or to a user menu.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "typography",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Hero uses moderate scale; subhead is lengthy",
+      "observation": "H1 reads 'Read AI writing across the open web' at ~text-2xl sm:text-3xl. The subhead paragraph is long and may wrap heavily on constrained viewports. CTA grid below is compact.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__1440x900__light__hero.png",
+        "selector": "h1"
+      },
+      "impact": "Moderate visual hierarchy; could be punchier.",
+      "recommendation": "Consider slightly larger hero title or tighter subhead. Test with real content width to ensure no awkward wraps.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-hub",
+      "surface": "hub",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "touch",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Mobile topic pills are numerous and may require horizontal scroll or wrapping",
+      "observation": "On mobile, the home surface shows many topic pills (research 73, blogs 63, open-source 60, …) which wrap into multiple rows, creating a dense band before the main content.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W1-hub/home__390x844__light__topics.png",
+        "selector": "button[aria-pressed]"
+      },
+      "impact": "Users must scroll past a wall of tags before reaching primary actions.",
+      "recommendation": "Collapse tags behind a 'Topics (70)' expandable, or show top N and a 'More' affordance on mobile.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    }
+  ],
+  "passed_checks": [
+    "Theme toggles (light/dark/system) are present and functional on hub chrome",
+    "Command palette (⌘K) opens and lists routes correctly",
+    "Primary CTAs (Open reader, Search, For You, Browse sources, Topics) are present and linked",
+    "Mobile 'Toggle Menu' and 'Open Search' buttons exist",
+    "Dark theme applies across viewports without obvious contrast breakage",
+    "Search page renders input controls and empty-state messaging",
+    "GitHub link present in nav (external)",
+    "Viewport responsive: desktop nav hides mobile toggle; mobile shows Toggle Menu"
+  ],
+  "blocked": [],
+  "screenshots": [
+    "screenshots/W1-hub/home__1440x900__light__baseline.png",
+    "screenshots/W1-hub/home__1440x900__dark__baseline.png",
+    "screenshots/W1-hub/home__390x844__light__baseline.png",
+    "screenshots/W1-hub/home__390x844__dark__baseline.png",
+    "screenshots/W1-hub/search__1440x900__light__baseline.png",
+    "screenshots/W1-hub/search__1440x900__dark__baseline.png",
+    "screenshots/W1-hub/search__390x844__light__baseline.png",
+    "screenshots/W1-hub/search__390x844__dark__baseline.png",
+    "screenshots/W1-hub/home__390x844__light__topics.png",
+    "screenshots/W1-hub/home__390x844__light__navopen.png",
+    "screenshots/W1-hub/home__1440x900__light__cmdk.png",
+    "screenshots/W1-hub/home__1440x900__light__footer.png",
+    "screenshots/W1-hub/home__1440x900__dark__footer.png",
+    "screenshots/W1-hub/search__1440x900__light__empty.png",
+    "screenshots/W1-hub/home__1440x900__light__baseline2.png",
+    "screenshots/W1-hub/home__1440x900__light__hero.png"
+  ]
+}

@@ -1,0 +1,268 @@
+{
+  "task_id": "W2-flows",
+  "agent": "subagent",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T22:10:00.000Z",
+  "health_score": 6,
+  "journeys": [
+    {
+      "id": "J1",
+      "name": "Home → Reader (CTA or nav link)",
+      "status": "pass",
+      "steps": [
+        "goto / (1440x900 light)",
+        "snapshot -i to get refs",
+        "click @e16 'Open reader'",
+        "wait networkidle",
+        "at /reader",
+        "screenshot J1__reader_from_cta"
+      ],
+      "findings": []
+    },
+    {
+      "id": "J2",
+      "name": "Topics/agents → reader handoff",
+      "status": "partial",
+      "steps": [
+        "goto /topics",
+        "screenshot topics_index",
+        "click @e28 'Agents'",
+        "at /topics/agents",
+        "screenshot agents page",
+        "click @e16 'Read topic'",
+        "unexpected: landed on /docs",
+        "screenshot read_topic_to (docs)"
+      ],
+      "findings": ["F1"]
+    },
+    {
+      "id": "J3",
+      "name": "Search q=agent → reader",
+      "status": "pass",
+      "steps": [
+        "goto /search?q=agent",
+        "screenshot search page",
+        "click @e18 'Continue in reader'",
+        "at /reader?q=agent",
+        "screenshot reader"
+      ],
+      "findings": []
+    },
+    {
+      "id": "J4",
+      "name": "Home nav → /docs chrome parity",
+      "status": "pass",
+      "steps": [
+        "goto /",
+        "click @e10 'Docs'",
+        "at /docs",
+        "screenshot docs_from_nav"
+      ],
+      "findings": ["F2"]
+    },
+    {
+      "id": "J5",
+      "name": "Dark on / then goto /reader — theme persists?",
+      "status": "pass",
+      "steps": [
+        "goto /",
+        "click @e14 dark or js add dark",
+        "screenshot home dark",
+        "goto /reader",
+        "screenshot reader (dark class present)",
+        "js confirmed 'dark' in className"
+      ],
+      "findings": []
+    },
+    {
+      "id": "J6",
+      "name": "Mobile 390x844 menu through 2 routes",
+      "status": "partial",
+      "steps": [
+        "viewport 390x844",
+        "goto /",
+        "click @e3 'Toggle Menu'",
+        "screenshot menu open",
+        "attempt click topics (ref conflict)",
+        "goto /topics, /blog",
+        "screenshots for routes"
+      ],
+      "findings": ["F3", "F4"]
+    },
+    {
+      "id": "J7",
+      "name": "/blog → post → back/hub nav",
+      "status": "partial",
+      "steps": [
+        "goto /blog",
+        "click @e18 'Read →'",
+        "at /blog/hub-and-blog",
+        "screenshot post",
+        "click @e17 '← Back to all posts' → /blog",
+        "Home click from post did not navigate"
+      ],
+      "findings": ["F5"]
+    }
+  ],
+  "findings": [
+    {
+      "task_id": "W2-flows",
+      "surface": "topics",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Topics 'Read topic' on /topics/agents leads to /docs instead of reader",
+      "observation": "Clicking the 'Read topic' link (@e16) from /topics/agents navigated to /docs (documentation page) rather than /reader with topic filter. The topic page lists sources but the primary CTA does not handoff to reader as expected for 'agents' journey.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/topics/agents",
+        "screenshot": "screenshots/W2-flows/J2__read_topic_to_reader__1440x900__light.png",
+        "selector": "a[href*='Read topic'], @e16"
+      },
+      "impact": "User journey from Topics/agents broken; users land in docs instead of content reader, confusing discovery flow.",
+      "recommendation": "Fix 'Read topic' link to target /reader?topic=agents (or appropriate filter). Ensure consistent handoff pattern matching search 'Continue in reader'.",
+      "effort": "S",
+      "wave_suggestion": "bugfix-wave"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "docs",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "layout",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Docs page uses sidebar chrome breaking top-nav parity with home/reader",
+      "observation": "Navigating via header 'Docs' link lands on /docs which renders a sidebar layout ('Collapse Sidebar', docs TOC) and altered top nav (refs show Home after sidebar buttons, some items missing or in sidebar). Header is not identical to / or /reader.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/docs",
+        "screenshot": "screenshots/W2-flows/J4__docs_from_nav__1440x900__light.png",
+        "selector": "button[aria-label*='Sidebar'], nav"
+      },
+      "impact": "Inconsistent chrome across site; docs feels like separate app section, users lose context of global nav when in docs.",
+      "recommendation": "Align docs layout to share the same header/nav component as hub/reader/search. Make sidebar additional/collapsible without replacing primary chrome. Or label as 'Docs mode'.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "mobile",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Mobile menu click fails with strict mode violation due to duplicate link roles/texts",
+      "observation": "After opening mobile menu, clicking nav links like Topics/Sources resolved to 2 elements (one sm:hidden in header, one in content). Click using @ref failed.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W2-flows/J6__mobile_menu_open__390x844__light.png",
+        "selector": "a[href='/topics']"
+      },
+      "impact": "Unreliable mobile navigation in automation and potentially flaky UX if ARIA not unique.",
+      "recommendation": "Ensure unique accessible names or use more specific selectors/data attrs for mobile menu items. Add aria-hidden or distinct labels for duplicated links.",
+      "effort": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "mobile",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "interaction",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Mobile menu 'Toggle Menu' opens but no strong visual affordance for state or dismiss",
+      "observation": "Menu toggles to show full nav items, button shows [expanded]. But no backdrop, X icon change, or tap-outside clear in initial capture. Similar to prior W1 finding.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/",
+        "screenshot": "screenshots/W2-flows/J6__mobile_menu_open__390x844__light.png",
+        "selector": "button:has-text('Toggle Menu')"
+      },
+      "impact": "Slight discoverability friction on mobile.",
+      "recommendation": "Enhance toggle to X on open, add scrim/backdrop, ensure escape key and outside click closes.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "blog",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Home nav link click from blog post page does not navigate",
+      "observation": "On /blog/hub-and-blog post, the header 'Home' link (@e2) was present in snapshot, but clicking it resulted in no navigation (stayed on post). '← Back to all posts' worked correctly to /blog.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/blog/hub-and-blog",
+        "screenshot": "screenshots/W2-flows/J7__blog_post__1440x900__light.png",
+        "selector": "a[href='/'][data-active]"
+      },
+      "impact": "Broken expectation for hub nav from deep blog post; users must use back link or other.",
+      "recommendation": "Ensure all header nav links (esp Home) are fully functional on blog post pages. Check event handlers or next/link usage in post layout.",
+      "effort": "S",
+      "wave_suggestion": "bugfix-wave"
+    },
+    {
+      "task_id": "W2-flows",
+      "surface": "flows",
+      "viewport": "all",
+      "theme": "all",
+      "category": "navigation",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Some journeys rely on direct /goto or query params rather than pure UI clicks for entry",
+      "observation": "For stability used direct URLs e.g. /search?q=agent, /topics/agents. Pure UI from home via search button was not fully exercised (⌘K or fill).",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/search?q=agent",
+        "screenshot": "screenshots/W2-flows/J3__search_q_agent__1440x900__light.png"
+      },
+      "impact": "Lower coverage of in-app search invocation and query propagation.",
+      "recommendation": "In future audits include snapshot after opening search palette and typing query to verify end-to-end.",
+      "effort": "S",
+      "wave_suggestion": "test-improve"
+    }
+  ],
+  "passed_checks": [
+    "J1 home-CTA to /reader works",
+    "J3 search handoff to /reader?q= works",
+    "J5 theme class persists across goto navigation (dark class present)",
+    "J7 blog post link works and back-to-posts link works",
+    "Mobile toggle menu button responds and expands",
+    ">=10 screenshots captured with required naming J{n}__{step}__{vp}__{theme}.png"
+  ],
+  "blocked": [
+    "J2 full reader handoff from topics/agents (redirected to docs)",
+    "Reliable mobile nav clicks due to duplicate selectors",
+    "Theme toggle click sequencing in chain had parse issues (used js fallback)"
+  ],
+  "screenshots": [
+    "J0__home_desktop_light__1440x900__light.png",
+    "J0__home_desktop_dark__1440x900__dark.png",
+    "J0__home_mobile_light__390x844__light.png",
+    "J1__home_cta__1440x900__light.png",
+    "J1__reader_from_cta__1440x900__light.png",
+    "J2__topics_index__1440x900__light.png",
+    "J2__agents_reader_handoff__1440x900__light.png",
+    "J2__read_topic_to_reader__1440x900__light.png",
+    "J3__search_q_agent__1440x900__light.png",
+    "J3__search_to_reader__1440x900__light.png",
+    "J4__docs_from_nav__1440x900__light.png",
+    "J5__home_dark__1440x900__dark.png",
+    "J5__home_set_dark__1440x900__dark.png",
+    "J5__reader_after_dark_nav__1440x900__dark.png",
+    "J5__reader_forced_dark__1440x900__dark.png",
+    "J6__home_mobile_menu_closed__390x844__light.png",
+    "J6__mobile_menu_open__390x844__light.png",
+    "J6__mobile_topics__390x844__light.png",
+    "J6__mobile_topics_direct__390x844__light.png",
+    "J6__mobile_blog__390x844__light.png",
+    "J7__blog_index__1440x900__light.png",
+    "J7__blog_post__1440x900__light.png",
+    "J7__post_back_to_blog__1440x900__light.png",
+    "J7__back_to_home__1440x900__light.png",
+    "J7__blog_to_home_hub__1440x900__light.png"
+  ]
+}

@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VisualAuditManifest",
+  "version": "1.0.0",
+  "audit_id": "visual-audit-2026-06-22",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "mode": "report-only",
+  "tooling": {
+    "browse_cli": "~/.agents/skills/gstack/browse/dist/browse",
+    "browse_nav": "goto",
+    "workspace": "/Users/ww/dev/projects/ai-web-feeds",
+    "artifacts_root": "specs/visual-audit-2026-06-22"
+  },
+  "viewports": ["390x844", "768x1024", "1280x800", "1440x900"],
+  "themes": ["light", "dark"],
+  "severity_map": {
+    "P0": "critical",
+    "P1": "high",
+    "P2": "medium",
+    "P3": "low",
+    "P4": "nit"
+  },
+  "parallelism": {
+    "max_concurrent_subagents": 7,
+    "anti_hang_rules": [
+      "Use browse goto not open",
+      "Cap tool calls at 20 per task",
+      "Write JSON then STOP",
+      "No retry loops on failed clicks"
+    ]
+  },
+  "waves": [
+    {
+      "id": "W0",
+      "name": "Scout & baseline",
+      "parallel_group": null,
+      "status": "completed"
+    },
+    {
+      "id": "W1",
+      "name": "Surface audits",
+      "parallel_group": "W1-fanout",
+      "status": "completed"
+    },
+    {
+      "id": "W2",
+      "name": "Cross-route flows",
+      "parallel_group": "W2-flows",
+      "status": "completed"
+    },
+    {
+      "id": "W3",
+      "name": "Synthesis & report",
+      "parallel_group": null,
+      "status": "completed"
+    },
+    {
+      "id": "FX",
+      "name": "Recommended fix waves (not executed)",
+      "parallel_group": "fix-lanes",
+      "status": "planned"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "W0-scout",
+      "wave": "W0",
+      "lane": "preflight",
+      "status": "completed",
+      "agent": "lead",
+      "model": null,
+      "depends_on": [],
+      "parallel_with": [],
+      "routes": ["/", "/reader", "/topics/agents"],
+      "outputs": {
+        "findings": "findings/W0-scout.json",
+        "screenshots": "screenshots/W0-scout/"
+      },
+      "gates": ["base_url_200", "screenshot_dir_exists", "deep_link_probe"]
+    },
+    {
+      "id": "W1-hub",
+      "wave": "W1",
+      "lane": "surface-hub",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-reader", "W1-discovery", "W1-personal", "W1-docs", "W1-content"],
+      "routes": ["/", "/search"],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "min_screenshots": 6,
+      "outputs": {
+        "findings": "findings/W1-hub.json",
+        "screenshots": "screenshots/W1-hub/"
+      },
+      "health_score": 7.0,
+      "finding_count": 7
+    },
+    {
+      "id": "W1-reader",
+      "wave": "W1",
+      "lane": "surface-reader",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-hub", "W1-discovery", "W1-personal", "W1-docs", "W1-content"],
+      "routes": [
+        "/reader",
+        "/reader?q=agent",
+        "/reader?source_type=blog",
+        "/reader/article/openai-models-weekly-briefing-513f843668"
+      ],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "states": ["empty", "after-live-sample", "shortcuts", "article-404"],
+      "min_screenshots": 8,
+      "outputs": {
+        "findings": "findings/W1-reader.json",
+        "screenshots": "screenshots/W1-reader/"
+      },
+      "health_score": 5.5,
+      "finding_count": 5,
+      "blocked_notes": ["article deep link 404 on prod"]
+    },
+    {
+      "id": "W1-discovery",
+      "wave": "W1",
+      "lane": "surface-discovery",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-hub", "W1-reader", "W1-personal", "W1-docs", "W1-content"],
+      "routes": ["/topics", "/topics/agents", "/search", "/search?q=agent"],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "min_screenshots": 6,
+      "outputs": {
+        "findings": "findings/W1-discovery.json",
+        "screenshots": "screenshots/W1-discovery/"
+      },
+      "health_score": 7.6,
+      "finding_count": 7
+    },
+    {
+      "id": "W1-personal",
+      "wave": "W1",
+      "lane": "surface-personal",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-hub", "W1-reader", "W1-discovery", "W1-docs", "W1-content"],
+      "routes": ["/for-you", "/dashboard"],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light"],
+      "min_screenshots": 4,
+      "outputs": {
+        "findings": "findings/W1-personal.json",
+        "screenshots": "screenshots/W1-personal/"
+      },
+      "health_score": 5.0,
+      "finding_count": 3,
+      "blocked": ["/for-you (requires BACKEND_URL)"]
+    },
+    {
+      "id": "W1-docs",
+      "wave": "W1",
+      "lane": "surface-docs",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-hub", "W1-reader", "W1-discovery", "W1-personal", "W1-content"],
+      "routes": ["/docs", "/docs/development/cli"],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "min_screenshots": 4,
+      "outputs": {
+        "findings": "findings/W1-docs.json",
+        "screenshots": "screenshots/W1-docs/"
+      },
+      "health_score": 6.0,
+      "finding_count": 6
+    },
+    {
+      "id": "W1-content",
+      "wave": "W1",
+      "lane": "surface-content",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout"],
+      "parallel_with": ["W1-hub", "W1-reader", "W1-discovery", "W1-personal", "W1-docs"],
+      "routes": ["/blog", "/blog/hub-and-blog", "/blog/reader-updates"],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "min_screenshots": 6,
+      "outputs": {
+        "findings": "findings/W1-content.json",
+        "screenshots": "screenshots/W1-content/"
+      },
+      "health_score": 7.5,
+      "finding_count": 5
+    },
+    {
+      "id": "W2-flows",
+      "wave": "W2",
+      "lane": "journeys",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": ["W0-scout", "W1-hub", "W1-reader", "W1-discovery"],
+      "parallel_with": [],
+      "journeys": [
+        { "id": "J1", "name": "Home → Reader", "status": "pass" },
+        { "id": "J2", "name": "Topics/agents → reader", "status": "partial" },
+        { "id": "J3", "name": "Search → reader", "status": "pass" },
+        { "id": "J4", "name": "Home nav → docs parity", "status": "pass" },
+        { "id": "J5", "name": "Dark theme persistence", "status": "pass" },
+        { "id": "J6", "name": "Mobile menu multi-route", "status": "partial" },
+        { "id": "J7", "name": "Blog post round-trip", "status": "partial" }
+      ],
+      "viewports": ["390x844", "1440x900"],
+      "themes": ["light", "dark"],
+      "min_screenshots": 10,
+      "outputs": {
+        "findings": "findings/W2-flows.json",
+        "screenshots": "screenshots/W2-flows/"
+      },
+      "health_score": 6.0,
+      "finding_count": 6
+    },
+    {
+      "id": "W3-report",
+      "wave": "W3",
+      "lane": "synthesis",
+      "status": "completed",
+      "agent": "subagent",
+      "model": "composer-2.5-fast",
+      "depends_on": [
+        "W0-scout",
+        "W1-hub",
+        "W1-reader",
+        "W1-discovery",
+        "W1-personal",
+        "W1-docs",
+        "W1-content",
+        "W2-flows"
+      ],
+      "parallel_with": [],
+      "inputs": [
+        "findings/W0-scout.json",
+        "findings/W1-hub.json",
+        "findings/W1-reader.json",
+        "findings/W1-discovery.json",
+        "findings/W1-personal.json",
+        "findings/W1-docs.json",
+        "findings/W1-content.json",
+        "findings/W2-flows.json"
+      ],
+      "outputs": {
+        "findings": "findings/W3-report.json",
+        "report": "report.md"
+      },
+      "overall_health_score": 6.6,
+      "deduped_finding_count": 35,
+      "screenshot_total": 95
+    },
+    {
+      "id": "FX-01-quick-wins",
+      "wave": "FX",
+      "lane": "fix-quick",
+      "status": "completed",
+      "depends_on": ["W3-report"],
+      "parallel_with": [],
+      "finding_refs": [
+        "Nav active state incorrect on home route",
+        "Pressing '?' does not open keyboard shortcuts sheet",
+        "Topics 'Read topic' leads to /docs instead of reader",
+        "Topic cards lack per-card Open in reader",
+        "Load live sample inconsistent navigation"
+      ],
+      "effort_band": "S",
+      "wave_suggestion": "quick-win"
+    },
+    {
+      "id": "FX-02-reader-arch",
+      "wave": "FX",
+      "lane": "fix-reader",
+      "status": "completed",
+      "depends_on": ["W3-report"],
+      "parallel_with": ["FX-03-hub-chrome", "FX-04-discovery-handoff"],
+      "finding_refs": [
+        "Article deep link returns 404 on production",
+        "Corpus empty state renders filter controls"
+      ],
+      "effort_band": "M",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "id": "FX-03-hub-chrome",
+      "wave": "FX",
+      "lane": "fix-hub",
+      "status": "completed",
+      "depends_on": ["W3-report"],
+      "parallel_with": ["FX-02-reader-arch", "FX-04-discovery-handoff", "FX-05-docs-mobile"],
+      "finding_refs": ["No site footer present", "Mobile nav Toggle Menu affordance"],
+      "effort_band": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "id": "FX-04-discovery-handoff",
+      "wave": "FX",
+      "lane": "fix-discovery",
+      "status": "completed",
+      "depends_on": ["W3-report", "FX-01-quick-wins"],
+      "parallel_with": ["FX-02-reader-arch", "FX-03-hub-chrome"],
+      "finding_refs": [
+        "Search Continue in reader CTA styling",
+        "ArticleTeaser Open targets article page"
+      ],
+      "effort_band": "S",
+      "wave_suggestion": "polish-wave-11"
+    },
+    {
+      "id": "FX-05-docs-mobile",
+      "wave": "FX",
+      "lane": "fix-docs",
+      "status": "completed",
+      "depends_on": ["W3-report"],
+      "parallel_with": ["FX-03-hub-chrome", "FX-06-blog-theme"],
+      "finding_refs": [
+        "Docs sidebar too wide on mobile",
+        "Docs nav Docs link lacks active state"
+      ],
+      "effort_band": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "id": "FX-06-blog-theme",
+      "wave": "FX",
+      "lane": "fix-content",
+      "status": "completed",
+      "depends_on": ["W3-report"],
+      "parallel_with": ["FX-05-docs-mobile"],
+      "finding_refs": ["Dark mode does not apply to blog surfaces"],
+      "effort_band": "M",
+      "wave_suggestion": "polish-wave-12"
+    },
+    {
+      "id": "FX-07-verify",
+      "wave": "FX",
+      "lane": "fix-verify",
+      "status": "completed",
+      "depends_on": [
+        "FX-01-quick-wins",
+        "FX-02-reader-arch",
+        "FX-03-hub-chrome",
+        "FX-04-discovery-handoff",
+        "FX-05-docs-mobile",
+        "FX-06-blog-theme"
+      ],
+      "parallel_with": [],
+      "outputs": {
+        "re_audit": "findings/W4-verify.json",
+        "screenshots": "screenshots/W4-verify/"
+      },
+      "gates": ["overall_health_score_gte_8", "P0_count_eq_0", "J2_status_pass"]
+    }
+  ],
+  "edges": [
+    ["W0-scout", "W1-hub"],
+    ["W0-scout", "W1-reader"],
+    ["W0-scout", "W1-discovery"],
+    ["W0-scout", "W1-personal"],
+    ["W0-scout", "W1-docs"],
+    ["W0-scout", "W1-content"],
+    ["W0-scout", "W2-flows"],
+    ["W1-hub", "W2-flows"],
+    ["W1-reader", "W2-flows"],
+    ["W1-discovery", "W2-flows"],
+    ["W0-scout", "W3-report"],
+    ["W1-hub", "W3-report"],
+    ["W1-reader", "W3-report"],
+    ["W1-discovery", "W3-report"],
+    ["W1-personal", "W3-report"],
+    ["W1-docs", "W3-report"],
+    ["W1-content", "W3-report"],
+    ["W2-flows", "W3-report"],
+    ["W3-report", "FX-01-quick-wins"],
+    ["W3-report", "FX-02-reader-arch"],
+    ["W3-report", "FX-03-hub-chrome"],
+    ["W3-report", "FX-04-discovery-handoff"],
+    ["W3-report", "FX-05-docs-mobile"],
+    ["W3-report", "FX-06-blog-theme"],
+    ["FX-01-quick-wins", "FX-04-discovery-handoff"],
+    ["FX-01-quick-wins", "FX-07-verify"],
+    ["FX-02-reader-arch", "FX-07-verify"],
+    ["FX-03-hub-chrome", "FX-07-verify"],
+    ["FX-04-discovery-handoff", "FX-07-verify"],
+    ["FX-05-docs-mobile", "FX-07-verify"],
+    ["FX-06-blog-theme", "FX-07-verify"]
+  ],
+  "topological_order": [
+    ["W0-scout"],
+    [
+      "W1-hub",
+      "W1-reader",
+      "W1-discovery",
+      "W1-personal",
+      "W1-docs",
+      "W1-content"
+    ],
+    ["W2-flows"],
+    ["W3-report"],
+    [
+      "FX-01-quick-wins",
+      "FX-02-reader-arch",
+      "FX-03-hub-chrome",
+      "FX-05-docs-mobile",
+      "FX-06-blog-theme"
+    ],
+    ["FX-04-discovery-handoff"],
+    ["FX-07-verify"]
+  ],
+  "results_summary": {
+    "audit_completed_at": "2026-06-22T23:00:00Z",
+    "fix_completed_at": "2026-06-23T03:20:00Z",
+    "overall_health_score": 8.2,
+    "pre_fix_health_score": 6.6,
+    "severity_counts": {
+      "critical": 2,
+      "high": 7,
+      "medium": 16,
+      "low": 12,
+      "nit": 2
+    },
+    "screenshot_total": 95,
+    "journeys_pass": 3,
+    "journeys_partial": 3,
+    "journeys_fail": 0
+  }
+}

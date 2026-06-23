@@ -1,0 +1,188 @@
+{
+  "task_id": "W1-reader",
+  "agent": "visual-qa",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T12:30:00Z",
+  "routes_audited": [
+    "/reader",
+    "/reader?q=agent",
+    "/reader?source_type=blog",
+    "/reader/article/openai-models-weekly-briefing-513f843668"
+  ],
+  "viewports": ["390x844", "1440x900"],
+  "themes": ["light", "dark"],
+  "health_score": 5.5,
+  "deep_links": {
+    "article": "/reader/article/openai-models-weekly-briefing-513f843668",
+    "search_handoff": "/reader?q=agent",
+    "source_type": "/reader?source_type=blog"
+  },
+  "findings": [
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "P0",
+      "confidence": "high",
+      "title": "Article deep link returns 404 on production",
+      "observation": "Navigating to /reader/article/openai-models-weekly-briefing-513f843668 returns a 404 page. The deep link is documented and referenced from other surfaces (e.g., W0-scout).",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/reader/article/openai-models-weekly-briefing-513f843668",
+        "status": 404,
+        "text": "404: This page could not be found.",
+        "screenshot": "screenshots/W1-reader/article-404__1440x900__light__404-clean.png"
+      },
+      "impact": "Users following article links (from search, topics, notifications, or external) land on a dead page. Breaks core deep linking contract for the reader.",
+      "recommendation": "Restore the article route or implement a graceful fallback/redirect. If the article slug is ephemeral, surface a 'not available' state with link back to reader or search instead of a hard 404.",
+      "effort": "M",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "feature",
+      "severity": "P0",
+      "confidence": "high",
+      "title": "Pressing '?' does not open keyboard shortcuts sheet",
+      "observation": "The reader UI advertises 'Press ? for keyboard shortcuts'. Pressing '?' triggers live refresh (numbers update) but does not open the ReaderShortcutsSheet. No 'Keyboard shortcuts' heading is present in DOM after keypress. e2e test expects getByRole('heading', { name: 'Keyboard shortcuts' }).",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/reader",
+        "shortcutMapping": "lib/db/schema.ts: '?' -> 'show_shortcuts'",
+        "sheetComponent": "apps/web/components/reader/reader-shortcuts-sheet.tsx",
+        "handler": "useReaderShortcutHandlers -> setShortcutsOpen(true)",
+        "test": "apps/web/tests/e2e/reader-keyboard.spec.ts",
+        "screenshotPressed": "screenshots/W1-reader/reader__1440x900__light__shortcuts-fresh.png",
+        "a11yAfterPress": "No heading containing 'shortcut' or 'keyboard' found"
+      },
+      "impact": "Advertised discoverability feature is non-functional on production. Users cannot discover keyboard shortcuts via the documented gesture. Breaks parity with tests and documented UX.",
+      "recommendation": "Ensure useReaderShortcutHandlers (or equivalent) is mounted for the reader empty and loaded states, and that listReaderShortcuts() + Sheet render path is reached. Wire the global shortcutManager key handler to call onShowShortcuts regardless of corpus state.",
+      "effort": "S",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "interaction",
+      "severity": "P1",
+      "confidence": "medium",
+      "title": "Load live sample click has inconsistent navigation outcome",
+      "observation": "Clicking 'Load live sample' (which calls refreshLatest(true)) sometimes remains on /reader and populates live posts with full reader chrome (filters, stream, articles), and other times navigates to /search showing 'No matching articles found'.",
+      "evidence": {
+        "clickTarget": "button text=Load live sample",
+        "oneOutcome": "stayed on /reader; later text showed '12 live posts loaded'",
+        "otherOutcome": "navigated to /search; a11y showed 'Search the corpus' heading and 0 matches",
+        "afterScreenshot": "screenshots/W1-reader/reader__1440x900__light__after-live-sample.png"
+      },
+      "impact": "Unpredictable UX. Users may expect in-place population of the reader desk; landing on search instead is disorienting and may make them think the action failed.",
+      "recommendation": "Make refreshLatest(true) strictly in-place for the reader route. Avoid any router.push/replace that takes the user out of the reader context. Consider a transient loading state + success indicator in the reader shell.",
+      "effort": "S",
+      "wave_suggestion": "fix-wave-12"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "layout",
+      "severity": "P2",
+      "confidence": "high",
+      "title": "Corpus empty state renders filter controls (search, source type, topics)",
+      "observation": "On /reader with no corpus, the accessibility tree and HTML include: textbox 'Search posts', combobox 'Source type', combobox 'Add topic focus', and the 'Filters and view' group. Filters are not hidden.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/reader",
+        "a11yExcerpt": "textbox 'Search posts', combobox 'Source type' with 18 options, combobox 'Add topic focus'",
+        "screenshot": "screenshots/W1-reader/reader__1440x900__light__empty.png",
+        "priorWave": "Wave-11 findings noted empty guard hid filter rail/chips; current prod exposes controls"
+      },
+      "impact": "Users see interactive-looking filter UI with no results and no clear indication that a 'Load live sample' step is required before filters are meaningful. May increase confusion or mis-clicks.",
+      "recommendation": "Either (a) keep filters visible but disable or visually de-emphasize until live sample is loaded, or (b) hide the advanced filter rail in the ReaderCorpusEmpty path and only surface a minimal 'Search posts' if desired. Align with intended empty-state contract.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "category": "visual",
+      "severity": "P2",
+      "confidence": "medium",
+      "title": "Dark mode shortcuts sheet contrast cannot be verified (sheet not rendered)",
+      "observation": "Shortcuts sheet does not open on '?'. Therefore contrast of the sheet (SheetContent, kbd labels, surface tokens) in dark theme could not be inspected.",
+      "evidence": {
+        "screenshotsAttempted": [
+          "screenshots/W1-reader/reader__1440x900__dark__shortcuts-fresh.png",
+          "screenshots/W1-reader/reader__1440x900__dark__shortcuts.png"
+        ],
+        "domAfterPress": "No dialog or 'Keyboard shortcuts' heading present"
+      },
+      "impact": "If/when the sheet is fixed, dark theme styling should be re-audited for low-contrast text on muted surfaces and border tokens.",
+      "recommendation": "After restoring shortcuts sheet, capture dark theme open state and verify --ink / --surface-muted / border contrast ratios meet WCAG AA.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    },
+    {
+      "task_id": "W1-reader",
+      "surface": "reader",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "a11y",
+      "severity": "P2",
+      "confidence": "medium",
+      "title": "Mobile filter details tap targets require visual verification",
+      "observation": "On 390x844, accessibility reports 'group: Filters and view All posts' and multiple elements containing filter labels. The exact tap target (summary, button, or accordion header) size and hit area could not be measured from text inspection alone.",
+      "evidence": {
+        "viewport": "390x844",
+        "a11ySnippet": "group: Filters and view All posts; button 'Load live sample'; comboboxes present",
+        "screenshot": "screenshots/W1-reader/reader__390x844__light__empty.png"
+      },
+      "impact": "If the mobile filter disclosure uses a small text-only header or tight spacing, users may have difficulty expanding/collapsing on touch.",
+      "recommendation": "Review captured mobile screenshots for 44x44+ effective tap targets on filter group headers and chips. Add explicit min-height/padding if needed.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-13"
+    }
+  ],
+  "passed_checks": [
+    "base_url loads /reader (200)",
+    "base_url loads /reader?q=agent (200)",
+    "base_url loads /reader?source_type=blog (200)",
+    "Empty state renders with 'Load live sample' button and 'Browse sources' link",
+    "Filter controls (search, source type, topic) are present and labeled in empty state (desktop + mobile)",
+    "After successful live sample load path, reader can display full chrome: nav, filters, stream with posts (observed via text + large screenshot)",
+    "Shortcuts overlay screenshots captured on '?' press for both themes (visual record even if not a functional sheet)",
+    "Mobile viewport 390x844 renders without horizontal overflow in captured states",
+    "Dark theme applied via class/attribute; empty and q=agent states captured",
+    "Article 404 page captured (minimal but present)",
+    "Screenshot folder: specs/visual-audit-2026-06-22/screenshots/W1-reader/ (18 pngs)",
+    "No console errors blocking basic navigation during audit sequence"
+  ],
+  "blocked": [
+    "Dark mode shortcuts sheet contrast audit (sheet did not render on prod; cannot sample colors or verify text on surface-muted)",
+    "Precise mobile filter tap target pixel measurements (would require annotated layout inspection or design tokens audit)",
+    "Live sample 'full chrome' parity across all filter combinations (only default and q=agent exercised)",
+    "Shortcuts list content in dark (listReaderShortcuts() result not observed)"
+  ],
+  "screenshots": [
+    "screenshots/W1-reader/reader__1440x900__light__empty.png",
+    "screenshots/W1-reader/reader__1440x900__dark__empty.png",
+    "screenshots/W1-reader/reader__390x844__light__empty.png",
+    "screenshots/W1-reader/reader__390x844__dark__empty.png",
+    "screenshots/W1-reader/reader-q-agent__1440x900__light__default.png",
+    "screenshots/W1-reader/reader-q-agent__1440x900__dark__default.png",
+    "screenshots/W1-reader/reader-q-agent__390x844__light__mobile.png",
+    "screenshots/W1-reader/reader-source-blog__1440x900__light__default.png",
+    "screenshots/W1-reader/reader__1440x900__light__after-live-sample.png",
+    "screenshots/W1-reader/reader__1440x900__light__shortcuts-fresh.png",
+    "screenshots/W1-reader/reader__1440x900__dark__shortcuts-fresh.png",
+    "screenshots/W1-reader/article-404__1440x900__light__404-clean.png",
+    "screenshots/W1-reader/reader__390x844__dark__mobile.png",
+    "screenshots/W1-reader/reader__1440x900__light__live-sample.png"
+  ],
+  "env_notes": "Production corpus empty by default. 'Load live sample' invokes refreshLatest(true). Shortcuts sheet depends on listReaderShortcuts() and handler wiring via useReaderShortcutHandlers. Article deep link 404 persists from W0-scout."
+}

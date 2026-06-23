@@ -1,0 +1,37 @@
+{
+  "task_id": "W0-scout",
+  "agent": "lead",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T12:00:00Z",
+  "routes_audited": ["/", "/reader", "/topics/agents"],
+  "viewports": ["1440x900"],
+  "themes": ["light"],
+  "health_score": 8.0,
+  "deep_links": {
+    "article": "/reader/article/openai-models-weekly-briefing-513f843668",
+    "topic": "/topics/agents",
+    "search_handoff": "/reader?q=agent",
+    "source_type": "/reader?source_type=blog"
+  },
+  "findings": [
+    {
+      "task_id": "W0-scout",
+      "surface": "reader",
+      "severity": "critical",
+      "title": "Seed article deep link returns 404 on production",
+      "observation": "GET /reader/article/openai-models-weekly-briefing-513f843668 returns HTTP 404 on Vercel.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/reader/article/openai-models-weekly-briefing-513f843668",
+        "screenshot": "screenshots/W1-reader/article-404__1440x900__light__404.png"
+      }
+    }
+  ],
+  "passed_checks": [
+    "base_url loads / (200 via gstack)",
+    "base_url loads /reader (200, workspace grid visible)",
+    "base_url loads /topics/agents (200)",
+    "screenshot folder specs/visual-audit-2026-06-22/screenshots/W0-scout/"
+  ],
+  "blocked": [],
+  "env_notes": "Production corpus may be empty by default; auditors should capture empty-state UI and Load live sample path when present."
+}

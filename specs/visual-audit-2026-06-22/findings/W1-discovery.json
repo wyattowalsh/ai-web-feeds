@@ -1,0 +1,387 @@
+{
+  "task_id": "W1-discovery",
+  "agent": "visual-qa",
+  "base_url": "https://aiwebfeeds.vercel.app",
+  "completed_at": "2026-06-22T12:45:00Z",
+  "routes_audited": ["/topics", "/topics/agents", "/search"],
+  "viewports": ["390x844", "1440x900"],
+  "themes": ["light", "dark"],
+  "health_score": 7.6,
+  "deep_links": {
+    "topics_index": "/topics",
+    "topic_detail": "/topics/agents",
+    "topic_reader": "/reader?topics=agents",
+    "search_empty": "/search",
+    "search_with_query": "/search?q=agents"
+  },
+  "screenshots": [
+    "screenshots/W1-discovery/topics-agents__390x844__light__baseline.png",
+    "screenshots/W1-discovery/topics-agents__390x844__dark__baseline.png",
+    "screenshots/W1-discovery/topics-agents__1440x900__light__baseline.png",
+    "screenshots/W1-discovery/topics-agents__1440x900__dark__baseline.png",
+    "screenshots/W1-discovery/topics__390x844__light__baseline.png",
+    "screenshots/W1-discovery/topics__1440x900__light__baseline.png",
+    "screenshots/W1-discovery/topics__1440x900__dark__baseline.png",
+    "screenshots/W1-discovery/search__390x844__light__baseline.png",
+    "screenshots/W1-discovery/search__390x844__dark__q-agent.png",
+    "screenshots/W1-discovery/search__1440x900__light__baseline.png",
+    "screenshots/W1-discovery/search__1440x900__light__q-agents.png",
+    "screenshots/W1-discovery/search__1440x900__dark__baseline.png"
+  ],
+  "findings_by_severity": {
+    "high": [
+      {
+        "task_id": "W1-DISC-001",
+        "surface": "topics",
+        "viewport": "1440x900",
+        "theme": "light",
+        "category": "navigation",
+        "severity": "high",
+        "confidence": "high",
+        "title": "Topic cards lack per-card 'Open in reader' quick actions (wave11 gap)",
+        "observation": "On /topics index and /topics/[topicId], each topic/source card is a single Link to the topic or source detail page. There is no secondary 'Open in reader' affordance on individual cards. A single 'Read topic' button exists at the topic detail header level only.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/topics-agents__1440x900__light__baseline.png",
+          "url": "https://aiwebfeeds.vercel.app/topics/agents",
+          "selector": ".grid a, .Card, Link[href*='/topics/']"
+        },
+        "impact": "Users exploring topics must navigate to a detail page before reaching the reader. Discovery friction; inconsistent with search-results which surfaces 'Open in reader' for sources.",
+        "recommendation": "Add a compact 'Open in reader' secondary link or icon button on each topic card (index) and on source cards within a topic page, linking to /reader?topics=<id> or /reader?feed=<id>. Keep primary card click for detail if needed, or make the whole card go to reader with a detail affordance.",
+        "effort": "S",
+        "wave_suggestion": "polish-wave-11",
+        "code_hint": [
+          "apps/web/app/(home)/topics/page.tsx:60-90",
+          "apps/web/app/(home)/topics/[topicId]/page.tsx:125-160",
+          "apps/web/components/hub/topic-card.tsx"
+        ]
+      },
+      {
+        "task_id": "W1-DISC-002",
+        "surface": "topics",
+        "viewport": "390x844",
+        "theme": "light",
+        "category": "navigation",
+        "severity": "high",
+        "confidence": "high",
+        "title": "Topic detail source cards have no reader handoff; only source page navigation",
+        "observation": "On /topics/agents, the 21 source cards link exclusively to /sources/* pages. The only reader entry is the header-level 'Read topic' button. No per-source quick entry to filtered reader.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/topics-agents__390x844__light__baseline.png",
+          "url": "https://aiwebfeeds.vercel.app/topics/agents",
+          "selector": "a[href^='/sources/']"
+        },
+        "impact": "Users who arrived via topic discovery cannot directly open a specific source in the reader from the topic page; must go through source detail or global reader.",
+        "recommendation": "Add an 'Open in reader' link on each source card within topic pages (or an icon button) that constructs /reader?feed=<sourceId>. Consider exposing recent article count as a hint.",
+        "effort": "S",
+        "wave_suggestion": "polish-wave-11",
+        "code_hint": [
+          "apps/web/app/(home)/topics/[topicId]/page.tsx:125-160",
+          "apps/web/components/source-avatar.tsx"
+        ]
+      }
+    ],
+    "medium": [
+      {
+        "task_id": "W1-DISC-003",
+        "surface": "search",
+        "viewport": "1440x900",
+        "theme": "light",
+        "category": "navigation",
+        "severity": "medium",
+        "confidence": "high",
+        "title": "ArticleTeaser 'Open' link targets article page, not reader (handoff inconsistency)",
+        "observation": "Search results render ArticleTeaser components. The trailing 'Open' link navigates to getArticlePath (article detail page). There is a top-level 'Continue in reader' when a query exists, but no per-result reader entry.",
+        "evidence": {
+          "url": "https://aiwebfeeds.vercel.app/search?q=agent",
+          "screenshot": "screenshots/W1-discovery/search__1440x900__light__q-agents.png",
+          "selector": "a[href^='/articles/'], .ArticleTeaser a"
+        },
+        "impact": "Search discovery does not feed the reader directly per item. Users expecting 'search then read' must either use the coarse 'Continue in reader' or leave the search context.",
+        "recommendation": "Add a per-result 'Read in reader' action on ArticleTeaser (or search result items) that links to /reader with appropriate filters (q, source, etc.). Keep 'Open' for article page if desired as secondary.",
+        "effort": "S",
+        "wave_suggestion": "polish-wave-11",
+        "code_hint": [
+          "apps/web/components/hub/article-teaser.tsx:35-45",
+          "apps/web/app/(home)/search/page.tsx:125-145"
+        ]
+      },
+      {
+        "task_id": "W1-DISC-004",
+        "surface": "search",
+        "viewport": "1440x900",
+        "theme": "light",
+        "category": "visual-polish",
+        "severity": "medium",
+        "confidence": "medium",
+        "title": "Search 'Continue in reader' CTA uses identical surface styling to Search button",
+        "observation": "Both the form submit button and the 'Continue in reader' link (when query present) use: rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium. They sit in adjacent surface-card containers and can appear as peer actions rather than progressive disclosure.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/search__1440x900__light__baseline.png",
+          "url": "https://aiwebfeeds.vercel.app/search",
+          "selector": "form button, a[href*='/reader']"
+        },
+        "impact": "Weak visual distinction between 'search again' and 'switch to reader'. Users may not perceive the intended handoff escalation.",
+        "recommendation": "Differentiate the handoff CTA: use primary/brand treatment, or an arrow icon, or place it as a prominent inline banner. Consider labeling it 'Open results in reader' for clarity.",
+        "effort": "S",
+        "wave_suggestion": "quick-win",
+        "code_hint": [
+          "apps/web/app/(home)/search/page.tsx:80-110"
+        ]
+      }
+    ],
+    "low": [
+      {
+        "task_id": "W1-DISC-005",
+        "surface": "topics",
+        "viewport": "390x844",
+        "theme": "light",
+        "category": "layout",
+        "severity": "low",
+        "confidence": "medium",
+        "title": "Topics index renders as flat list rows on mobile; no card separation or tap-target affordance",
+        "observation": "At 390x844 the /topics page shows a long vertical list of topic rows with subtle dividers. Rows are full-width, flat, without card chrome. While touch targets are adequate, the presentation does not communicate 'selectable collection' as strongly as desktop grid cards.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/topics__390x844__light__baseline.png",
+          "url": "https://aiwebfeeds.vercel.app/topics",
+          "selector": "main .grid, a[href^='/topics/']"
+        },
+        "impact": "Slightly reduced perceived interactivity and grouping on mobile discovery. May feel like plain text navigation rather than content collections.",
+        "recommendation": "Consider subtle card or surface treatment for topic rows on narrow viewports, or at minimum ensure chevron + count are strongly right-aligned and provide clear press feedback.",
+        "effort": "S",
+        "wave_suggestion": "polish-wave-12",
+        "code_hint": [
+          "apps/web/app/(home)/topics/page.tsx:55-95"
+        ]
+      },
+      {
+        "task_id": "W1-DISC-006",
+        "surface": "topics",
+        "viewport": "1440x900",
+        "theme": "light",
+        "category": "visual-polish",
+        "severity": "low",
+        "confidence": "medium",
+        "title": "All topic cards have uniform visual weight regardless of source count",
+        "observation": "On /topics desktop grid, cards for 'Research (73)' and 'Blogs (63)' look identical in size/emphasis to 'Reasoning Models (0)' or 'Fairness (0)'. The only signal is a small secondary badge.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/topics__1440x900__light__baseline.png",
+          "url": "https://aiwebfeeds.vercel.app/topics",
+          "selector": ".grid > a, .Card"
+        },
+        "impact": "Users scanning for high-value collections must read numbers rather than perceive density via layout. Popular topics not visually prioritized.",
+        "recommendation": "Optional: scale subtle visual weight (padding, border, or badge prominence) for high-count topics, or surface a 'Popular' section. Keep accessibility and tap parity.",
+        "effort": "M",
+        "wave_suggestion": "polish-wave-12",
+        "code_hint": [
+          "apps/web/app/(home)/topics/page.tsx:55-95",
+          "apps/web/lib/public-content.ts (loadTopicCatalog, getSourcesForTopic)"
+        ]
+      }
+    ],
+    "nit": [
+      {
+        "task_id": "W1-DISC-007",
+        "surface": "search",
+        "viewport": "390x844",
+        "theme": "dark",
+        "category": "visual-polish",
+        "severity": "nit",
+        "confidence": "medium",
+        "title": "Search input and 'Search' button have tight padding on mobile; may benefit from larger tap targets",
+        "observation": "The search form uses py-2 on input and standard button padding. On 390px in dark, the row is compact; the submit button text 'Search' is short but the overall control height is modest.",
+        "evidence": {
+          "screenshot": "screenshots/W1-discovery/search__390x844__dark__q-agent.png",
+          "url": "https://aiwebfeeds.vercel.app/search?q=agent",
+          "selector": "form input, form button"
+        },
+        "impact": "Minor; current targets meet basic usability but are not generous.",
+        "recommendation": "Increase min-height to ~44px or add py-2.5/3 on the form row for mobile.",
+        "effort": "S",
+        "wave_suggestion": "quick-win",
+        "code_hint": [
+          "apps/web/app/(home)/search/page.tsx:80-95"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "task_id": "W1-DISC-001",
+      "surface": "topics",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Topic cards lack per-card 'Open in reader' quick actions (wave11 gap)",
+      "observation": "On /topics index and /topics/[topicId], each topic/source card is a single Link to the topic or source detail page. There is no secondary 'Open in reader' affordance on individual cards. A single 'Read topic' button exists at the topic detail header level only.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/topics-agents__1440x900__light__baseline.png",
+        "url": "https://aiwebfeeds.vercel.app/topics/agents",
+        "selector": ".grid a, .Card, Link[href*='/topics/']"
+      },
+      "impact": "Users exploring topics must navigate to a detail page before reaching the reader. Discovery friction; inconsistent with search-results which surfaces 'Open in reader' for sources.",
+      "recommendation": "Add a compact 'Open in reader' secondary link or icon button on each topic card (index) and on source cards within a topic page, linking to /reader?topics=<id> or /reader?feed=<id>. Keep primary card click for detail if needed, or make the whole card go to reader with a detail affordance.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11",
+      "code_hint": [
+        "apps/web/app/(home)/topics/page.tsx:60-90",
+        "apps/web/app/(home)/topics/[topicId]/page.tsx:125-160",
+        "apps/web/components/hub/topic-card.tsx"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-002",
+      "surface": "topics",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Topic detail source cards have no reader handoff; only source page navigation",
+      "observation": "On /topics/agents, the 21 source cards link exclusively to /sources/* pages. The only reader entry is the header-level 'Read topic' button. No per-source quick entry to filtered reader.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/topics-agents__390x844__light__baseline.png",
+        "url": "https://aiwebfeeds.vercel.app/topics/agents",
+        "selector": "a[href^='/sources/']"
+      },
+      "impact": "Users who arrived via topic discovery cannot directly open a specific source in the reader from the topic page; must go through source detail or global reader.",
+      "recommendation": "Add an 'Open in reader' link on each source card within topic pages (or an icon button) that constructs /reader?feed=<sourceId>. Consider exposing recent article count as a hint.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11",
+      "code_hint": [
+        "apps/web/app/(home)/topics/[topicId]/page.tsx:125-160",
+        "apps/web/components/source-avatar.tsx"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-003",
+      "surface": "search",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "navigation",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "ArticleTeaser 'Open' link targets article page, not reader (handoff inconsistency)",
+      "observation": "Search results render ArticleTeaser components. The trailing 'Open' link navigates to getArticlePath (article detail page). There is a top-level 'Continue in reader' when a query exists, but no per-result reader entry.",
+      "evidence": {
+        "url": "https://aiwebfeeds.vercel.app/search?q=agent",
+        "screenshot": "screenshots/W1-discovery/search__1440x900__light__q-agents.png",
+        "selector": "a[href^='/articles/'], .ArticleTeaser a"
+      },
+      "impact": "Search discovery does not feed the reader directly per item. Users expecting 'search then read' must either use the coarse 'Continue in reader' or leave the search context.",
+      "recommendation": "Add a per-result 'Read in reader' action on ArticleTeaser (or search result items) that links to /reader with appropriate filters (q, source, etc.). Keep 'Open' for article page if desired as secondary.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-11",
+      "code_hint": [
+        "apps/web/components/hub/article-teaser.tsx:35-45",
+        "apps/web/app/(home)/search/page.tsx:125-145"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-004",
+      "surface": "search",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "visual-polish",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Search 'Continue in reader' CTA uses identical surface styling to Search button",
+      "observation": "Both the form submit button and the 'Continue in reader' link (when query present) use: rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium. They sit in adjacent surface-card containers and can appear as peer actions rather than progressive disclosure.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/search__1440x900__light__baseline.png",
+        "url": "https://aiwebfeeds.vercel.app/search",
+        "selector": "form button, a[href*='/reader']"
+      },
+      "impact": "Weak visual distinction between 'search again' and 'switch to reader'. Users may not perceive the intended handoff escalation.",
+      "recommendation": "Differentiate the handoff CTA: use primary/brand treatment, or an arrow icon, or place it as a prominent inline banner. Consider labeling it 'Open results in reader' for clarity.",
+      "effort": "S",
+      "wave_suggestion": "quick-win",
+      "code_hint": [
+        "apps/web/app/(home)/search/page.tsx:80-110"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-005",
+      "surface": "topics",
+      "viewport": "390x844",
+      "theme": "light",
+      "category": "layout",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Topics index renders as flat list rows on mobile; no card separation or tap-target affordance",
+      "observation": "At 390x844 the /topics page shows a long vertical list of topic rows with subtle dividers. Rows are full-width, flat, without card chrome. While touch targets are adequate, the presentation does not communicate 'selectable collection' as strongly as desktop grid cards.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/topics__390x844__light__baseline.png",
+        "url": "https://aiwebfeeds.vercel.app/topics",
+        "selector": "main .grid, a[href^='/topics/']"
+      },
+      "impact": "Slightly reduced perceived interactivity and grouping on mobile discovery. May feel like plain text navigation rather than content collections.",
+      "recommendation": "Consider subtle card or surface treatment for topic rows on narrow viewports, or at minimum ensure chevron + count are strongly right-aligned and provide clear press feedback.",
+      "effort": "S",
+      "wave_suggestion": "polish-wave-12",
+      "code_hint": [
+        "apps/web/app/(home)/topics/page.tsx:55-95"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-006",
+      "surface": "topics",
+      "viewport": "1440x900",
+      "theme": "light",
+      "category": "visual-polish",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "All topic cards have uniform visual weight regardless of source count",
+      "observation": "On /topics desktop grid, cards for 'Research (73)' and 'Blogs (63)' look identical in size/emphasis to 'Reasoning Models (0)' or 'Fairness (0)'. The only signal is a small secondary badge.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/topics__1440x900__light__baseline.png",
+        "url": "https://aiwebfeeds.vercel.app/topics",
+        "selector": ".grid > a, .Card"
+      },
+      "impact": "Users scanning for high-value collections must read numbers rather than perceive density via layout. Popular topics not visually prioritized.",
+      "recommendation": "Optional: scale subtle visual weight (padding, border, or badge prominence) for high-count topics, or surface a 'Popular' section. Keep accessibility and tap parity.",
+      "effort": "M",
+      "wave_suggestion": "polish-wave-12",
+      "code_hint": [
+        "apps/web/app/(home)/topics/page.tsx:55-95",
+        "apps/web/lib/public-content.ts (loadTopicCatalog, getSourcesForTopic)"
+      ]
+    },
+    {
+      "task_id": "W1-DISC-007",
+      "surface": "search",
+      "viewport": "390x844",
+      "theme": "dark",
+      "category": "visual-polish",
+      "severity": "nit",
+      "confidence": "medium",
+      "title": "Search input and 'Search' button have tight padding on mobile; may benefit from larger tap targets",
+      "observation": "The search form uses py-2 on input and standard button padding. On 390px in dark, the row is compact; the submit button text 'Search' is short but the overall control height is modest.",
+      "evidence": {
+        "screenshot": "screenshots/W1-discovery/search__390x844__dark__q-agent.png",
+        "url": "https://aiwebfeeds.vercel.app/search?q=agent",
+        "selector": "form input, form button"
+      },
+      "impact": "Minor; current targets meet basic usability but are not generous.",
+      "recommendation": "Increase min-height to ~44px or add py-2.5/3 on the form row for mobile.",
+      "effort": "S",
+      "wave_suggestion": "quick-win",
+      "code_hint": [
+        "apps/web/app/(home)/search/page.tsx:80-95"
+      ]
+    }
+  ],
+  "passed_checks": [
+    "base_url loads /topics (200)",
+    "base_url loads /topics/agents (200)",
+    "base_url loads /search (200)",
+    "screenshots captured for 390x844 and 1440x900, light and dark",
+    "minimum 6 screenshots exceeded (12 total)",
+    "topic counts visible in badges on cards",
+    "global 'Read topic' CTA present on topic detail",
+    "search form present with query handoff link when results context exists"
+  ],
+  "blocked": [],
+  "env_notes": "Production corpus may be empty; several screenshots captured empty or no-results states for /search. Topic pages render from static catalog and show source counts regardless of article corpus state."
+}
