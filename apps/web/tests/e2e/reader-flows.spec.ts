@@ -24,7 +24,7 @@ test.describe("Reader handoff flows", () => {
 
   test("search continue-in-reader link preserves query", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/search?q=agent", { waitUntil: "domcontentloaded" });
+    await gotoWithRetry(page, "/search?q=agent", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByText(/Showing results for/i)).toBeVisible({ timeout: 15_000 });
     const continueInReader = page.getByRole("link", { name: "Continue in reader" });
@@ -37,7 +37,7 @@ test.describe("Reader handoff flows", () => {
 
   test("for you recommendation opens reader with pinned feed", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/for-you", { waitUntil: "domcontentloaded" });
+    await gotoWithRetry(page, "/for-you", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "For You" })).toBeVisible();
 
     const readInReader = page.getByRole("link", { name: "Read in reader" }).first();
@@ -47,6 +47,18 @@ test.describe("Reader handoff flows", () => {
     await readInReader.click();
     await expect(page).toHaveURL(/\/reader\?.*feed=/, { timeout: 15_000 });
     await expect(page.getByTestId("reader-workspace-grid")).toBeVisible();
+  });
+});
+
+test.describe("Reader mobile deep link", () => {
+  test("preserves query chip on mobile viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoWithRetry(page, "/reader?q=agent", { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByRole("button", { name: /Search: agent/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect.poll(() => page.url(), { timeout: 15_000 }).toMatch(/\/reader\?q=agent/);
   });
 });
 
