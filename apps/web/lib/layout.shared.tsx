@@ -29,6 +29,7 @@ export function baseOptions(): BaseLayoutProps {
     },
     searchToggle: {
       components: {
+        // Home mobile nav renders inside <ul> — keep a proper list item.
         sm: (
           <li>
             <SearchToggle className="p-2" hideIfDisabled />

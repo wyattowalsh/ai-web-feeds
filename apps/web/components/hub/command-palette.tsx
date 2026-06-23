@@ -250,9 +250,11 @@ export function CommandPalette({
               {filtered.map((item, idx) => {
                 const isActive = idx === activeIndex;
                 return (
-                  <li key={item.id} role="option" aria-selected={isActive}>
+                  <li key={item.id} role="presentation">
                     <button
                       type="button"
+                      role="option"
+                      aria-selected={isActive}
                       onClick={() => onItemClick(item)}
                       onMouseEnter={() => setActiveIndex(idx)}
                       className={cn(
@@ -270,7 +272,7 @@ export function CommandPalette({
                           </div>
                         ) : null}
                       </div>
-                      <div className="shrink-0 text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">
+                      <div className="shrink-0 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
                         {item.external ? "Open" : item.href}
                       </div>
                     </button>

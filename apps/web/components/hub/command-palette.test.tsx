@@ -101,7 +101,7 @@ describe("CommandPalette", () => {
 
   it("clicking an item navigates via router.push for internal links", async () => {
     renderPalette({ open: true });
-    const sourcesBtn = await screen.findByRole("button", { name: /sources/i });
+    const sourcesBtn = await screen.findByRole("option", { name: /sources/i });
     fireEvent.click(sourcesBtn);
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("/sources"));
