@@ -1,3 +1,5 @@
+import type { LinkItemType } from "fumadocs-ui/layouts/shared";
+
 import { CANONICAL_CATALOG_PATH, CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import type { HubNavItem } from "./types";
 
@@ -34,18 +36,27 @@ export const PRIMARY_HUB_NAV: HubNavItem[] = [
   { label: "Docs", href: HUB_ROUTES.docs, description: "Guides and API" },
 ];
 
+/** Map nav labels to explicit active modes per FX-01 spec. */
+function activeFor(label: string): "url" | "nested-url" | undefined {
+  if (label === "Home") return "url";
+  // Reader/Docs/Topics/Blog/Sources/Dashboard/Search/For You use nested-url
+  return "nested-url";
+}
+
 /** FumaDocs header links derived from PRIMARY_HUB_NAV + external links. */
-export function hubLayoutLinks(): Array<{ text: string; url: string; external?: boolean }> {
+export function hubLayoutLinks(): LinkItemType[] {
   return [
     ...PRIMARY_HUB_NAV.map((item) => ({
       text: item.label,
       url: item.href,
       external: item.external,
+      active: activeFor(item.label),
     })),
     ...EXTERNAL_HUB_LINKS.map((item) => ({
       text: item.label,
       url: item.href,
       external: true as const,
+      active: "none" as const,
     })),
   ];
 }

@@ -15,6 +15,7 @@ export type HubTeaserArticle = {
   sourceName?: string;
   publishedAt?: string | null;
   topics?: string[];
+  readerHref?: string;
 };
 
 export type HubSourceSummary = {

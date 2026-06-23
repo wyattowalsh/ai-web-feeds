@@ -52,7 +52,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     .filter(Boolean);
 
   return (
-    <div className="page-wrap page-stack">
+    <div className="page-wrap page-stack bg-background text-foreground">
       <JsonLd
         nonce={nonce}
         data={[
@@ -64,23 +64,29 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         ]}
       />
       <HubPage
-        variant="immersive"
+        variant="default"
         eyebrow={
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            <ArrowLeft className="size-3.5" /> Blog
-          </Link>
+          <span className="inline-flex items-center gap-2 text-sm">
+            <Link href="/" className="text-primary hover:underline">
+              Home
+            </Link>
+            <span className="text-muted-foreground">/</span>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-1 text-primary hover:underline"
+            >
+              <ArrowLeft className="size-3.5" /> Blog
+            </Link>
+          </span>
         }
         title={post.title}
         description={post.summary}
       >
-        <div className="text-sm text-(--ink-muted)">
+        <div className="text-sm text-muted-foreground">
           <time dateTime={post.date}>{formatArticleDate(post.date)}</time>
         </div>
 
-        <div className="surface-card space-y-5 py-8 text-[15px] leading-7 text-(--ink)">
+        <div className="surface-card space-y-5 py-8 text-[15px] leading-7 text-foreground">
           {paragraphs.length > 0 ? (
             paragraphs.map((para, idx) => (
               <p key={idx} className="whitespace-pre-wrap">

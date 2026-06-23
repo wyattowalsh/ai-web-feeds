@@ -15,7 +15,7 @@ export default async function BlogIndexPage() {
   const posts: BlogPost[] = await loadBlogPosts();
 
   return (
-    <div className="page-wrap page-stack">
+    <div className="page-wrap page-stack bg-background text-foreground">
       <HubPage
         eyebrow="Updates"
         title="Blog"
@@ -31,7 +31,7 @@ export default async function BlogIndexPage() {
       >
         <div className="space-y-4">
           {posts.length === 0 ? (
-            <div className="surface-card py-8 text-center text-sm text-(--ink-muted)">
+            <div className="surface-card py-8 text-center text-sm text-muted-foreground">
               No posts yet.
             </div>
           ) : (
@@ -46,9 +46,9 @@ export default async function BlogIndexPage() {
                   </h2>
                 </Link>
                 {post.summary ? (
-                  <p className="text-sm leading-6 text-(--ink-muted)">{post.summary}</p>
+                  <p className="text-sm leading-6 text-muted-foreground">{post.summary}</p>
                 ) : null}
-                <div className="flex items-center gap-3 text-xs text-(--ink-muted)">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <time dateTime={post.date}>{formatArticleDate(post.date)}</time>
                   <Link
                     href={`/blog/${post.slug}`}
