@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock3, ExternalLink } from "lucide-react";
+import { Clock3, ExternalLink, BookOpen } from "lucide-react";
 import { formatArticleDate } from "@/lib/reader/format";
 import { formatReadingTime } from "@/lib/reader/reading-time";
 import { cn } from "@/lib/cn";
@@ -9,16 +9,24 @@ type ArticleTeaserProps = {
   article: HubTeaserArticle;
   className?: string;
   showTopics?: boolean;
+  readerHref?: string;
 };
 
-export function ArticleTeaser({ article, className, showTopics = true }: ArticleTeaserProps) {
+export function ArticleTeaser({
+  article,
+  className,
+  showTopics = true,
+  readerHref,
+}: ArticleTeaserProps) {
+  const resolvedReaderHref = readerHref ?? (article as { readerHref?: string }).readerHref;
+
   return (
     <article className={cn("surface-card space-y-3 transition hover:border-primary/25", className)}>
       <div className="space-y-2">
         <Link href={article.href} className="group block">
-          <h3 className="text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
+          <h2 className="text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
             {article.title}
-          </h3>
+          </h2>
         </Link>
         {article.summary ? (
           <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{article.summary}</p>
@@ -40,6 +48,15 @@ export function ArticleTeaser({ article, className, showTopics = true }: Article
           Open
           <ExternalLink className="size-3" />
         </Link>
+        {resolvedReaderHref ? (
+          <Link
+            href={resolvedReaderHref}
+            className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+          >
+            Read in reader
+            <BookOpen className="size-3" />
+          </Link>
+        ) : null}
       </div>
       {showTopics && article.topics && article.topics.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">

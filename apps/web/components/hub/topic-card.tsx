@@ -9,9 +9,10 @@ type TopicCardProps = {
 };
 
 export function TopicCard({ topic, className }: TopicCardProps) {
+  const readerHref = `/reader?topics=${encodeURIComponent(topic.id)}`;
+
   return (
-    <Link
-      href={topic.href}
+    <div
       className={cn(
         "surface-card-soft group flex flex-col gap-2 transition hover:border-primary/30",
         className,
@@ -21,9 +22,12 @@ export function TopicCard({ topic, className }: TopicCardProps) {
         <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-background">
           <Hash className="size-4 text-primary" />
         </span>
-        <h3 className="text-base font-semibold text-foreground group-hover:text-primary">
+        <Link
+          href={topic.href}
+          className="text-base font-semibold text-foreground group-hover:text-primary hover:underline"
+        >
           {topic.label}
-        </h3>
+        </Link>
       </div>
       {topic.description ? (
         <p className="text-sm leading-6 text-muted-foreground">{topic.description}</p>
@@ -33,6 +37,14 @@ export function TopicCard({ topic, className }: TopicCardProps) {
           {topic.articleCount} articles
         </p>
       ) : null}
-    </Link>
+      <div className="pt-1">
+        <Link
+          href={readerHref}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+        >
+          Open in reader
+        </Link>
+      </div>
+    </div>
   );
 }

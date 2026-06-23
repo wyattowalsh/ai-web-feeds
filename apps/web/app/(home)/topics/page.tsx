@@ -59,31 +59,38 @@ export default async function TopicsPage() {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {topics.map((topic) => {
             const sourceCount = getSourcesForTopic(topic.id).length;
+            const readerHref = `/reader?topics=${encodeURIComponent(topic.id)}`;
+            const topicHref = getTopicPath(topic.id);
 
             return (
               <Card
                 key={topic.id}
-                asChild
-                className="transition hover:border-primary/45 hover:bg-muted/25"
+                className="flex flex-col transition hover:border-primary/45 hover:bg-muted/25"
               >
-                <Link href={getTopicPath(topic.id)}>
-                  <CardHeader>
-                    <CardTitle className="flex items-start justify-between gap-3">
-                      <span className="min-w-0 break-words">{topic.label}</span>
-                      <Badge variant="secondary" className="h-6 shrink-0 rounded-md">
-                        {sourceCount}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
-                      {truncateDescription(
-                        topic.description,
-                        `Sources and reader filters for ${topic.label}.`,
-                      )}
-                    </p>
-                  </CardContent>
-                </Link>
+                <CardHeader>
+                  <CardTitle className="flex items-start justify-between gap-3">
+                    <Link href={topicHref} className="min-w-0 break-words hover:underline">
+                      {topic.label}
+                    </Link>
+                    <Badge variant="secondary" className="h-6 shrink-0 rounded-md">
+                      {sourceCount}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col justify-between gap-3">
+                  <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    {truncateDescription(
+                      topic.description,
+                      `Sources and reader filters for ${topic.label}.`,
+                    )}
+                  </p>
+                  <Link
+                    href={readerHref}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    Open in reader
+                  </Link>
+                </CardContent>
               </Card>
             );
           })}

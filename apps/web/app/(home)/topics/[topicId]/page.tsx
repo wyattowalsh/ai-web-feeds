@@ -124,17 +124,24 @@ export default async function TopicPage({ params }: TopicPageProps) {
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          {sources.map((source) => (
-            <Card
-              key={source.id ?? source.url}
-              asChild
-              className="transition hover:border-primary/45 hover:bg-muted/25"
-            >
-              <Link href={getSourcePath(source)}>
+          {sources.map((source) => {
+            const sourceHref = getSourcePath(source);
+            const readerHref = `/reader?feed=${encodeURIComponent(
+              source.id ?? getSourceTitle(source),
+            )}`;
+            return (
+              <Card
+                key={source.id ?? source.url}
+                className="flex flex-col transition hover:border-primary/45 hover:bg-muted/25"
+              >
                 <CardHeader className="flex-row items-start gap-3">
                   <SourceAvatar source={source} />
-                  <div className="min-w-0">
-                    <CardTitle>{getSourceTitle(source)}</CardTitle>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle>
+                      <Link href={sourceHref} className="hover:underline">
+                        {getSourceTitle(source)}
+                      </Link>
+                    </CardTitle>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {source.source_type ? (
                         <Badge variant="outline" className="h-6 rounded-md">
@@ -149,14 +156,20 @@ export default async function TopicPage({ params }: TopicPageProps) {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-1 flex-col justify-between gap-3">
                   <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
                     {source.description ?? source.url}
                   </p>
+                  <Link
+                    href={readerHref}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    Open in reader
+                  </Link>
                 </CardContent>
-              </Link>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </section>
     </div>

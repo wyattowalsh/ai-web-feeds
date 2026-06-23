@@ -12,6 +12,9 @@ import type { ReaderPageSearchParams } from "@/lib/reader-route";
 import { normalizeSearchQuery } from "@/lib/search";
 import { getArticlePath } from "@/lib/public-content";
 import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
+import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Search - AI Web Feeds",
@@ -45,6 +48,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     sourceName: article.feed_title,
     publishedAt: article.published_at,
     topics: article.topics,
+    readerHref: buildImmersiveReaderHref({
+      id: article.id,
+      title: article.title,
+      link: article.link,
+    }),
   }));
 
   return (
@@ -103,7 +111,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </p>
             <Link
               href={`${CANONICAL_READER_PATH}?q=${encodeURIComponent(query)}`}
-              className="inline-flex items-center justify-center rounded-xl border border-(--line) bg-(--surface) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-muted)"
+              className={cn(buttonVariants({ variant: "default" }))}
             >
               Continue in reader
             </Link>
@@ -125,11 +133,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {teasers.map((article) => (
-              <ArticleTeaser key={article.id} article={article} />
-            ))}
-          </div>
+          <section aria-labelledby="search-results-heading" className="space-y-4">
+            <h2 id="search-results-heading" className="sr-only">
+              Search results
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {teasers.map((article) => (
+                <ArticleTeaser key={article.id} article={article} readerHref={article.readerHref} />
+              ))}
+            </div>
+          </section>
         )}
 
         {browse && (
