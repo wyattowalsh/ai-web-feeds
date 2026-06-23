@@ -135,4 +135,28 @@ describe("keyboard-shortcuts (lib)", () => {
     expect(SHORTCUT_DESCRIPTIONS["star"]).toMatch(/star/i);
     expect(SHORTCUT_DESCRIPTIONS["archive"]).toBeTruthy();
   });
+
+  it("Shift+/ (key='/' with shiftKey) maps to '?' and triggers show_shortcuts", async () => {
+    const handler = vi.fn();
+    const unregister = shortcutManager.register("show_shortcuts", handler);
+
+    // Some browsers report key="/" + shiftKey when user presses Shift+/
+    const ev = new KeyboardEvent("keydown", { key: "/", shiftKey: true, bubbles: true });
+    window.dispatchEvent(ev);
+
+    await expect.poll(() => handler.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
+
+    unregister();
+  });
+
+  it("key='?' directly triggers show_shortcuts", async () => {
+    const handler = vi.fn();
+    const unregister = shortcutManager.register("show_shortcuts", handler);
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+
+    await expect.poll(() => handler.mock.calls.length, { timeout: 1000 }).toBeGreaterThan(0);
+
+    unregister();
+  });
 });

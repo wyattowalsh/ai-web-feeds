@@ -49,14 +49,13 @@ class KeyboardShortcutManager {
   private async loadShortcuts(): Promise<void> {
     try {
       const prefs = await preferences.get();
-      this.shortcuts.clear();
+      this.loadDefaultShortcuts();
 
       Object.entries(prefs.keyboardShortcuts).forEach(([key, action]) => {
         this.shortcuts.set(key, action as ShortcutAction);
       });
     } catch (error) {
       console.error("Failed to load keyboard shortcuts:", error);
-      // Use defaults from schema
       this.loadDefaultShortcuts();
     }
   }
@@ -156,10 +155,19 @@ class KeyboardShortcutManager {
 
     if (event.ctrlKey) parts.push("ctrl");
     if (event.altKey) parts.push("alt");
-    if (event.shiftKey && event.key.length > 1) parts.push("shift");
     if (event.metaKey) parts.push("meta");
 
-    const key = event.key.toLowerCase();
+    let key = event.key;
+
+    // Shift + "/" (physical key reported by some browsers) should map to "?"
+    // so it triggers the show_shortcuts action registered as "?".
+    if (event.shiftKey && (key === "/" || key === "?")) {
+      key = "?";
+    } else if (event.shiftKey && key.length > 1) {
+      parts.push("shift");
+    }
+
+    key = key.toLowerCase();
     if (key !== "control" && key !== "alt" && key !== "shift" && key !== "meta") {
       parts.push(key);
     }
