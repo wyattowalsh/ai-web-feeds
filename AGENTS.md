@@ -60,6 +60,9 @@ yarn add package                  # NEVER use yarn
 - **Comprehensive Docs**:
   [aiwebfeeds.vercel.app/llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt)
 - **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Canonical public docs URL**: [aiwebfeeds.vercel.app](https://aiwebfeeds.vercel.app)
+  — use for agent instructions, README links, issue templates, and prompts (not
+  `aiwebfeeds.com`, `ai-web-feeds.vercel.app`, or local `file://` paths)
 - **Repository**:
   [github.com/wyattowalsh/ai-web-feeds](https://github.com/wyattowalsh/ai-web-feeds)
 

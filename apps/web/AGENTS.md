@@ -373,9 +373,9 @@ pnpm lint:links:bun  # Using Bun runtime
 
 ### Adding Documentation Pages
 
-1. **Create MDX file** in `content/docs/`:
+1. **Create MDX file** in `content/docs/` with frontmatter:
 
-````txt
+```mdx
 ---
 title: Page Title
 description: SEO description for this page
@@ -383,33 +383,8 @@ description: SEO description for this page
 
 # Page Title
 
-Your content here with **Markdown** formatting.
-
-## Code Example
-
-```python
-def hello():
-    print("Hello, world!")
+Your content here.
 ```
-````
-
-## Math
-
-Inline math: $E = mc^2$
-
-Block math:
-
-$$ \\int\_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2} $$
-
-## Diagram
-
-```mermaid
-graph LR
-    A[Start] --> B[Process]
-    B --> C[End]
-```
-
-````
 
 2. **Update navigation** in `content/docs/meta.json`:
 
@@ -420,7 +395,7 @@ graph LR
     "pages": ["page-slug"]
   }
 }
-````
+```
 
 3. **Test locally**:
 

@@ -208,8 +208,9 @@ Dual authentication system:
 **API Request:**
 
 ```bash
+# When BACKEND_URL points to a running ai-web-feeds backend:
 curl -H "X-API-Key: awf_abc123..." \
-  https://api.aiwebfeeds.com/v1/export?format=csv
+  "${BACKEND_URL}/api/analytics/export?format=csv"
 ```
 
 ## Validation & Security

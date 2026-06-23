@@ -279,15 +279,20 @@ from ai_web_feeds.cli.commands import (
     visualize,
 )
 
-app.add_typer(fetch.app, name="fetch")
-app.add_typer(enrich.app, name="enrich")
-app.add_typer(export.app, name="export")
 app.add_typer(analytics.app, name="analytics")
-app.add_typer(stats.app, name="stats")
-app.add_typer(validate.app, name="validate")
+app.add_typer(corpus.app, name="corpus")
+app.add_typer(enrich_commands.app, name="enrich")
+app.add_typer(export_commands.app, name="export")
+app.add_typer(fetch.app, name="fetch")
+app.add_typer(monitor.app, name="monitor")
+app.add_typer(nlp.app, name="nlp")
 app.add_typer(opml.app, name="opml")
+app.add_typer(recommend.app, name="recommend")
+app.add_typer(search.app, name="search")
+app.add_typer(stats.app, name="stats")
 app.add_typer(test.app, name="test")
 app.add_typer(visualize.app, name="visualize")
+app.add_typer(validate_commands.app, name="validate")
 
 
 def main() -> None:

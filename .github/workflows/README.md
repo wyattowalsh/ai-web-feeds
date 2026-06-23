@@ -1,432 +1,389 @@
-# GitHub Actions Workflows Documentation
+# GitHub Actions Workflows
 
-This document describes all GitHub Actions workflows in the AI Web Feeds project and how
-they utilize the CLI.
+Active GitHub Actions workflows are defined in `.github/workflows/*.yml`.
 
-## 📋 Table of Contents
+`.github/workflows/*.md` files are experimental GitHub Agentic Workflows (gh-aw)
+**sources** and are not active until compiled into a lock workflow and reviewed.
+Existing `.yml` workflows are the production source of truth. See `.github/AGENTS.md`.
 
-- [Quality Workflows](#quality-workflows)
-- [Validation Workflows](#validation-workflows)
-- [Automation Workflows](#automation-workflows)
-- [CLI Integration](#cli-integration)
-- [Quality Standards](#quality-standards)
+### gh-aw Sources (`.md`, inactive)
 
-______________________________________________________________________
+- `feed-submission-review.md`: Experimental read-only pilot for feed submission
+  triage/validation (labels: automation, feed-submission, gh-aw-pilot).
+- `feed-discovery-report.md`: Experimental report-only weekly discovery pilot for topic
+  gaps (schedule + dispatch; creates issues with `[gh-aw]` prefix).
 
-## 🎯 Quality Workflows
+These are kept separate from active `.yml` per `.github/AGENTS.md`.
 
-### `quality-enforcement.yml` 🆕
+## Quality
 
-**Purpose**: Comprehensive quality gate enforcing all project standards.
+### ci.yml
 
 **Triggers**:
 
-- Pull requests to `main` or `develop`
-- Pushes to `main` or `develop`
+- `pull_request` → `main`, `develop`
+- `push` → `main`, `develop`
+
+**Concurrency**: cancel-in-progress per workflow+ref.
 
 **Jobs**:
 
-1. **enforce-formatting**: Ensures code is properly formatted
+- `workflow-lint`: `rhysd/actionlint@v1.7.12`
+- `python-quality`:
+  - `uv run ruff check` (targeted smoke files under
+    `apps/cli/ai_web_feeds/cli/commands/` and `packages/ai_web_feeds/src/ai_web_feeds/`)
+  - `uv run ruff format --check` (same targets)
+  - `uv run ty check` (same targets)
+  - `uv run bandit` (same targets, `-c pyproject.toml`)
+- `python-tests`:
+  - `cd tests && uv run pytest -q` (targeted smoke test files)
+- `web-quality`:
+  - pnpm install (apps/web)
+  - `pnpm --dir apps/web lint`
+  - `pnpm --dir apps/web exec next typegen`
+  - `pnpm --dir apps/web exec tsc --noEmit`
+  - `pnpm --dir apps/web test:unit`
+  - `CI=1 pnpm --dir apps/web build`
+- `web-e2e` (PRs only, needs `web-quality`):
+  - Playwright install + `pnpm --dir apps/web test`
+  - Upload `playwright-report/` artifact (14 days)
 
-   - CLI: `uv run format --check`
-   - Standard: Ruff formatting rules
+### quality-enforcement.yml
 
-1. **enforce-linting**: Enforces linting standards
+**Name**: Quality Enforcement (Manual)
 
-   - CLI: `uv run lint`
-   - Standard: Ruff linting rules (ANN, D, E, F, etc.)
-
-1. **enforce-type-checking**: Validates type hints
-
-   - CLI: `uv run typecheck`
-   - Standard: ty smoke type surface
-
-1. **enforce-testing**: Verifies test coverage ≥90%
-
-   - CLI: `uv run ai-web-feeds test coverage --html`
-   - Standard: 90% minimum coverage
-
-1. **enforce-data-validation**: Validates data files
-
-   - CLI: `uv run ai-web-feeds validate all --strict`
-   - Standard: JSON Schema compliance
-
-1. **quality-gate**: Final gate requiring all checks to pass
-
-   - Blocks merge if any check fails
-   - Posts comprehensive status to PR
-
-**Output**:
-
-- Detailed PR comments with pass/fail status
-- Artifacts for all reports
-- Prevents merge on failure
-
-______________________________________________________________________
-
-### `python-quality.yml` (Enhanced)
-
-**Purpose**: Multi-platform Python code quality checks.
-
-**Triggers**:
-
-- Changes to `.py` files
-- Changes to `pyproject.toml` or `uv.lock`
+**Triggers**: `workflow_dispatch`
 
 **Jobs**:
 
-1. **lint-and-format**: Ruff linting and formatting
+- `quality-gate` (ubuntu-latest):
+  - Checkout, `astral-sh/setup-uv`, `actions/setup-python@v5` (3.13),
+    `uv sync --all-extras`
+  - `uv run ruff check .`
+  - `uv run ruff format --check .`
+  - `uv run ty check` (targeted smoke files)
+  - `cd tests && uv run pytest -q`
 
-   - CLI: `uv run ruff check .` + `uv run ruff format --check .`
-   - Outputs: GitHub annotations, JSON/text reports
+### python-quality.yml
 
-1. **type-check**: ty smoke type validation
+**Name**: Python Quality (Manual)
 
-   - CLI: `uv run ty check <smoke targets>`
-
-1. **security-check**: Bandit security scanning
-
-   - CLI: `uv run bandit`
-   - Outputs: JSON/text security reports
-
-1. **test**: Cross-platform testing (Ubuntu, macOS, Windows)
-
-   - CLI: `uv run ai-web-feeds test coverage --html`
-   - Coverage uploaded to Codecov
-   - Enforces 90% threshold
-
-1. **quality-gate**: Aggregates all results
-
-   - Fails if any job fails
-
-______________________________________________________________________
-
-### `coverage.yml` (Enhanced)
-
-**Purpose**: Detailed coverage reporting and tracking.
-
-**Triggers**:
-
-- Pushes to `main`
-- Pull requests to `main`
-
-**CLI Commands**:
-
-- `uv run ai-web-feeds test coverage --html`
-
-**Features**:
-
-- Generates HTML coverage reports
-- Posts coverage comments on PRs
-- Uploads to Codecov
-- Creates coverage badges (optional)
-- Enforces 90% minimum threshold
-
-______________________________________________________________________
-
-## ✅ Validation Workflows
-
-### `pr-validation.yml` (Enhanced)
-
-**Purpose**: Validate PRs for data and code changes.
-
-**Triggers**: Pull requests changing data or Python files
+**Triggers**: `workflow_dispatch`, `workflow_call`
 
 **Jobs**:
 
-1. **validate-data**: Validate YAML data files
+- `python-quality` (ubuntu-latest):
+  - Checkout, uv + py 3.13, `uv sync --all-extras`
+  - `uv run ruff check .`
+  - `uv run ruff format --check .`
+  - `uv run ty check` (targeted smoke files)
+  - `uv run bandit -r packages/ai_web_feeds/src apps/cli/ai_web_feeds -c pyproject.toml`
 
-   - CLI: `uv run ai-web-feeds validate all --strict`
-   - Checks feeds.yaml, topics.yaml schemas
-   - Validates topic references
-   - Checks for duplicate IDs
+### coverage.yml
 
-1. **lint-check**: Quick code quality check
-
-   - CLI: `uv run ruff check .` + `uv run ruff format --check .`
-   - Only runs if Python files changed
-
-1. **test-check**: Quick test validation
-
-   - CLI: `uv run ai-web-feeds test quick`
-   - Fast unit tests only
-   - Fails fast on errors
-
-**Output**: PR comments with validation results
-
-______________________________________________________________________
-
-### `validate-all-feeds.yml` (Enhanced)
-
-**Purpose**: Comprehensive feed validation (scheduled + manual).
+**Name**: Coverage Report
 
 **Triggers**:
 
-- Weekly schedule (Sundays at 2am UTC)
-- Manual workflow dispatch
+- `push` → `main`
+- `workflow_dispatch`
 
-**CLI Commands**:
+**Jobs**:
 
-- `uv run ai-web-feeds validate all --strict` (or `--lenient`)
-- `uv run ai-web-feeds stats --output json`
+- `coverage` (ubuntu-latest):
+  - Checkout, uv + py 3.13, `uv sync --all-extras`
+  - `cd tests && uv run pytest -q` (targeted smoke tests)
+  - `uv run coverage xml -o reports/coverage/coverage.xml`
+  - `uv run coverage report`
+  - `uv run coverage report --format=markdown > ../coverage-summary.md`
+  - Upload artifact `coverage-reports` (reports/coverage/ + summary.md, 30 days)
 
-**Workflow Inputs**:
+### auto-fix.yml
 
-- `check_accessibility`: Check feed URL accessibility
-- `strict_mode`: Use strict validation (default: true)
+**Name**: Auto-fix Code Issues
 
-**Output**: Validation reports as artifacts
+**Triggers**:
+
+- `pull_request` paths: `**.py`, `pyproject.toml`
+
+**Permissions**: `contents: write`, `pull-requests: write`
+
+**Jobs**:
+
+- `auto-fix` (only if PR head repo matches repository):
+  - Checkout PR ref + token
+  - uv + py 3.13, `uv sync --all-extras`
+  - `uv run fix`
+  - If changes: commit as `github-actions[bot]` with message
+    `style: auto-fix code with ruff [skip ci]`, push
+  - If changes: post PR comment listing changed files (via `actions/github-script@v7`)
+
+## Validation
+
+### pr-validation.yml
+
+**Name**: Data Submission Validation
+
+**Triggers**:
+
+- `pull_request` (opened, synchronize, reopened)
+- Paths: `data/feeds.yaml`, `data/feeds.enriched.yaml`, `data/topics.yaml`,
+  `data/*.schema.json`, `data/validate_data_assets.py`
+
+**Jobs**:
+
+- `validate-data`:
+  - Checkout, uv + py 3.13, `uv sync --all-extras`
+  - `uv run python data/validate_data_assets.py`
+
+### validate-all-feeds.yml
+
+**Name**: Validate All Feeds
+
+**Triggers**:
+
+- `schedule`: `0 2 * * 0` (Sundays 02:00 UTC)
+- `workflow_dispatch` inputs:
+  - `check_accessibility`: boolean (default: false)
+  - `strict_mode`: boolean (default: true)
+
+**Jobs**:
+
+- `validate-with-cli`:
+  - Checkout, uv + py 3.13, `uv sync --all-extras`
+  - `uv run python data/validate_data_assets.py`
+  - `uv run ai-web-feeds validate all --lenient` (if strict_mode=false) or `--strict`
+  - Inline Python: duplicate ID checks, required fields (`id`, url/feed/site), topic
+    validity against `topics.yaml`, topic count ≤6, tag count ≤12; writes
+    `validation_summary.json`; exits 1 on issues
+  - If `check_accessibility`: parallel requests + feedparser checks across sources
+  - Always: upload `validation-report` artifact (30 days)
+  - Always: `actions/github-script@v7` writes summary counts to workflow summary
+
+### validate-feed-submission.yml
+
+**Name**: Validate Feed Submission
+
+**Triggers**: `issues` (opened, edited)
+
+**Jobs**:
+
+- `validate-feed` (only if issue has label `feed-submission`):
+  - Checkout, uv + py 3.13
+  - `actions/github-script@v7`: parse issue form fields (regex on `### ` sections),
+    extract id/feed/site/title/topics/mediums/etc., write `parsed_feed.json`, comment
+    parsed data
+  - Run Python: load `data/feeds.schema.json`, validate minimal document via
+    `jsonschema`; write result file
+  - Run Python (`--with requests --with feedparser`): optional feed URL accessibility +
+    parse test
+  - Always: post result comment; add label `validated` or `validation-failed`
+
+### add-approved-feed.yml
+
+**Name**: Add Approved Feed to Registry
+
+**Triggers**: `issues` (labeled)
+
+**Jobs**:
+
+- `add-feed` (if `label.name == 'approved'`):
+  - Permissions: contents, issues, pull-requests write
+  - Checkout with token
+  - `actions/github-script@v7`: parse issue, build feed entry, load `data/feeds.yaml`,
+    reject duplicate ID, append source + update `document_meta.updated`, write file
+  - `peter-evans/create-pull-request@v6`: branch `feed-submission-{number}`, commit,
+    title "Add feed: ...", body, labels `feed-submission`, `automated`
+  - Comment on issue
+
+### process-feeds.yml
+
+**Name**: Feed Processing Pipeline
+
+**Triggers**:
+
+- `push` → `main` (paths: `data/feeds.yaml`, `data/topics.yaml`,
+  `packages/ai_web_feeds/**`, `apps/cli/**`)
+- `pull_request` (paths: `data/feeds.yaml`, `data/topics.yaml`)
+- `workflow_dispatch` inputs:
+  - `skip_enrichment`: boolean (default: true)
+  - `export_formats`: boolean (default: true)
+
+**Permissions**: `contents: write`, `pull-requests: write`
+
+**Jobs**:
+
+- `process-feeds`:
+  - Checkout (fetch-depth: 0), py 3.13
+  - uv sync in `packages/ai_web_feeds` and `apps/cli` separately
+  - Inline Python: validate `feeds.yaml` (schema_version=`feeds-3.0.0`, sources
+    non-empty list, each has `url` http(s), 1-6 unique string topics, title/notes length
+    constraints); fail on errors
+  - `cd apps/cli && uv run ai-web-feeds process --input ../../data/feeds.yaml --output ../../data/feeds.enriched.yaml --database sqlite:///../../data/ai-web-feeds.db [--skip-enrichment] [--export|--no-export]`
+  - Verify: list generated files, source counts (from json), run
+    `data/validate_data_assets.py`, sqlite table/source queries
+  - On `push` to `main`: commit generated files (`feeds.enriched.yaml`, `feeds.json`,
+    `*.opml`, `ai-web-feeds.db`) with `[skip ci]`
+  - Always: upload `processed-feeds` artifact (30 days)
+  - On PR: `actions/github-script` posts comment with source count + file sizes
+
+## Automation
+
+### label-manager.yml
+
+**Name**: Label Manager
+
+**Triggers**:
+
+- `issues` (opened)
+- `pull_request` (opened)
+
+**Jobs**:
+
+- `auto-label`:
+  - Issues: size (body length), component (CLI/web/schema/docs keywords in body),
+    priority (urgent/critical/blocking)
+  - PRs: scan changed files via `pulls.listFiles`; component labels by path
+    (`apps/cli/`, `apps/web/`, `packages/`, `data/`, `.github/`, `test`, `schema`,
+    `docs`); size by total delta
+
+### greet-contributors.yml
+
+**Name**: Greet New Contributors
+
+**Triggers**:
+
+- `issues` (opened)
+- `pull_request_target` (opened)
+
+**Jobs**:
+
+- `greet`:
+  - Search issues/PRs by author; if total_count==1 (first contribution): post welcome
+    comment (issue vs PR variant) + add `first-time-contributor` label (issues only);
+    PRs receive review comment
+
+### sync-labels.yml
+
+**Name**: Sync Labels
+
+**Triggers**:
+
+- `push` → `main` paths: `.github/labels.yml`
+- `workflow_dispatch`
+
+**Jobs**:
+
+- `sync-labels`: `micnncim/action-label-syncer@v1` (manifest: `.github/labels.yml`,
+  `prune: false`)
+
+### stale.yml
+
+**Name**: Stale Issues and PRs
+
+**Triggers**:
+
+- `schedule`: `0 0 * * 0`
+- `workflow_dispatch`
+
+**Jobs**:
+
+- `stale` (`actions/stale@v9`):
+  - Issues: stale 60d, close 14d; messages, label `stale`, exempt:
+    `keep-open,pinned,security,good-first-issue`
+  - PRs: stale 30d, close 7d; messages, exempt: `keep-open,pinned,security,in-progress`
+  - `operations-per-run: 100`, `remove-stale-when-updated: true`
+
+### dependency-updates.yml
+
+**Name**: Dependency Updates
+
+**Triggers**:
+
+- `schedule`: `0 9 * * 1` (Mondays 09:00 UTC)
+- `workflow_dispatch`
+
+**Jobs**:
+
+- `update-dependencies`:
+  - `uv lock --upgrade`
+  - `peter-evans/create-pull-request@v7` (token prefers `GH_AW_CI_TRIGGER_TOKEN` else
+    `GITHUB_TOKEN`; labels `dependencies,automated`; continue-on-error)
+- `update-pre-commit`:
+  - `uv sync --all-extras`, `uv run pre-commit autoupdate`
+  - create-pr (similar)
+
+### release-drafter.yml
+
+**Name**: Release Drafter
+
+**Triggers**:
+
+- `push` → `main`
+- `pull_request` (opened, reopened, synchronize)
+
+**Jobs**:
+
+- `update_release_draft`: `release-drafter/release-drafter@v6` (config:
+  `release-drafter.yml`)
+
+## Security/Release
+
+### release.yml
+
+**Name**: Release
+
+**Triggers**:
+
+- `push` tags: `v*.*.*`
+- `workflow_dispatch` (input: `version`)
+
+**Jobs**:
+
+- `quality-checks`:
+  - uv + py 3.13, sync `--extra dev`
+  - `uv run ruff check .`, format `--check`, `ty check` (smoke), `uv run pytest --cov`
+- `build-and-publish` (needs: quality-checks):
+  - `cd packages/ai_web_feeds && uv build`; same for `apps/cli`
+  - If tag: `uv publish` each (env `UV_PUBLISH_TOKEN`)
+  - Upload `dist-packages` artifact
+- `create-release` (needs: build-and-publish; only on tag):
+  - Download artifact, generate `release_notes.md` (git log since prev tag)
+  - `softprops/action-gh-release@v2` (attach dist files)
+
+### dependency-review.yml
+
+**Name**: Dependency Review
+
+**Triggers**: `pull_request`
+
+**Jobs**:
+
+- `dependency-review`:
+  - `actions/dependency-review-action@v4` (`continue-on-error: true`,
+    `fail-on-severity: moderate`, `deny-licenses: GPL-3.0, AGPL-3.0`,
+    `comment-summary-in-pr: always`)
+
+### codeql-analysis.yml
+
+**Name**: CodeQL Analysis
+
+**Triggers**:
+
+- `push` → `main,develop`
+- `pull_request` → `main`
+- `schedule`: `0 6 * * 1` (Mondays 06:00 UTC)
+
+**Jobs**:
+
+- `analyze` (matrix: javascript, python; `fail-fast: false`):
+  - Permissions: actions read, contents read, security-events write
+  - `github/codeql-action/init@v3` (languages + queries:
+    security-extended,security-and-quality)
+  - autobuild
+  - `github/codeql-action/analyze@v3`
 
 ______________________________________________________________________
 
-## 🤖 Automation Workflows
-
-### Experimental Agentic Workflow Sources
-
-The repository now also contains experimental GitHub Agentic Workflows source files in
-`.github/workflows/*.md`.
-
-- These files are **not active** until they are compiled and reviewed.
-- Existing `.yml` workflows remain the production source of truth.
-- Agentic workflow pilots should begin with read-only or tightly-scoped automation
-  before replacing active CI/CD logic.
-- Reusable custom agents for these workflows live in `.github/agents/`.
-
-Current experimental source files:
-
-- `feed-submission-review.md`: read-only feed submission triage and validation pilot
-- `feed-discovery-report.md`: weekly report-only discovery pilot for topic gaps and
-  candidate leads
-
-The discovery pilot intentionally avoids `feed-submission`, `approved`, and other
-submission-path labels because the current issue-based approval automation still assumes
-an older submission shape than `data/feeds.yaml`.
-
-### `auto-fix.yml` (Enhanced)
-
-**Purpose**: Automatically fix code quality issues.
-
-**Triggers**: Pull requests with Python changes
-
-**CLI Commands**:
-
-- `uv run fix` (runs `lint-fix` + `format`)
-
-**Process**:
-
-1. Checks out PR branch
-1. Runs auto-fix commands
-1. Commits changes if any
-1. Posts detailed comment with changed files
-
-**Output**: Automatic commits to PR with fixes
-
-______________________________________________________________________
-
-### Other Workflows
-
-**`codeql-analysis.yml`**: GitHub CodeQL security scanning
-
-**`dependency-review.yml`**: Reviews dependency changes
-
-**`dependency-updates.yml`**: Automated dependency updates
-
-**`greet-contributors.yml`**: Welcomes new contributors
-
-**`label-manager.yml`**: Manages issue/PR labels
-
-**`release-drafter.yml`**: Drafts release notes
-
-**`release.yml`**: Publishes releases
-
-**`stale.yml`**: Manages stale issues/PRs
-
-**`sync-labels.yml`**: Syncs repository labels
-
-**`validate-feed-submission.yml`**: Validates new feed submissions
-
-**`add-approved-feed.yml`**: Adds approved feeds to data
-
-______________________________________________________________________
-
-## 🔧 CLI Integration
-
-All enhanced workflows utilize the `ai-web-feeds` CLI for consistency.
-
-### Test Commands
-
-```bash
-uv run ai-web-feeds test all              # All tests
-uv run ai-web-feeds test unit             # Unit tests only
-uv run ai-web-feeds test integration      # Integration tests
-uv run ai-web-feeds test e2e              # E2E tests
-uv run ai-web-feeds test coverage --html  # With coverage
-uv run ai-web-feeds test quick            # Fast unit tests
-```
-
-### Validation Commands
-
-```bash
-uv run ai-web-feeds validate feeds        # Validate feeds.yaml
-uv run ai-web-feeds validate topics       # Validate topics.yaml
-uv run ai-web-feeds validate references   # Validate topic refs
-uv run ai-web-feeds validate all          # All validations
-uv run ai-web-feeds validate all --strict # Strict mode
-```
-
-### Quality Commands (via uv scripts)
-
-```bash
-uv run lint                             # Run linter
-uv run lint-fix                         # Auto-fix issues
-uv run format                           # Format code
-uv run format --check                   # Check formatting
-uv run typecheck                        # Type checking
-uv run check                            # All checks
-uv run fix                              # Auto-fix all
-```
-
-### Stats Commands
-
-```bash
-uv run ai-web-feeds stats                 # Display stats
-uv run ai-web-feeds stats --output json   # JSON output
-```
-
-______________________________________________________________________
-
-## 📏 Quality Standards
-
-### Enforced Standards
-
-1. **Code Formatting**: Ruff format (100 char lines)
-1. **Linting**: Ruff with ANN, D, E, F, I, N, UP, etc.
-1. **Type Hints**: ty smoke surface for active Python quality gates
-1. **Test Coverage**: ≥90% required
-1. **Data Validation**: JSON Schema compliance
-1. **Security**: Bandit scanning
-1. **Cross-platform**: Ubuntu, macOS, Windows support
-
-### Quality Gate
-
-The `quality-gate` job in workflows ensures:
-
-- ✅ All formatting rules pass
-- ✅ All linting rules pass
-- ✅ All type checks pass
-- ✅ Coverage ≥90%
-- ✅ All data validations pass
-
-**If any check fails, the PR cannot be merged.**
-
-______________________________________________________________________
-
-## 🚀 Local Development
-
-### Before Committing
-
-```bash
-# Run all quality checks
-uv run check
-
-# Auto-fix issues
-uv run fix
-
-# Run tests
-uv run ai-web-feeds test all
-
-# Validate data
-uv run ai-web-feeds validate all
-```
-
-### Pre-commit Hook (Recommended)
-
-Install pre-commit hooks to run checks automatically:
-
-```bash
-uv sync --extra dev
-uv run pre-commit install
-```
-
-______________________________________________________________________
-
-## 📊 Workflow Artifacts
-
-Workflows generate artifacts for review:
-
-- **Ruff Reports**: JSON and text linting reports
-- **Type Check Output**: ty smoke diagnostics
-- **Bandit Reports**: JSON and text security reports
-- **Test Reports**: JUnit XML and pytest reports
-- **Coverage Reports**: HTML coverage reports
-- **Validation Reports**: JSON validation statistics
-
-**Retention**: 7-30 days depending on report type
-
-______________________________________________________________________
-
-## 🔄 Continuous Improvement
-
-### Workflow Updates
-
-When updating workflows:
-
-1. Test locally with `act` (GitHub Actions local runner)
-1. Update this documentation
-1. Add CLI commands where appropriate
-1. Maintain consistency across workflows
-1. Update AGENTS.md files as needed
-
-### Adding New Checks
-
-To add new quality checks:
-
-1. Add command to CLI if applicable
-1. Add job to `quality-enforcement.yml`
-1. Update quality gate dependencies
-1. Document in this file
-1. Update project README
-
-______________________________________________________________________
-
-## 📝 Workflow Debugging
-
-### Common Issues
-
-**Issue**: Workflow fails with "CLI command not found"
-
-- **Solution**: Ensure `uv sync --all-extras` is run first
-
-**Issue**: Coverage below 90%
-
-- **Solution**: Add tests or update coverage threshold
-
-**Issue**: Data validation fails
-
-- **Solution**: Run `uv run ai-web-feeds validate all` locally
-
-**Issue**: Formatting/linting fails
-
-- **Solution**: Run `uv run fix` to auto-fix
-
-### Logs and Reports
-
-Check workflow run artifacts for detailed reports:
-
-1. Go to Actions tab
-1. Select workflow run
-1. Download artifacts
-1. Review JSON/HTML reports
-
-______________________________________________________________________
-
-## 🔗 Related Documentation
-
-- [CLI Documentation](../../apps/cli/AGENTS.md)
-- [Testing Documentation](../../tests/AGENTS.md)
-- [Contributing Guidelines](../../CONTRIBUTING.md)
-- [Project AGENTS.md](../../AGENTS.md)
-
-______________________________________________________________________
-
-*Last Updated: October 2025*
+*Reconciled to actual `.yml` files (triggers, jobs, commands) on 2026-06-23.
+Aspirational content removed.*

@@ -229,7 +229,7 @@ ai-web-feeds test coverage
 ai-web-feeds test coverage --open
 
 # Run specific file
-ai-web-feeds test file packages/ai_web_feeds/unit/test_models.py
+ai-web-feeds test file tests/packages/ai_web_feeds/unit/test_models.py
 
 # Debug mode
 ai-web-feeds test debug
@@ -269,12 +269,12 @@ ai-web-feeds test coverage --open        # Coverage report
 ai-web-feeds test all --coverage --parallel
 
 # Debugging
-ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
+ai-web-feeds test debug tests/packages/ai_web_feeds/unit/test_models.py
 ai-web-feeds test file test_storage.py -k "test_add_feed"
 ```
 
-See [CLI documentation](https://aiwebfeeds.vercel.app/docs/development/cli) and
-[`ai-web-feeds test --help`](../../tests/AGENTS.md) for test command details.
+See [CLI documentation](https://aiwebfeeds.vercel.app/docs/development/cli). Run
+`uv run ai-web-feeds test --help` for test command details.
 
 ### Environment Variables
 

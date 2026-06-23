@@ -8,7 +8,7 @@ Generate a weekly discovery report for AI Web Feeds.
 
 Work from repository source-of-truth files first:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `.github/prompts/FEED_DISCOVERY_PROMPT.md`
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`

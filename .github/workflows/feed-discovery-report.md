@@ -31,7 +31,7 @@ Generate at most one maintainer-facing discovery report issue for this run.
 
 Use these files as the source of truth before making any recommendation:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `.github/prompts/FEED_DISCOVERY_PROMPT.md`
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`

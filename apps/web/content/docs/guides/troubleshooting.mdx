@@ -1,0 +1,34 @@
+---
+title: Troubleshooting
+description: Hub for diagnosing CLI, test, workflow, feed, and docs build issues in ai-web-feeds
+icon: LifeBuoy
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Card, Cards } from "fumadocs-ui/components/card";
+
+# Troubleshooting
+
+Use this page to route common problems to the right guide. Each link points to an
+existing troubleshooting section in the docs site.
+
+<Callout type="info">Entry point for contributors: [Contributing overview](/docs/development/contributing)</Callout>
+
+## Where to look
+
+<Cards>
+  <Card title="CLI commands" href="/docs/development/cli" description="Command reference, flags, and CLI-specific failure modes." />
+  <Card title="CLI workflows" href="/docs/development/cli-workflows" description="How CLI commands fit into validation, export, and enrichment pipelines." />
+  <Card title="Tests" href="/docs/guides/testing#troubleshooting" description="pytest paths, coverage, markers, and `ai-web-feeds test` debugging." />
+  <Card title="GitHub workflows" href="/docs/guides/workflow-reference" description="CI job failures, workflow triggers, and automation integration." />
+  <Card title="Development workflows" href="/docs/development/workflows" description="Repository automation, scheduled jobs, and maintainer workflows." />
+  <Card title="Feed schema" href="/docs/guides/feed-schema" description="YAML structure, validation errors, and feed metadata rules." />
+  <Card title="GitHub infrastructure" href="/docs/guides/github-infrastructure#troubleshooting" description="Issue templates, labels, and repository automation assets." />
+  <Card title="Web and docs build" href="/docs/guides/quick-reference#troubleshooting" description="Next.js cache, TypeScript errors, and Fumadocs configuration checks." />
+  <Card title="Getting started" href="/docs/guides/getting-started#troubleshooting" description="First-run setup, environment issues, and onboarding fixes." />
+</Cards>
+
+## Still stuck?
+
+Open a [bug report](https://github.com/wyattowalsh/ai-web-feeds/issues/new/choose) with
+reproduction steps, command output, and the doc section you already tried.

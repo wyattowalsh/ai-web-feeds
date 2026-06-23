@@ -55,7 +55,7 @@ ______________________________________________________________________
 
 Core library providing:
 
-- **Fetching**: HTTP client with retry logic (`fetcher.py`)
+- **Polling**: HTTP client with retry logic (`polling.py` — `FeedPoller`)
 - **Parsing**: RSS/Atom XML processing (`feedparser`)
 - **Storage**: SQLAlchemy ORM + migrations (`storage.py`, `models.py`)
 - **Analytics**: Feed metrics and insights (`analytics.py`)
@@ -75,25 +75,43 @@ ______________________________________________________________________
 ```
 src/ai_web_feeds/
 ├── __init__.py       # Public API exports
+├── analytics.py      # Metrics, trending, health summaries ✅ test_analytics.py
 ├── config.py         # Settings (Pydantic) ✅ test_config.py
 ├── enrich.py         # Feed enrichment & AI metadata ✅ test_enrich.py
 ├── export.py         # JSON/OPML export ✅ test_export.py
 ├── load.py           # YAML load/save operations ✅ test_load.py
 ├── logger.py         # Logging setup ✅ test_logger.py
 ├── models.py         # ORM models (SQLModel) ✅ test_models.py
+├── polling.py        # FeedPoller + refresh_corpus ✅ test_polling*.py
+├── recommendations.py # Recs + personalization
+├── scheduler.py      # APScheduler orchestration
+├── search.py         # FTS5 + semantic search + autocomplete ✅ test_search.py
 ├── storage.py        # Database operations ✅ test_storage.py
 ├── utils.py          # Helper functions ✅ test_utils.py
-└── validate.py       # JSON schema validation ✅ test_validate.py
+├── validate.py       # JSON schema validation ✅ test_validate.py
+├── nlp/              # NLP subpackage (quality, entities, sentiment, topics)
+│   ├── quality_scorer.py
+│   ├── entity_extractor.py
+│   ├── sentiment_analyzer.py
+│   ├── topic_modeler.py
+│   ├── scheduler.py
+│   └── jobs/
+└── visualization/    # Dashboard, clustering, forecasting, API
+    ├── api.py
+    ├── visualization_service.py
+    ├── clustering.py
+    └── ...
 ```
 
 **Testing**: All core modules have comprehensive test coverage in
-`../../tests/tests/packages/ai_web_feeds/unit/`
+`tests/tests/packages/ai_web_feeds/` (unit/ + integration/ + nlp/ + e2e/)
 
-**Recent Updates (October 2025)**:
+**Recent Updates (June 2026)**:
 
-- ✅ Complete test synchronization across all modules
-- ✅ New modules: `load.py`, `validate.py`, `export.py`, `enrich.py`
-- ✅ 100% module coverage with 1,600+ lines of test code
+- ✅ Expanded architecture: `polling.py`, `search.py`, `analytics.py`, `nlp/`,
+  `visualization/`
+- ✅ `FeedPoller` + `DatabaseManager` replace legacy fetch/storage patterns
+- ✅ Pydantic v2 + SQLModel models (FeedSource primary)
 
 **See**: [llms-full.txt](https://aiwebfeeds.vercel.app/llms-full.txt) for detailed
 module documentation
@@ -106,11 +124,11 @@ ______________________________________________________________________
 
 ```python
 # ✅ Always include type hints
-def fetch_feed(url: str, timeout: int = 30) -> Optional[Feed]: ...
+def get_feed_source(feed_id: str) -> Optional[FeedSource]: ...
 
 
 # ❌ Never omit types
-def fetch_feed(url, timeout=30): ...
+def get_feed_source(feed_id): ...
 ```
 
 ### 2. Pydantic Models
@@ -136,7 +154,7 @@ async def fetch_with_retry(url: str) -> bytes: ...
 ```python
 # Use context managers
 with get_session() as session:
-    feed = session.get(Feed, feed_id)
+    source = session.get(FeedSource, feed_id)
     ...
 ```
 
@@ -151,7 +169,7 @@ ______________________________________________________________________
 
 ```bash
 # Run core package tests
-cd ../../tests && uv run pytest tests/packages/ai_web_feeds/ -v --cov=ai_web_feeds
+cd tests && uv run pytest tests/packages/ai_web_feeds/ -v --cov=ai_web_feeds
 ```
 
 ______________________________________________________________________
@@ -167,9 +185,9 @@ ______________________________________________________________________
    `meta.json`
 1. **FORBIDDEN**: Do NOT create `.md` files like `DATABASE.md` or `MODELS.md`
 
-### Adding a New Fetcher Method
+### Adding a New Polling Method
 
-1. Add to `fetcher.py` with type hints
+1. Add to `polling.py` (FeedPoller) with type hints
 1. Add retry logic via `@retry` decorator
 1. Write unit tests with mocked HTTP
 1. **REQUIRED**: Document in `apps/web/content/docs/` as `.mdx` (not standalone `.md`)
@@ -267,7 +285,7 @@ search.
 
 ______________________________________________________________________
 
-*Updated: October 15, 2025 · Version: 0.1.0*
+*Updated: June 2026 · Version: 0.2.0*
 
 **Example Implementation**:
 
@@ -324,52 +342,42 @@ ______________________________________________________________________
 
 - Use `Optional` for nullable fields
 - Add `Field(index=True)` for frequently queried columns
-- Implement validators for data integrity
+- Use Field(ge=..., le=...) / model_config for v2 validation (no @validator)
 - Use `datetime` for timestamps (UTC)
 - Keep models focused and single-purpose
 
-**Example Models**:
+**Example Models** (Pydantic v2):
 
 ```python
-from sqlmodel import SQLModel, Field
-from pydantic import HttpUrl, validator
+from sqlmodel import SQLModel, Field as SQLField
+from sqlalchemy import Column, JSON
+from pydantic import ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Any
+
+from ai_web_feeds.models import SourceType, CurationStatus
 
 
-class Feed(SQLModel, table=True):
-    """RSS/Atom feed database model."""
+class FeedSource(SQLModel, table=True):
+    """Feed source (primary model)."""
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    url: str = Field(index=True, unique=True)
-    title: Optional[str] = None
-    description: Optional[str] = None
-    last_fetched: Optional[datetime] = None
-    last_modified: Optional[str] = None
-    etag: Optional[str] = None
-    is_active: bool = Field(default=True)
+    __tablename__ = "sources"
 
-    @validator("url")
-    def validate_url(cls, v: str) -> str:
-        """Ensure URL is valid and normalized."""
-        if not v.startswith(("http://", "https://")):
-            raise ValueError("URL must start with http:// or https://")
-        return v.lower().strip()
+    id: str = SQLField(primary_key=True)
+    url: str | None = SQLField(default=None)
+    feed: str | None = SQLField(default=None)
+    title: str = SQLField()
+    source_type: SourceType | None = SQLField(default=None)
+    topics: list[str] = SQLField(default_factory=list, sa_column=Column(JSON))
+    topic_weights: dict[str, float] = SQLField(
+        default_factory=dict, sa_column=Column(JSON)
+    )
+    curation_status: CurationStatus | None = SQLField(default=CurationStatus.UNVERIFIED)
+    verified: bool = SQLField(default=False)
+    quality_score: float | None = SQLField(default=None, ge=0.0, le=1.0)
+    # ... (other fields: mediums, tags, popularity_score, etc.)
 
-
-class ArticleEntry(SQLModel, table=True):
-    """Individual feed article."""
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-    feed_id: str = Field(foreign_key="sources.id", index=True)
-    title: str
-    link: str
-    pub_date: datetime
-    topics: list[str] = Field(default_factory=list, sa_column=Column(JSON))
-    raw_categories: list[str] = Field(default_factory=list, sa_column=Column(JSON))
-    summary: Optional[str] = None
-    author: Optional[str] = None
-    guid: str = Field(unique=True, index=True)
+    model_config = ConfigDict(use_enum_values=True)
 ```
 
 ______________________________________________________________________
@@ -386,52 +394,27 @@ ______________________________________________________________________
 - Use `select()` for type-safe queries
 - Handle `IntegrityError` for unique constraints
 
-**Example Implementation**:
+**Example Implementation** (DatabaseManager):
 
 ```python
-from sqlmodel import Session, create_engine, select
-from sqlalchemy.exc import IntegrityError
-from typing import Optional
+from sqlmodel import Session, select
+from ai_web_feeds.storage import DatabaseManager
+from ai_web_feeds.models import FeedSource
 from loguru import logger
 
+db = DatabaseManager(database_url="sqlite:///data/ai-web-feeds.db")
+# For tests/fixtures:
+db.create_db_and_tables()
 
-class FeedStorage:
-    """Database operations for feed management."""
+# Session usage (context or direct)
+with db.get_session() as session:
+    sources = session.exec(select(FeedSource)).all()
 
-    def __init__(self, database_url: str = "sqlite:///data/ai-web-feeds.db"):
-        """Initialize storage with database connection."""
-        self.engine = create_engine(
-            database_url, echo=False, connect_args={"check_same_thread": False}
-        )
-        SQLModel.metadata.create_all(self.engine)
-        logger.info(f"Database initialized: {database_url}")
+# Or module helper
+from ai_web_feeds.storage import get_session
 
-    def add_feed(self, feed: Feed) -> Optional[Feed]:
-        """Add a new feed to database.
-
-        Returns:
-            Feed with database-assigned ID, or None if already exists
-        """
-        try:
-            with Session(self.engine) as session:
-                session.add(feed)
-                session.commit()
-                session.refresh(feed)
-                logger.info(f"Added feed: {feed.url}")
-                return feed
-        except IntegrityError:
-            logger.warning(f"Feed already exists: {feed.url}")
-            return None
-
-    def get_all_feeds(self, active_only: bool = True) -> list[Feed]:
-        """Retrieve all feeds."""
-        with Session(self.engine) as session:
-            statement = select(Feed)
-            if active_only:
-                statement = statement.where(Feed.is_active == True)
-            feeds = session.exec(statement).all()
-            logger.debug(f"Retrieved {len(feeds)} feeds")
-            return feeds
+with get_session() as session:
+    feed = session.get(FeedSource, feed_id)
 ```
 
 ______________________________________________________________________
@@ -464,13 +447,13 @@ class FeedStats:
 class FeedAnalytics:
     """Analytics engine for feed data."""
 
-    def __init__(self, storage: FeedStorage):
-        self.storage = storage
+    def __init__(self, db: DatabaseManager):
+        self.db = db
 
     def calculate_stats(self) -> FeedStats:
         """Calculate comprehensive feed statistics."""
-        feeds = self.storage.get_all_feeds(active_only=False)
-        active = [f for f in feeds if f.is_active]
+        feeds = self.db.get_all_feed_sources()
+        active = [f for f in feeds if f.curation_status not in {"archived", "inactive"}]
 
         # Calculate metrics
         return FeedStats(
@@ -582,7 +565,7 @@ uv run ruff format src/
 uv run mypy src/
 
 # From tests directory
-cd ../../tests
+cd tests
 uv run pytest tests/packages/ai_web_feeds/ --cov=ai_web_feeds
 ```
 
@@ -597,7 +580,7 @@ tests/tests/packages/ai_web_feeds/
 ├── unit/                          # Unit tests (isolated)
 │   ├── test_analytics.py
 │   ├── test_config.py
-│   ├── test_fetcher.py
+│   ├── test_enrich.py
 │   ├── test_models.py
 │   ├── test_storage.py
 │   └── test_utils.py
@@ -611,24 +594,29 @@ tests/tests/packages/ai_web_feeds/
 
 ```python
 import pytest
-from ai_web_feeds.models import Feed
-from ai_web_feeds.storage import FeedStorage
+from ai_web_feeds.models import FeedSource
+from ai_web_feeds.storage import DatabaseManager
 
 
-class TestFeedStorage:
-    """Tests for FeedStorage class."""
+class TestFeedSourceStorage:
+    """Tests for DatabaseManager feed source storage."""
 
     @pytest.mark.unit
-    def test_add_feed(self, test_db):
-        """Test adding feed to database."""
-        storage = FeedStorage(database_url=test_db)
-        feed = Feed(url="https://example.com/feed.xml", title="Test")
+    def test_add_feed_source(self, test_db):
+        """Test adding feed source to database."""
+        from ai_web_feeds.storage import DatabaseManager
+        from ai_web_feeds.models import FeedSource
 
-        saved_feed = storage.add_feed(feed)
+        db = DatabaseManager(database_url=test_db)
+        db.create_db_and_tables()
+        source = FeedSource(
+            id="example", title="Test", feed="https://example.com/feed.xml"
+        )
 
-        assert saved_feed is not None
-        assert saved_feed.id is not None
-        assert saved_feed.url == feed.url
+        saved = db.add_feed_source(source)
+
+        assert saved is not None
+        assert saved.id == "example"
 ```
 
 ### Running Tests
@@ -643,7 +631,7 @@ uv run pytest tests/packages/ai_web_feeds/
 uv run pytest tests/packages/ai_web_feeds/ --cov=ai_web_feeds --cov-report=html
 
 # Specific module
-uv run pytest tests/packages/ai_web_feeds/unit/test_fetcher.py -v
+uv run pytest tests/packages/ai_web_feeds/unit/test_storage.py -v
 ```
 
 ______________________________________________________________________
@@ -709,4 +697,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-*Last Updated: October 2025*
+*Last Updated: June 2026*

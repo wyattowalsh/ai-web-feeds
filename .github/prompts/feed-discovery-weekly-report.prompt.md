@@ -22,7 +22,7 @@ ______________________________________________________________________
 
 Read these before producing a report:
 
-- `FEED_DISCOVERY_PROMPT.md`
+- `.github/prompts/FEED_DISCOVERY_PROMPT.md`
 - `data/feeds.yaml`
 - `data/feeds.schema.json`
 - `data/topics.yaml`

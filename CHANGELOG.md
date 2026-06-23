@@ -305,7 +305,7 @@ None. This release is backward compatible with Phase 2 (Data Discovery & Analyti
 
 - **Specification**: `specs/003-real-time-monitoring/spec.md`
 - **Completion Report**: `specs/003-real-time-monitoring/COMPLETION.md`
-- **Documentation**: [Real-Time Monitoring Guide](https://aiwebfeeds.com/docs/features/real-time-monitoring)
+- **Documentation**: [Real-Time Monitoring Guide](https://aiwebfeeds.vercel.app/docs/features/real-time-monitoring)
 - **OpenAPI**: `specs/003-real-time-monitoring/contracts/openapi.yaml`
 
 ---
