@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
@@ -5,9 +8,19 @@ import type { FeedSource } from "@/lib/feeds-filters";
 import type { WorkspaceArticle } from "@/lib/reader";
 import { useReaderLiveRefresh } from "./use-reader-live-refresh";
 
+const liveRefreshSource = readFileSync(
+  join(process.cwd(), "hooks/use-reader-live-refresh.ts"),
+  "utf8",
+);
+
 describe("useReaderLiveRefresh", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("never imports or uses router navigation (stays in-place)", () => {
+    expect(liveRefreshSource).not.toMatch(/from ["']next\/navigation["']/);
+    expect(liveRefreshSource).not.toMatch(/useRouter|router\.(push|replace|back)\s*\(/);
   });
 
   it("returns error when no feed ids", async () => {

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { HubPage } from "@/components/hub";
 import { JsonLd } from "@/components/json-ld";
+import { ArticleUnavailable } from "@/components/reader/article-unavailable";
 import { ImmersiveReader } from "@/components/reader/immersive-reader";
 import { getRequestNonce } from "@/lib/nonce";
 import { buttonVariants } from "@/components/ui/button";
@@ -27,7 +27,7 @@ type ImmersiveReaderPageProps = {
   params: Promise<{ articleId: string }>;
 };
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const corpus = await loadArticleCorpus();
@@ -70,7 +70,7 @@ export default async function ImmersiveReaderPage({ params }: ImmersiveReaderPag
   // Prefer the dedicated reader loader (centralized server helper)
   const article = await loadArticleForReader(articleId);
   if (!article) {
-    notFound();
+    return <ArticleUnavailable articleId={articleId} />;
   }
 
   const nonce = await getRequestNonce();

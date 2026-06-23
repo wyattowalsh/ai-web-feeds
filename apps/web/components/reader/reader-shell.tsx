@@ -158,6 +158,7 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
         onFilterChip={updateUrl}
         onResetDrafts={resetDrafts}
         onPaginate={(cursor) => updateUrl({ cursor })}
+        filtersDisabled={corpusEmpty && overlayArticles.length === 0}
       />
       <ReaderShortcutsSheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </>

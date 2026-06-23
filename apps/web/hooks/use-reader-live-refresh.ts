@@ -2,6 +2,14 @@
 
 import { useCallback, useState } from "react";
 
+/**
+ * useReaderLiveRefresh
+ *
+ * Performs in-place live sample loading via streaming fetch.
+ * IMPORTANT (FX-01): This hook MUST NEVER navigate away (no router.push/replace).
+ * All updates are done via local overlay state only; the reader stays in-place.
+ */
+
 import type { FeedSource } from "@/lib/feeds-filters";
 import {
   getArticleSortComparator,

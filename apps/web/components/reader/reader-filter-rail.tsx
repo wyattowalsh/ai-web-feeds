@@ -20,6 +20,8 @@ export type ReaderFilterRailProps = {
   corpusFeedCount?: number;
   catalogTotal?: number;
   catalogTopicCount?: number;
+  /** When true, disables all filter inputs and actions (e.g., empty corpus, no live overlay) */
+  filtersDisabled?: boolean;
 };
 
 export function ReaderFilterRail({
@@ -35,6 +37,7 @@ export function ReaderFilterRail({
   corpusFeedCount = 0,
   catalogTotal = 0,
   catalogTopicCount = 0,
+  filtersDisabled,
 }: ReaderFilterRailProps) {
   if (variant === "desktop") {
     return (
@@ -44,7 +47,7 @@ export function ReaderFilterRail({
             <p className="metric-label">Focus</p>
             <p className="small-note">Narrow the stream without leaving the reader.</p>
           </div>
-          <ReaderFiltersForm variant="desktop" {...filters} />
+          <ReaderFiltersForm variant="desktop" filtersDisabled={filtersDisabled} {...filters} />
 
           <div className="surface-card-soft mt-5 border-(--line) p-4">
             <p className="metric-label">Current view</p>
@@ -81,7 +84,7 @@ export function ReaderFilterRail({
           {activeFilterCount > 0 ? `${activeFilterCount} active` : "All posts"}
         </span>
       </summary>
-      <ReaderFiltersForm variant="mobile" {...filters} />
+      <ReaderFiltersForm variant="mobile" filtersDisabled={filtersDisabled} {...filters} />
     </details>
   );
 }

@@ -48,6 +48,8 @@ export type ReaderFiltersFormProps = {
   queryInputRef?: RefObject<HTMLInputElement | null>;
   /** Whether apply should be enabled (has unapplied draft changes) */
   hasPendingDraftChanges: boolean;
+  /** When true, all inputs and actions are disabled (e.g., empty corpus with no live overlay) */
+  filtersDisabled?: boolean;
 };
 
 /**
@@ -80,6 +82,7 @@ export function ReaderFiltersForm({
   availableTopicOptions,
   queryInputRef,
   hasPendingDraftChanges,
+  filtersDisabled = false,
 }: ReaderFiltersFormProps) {
   const isDesktop = variant === "desktop";
 
@@ -121,159 +124,122 @@ export function ReaderFiltersForm({
     applyDrafts();
   };
 
+  const formDisabled = filtersDisabled;
+  const disabledProps = formDisabled ? ({ disabled: true } as const) : {};
+
   return (
-    <form className="mt-4 space-y-4" onSubmit={onSubmit}>
-      <label className="space-y-1.5 text-sm">
-        <FilterFieldLabel>Search posts</FilterFieldLabel>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
-          <Input
-            ref={isDesktop ? queryInputRef : undefined}
-            id={qId}
-            name="q"
-            aria-label={qAria}
-            placeholder="Search titles, summaries, authors"
-            value={draftState.query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </label>
+    <fieldset
+      disabled={formDisabled || undefined}
+      className={cn(
+        "mt-4 space-y-4 border-0 p-0",
+        formDisabled && "pointer-events-none opacity-60",
+      )}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <label className="space-y-1.5 text-sm">
+          <FilterFieldLabel>Search posts</FilterFieldLabel>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-(--ink-muted)" />
+            <Input
+              ref={isDesktop ? queryInputRef : undefined}
+              id={qId}
+              name="q"
+              aria-label={qAria}
+              placeholder="Search titles, summaries, authors"
+              value={draftState.query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="pl-10"
+              {...disabledProps}
+            />
+          </div>
+        </label>
 
-      <label className="space-y-1.5 text-sm">
-        <FilterFieldLabel>Source type</FilterFieldLabel>
-        <Select
-          id={stId}
-          name="source_type"
-          aria-label={stAria}
-          value={draftState.sourceType}
-          onChange={(event) => setSourceType(event.target.value)}
-        >
-          <option value="">All source types</option>
-          {sourceTypes.map((sourceType) => (
-            <option key={sourceType} value={sourceType}>
-              {sourceType}
-            </option>
-          ))}
-        </Select>
-      </label>
-
-      <div className={isDesktop ? "space-y-3" : "space-y-2"}>
-        <div className="space-y-1.5 text-sm">
-          <FilterFieldLabel>Topic focus</FilterFieldLabel>
+        <label className="space-y-1.5 text-sm">
+          <FilterFieldLabel>Source type</FilterFieldLabel>
           <Select
-            id={topicSelId}
-            name="topic"
-            aria-label={topicSelAria}
-            value=""
-            onChange={handleTopicSelect}
+            id={stId}
+            name="source_type"
+            aria-label={stAria}
+            value={draftState.sourceType}
+            onChange={(event) => setSourceType(event.target.value)}
+            {...disabledProps}
           >
-            <option value="">
-              {draftState.topics.length > 0 ? "Add another topic" : "All topics"}
-            </option>
-            {availableTopicOptions.map((topic) => (
-              <option key={topic} value={topic}>
-                {topic}
+            <option value="">All source types</option>
+            {sourceTypes.map((sourceType) => (
+              <option key={sourceType} value={sourceType}>
+                {sourceType}
               </option>
             ))}
           </Select>
-          {draftState.topics.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {draftState.topics.map((topic) => (
-                <button
-                  key={topic}
-                  type="button"
-                  onClick={() => handleChipRemove(topic)}
-                  className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
-                >
+        </label>
+
+        <div className={isDesktop ? "space-y-3" : "space-y-2"}>
+          <div className="space-y-1.5 text-sm">
+            <FilterFieldLabel>Topic focus</FilterFieldLabel>
+            <Select
+              id={topicSelId}
+              name="topic"
+              aria-label={topicSelAria}
+              value=""
+              onChange={handleTopicSelect}
+              {...disabledProps}
+            >
+              <option value="">
+                {draftState.topics.length > 0 ? "Add another topic" : "All topics"}
+              </option>
+              {availableTopicOptions.map((topic) => (
+                <option key={topic} value={topic}>
                   {topic}
-                  <X className="size-3.5" />
-                </button>
+                </option>
               ))}
-            </div>
-          ) : isDesktop ? (
-            <p className="small-note">Choose one or more topic slices.</p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {topicCounts.map(({ topic, count }) => (
-            <button
-              key={topic}
-              type="button"
-              aria-pressed={draftState.topics.includes(topic)}
-              onClick={() => handleQuickTopic(topic)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
-                draftState.topics.includes(topic)
-                  ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
-                  : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
-              )}
-            >
-              {topic}
-              {isDesktop ? (
-                <span className="ml-2 text-[0.68rem] uppercase tracking-[0.12em] opacity-70">
-                  {count}
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {isDesktop ? (
-        <>
-          {hasVerificationMetadata ? (
-            <label className="space-y-1.5 text-sm">
-              <FilterFieldLabel>Verification</FilterFieldLabel>
-              <Select
-                id={verifId}
-                name="verified"
-                aria-label={verifAria}
-                value={draftState.verified}
-                onChange={(event) => setVerified(event.target.value as VerifiedDraftValue)}
+            </Select>
+            {draftState.topics.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {draftState.topics.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => handleChipRemove(topic)}
+                    className="inline-flex items-center gap-2 rounded-full border border-(--brand) bg-(--brand-soft) px-3 py-1 text-xs font-semibold text-(--brand-strong)"
+                    {...disabledProps}
+                  >
+                    {topic}
+                    <X className="size-3.5" />
+                  </button>
+                ))}
+              </div>
+            ) : isDesktop ? (
+              <p className="small-note">Choose one or more topic slices.</p>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {topicCounts.map(({ topic, count }) => (
+              <button
+                key={topic}
+                type="button"
+                aria-pressed={draftState.topics.includes(topic)}
+                onClick={() => handleQuickTopic(topic)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition duration-150",
+                  draftState.topics.includes(topic)
+                    ? "border-(--brand) bg-(--brand-soft) text-(--brand-strong)"
+                    : "border-(--line) bg-(--surface) text-(--ink-muted) hover:bg-(--surface-muted)",
+                )}
+                {...disabledProps}
               >
-                <option value="">All feeds</option>
-                <option value="true">Verified only</option>
-                <option value="false">Unverified only</option>
-              </Select>
-            </label>
-          ) : null}
+                {topic}
+                {isDesktop ? (
+                  <span className="ml-2 text-[0.68rem] uppercase tracking-[0.12em] opacity-70">
+                    {count}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <label className="space-y-1.5 text-sm">
-            <FilterFieldLabel>Reader view</FilterFieldLabel>
-            <Select
-              id={viewId}
-              name="view"
-              aria-label={viewAria}
-              value={draftState.readerView}
-              onChange={(event) => setReaderView(event.target.value as ReaderView)}
-            >
-              <option value="latest">Latest</option>
-              <option value="unread">Unread</option>
-              <option value="saved">Saved</option>
-              <option value="starred">Starred</option>
-              <option value="archived">Archived</option>
-            </Select>
-          </label>
-
-          <label className="space-y-1.5 text-sm">
-            <FilterFieldLabel>Sort</FilterFieldLabel>
-            <Select
-              id={sortId}
-              name="sort"
-              aria-label={sortAria}
-              value={draftState.sort}
-              onChange={(event) => setSort(event.target.value as ArticleSort)}
-            >
-              <option value="latest">Latest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="source">By source</option>
-            </Select>
-          </label>
-        </>
-      ) : (
-        <>
-          <div className="grid gap-3 sm:grid-cols-2">
+        {isDesktop ? (
+          <>
             {hasVerificationMetadata ? (
               <label className="space-y-1.5 text-sm">
                 <FilterFieldLabel>Verification</FilterFieldLabel>
@@ -283,6 +249,7 @@ export function ReaderFiltersForm({
                   aria-label={verifAria}
                   value={draftState.verified}
                   onChange={(event) => setVerified(event.target.value as VerifiedDraftValue)}
+                  {...disabledProps}
                 >
                   <option value="">All feeds</option>
                   <option value="true">Verified only</option>
@@ -290,6 +257,7 @@ export function ReaderFiltersForm({
                 </Select>
               </label>
             ) : null}
+
             <label className="space-y-1.5 text-sm">
               <FilterFieldLabel>Reader view</FilterFieldLabel>
               <Select
@@ -298,6 +266,7 @@ export function ReaderFiltersForm({
                 aria-label={viewAria}
                 value={draftState.readerView}
                 onChange={(event) => setReaderView(event.target.value as ReaderView)}
+                {...disabledProps}
               >
                 <option value="latest">Latest</option>
                 <option value="unread">Unread</option>
@@ -306,83 +275,145 @@ export function ReaderFiltersForm({
                 <option value="archived">Archived</option>
               </Select>
             </label>
-          </div>
-          <label className="space-y-1.5 text-sm">
-            <FilterFieldLabel>Sort</FilterFieldLabel>
-            <Select
-              id={sortId}
-              name="sort"
-              aria-label={sortAria}
-              value={draftState.sort}
-              onChange={(event) => setSort(event.target.value as ArticleSort)}
-            >
-              <option value="latest">Latest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="source">By source</option>
-            </Select>
-          </label>
-        </>
-      )}
 
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant={layout === "cards" ? "default" : "outline"}
-          className="flex-1"
-          onClick={() => onLayoutChange("cards")}
-          aria-pressed={layout === "cards"}
-        >
-          <LayoutGrid className="size-4" />
-          Cards
-        </Button>
-        <Button
-          type="button"
-          variant={layout === "list" ? "default" : "outline"}
-          className="flex-1"
-          onClick={() => onLayoutChange("list")}
-          aria-pressed={layout === "list"}
-        >
-          <List className="size-4" />
-          List
-        </Button>
-        <Button
-          type="button"
-          variant={layout === "compact" ? "default" : "outline"}
-          className="flex-1"
-          onClick={() => onLayoutChange("compact")}
-          aria-pressed={layout === "compact"}
-        >
-          <Rows3 className="size-4" />
-          Compact
-        </Button>
-      </div>
+            <label className="space-y-1.5 text-sm">
+              <FilterFieldLabel>Sort</FilterFieldLabel>
+              <Select
+                id={sortId}
+                name="sort"
+                aria-label={sortAria}
+                value={draftState.sort}
+                onChange={(event) => setSort(event.target.value as ArticleSort)}
+                {...disabledProps}
+              >
+                <option value="latest">Latest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="source">By source</option>
+              </Select>
+            </label>
+          </>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {hasVerificationMetadata ? (
+                <label className="space-y-1.5 text-sm">
+                  <FilterFieldLabel>Verification</FilterFieldLabel>
+                  <Select
+                    id={verifId}
+                    name="verified"
+                    aria-label={verifAria}
+                    value={draftState.verified}
+                    onChange={(event) => setVerified(event.target.value as VerifiedDraftValue)}
+                    {...disabledProps}
+                  >
+                    <option value="">All feeds</option>
+                    <option value="true">Verified only</option>
+                    <option value="false">Unverified only</option>
+                  </Select>
+                </label>
+              ) : null}
+              <label className="space-y-1.5 text-sm">
+                <FilterFieldLabel>Reader view</FilterFieldLabel>
+                <Select
+                  id={viewId}
+                  name="view"
+                  aria-label={viewAria}
+                  value={draftState.readerView}
+                  onChange={(event) => setReaderView(event.target.value as ReaderView)}
+                  {...disabledProps}
+                >
+                  <option value="latest">Latest</option>
+                  <option value="unread">Unread</option>
+                  <option value="saved">Saved</option>
+                  <option value="starred">Starred</option>
+                  <option value="archived">Archived</option>
+                </Select>
+              </label>
+            </div>
+            <label className="space-y-1.5 text-sm">
+              <FilterFieldLabel>Sort</FilterFieldLabel>
+              <Select
+                id={sortId}
+                name="sort"
+                aria-label={sortAria}
+                value={draftState.sort}
+                onChange={(event) => setSort(event.target.value as ArticleSort)}
+                {...disabledProps}
+              >
+                <option value="latest">Latest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="source">By source</option>
+              </Select>
+            </label>
+          </>
+        )}
 
-      <div className={cn("flex flex-wrap gap-2", isDesktop && "border-t border-(--line) pt-4")}>
-        <Button
-          type="submit"
-          className="relative flex-1"
-          disabled={!hasPendingDraftChanges}
-          aria-describedby={hasPendingDraftChanges ? "reader-apply-pending" : undefined}
-        >
-          Apply filters
-          {hasPendingDraftChanges ? (
-            <span
-              id="reader-apply-pending"
-              className="absolute end-2 top-2 size-2 rounded-full bg-(--brand-strong) ring-2 ring-(--surface)"
-              aria-hidden
-            />
-          ) : null}
-        </Button>
-        <Button type="button" variant="outline" onClick={resetDrafts}>
-          Reset
-        </Button>
-      </div>
-      <p className="small-note text-(--ink-muted)">
-        Reset clears draft filters. Clear all in the stream drops search and view filters. Pinned{" "}
-        <code className="rounded bg-(--surface-muted) px-1 py-0.5 text-[0.7rem]">feed=</code> links
-        stay until you reset the workspace.
-      </p>
-    </form>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={layout === "cards" ? "default" : "outline"}
+            className="flex-1"
+            onClick={() => onLayoutChange("cards")}
+            aria-pressed={layout === "cards"}
+            {...disabledProps}
+          >
+            <LayoutGrid className="size-4" />
+            Cards
+          </Button>
+          <Button
+            type="button"
+            variant={layout === "list" ? "default" : "outline"}
+            className="flex-1"
+            onClick={() => onLayoutChange("list")}
+            aria-pressed={layout === "list"}
+            {...disabledProps}
+          >
+            <List className="size-4" />
+            List
+          </Button>
+          <Button
+            type="button"
+            variant={layout === "compact" ? "default" : "outline"}
+            className="flex-1"
+            onClick={() => onLayoutChange("compact")}
+            aria-pressed={layout === "compact"}
+            {...disabledProps}
+          >
+            <Rows3 className="size-4" />
+            Compact
+          </Button>
+        </div>
+
+        <div className={cn("flex flex-wrap gap-2", isDesktop && "border-t border-(--line) pt-4")}>
+          <Button
+            type="submit"
+            className="relative flex-1"
+            disabled={!hasPendingDraftChanges || formDisabled}
+            aria-describedby={
+              hasPendingDraftChanges && !formDisabled ? "reader-apply-pending" : undefined
+            }
+            {...disabledProps}
+          >
+            Apply filters
+            {hasPendingDraftChanges && !formDisabled ? (
+              <span
+                id="reader-apply-pending"
+                className="absolute end-2 top-2 size-2 rounded-full bg-(--brand-strong) ring-2 ring-(--surface)"
+                aria-hidden
+              />
+            ) : null}
+          </Button>
+          <Button type="button" variant="outline" onClick={resetDrafts} {...disabledProps}>
+            Reset
+          </Button>
+        </div>
+        <p className="small-note text-(--ink-muted)">
+          Reset clears draft filters. Clear all in the stream drops search and view filters. Pinned{" "}
+          <code className="rounded bg-(--surface-muted) px-1 py-0.5 text-[0.7rem]">feed=</code>{" "}
+          links stay until you reset the workspace.
+        </p>
+      </form>
+    </fieldset>
   );
 }
 
