@@ -88,7 +88,8 @@ export function ReaderShellWorkspace({
   onResetDrafts,
   onPaginate,
 }: ReaderShellWorkspaceProps) {
-  const showCorpusEmptyPanel = corpusEmpty && overlayCount === 0 && !refreshing;
+  const noOverlay = corpusEmpty && overlayCount === 0;
+  const showCorpusEmptyPanel = noOverlay && !refreshing;
   const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
   // Only disable filters entirely when corpus is empty AND there are no active URL filters.
   // When query/source_type/feed/topics are present, allow filter chrome interaction (FIX-001 remainder).
@@ -97,7 +98,7 @@ export function ReaderShellWorkspace({
     Boolean(currentState.sourceType) ||
     currentState.feedIds.length > 0 ||
     currentState.topics.length > 0;
-  const filtersDisabled = corpusEmpty && overlayCount === 0 && !hasActiveUrlFilters;
+  const filtersDisabled = noOverlay && !hasActiveUrlFilters;
 
   return (
     <div className="reader-shell space-y-5">

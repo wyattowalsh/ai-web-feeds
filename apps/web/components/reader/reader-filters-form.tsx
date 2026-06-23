@@ -85,6 +85,7 @@ export function ReaderFiltersForm({
   filtersDisabled = false,
 }: ReaderFiltersFormProps) {
   const isDesktop = variant === "desktop";
+  const canApply = hasPendingDraftChanges && !filtersDisabled;
 
   const qId = isDesktop ? "reader-search" : "reader-search-mobile";
   const qAria = isDesktop ? "Search posts" : "Search posts mobile";
@@ -127,10 +128,7 @@ export function ReaderFiltersForm({
   return (
     <fieldset
       disabled={filtersDisabled || undefined}
-      className={cn(
-        "mt-4 space-y-4 border-0 p-0",
-        filtersDisabled && "pointer-events-none opacity-60",
-      )}
+      className={cn("mt-4 border-0 p-0", filtersDisabled && "pointer-events-none opacity-60")}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <label className="space-y-1.5 text-sm">
@@ -371,13 +369,11 @@ export function ReaderFiltersForm({
           <Button
             type="submit"
             className="relative flex-1"
-            disabled={!hasPendingDraftChanges || filtersDisabled}
-            aria-describedby={
-              hasPendingDraftChanges && !filtersDisabled ? "reader-apply-pending" : undefined
-            }
+            disabled={!canApply}
+            aria-describedby={canApply ? "reader-apply-pending" : undefined}
           >
             Apply filters
-            {hasPendingDraftChanges && !filtersDisabled ? (
+            {canApply ? (
               <span
                 id="reader-apply-pending"
                 className="absolute end-2 top-2 size-2 rounded-full bg-(--brand-strong) ring-2 ring-(--surface)"
