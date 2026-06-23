@@ -1,10 +1,11 @@
 import { getViolations, injectAxe } from "axe-playwright";
-import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import {
   PLAYWRIGHT_AXE_OPTIONS,
   buildAxeFailureMessage,
   summarizeAxeViolations,
 } from "../../lib/accessibility/axe-tests";
+import { gotoWithRetry, typeIntoControlledInput } from "./helpers/navigation";
 
 test.use({ video: "off" });
 test.describe.configure({ mode: "serial" });
@@ -44,30 +45,6 @@ function trackClientErrors(page: Page) {
 async function expectNoClientErrors(page: Page, tracker: ReturnType<typeof trackClientErrors>) {
   await expect.poll(() => tracker.consoleErrors, { timeout: 1000 }).toEqual([]);
   await expect.poll(() => tracker.pageErrors, { timeout: 1000 }).toEqual([]);
-}
-
-async function gotoWithRetry(
-  page: Page,
-  path: string,
-  options?: Parameters<Page["goto"]>[1],
-  attempts = 2,
-) {
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      await page.goto(path, options);
-      return;
-    } catch (error) {
-      lastError = error;
-      const isAbortError = error instanceof Error && error.message.includes("ERR_ABORTED");
-      if (!isAbortError || attempt === attempts - 1) {
-        throw error;
-      }
-    }
-  }
-
-  throw lastError;
 }
 
 async function warnOnA11yViolations(page: Page, testInfo: TestInfo) {
@@ -112,14 +89,6 @@ async function firstArticleSearchToken(page: Page): Promise<string> {
       .map((part) => part.replace(/[^\p{L}\p{N}-]/gu, ""))
       .find((part) => part.length >= 4) ?? "feeds";
   return token.toLowerCase();
-}
-
-/** Fill a React-controlled input via real keystrokes (fill() alone can skip onChange in webkit CI). */
-async function typeIntoControlledInput(input: Locator, value: string) {
-  await input.click();
-  await input.fill("");
-  await input.pressSequentially(value, { delay: 30 });
-  await expect(input).toHaveValue(value, { timeout: 10_000 });
 }
 
 test.afterEach(async ({ page }, testInfo) => {

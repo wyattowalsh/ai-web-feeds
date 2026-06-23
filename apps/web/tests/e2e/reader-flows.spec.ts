@@ -1,35 +1,8 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+import { gotoWithRetry, typeIntoControlledInput } from "./helpers/navigation";
 
 test.use({ video: "off" });
-
-async function typeIntoControlledInput(input: Locator, value: string) {
-  await input.click();
-  await input.fill("");
-  await input.pressSequentially(value, { delay: 30 });
-  await expect(input).toHaveValue(value, { timeout: 10_000 });
-}
-
-async function gotoWithRetry(page: Page, path: string, attempts = 3) {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 45_000 });
-      return;
-    } catch (error) {
-      lastError = error;
-      const message = error instanceof Error ? error.message : String(error);
-      const isRetryable =
-        message.includes("ERR_ABORTED") ||
-        message.includes("Timeout") ||
-        message.includes("net::ERR");
-      if (!isRetryable || attempt === attempts - 1) {
-        throw error;
-      }
-      await page.waitForTimeout(500 * (attempt + 1));
-    }
-  }
-  throw lastError;
-}
 
 test.describe("Reader handoff flows", () => {
   test("sources search opens reader with feed scope preserved", async ({ page }) => {
@@ -77,6 +50,21 @@ test.describe("Reader handoff flows", () => {
   });
 });
 
+test.describe("Reader article fallback", () => {
+  test("missing article id shows unavailable UI with navigation", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const missingId = "definitely-not-a-real-article-slug-xyz";
+    await gotoWithRetry(page, `/reader/article/${missingId}`);
+
+    await expect(page.getByRole("heading", { name: "Article unavailable" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("link", { name: "Back to reader" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Search corpus" })).toBeVisible();
+    await expect(page.getByText(missingId)).toBeVisible();
+  });
+});
+
 test.describe("Hub dark-mode smoke", () => {
   test("reader and docs load under dark color scheme", async ({ page }) => {
     test.setTimeout(90_000);
@@ -87,7 +75,7 @@ test.describe("Hub dark-mode smoke", () => {
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 30_000 });
 
     await expect(async () => {
-      await gotoWithRetry(page, "/docs", 4);
+      await gotoWithRetry(page, "/docs", { attempts: 4 });
       await expect(page.locator("h1").first()).toBeVisible({ timeout: 30_000 });
     }).toPass({ timeout: 120_000 });
   });
