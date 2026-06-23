@@ -28,17 +28,11 @@ uv scripts (workspace pyproject.toml)
     pytest (test execution)
 ```
 
-**Alternative script entry point:**
-
-```
-tests/run_tests.py → uv scripts → CLI → pytest
-```
-
 ### Multiple Entry Points
 
-You can run tests using any of these methods:
+You can run tests using either method:
 
-<Tabs items={['uv Scripts (Recommended)', 'CLI Direct', 'Script Wrapper']}>
+<Tabs items={['uv Scripts (Recommended)', 'CLI Direct']}>
   <Tab value="uv Scripts (Recommended)">
     ```bash
     # Run all tests
@@ -84,28 +78,6 @@ You can run tests using any of these methods:
 
     # Get help
     uv run ai-web-feeds test --help
-    ```
-
-  </Tab>
-
-  <Tab value="Legacy Wrapper">
-    ```bash
-    cd tests
-
-    # Run all tests
-    ./run_tests.py all
-
-    # Run unit tests
-    ./run_tests.py unit
-
-    # Run with coverage
-    ./run_tests.py coverage
-
-    # Quick run
-    ./run_tests.py quick
-
-    # Get help
-    ./run_tests.py help
     ```
 
   </Tab>
@@ -410,12 +382,7 @@ uv run test-watch                # Watch mode for TDD
 # Alternative: Use CLI directly
 uv run ai-web-feeds test all --verbose --coverage
 uv run ai-web-feeds test unit --fast
-uv run ai-web-feeds test debug packages/ai_web_feeds/unit/test_models.py
-
-# Legacy: Use run_tests.py wrapper
-cd tests
-./run_tests.py quick
-./run_tests.py coverage
+uv run ai-web-feeds test debug tests/packages/ai_web_feeds/unit/test_models.py
 ```
 
 ### Benefits of This Architecture
@@ -428,7 +395,6 @@ Key advantages:
 2. **Multiple Entry Points** - Choose the interface that works best for you
 3. **Consistent Behavior** - All methods use the same underlying CLI
 4. **Easy Discovery** - `uv run --help` lists all available scripts
-5. **Backward Compatible** - Legacy `run_tests.py` still works
 
 ## CI/CD Integration
 
@@ -459,13 +425,13 @@ jobs:
 
 If you're updating CI/CD pipelines:
 
-**Before:**
+**Before (legacy):**
 
 ```yaml
-- run: python tests/run_tests.py coverage
+- run: cd tests && python -m pytest
 ```
 
-**After (Recommended):**
+**After (recommended):**
 
 ```yaml
 - run: uv run test-coverage
