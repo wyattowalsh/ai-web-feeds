@@ -1,0 +1,24 @@
+# Orphan Topic Matrix
+
+- **reasoning-models** (facet=methodology, rank_hint=0.78) → **Activate**
+- **vlm** (facet=task, rank_hint=0.8) → **Activate**
+- **long-context** (facet=methodology, rank_hint=0.84) → **Activate**
+- **context-engineering** (facet=prompting, rank_hint=0.9) → **Activate**
+- **devtools** (facet=devtools, rank_hint=0.8) → **Activate**
+- **simulation** (facet=methodology, rank_hint=0.76) → **Activate**
+- **synthetic-agents** (facet=task, rank_hint=0.7) → **Activate**
+- **fairness** (facet=ethics, rank_hint=0.72) → **Activate**
+- **supply-chain** (facet=security, rank_hint=0.76) → **Activate**
+- **model-risk** (facet=governance, rank_hint=0.76) → **Activate**
+- **copyright-ip** (facet=governance, rank_hint=0.7) → **Activate**
+- **synthetic-data** (facet=data, rank_hint=0.8) → **Activate**
+- **labeling** (facet=data, rank_hint=0.76) → **Activate**
+- **active-learning** (facet=methodology, rank_hint=0.74) → **Activate**
+- **infra** (facet=infra, rank_hint=0.8) → **Activate**
+- **data-centric-ai** (facet=methodology, rank_hint=0.78) → **Activate**
+- **data-viz** (facet=devtools, rank_hint=0.66) → **Activate**
+- **incident-response** (facet=ops, rank_hint=0.78) → **Activate**
+- **mobile** (facet=deployment, rank_hint=0.7) → **Activate**
+- **finance-ai** (facet=domain, rank_hint=0.66) → **Activate**
+- **conferences** (facet=media, rank_hint=0.6) → **Activate**
+- **gans** (facet=methodology, rank_hint=0.3) → **Activate**

@@ -1,0 +1,144 @@
+{
+  "retagged": [
+    {
+      "url": "http://export.arxiv.org/rss/cs.CV",
+      "title": "arXiv \u2014 cs.CV RSS",
+      "added_topics": [
+        "vlm"
+      ]
+    },
+    {
+      "url": "https://github.com/NVIDIA/NeMo/releases.atom",
+      "title": "NVIDIA NeMo \u2014 Releases (Atom)",
+      "added_topics": [
+        "vlm"
+      ]
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?user=MetaAI",
+      "title": "Meta AI \u2014 YouTube",
+      "added_topics": [
+        "vlm"
+      ]
+    },
+    {
+      "url": "https://lilianweng.github.io/index.xml",
+      "title": "Lilian Weng \u2014 Blog",
+      "added_topics": [
+        "long-context",
+        "context-engineering"
+      ]
+    },
+    {
+      "url": "https://promptfoo.dev/blog/rss.xml",
+      "title": "promptfoo \u2014 Blog",
+      "added_topics": [
+        "context-engineering"
+      ]
+    },
+    {
+      "url": "https://blog.langchain.com/rss.xml",
+      "title": "LangChain \u2014 Blog",
+      "added_topics": [
+        "context-engineering"
+      ]
+    },
+    {
+      "url": "https://www.protectai.com/blog/rss.xml",
+      "title": "Protect AI \u2014 MLSecOps Blog",
+      "added_topics": [
+        "model-risk"
+      ]
+    },
+    {
+      "url": "https://bankunderground.co.uk/feed",
+      "title": "Bank Underground (Bank of England)",
+      "added_topics": [
+        "model-risk"
+      ]
+    },
+    {
+      "url": "https://www.montecarlodata.com/blog/feed",
+      "title": "Monte Carlo \u2014 Data Observability Blog",
+      "added_topics": [
+        "incident-response"
+      ]
+    },
+    {
+      "url": "https://eugeneyan.com/rss/",
+      "title": "Eugene Yan \u2014 RSS",
+      "added_topics": [
+        "synthetic-data",
+        "active-learning",
+        "labeling"
+      ]
+    },
+    {
+      "url": "https://blog.roboflow.com/feed",
+      "title": "Roboflow \u2014 Blog",
+      "added_topics": [
+        "labeling",
+        "active-learning",
+        "synthetic-data"
+      ]
+    },
+    {
+      "url": "https://towardsdatascience.com/feed",
+      "title": "Towards Data Science",
+      "added_topics": [
+        "data-centric-ai"
+      ]
+    },
+    {
+      "url": "https://www.databricks.com/feed",
+      "title": "Databricks Blog \u2014 RSS",
+      "added_topics": [
+        "synthetic-data"
+      ]
+    },
+    {
+      "url": "https://waymo.com/blog/rss.xml",
+      "title": "Waymo Blog",
+      "added_topics": [
+        "synthetic-data",
+        "synthetic-agents"
+      ]
+    },
+    {
+      "url": "https://blog.unity.com/feed",
+      "title": "Unity Blog",
+      "added_topics": [
+        "synthetic-data"
+      ]
+    },
+    {
+      "url": "https://lilianweng.github.io/index.xml",
+      "title": "Lilian Weng \u2014 Blog",
+      "added_topics": [
+        "long-context",
+        "context-engineering"
+      ]
+    },
+    {
+      "url": "https://lilianweng.github.io/index.xml",
+      "title": "Lil'Log",
+      "added_topics": [
+        "long-context",
+        "context-engineering"
+      ]
+    }
+  ],
+  "remaining_orphans": [],
+  "orphan_count": 0,
+  "new_sources": [],
+  "summary": {
+    "initial_orphan_count": 10,
+    "final_orphan_count": 0,
+    "sources_retagged": 17,
+    "new_sources_added": 0,
+    "topics_deferred": [],
+    "validation": "uv run ai-web-feeds validate all",
+    "max_topics_per_source": 6,
+    "notes": "Honest retag ONLY of existing sources (max 6 topics each). Do NOT remove feeds. Retagged to cover all 10 listed orphans using content-verified fits (e.g. papers in CV for vlm, Lilian Weng research for long-context+context-eng, Roboflow/Eugene for labeling/active/synth-data, ProtectAI+Bank for model-risk, MonteCarlo for incident, Databricks/Unity/Waymo for synth, TDS for data-centric). Updated after rebuild state of 234 feeds."
+  }
+}

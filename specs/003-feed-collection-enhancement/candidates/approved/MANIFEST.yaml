@@ -1,0 +1,830 @@
+sources:
+- url: https://blog.neurips.cc/feed/
+  title: NeurIPS Blog
+  topics:
+  - conferences
+  - research
+  - papers
+  notes: Official NeurIPS blog
+- url: https://blog.iclr.cc/feed/
+  title: ICLR Blog
+  topics:
+  - conferences
+  - research
+  - papers
+  notes: ICLR conference blog
+- url: https://distill.pub/rss.xml
+  title: Distill
+  topics:
+  - research
+  - papers
+  - gans
+  - interpretability
+  notes: Interactive ML journal (archived but RSS active)
+- url: https://www.ft.com/artificial-intelligence?format=rss
+  title: Financial Times AI
+  topics:
+  - industry
+  - finance-ai
+  notes: FT AI section RSS
+- url: https://feeds.bloomberg.com/technology/news.rss
+  title: Bloomberg Technology
+  topics:
+  - industry
+  - finance-ai
+  notes: Bloomberg tech news
+- url: https://artificiallawyer.com/feed/
+  title: Artificial Lawyer
+  topics:
+  - blogs
+  - legal-ai
+  - governance
+  notes: Legal AI industry blog
+- url: https://www.nature.com/npjdigitalmed.rss
+  title: NPJ Digital Medicine
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Nature digital health journal
+- url: https://venturebeat.com/category/ai/feed/
+  title: VentureBeat AI
+  topics:
+  - industry
+  - product
+  notes: VB AI category feed
+- url: https://techcrunch.com/category/artificial-intelligence/feed/
+  title: TechCrunch AI
+  topics:
+  - industry
+  - product
+  notes: TC AI category feed
+- url: https://www.wired.com/feed/tag/ai/latest/rss
+  title: Wired AI
+  topics:
+  - industry
+  - governance
+  notes: Wired AI tag feed
+- url: https://www.technologyreview.com/topic/artificial-intelligence/feed
+  title: MIT Tech Review AI
+  topics:
+  - industry
+  - research
+  notes: MIT TR AI topic feed
+- url: https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss
+  title: IEEE Spectrum AI
+  topics:
+  - industry
+  - research
+  notes: IEEE Spectrum AI topic
+- url: https://blog.duolingo.com/tag/ai/feed/
+  title: Duolingo AI Blog
+  topics:
+  - industry
+  - edtech-ai
+  - product
+  notes: Duolingo AI tag feed
+- url: https://blog.khanacademy.org/feed/
+  title: Khan Academy Blog
+  topics:
+  - industry
+  - edtech-ai
+  - education
+  notes: EdTech with AI coverage
+- url: https://waymo.com/blog/rss.xml
+  title: Waymo Blog
+  topics:
+  - industry
+  - simulation
+  - mlops
+  notes: Autonomy/simulation at scale
+- url: https://blog.unity.com/feed
+  title: Unity Blog
+  topics:
+  - industry
+  - simulation
+  - mlops
+  notes: Simulation and game-engine ML
+- url: https://machinelearning.apple.com/rss.xml
+  title: Apple ML Research
+  topics:
+  - industry
+  - mobile
+  - inference
+  notes: Apple on-device ML research RSS
+- url: https://www.lesswrong.com/feed.xml
+  title: LessWrong
+  topics:
+  - open-source
+  - blogs
+  - safety
+  - research
+  notes: Rationalist AI discussion community
+- url: https://hnrss.org/newest?q=AI
+  title: Hacker News AI
+  topics:
+  - open-source
+  - blogs
+  - industry
+  - research
+  notes: HN AI stories via hnrss
+- url: https://discuss.pytorch.org/posts.rss
+  title: PyTorch Forum
+  topics:
+  - open-source
+  - blogs
+  - ml
+  notes: PyTorch community discussions
+- url: https://discuss.huggingface.co/latest.rss
+  title: Hugging Face Forum
+  topics:
+  - open-source
+  - blogs
+  - llm
+  notes: HF community latest posts
+- url: https://stackoverflow.com/feeds/tag?tagnames=artificial-intelligence&sort=newest
+  title: Stack Overflow AI
+  topics:
+  - open-source
+  - blogs
+  - ai-for-code
+  - education
+  notes: SO AI tag feed
+- url: https://kubernetes.io/feed.xml
+  title: Kubernetes Blog
+  topics:
+  - devtools
+  - education
+  - infra
+  - mlops
+  notes: K8s blog for ML infra
+- url: https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology.atom
+  title: UK DSIT
+  topics:
+  - industry
+  - governance
+  - regulation
+  notes: UK science/innovation department
+- url: https://sakana.ai/feed
+  title: Sakana AI
+  topics:
+  - industry
+  - research
+  - llm
+  notes: Tokyo-based AI lab
+- url: https://www.bensbites.com/feed
+  title: Ben's Bites
+  topics:
+  - newsletters
+  - industry
+  - product
+  notes: Daily AI product/news digest
+- url: https://lastweekin.ai/feed
+  title: Last Week in AI
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Weekly AI news roundup
+- url: https://buttondown.email/ainews/rss
+  title: AI News (Karpathy)
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Curated AI links newsletter
+- url: https://tldr.tech/rss
+  title: TLDR AI
+  topics:
+  - newsletters
+  - industry
+  - devtools
+  notes: Concise AI/tech newsletter
+- url: https://aisupremacy.substack.com/feed
+  title: AI Supremacy
+  topics:
+  - newsletters
+  - industry
+  - governance
+  notes: Substack AI strategy newsletter
+- url: https://syncedreview.com/feed/
+  title: Synced Review
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: AI research/industry news
+- url: https://www.platformer.news/feed
+  title: Platformer
+  topics:
+  - newsletters
+  - governance
+  - industry
+  notes: Tech policy and platforms
+- url: https://jack-clark.net/feed/
+  title: Import AI (Jack Clark)
+  topics:
+  - newsletters
+  - safety
+  - governance
+  notes: Author blog; complements Import AI newsletter entry
+- url: https://twimlai.com/feed
+  title: TWIML AI Podcast
+  topics:
+  - podcasts
+  - ml
+  - industry
+  notes: This Week in Machine Learning & AI
+- url: https://feeds.megaphone.fm/nopriors
+  title: No Priors
+  topics:
+  - podcasts
+  - industry
+  - product
+  notes: VC AI founders podcast
+- url: https://thedataexchange.media/feed/
+  title: The Data Exchange
+  topics:
+  - podcasts
+  - mlops
+  - data
+  notes: Data/ML practitioners podcast
+- url: https://lexfridman.com/feed/podcast/
+  title: Lex Fridman Podcast
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: Long-form AI/tech interviews
+- url: https://changelog.com/friends/feed
+  title: Changelog & Friends
+  topics:
+  - podcasts
+  - open-source
+  - devtools
+  notes: Changelog network show
+- url: https://www.superdatascience.com/feed
+  title: Super Data Science
+  topics:
+  - podcasts
+  - ml
+  - education
+  notes: ML career and practice podcast
+- url: https://simonwillison.net/atom/everything/
+  title: Simon Willison
+  topics:
+  - blogs
+  - llm
+  - devtools
+  notes: LLM tooling and engineering notes
+- url: https://gwern.net/feed
+  title: Gwern
+  topics:
+  - blogs
+  - research
+  - evaluation
+  notes: Long-form AI/statistics research
+- url: https://www.jeremykun.com/feed/
+  title: Jeremy Kun
+  topics:
+  - blogs
+  - education
+  - ml
+  notes: Math and ML explanations
+- url: https://lilianweng.github.io/index.xml
+  title: Lil'Log
+  topics:
+  - blogs
+  - research
+  - llm
+  notes: Lilian Weng research blog
+- url: https://karpathy.github.io/feed.xml
+  title: Andrej Karpathy
+  topics:
+  - blogs
+  - education
+  - llm
+  notes: Karpathy engineering blog
+- url: https://colah.github.io/rss.xml
+  title: Colah's Blog
+  topics:
+  - blogs
+  - research
+  - interpretability
+  notes: Neural network interpretability
+- url: https://minimaxir.com/index.xml
+  title: Minimaxir
+  topics:
+  - blogs
+  - ml
+  - evaluation
+  notes: Data/ML analysis and commentary
+- url: https://www.interconnects.ai/feed
+  title: Interconnects
+  topics:
+  - blogs
+  - industry
+  - llm
+  notes: Nathan Lambert AI analysis
+- url: https://www.oneusefulthing.org/feed
+  title: One Useful Thing
+  topics:
+  - blogs
+  - product
+  - education
+  notes: Ethan Mollick on AI in work/education
+- url: https://stratechery.com/feed/
+  title: Stratechery
+  topics:
+  - blogs
+  - industry
+  - product
+  notes: Ben Thompson strategy analysis
+- url: https://hamel.dev/index.xml
+  title: Hamel Husain
+  topics:
+  - blogs
+  - mlops
+  - evaluation
+  notes: MLOps and LLM eval practice
+- url: https://flowingdata.com/feed/
+  title: FlowingData
+  topics:
+  - blogs
+  - data-viz
+  - education
+  notes: Data visualization and statistics
+- url: http://export.arxiv.org/rss/cs.CY
+  title: arXiv cs.CY
+  topics:
+  - research
+  - papers
+  - safety
+  notes: Computers and Society (safety/ethics)
+- url: http://export.arxiv.org/rss/cs.AI
+  title: arXiv cs.AI
+  topics:
+  - research
+  - papers
+  - llm
+  notes: Artificial Intelligence preprints
+- url: https://research.google/blog/rss/
+  title: Google Research Blog
+  topics:
+  - industry
+  - research
+  - evaluation
+  notes: Official Google Research RSS
+- url: https://research.facebook.com/feed/
+  title: Meta Research
+  topics:
+  - industry
+  - research
+  - open-source
+  notes: Meta FAIR research feed
+- url: https://research.nvidia.com/rss.xml
+  title: NVIDIA Research
+  topics:
+  - industry
+  - research
+  - inference
+  notes: NVIDIA research publications
+- url: https://crfm.stanford.edu/feed.xml
+  title: Stanford CRFM
+  topics:
+  - industry
+  - research
+  - safety
+  notes: Center for Research on Foundation Models
+- url: https://blog.eleuther.ai/index.xml
+  title: EleutherAI Blog
+  topics:
+  - industry
+  - open-source
+  - safety
+  notes: Atom feed (replaces broken HTML URL)
+- url: https://www.fiddler.ai/blog/rss.xml
+  title: Fiddler AI Blog
+  topics:
+  - industry
+  - evaluation
+  - governance
+  notes: Model observability and governance
+- url: https://www.gov.uk/government/organisations/ai-safety-institute.atom
+  title: UK AI Safety Institute
+  topics:
+  - industry
+  - governance
+  - safety
+  notes: UK AISI government atom feed
+- url: https://futureoflife.org/feed/
+  title: Future of Life Institute
+  topics:
+  - industry
+  - safety
+  - governance
+  notes: AI safety and policy org
+- url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+  title: CISA Advisories
+  topics:
+  - industry
+  - supply-chain
+  - security
+  notes: Supply chain / security advisories
+- url: https://theaiinsider.tech/feed/
+  title: AI Insider
+  topics:
+  - blogs
+  - industry
+  - research
+  notes: In-depth AI articles, interviews and funding news
+- url: https://www.aitrends.com/feed
+  title: AI Trends
+  topics:
+  - blogs
+  - industry
+  notes: AI industry trends and analysis
+- url: https://aiweirdness.com/rss
+  title: AI Weirdness
+  topics:
+  - blogs
+  - ml
+  - research
+  notes: Fun and insightful AI weirdness blog
+- url: https://mlinproduction.com/feed
+  title: ML in Production
+  topics:
+  - blogs
+  - mlops
+  - industry
+  notes: Practical ML production and engineering
+- url: https://davidstutz.de/feed
+  title: David Stutz
+  topics:
+  - blogs
+  - research
+  - ml
+  notes: ML research blog and paper notes
+- url: https://danieltakeshi.github.io/feed.xml
+  title: Seita's Place
+  topics:
+  - blogs
+  - education
+  - ml
+  notes: Daniel Takeshi blog on ML, RL and research
+- url: https://feeds.megaphone.fm/MLN2155636147
+  title: The TWIML AI Podcast
+  topics:
+  - podcasts
+  - ml
+  - industry
+  - research
+  notes: This Week in Machine Learning & AI podcast (long running)
+- url: https://blog.google/technology/ai/rss/
+  title: Google AI Blog
+  topics:
+  - industry
+  - research
+  - product
+  notes: Google AI / blog updates (distinct from research.google)
+- url: https://www.abortretry.fail/feed
+  title: Abort Retry Fail
+  topics:
+  - blogs
+  - industry
+  - infra
+  notes: Deep technical dives on AI infra, systems and reliability
+- url: https://kelvinmu.substack.com/feed
+  title: AI Musings by Mu
+  topics:
+  - newsletters
+  - research
+  - llm
+  notes: AI research and musings newsletter
+- url: https://www.cognitiverevolution.ai/latest/rss/
+  title: The Cognitive Revolution
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: AI podcast on builders, researchers and analysis
+- url: https://www.aisnakeoil.com/feed/
+  title: AI as Normal Technology
+  topics:
+  - blogs
+  - research
+  - industry
+  notes: Blog by Arvind Narayanan on AI
+- url: https://thealgorithmicbridge.substack.com/feed
+  title: The Algorithmic Bridge
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Newsletter bridging AI research and practice
+- url: https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml
+  title: ScienceDaily AI News
+  topics:
+  - research
+  - industry
+  notes: Aggregated AI research and science news
+- url: https://vitalab.github.io/feed.xml
+  title: VITALab
+  topics:
+  - research
+  - ml
+  notes: VITALab Montreal AI research blog
+- url: https://www.inference.vc/rss
+  title: inFERENCe
+  topics:
+  - blogs
+  - research
+  - ml
+  notes: Ferenc Huszar research blog on ML/inference
+- url: http://jalammar.github.io/feed.xml
+  title: Jay Alammar
+  topics:
+  - blogs
+  - education
+  - research
+  notes: Visual explanations of ML and LLMs
+- url: https://aiguide.substack.com/feed
+  title: AI A Guide for Thinking Humans
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Melanie Mitchell AI newsletter / substack
+- url: https://deepmind.google/blog/rss.xml
+  title: Google DeepMind News
+  topics:
+  - research
+  - industry
+  - llm
+  notes: Official DeepMind / Google DeepMind research and news blog feed
+- url: https://blogs.nvidia.com/feed/
+  title: NVIDIA Blog
+  topics:
+  - research
+  - industry
+  - mlops
+  notes: NVIDIA technical blog covering GPUs, deep learning, AI infrastructure and
+    announcements
+- url: https://karpathy.bearblog.dev/feed/
+  title: Andrej Karpathy
+  topics:
+  - blogs
+  - research
+  - education
+  notes: Personal blog of Andrej Karpathy on AI, LLMs, and building
+- url: https://gradientflow.substack.com/feed
+  title: Gradient Flow
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Newsletter on ML research, production and industry trends
+- url: https://aiweekly.co/issues.rss
+  title: AI Weekly — AI News & Updates
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Weekly collection of the best AI and machine learning news and resources
+- url: https://gwern.substack.com/feed
+  title: Gwern.net Newsletter
+  topics:
+  - research
+  - blogs
+  - safety
+  notes: Gwern Branwen newsletter with deep research notes on AI scaling, psychology
+    and long-form essays
+- url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+  title: AI | The Verge
+  topics:
+  - industry
+  - product
+  - blogs
+  notes: The Verge coverage of AI products, news and consumer tech developments
+- url: https://berkeleyrdi.substack.com/feed
+  title: Agentic AI Weekly
+  topics:
+  - community
+  - industry
+  - newsletters
+  - ai
+  - research
+  notes: Substack newsletter feed
+- url: https://magazine.sebastianraschka.com/feed
+  title: Ahead of AI
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://arstechnica.com/ai/feed/
+  title: AI - Ars Technica
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://newsletter.safe.ai/feed
+  title: AI Safety Newsletter
+  topics:
+  - governance
+  - newsletters
+  - safety
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://ai-supremacy.substack.com/feed
+  title: AI Supremacy
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://www.amazon.science/index.rss
+  title: Amazon Science homepage
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://feeds.arstechnica.com/arstechnica/index
+  title: Ars Technica - All content
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.smashingmagazine.com/feed/
+  title: Articles on Smashing Magazine — For Web Designers And Developers
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://aws.amazon.com/blogs/amazon-ai/feed/
+  title: Artificial Intelligence
+  topics:
+  - blogs
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://artificialintelligencemadesimple.substack.com/feed
+  title: Artificial Intelligence Made Simple
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://benn.substack.com/feed
+  title: benn.substack
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://commoncog.com/blog/rss/
+  title: Commoncog
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://arxiv.org/rss/cs
+  title: cs updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: https://rss.arxiv.org/rss/cs.LG
+  title: cs.LG updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.NE
+  title: cs.NE updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.RO
+  title: cs.RO updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.SD
+  title: cs.SD updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.SE
+  title: cs.SE updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: https://decision.substack.com/feed
+  title: Decision Intelligence
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://thezvi.substack.com/feed
+  title: Don't Worry About the Vase
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://www.eledia.org/e-air/feed/
+  title: ELEDIA E-AIR
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://addyo.substack.com/feed
+  title: Elevate
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://engineering.fb.com/feed/
+  title: Engineering at Meta
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://slack.engineering/feed
+  title: Engineering at Slack
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://epochai.substack.com/feed
+  title: Epoch AI
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://ben-evans.com/benedictevans?format=rss
+  title: Essays - Benedict Evans
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://fs.blog/feed/
+  title: Farnam Street
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://future.a16z.com/feed/
+  title: Future
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://guykawasaki.com/feed/
+  title: Guy Kawasaki
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://news.ycombinator.com/rss
+  title: Hacker News
+  topics:
+  - community
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://hnrss.org/show
+  title: 'Hacker News: Show HN'
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://spectrum.ieee.org/feeds/feed.rss
+  title: IEEE Spectrum
+  topics:
+  - blogs
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml  # may dup
+    from pass6'
+  title: 'index.xml  # may dup from pass6'
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed

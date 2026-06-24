@@ -1,0 +1,128 @@
+{
+  "stage": "interview",
+  "title": "Comprehensive AI Feed Catalog",
+  "goalSlug": "comprehensive-ai-feed-catalog",
+  "questions": [
+    {
+      "id": "discovery_scope",
+      "prompt": "What source categories should discovery prioritize for \"every relevant AI feed\"?",
+      "description": "Spec 003 already targets podcasts, newsletters, forums, docs, practitioners, conferences, governance, domain apps, geography, and emerging labs. Confirm breadth vs depth.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "All listed categories plus blogs, research (arxiv/journals), org/lab announcements, GitHub releases, YouTube, Reddit/HN — continue spec 003's category shards and extend until saturation signals say stop.",
+      "recommendedOptionIds": ["media", "practitioners", "forums_docs", "research", "orgs_labs", "geo", "social_aggregators"],
+      "options": [
+        { "id": "media", "label": "Media (podcasts, newsletters, video)" },
+        { "id": "practitioners", "label": "Practitioner blogs & substacks" },
+        { "id": "forums_docs", "label": "Forums & official docs changelogs" },
+        { "id": "research", "label": "Research (arxiv, journals, preprints)" },
+        { "id": "orgs_labs", "label": "Orgs, labs, product announcements" },
+        { "id": "geo", "label": "Non-US / multilingual sources" },
+        { "id": "social_aggregators", "label": "Social & aggregators (Reddit, HN, Twitter/X proxies)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "size_target",
+      "prompt": "What is the catalog size target?",
+      "description": "Current: 319 sources in feeds.yaml, 262 enriched. Spec 003 planned +80–120 net. You asked for \"every and all relevant\" feeds.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No hard ceiling — discover until category saturation (spec 003 gap-matrix + orphan-matrix show diminishing returns). Minimum bar: complete spec 003's 80–120 verified candidates plus fix/enrich the full existing catalog.",
+      "recommendedOptionIds": ["unbounded_saturation"],
+      "options": [
+        { "id": "spec_target", "label": "Follow spec 003 cap: +80–120 net (~342–382 total)" },
+        { "id": "unbounded_saturation", "label": "No hard cap — stop at research saturation, not a number" },
+        { "id": "aggressive_500", "label": "Aggressive floor: ≥500 validated sources" }
+      ],
+      "required": true
+    },
+    {
+      "id": "http_policy",
+      "prompt": "How should broken or unreachable feeds be handled?",
+      "description": "HTTP audit shows ~217/262 failures (many parse errors, 403/404). Strict policy was chosen in spec 003.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Strict: fix URL/replace feed where possible; remove if unrecoverable. Zero broken feeds at ship gate. Re-run HTTP validation after every integration wave.",
+      "recommendedOptionIds": ["strict_fix_or_remove"],
+      "options": [
+        { "id": "strict_fix_or_remove", "label": "Strict — fix or remove; 0 broken at done" },
+        { "id": "lenient_keep", "label": "Lenient — keep broken with notes for later" },
+        { "id": "quarantine", "label": "Quarantine broken feeds to a separate file" }
+      ],
+      "required": true
+    },
+    {
+      "id": "enrichment_bar",
+      "prompt": "What does \"fully enriched\" require for every catalog source?",
+      "description": "Schema requires id, title, source_type, topics. Enrichment pipeline can add tags, feed URL, meta scores, etc.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "100% of feeds.yaml sources present in feeds.enriched.yaml with required fields (id, title, source_type, topics) plus feed URL and tags where detectable. Regenerate SQLite cache. Counts must match.",
+      "recommendedOptionIds": ["required_fields", "feed_url", "tags", "db_sync"],
+      "options": [
+        { "id": "required_fields", "label": "Required schema fields (id, title, source_type, topics)" },
+        { "id": "feed_url", "label": "Canonical feed URL resolved" },
+        { "id": "tags", "label": "Auto tags / keywords where available" },
+        { "id": "meta_scores", "label": "Health/quality/completeness scores" },
+        { "id": "db_sync", "label": "SQLite sources table synced 1:1" }
+      ],
+      "required": true
+    },
+    {
+      "id": "verified_policy",
+      "prompt": "Should we add verified / curation flags to new sources?",
+      "description": "Spec 003 policy: never author verified: true in feeds.yaml.",
+      "answerMode": "single",
+      "recommendedAnswer": "No — trusted-by-policy catalog; no verified flags in feeds.yaml; leave curation fields dormant.",
+      "recommendedOptionIds": ["no_verified"],
+      "options": [
+        { "id": "no_verified", "label": "No verified flags (continue spec 003 policy)" },
+        { "id": "verified_ok", "label": "Allow verified flags for high-confidence sources" }
+      ],
+      "required": true
+    },
+    {
+      "id": "derivative_assets",
+      "prompt": "Which derivative data assets must be regenerated on completion?",
+      "answerMode": "multi",
+      "recommendedAnswer": "All standard exports: feeds.enriched.yaml, OPML files, feeds.json, SQLite DB, and pass validate_data_assets.py 30/30.",
+      "recommendedOptionIds": ["enriched_yaml", "opml", "json", "sqlite", "data_assets_check"],
+      "options": [
+        { "id": "enriched_yaml", "label": "feeds.enriched.yaml" },
+        { "id": "opml", "label": "OPML export files" },
+        { "id": "json", "label": "feeds.json" },
+        { "id": "sqlite", "label": "SQLite cache (ai-web-feeds.db)" },
+        { "id": "data_assets_check", "label": "validate_data_assets.py 30/30" }
+      ],
+      "required": true
+    },
+    {
+      "id": "out_of_scope",
+      "prompt": "What is explicitly OUT of scope for this goal?",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Real-time monitoring (spec 003-real-time-monitoring), web UI changes, new CLI features, verified-badge UX, and automated ongoing discovery cron — this goal is a one-time catalog saturation pass.",
+      "recommendedOptionIds": ["realtime_monitoring", "web_ui", "new_cli", "ongoing_cron"],
+      "options": [
+        { "id": "realtime_monitoring", "label": "Real-time feed monitoring / alerts" },
+        { "id": "web_ui", "label": "Web docs site UI changes" },
+        { "id": "new_cli", "label": "New CLI commands or enrichment logic" },
+        { "id": "ongoing_cron", "label": "Scheduled auto-discovery pipeline" },
+        { "id": "topic_taxonomy", "label": "Major topics.yaml taxonomy redesign" }
+      ],
+      "required": true
+    },
+    {
+      "id": "done_gate",
+      "prompt": "What validation gates must pass for this goal to be DONE?",
+      "answerMode": "multi",
+      "recommendedAnswer": "All CLI validation green, HTTP 0 broken, enriched count = feeds count, orphan topics ≤6, data assets 30/30.",
+      "recommendedOptionIds": ["validate_all", "validate_http", "enrichment_parity", "orphan_topics", "data_assets"],
+      "options": [
+        { "id": "validate_all", "label": "ai-web-feeds validate all" },
+        { "id": "validate_http", "label": "ai-web-feeds validate http (0 failures)" },
+        { "id": "enrichment_parity", "label": "feeds.enriched count = feeds.yaml count" },
+        { "id": "orphan_topics", "label": "Orphan topics ≤6 (per spec 003 target)" },
+        { "id": "data_assets", "label": "validate_data_assets.py 30/30" },
+        { "id": "pytest_coverage", "label": "pytest coverage ≥90% (no regressions)" }
+      ],
+      "required": true
+    }
+  ]
+}

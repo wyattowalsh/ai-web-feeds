@@ -154,14 +154,15 @@ def infer_source_type(source: dict[str, Any]) -> str:
     domain = parsed.netloc.lower()
     path = parsed.path.lower()
     topics = set(_string_list(source.get("topics"))) | set(_string_list(source.get("tags")))
-    source_type = _platform_source_type(domain)
+    source_type = _platform_source_type(domain, path)
 
     if source_type is None:
         topic_rules = (
             ("podcast", "podcasts" in topics or "podcast" in path),
             ("video", bool({"videos", "video"} & topics)),
             ("newsletter", "newsletters" in topics or "newsletter" in path),
-            ("docs", bool({"docs", "documentation"} & topics)),
+            ("forum", bool({"community", "forum"} & topics) or _is_forum_domain(domain)),
+            ("docs", bool({"docs", "documentation", "devtools"} & topics) or _is_docs_feed(path)),
             ("dataset", bool({"datasets", "data"} & topics)),
             ("education", "education" in topics),
             ("journal", "papers" in topics),
@@ -210,9 +211,31 @@ def _first_non_empty_string(*values: Any) -> str:
     return ""
 
 
-def _platform_source_type(domain: str) -> str | None:
+def _is_forum_domain(domain: str) -> bool:
+    forum_markers = (
+        "stackexchange.com",
+        "stackoverflow.com",
+        "discuss.",
+        "community.",
+        "forum.",
+    )
+    return any(marker in domain for marker in forum_markers)
+
+
+def _is_docs_feed(path: str) -> bool:
+    docs_markers = ("/releases.atom", "/changelog", "/docs/", "/releases/")
+    return any(marker in path for marker in docs_markers)
+
+
+def _platform_source_type(domain: str, path: str = "") -> str | None:
     if domain.endswith(".substack.com") or domain in {"substack.com", "www.substack.com"}:
         return "substack"
+
+    if _is_forum_domain(domain):
+        return "forum"
+
+    if domain in {"github.com", "www.github.com"} and path.endswith("/releases.atom"):
+        return "docs"
 
     platform_types = {
         "github": {"github.com", "www.github.com"},

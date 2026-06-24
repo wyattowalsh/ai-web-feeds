@@ -1,0 +1,15 @@
+sources:
+- url: https://gradientflow.substack.com/feed
+  title: Gradient Flow
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Newsletter on ML research, production and industry trends
+- url: https://aiweekly.co/issues.rss
+  title: AI Weekly — AI News & Updates
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Weekly collection of the best AI and machine learning news and resources

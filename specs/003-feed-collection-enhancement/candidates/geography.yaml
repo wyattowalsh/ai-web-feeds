@@ -1,0 +1,15 @@
+sources:
+- url: https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology.atom
+  title: UK DSIT
+  topics:
+  - industry
+  - governance
+  - regulation
+  notes: UK science/innovation department
+- url: https://sakana.ai/feed
+  title: Sakana AI
+  topics:
+  - industry
+  - research
+  - llm
+  notes: Tokyo-based AI lab

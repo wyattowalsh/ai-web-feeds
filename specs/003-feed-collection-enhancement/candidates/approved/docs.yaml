@@ -1,0 +1,43 @@
+sources:
+- url: https://docs.langchain.com/oss/python/releases/changelog/rss.xml
+  title: LangChain Changelog
+  topics:
+  - devtools
+  - llm
+  - education
+  notes: LangChain OSS release changelogs
+- url: https://github.com/run-llama/llama_index/releases.atom
+  title: LlamaIndex Releases
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: LlamaIndex GitHub release notes
+- url: https://github.com/gradio-app/gradio/releases.atom
+  title: Gradio Releases
+  topics:
+  - open-source
+  - devtools
+  - product
+  notes: Gradio UI library release notes
+- url: https://github.com/keras-team/keras/releases.atom
+  title: Keras Releases
+  topics:
+  - open-source
+  - ml
+  - devtools
+  notes: Keras deep learning releases
+- url: https://github.com/explosion/spaCy/releases.atom
+  title: spaCy Releases
+  topics:
+  - open-source
+  - nlp
+  - devtools
+  notes: spaCy NLP library releases
+- url: https://github.com/explosion/thinc/releases.atom
+  title: Thinc Releases
+  topics:
+  - open-source
+  - ml
+  - devtools
+  notes: Thinc ML framework releases

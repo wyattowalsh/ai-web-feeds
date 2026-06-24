@@ -1,0 +1,15 @@
+sources:
+- url: https://gwern.substack.com/feed
+  title: Gwern.net Newsletter
+  topics:
+  - research
+  - blogs
+  - safety
+  notes: Gwern Branwen newsletter with deep research notes on AI scaling, psychology and long-form essays
+- url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+  title: AI | The Verge
+  topics:
+  - industry
+  - product
+  - blogs
+  notes: The Verge coverage of AI products, news and consumer tech developments

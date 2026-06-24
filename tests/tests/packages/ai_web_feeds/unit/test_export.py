@@ -9,6 +9,8 @@ import pytest
 import yaml
 from ai_web_feeds.export import (
     _add_feed_outline,
+    build_export_data,
+    build_opml_category_map,
     export_all_formats,
     export_to_json,
     export_to_opml,
@@ -458,3 +460,69 @@ class TestExportIntegration:
                 imported_data = json.load(f)
 
             assert imported_data == original_data
+
+
+@pytest.mark.unit
+class TestBuildExportData:
+    """Tests for build_export_data edge cases."""
+
+    def test_build_export_data_passthrough(self, sample_feeds_data) -> None:
+        """build_export_data returns input catalog unchanged (thin wrapper)."""
+        result = build_export_data(sample_feeds_data)
+        assert result is sample_feeds_data or result == sample_feeds_data
+        assert "sources" in result
+
+    def test_build_export_data_empty_catalog(self) -> None:
+        data = {"sources": []}
+        result = build_export_data(data)
+        assert result == data
+
+    def test_build_export_data_with_meta(self) -> None:
+        data = {"document_meta": {"foo": "bar"}, "sources": [{"id": "x", "title": "X"}]}
+        result = build_export_data(data)
+        assert result["document_meta"] == {"foo": "bar"}
+
+
+@pytest.mark.unit
+class TestBuildOpmlCategoryMap:
+    """Tests for build_opml_category_map covering edge cases."""
+
+    def test_build_opml_category_map_groups_by_topic(self) -> None:
+        catalog = {
+            "sources": [
+                {"id": "s1", "title": "S1", "topics": ["ai", "ml"]},
+                {"id": "s2", "title": "S2", "topics": ["ai"]},
+                {"id": "s3", "title": "S3", "topics": ["ml", "dl"]},
+            ]
+        }
+        cat_map = build_opml_category_map(catalog)
+        assert "ai" in cat_map
+        assert len(cat_map["ai"]) == 2
+        assert len(cat_map["ml"]) == 2
+        assert len(cat_map["dl"]) == 1
+
+    def test_build_opml_category_map_default_uncategorized(self) -> None:
+        catalog = {
+            "sources": [
+                {"id": "u1", "title": "U1"},  # no topics
+                {"id": "u2", "title": "U2", "topics": []},
+                {"id": "u3", "title": "U3", "topics": None},
+            ]
+        }
+        cat_map = build_opml_category_map(catalog)
+        assert "Uncategorized" in cat_map
+        assert len(cat_map["Uncategorized"]) == 3
+
+    def test_build_opml_category_map_empty_sources(self) -> None:
+        cat_map = build_opml_category_map({"sources": []})
+        assert cat_map == {}
+
+    def test_build_opml_category_map_missing_sources_key(self) -> None:
+        cat_map = build_opml_category_map({})
+        assert cat_map == {}
+
+    def test_build_opml_category_map_single_topic_per_source(self) -> None:
+        catalog = {"sources": [{"id": "only", "topics": ["sole"]}]}
+        cat_map = build_opml_category_map(catalog)
+        assert list(cat_map.keys()) == ["sole"]
+        assert cat_map["sole"][0]["id"] == "only"

@@ -1,0 +1,22 @@
+sources:
+- url: https://deepmind.google/blog/rss.xml
+  title: Google DeepMind News
+  topics:
+  - research
+  - industry
+  - llm
+  notes: Official DeepMind / Google DeepMind research and news blog feed
+- url: https://blogs.nvidia.com/feed/
+  title: NVIDIA Blog
+  topics:
+  - research
+  - industry
+  - mlops
+  notes: NVIDIA technical blog covering GPUs, deep learning, AI infrastructure and announcements
+- url: https://karpathy.bearblog.dev/feed/
+  title: Andrej Karpathy
+  topics:
+  - blogs
+  - research
+  - education
+  notes: Personal blog of Andrej Karpathy on AI, LLMs, and building

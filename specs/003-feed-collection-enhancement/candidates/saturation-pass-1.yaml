@@ -1,0 +1,71 @@
+sources:
+- url: https://theaiinsider.tech/feed/
+  title: AI Insider
+  topics:
+  - blogs
+  - industry
+  - research
+  notes: In-depth AI articles, interviews and funding news
+- url: https://intelligence.org/feed/
+  title: Machine Intelligence Research Institute
+  topics:
+  - research
+  - safety
+  - alignment
+  notes: MIRI AI safety and alignment research
+- url: https://www.aitrends.com/feed
+  title: AI Trends
+  topics:
+  - blogs
+  - industry
+  notes: AI industry trends and analysis
+- url: https://aiweirdness.com/rss
+  title: AI Weirdness
+  topics:
+  - blogs
+  - ml
+  - research
+  notes: Fun and insightful AI weirdness blog
+- url: https://mlinproduction.com/feed
+  title: ML in Production
+  topics:
+  - blogs
+  - mlops
+  - industry
+  notes: Practical ML production and engineering
+- url: https://davidstutz.de/feed
+  title: David Stutz
+  topics:
+  - blogs
+  - research
+  - ml
+  notes: ML research blog and paper notes
+- url: https://danieltakeshi.github.io/feed.xml
+  title: Seita's Place
+  topics:
+  - blogs
+  - education
+  - ml
+  notes: Daniel Takeshi blog on ML, RL and research
+- url: https://feeds.megaphone.fm/MLN2155636147
+  title: The TWIML AI Podcast
+  topics:
+  - podcasts
+  - ml
+  - industry
+  - research
+  notes: This Week in Machine Learning & AI podcast (long running)
+- url: https://www.technologyreview.com/topic/artificial-intelligence/feed/
+  title: MIT Technology Review AI
+  topics:
+  - blogs
+  - industry
+  - research
+  notes: MIT TR coverage of artificial intelligence
+- url: https://blog.google/technology/ai/rss/
+  title: Google AI Blog
+  topics:
+  - industry
+  - research
+  - product
+  notes: Google AI / blog updates (distinct from research.google)

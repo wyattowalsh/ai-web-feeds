@@ -1,0 +1,29 @@
+sources:
+- url: https://mlops.substack.com/feed
+  title: MLOps Newsletter
+  topics:
+  - newsletters
+  - mlops
+  - industry
+  notes: Developments in machine learning operations
+- url: https://newsletter.theaiedge.io/feed
+  title: The AiEdge Newsletter
+  topics:
+  - newsletters
+  - industry
+  - education
+  notes: Practical AI and edge ML newsletter
+- url: https://rss.beehiiv.com/feeds/2R3C6Bt5wj.xml
+  title: The Rundown AI
+  topics:
+  - newsletters
+  - industry
+  - product
+  notes: Daily concise AI news and tools
+- url: https://thesequence.substack.com/feed
+  title: TheSequence
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: AI research and industry newsletter

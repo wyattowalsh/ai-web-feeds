@@ -1,0 +1,192 @@
+{
+  "generated_at": "2026-06-24T12:03:17.253281Z",
+  "shards": {
+    "podcasts": [
+      {
+        "url": "https://www.dwarkesh.com/feed",
+        "title": "Dwarkesh Podcast",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 849.0,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      },
+      {
+        "url": "https://cognitiverevolution.substack.com/feed",
+        "title": "The Cognitive Revolution",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 251.93,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      },
+      {
+        "url": "https://anchor.fm/s/f7cac464/podcast/rss",
+        "title": "The AI Daily Brief",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 1002.24,
+          "feed_format": "rss",
+          "entry_count": 1014
+        }
+      },
+      {
+        "url": "https://anchor.fm/s/1e4a0eac/podcast/rss",
+        "title": "Machine Learning Street Talk (MLST)",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 361.21,
+          "feed_format": "rss",
+          "entry_count": 253
+        }
+      },
+      {
+        "url": "https://rss.libsyn.com/shows/123267/destinations/727317.xml",
+        "title": "Eye On A.I.",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 3896.24,
+          "feed_format": "rss",
+          "entry_count": 358
+        }
+      }
+    ],
+    "newsletters": [
+      {
+        "url": "https://mlops.substack.com/feed",
+        "title": "MLOps Newsletter",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 431.65,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      },
+      {
+        "url": "https://newsletter.theaiedge.io/feed",
+        "title": "The AiEdge Newsletter",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 113.76,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      },
+      {
+        "url": "https://rss.beehiiv.com/feeds/2R3C6Bt5wj.xml",
+        "title": "The Rundown AI",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 227.1,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      },
+      {
+        "url": "https://thesequence.substack.com/feed",
+        "title": "TheSequence",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 64.5,
+          "feed_format": "rss",
+          "entry_count": 20
+        }
+      }
+    ],
+    "forums": [
+      {
+        "url": "https://www.reddit.com/r/artificial/hot/.rss",
+        "title": "r/artificial",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 620.16,
+          "feed_format": "atom",
+          "entry_count": 25
+        }
+      },
+      {
+        "url": "https://ai.stackexchange.com/feeds",
+        "title": "Artificial Intelligence Stack Exchange",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 162.76,
+          "feed_format": "atom",
+          "entry_count": 30
+        }
+      }
+    ],
+    "docs": [
+      {
+        "url": "https://docs.langchain.com/oss/python/releases/changelog/rss.xml",
+        "title": "LangChain Changelog",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 349.13,
+          "feed_format": "rss",
+          "entry_count": 10
+        }
+      },
+      {
+        "url": "https://github.com/run-llama/llama_index/releases.atom",
+        "title": "LlamaIndex Releases",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 837.31,
+          "feed_format": "atom",
+          "entry_count": 10
+        }
+      },
+      {
+        "url": "https://github.com/gradio-app/gradio/releases.atom",
+        "title": "Gradio Releases",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 607.79,
+          "feed_format": "atom",
+          "entry_count": 10
+        }
+      },
+      {
+        "url": "https://github.com/keras-team/keras/releases.atom",
+        "title": "Keras Releases",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 134.52,
+          "feed_format": "atom",
+          "entry_count": 10
+        }
+      },
+      {
+        "url": "https://github.com/explosion/spaCy/releases.atom",
+        "title": "spaCy Releases",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 103.46,
+          "feed_format": "atom",
+          "entry_count": 10
+        }
+      },
+      {
+        "url": "https://github.com/explosion/thinc/releases.atom",
+        "title": "Thinc Releases",
+        "verify": {
+          "status_code": 200,
+          "response_time_ms": 104.03,
+          "feed_format": "atom",
+          "entry_count": 10
+        }
+      }
+    ]
+  },
+  "failed": [],
+  "dups_skipped": [],
+  "summary": {
+    "podcasts": 5,
+    "newsletters": 4,
+    "forums": 2,
+    "docs": 6,
+    "total_in_manifest": 82
+  }
+}

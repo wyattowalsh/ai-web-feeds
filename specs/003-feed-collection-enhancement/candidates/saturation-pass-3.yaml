@@ -1,0 +1,41 @@
+sources:
+- url: https://www.euractiv.com/topics/artificial-intelligence/feed/
+  title: Euractiv AI
+  topics:
+  - industry
+  - governance
+  - regulation
+  notes: European policy and AI news coverage
+- url: https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml
+  title: ScienceDaily AI News
+  topics:
+  - research
+  - industry
+  notes: Aggregated AI research and science news
+- url: https://vitalab.github.io/feed.xml
+  title: VITALab
+  topics:
+  - research
+  - ml
+  notes: VITALab Montreal AI research blog
+- url: https://www.inference.vc/rss
+  title: inFERENCe
+  topics:
+  - blogs
+  - research
+  - ml
+  notes: Ferenc Huszar research blog on ML/inference
+- url: http://jalammar.github.io/feed.xml
+  title: Jay Alammar
+  topics:
+  - blogs
+  - education
+  - research
+  notes: Visual explanations of ML and LLMs
+- url: https://aiguide.substack.com/feed
+  title: AI A Guide for Thinking Humans
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Melanie Mitchell AI newsletter / substack

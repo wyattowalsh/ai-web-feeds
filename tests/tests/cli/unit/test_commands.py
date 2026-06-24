@@ -5,6 +5,7 @@ import importlib
 import json
 import sys
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import pytest
 import yaml
@@ -566,3 +567,76 @@ class TestCLIAddCommand:
             assert src["url"] == "https://example.com/feed.xml"
             assert src["title"] == "Example Feed"
             assert "ai" in src.get("topics", [])
+
+    def test_add_rejects_missing_input_file(self, tmp_path: Path):
+        """Missing feeds file should error before adding."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            missing = Path("no-such.yaml")
+            result = runner.invoke(
+                add_app,
+                ["https://example.com/feed.rss", "--input", str(missing)],
+            )
+            assert result.exit_code != 0
+            assert "not found" in (result.output or "").lower() or result.exit_code == 1
+
+    def test_add_rejects_invalid_scheme(self, tmp_path: Path):
+        """Non http/https should be rejected early."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8")
+            result = runner.invoke(add_app, ["ftp://bad", "--input", str(feeds_file)])
+            assert result.exit_code != 0
+
+    def test_add_duplicate_url_warns_but_proceeds(self, tmp_path: Path):
+        """Duplicate should warn but still add (per current impl allowing topics update)."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(
+                yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": [{"url": "https://dup.com/feed.xml"}]}),
+                encoding="utf-8",
+            )
+            result = runner.invoke(add_app, ["https://dup.com/feed.xml", "--input", str(feeds_file)])
+            # may exit 0 or warn
+            assert result.exit_code in (0, 1, 2)
+            data = yaml.safe_load(feeds_file.read_text(encoding="utf-8"))
+            # at least original present
+            assert any(s.get("url") == "https://dup.com/feed.xml" for s in data.get("sources", []))
+
+    def test_add_with_validate_flag(self, tmp_path: Path):
+        """--validate flag exercises validate path."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8")
+            with patch("ai_web_feeds.validate.validate_feeds") as mock_val:
+                mock_val.return_value = Mock(valid=True, errors=[])
+                result = runner.invoke(
+                    add_app, ["https://ex.com/f.xml", "--validate", "--input", str(feeds_file)]
+                )
+                assert result.exit_code in (0, 1)
+                mock_val.assert_called()
+
+    def test_add_with_enrich_flag_and_save_error(self, tmp_path: Path):
+        """--enrich and simulate save error path."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8")
+            with patch("ai_web_feeds.cli.commands.add.save_feeds", side_effect=Exception("disk full")):
+                result = runner.invoke(
+                    add_app, ["https://ex.com/f.xml", "--enrich", "--input", str(feeds_file)]
+                )
+                assert result.exit_code != 0

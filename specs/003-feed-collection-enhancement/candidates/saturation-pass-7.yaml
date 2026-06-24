@@ -1,0 +1,565 @@
+sources:
+- url: https://www.adaptcentre.ie/feed
+  title: ADAPT, the Research Ireland Research Centre for AI-Driven Digital...
+  topics:
+  - industry
+  - ai
+  - research
+  - papers
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://berkeleyrdi.substack.com/feed
+  title: Agentic AI Weekly
+  topics:
+  - community
+  - industry
+  - newsletters
+  - ai
+  - research
+  notes: Substack newsletter feed
+- url: https://magazine.sebastianraschka.com/feed
+  title: Ahead of AI
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://arstechnica.com/ai/feed/
+  title: AI - Ars Technica
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://newsletter.safe.ai/feed
+  title: AI Safety Newsletter
+  topics:
+  - governance
+  - newsletters
+  - safety
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://ai-supremacy.substack.com/feed
+  title: AI Supremacy
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://www.amazon.science/index.rss
+  title: Amazon Science homepage
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://feeds.arstechnica.com/arstechnica/index
+  title: Ars Technica - All content
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.smashingmagazine.com/feed/
+  title: Articles on Smashing Magazine — For Web Designers And Developers
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://aws.amazon.com/blogs/amazon-ai/feed/
+  title: Artificial Intelligence
+  topics:
+  - blogs
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://artificialintelligencemadesimple.substack.com/feed
+  title: Artificial Intelligence Made Simple
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://benn.substack.com/feed
+  title: benn.substack
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://commoncog.com/blog/rss/
+  title: Commoncog
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://arxiv.org/rss/cs
+  title: cs updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: https://rss.arxiv.org/rss/cs.LG
+  title: cs.LG updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.NE
+  title: cs.NE updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.RO
+  title: cs.RO updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.SD
+  title: cs.SD updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: http://export.arxiv.org/rss/cs.SE
+  title: cs.SE updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: https://decision.substack.com/feed
+  title: Decision Intelligence
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://thezvi.substack.com/feed
+  title: Don't Worry About the Vase
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://www.eledia.org/e-air/feed/
+  title: ELEDIA E-AIR
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://addyo.substack.com/feed
+  title: Elevate
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://engineering.fb.com/feed/
+  title: Engineering at Meta
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://slack.engineering/feed
+  title: Engineering at Slack
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://epochai.substack.com/feed
+  title: Epoch AI
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://ben-evans.com/benedictevans?format=rss
+  title: Essays - Benedict Evans
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://fs.blog/feed/
+  title: Farnam Street
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://future.a16z.com/feed/
+  title: Future
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://guykawasaki.com/feed/
+  title: Guy Kawasaki
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://news.ycombinator.com/rss
+  title: Hacker News
+  topics:
+  - community
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://hnrss.org/show
+  title: 'Hacker News: Show HN'
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://spectrum.ieee.org/feeds/feed.rss
+  title: IEEE Spectrum
+  topics:
+  - blogs
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml  # may dup
+    from pass6'
+  title: 'index.xml  # may dup from pass6'
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://lethain.com/feeds/
+  title: Irrational Exuberance
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.joelonsoftware.com/feed/
+  title: Joel on Software
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://joshwcomeau.com/rss.xml
+  title: Josh Comeau's blog
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://jvns.ca/atom.xml
+  title: Julia Evans
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.kdnuggets.com/feed
+  title: KDnuggets
+  topics:
+  - devtools
+  - ai
+  - mlops
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://lexfridman.com/feed/
+  title: Lex Fridman
+  topics:
+  - ai
+  - podcasts
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://feeds.feedburner.com/martinkl?format=xml
+  title: Martin Kleppmann's blog
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://research.fb.com/feed/
+  title: Meta Research
+  topics:
+  - industry
+  - ai
+  - research
+  - papers
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://news.mit.edu/rss/research
+  title: MIT News
+  topics:
+  - industry
+  - ai
+  - research
+  - papers
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://news.mit.edu/rss/topic/artificial-intelligence2
+  title: MIT News - Artificial intelligence
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.nature.com/nature/current_issue/rss
+  title: Nature
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://nesslabs.com/feed
+  title: Ness Labs
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://stackoverflow.com/feeds/tag?tagnames=machine-learning&sort=newest
+  title: Newest questions tagged machine-learning - Stack Overflow
+  topics:
+  - community
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.nngroup.com/feed/rss/
+  title: NN/g latest articles and announcements
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.notboring.co/feed
+  title: Not Boring by Packy McCormick
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://oneusefulthing.substack.com/feed
+  title: One Useful Thing
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://overreacted.io/rss.xml
+  title: overreacted — A blog by Dan Abramov
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.producthunt.com/feed
+  title: Product Hunt — The best new products, every day
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://productlife.to/feed
+  title: Product Life
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.all-about-psychology.com/psychology.xml
+  title: Psychology Blog
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.quantamagazine.org/feed/
+  title: Quanta Magazine
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://danluu.com/atom.xml
+  title: Recent content on
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://github.com/axolotl-ai-cloud/axolotl/releases.atom
+  title: Release notes from axolotl
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/comfyanonymous/ComfyUI/releases.atom
+  title: Release notes from ComfyUI
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/crewAIInc/crewAI/releases.atom
+  title: Release notes from crewAI
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/langgenius/dify/releases.atom
+  title: Release notes from dify
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/janhq/jan/releases.atom
+  title: Release notes from jan
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/langflow-ai/langflow/releases.atom
+  title: Release notes from langflow
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/n8n-io/n8n/releases.atom
+  title: Release notes from n8n
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/peft/releases.atom
+  title: Release notes from peft
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/trl/releases.atom
+  title: Release notes from trl
+  topics:
+  - ai
+  - product
+  - open-source
+  notes: GitHub releases.atom feed
+- url: 'https://mistral.ai/rss.xml  # may dup'
+  title: 'rss.xml  # may dup'
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.economist.com/science-and-technology/rss.xml
+  title: Science & technology
+  topics:
+  - blogs
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://simonw.substack.com/feed
+  title: Simon Willison’s Newsletter
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://singularityhub.com/feed/
+  title: SingularityHub
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: http://export.arxiv.org/rss/stat.ML
+  title: stat.ML updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed
+- url: https://steveblank.com/feed/
+  title: Steve Blank
+  topics:
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://theaiedge.substack.com/feed
+  title: The AI Edge
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://aimaker.substack.com/feed
+  title: The AI Maker
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://blog.cloudflare.com/rss/
+  title: The Cloudflare Blog
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://artificialintelligenceact.substack.com/feed
+  title: The EU AI Act Newsletter
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://blog.pragmaticengineer.com/rss/
+  title: The Pragmatic Engineer
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://geohot.github.io/blog/feed.xml
+  title: the singularity is nearer
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://coffeeandjunk.substack.com/feed
+  title: The Sunday Wisdom
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed
+- url: https://uxdesign.cc/feed
+  title: UX Collective - Medium
+  topics:
+  - blogs
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.wired.com/feed/rss
+  title: WIRED
+  topics:
+  - blogs
+  - ai
+  - industry
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.reddit.com/r/artificial/.rss
+  title: www.reddit.com
+  topics:
+  - community
+  - ai
+  notes: Reddit .rss feed
+- url: https://www.reddit.com/r/LocalLLaMA/.rss
+  title: www.reddit.com
+  topics:
+  - community
+  - ai
+  notes: Reddit .rss feed
+- url: https://blog.ycombinator.com/feed/
+  title: Y Combinator Blog
+  topics:
+  - blogs
+  - community
+  - ai
+  notes: Discovered via 2026 web search; HTTP verified RSS/Atom feed
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew
+  title: Yannic Kilcher
+  topics:
+  - education
+  - ai
+  - videos
+  notes: YouTube channel feed
+- url: https://diamantai.substack.com/feed
+  title: 💎DiamantAI
+  topics:
+  - community
+  - newsletters
+  - ai
+  notes: Substack newsletter feed

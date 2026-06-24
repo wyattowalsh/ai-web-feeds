@@ -1,0 +1,354 @@
+sources:
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cohere.xml
+  title: The Cohere Blog
+  topics:
+  - industry
+  - product
+  - llm
+  - research
+  notes: Olshansk proxy feed for company blog without native RSS; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_groq.xml
+  title: Groq Blog
+  topics:
+  - industry
+  - product
+  - inference
+  notes: Olshansk proxy feed for company blog; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_perplexity_hub.xml
+  title: Perplexity Blog
+  topics:
+  - industry
+  - product
+  - research
+  notes: Olshansk proxy feed for Perplexity Hub; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml
+  title: Anthropic Engineering Blog
+  topics:
+  - industry
+  - research
+  - product
+  notes: Olshansk proxy feed for Anthropic Engineering (target missing org); HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_red.xml
+  title: Anthropic Frontier Red Team Blog
+  topics:
+  - industry
+  - research
+  - safety
+  notes: Olshansk proxy feed for Anthropic Red Team (target missing org); HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_pinecone.xml
+  title: Pinecone Blog
+  topics:
+  - industry
+  - product
+  - vector
+  - retrieval
+  notes: Olshansk proxy feed; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml
+  title: AI at Meta Blog
+  topics:
+  - industry
+  - research
+  - product
+  notes: Olshansk proxy for AI at Meta; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_the_batch.xml
+  title: The Batch | DeepLearning.AI
+  topics:
+  - industry
+  - education
+  - research
+  notes: Olshansk proxy for DeepLearning.AI The Batch; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml
+  title: Cursor Blog
+  topics:
+  - industry
+  - product
+  - devtools
+  - ai-for-code
+  notes: Olshansk proxy feed; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml
+  title: Claude Blog
+  topics:
+  - industry
+  - product
+  - llm
+  notes: Olshansk proxy for Claude blog; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_paulgraham.xml
+  title: Paul Graham Essays
+  topics:
+  - industry
+  - blogs
+  notes: Olshansk proxy; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml
+  title: Windsurf Blog
+  topics:
+  - industry
+  - product
+  notes: Olshansk proxy feed; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_blogsurgeai.xml
+  title: Surge AI Blog
+  topics:
+  - industry
+  - research
+  notes: Olshansk proxy for Surge AI; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_thinkingmachines.xml
+  title: Thinking Machines Lab - Connectionism
+  topics:
+  - industry
+  - research
+  notes: Olshansk proxy; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_chanderramesh.xml
+  title: Chander Ramesh - Writing
+  topics:
+  - industry
+  - blogs
+  notes: Olshansk proxy; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_google_ai.xml
+  title: Google Developers Blog - AI
+  topics:
+  - industry
+  - research
+  notes: Olshansk proxy; HTTP verified
+- url: https://blog.icml.cc/feed
+  title: ICML Blog
+  topics:
+  - conferences
+  - research
+  - papers
+  notes: Official ICML blog feed (target conference); HTTP verified
+- url: https://blog.intelligenthealth.ai/rss.xml
+  title: Intelligent Health Blog.
+  topics:
+  - healthcare-ai
+  - research
+  - industry
+  notes: Domain app healthcare AI blog; HTTP verified
+- url: https://www.healthtechmagazines.com/feed/
+  title: HealthTech Magazines
+  topics:
+  - healthcare-ai
+  - industry
+  notes: HealthTech AI coverage feed; HTTP verified
+- url: https://blog.latch.bio/feed
+  title: LatchBio
+  topics:
+  - healthcare-ai
+  - research
+  - industry
+  notes: LatchBio biocomputing/health AI; HTTP verified
+- url: https://www.simbo.ai/blog/index.php/feed/
+  title: Simbo AI – Blogs
+  topics:
+  - healthcare-ai
+  - industry
+  notes: Simbo voice AI for healthcare; HTTP verified
+- url: https://viz.ai/blog/feed
+  title: Latest blog posts on AI-powered healthcare | Viz.ai
+  topics:
+  - healthcare-ai
+  - industry
+  - cv
+  notes: Viz.ai healthcare imaging AI blog; HTTP verified
+- url: https://github.com/ray-project/ray/releases.atom
+  title: Release notes from ray
+  topics:
+  - open-source
+  - infra
+  - mlops
+  notes: Ray (Anyscale) releases.atom feed (infra); HTTP verified
+- url: https://github.com/dmlc/xgboost/releases.atom
+  title: Release notes from xgboost
+  topics:
+  - open-source
+  - ml
+  notes: XGBoost releases; HTTP verified
+- url: https://github.com/stanfordnlp/dspy/releases.atom
+  title: Release notes from dspy
+  topics:
+  - open-source
+  - llm
+  - agents
+  - devtools
+  notes: DSPy (Stanford) releases; HTTP verified
+- url: https://github.com/eleutherAI/gpt-neox/releases.atom
+  title: Release notes from gpt-neox
+  topics:
+  - open-source
+  - research
+  - llm
+  notes: EleutherAI releases; HTTP verified
+- url: https://github.com/huggingface/diffusers/releases.atom
+  title: Release notes from diffusers
+  topics:
+  - open-source
+  - diffusion
+  - genai
+  notes: Hugging Face Diffusers releases; HTTP verified
+- url: https://github.com/pytorch/vision/releases.atom
+  title: Release notes from vision
+  topics:
+  - open-source
+  - cv
+  notes: PyTorch Vision releases; HTTP verified
+- url: https://github.com/pytorch/audio/releases.atom
+  title: Release notes from audio
+  topics:
+  - open-source
+  - audio-speech
+  notes: PyTorch Audio; HTTP verified
+- url: https://github.com/onnx/onnx/releases.atom
+  title: Release notes from onnx
+  topics:
+  - open-source
+  - infra
+  notes: ONNX releases; HTTP verified
+- url: https://github.com/apache/tvm/releases.atom
+  title: Release notes from tvm
+  topics:
+  - open-source
+  - compilers
+  - infra
+  notes: Apache TVM; HTTP verified
+- url: https://github.com/ROCm/ROCm/releases.atom
+  title: Release notes from ROCm
+  topics:
+  - open-source
+  - hardware
+  - accelerators
+  notes: AMD ROCm releases; HTTP verified
+- url: https://github.com/microsoft/semantic-kernel/releases.atom
+  title: Release notes from semantic-kernel
+  topics:
+  - open-source
+  - agents
+  - devtools
+  notes: Semantic Kernel (Microsoft); HTTP verified
+- url: https://github.com/astral-sh/uv/releases.atom
+  title: Release notes from uv
+  topics:
+  - open-source
+  - devtools
+  notes: uv (Astral); HTTP verified
+- url: https://github.com/astral-sh/ruff/releases.atom
+  title: Release notes from ruff
+  topics:
+  - open-source
+  - devtools
+  notes: Ruff linter; HTTP verified
+- url: https://github.com/PaddlePaddle/Paddle/releases.atom
+  title: Release notes from Paddle
+  topics:
+  - open-source
+  - industry
+  - research
+  notes: Baidu PaddlePaddle (target org Baidu AI); HTTP verified
+- url: https://github.com/keras-team/autokeras/releases.atom
+  title: Release notes from autokeras
+  topics:
+  - open-source
+  - ml
+  - research
+  notes: AutoKeras releases; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_changelog.xml
+  title: Windsurf Changelog
+  topics:
+  - product
+  - industry
+  notes: Olshansk proxy changelog; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_next_changelog.xml
+  title: Windsurf Next Changelog
+  topics:
+  - product
+  - industry
+  notes: Olshansk proxy; HTTP verified
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_dagster.xml
+  title: Dagster Blog
+  topics:
+  - industry
+  - mlops
+  - data
+  notes: Olshansk proxy (note native exists but this for news); HTTP verified
+- url: https://github.com/deepseek-ai/DeepSeek-V3/releases.atom
+  title: Release notes from DeepSeek-V3
+  topics:
+  - industry
+  - research
+  - llm
+  - open-source
+  notes: DeepSeek releases (target org); HTTP verified
+- url: https://github.com/microsoft/DeepSpeed/releases.atom
+  title: Release notes from DeepSpeed
+  topics:
+  - open-source
+  - training
+  - infra
+  notes: Microsoft DeepSpeed; HTTP verified
+- url: https://github.com/sony/ai-research-code/releases.atom
+  title: Release notes from ai-research-code
+  topics:
+  - industry
+  - research
+  - open-source
+  notes: Sony AI research code releases (target org); HTTP verified
+- url: https://github.com/Lightning-AI/pytorch-lightning/releases.atom
+  title: Release notes from pytorch-lightning
+  topics:
+  - open-source
+  - mlops
+  - training
+  notes: Lightning AI PyTorch Lightning; HTTP verified
+- url: https://github.com/Lightning-AI/lightning/releases.atom
+  title: Release notes from pytorch-lightning
+  topics:
+  - open-source
+  - mlops
+  notes: Lightning AI; HTTP verified
+- url: https://github.com/zenml-io/zenml/releases.atom
+  title: Release notes from zenml
+  topics:
+  - open-source
+  - mlops
+  - workflows
+  notes: ZenML MLOps; HTTP verified
+- url: https://github.com/deepset-ai/haystack/releases.atom
+  title: Release notes from haystack
+  topics:
+  - open-source
+  - retrieval
+  - rag
+  - llm
+  notes: Haystack (deepset); HTTP verified
+- url: https://github.com/pydantic/pydantic/releases.atom
+  title: Release notes from pydantic
+  topics:
+  - open-source
+  - devtools
+  - structured-generation
+  notes: Pydantic releases; HTTP verified
+- url: https://github.com/tiangolo/fastapi/releases.atom
+  title: Release notes from fastapi
+  topics:
+  - open-source
+  - devtools
+  - serving
+  notes: FastAPI; HTTP verified
+- url: https://github.com/evidentlyai/evidently/releases.atom
+  title: Release notes from evidently
+  topics:
+  - open-source
+  - monitoring
+  - evaluation
+  notes: Evidently AI monitoring; HTTP verified
+- url: https://github.com/feast-dev/feast/releases.atom
+  title: Release notes from feast
+  topics:
+  - open-source
+  - data
+  - mlops
+  notes: Feast feature store; HTTP verified
+- url: https://github.com/SeldonIO/seldon-core/releases.atom
+  title: Release notes from seldon-core
+  topics:
+  - open-source
+  - serving
+  - mlops
+  notes: Seldon Core; HTTP verified

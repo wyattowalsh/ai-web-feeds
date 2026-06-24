@@ -9,7 +9,7 @@ from typing import Any
 import feedparser
 import httpx
 from loguru import logger
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm as async_tqdm
 
 from ai_web_feeds.models import FeedSource, FeedValidationResult
@@ -17,6 +17,10 @@ from ai_web_feeds.models import FeedSource, FeedValidationResult
 
 class ValidationError(Exception):
     """Custom validation error."""
+
+
+class _RateLimitedError(Exception):
+    """Transient HTTP rate limit; triggers retry in validate_feed_url."""
 
 
 class ValidationResult:
@@ -181,11 +185,12 @@ def validate_topics(
 
 
 @retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=4, max=30),
+    retry=retry_if_exception_type(_RateLimitedError),
     reraise=True,
 )
-async def validate_feed_url(
+async def _validate_feed_url_attempt(
     feed_url: str,
     timeout: float = 30.0,
 ) -> dict[str, Any]:
@@ -219,7 +224,9 @@ async def validate_feed_url(
             result["response_time_ms"] = round(response_time, 2)
             result["status_code"] = response.status_code
 
-            # Check HTTP status
+            # Check HTTP status (retry transient rate limits)
+            if response.status_code in (429, 503):
+                raise _RateLimitedError(f"HTTP {response.status_code}")
             if response.status_code != 200:
                 result["error_message"] = f"HTTP {response.status_code}"
                 return result
@@ -255,6 +262,8 @@ async def validate_feed_url(
             elif not has_parse_error:
                 result["error_message"] = "No entries found in feed"
 
+    except _RateLimitedError:
+        raise
     except httpx.TimeoutException:
         result["error_message"] = f"Timeout after {timeout}s"
     except httpx.RequestError as e:
@@ -264,6 +273,26 @@ async def validate_feed_url(
         logger.exception(f"Error validating feed {feed_url}")
 
     return result
+
+
+async def validate_feed_url(
+    feed_url: str,
+    timeout: float = 30.0,
+) -> dict[str, Any]:
+    """Validate feed URL; returns failure dict if rate-limit retries exhaust."""
+    try:
+        return await _validate_feed_url_attempt(feed_url, timeout=timeout)
+    except _RateLimitedError as exc:
+        return {
+            "url": feed_url,
+            "success": False,
+            "status_code": 429,
+            "response_time_ms": None,
+            "error_message": str(exc),
+            "feed_format": None,
+            "entry_count": 0,
+            "validated_at": datetime.now(),
+        }
 
 
 async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
@@ -285,7 +314,6 @@ async def validate_feed(feed_source: FeedSource) -> FeedValidationResult:
             validated_at=datetime.now(),
         )
 
-    # Validate URL
     result_dict = await validate_feed_url(url_to_validate)
 
     # Convert to FeedValidationResult model

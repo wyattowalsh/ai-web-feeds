@@ -1,0 +1,54 @@
+sources:
+- url: https://www.lesswrong.com/feed.xml
+  title: LessWrong
+  topics:
+  - open-source
+  - blogs
+  - safety
+  - research
+  notes: Rationalist AI discussion community
+- url: https://hnrss.org/newest?q=AI
+  title: Hacker News AI
+  topics:
+  - open-source
+  - blogs
+  - industry
+  - research
+  notes: HN AI stories via hnrss
+- url: https://discuss.pytorch.org/posts.rss
+  title: PyTorch Forum
+  topics:
+  - open-source
+  - blogs
+  - ml
+  notes: PyTorch community discussions
+- url: https://discuss.huggingface.co/latest.rss
+  title: Hugging Face Forum
+  topics:
+  - open-source
+  - blogs
+  - llm
+  notes: HF community latest posts
+- url: https://stackoverflow.com/feeds/tag?tagnames=artificial-intelligence&sort=newest
+  title: Stack Overflow AI
+  topics:
+  - open-source
+  - blogs
+  - ai-for-code
+  - education
+  notes: SO AI tag feed
+- url: https://docs.wandb.ai/ref/release-notes/index.xml
+  title: W&B Release Notes
+  topics:
+  - devtools
+  - education
+  - mlops
+  notes: Weights & Biases docs changelog
+- url: https://kubernetes.io/feed.xml
+  title: Kubernetes Blog
+  topics:
+  - devtools
+  - education
+  - infra
+  - mlops
+  notes: K8s blog for ML infra

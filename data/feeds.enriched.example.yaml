@@ -12,6 +12,7 @@ document_meta:
 sources:
   # Example 1: Fully enriched blog feed (OpenAI)
 - id: openai-blog
+  url: https://openai.com/blog/rss/
   feed: https://openai.com/blog/rss/
   site: https://openai.com/blog
   title: OpenAI Blog
@@ -102,7 +103,7 @@ sources:
     quality_score: 0.92
     notes: High-quality source with authoritative content. Regular updates with full-text articles. Recommended for all AI practitioners.
   provenance:
-    source: aiwebfeeds-core
+    source: manual
     from: https://github.com/wyattowalsh/ai-web-feeds
     license: Public
   discover:
@@ -122,6 +123,7 @@ sources:
 
   # Example 2: Podcast feed with iTunes extensions (Latent Space)
 - id: latent-space-podcast
+  url: https://www.latent.space/feed
   feed: https://www.latent.space/feed
   site: https://www.latent.space
   title: Latent Space - The AI Engineer Podcast
@@ -210,7 +212,7 @@ sources:
     quality_score: 0.89
     notes: Excellent technical depth with practical insights from practitioners. Strong focus on production ML and LLMOps.
   provenance:
-    source: community-submission
+    source: import
     from: https://github.com/wyattowalsh/ai-web-feeds/issues/42
     license: CC-BY-4.0
   discover:
@@ -227,10 +229,11 @@ sources:
 
   # Example 3: Research feed (arXiv cs.LG)
 - id: arxiv-cs-lg
+  url: http://export.arxiv.org/rss/cs.LG
   feed: http://export.arxiv.org/rss/cs.LG
   site: https://arxiv.org/list/cs.LG/recent
   title: arXiv cs.LG - Machine Learning
-  source_type: preprint
+  source_type: arxiv
   mediums:
   - text
   tags:
@@ -308,7 +311,7 @@ sources:
     quality_score: 0.85
     notes: Canonical source for ML research preprints. High volume, variable quality. Abstracts only.
   provenance:
-    source: aiwebfeeds-core
+    source: automation
     from: https://arxiv.org
     license: CC0-1.0
   discover:
@@ -324,10 +327,11 @@ sources:
 
   # Example 4: GitHub releases feed
 - id: pytorch-releases
+  url: https://github.com/pytorch/pytorch/releases.atom
   feed: https://github.com/pytorch/pytorch/releases.atom
   site: https://github.com/pytorch/pytorch
   title: PyTorch Releases
-  source_type: code-repo
+  source_type: github
   mediums:
   - text
   - code
@@ -411,7 +415,7 @@ sources:
     quality_score: 0.94
     notes: Essential for tracking PyTorch framework updates. Well-documented releases with detailed changelogs.
   provenance:
-    source: github-official
+    source: automation
     from: https://github.com/pytorch/pytorch
     license: BSD-3-Clause
   discover:

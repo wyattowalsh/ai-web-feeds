@@ -1,0 +1,420 @@
+sources:
+- url: https://www.dwarkesh.com/feed
+  title: Dwarkesh Podcast
+  topics:
+  - podcasts
+  - ai
+  - industry
+  - research
+  notes: Verified new AI podcast feed; deep interviews with AI leaders
+- url: https://aneyeonai.libsyn.com/rss
+  title: Eye On A.I.
+  topics:
+  - podcasts
+  - ai
+  - research
+  - industry
+  notes: Verified Libsyn RSS for Eye On A.I. podcast
+- url: https://www.exponentialview.co/feed
+  title: Exponential View
+  topics:
+  - newsletters
+  - podcasts
+  - ai
+  - industry
+  notes: Verified RSS for Azeem Azhar Exponential View newsletter/podcast
+- url: https://aiaustralia.libsyn.com/rss
+  title: AI Australia Podcast
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified Libsyn AI Australia podcast
+- url: https://rsnaradiologyai.libsyn.com/rss
+  title: Radiology AI Podcast | RSNA
+  topics:
+  - podcasts
+  - ai
+  - healthcare-ai
+  notes: Verified RSNA Radiology AI podcast
+- url: https://feeds.simplecast.com/6HKOhNgS
+  title: Hard Fork
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified NYT Hard Fork podcast feed (AI/tech focus)
+- url: https://aiandbanking.libsyn.com/rss
+  title: AI in Financial Services Podcast
+  topics:
+  - podcasts
+  - ai
+  - finance-ai
+  - industry
+  notes: Verified AI in Financial Services podcast
+- url: https://dataespresso.substack.com/feed
+  title: Data Espresso
+  topics:
+  - newsletters
+  - ai
+  - data
+  notes: Verified Substack newsletter feed
+- url: https://buildtolaunch.substack.com/feed
+  title: Build to Launch
+  topics:
+  - newsletters
+  - ai
+  - industry
+  - devtools
+  notes: Verified Substack AI builder newsletter
+- url: https://jonathanneo.substack.com/feed
+  title: Data Engineer Camp
+  topics:
+  - newsletters
+  - ai
+  - industry
+  notes: Verified Substack newsletter feed
+- url: https://pivottoai.libsyn.com/rss
+  title: Pivot to AI
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified Pivot to AI podcast RSS
+- url: https://machinelearningguide.libsyn.com/rss
+  title: Machine Learning Guide
+  topics:
+  - podcasts
+  - ml
+  - education
+  - ai
+  notes: Verified Machine Learning Guide podcast
+- url: https://irmspodcast.libsyn.com/rss
+  title: IRMS podcast series
+  topics:
+  - podcasts
+  - ai
+  - research
+  notes: Verified IRMS AI/ML podcast
+- url: https://thoughtworks.libsyn.com/rss
+  title: Thoughtworks Technology Podcast
+  topics:
+  - podcasts
+  - ai
+  - industry
+  - devtools
+  notes: Verified Thoughtworks tech/AI podcast
+- url: https://aiechoes.substack.com/feed
+  title: AI Echoes
+  topics:
+  - newsletters
+  - ai
+  - community
+  notes: Verified Substack AI newsletter
+- url: https://afterhoursai.substack.com/feed
+  title: After Hours
+  topics:
+  - newsletters
+  - ai
+  - industry
+  notes: Verified Substack AI newsletter
+- url: https://pivot-to-ai.com/feed
+  title: Pivot to AI
+  topics:
+  - newsletters
+  - podcasts
+  - ai
+  notes: Verified Pivot to AI feed
+- url: https://hashtagtrending.libsyn.com/rss
+  title: Hashtag Trending
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified Hashtag Trending podcast (AI segments)
+- url: https://betakit.libsyn.com/rss
+  title: The BetaKit Podcast Channel
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified BetaKit tech/AI podcast
+- url: https://avsuperfriends.libsyn.com/rss
+  title: AV SuperFriends
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Verified AV SuperFriends podcast (AI tech talks)
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCqcbQf6yw5KzRoDDcZ_wBSw
+  title: Wes Roth
+  topics:
+  - videos
+  - ai
+  - industry
+  - education
+  notes: Verified YouTube AI news channel RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCNU_lfiiWBdtULKOw6X0Dig
+  title: Krish Naik
+  topics:
+  - videos
+  - education
+  - ml
+  - ai
+  notes: Verified Krish Naik AI/ML tutorials YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfzlCWGWYyIQ0aLC5w48gBQ
+  title: sentdex
+  topics:
+  - videos
+  - education
+  - ml
+  - ai
+  - python
+  notes: Verified sentdex Python/ML YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCiT9RITQ9PW6BhXK0y2jaeg
+  title: Ken Jee
+  topics:
+  - videos
+  - education
+  - ml
+  - ai
+  - data
+  notes: Verified Ken Jee data science/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYO_jab_esuFRV4b17AJtAw
+  title: 3Blue1Brown
+  topics:
+  - videos
+  - education
+  - ml
+  - ai
+  notes: Verified 3Blue1Brown math/AI visualizations YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYUjYU5FveRAscQ8V21w81A
+  title: Murtaza's Workshop - Robotics and AI
+  topics:
+  - videos
+  - ai
+  - robotics
+  - education
+  notes: Verified Murtaza AI/robotics projects YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCov_51F0betb6hJ6Gumxg3Q
+  title: AI and Games
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified AI and Games YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCR9j1jqqB5Rse69wjUnbYwA
+  title: All About AI
+  topics:
+  - videos
+  - ai
+  - education
+  - community
+  notes: Verified All About AI YouTube channel RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw
+  title: AI Explained
+  topics:
+  - videos
+  - ai
+  - education
+  - research
+  notes: Verified AI Explained YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWN3xxRkmTPmbKwht9FuE5A
+  title: Siraj Raval
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified Siraj Raval AI education YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUzGQrN-lyyc0BWTYoJM_Sg
+  title: What's AI by Louis-François Bouchard
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified Louis Bouchard AI news/explainers YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCPAfv1GeraR1WM0608He6ow
+  title: AI WITH Rithesh
+  topics:
+  - videos
+  - ai
+  - ml
+  - education
+  notes: Verified Rithesh AI/ML education YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-o9u9QL4zXzBwjvT1gmzNg
+  title: Eye on AI
+  topics:
+  - videos
+  - podcasts
+  - ai
+  - industry
+  notes: Verified Eye on AI YouTube channel RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCpABUkWm8xMt5XmGcFb3EFg
+  title: Nicolai Nielsen
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified Nicolai Nielsen tech/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoW_WzQNJVAjxo4osNAxd_g
+  title: Venelin Valkov
+  topics:
+  - videos
+  - ai
+  - ml
+  - education
+  notes: Verified Venelin Valkov AI/ML YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCawZsQWqfGSbCI5yjkdVkTA
+  title: Matthew Berman
+  topics:
+  - videos
+  - ai
+  - industry
+  - education
+  notes: Verified Matthew Berman AI news/tools YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC1H1NWNTG2Xi3pt85ykVSHA
+  title: Jordan Harrod
+  topics:
+  - videos
+  - ai
+  - education
+  - research
+  notes: Verified Jordan Harrod AI/algorithms YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-F7BqYO4az9jaZuxIV10dA
+  title: Hannan Mentor
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified Hannan Mentor AI tutorials YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8n8ftV94ZU_DJLOLtrpORA
+  title: Code Explained
+  topics:
+  - videos
+  - education
+  - ai
+  - devtools
+  notes: Verified Code Explained YouTube tech/AI RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUaTRF8LDgE6rQoduLWsErA
+  title: Coding Explained
+  topics:
+  - videos
+  - education
+  - ai
+  - devtools
+  notes: Verified Coding Explained YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4Otk-uDioJN0tg6s1QO9lw
+  title: atomic14
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified atomic14 tech/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC3ts8coMP645hZw9JSD3pqQ
+  title: Andreas Kling
+  topics:
+  - videos
+  - ai
+  - education
+  - devtools
+  notes: Verified Andreas Kling tech/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4QYBbgLkGaULStiC5yc_1Q
+  title: Samo Burja
+  topics:
+  - videos
+  - ai
+  - industry
+  - governance
+  notes: Verified Samo Burja AI/strategy YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7x9bzl98b5JDPA7S17-NBQ
+  title: Entrepreneur Mastermind Podcast
+  topics:
+  - videos
+  - podcasts
+  - ai
+  - industry
+  notes: Verified entrepreneur/AI podcast video RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcAlTqd9zID6aNX3TzwxJXg
+  title: The Art of Code
+  topics:
+  - videos
+  - education
+  - ai
+  - devtools
+  notes: Verified Art of Code YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCuoqzrsHlwv1YyPKLuMDUQ
+  title: Jonathan Blow
+  topics:
+  - videos
+  - ai
+  - education
+  - devtools
+  notes: Verified Jonathan Blow tech/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4mpLlHn0FOekNg05yCnkzQ
+  title: ferrisstreamsstuff
+  topics:
+  - videos
+  - ai
+  - education
+  - devtools
+  notes: Verified Ferris tech YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC6QckhILSqdl3K0TWPWrDdg
+  title: My Tech Fun
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified My Tech Fun YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCkSr3M8GXbS4txqPY7OMxQ
+  title: Edge Precision
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified tech/AI edge YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7O6CntQoAI-wYyJxYiqNUg
+  title: Ihatetomatoes
+  topics:
+  - videos
+  - ai
+  - education
+  notes: Verified Ihatetomatoes tech/AI YouTube RSS
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UC3L8AcX1xJEhTofnCF2MAaQ
+  title: Simulating Physics Miscellaneous
+  topics:
+  - videos
+  - ai
+  - education
+  - research
+  notes: Verified physics/sim/AI YouTube RSS
+- url: https://mlops.substack.com/feed
+  title: MLOps Newsletter
+  topics:
+  - newsletters
+  - mlops
+  - ai
+  - devtools
+  notes: Substack (verified in collection pass; HTTP 200)
+- url: https://www.marktechpost.com/feed/
+  title: ''
+  topics:
+  - blogs
+  - ai
+  - research
+  - industry
+  notes: Verified RSS (status rechecked in process; AI news summaries)
+- url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew
+  title: Yannic Kilcher
+  topics:
+  - videos
+  - ai
+  - research
+  - education
+  notes: Popular AI research papers video channel (new in this pass context)
+- url: https://feeds.buzzsprout.com/2149574.rss
+  title: Leveraging AI
+  topics:
+  - podcasts
+  - ai
+  - industry
+  notes: Business AI podcast (validated/attempted; included for coverage)

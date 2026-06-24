@@ -2,6 +2,7 @@
 
 import json
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -9,10 +10,13 @@ import pytest
 from ai_web_feeds.validate import (
     ValidationError,
     ValidationResult,
+    calculate_health_score,
+    mark_inactive_feeds,
     validate_feed_url,
     validate_feeds,
     validate_topics,
 )
+from ai_web_feeds.models import FeedSource, FeedValidationResult
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -489,6 +493,28 @@ class TestValidateFeedUrl:
         assert result["entry_count"] == 0
         assert result["error_message"] == "Feed parse error: mismatched tag"
 
+    @patch("ai_web_feeds.validate.feedparser.parse")
+    @patch("ai_web_feeds.validate.httpx.AsyncClient")
+    async def test_validate_feed_url_retries_on_rate_limit(
+        self, mock_client_class, mock_parse
+    ):
+        """HTTP 429 should retry and succeed on a later attempt."""
+        rate_limited = Mock(status_code=429, text="")
+        success = Mock(status_code=200, text="<rss></rss>")
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(side_effect=[rate_limited, success])
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+
+        mock_parse.return_value = ParsedFeed(
+            feed={"title": "Rate Limited Feed"},
+            entries=[{"title": "Entry 1"}],
+        )
+
+        result = await validate_feed_url("https://example.com/feed.xml")
+
+        assert result["success"] is True
+        assert mock_client.get.await_count == 2
+
 
 @pytest.mark.unit
 class TestValidationIntegration:
@@ -557,3 +583,152 @@ class TestValidationIntegration:
 
         assert len(result.errors) == 5
         assert result.valid is False
+
+
+@pytest.mark.unit
+class TestHealthAndInactiveMarking:
+    """Tests for calculate_health_score and mark_inactive_feeds (added coverage)."""
+
+    def test_calculate_health_score_empty(self) -> None:
+        """Empty results return 0.0 health."""
+        assert calculate_health_score([]) == 0.0
+
+    def test_calculate_health_score_all_success(self, mocker) -> None:
+        """All valid recent results -> high score ~0.8+."""
+        now = datetime.now()
+        results = []
+        for i in range(5):
+            r = FeedValidationResult(
+                feed_source_id=f"feed-{i}",
+                is_valid=True,
+                response_time_ms=200 + i * 10,
+                validated_at=now,
+            )
+            results.append(r)
+        score = calculate_health_score(results)
+        assert 0.79 <= score <= 1.0
+
+    def test_calculate_health_score_mixed_with_slow_responses(self) -> None:
+        """Mixed success + slow responses yields moderate score."""
+        base = datetime.now()
+        results = [
+            FeedValidationResult(
+                feed_source_id="f1", is_valid=True, response_time_ms=800, validated_at=base
+            ),
+            FeedValidationResult(
+                feed_source_id="f2", is_valid=False, response_time_ms=6000, validated_at=base
+            ),
+            FeedValidationResult(
+                feed_source_id="f3", is_valid=True, response_time_ms=1200, validated_at=base
+            ),
+        ]
+        score = calculate_health_score(results)
+        assert 0.4 < score < 0.85
+
+    def test_calculate_health_score_respects_max_results(self) -> None:
+        """Only considers up to max_results."""
+        base = datetime.now()
+        many = [
+            FeedValidationResult(feed_source_id=f"f{i}", is_valid=(i < 2), validated_at=base)
+            for i in range(20)
+        ]
+        score_full = calculate_health_score(many, max_results=20)
+        score_limited = calculate_health_score(many, max_results=2)
+        # With only first 2 (both valid), higher than overall 2/20
+        assert score_limited > score_full
+
+    def test_mark_inactive_feeds_marks_on_no_recent_success(self, mocker) -> None:
+        """Feeds without recent success are marked inactive."""
+        cutoff = 30
+        old_date = datetime.now() - timedelta(days=cutoff + 5)
+        recent_date = datetime.now() - timedelta(days=1)
+
+        # Use plain mocks (no strict spec) to allow dynamic is_active attr set by func
+        active = mocker.Mock(id="active1")
+        inactive1 = mocker.Mock(id="inactive1")
+        inactive2 = mocker.Mock(id="inactive2")
+        feeds = [active, inactive1, inactive2]
+
+        history = {
+            "active1": [
+                FeedValidationResult(feed_source_id="active1", is_valid=True, validated_at=recent_date)
+            ],
+            "inactive1": [
+                FeedValidationResult(feed_source_id="inactive1", is_valid=True, validated_at=old_date)
+            ],
+            "inactive2": [],  # no history -> skipped per impl
+        }
+
+        marked = mark_inactive_feeds(feeds, history, inactive_threshold_days=cutoff)
+        assert "inactive1" in marked
+        assert "inactive2" not in marked  # per current logic skips no-history
+        assert inactive1.is_active is False
+        assert getattr(active, "is_active", None) is not False
+
+    def test_mark_inactive_feeds_returns_empty_for_no_history(self) -> None:
+        feeds = [FeedSource(id="f1", title="F1", feed="u")]
+        marked = mark_inactive_feeds(feeds, {}, inactive_threshold_days=30)
+        assert marked == []
+
+    def test_mark_inactive_feeds_with_recent_success_keeps_active(self, mocker) -> None:
+        feed = mocker.Mock(id="f1")
+        feed.is_active = True  # pre-set
+        feeds = [feed]
+        hist = {
+            "f1": [FeedValidationResult(feed_source_id="f1", is_valid=True, validated_at=datetime.now())]
+        }
+        marked = mark_inactive_feeds(feeds, hist, inactive_threshold_days=30)
+        assert marked == []
+        assert feed.is_active is True
+
+
+@pytest.mark.unit
+class TestValidateAdditionalBranches:
+    """Cover remaining branches in validate: feed validation, all, health, no-feed cases."""
+
+    def test_validate_feed_no_url(self):
+        from ai_web_feeds.models import FeedSource
+        from ai_web_feeds.validate import validate_feed
+        import asyncio
+
+        fs = FeedSource(id="no", title="NoFeed", feed=None, url="http://ex")
+        res = asyncio.run(validate_feed(fs))
+        assert res.is_valid is False
+        assert "No feed URL" in str(res.warnings or [])
+
+    @pytest.mark.asyncio
+    async def test_validate_all_feeds_no_progress(self, mocker):
+        from ai_web_feeds.validate import validate_all_feeds
+        from ai_web_feeds.models import FeedSource
+
+        mock_v = mocker.patch("ai_web_feeds.validate.validate_feed", new_callable=mocker.AsyncMock)
+        mock_v.return_value = FeedValidationResult(feed_source_id="x", is_valid=True)
+        feeds = [FeedSource(id="f1", title="t", feed="https://ex/feed", url="s")]
+        res = await validate_all_feeds(feeds, show_progress=False)
+        assert len(res) == 1
+
+    def test_calculate_health_score_edges(self):
+        from ai_web_feeds.validate import calculate_health_score
+        from ai_web_feeds.models import FeedValidationResult
+
+        assert calculate_health_score([]) == 0.0
+        res = [FeedValidationResult(feed_source_id="1", is_valid=True), FeedValidationResult(feed_source_id="2", is_valid=False)]
+        score = calculate_health_score(res)
+        assert 0.0 <= score <= 1.0
+
+    @pytest.mark.asyncio
+    async def test_validate_feed_url_timeout_path(self, mocker):
+        from ai_web_feeds.validate import validate_feed_url
+        mocker.patch("ai_web_feeds.validate.httpx.AsyncClient.get", new_callable=mocker.AsyncMock, side_effect=Exception("timeout sim"))
+        r = await validate_feed_url("https://slow")
+        assert r["success"] is False
+        assert r["error_message"] is not None
+
+    def test_validate_topics_non_list(self):
+        from ai_web_feeds.validate import validate_topics
+        # missing key uses default [], covers post-get code path without crash
+        res = validate_topics({})
+        assert isinstance(res, ValidationResult)
+        # explicit list also
+        res2 = validate_topics({"topics": []})
+        assert isinstance(res2, ValidationResult)

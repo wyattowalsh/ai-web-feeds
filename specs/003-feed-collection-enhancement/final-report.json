@@ -1,0 +1,52 @@
+{
+  "completed_at": "2026-06-24T12:33:46.040742+00:00",
+  "baseline_sources": 262,
+  "final_sources": 321,
+  "net_added": 59,
+  "validate_data_assets": "30/30",
+  "http": {
+    "total": 321,
+    "ok": 190,
+    "fail": 131,
+    "rate": 59.2
+  },
+  "metrics": {
+    "orphans": 9,
+    "orphan_ids": [
+      "conferences",
+      "context-engineering",
+      "copyright-ip",
+      "fairness",
+      "incident-response",
+      "long-context",
+      "mobile",
+      "model-risk",
+      "reasoning-models"
+    ],
+    "podcasts": 9,
+    "newsletters": 12,
+    "forums": 3,
+    "docs": 1
+  },
+  "acceptance": {
+    "source_count_342_382": false,
+    "http_zero_failures": false,
+    "orphans_le_6": false,
+    "podcasts_ge_15": false,
+    "newsletters_ge_18": false,
+    "forums_ge_8": false,
+    "docs_ge_6": false,
+    "validate_data_assets_30_30": true
+  },
+  "waves_completed": [
+    "W0 scouts/research/http",
+    "W2 candidate approval (65 leads)",
+    "W3 integration (+57 net)",
+    "W4 schema/sync/validate"
+  ],
+  "notes": [
+    "Platform source_type values aligned in generate_enriched_schema() and feeds.enriched.schema.json.",
+    "Fix-only HTTP policy; accidental strict-prune regression recovered from enriched export.",
+    "Remaining gap: strict HTTP 0-failures requires continued URL fix pass or prune of page-only sources."
+  ]
+}

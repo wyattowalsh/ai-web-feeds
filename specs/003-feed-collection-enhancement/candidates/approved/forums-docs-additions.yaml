@@ -1,0 +1,108 @@
+sources:
+- url: https://www.reddit.com/r/MachineLearning/hot/.rss
+  title: r/MachineLearning
+  topics:
+  - community
+  - research
+  - ml
+  notes: Reddit ML discussions (forum)
+- url: https://stackoverflow.com/feeds/tag?tagnames=machine-learning&sort=newest
+  title: Stack Overflow Machine Learning
+  topics:
+  - community
+  - research
+  notes: Stack Overflow machine-learning tag (forum)
+- url: https://genai.stackexchange.com/feeds
+  title: Generative AI Stack Exchange
+  topics:
+  - community
+  - llm
+  notes: Generative AI Q&A (forum)
+- url: https://datascience.stackexchange.com/feeds
+  title: Data Science Stack Exchange
+  topics:
+  - community
+  - research
+  - industry
+  notes: Data science and ML Q&A (forum)
+- url: https://ai.meta.stackexchange.com/feeds
+  title: Artificial Intelligence Meta
+  topics:
+  - community
+  - governance
+  notes: Meta discussions for AI Stack Exchange (forum)
+- url: https://community.openai.com/latest.rss
+  title: OpenAI Community
+  topics:
+  - community
+  - llm
+  - industry
+  notes: OpenAI developer community forum
+- url: https://discuss.pytorch.org/posts.rss
+  title: PyTorch Forum
+  topics:
+  - community
+  - open-source
+  - ml
+  notes: PyTorch community discussions (forum)
+- url: https://discuss.huggingface.co/latest.rss
+  title: Hugging Face Forum
+  topics:
+  - community
+  - open-source
+  - llm
+  notes: Hugging Face community forum
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml
+  title: Anthropic News
+  topics:
+  - industry
+  - llm
+  - research
+  notes: Anthropic news mirror (no native RSS on anthropic.com/news)
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml
+  title: xAI News
+  topics:
+  - industry
+  - llm
+  - research
+  notes: xAI news mirror (x.ai/blog has no native RSS)
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_research.xml
+  title: Anthropic Research
+  topics:
+  - research
+  - governance
+  notes: Anthropic research and alignment content mirror
+- url: https://github.com/xai-org/xai-sdk-python/releases.atom
+  title: xAI SDK Releases
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: xAI Python SDK release notes (docs)
+- url: https://github.com/anthropics/anthropic-sdk-python/releases.atom
+  title: Anthropic SDK Releases
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: Anthropic Python SDK release notes (docs)
+- url: https://code.claude.com/docs/en/changelog/rss.xml
+  title: Claude Code Changelog
+  topics:
+  - devtools
+  - llm
+  notes: Claude developer tools changelog (docs)
+- url: https://github.com/langchain-ai/langgraph/releases.atom
+  title: LangGraph Releases
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: LangGraph GitHub releases (docs)
+- url: https://github.com/langchain-ai/langchain/releases.atom
+  title: LangChain Releases
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: LangChain GitHub releases (docs)

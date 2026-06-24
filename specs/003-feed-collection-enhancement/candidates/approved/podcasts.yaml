@@ -1,0 +1,35 @@
+sources:
+- url: https://www.dwarkesh.com/feed
+  title: Dwarkesh Podcast
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: Deeply researched interviews with AI leaders and thinkers
+- url: https://cognitiverevolution.substack.com/feed
+  title: The Cognitive Revolution
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: In-depth expert interviews and AI scouting reports
+- url: https://anchor.fm/s/f7cac464/podcast/rss
+  title: The AI Daily Brief
+  topics:
+  - podcasts
+  - industry
+  notes: Daily AI news analysis podcast
+- url: https://anchor.fm/s/1e4a0eac/podcast/rss
+  title: Machine Learning Street Talk (MLST)
+  topics:
+  - podcasts
+  - research
+  - ml
+  notes: Highly technical AI research podcast
+- url: https://rss.libsyn.com/shows/123267/destinations/727317.xml
+  title: Eye On A.I.
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: Conversations with people building and deploying AI

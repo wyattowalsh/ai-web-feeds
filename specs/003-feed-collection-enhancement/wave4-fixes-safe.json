@@ -1,0 +1,15 @@
+{
+  "fixed": [
+    {
+      "old": "https://x.com/karpathy",
+      "new": "https://karpathy.github.io/feed.xml",
+      "id": "eb09beb38255e4f6"
+    },
+    {
+      "old": "https://dev.to/t/machinelearning",
+      "new": "https://dev.to/feed/tag/machinelearning",
+      "id": "1448e130279b08bd"
+    }
+  ],
+  "total": 319
+}

@@ -1,0 +1,85 @@
+sources:
+- url: https://www.ft.com/artificial-intelligence?format=rss
+  title: Financial Times AI
+  topics:
+  - industry
+  - finance-ai
+  notes: FT AI section RSS
+- url: https://feeds.bloomberg.com/technology/news.rss
+  title: Bloomberg Technology
+  topics:
+  - industry
+  - finance-ai
+  notes: Bloomberg tech news
+- url: https://artificiallawyer.com/feed/
+  title: Artificial Lawyer
+  topics:
+  - blogs
+  - legal-ai
+  - governance
+  notes: Legal AI industry blog
+- url: https://www.nature.com/npjdigitalmed.rss
+  title: NPJ Digital Medicine
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Nature digital health journal
+- url: https://venturebeat.com/category/ai/feed/
+  title: VentureBeat AI
+  topics:
+  - industry
+  - product
+  notes: VB AI category feed
+- url: https://techcrunch.com/category/artificial-intelligence/feed/
+  title: TechCrunch AI
+  topics:
+  - industry
+  - product
+  notes: TC AI category feed
+- url: https://www.wired.com/feed/tag/ai/latest/rss
+  title: Wired AI
+  topics:
+  - industry
+  - governance
+  notes: Wired AI tag feed
+- url: https://www.technologyreview.com/topic/artificial-intelligence/feed
+  title: MIT Tech Review AI
+  topics:
+  - industry
+  - research
+  notes: MIT TR AI topic feed
+- url: https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss
+  title: IEEE Spectrum AI
+  topics:
+  - industry
+  - research
+  notes: IEEE Spectrum AI topic
+- url: https://blog.duolingo.com/tag/ai/feed/
+  title: Duolingo AI Blog
+  topics:
+  - industry
+  - edtech-ai
+  - product
+  notes: Duolingo AI tag feed
+- url: https://blog.khanacademy.org/feed/
+  title: Khan Academy Blog
+  topics:
+  - industry
+  - edtech-ai
+  - education
+  notes: EdTech with AI coverage
+- url: https://waymo.com/blog/rss.xml
+  title: Waymo Blog
+  topics:
+  - industry
+  - simulation
+  - mlops
+  notes: Autonomy/simulation at scale
+- url: https://blog.unity.com/feed
+  title: Unity Blog
+  topics:
+  - industry
+  - simulation
+  - mlops
+  notes: Simulation and game-engine ML

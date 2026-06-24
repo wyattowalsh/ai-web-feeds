@@ -1,0 +1,14 @@
+sources:
+- url: https://www.reddit.com/r/artificial/hot/.rss
+  title: r/artificial
+  topics:
+  - community
+  - industry
+  notes: Reddit AI community discussions
+- url: https://ai.stackexchange.com/feeds
+  title: Artificial Intelligence Stack Exchange
+  topics:
+  - community
+  - education
+  - research
+  notes: Q&A forum for AI questions

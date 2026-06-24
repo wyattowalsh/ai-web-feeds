@@ -1,0 +1,298 @@
+sources:
+- url: https://github.com/openai/openai-python/releases.atom
+  title: Release notes from openai-python
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: GitHub releases.atom feed
+- url: https://github.com/openai/openai-agents-python/releases.atom
+  title: Release notes from openai-agents-python
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: GitHub releases.atom feed
+- url: https://github.com/tensorflow/tensorflow/releases.atom
+  title: Release notes from tensorflow
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/ray-project/ray/releases.atom
+  title: Release notes from ray
+  topics:
+  - open-source
+  - devtools
+  - mlops
+  - industry
+  notes: GitHub releases.atom feed
+- url: https://github.com/pandas-dev/pandas/releases.atom
+  title: Release notes from pandas
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/numpy/numpy/releases.atom
+  title: Release notes from numpy
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/google/flax/releases.atom
+  title: Release notes from flax
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/continuedev/continue/releases.atom
+  title: Release notes from continue
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/Aider-AI/aider/releases.atom
+  title: Release notes from aider
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/hiyouga/LLaMA-Factory/releases.atom
+  title: Release notes from LlamaFactory
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/Lightning-AI/pytorch-lightning/releases.atom
+  title: Release notes from pytorch-lightning
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/groq/groq-python/releases.atom
+  title: Release notes from groq-python
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/cohere-ai/cohere-python/releases.atom
+  title: Release notes from cohere-python
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/togethercomputer/together-python/releases.atom
+  title: Release notes from together-python
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/replicate/replicate-python/releases.atom
+  title: Release notes from replicate-python
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/diffusers/releases.atom
+  title: Release notes from diffusers
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/datasets/releases.atom
+  title: Release notes from datasets
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/accelerate/releases.atom
+  title: Release notes from accelerate
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/safetensors/releases.atom
+  title: Release notes from safetensors
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/huggingface/tokenizers/releases.atom
+  title: Release notes from tokenizers
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/deepseek-ai/DeepSeek-V2/releases.atom
+  title: Release notes from DeepSeek-V2
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: GitHub releases.atom feed
+- url: https://github.com/QwenLM/Qwen/releases.atom
+  title: Release notes from Qwen
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: GitHub releases.atom feed
+- url: https://github.com/THUDM/ChatGLM3/releases.atom
+  title: Release notes from ChatGLM3
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/Lightning-AI/lit-llama/releases.atom
+  title: Release notes from lit-llama
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/mosaicml/composer/releases.atom
+  title: Release notes from composer
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/EleutherAI/gpt-neox/releases.atom
+  title: Release notes from gpt-neox
+  topics:
+  - open-source
+  - devtools
+  - llm
+  notes: GitHub releases.atom feed
+- url: https://github.com/EleutherAI/lm-evaluation-harness/releases.atom
+  title: Release notes from lm-evaluation-harness
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/anyscale/ray/releases.atom
+  title: Release notes from ray
+  topics:
+  - open-source
+  - devtools
+  - mlops
+  - industry
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/FBGEMM/releases.atom
+  title: Release notes from FBGEMM
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/executorch/releases.atom
+  title: Release notes from executorch
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/vision/releases.atom
+  title: Release notes from vision
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/audio/releases.atom
+  title: Release notes from audio
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/torchtune/releases.atom
+  title: Release notes from torchtune
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/pytorch/ignite/releases.atom
+  title: Release notes from ignite
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/tensorflow/models/releases.atom
+  title: Release notes from models
+  topics:
+  - open-source
+  - devtools
+  - ml
+  - nlp
+  notes: GitHub releases.atom feed
+- url: https://github.com/keras-team/keras-cv/releases.atom
+  title: Release notes from keras-cv
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/onnx/onnx/releases.atom
+  title: Release notes from onnx
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/onnx/onnx-tensorrt/releases.atom
+  title: Release notes from onnx-tensorrt
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/onnx/onnx-mlir/releases.atom
+  title: Release notes from onnx-mlir
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://github.com/Intel/neural-compressor/releases.atom
+  title: Release notes from neural-compressor
+  topics:
+  - open-source
+  - devtools
+  notes: GitHub releases.atom feed
+- url: https://forum.effectivealtruism.org/feed.xml
+  title: Effective Altruism Forum
+  topics:
+  - community
+  - research
+  - governance
+  - safety
+  notes: HTTP+parse verified; entries~10; rss
+- url: https://www.reddit.com/r/learnmachinelearning/hot/.rss
+  title: Feed
+  topics:
+  - community
+  - industry
+  notes: Reddit subreddit .rss (forum)
+- url: https://www.reddit.com/r/rag/hot/.rss
+  title: Feed
+  topics:
+  - community
+  - industry
+  notes: Reddit subreddit .rss (forum)

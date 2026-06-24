@@ -1,0 +1,8 @@
+sources:
+- url: https://machinelearning.apple.com/rss.xml
+  title: Apple ML Research
+  topics:
+  - industry
+  - mobile
+  - inference
+  notes: Apple on-device ML research RSS

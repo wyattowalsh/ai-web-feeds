@@ -1,0 +1,23 @@
+sources:
+- url: https://blog.neurips.cc/feed/
+  title: NeurIPS Blog
+  topics:
+  - conferences
+  - research
+  - papers
+  notes: Official NeurIPS blog
+- url: https://blog.iclr.cc/feed/
+  title: ICLR Blog
+  topics:
+  - conferences
+  - research
+  - papers
+  notes: ICLR conference blog
+- url: https://distill.pub/rss.xml
+  title: Distill
+  topics:
+  - research
+  - papers
+  - gans
+  - interpretability
+  notes: Interactive ML journal (archived but RSS active)

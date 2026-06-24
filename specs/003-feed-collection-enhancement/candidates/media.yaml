@@ -1,0 +1,99 @@
+sources:
+- url: https://www.bensbites.com/feed
+  title: Ben's Bites
+  topics:
+  - newsletters
+  - industry
+  - product
+  notes: Daily AI product/news digest
+- url: https://lastweekin.ai/feed
+  title: Last Week in AI
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Weekly AI news roundup
+- url: https://buttondown.email/ainews/rss
+  title: AI News (Karpathy)
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: Curated AI links newsletter
+- url: https://tldr.tech/rss
+  title: TLDR AI
+  topics:
+  - newsletters
+  - industry
+  - devtools
+  notes: Concise AI/tech newsletter
+- url: https://aisupremacy.substack.com/feed
+  title: AI Supremacy
+  topics:
+  - newsletters
+  - industry
+  - governance
+  notes: Substack AI strategy newsletter
+- url: https://syncedreview.com/feed/
+  title: Synced Review
+  topics:
+  - newsletters
+  - research
+  - industry
+  notes: AI research/industry news
+- url: https://www.platformer.news/feed
+  title: Platformer
+  topics:
+  - newsletters
+  - governance
+  - industry
+  notes: Tech policy and platforms
+- url: https://jack-clark.net/feed/
+  title: Import AI (Jack Clark)
+  topics:
+  - newsletters
+  - safety
+  - governance
+  notes: Author blog; complements Import AI newsletter entry
+- url: https://twimlai.com/feed
+  title: TWIML AI Podcast
+  topics:
+  - podcasts
+  - ml
+  - industry
+  notes: This Week in Machine Learning & AI
+- url: https://feeds.megaphone.fm/nopriors
+  title: No Priors
+  topics:
+  - podcasts
+  - industry
+  - product
+  notes: VC AI founders podcast
+- url: https://thedataexchange.media/feed/
+  title: The Data Exchange
+  topics:
+  - podcasts
+  - mlops
+  - data
+  notes: Data/ML practitioners podcast
+- url: https://lexfridman.com/feed/podcast/
+  title: Lex Fridman Podcast
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: Long-form AI/tech interviews
+- url: https://changelog.com/friends/feed
+  title: Changelog & Friends
+  topics:
+  - podcasts
+  - open-source
+  - devtools
+  notes: Changelog network show
+- url: https://www.superdatascience.com/feed
+  title: Super Data Science
+  topics:
+  - podcasts
+  - ml
+  - education
+  notes: ML career and practice podcast

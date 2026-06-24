@@ -1,0 +1,85 @@
+sources:
+- url: https://simonwillison.net/atom/everything/
+  title: Simon Willison
+  topics:
+  - blogs
+  - llm
+  - devtools
+  notes: LLM tooling and engineering notes
+- url: https://gwern.net/feed
+  title: Gwern
+  topics:
+  - blogs
+  - research
+  - evaluation
+  notes: Long-form AI/statistics research
+- url: https://www.jeremykun.com/feed/
+  title: Jeremy Kun
+  topics:
+  - blogs
+  - education
+  - ml
+  notes: Math and ML explanations
+- url: https://lilianweng.github.io/index.xml
+  title: Lil'Log
+  topics:
+  - blogs
+  - research
+  - llm
+  notes: Lilian Weng research blog
+- url: https://karpathy.github.io/feed.xml
+  title: Andrej Karpathy
+  topics:
+  - blogs
+  - education
+  - llm
+  notes: Karpathy engineering blog
+- url: https://colah.github.io/rss.xml
+  title: Colah's Blog
+  topics:
+  - blogs
+  - research
+  - interpretability
+  notes: Neural network interpretability
+- url: https://minimaxir.com/index.xml
+  title: Minimaxir
+  topics:
+  - blogs
+  - ml
+  - evaluation
+  notes: Data/ML analysis and commentary
+- url: https://www.interconnects.ai/feed
+  title: Interconnects
+  topics:
+  - blogs
+  - industry
+  - llm
+  notes: Nathan Lambert AI analysis
+- url: https://www.oneusefulthing.org/feed
+  title: One Useful Thing
+  topics:
+  - blogs
+  - product
+  - education
+  notes: Ethan Mollick on AI in work/education
+- url: https://stratechery.com/feed/
+  title: Stratechery
+  topics:
+  - blogs
+  - industry
+  - product
+  notes: Ben Thompson strategy analysis
+- url: https://hamel.dev/index.xml
+  title: Hamel Husain
+  topics:
+  - blogs
+  - mlops
+  - evaluation
+  notes: MLOps and LLM eval practice
+- url: https://flowingdata.com/feed/
+  title: FlowingData
+  topics:
+  - blogs
+  - data-viz
+  - education
+  notes: Data visualization and statistics

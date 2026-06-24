@@ -1,0 +1,319 @@
+sources:
+- url: https://rss.arxiv.org/rss/cs.SY
+  title: cs.SY updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS for Systems and Control (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/stat.AP
+  title: stat.AP updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Statistics Applications (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/eess.AS
+  title: eess.AS updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Audio and Speech Processing (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/q-bio.QM
+  title: q-bio.QM updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS Quantitative Methods (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/q-bio.BM
+  title: q-bio.BM updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS Biomolecules (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/q-bio.GN
+  title: q-bio.GN updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS Genomics (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/q-bio.NC
+  title: q-bio.NC updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS Neurons and Cognition (target gap); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/physics.comp-ph
+  title: physics.comp-ph updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Computational Physics (target gap); HTTP verified via validate_feed_url
+- url: http://export.arxiv.org/rss/cs.SY
+  title: cs.SY updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv export RSS for cs.SY (verified); HTTP verified via validate_feed_url
+- url: http://export.arxiv.org/rss/stat.AP
+  title: stat.AP updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv export RSS (verified); HTTP verified via validate_feed_url
+- url: http://export.arxiv.org/rss/eess.AS
+  title: eess.AS updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv export RSS (verified); HTTP verified via validate_feed_url
+- url: http://export.arxiv.org/rss/physics.comp-ph
+  title: physics.comp-ph updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv export RSS (verified); HTTP verified via validate_feed_url
+- url: https://arxiv.org/rss/cs.SY
+  title: cs.SY updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed (verified); HTTP verified via validate_feed_url
+- url: https://arxiv.org/rss/stat.AP
+  title: stat.AP updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed (verified); HTTP verified via validate_feed_url
+- url: https://arxiv.org/rss/eess.AS
+  title: eess.AS updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed (verified); HTTP verified via validate_feed_url
+- url: https://arxiv.org/rss/q-bio.QM
+  title: q-bio.QM updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS category feed (verified); HTTP verified via validate_feed_url
+- url: https://arxiv.org/rss/physics.comp-ph
+  title: physics.comp-ph updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS category feed (verified); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/atom/cs.SY
+  title: cs.SY updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv Atom feed (verified); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/atom/stat.AP
+  title: stat.AP updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv Atom feed (verified); HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/cs.CC
+  title: cs.CC updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Computational Complexity; HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/stat.TH
+  title: stat.TH updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Statistics Theory; HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/eess.SP
+  title: eess.SP updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Signal Processing; HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/math.OC
+  title: math.OC updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  notes: arXiv RSS Optimization and Control; HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/cs.IR
+  title: cs.IR updates on arXiv.org
+  topics:
+  - ai
+  - research
+  - papers
+  - nlp
+  notes: arXiv RSS Information Retrieval; HTTP verified via validate_feed_url
+- url: https://rss.arxiv.org/rss/q-bio
+  title: q-bio updates on arXiv.org
+  topics:
+  - ai-for-science
+  - research
+  - papers
+  - ai
+  notes: arXiv RSS Quantitative Biology; HTTP verified via validate_feed_url
+- url: https://www.nature.com/natmachintell.rss
+  title: Nature Machine Intelligence
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Nature ML journal RSS (verified path); HTTP verified via validate_feed_url
+- url: https://www.nature.com/subjects/machine-learning.rss
+  title: 'Machine learning : nature.com subject feeds'
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Nature subject feed for ML; HTTP verified via validate_feed_url
+- url: https://www.nature.com/subjects/computer-science.rss
+  title: 'Computer science : nature.com subject feeds'
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Nature subject feed; HTTP verified via validate_feed_url
+- url: https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics
+  title: 'AAAS: Science Robotics: Table of Contents'
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Science Robotics journal TOC RSS (target gap); HTTP verified via validate_feed_url
+- url: https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv
+  title: 'AAAS: Science Advances: Table of Contents'
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Science Advances journal TOC; HTTP verified via validate_feed_url
+- url: https://www.jmlr.org/jmlr.xml
+  title: JMLR
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: Journal of Machine Learning Research; HTTP verified via validate_feed_url
+- url: https://blog.ai.princeton.edu/feed
+  title: Princeton Laboratory for Artificial Intelligence Research Blog
+  topics:
+  - ai
+  - research
+  - papers
+  notes: Princeton AI Lab research blog (verified); HTTP verified via validate_feed_url
+- url: https://news.mit.edu/topic/mitrobotics-rss.xml
+  title: MIT News - Robotics
+  topics:
+  - ai
+  - research
+  - papers
+  - robotics
+  notes: MIT News robotics research feed; HTTP verified via validate_feed_url
+- url: https://ai.engin.umich.edu/news/feed
+  title: University of Michigan AI Lab News
+  topics:
+  - ai
+  - research
+  - papers
+  notes: UMich AI Lab news feed; HTTP verified via validate_feed_url
+- url: https://spectrum.ieee.org/feeds/topic/robotics.rss
+  title: IEEE Spectrum
+  topics:
+  - ai
+  - research
+  - papers
+  - robotics
+  notes: IEEE Spectrum robotics coverage; HTTP verified via validate_feed_url
+- url: https://blog.icml.cc/feed
+  title: ICML Blog
+  topics:
+  - ai
+  - ml
+  - research
+  - papers
+  notes: ICML conference blog; HTTP verified via validate_feed_url
+- url: https://www.microsoft.com/en-us/research/feed/
+  title: Microsoft Research
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Microsoft Research publications feed; HTTP verified via validate_feed_url
+- url: https://engineering.fb.com/feed/
+  title: Engineering at Meta
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Meta engineering and research blog; HTTP verified via validate_feed_url
+- url: https://aws.amazon.com/blogs/machine-learning/feed/
+  title: Artificial Intelligence
+  topics:
+  - ai
+  - research
+  - industry
+  notes: AWS Machine Learning Blog; HTTP verified via validate_feed_url
+- url: https://azure.microsoft.com/en-us/blog/feed/
+  title: Microsoft Azure Blog
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Azure AI and ML updates; HTTP verified via validate_feed_url
+- url: https://blog.allenai.org/feed
+  title: Allen Institute for AI
+  topics:
+  - ai
+  - research
+  - papers
+  notes: AI2 research blog; HTTP verified via validate_feed_url
+- url: https://intelligence.org/feed/
+  title: Machine Intelligence Research Institute
+  topics:
+  - ai
+  - research
+  - papers
+  - nlp
+  notes: MIRI AI safety research feed; HTTP verified via validate_feed_url
+- url: https://netflixtechblog.com/feed
+  title: Netflix TechBlog - Medium
+  topics:
+  - ai
+  - research
+  - industry
+  notes: Netflix ML and infra research; HTTP verified via validate_feed_url

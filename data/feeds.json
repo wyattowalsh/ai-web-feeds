@@ -2,12 +2,12 @@
   "schema_version": "feeds-3.0.0",
   "document_meta": {
     "created": "2025-10-15",
-    "updated": "2025-10-15",
+    "updated": "2026-06-24",
     "generated_with": {
       "tool": "aiwebfeeds-cli",
       "version": "0.1.0"
     },
-    "notes": "Simplified schema - only URL and topics required. Titles and metadata auto-enriched, but can be customized."
+    "notes": "Expanded via specs/003-feed-collection-enhancement orchestration."
   },
   "sources": [
     {
@@ -22,25 +22,15 @@
       "title": "arXiv cs.LG"
     },
     {
-      "url": "https://openai.com/blog/rss/",
+      "url": "https://openai.com/news/rss.xml",
       "topics": [
         "industry",
         "product",
         "llm"
       ],
       "id": "c2e8f1ffb0b2b48b",
-      "title": "OpenAI Blog"
-    },
-    {
-      "url": "https://www.pinecone.io/learn/feed.xml",
-      "topics": [
-        "retrieval",
-        "vector",
-        "embeddings",
-        "mlops"
-      ],
-      "id": "a1156030febbd9e6",
-      "title": "Pinecone Learn"
+      "title": "OpenAI Blog",
+      "notes": "HTTP fix: feed URL discovered 2026-06-24."
     },
     {
       "url": "https://www.latent.space/feed",
@@ -63,147 +53,92 @@
       "title": "Import AI"
     },
     {
-      "url": "https://huggingface.co/blog",
+      "url": "https://huggingface.co/blog/feed.xml",
       "topics": [
         "open-source",
         "mlops",
-        "nlp"
+        "nlp",
+        "genai",
+        "diffusion"
       ],
-      "notes": "Site URL; auto-discovers RSS feed",
+      "notes": "Site URL; auto-discovers RSS feed HTTP fix: feed URL discovered 2026-06-24.",
       "id": "935fbe5ba89ff5f9",
       "title": "Hugging Face Blog"
     },
     {
-      "url": "https://www.anthropic.com/news",
-      "topics": [
-        "industry",
-        "safety",
-        "llm"
-      ],
-      "notes": "Custom title provided; feed auto-discovered",
-      "id": "f6aa679babd7a46a",
-      "title": "Anthropic News"
-    },
-    {
-      "url": "https://openxla.org/blog",
-      "topics": [
-        "compilers",
-        "optimization",
-        "open-source"
-      ],
-      "id": "7151a155c27680f0",
-      "title": "OpenXLA Blog"
-    },
-    {
-      "url": "https://www.reddit.com/r/MachineLearning",
-      "topics": [
-        "ml",
-        "community",
-        "research"
-      ],
-      "notes": "Reddit subreddit; auto-generates .rss URL",
-      "id": "05e1130929e7ac30",
-      "title": "r/MachineLearning"
-    },
-    {
-      "url": "https://towardsdatascience.com",
+      "url": "https://towardsdatascience.com/feed",
       "topics": [
         "ml",
         "blogs",
-        "education"
+        "education",
+        "data-centric-ai"
       ],
-      "notes": "Popular Medium publication with custom title",
+      "notes": "Popular Medium publication with custom title HTTP fix: feed URL discovered 2026-06-24.",
       "id": "80bd7e4b43bc6827",
       "title": "Towards Data Science"
     },
     {
-      "url": "https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg",
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
       "topics": [
         "research",
         "videos",
-        "education"
+        "education",
+        "industry",
+        "open-source",
+        "vlm"
       ],
-      "notes": "Excellent AI research video summaries",
+      "notes": "Excellent AI research video summaries HTTP fix: feed URL discovered 2026-06-24.",
       "id": "26be51fe87907faf",
       "title": "Two Minute Papers"
     },
     {
-      "url": "https://github.com/pytorch/pytorch",
+      "url": "https://github.com/pytorch/pytorch/releases.atom",
       "topics": [
         "open-source",
         "ml",
         "product"
       ],
-      "notes": "PyTorch repo; auto-generates releases.atom",
+      "notes": "PyTorch repo; auto-generates releases.atom HTTP fix: feed URL discovered 2026-06-24.",
       "id": "6ee2c2a30826817d",
       "title": "PyTorch Releases"
     },
     {
-      "url": "https://dev.to/t/machinelearning",
+      "url": "https://dev.to/feed/tag/machinelearning",
       "topics": [
         "blogs",
         "education",
         "ml"
       ],
-      "notes": "Dev.to tag; auto-generates feed URL",
+      "notes": "Dev.to tag; auto-generates feed URL HTTP fix: feed URL discovered 2026-06-24.",
       "id": "1448e130279b08bd",
       "title": "DEV Community Machine Learning"
     },
     {
-      "url": "https://x.com/karpathy",
-      "topics": [
-        "ai",
-        "ml",
-        "research"
-      ],
-      "notes": "Custom title; uses explicit Twitter feed bridge",
-      "id": "eb09beb38255e4f6",
-      "title": "Andrej Karpathy"
-    },
-    {
-      "url": "https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y",
-      "topics": [
-        "research",
-        "papers",
-        "ml"
-      ],
-      "notes": "Custom title for arXiv author search",
-      "id": "46a88037c9410525",
-      "title": "Yoshua Bengio - arXiv Papers"
-    },
-    {
-      "url": "https://ai.googleblog.com",
-      "topics": [
-        "industry",
-        "research",
-        "llm"
-      ],
-      "notes": "Official Google AI blog; enrichment auto-discovers feed.",
-      "id": "65d0cfe837afd1c3",
-      "title": "Google AI Blog"
-    },
-    {
-      "url": "https://deepmind.google/discover/blog",
-      "topics": [
-        "research",
-        "ml",
-        "llm"
-      ],
-      "notes": "DeepMind’s research & product posts; feed auto-discovery.",
-      "id": "d02ec00905b7b5c3",
-      "title": "DeepMind — Discover/Blog"
-    },
-    {
-      "url": "https://ai.meta.com/blog/",
+      "url": "https://research.google/blog/rss/",
       "topics": [
         "industry",
         "research",
         "llm",
-        "open-source"
+        "evaluation",
+        "reasoning-models",
+        "genai"
       ],
-      "notes": "Official Meta AI blog; enrichment will locate feed.",
-      "id": "191cc99ce0bbb92f",
-      "title": "Meta AI — Blog"
+      "notes": "Official Google AI blog; enrichment auto-discovers feed. HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "65d0cfe837afd1c3",
+      "title": "Google AI Blog"
+    },
+    {
+      "url": "https://deepmind.google/discover/blog/feed",
+      "topics": [
+        "research",
+        "ml",
+        "llm",
+        "diffusion",
+        "genai"
+      ],
+      "notes": "DeepMind’s research & product posts; feed auto-discovery. HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "d02ec00905b7b5c3",
+      "title": "DeepMind — Discover/Blog"
     },
     {
       "url": "https://www.microsoft.com/en-us/research/feed/",
@@ -256,22 +191,14 @@
       "topics": [
         "research",
         "llm",
-        "evaluation"
+        "evaluation",
+        "copyright-ip",
+        "privacy",
+        "legal-ai"
       ],
       "notes": "HELM, FMs, policy & research updates.",
       "id": "d8fbfd4426ed3c35",
       "title": "Stanford CRFM — RSS"
-    },
-    {
-      "url": "https://hai.stanford.edu/news",
-      "topics": [
-        "industry",
-        "governance",
-        "research"
-      ],
-      "notes": "News & analysis from HAI; feed auto-discovery.",
-      "id": "1647adede221cf8d",
-      "title": "Stanford HAI — News"
     },
     {
       "url": "https://thegradient.pub/rss/",
@@ -296,17 +223,6 @@
       "title": "TensorFlow Blog — RSS"
     },
     {
-      "url": "https://txt.cohere.ai/rss/",
-      "topics": [
-        "industry",
-        "llm",
-        "product"
-      ],
-      "notes": "Provider perspective on LLMs and use cases.",
-      "id": "e203e23af281125c",
-      "title": "Cohere — txt (RSS)"
-    },
-    {
       "url": "https://replicate.com/blog/rss",
       "topics": [
         "open-source",
@@ -323,490 +239,220 @@
         "mlops",
         "evaluation",
         "product",
-        "industry"
+        "industry",
+        "synthetic-data"
       ],
       "notes": "Data+AI, lakehouse, eval/monitoring patterns.",
       "id": "7f1c72c187c23c51",
       "title": "Databricks Blog — RSS"
     },
     {
-      "url": "https://lmsys.org/blog/",
-      "topics": [
-        "evaluation",
-        "llm",
-        "agents"
-      ],
-      "notes": "Chatbot Arena, SGLang; Hugo feed autodetected.",
-      "id": "c84633173b800035",
-      "title": "LMSYS — Blog"
-    },
-    {
-      "url": "https://github.com/vllm-project/vllm",
+      "url": "https://github.com/vllm-project/vllm/releases.atom",
       "topics": [
         "open-source",
         "serving",
         "inference"
       ],
-      "notes": "Auto-generates releases feed via releases.atom.",
+      "notes": "Auto-generates releases feed via releases.atom. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "e8ba7172314e48e9",
       "title": "vLLM (GitHub)"
     },
     {
-      "url": "https://github.com/NVIDIA/TensorRT-LLM",
+      "url": "https://github.com/NVIDIA/TensorRT-LLM/releases.atom",
       "topics": [
         "accelerators",
         "inference",
         "open-source"
       ],
-      "notes": "Auto-generates releases feed via releases.atom.",
+      "notes": "Auto-generates releases feed via releases.atom. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "754595d3bef49bf4",
       "title": "TensorRT-LLM (GitHub)"
     },
     {
-      "url": "https://weaviate.io/blog",
+      "url": "https://weaviate.io/blog/rss.xml",
       "topics": [
         "vector",
         "retrieval",
         "mlops",
         "open-source"
       ],
-      "notes": "Vector search patterns and product engineering.",
+      "notes": "Vector search patterns and product engineering. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "a639b4426b7c8da8",
       "title": "Weaviate — Blog"
     },
     {
-      "url": "https://milvus.io/blog",
+      "url": "https://qdrant.tech/articles/index.xml",
       "topics": [
         "vector",
         "retrieval",
         "open-source",
         "mlops"
       ],
-      "notes": "Zilliz/Milvus updates & scaling notes.",
-      "id": "b8d6cb38455ac73c",
-      "title": "Milvus — Blog"
-    },
-    {
-      "url": "https://qdrant.tech/articles/",
-      "topics": [
-        "vector",
-        "retrieval",
-        "open-source",
-        "mlops"
-      ],
-      "notes": "Vector database internals, HNSW, filters.",
+      "notes": "Vector database internals, HNSW, filters. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "e09ae3dc4358cf27",
       "title": "Qdrant — Articles"
     },
     {
-      "url": "https://blog.langchain.com/",
+      "url": "https://blog.langchain.com/rss.xml",
       "topics": [
         "agents",
         "tool-use",
         "llm",
-        "workflows"
+        "workflows",
+        "devtools",
+        "context-engineering"
       ],
-      "notes": "LangGraph/agents runtime posts; feed autodiscovery.",
+      "notes": "LangGraph/agents runtime posts; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "77460b2256f18fac",
       "title": "LangChain — Blog"
-    },
-    {
-      "url": "https://www.llamaindex.ai/blog",
-      "topics": [
-        "retrieval",
-        "rag",
-        "agents",
-        "llm"
-      ],
-      "notes": "RAG patterns & evaluation; feed autodiscovery.",
-      "id": "3ccc18a956cae0b1",
-      "title": "LlamaIndex — Blog"
-    },
-    {
-      "url": "https://mlops.community/blog",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "workflows"
-      ],
-      "notes": "Practitioner case studies; WordPress feed typically at /feed/.",
-      "id": "b321aa49164209fb",
-      "title": "MLOps Community — Blog"
-    },
-    {
-      "url": "https://www.aisafety.gov.uk/news",
-      "topics": [
-        "safety",
-        "governance",
-        "evaluation"
-      ],
-      "notes": "Safety, evaluations, system cards, assurance.",
-      "id": "066b0307e23b6bdc",
-      "title": "UK AI Safety Institute — News"
-    },
-    {
-      "url": "https://mlcommons.org/news/",
-      "topics": [
-        "evaluation",
-        "benchops",
-        "industry"
-      ],
-      "notes": "Benchmark releases and methodology updates.",
-      "id": "dea463fd6c8c0a3c",
-      "title": "MLCommons — News (MLPerf)"
-    },
-    {
-      "url": "https://sebastianraschka.com/rss.xml",
-      "topics": [
-        "education",
-        "ml",
-        "llm"
-      ],
-      "notes": "Hands-on deep learning/LLM posts, high cadence.",
-      "id": "338c0f69c10eb1c7",
-      "title": "Sebastian Raschka — RSS"
     },
     {
       "url": "https://eugeneyan.com/rss/",
       "topics": [
         "education",
         "mlops",
-        "data"
+        "data",
+        "synthetic-data",
+        "active-learning",
+        "labeling"
       ],
       "notes": "Practical prod-ML systems & design write-ups.",
       "id": "e2a35dcabe116d15",
       "title": "Eugene Yan — RSS"
     },
     {
-      "url": "https://hamel.dev/atom.xml",
+      "url": "https://hamel.dev/index.xml",
       "topics": [
         "llmops",
         "mlops",
-        "agents"
+        "agents",
+        "blogs",
+        "evaluation"
       ],
-      "notes": "Agentic systems, evals, and tooling deep dives.",
+      "notes": "Agentic systems, evals, and tooling deep dives. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "1739dc2b7e937a4e",
       "title": "Hamel Husain — Atom"
     },
     {
-      "url": "https://machinelearning.apple.com",
+      "url": "https://machinelearning.apple.com/rss.xml",
       "topics": [
         "research",
         "on-device",
-        "ai"
+        "ai",
+        "industry",
+        "mobile",
+        "inference"
       ],
-      "notes": "On-device/edge ML research from Apple; platform auto-discovers feed.",
+      "notes": "On-device/edge ML research from Apple; platform auto-discovers feed. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "d1cafa5415087246",
       "title": "Apple Machine Learning Research (Journal)"
     },
     {
-      "url": "https://allenai.org/blog",
-      "topics": [
-        "research",
-        "llm",
-        "evaluation"
-      ],
-      "notes": "AI2 lab research updates; high-quality technical write-ups.",
-      "id": "86e00abd227a3a01",
-      "title": "Allen Institute for AI — Blog"
-    },
-    {
-      "url": "https://www.csail.mit.edu/news",
-      "topics": [
-        "research",
-        "ai",
-        "robotics"
-      ],
-      "notes": "Academic lab news and research explainers; feed autodiscovery.",
-      "id": "efd5a9abfb4160fd",
-      "title": "MIT CSAIL — News"
-    },
-    {
-      "url": "http://www.fast.ai",
+      "url": "http://www.fast.ai/index.xml",
       "topics": [
         "education",
         "ml",
         "blogs"
       ],
-      "notes": "Hands-on deep learning essays; known feed endpoint historically at /atom.xml.",
+      "notes": "Hands-on deep learning essays; known feed endpoint historically at /atom.xml. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "c2e4778941fa6e5f",
       "title": "fast.ai — Blog"
     },
     {
-      "url": "https://www.deeplearning.ai/the-batch/",
-      "topics": [
-        "newsletters",
-        "industry",
-        "education"
-      ],
-      "notes": "Weekly AI newsletter by Andrew Ng team.",
-      "id": "d95936737ca33a17",
-      "title": "DeepLearning.AI — The Batch"
-    },
-    {
-      "url": "https://robotics.googleblog.com/",
-      "topics": [
-        "robotics",
-        "cv",
-        "rl"
-      ],
-      "notes": "Google robotics research; Atom feed available.",
-      "id": "fe4c4efe475f4201",
-      "title": "Robotics at Google — Blog"
-    },
-    {
-      "url": "https://openmined.org/blog",
-      "topics": [
-        "privacy",
-        "pets",
-        "security"
-      ],
-      "notes": "PETs, federated learning, DP; Ghost-based site (feed autodiscovery).",
-      "id": "b55443f051a2a8d2",
-      "title": "OpenMined — Blog"
-    },
-    {
-      "url": "https://blog.eleuther.ai/",
+      "url": "https://blog.eleuther.ai/index.xml",
       "topics": [
         "open-source",
         "llm",
-        "research"
+        "research",
+        "industry",
+        "safety"
       ],
-      "notes": "Open research on LLMs and scaling; known feed endpoint at /index.xml.",
+      "notes": "Open research on LLMs and scaling; known feed endpoint at /index.xml. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "6d1e4d5f90717cfb",
       "title": "EleutherAI — Blog"
     },
     {
-      "url": "https://tvm.apache.org/blog",
-      "topics": [
-        "compilers",
-        "optimization",
-        "inference"
-      ],
-      "notes": "Compiler stack for ML; kernels, codegen, deployment.",
-      "id": "687b81f9a8985d70",
-      "title": "Apache TVM — Blog"
-    },
-    {
-      "url": "https://nixtla.github.io/blog",
+      "url": "https://nixtla.github.io/blog/feed",
       "topics": [
         "time-series",
         "ml",
         "education"
       ],
-      "notes": "Forecasting libraries, probabilistic TS; frequent technical posts.",
+      "notes": "Forecasting libraries, probabilistic TS; frequent technical posts. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "ad36bfcc986c3a4f",
       "title": "Nixtla — Blog"
     },
     {
-      "url": "https://blog.roboflow.com",
+      "url": "https://blog.roboflow.com/feed",
       "topics": [
         "cv",
         "open-source",
-        "product"
+        "product",
+        "labeling",
+        "active-learning",
+        "synthetic-data"
       ],
-      "notes": "Vision datasets, labeling, YOLO/Detectron tips; RSS available.",
+      "notes": "Vision datasets, labeling, YOLO/Detectron tips; RSS available. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "29ee65b2a0938244",
       "title": "Roboflow — Blog"
     },
     {
-      "url": "https://opencv.org/blog",
-      "topics": [
-        "cv",
-        "education",
-        "open-source"
-      ],
-      "notes": "Official OpenCV engineering posts; WordPress feed at /feed/.",
-      "id": "75612d096bc66dfd",
-      "title": "OpenCV — Blog"
-    },
-    {
-      "url": "https://neo4j.com/developer-blog/",
+      "url": "https://neo4j.com/developer-blog/feed",
       "topics": [
         "knowledge-graphs",
         "retrieval",
         "vector"
       ],
-      "notes": "Graph algorithms, embeddings, graph-RAG patterns; RSS available.",
+      "notes": "Graph algorithms, embeddings, graph-RAG patterns; RSS available. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "4d7d6afe38671dbc",
       "title": "Neo4j — Developer Blog"
     },
     {
-      "url": "https://www.arangodb.com/blog/",
-      "topics": [
-        "knowledge-graphs",
-        "retrieval",
-        "open-source"
-      ],
-      "notes": "Multi-model DB posts incl. graph queries and vector search.",
-      "id": "05e838380506f8fc",
-      "title": "ArangoDB — Blog"
-    },
-    {
-      "url": "https://arize.com/blog",
+      "url": "https://arize.com/blog/feed/",
       "topics": [
         "mlops",
         "monitoring",
         "llmops"
       ],
-      "notes": "Prod ML/LLM monitoring, evals, and tracing patterns.",
+      "notes": "Prod ML/LLM monitoring, evals, and tracing patterns. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "804715f8f1497559",
       "title": "Arize AI — Blog"
     },
     {
-      "url": "https://www.evidentlyai.com/blog",
-      "topics": [
-        "mlops",
-        "evaluation",
-        "monitoring"
-      ],
-      "notes": "Metrics, drift detection, eval pipelines; practical guides.",
-      "id": "f9abf95c6ead4904",
-      "title": "Evidently AI — Blog"
-    },
-    {
-      "url": "https://whylabs.ai/blog",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "security"
-      ],
-      "notes": "Observability, data quality, LLM risk; frequent how-tos.",
-      "id": "f9aecb186e9a6484",
-      "title": "WhyLabs — Blog"
-    },
-    {
-      "url": "https://www.anyscale.com/blog",
-      "topics": [
-        "ai-infra-stacks",
-        "orchestration",
-        "serving"
-      ],
-      "notes": "Ray ecosystem (serve, actors, scaling); production case studies.",
-      "id": "050119dbab88ea86",
-      "title": "Anyscale (Ray) — Blog"
-    },
-    {
-      "url": "https://modal.com/blog",
+      "url": "https://modal.com/blog/atom.xml",
       "topics": [
         "serving",
         "ai-infra-stacks",
         "optimization"
       ],
-      "notes": "Serverless GPU workflows, model serving patterns.",
+      "notes": "Serverless GPU workflows, model serving patterns. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "0be5c22bd2fbf2c2",
       "title": "Modal — Blog"
     },
     {
-      "url": "https://neo4j.com/developer/graph-data-science/",
-      "topics": [
-        "knowledge-graphs",
-        "embeddings",
-        "retrieval"
-      ],
-      "notes": "Graph embeddings, similarity search, pipelines.",
-      "id": "78bab138682cfbd0",
-      "title": "Neo4j Graph Data Science — Articles"
-    },
-    {
-      "url": "https://cohere.com/research",
-      "topics": [
-        "research",
-        "llm",
-        "evaluation"
-      ],
-      "notes": "Provider research updates complementing ‘txt’; feed autodiscovery.",
-      "id": "41aab499985c4dd8",
-      "title": "Cohere — Research"
-    },
-    {
-      "url": "https://www.microsoft.com/en-us/ai/blog/",
+      "url": "https://www.microsoft.com/en-us/ai/blog/feed",
       "topics": [
         "industry",
         "product",
         "llm"
       ],
-      "notes": "Platform features + partner work; separate from MSR feed.",
+      "notes": "Platform features + partner work; separate from MSR feed. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "5b13693f8f06a94e",
       "title": "Microsoft AI — Blog"
-    },
-    {
-      "url": "https://www.qualcomm.com/research/artificial-intelligence",
-      "topics": [
-        "edge",
-        "on-device",
-        "accelerators"
-      ],
-      "notes": "On-device inference, NPUs, edge acceleration; feed autodiscovery.",
-      "id": "f736744c2ef76e85",
-      "title": "Qualcomm — AI Research/Engineering"
-    },
-    {
-      "url": "https://blog.langfuse.com",
-      "topics": [
-        "llmops",
-        "evaluation",
-        "monitoring"
-      ],
-      "notes": "LLM telemetry, tracing, evals for agentic systems.",
-      "id": "ecb0da614acf3f20",
-      "title": "Langfuse — Blog"
     },
     {
       "url": "https://ainowinstitute.org/category/news/feed",
       "topics": [
         "governance",
         "safety",
-        "research"
+        "research",
+        "ethics",
+        "fairness",
+        "regulation"
       ],
       "notes": "Policy, governance, and safety analyses; active 2025 cadence.",
       "id": "c3775a125353e5c5",
       "title": "AI Now Institute — News (RSS)"
-    },
-    {
-      "url": "https://partnershiponai.org/blog/",
-      "topics": [
-        "governance",
-        "safety",
-        "trust-audit",
-        "evaluation"
-      ],
-      "notes": "Standards & guidance (e.g., foundation-model deployment); feed auto-discovery.",
-      "id": "86667bd1884f48e9",
-      "title": "Partnership on AI — Blog"
-    },
-    {
-      "url": "https://mila.quebec/en/news",
-      "topics": [
-        "research",
-        "ml",
-        "genai"
-      ],
-      "notes": "Leading academic lab; WordPress feed auto-discovery.",
-      "id": "7f2bfb74575abbb6",
-      "title": "Mila — News"
-    },
-    {
-      "url": "https://vectorinstitute.ai/insights/",
-      "topics": [
-        "research",
-        "industry",
-        "evaluation"
-      ],
-      "notes": "Canadian institute analyses and research highlights.",
-      "id": "5c3fed87d2fdc538",
-      "title": "Vector Institute — Insights"
-    },
-    {
-      "url": "https://www.turing.ac.uk/blog",
-      "topics": [
-        "research",
-        "governance",
-        "ethics"
-      ],
-      "notes": "National lab perspective; policy & technical posts.",
-      "id": "a76b8940cf25eaeb",
-      "title": "The Alan Turing Institute — Blog"
     },
     {
       "url": "https://blog.ml.cmu.edu/feed/",
@@ -831,49 +477,27 @@
       "title": "MIT News — Machine Learning (RSS)"
     },
     {
-      "url": "https://blog.vespa.ai",
+      "url": "https://blog.vespa.ai/feed",
       "topics": [
         "retrieval",
         "vector",
         "serving",
         "ai-infra-stacks"
       ],
-      "notes": "Production ranking/search/ANN at scale; auto-discovery.",
+      "notes": "Production ranking/search/ANN at scale; auto-discovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3194b6528d7bd7ff",
       "title": "Vespa.ai — Blog"
     },
     {
-      "url": "https://jina.ai/blog/",
-      "topics": [
-        "retrieval",
-        "agents",
-        "open-source"
-      ],
-      "notes": "Embeddings, hybrid search, multimodal RAG.",
-      "id": "a70f33e6628745ab",
-      "title": "Jina AI — Blog"
-    },
-    {
-      "url": "https://haystack.deepset.ai/blog",
+      "url": "https://haystack.deepset.ai/blog/index.xml",
       "topics": [
         "retrieval",
         "rag",
         "llmops"
       ],
-      "notes": "RAG patterns, pipelines, evaluation.",
+      "notes": "RAG patterns, pipelines, evaluation. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "2a336b1f05476f87",
       "title": "Haystack (deepset) — Blog"
-    },
-    {
-      "url": "https://llm.mlc.ai/blog",
-      "topics": [
-        "on-device",
-        "small-models",
-        "inference"
-      ],
-      "notes": "Edge/Apple/Android inference stacks; frequent updates.",
-      "id": "d8db61643a229671",
-      "title": "MLC LLM — Blog"
     },
     {
       "url": "https://github.com/ggml-org/llama.cpp/releases.atom",
@@ -933,61 +557,15 @@
       "title": "MLC-LLM — Releases (Atom)"
     },
     {
-      "url": "https://neptune.ai/blog/feed",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "evaluation",
-        "education"
-      ],
-      "notes": "Telemetry, drift, evals, practical prod-ML guides.",
-      "id": "b6cb4b82f8dbf7fc",
-      "title": "Neptune.ai — Blog (RSS)"
-    },
-    {
-      "url": "https://onnx.ai/blog",
-      "topics": [
-        "compilers",
-        "optimization",
-        "open-source"
-      ],
-      "notes": "Interchange & runtimes ecosystem; feed auto-discovery.",
-      "id": "656698fe8acbfbd8",
-      "title": "ONNX — Blog"
-    },
-    {
-      "url": "https://mistral.ai/news",
+      "url": "https://mistral.ai/rss.xml",
       "topics": [
         "industry",
         "product",
         "llm"
       ],
-      "notes": "Provider releases & product updates.",
+      "notes": "Provider releases & product updates. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "266ae3c8fd4248d3",
       "title": "Mistral AI — News"
-    },
-    {
-      "url": "https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html",
-      "topics": [
-        "optimization",
-        "inference",
-        "on-device",
-        "accelerators"
-      ],
-      "notes": "Quantization, toolchain, kernel & deployment tutorials.",
-      "id": "2fcec7ed63a5946b",
-      "title": "Intel OpenVINO — Blog"
-    },
-    {
-      "url": "https://www.crewai.com/blog",
-      "topics": [
-        "agents",
-        "workflows",
-        "orchestration"
-      ],
-      "notes": "Agentic frameworks, planning, multi-tool pipelines.",
-      "id": "e880e6572e5a0803",
-      "title": "CrewAI — Blog"
     },
     {
       "url": "https://www.jmlr.org/jmlr.xml",
@@ -1001,251 +579,115 @@
       "title": "Journal of Machine Learning Research"
     },
     {
-      "url": "https://proceedings.mlr.press",
+      "url": "https://proceedings.mlr.press/feed",
       "topics": [
         "research",
         "papers",
         "ml"
       ],
-      "notes": "Venue site; enrichment should auto-discover the RSS feed.",
+      "notes": "Venue site; enrichment should auto-discover the RSS feed. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "e85625fb94d48199",
       "title": "Proceedings of Machine Learning Research (PMLR)"
     },
     {
-      "url": "https://jmlr.org/tmlr/",
+      "url": "https://www.nature.com/natmachintell/rss",
       "topics": [
         "research",
         "papers",
         "ml"
       ],
-      "notes": "Venue page; enrichment to locate the feed.",
-      "id": "9f44675f421cf191",
-      "title": "Transactions on Machine Learning Research (TMLR)"
-    },
-    {
-      "url": "https://www.nature.com/natmachintell",
-      "topics": [
-        "research",
-        "papers",
-        "ml"
-      ],
-      "notes": "Nature research journal; feed auto-discovery expected.",
+      "notes": "Nature research journal; feed auto-discovery expected. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "0ac423b4dfcf525a",
       "title": "Nature Machine Intelligence"
     },
     {
-      "url": "https://ai.nejm.org",
+      "url": "https://www.nature.com/npjdigitalmed/rss",
       "topics": [
         "healthcare-ai",
         "research",
         "papers"
       ],
-      "notes": "Medical AI journal; healthcare focus.",
-      "id": "5c45656572ca46e6",
-      "title": "NEJM AI"
-    },
-    {
-      "url": "https://www.nature.com/npjdigitalmed/",
-      "topics": [
-        "healthcare-ai",
-        "research",
-        "papers"
-      ],
-      "notes": "Digital medicine / clinical AI journal.",
+      "notes": "Digital medicine / clinical AI journal. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3daf7af1d06a28d1",
       "title": "NPJ Digital Medicine"
     },
     {
-      "url": "https://developers.google.com/earth-engine/blog",
-      "topics": [
-        "geospatial-ml",
-        "data",
-        "cv",
-        "education"
-      ],
-      "notes": "Official geospatial ML/dev updates.",
-      "id": "6be3b96a55bfaed0",
-      "title": "Google Earth Engine — Developer Blog"
-    },
-    {
-      "url": "https://planetarycomputer.microsoft.com/blog",
-      "topics": [
-        "geospatial-ml",
-        "data",
-        "ai-for-science",
-        "education"
-      ],
-      "notes": "Geospatial datasets, APIs, notebooks.",
-      "id": "5666b8ddb33ae1f6",
-      "title": "Microsoft Planetary Computer — Blog"
-    },
-    {
-      "url": "https://www.radiant.earth/blog/",
+      "url": "https://www.radiant.earth/blog/index.xml",
       "topics": [
         "geospatial-ml",
         "datasets",
         "ai-for-science"
       ],
-      "notes": "Earth observation / ML datasets & methods.",
+      "notes": "Earth observation / ML datasets & methods. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "a18faccba3716085",
       "title": "Radiant Earth — Blog"
     },
     {
-      "url": "https://incidentdatabase.ai/blog/",
-      "topics": [
-        "trust-audit",
-        "safety",
-        "governance",
-        "evaluation"
-      ],
-      "notes": "Monthly incident roundups; taxonomy & incident analysis.",
-      "id": "18048e8eb7a6b27d",
-      "title": "AI Incident Database — Blog"
-    },
-    {
-      "url": "https://openlineage.io/blog/",
-      "topics": [
-        "data-governance",
-        "mlops",
-        "workflows",
-        "orchestration"
-      ],
-      "notes": "Lineage standards, integrations, and design notes.",
-      "id": "9b03b9ad08ab4f7c",
-      "title": "OpenLineage — Blog"
-    },
-    {
-      "url": "https://greatexpectations.io/blog/",
-      "topics": [
-        "data-governance",
-        "mlops",
-        "evaluation"
-      ],
-      "notes": "Data quality, validation patterns, case studies.",
-      "id": "38df3d9fdf6d06bd",
-      "title": "Great Expectations (GX) — Blog"
-    },
-    {
-      "url": "https://www.montecarlodata.com/blog/",
+      "url": "https://www.montecarlodata.com/blog/feed",
       "topics": [
         "mlops",
         "monitoring",
-        "data-governance"
+        "data-governance",
+        "incident-response"
       ],
-      "notes": "Observability patterns, lineage, incident response.",
+      "notes": "Observability patterns, lineage, incident response. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "78c16cb04f525c7d",
       "title": "Monte Carlo — Data Observability Blog"
-    },
-    {
-      "url": "https://www.assemblyai.com/blog/rss/",
-      "topics": [
-        "audio-speech",
-        "ml",
-        "education",
-        "product"
-      ],
-      "notes": "ASR/LLM audio techniques, benchmarks, and tutorials.",
-      "id": "35b869b7beb9c7f7",
-      "title": "AssemblyAI — Blog (RSS)"
-    },
-    {
-      "url": "https://www.edgeimpulse.com/blog",
-      "topics": [
-        "on-device",
-        "edge",
-        "small-models",
-        "mlops"
-      ],
-      "notes": "Embedded/edge ML workflows; enrichment to resolve feed.",
-      "id": "94adae3f50be12a4",
-      "title": "Edge Impulse — Blog"
-    },
-    {
-      "url": "https://www.tinyml.org/blog/",
-      "topics": [
-        "on-device",
-        "edge",
-        "small-models",
-        "optimization"
-      ],
-      "notes": "Community and conference updates for TinyML.",
-      "id": "310dae39168d617a",
-      "title": "tinyML Foundation — Blog"
     },
     {
       "url": "https://docs.wandb.ai/ref/release-notes/index.xml",
       "topics": [
         "mlops",
         "monitoring",
-        "benchops"
+        "benchops",
+        "data-viz"
       ],
       "notes": "Product/runtime changes; useful for MLOps tracking.",
       "id": "5d60e495d86ee1e1",
       "title": "Weights & Biases — Release Notes (RSS)"
     },
     {
-      "url": "https://www.nvidia.com/en-us/research/ai/",
-      "topics": [
-        "accelerators",
-        "inference",
-        "optimization",
-        "research"
-      ],
-      "notes": "Research highlights; enrichment to locate feed if present.",
-      "id": "4960b74b4be54c74",
-      "title": "NVIDIA Research — AI"
-    },
-    {
-      "url": "https://blog.neurips.cc",
+      "url": "https://blog.neurips.cc/feed",
       "topics": [
         "research",
         "community",
-        "papers"
+        "papers",
+        "conferences"
       ],
-      "notes": "Conference announcements, calls, and highlights; WordPress feed autodiscovery.",
+      "notes": "Conference announcements, calls, and highlights; WordPress feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "6902b81365908ed8",
       "title": "NeurIPS — Official Blog"
     },
     {
-      "url": "https://blog.iclr.cc",
+      "url": "https://blog.iclr.cc/feed",
       "topics": [
         "research",
         "community",
-        "papers"
+        "papers",
+        "conferences"
       ],
-      "notes": "Conference news, calls, and program updates; feed autodiscovery.",
+      "notes": "Conference news, calls, and program updates; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "32c0308e29797618",
       "title": "ICLR — Official Blog"
     },
     {
-      "url": "https://ai.stanford.edu/blog",
+      "url": "https://ai.stanford.edu/blog/feed.xml",
       "topics": [
         "research",
         "ml",
         "education"
       ],
-      "notes": "Active lab blog with explicit RSS; papers/talks round-ups and technical explainers.",
+      "notes": "Active lab blog with explicit RSS; papers/talks round-ups and technical explainers. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3d11b8b7e6cb0ea8",
       "title": "Stanford AI Lab — SAIL Blog"
-    },
-    {
-      "url": "https://hazyresearch.stanford.edu/blog",
-      "topics": [
-        "research",
-        "optimization",
-        "training",
-        "ai-infra-stacks"
-      ],
-      "notes": "Systems-for-ML, optimizers, and infra; frequent deep technical posts.",
-      "id": "594aced327aa13ad",
-      "title": "Hazy Research — Blog"
     },
     {
       "url": "http://export.arxiv.org/rss/cs.CV",
       "topics": [
         "research",
         "papers",
-        "cv"
+        "cv",
+        "vlm"
       ],
       "notes": "Official category feed (Computer Vision & Pattern Recognition).",
       "id": "49c5d77c30cdd8dc",
@@ -1274,35 +716,24 @@
       "title": "arXiv — cs.IR RSS"
     },
     {
-      "url": "https://dagster.io/blog",
+      "url": "https://dagster.io/blog/rss.xml",
       "topics": [
         "mlops",
         "workflows",
         "orchestration"
       ],
-      "notes": "Practitioner posts on pipelines, lineage, assets; feed autodiscovery.",
+      "notes": "Practitioner posts on pipelines, lineage, assets; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "18e33c6f4d298399",
       "title": "Dagster — Blog"
     },
     {
-      "url": "https://www.astronomer.io/blog",
-      "topics": [
-        "data",
-        "workflows",
-        "orchestration"
-      ],
-      "notes": "Airflow best practices, scheduling, data reliability.",
-      "id": "04fedffae7ee5a3f",
-      "title": "Astronomer (Airflow) — Blog"
-    },
-    {
-      "url": "https://www.getdbt.com/blog",
+      "url": "https://www.getdbt.com/blog/feed",
       "topics": [
         "data",
         "data-governance",
         "workflows"
       ],
-      "notes": "Analytics engineering, testing, docs, deployments.",
+      "notes": "Analytics engineering, testing, docs, deployments. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "24d8ae846b1dec7e",
       "title": "dbt Labs — Blog"
     },
@@ -1341,26 +772,15 @@
       "title": "Chips and Cheese — RSS"
     },
     {
-      "url": "https://www.nist.gov/blogs/cybersecurity-insights",
+      "url": "https://www.nist.gov/blogs/cybersecurity-insights/rss.xml",
       "topics": [
         "security",
         "governance",
         "trust-audit"
       ],
-      "notes": "Standards/guidance perspectives impacting AI/ML security.",
+      "notes": "Standards/guidance perspectives impacting AI/ML security. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "7642be34774dc70f",
       "title": "NIST — Cybersecurity Insights"
-    },
-    {
-      "url": "https://www.safe.ai/blog",
-      "topics": [
-        "safety",
-        "governance",
-        "evaluation"
-      ],
-      "notes": "Safety research, risk analyses, policy-relevant technical posts.",
-      "id": "a27b8d271c27aa02",
-      "title": "Center for AI Safety — Blog"
     },
     {
       "url": "https://alignmentforum.org/rss",
@@ -1374,320 +794,99 @@
       "title": "Alignment Forum — RSS"
     },
     {
-      "url": "https://aclrollingreview.org",
+      "url": "https://aclrollingreview.org/feed",
       "topics": [
         "nlp",
         "evaluation",
         "research"
       ],
-      "notes": "Peer-review updates for ACL venues; WordPress feed autodiscovery.",
+      "notes": "Peer-review updates for ACL venues; WordPress feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "b1969a765a98917a",
       "title": "ACL Rolling Review — Site"
     },
     {
-      "url": "https://pytorch.org/blog",
+      "url": "https://pytorch.org/blog/feed",
       "topics": [
         "open-source",
         "training",
         "inference",
         "blogs"
       ],
-      "notes": "Framework internals, performance work, and release details.",
+      "notes": "Framework internals, performance work, and release details. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "c4458a0a7dcab4fd",
       "title": "PyTorch — Engineering Blog"
     },
     {
-      "url": "https://lightning.ai/pages/blog",
-      "topics": [
-        "training",
-        "optimization",
-        "education",
-        "blogs"
-      ],
-      "notes": "Trainer/Fabric ecosystem updates and best practices.",
-      "id": "990bdc6bb9af959a",
-      "title": "Lightning AI — Blog"
-    },
-    {
-      "url": "https://groq.com/blog",
-      "topics": [
-        "accelerators",
-        "inference",
-        "ai-infra-stacks",
-        "product"
-      ],
-      "notes": "LPU-centric inference engineering and product posts.",
-      "id": "b4240ef1cc51e832",
-      "title": "Groq — Blog"
-    },
-    {
-      "url": "https://www.together.ai/blog",
+      "url": "https://www.together.ai/blog/rss.xml",
       "topics": [
         "industry",
         "product",
         "llm",
         "inference"
       ],
-      "notes": "Hosting, finetuning, datasets, and cost/perf notes.",
+      "notes": "Hosting, finetuning, datasets, and cost/perf notes. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "985e561bc559a1cd",
       "title": "Together AI — Blog"
     },
     {
-      "url": "https://fireworks.ai/blog",
-      "topics": [
-        "serving",
-        "agents",
-        "optimization",
-        "product"
-      ],
-      "notes": "High-throughput serving, agents, and platform releases.",
-      "id": "64b811560a52e317",
-      "title": "Fireworks.ai — Blog"
-    },
-    {
-      "url": "https://www.baseten.co/blog",
-      "topics": [
-        "serving",
-        "agents",
-        "mlops",
-        "product"
-      ],
-      "notes": "Serverless model hosting patterns and case studies.",
-      "id": "2b372a37cfd720ad",
-      "title": "Baseten — Blog"
-    },
-    {
-      "url": "https://octoai.cloud/blog",
-      "topics": [
-        "serving",
-        "inference",
-        "ai-infra-stacks",
-        "product"
-      ],
-      "notes": "Optimized inference runtimes and workflow guides.",
-      "id": "0a9670d7d20f9381",
-      "title": "OctoAI — Blog"
-    },
-    {
-      "url": "https://laion.ai/blog",
-      "topics": [
-        "open-source",
-        "datasets",
-        "research",
-        "blogs"
-      ],
-      "notes": "Open datasets and research updates.",
-      "id": "c696f25176795f99",
-      "title": "LAION — Blog"
-    },
-    {
-      "url": "https://wandb.com/articles",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "evaluation",
-        "blogs"
-      ],
-      "notes": "Observability, evals, and practical production ML guides.",
-      "id": "e39898853af3e653",
-      "title": "Weights & Biases — Articles"
-    },
-    {
-      "url": "https://humanloop.com/blog",
-      "topics": [
-        "llmops",
-        "evaluation",
-        "structured-generation",
-        "blogs"
-      ],
-      "notes": "Prompt management, eval methodology, and tooling.",
-      "id": "2f76f620c3ff2a8f",
-      "title": "Humanloop — Blog"
-    },
-    {
-      "url": "https://ragas.io/blog",
-      "topics": [
-        "evaluation",
-        "rag",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "RAG evaluation techniques and benchmarks.",
-      "id": "4a98c7a11f95007e",
-      "title": "Ragas — Blog"
-    },
-    {
-      "url": "https://www.trulens.org/blog",
-      "topics": [
-        "evaluation",
-        "monitoring",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "Telemetry and evaluation for LLM/agent systems.",
-      "id": "b2d0617883584004",
-      "title": "TruLens — Blog"
-    },
-    {
-      "url": "https://www.confident-ai.com/blog",
-      "topics": [
-        "evaluation",
-        "llmops",
-        "monitoring",
-        "blogs"
-      ],
-      "notes": "Evaluation frameworks and methodology posts.",
-      "id": "3974c9e901d3b039",
-      "title": "DeepEval (Confident AI) — Blog"
-    },
-    {
-      "url": "https://github.com/kserve/kserve",
+      "url": "https://github.com/kserve/kserve/releases.atom",
       "topics": [
         "serving",
         "mlops",
         "ai-infra-stacks",
         "open-source"
       ],
-      "notes": "K8s-native serving; releases feed auto-discovered.",
+      "notes": "K8s-native serving; releases feed auto-discovered. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "bfb82f4462f890bb",
       "title": "KServe — GitHub"
     },
     {
-      "url": "https://github.com/langchain-ai/langgraph",
+      "url": "https://github.com/langchain-ai/langgraph/releases.atom",
       "topics": [
         "agents",
         "tool-use",
         "workflows",
         "open-source"
       ],
-      "notes": "Agent graphs runtime; frequent releases.",
+      "notes": "Agent graphs runtime; frequent releases. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "642743ad9061795a",
       "title": "LangGraph — GitHub"
     },
     {
-      "url": "https://github.com/langchain-ai/langchain",
+      "url": "https://github.com/langchain-ai/langchain/releases.atom",
       "topics": [
         "agents",
         "tool-use",
         "structured-generation",
         "open-source"
       ],
-      "notes": "Core agents/tooling; release activity tracked.",
+      "notes": "Core agents/tooling; release activity tracked. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "c5a32632e586ab2c",
       "title": "LangChain — GitHub"
     },
     {
-      "url": "https://github.com/jax-ml/jax",
+      "url": "https://github.com/jax-ml/jax/releases.atom",
       "topics": [
         "compilers",
         "optimization",
         "training",
         "open-source"
       ],
-      "notes": "XLA transforms and array program transformations.",
+      "notes": "XLA transforms and array program transformations. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "a38d273f219db547",
       "title": "JAX — GitHub"
     },
     {
-      "url": "https://github.com/huggingface/transformers",
+      "url": "https://github.com/huggingface/transformers/releases.atom",
       "topics": [
         "nlp",
         "llm",
         "open-source",
         "training"
       ],
-      "notes": "Model library releases and API changes.",
+      "notes": "Model library releases and API changes. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "53d940334a2a5afd",
       "title": "Transformers — GitHub"
-    },
-    {
-      "url": "https://evals.openai.com",
-      "topics": [
-        "evaluation",
-        "llmops",
-        "benchops"
-      ],
-      "notes": "Evaluation framework, tasks, and documentation hub.",
-      "id": "f6d8f5b7980b40df",
-      "title": "OpenAI — Evals"
-    },
-    {
-      "url": "https://www.nist.gov/aisi",
-      "topics": [
-        "safety",
-        "governance",
-        "evaluation"
-      ],
-      "notes": "Safety guidance, evaluation artifacts, and calls.",
-      "id": "84e0da6d5092e27d",
-      "title": "U.S. AI Safety Institute (NIST)"
-    },
-    {
-      "url": "https://oecd.ai",
-      "topics": [
-        "governance",
-        "industry"
-      ],
-      "notes": "Global AI policy data, indicators, and analysis.",
-      "id": "52f7a3212c2dbad9",
-      "title": "OECD.AI Policy Observatory"
-    },
-    {
-      "url": "https://www.redwoodresearch.org/blog",
-      "topics": [
-        "alignment",
-        "safety",
-        "research",
-        "blogs"
-      ],
-      "notes": "Alignment research updates and commentary.",
-      "id": "f9a0efcdd35439b8",
-      "title": "Redwood Research — Blog"
-    },
-    {
-      "url": "https://www.far.ai/blog",
-      "topics": [
-        "safety",
-        "evaluation",
-        "research",
-        "blogs"
-      ],
-      "notes": "Evals and risk-reduction research perspectives.",
-      "id": "6140873d1b290f04",
-      "title": "FAR AI — Blog"
-    },
-    {
-      "url": "https://openai.com/news/rss.xml",
-      "topics": [
-        "industry",
-        "product",
-        "llm"
-      ],
-      "notes": "Official news feed for releases, safety & policy updates.",
-      "id": "bea4293d5eddcb34",
-      "title": "OpenAI — News (RSS)"
-    },
-    {
-      "url": "https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office",
-      "topics": [
-        "governance",
-        "regulation",
-        "safety"
-      ],
-      "notes": "European Commission AI Office landing; feed auto-discovery during enrichment.",
-      "id": "84894ec9fef04246",
-      "title": "European AI Office — Policy & News"
-    },
-    {
-      "url": "https://cset.georgetown.edu/blog/",
-      "topics": [
-        "governance",
-        "safety",
-        "industry"
-      ],
-      "notes": "Policy/governance analysis; typical WordPress feed at /feed/.",
-      "id": "46e0d36ae8327d77",
-      "title": "Georgetown CSET — Blog"
     },
     {
       "url": "https://robohub.org/feed/",
@@ -1699,39 +898,6 @@
       "notes": "Independent robotics news & interviews; active cadence.",
       "id": "b71ced9408e9949e",
       "title": "Robohub — RSS"
-    },
-    {
-      "url": "https://blog.vllm.ai/",
-      "topics": [
-        "ai-infra-stacks",
-        "serving",
-        "inference"
-      ],
-      "notes": "Runtime internals, perf notes; feed auto-discovery (Jekyll).",
-      "id": "413c7b566e2ec942",
-      "title": "vLLM — Blog"
-    },
-    {
-      "url": "https://blog.skypilot.so/",
-      "topics": [
-        "ai-infra-stacks",
-        "orchestration",
-        "optimization"
-      ],
-      "notes": "Multi-cloud GPU scheduling & orchestration patterns.",
-      "id": "798984ec61f55607",
-      "title": "SkyPilot — Blog"
-    },
-    {
-      "url": "https://iree.dev/blog/",
-      "topics": [
-        "compilers",
-        "optimization",
-        "accelerators"
-      ],
-      "notes": "ML compiler stack updates; kernel & codegen deep dives.",
-      "id": "8f2f631625c147a5",
-      "title": "IREE — Blog (OpenXLA)"
     },
     {
       "url": "https://github.com/ml-explore/mlx/releases.atom",
@@ -1762,7 +928,8 @@
         "audio-speech",
         "llm",
         "multimodal",
-        "training"
+        "training",
+        "vlm"
       ],
       "notes": "ASR/TTS/LLM toolkit releases.",
       "id": "7b63143f9a99d87a",
@@ -1849,65 +1016,33 @@
       "title": "Practical AI — Podcast (RSS)"
     },
     {
-      "url": "https://feeds.buzzsprout.com/682433.rss",
-      "topics": [
-        "podcasts",
-        "industry",
-        "research"
-      ],
-      "notes": "Ben Lorica interviews & quick takes; weekly cadence.",
-      "id": "af79d2368a96bd92",
-      "title": "The Data Exchange — Podcast (RSS)"
-    },
-    {
-      "url": "https://lilianweng.github.io/",
+      "url": "https://lilianweng.github.io/index.xml",
       "topics": [
         "llm",
         "agents",
         "evaluation",
-        "blogs"
+        "blogs",
+        "long-context",
+        "context-engineering"
       ],
-      "notes": "Deep technical explainers; feed auto-discovery at /rss.xml.",
+      "notes": "Deep technical explainers; feed auto-discovery at /rss.xml. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "fb43a215329b9e2a",
       "title": "Lilian Weng — Blog"
     },
     {
-      "url": "https://www.neelnanda.io/blog",
+      "url": "https://www.neelnanda.io/blog/rss.xml",
       "topics": [
         "interpretability",
         "safety",
         "research",
         "blogs"
       ],
-      "notes": "Mech-interp deep dives; active posts.",
+      "notes": "Mech-interp deep dives; active posts. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "373d3140196b501f",
       "title": "Neel Nanda — Mechanistic Interpretability"
     },
     {
-      "url": "https://open-metadata.medium.com/",
-      "topics": [
-        "data-governance",
-        "mlops",
-        "workflows",
-        "open-source"
-      ],
-      "notes": "Data catalog & lineage; Medium feed at /feed.",
-      "id": "c93c85d1974e69b5",
-      "title": "OpenMetadata — Blog"
-    },
-    {
-      "url": "https://blog.jigsaw.google/",
-      "topics": [
-        "content-moderation",
-        "safety",
-        "governance"
-      ],
-      "notes": "Harms & safety tech; platform feed auto-discovery.",
-      "id": "5f13317de4c74dd0",
-      "title": "Jigsaw — Blog"
-    },
-    {
-      "url": "https://www.modular.com/blog",
+      "url": "https://www.modular.com/blog/rss.xml",
       "topics": [
         "compilers",
         "optimization",
@@ -1915,62 +1050,12 @@
         "ai-infra-stacks",
         "blogs"
       ],
-      "notes": "Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available.",
+      "notes": "Mojo/Modular compiler & runtime engineering deep dives; explicit RSS available. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "5785242ca67d5da7",
       "title": "Modular Blog"
     },
     {
-      "url": "https://www.aiverifyfoundation.sg/latest",
-      "topics": [
-        "governance",
-        "safety",
-        "trust-audit",
-        "evaluation"
-      ],
-      "notes": "Singapore’s AI governance & eval ecosystem (non-US perspective); news & standards updates.",
-      "id": "2b970ad8e9d28e5a",
-      "title": "AI Verify Foundation — Latest"
-    },
-    {
-      "url": "https://www.earthdata.nasa.gov/news/blog",
-      "topics": [
-        "geospatial-ml",
-        "datasets",
-        "ai-for-science",
-        "education",
-        "blogs"
-      ],
-      "notes": "Earth-observation datasets & ML use cases; RSS support documented.",
-      "id": "49c7103b140ca274",
-      "title": "NASA Earthdata — News & Blog"
-    },
-    {
-      "url": "https://www.ontotext.com/blog/",
-      "topics": [
-        "knowledge-graphs",
-        "retrieval",
-        "open-source",
-        "blogs"
-      ],
-      "notes": "Enterprise/semantic KG practices (RDF, OWL, linked data) and production case studies.",
-      "id": "fef68c7680a9013f",
-      "title": "Ontotext — Knowledge Graph Blog"
-    },
-    {
-      "url": "https://spectrum.ieee.org/topic/robotics",
-      "topics": [
-        "robotics",
-        "cv",
-        "rl",
-        "education",
-        "blogs"
-      ],
-      "notes": "Robotics research & industry engineering coverage; steady weekly cadence.",
-      "id": "22e6a14a4ffdd286",
-      "title": "IEEE Spectrum — Robotics"
-    },
-    {
-      "url": "https://datahub.com/blog",
+      "url": "https://datahub.com/blog/feed",
       "topics": [
         "data-governance",
         "mlops",
@@ -1978,12 +1063,12 @@
         "llmops",
         "blogs"
       ],
-      "notes": "Metadata, lineage, governance patterns; LLM app metadata/eval posts.",
+      "notes": "Metadata, lineage, governance patterns; LLM app metadata/eval posts. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "a4f5be9aef7dbd4d",
       "title": "DataHub — Blog"
     },
     {
-      "url": "https://blog.agen.cy",
+      "url": "https://blog.agen.cy/feed",
       "topics": [
         "agents",
         "workflows",
@@ -1991,89 +1076,24 @@
         "newsletters",
         "industry"
       ],
-      "notes": "Agentic systems analysis and ecosystem updates; Substack feed auto-available.",
+      "notes": "Agentic systems analysis and ecosystem updates; Substack feed auto-available. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "f1699c68b6a727df",
       "title": "Agency — Substack"
     },
     {
-      "url": "https://genai.owasp.org/llm-top-10/",
-      "topics": [
-        "security",
-        "safety",
-        "governance",
-        "trust-audit",
-        "evaluation"
-      ],
-      "notes": "Canonical AI security reference for LLM apps; project updates and guidance.",
-      "id": "c678f61aafadd507",
-      "title": "OWASP — Top 10 for LLM Applications"
-    },
-    {
-      "url": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/",
-      "topics": [
-        "ai-for-science",
-        "research",
-        "evaluation",
-        "blogs"
-      ],
-      "notes": "Active AI4Science lab stream (materials, bio, physics); RSS available from lab pages.",
-      "id": "65b321f4f6fc4343",
-      "title": "Microsoft Research — AI for Science (News & Awards)"
-    },
-    {
-      "url": "https://scale.com/blog",
-      "topics": [
-        "industry",
-        "llmops",
-        "evaluation",
-        "data",
-        "product",
-        "blogs"
-      ],
-      "notes": "Data pipelines, evals, model-ops & deployment stories; weekly+ cadence.",
-      "id": "179249eb8ad6fe4d",
-      "title": "Scale AI — Blog"
-    },
-    {
-      "url": "https://changelog.langchain.com/",
+      "url": "https://changelog.langchain.com/feed",
       "topics": [
         "llmops",
         "evaluation",
         "product",
         "agents"
       ],
-      "notes": "Operational updates for LangSmith/LangGraph (evals, tracing, agents).",
+      "notes": "Operational updates for LangSmith/LangGraph (evals, tracing, agents). HTTP fix: feed URL discovered 2026-06-24.",
       "id": "7ed681c3449c37e5",
       "title": "LangChain — Changelog"
     },
     {
-      "url": "https://mozilla.ai/blog/",
-      "topics": [
-        "industry",
-        "safety",
-        "governance",
-        "llm",
-        "blogs"
-      ],
-      "notes": "Independent lab on trustworthy AI; technical posts + policy perspective.",
-      "id": "4075e0d026770dfb",
-      "title": "Mozilla.ai — Blog"
-    },
-    {
-      "url": "https://opendp.org/blog",
-      "topics": [
-        "privacy",
-        "pets",
-        "data-governance",
-        "research",
-        "blogs"
-      ],
-      "notes": "Harvard/MIT open-source differential privacy project; methods & releases.",
-      "id": "8ade4055a0a85622",
-      "title": "OpenDP — Blog"
-    },
-    {
-      "url": "https://www.ri.cmu.edu/news/",
+      "url": "https://www.ri.cmu.edu/news/feed",
       "topics": [
         "robotics",
         "cv",
@@ -2081,12 +1101,12 @@
         "research",
         "blogs"
       ],
-      "notes": "Leading academic robotics lab; research spotlights and event posts.",
+      "notes": "Leading academic robotics lab; research spotlights and event posts. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "fb7b2a0f8bdd6135",
       "title": "CMU Robotics Institute — News"
     },
     {
-      "url": "https://metr.org/blog",
+      "url": "https://metr.org/blog/rss.xml",
       "topics": [
         "safety",
         "evaluation",
@@ -2094,75 +1114,40 @@
         "trust-audit",
         "blogs"
       ],
-      "notes": "Frontier model evaluations and risk reports.",
+      "notes": "Frontier model evaluations and risk reports. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "db5a00c01013fff4",
       "title": "METR (ARC Evals) — Blog"
     },
     {
-      "url": "https://www.lakera.ai/blog",
-      "topics": [
-        "security",
-        "safety",
-        "llmops",
-        "evaluation",
-        "blogs"
-      ],
-      "notes": "Applied LLM security: prompt injection, model abuse, guardrails.",
-      "id": "83cb083527c32d45",
-      "title": "Lakera — Blog"
-    },
-    {
-      "url": "https://hiddenlayer.com/innovation-hub/",
-      "topics": [
-        "security",
-        "safety",
-        "trust-audit",
-        "mlops",
-        "blogs"
-      ],
-      "notes": "AI security research & incident analysis from a specialist vendor.",
-      "id": "1784b9b1d5e3e03a",
-      "title": "HiddenLayer — Innovation Hub"
-    },
-    {
-      "url": "https://www.protectai.com/blog",
+      "url": "https://www.protectai.com/blog/rss.xml",
       "topics": [
         "security",
         "mlops",
         "llmops",
-        "blogs"
+        "blogs",
+        "content-moderation",
+        "model-risk"
       ],
-      "notes": "Threat modeling, SBOMs for ML, supply chain, scanning/model risk.",
+      "notes": "Threat modeling, SBOMs for ML, supply chain, scanning/model risk. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3b885a608add9f1e",
       "title": "Protect AI — MLSecOps Blog"
     },
     {
-      "url": "https://bankunderground.co.uk/",
+      "url": "https://bankunderground.co.uk/feed",
       "topics": [
         "infra-economics",
         "industry",
         "governance",
-        "blogs"
+        "blogs",
+        "finance-ai",
+        "model-risk"
       ],
-      "notes": "Central-bank analytics incl. AI/ML in finance, model risk.",
+      "notes": "Central-bank analytics incl. AI/ML in finance, model risk. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "27f9ba5272b1eded",
       "title": "Bank Underground (Bank of England)"
     },
     {
-      "url": "https://ai.ethz.ch/news-and-events.html",
-      "topics": [
-        "research",
-        "ml",
-        "robotics",
-        "education",
-        "blogs"
-      ],
-      "notes": "Swiss flagship AI center; research news & seminars.",
-      "id": "12865c9d95018451",
-      "title": "ETH AI Center — News & Events"
-    },
-    {
-      "url": "https://is.mpg.de/news",
+      "url": "https://is.mpg.de/news/rss",
       "topics": [
         "research",
         "robotics",
@@ -2170,76 +1155,12 @@
         "ml",
         "blogs"
       ],
-      "notes": "Tübingen/Stuttgart; academic highlights and project updates.",
+      "notes": "Tübingen/Stuttgart; academic highlights and project updates. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "09effde00bd7d9f3",
       "title": "Max Planck Institute for Intelligent Systems — News"
     },
     {
-      "url": "https://www.tue.ai/news",
-      "topics": [
-        "research",
-        "ml",
-        "robotics",
-        "education",
-        "blogs"
-      ],
-      "notes": "German national AI center (Uni Tübingen + MPI); research news.",
-      "id": "9e06b31a9362e513",
-      "title": "Tübingen AI Center — News"
-    },
-    {
-      "url": "https://aip.riken.jp/news-en/",
-      "topics": [
-        "research",
-        "ml",
-        "safety",
-        "blogs"
-      ],
-      "notes": "Japan’s national AI research hub; multilingual updates.",
-      "id": "cdf859a80b0fd558",
-      "title": "RIKEN AIP — News"
-    },
-    {
-      "url": "https://x.ai/blog",
-      "topics": [
-        "industry",
-        "llm",
-        "research",
-        "product",
-        "blogs"
-      ],
-      "notes": "Model releases, evaluations, and research notes.",
-      "id": "f87eff4db9a7ed4b",
-      "title": "xAI — Blog"
-    },
-    {
-      "url": "https://sakana.ai/blog/",
-      "topics": [
-        "optimization",
-        "training",
-        "ml",
-        "research",
-        "blogs"
-      ],
-      "notes": "Engineering-first posts on efficient training/inference.",
-      "id": "ed682c56f4a399ae",
-      "title": "Sakana AI — Blog"
-    },
-    {
-      "url": "https://kyutai.org/blog",
-      "topics": [
-        "audio-speech",
-        "multimodal",
-        "llm",
-        "research",
-        "blogs"
-      ],
-      "notes": "Open research lab (France); speech & multimodal model posts.",
-      "id": "2e33e59b5096e5d5",
-      "title": "Kyutai — Blog"
-    },
-    {
-      "url": "https://ollama.com/blog",
+      "url": "https://ollama.com/blog/rss.xml",
       "topics": [
         "on-device",
         "small-models",
@@ -2247,152 +1168,26 @@
         "product",
         "blogs"
       ],
-      "notes": "Local LLM ecosystem, model packs, runtime updates.",
+      "notes": "Local LLM ecosystem, model packs, runtime updates. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "14866557b8777e62",
       "title": "Ollama — Blog"
     },
     {
-      "url": "https://lmstudio.ai/blog",
-      "topics": [
-        "on-device",
-        "small-models",
-        "inference",
-        "product",
-        "blogs"
-      ],
-      "notes": "Desktop local-LLM tooling; releases and tips.",
-      "id": "0f1cd0bff5c281f6",
-      "title": "LM Studio — Blog"
-    },
-    {
-      "url": "https://blog.perplexity.ai/",
-      "topics": [
-        "product",
-        "retrieval",
-        "rag",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "Search+LLM product engineering, features, and research collabs.",
-      "id": "7a850c68de309111",
-      "title": "Perplexity Blog"
-    },
-    {
-      "url": "https://blog.openrouter.ai/",
-      "topics": [
-        "product",
-        "serving",
-        "llmops",
-        "agents",
-        "blogs"
-      ],
-      "notes": "Model routing, cost/perf notes, and ecosystem updates.",
-      "id": "1c762c14f88b7a61",
-      "title": "OpenRouter — Blog"
-    },
-    {
-      "url": "https://trychroma.com/blog",
-      "topics": [
-        "vector",
-        "retrieval",
-        "open-source",
-        "product",
-        "blogs"
-      ],
-      "notes": "Vector DB engineering & RAG patterns.",
-      "id": "21d93218521ecaab",
-      "title": "Chroma — Blog"
-    },
-    {
-      "url": "https://blog.nomic.ai/",
-      "topics": [
-        "embeddings",
-        "retrieval",
-        "open-source",
-        "blogs"
-      ],
-      "notes": "Embeddings, Atlas, and data-centric AI posts.",
-      "id": "28a8d725f91b4072",
-      "title": "Nomic — Blog"
-    },
-    {
-      "url": "https://promptfoo.dev/blog/",
+      "url": "https://promptfoo.dev/blog/rss.xml",
       "topics": [
         "evaluation",
         "llmops",
         "structured-generation",
         "tool-use",
-        "blogs"
+        "blogs",
+        "context-engineering"
       ],
-      "notes": "LLM evaluation tooling, prompts-as-tests, CI/CD patterns.",
+      "notes": "LLM evaluation tooling, prompts-as-tests, CI/CD patterns. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3840e50541660c61",
       "title": "promptfoo — Blog"
     },
     {
-      "url": "https://www.uptrain.ai/blog",
-      "topics": [
-        "evaluation",
-        "monitoring",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "LLM evals/monitoring playbooks and case studies.",
-      "id": "fea785acf653d20d",
-      "title": "UpTrain — Blog"
-    },
-    {
-      "url": "https://blog.gentrace.ai/",
-      "topics": [
-        "evaluation",
-        "llmops",
-        "benchops",
-        "blogs"
-      ],
-      "notes": "Eval pipelines, benchmarks, and reliability for LLM apps.",
-      "id": "a2f3b827e372e634",
-      "title": "Gentrace — Blog"
-    },
-    {
-      "url": "https://www.tecton.ai/blog/",
-      "topics": [
-        "data",
-        "mlops",
-        "data-governance",
-        "workflows",
-        "blogs"
-      ],
-      "notes": "Feature platforms, real-time ML data engineering.",
-      "id": "2af41b40a1e733ca",
-      "title": "Tecton — Blog"
-    },
-    {
-      "url": "https://www.hopsworks.ai/blog",
-      "topics": [
-        "data",
-        "mlops",
-        "workflows",
-        "data-governance",
-        "blogs"
-      ],
-      "notes": "Feature store engineering and MLOps at scale.",
-      "id": "91a3d470b0a9fc69",
-      "title": "Hopsworks — Blog"
-    },
-    {
-      "url": "https://flyte.org/blog",
-      "topics": [
-        "orchestration",
-        "workflows",
-        "mlops",
-        "ai-infra-stacks",
-        "blogs"
-      ],
-      "notes": "OSS workflow orchestration for data/ML; patterns and releases.",
-      "id": "42ac26c597fb4774",
-      "title": "Flyte — Blog"
-    },
-    {
-      "url": "https://blog.argoproj.io/",
+      "url": "https://blog.argoproj.io/feed",
       "topics": [
         "orchestration",
         "workflows",
@@ -2400,88 +1195,12 @@
         "open-source",
         "blogs"
       ],
-      "notes": "Kubernetes-native workflows (Workflows, CD, Events).",
+      "notes": "Kubernetes-native workflows (Workflows, CD, Events). HTTP fix: feed URL discovered 2026-06-24.",
       "id": "368da37b7fb8eb0f",
       "title": "Argo Project — Blog"
     },
     {
-      "url": "https://www.prefect.io/blog",
-      "topics": [
-        "orchestration",
-        "workflows",
-        "monitoring",
-        "mlops",
-        "blogs"
-      ],
-      "notes": "Dataflow orchestration, assets, and observability for ML/data.",
-      "id": "df997f8ac78e0475",
-      "title": "Prefect — Blog"
-    },
-    {
-      "url": "https://devblogs.microsoft.com/autogen/",
-      "topics": [
-        "agents",
-        "tool-use",
-        "workflows",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "Agent frameworks, studio, and architecture updates.",
-      "id": "251acb33677f6e4d",
-      "title": "Microsoft AutoGen — Blog"
-    },
-    {
-      "url": "https://blog.guardrailsai.com/",
-      "topics": [
-        "structured-generation",
-        "evaluation",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "Schemas, constraints, and reliability for LLM outputs.",
-      "id": "6ca1ef7914c94933",
-      "title": "Guardrails AI — Blog"
-    },
-    {
-      "url": "https://coqui.ai/blog",
-      "topics": [
-        "audio-speech",
-        "multimodal",
-        "open-source",
-        "product",
-        "blogs"
-      ],
-      "notes": "TTS/ASR engineering and model updates.",
-      "id": "eb69a578ceb316b9",
-      "title": "Coqui — Blog"
-    },
-    {
-      "url": "https://stability.ai/news",
-      "topics": [
-        "diffusion",
-        "cv",
-        "multimodal",
-        "product",
-        "blogs"
-      ],
-      "notes": "Image/video diffusion releases and ecosystem posts.",
-      "id": "27576ba101af6eff",
-      "title": "Stability AI — News"
-    },
-    {
-      "url": "https://openmmlab.com/blog/",
-      "topics": [
-        "cv",
-        "open-source",
-        "optimization",
-        "blogs"
-      ],
-      "notes": "MM* stacks (Det/Seg/Posing); kernels and model zoo notes.",
-      "id": "9e2b6804acf69cd7",
-      "title": "OpenMMLab — Blog"
-    },
-    {
-      "url": "https://ultralytics.com/blog",
+      "url": "https://ultralytics.com/blog/rss.xml",
       "topics": [
         "cv",
         "open-source",
@@ -2489,404 +1208,235 @@
         "product",
         "blogs"
       ],
-      "notes": "YOLO family updates and vision deployment tips.",
+      "notes": "YOLO family updates and vision deployment tips. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "6bfe15ea5eb4da3f",
       "title": "Ultralytics — Blog"
     },
     {
-      "url": "https://blog.salesforceairesearch.com/",
-      "topics": [
-        "research",
-        "nlp",
-        "llm",
-        "ml",
-        "blogs"
-      ],
-      "notes": "Research explainers, code releases, and demos.",
-      "id": "f1de2f3335636fbc",
-      "title": "Salesforce AI Research — Blog"
-    },
-    {
-      "url": "https://research.ibm.com/blog/ai",
-      "topics": [
-        "industry",
-        "research",
-        "mlops",
-        "optimization",
-        "blogs"
-      ],
-      "notes": "Foundation models, tooling, and applied research.",
-      "id": "c077ecebf217afc7",
-      "title": "IBM Research — AI Blog"
-    },
-    {
-      "url": "https://cloud.google.com/blog/topics/ai-ml",
-      "topics": [
-        "industry",
-        "product",
-        "mlops",
-        "ai-infra-stacks",
-        "blogs"
-      ],
-      "notes": "Platform features, MLOps patterns, and case studies.",
-      "id": "5853e288138a16dd",
-      "title": "Google Cloud — AI & ML"
-    },
-    {
-      "url": "https://azure.microsoft.com/en-us/blog/topics/ai-ml/",
-      "topics": [
-        "industry",
-        "product",
-        "mlops",
-        "ai-infra-stacks",
-        "blogs"
-      ],
-      "notes": "Azure AI services, inference/training stacks, refs.",
-      "id": "146b135a6ebbf0e7",
-      "title": "Microsoft Azure — AI & ML"
-    },
-    {
-      "url": "https://www.ibm.com/blog/ai/",
-      "topics": [
-        "industry",
-        "product",
-        "governance",
-        "blogs"
-      ],
-      "notes": "Enterprise AI adoption, governance, and platform posts.",
-      "id": "58032d19700e464a",
-      "title": "IBM — AI Blog"
-    },
-    {
-      "url": "https://www.youtube.com/@YannicKilcher",
-      "topics": [
-        "research",
-        "education",
-        "videos",
-        "ml"
-      ],
-      "notes": "Paper walkthroughs and critical takes; high-cadence videos.",
-      "id": "1f02eefb105a4042",
-      "title": "Yannic Kilcher — YouTube"
-    },
-    {
-      "url": "https://www.youtube.com/@HenryAILabs",
-      "topics": [
-        "research",
-        "education",
-        "videos",
-        "llm"
-      ],
-      "notes": "Model explainers, interviews, and weekly recaps.",
-      "id": "a64df8be753b9658",
-      "title": "Henry AI Labs — YouTube"
-    },
-    {
-      "url": "https://www.youtube.com/@GoogleDeepMind",
-      "topics": [
-        "research",
-        "videos",
-        "ml",
-        "multimodal"
-      ],
-      "notes": "Talks, demos, and research highlights.",
-      "id": "b32c8fb72fe2c9ff",
-      "title": "Google DeepMind — YouTube"
-    },
-    {
-      "url": "https://www.youtube.com/@OpenAI",
-      "topics": [
-        "industry",
-        "product",
-        "videos",
-        "llm"
-      ],
-      "notes": "Product demos, research talks, and updates.",
-      "id": "4c2d8c92979beb4a",
-      "title": "OpenAI — YouTube"
-    },
-    {
-      "url": "https://www.youtube.com/@MetaAI",
-      "topics": [
-        "industry",
-        "research",
-        "videos",
-        "open-source"
-      ],
-      "notes": "FAIR/GenAI research talks and product tech.",
-      "id": "3775c6f15991089c",
-      "title": "Meta AI — YouTube"
-    },
-    {
-      "url": "https://www.reddit.com/r/LocalLLaMA",
-      "topics": [
-        "small-models",
-        "on-device",
-        "community",
-        "ml"
-      ],
-      "notes": "Community for running/optimizing local LLMs.",
-      "id": "e620332497754836",
-      "title": "r/LocalLLaMA"
-    },
-    {
-      "url": "https://www.reddit.com/r/StableDiffusion",
-      "topics": [
-        "diffusion",
-        "cv",
-        "community",
-        "multimodal"
-      ],
-      "notes": "Image diffusion techniques, models, and workflows.",
-      "id": "3913a1ff067804cf",
-      "title": "r/StableDiffusion"
-    },
-    {
-      "url": "https://github.com/ollama/ollama",
+      "url": "https://github.com/ollama/ollama/releases.atom",
       "topics": [
         "on-device",
         "inference",
         "serving",
         "open-source"
       ],
-      "notes": "Local model runtime; follow releases for engine updates.",
+      "notes": "Local model runtime; follow releases for engine updates. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "77b4be38215d4c71",
       "title": "Ollama — GitHub"
     },
     {
-      "url": "https://github.com/open-webui/open-webui",
+      "url": "https://github.com/open-webui/open-webui/releases.atom",
       "topics": [
         "agents",
         "tool-use",
         "product",
         "open-source"
       ],
-      "notes": "Self-hosted chat/agent UI; rapid releases.",
+      "notes": "Self-hosted chat/agent UI; rapid releases. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "7c94eb734f17ebfc",
       "title": "Open WebUI — GitHub"
     },
     {
-      "url": "https://github.com/FlowiseAI/Flowise",
+      "url": "https://github.com/FlowiseAI/Flowise/releases.atom",
       "topics": [
         "agents",
         "workflows",
         "llmops",
         "open-source"
       ],
-      "notes": "Flow-based agent and tool graph builder.",
+      "notes": "Flow-based agent and tool graph builder. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "22c27291c0ff8f7a",
       "title": "Flowise — GitHub"
     },
     {
-      "url": "https://github.com/BerriAI/litellm",
+      "url": "https://github.com/BerriAI/litellm/releases.atom",
       "topics": [
         "llmops",
         "serving",
         "tool-use",
-        "open-source"
+        "open-source",
+        "devtools"
       ],
-      "notes": "Unified LLM API router; costs/observability features.",
+      "notes": "Unified LLM API router; costs/observability features. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "dab892839df45099",
       "title": "LiteLLM — GitHub"
     },
     {
-      "url": "https://github.com/unslothai/unsloth",
+      "url": "https://github.com/unslothai/unsloth/releases.atom",
       "topics": [
         "training",
         "optimization",
         "small-models",
         "open-source"
       ],
-      "notes": "Fast finetuning for LLMs; LoRA/QLoRA-focused.",
+      "notes": "Fast finetuning for LLMs; LoRA/QLoRA-focused. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "1970f2aab6a882fb",
       "title": "Unsloth — GitHub"
     },
     {
-      "url": "https://github.com/casper-hansen/AutoAWQ",
+      "url": "https://github.com/casper-hansen/AutoAWQ/releases.atom",
       "topics": [
         "optimization",
         "inference",
         "small-models",
         "open-source"
       ],
-      "notes": "Activation-aware quantization for fast inference.",
+      "notes": "Activation-aware quantization for fast inference. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "70602e696a51b03d",
       "title": "AutoAWQ — GitHub"
     },
     {
-      "url": "https://github.com/turboderp/exllamav2",
+      "url": "https://github.com/turboderp/exllamav2/releases.atom",
       "topics": [
         "inference",
         "optimization",
         "small-models",
         "open-source"
       ],
-      "notes": "High-throughput kernels for LLaMA-family models.",
+      "notes": "High-throughput kernels for LLaMA-family models. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "736a2e973b799d71",
       "title": "ExLlamaV2 — GitHub"
     },
     {
-      "url": "https://github.com/ggerganov/whisper.cpp",
+      "url": "https://github.com/ggerganov/whisper.cpp/releases.atom",
       "topics": [
         "audio-speech",
         "on-device",
         "optimization",
         "open-source"
       ],
-      "notes": "On-device ASR; CPU/GPU-optimized ports.",
+      "notes": "On-device ASR; CPU/GPU-optimized ports. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "1b4c7ffe2cc503af",
       "title": "whisper.cpp — GitHub"
     },
     {
-      "url": "https://github.com/LostRuins/koboldcpp",
+      "url": "https://github.com/LostRuins/koboldcpp/releases.atom",
       "topics": [
         "inference",
         "on-device",
         "small-models",
         "open-source"
       ],
-      "notes": "Local text-gen runtime with UI; frequent builds.",
+      "notes": "Local text-gen runtime with UI; frequent builds. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "e2e64792950396e4",
       "title": "KoboldCpp — GitHub"
     },
     {
-      "url": "https://github.com/guardrails-ai/guardrails",
+      "url": "https://github.com/guardrails-ai/guardrails/releases.atom",
       "topics": [
         "structured-generation",
         "evaluation",
         "llmops",
         "open-source"
       ],
-      "notes": "Output validation/guarded decoding library.",
+      "notes": "Output validation/guarded decoding library. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "f083d320a47d5151",
       "title": "Guardrails — GitHub"
     },
     {
-      "url": "https://github.com/outlines-dev/outlines",
+      "url": "https://github.com/outlines-dev/outlines/releases.atom",
       "topics": [
         "structured-generation",
         "tool-use",
         "optimization",
         "open-source"
       ],
-      "notes": "Grammar/constrained decoding for reliable generation.",
+      "notes": "Grammar/constrained decoding for reliable generation. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "f666cb1bf6da00d6",
       "title": "Outlines — GitHub"
     },
     {
-      "url": "https://github.com/openai/whisper",
+      "url": "https://github.com/openai/whisper/releases.atom",
       "topics": [
         "audio-speech",
         "open-source"
       ],
-      "notes": "Speech recognition model; track releases.",
+      "notes": "Speech recognition model; track releases. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "24d2ebb24ff35b75",
       "title": "OpenAI Whisper — GitHub"
     },
     {
-      "url": "https://github.com/speechbrain/speechbrain",
+      "url": "https://github.com/speechbrain/speechbrain/releases.atom",
       "topics": [
         "audio-speech",
         "open-source"
       ],
-      "notes": "Open speech toolkit (ASR/TTS/SSL).",
+      "notes": "Open speech toolkit (ASR/TTS/SSL). HTTP fix: feed URL discovered 2026-06-24.",
       "id": "98e6d69888ea533c",
       "title": "SpeechBrain — GitHub"
     },
     {
-      "url": "https://github.com/coqui-ai/TTS",
+      "url": "https://github.com/coqui-ai/TTS/releases.atom",
       "topics": [
         "audio-speech",
         "open-source"
       ],
-      "notes": "TTS toolkit and models.",
+      "notes": "TTS toolkit and models. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "93d4e0dab34a8829",
       "title": "Coqui TTS — GitHub"
     },
     {
-      "url": "https://github.com/sktime/sktime",
+      "url": "https://github.com/sktime/sktime/releases.atom",
       "topics": [
         "time-series",
         "open-source"
       ],
-      "notes": "Time-series ML in Python; classical + deep.",
+      "notes": "Time-series ML in Python; classical + deep. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "c21c34f5075aa224",
       "title": "sktime — GitHub"
     },
     {
-      "url": "https://github.com/unit8co/darts",
+      "url": "https://github.com/unit8co/darts/releases.atom",
       "topics": [
         "time-series",
         "open-source"
       ],
-      "notes": "Forecasting library; probabilistic & deep TS models.",
+      "notes": "Forecasting library; probabilistic & deep TS models. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "fb6f1c126d55707b",
       "title": "Darts — GitHub"
     },
     {
-      "url": "https://transformer-circuits.pub/",
+      "url": "https://transformer-circuits.pub/feed.xml",
       "topics": [
         "interpretability",
         "alignment",
         "research"
       ],
-      "notes": "Mechanistic interpretability research hub.",
+      "notes": "Mechanistic interpretability research hub. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "5083d746c2728ff2",
       "title": "Transformer Circuits"
     },
     {
-      "url": "https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/",
-      "topics": [
-        "legal-ai",
-        "governance",
-        "structured-generation"
-      ],
-      "notes": "Legal+AI research; policy, tooling, structured generation.",
-      "id": "1f3bf69da87690b7",
-      "title": "Stanford CodeX — Legal Informatics"
-    },
-    {
-      "url": "https://blog.englishtest.duolingo.com/",
+      "url": "https://blog.englishtest.duolingo.com/feed",
       "topics": [
         "edtech-ai",
         "education",
         "evaluation",
         "blogs"
       ],
-      "notes": "Assessment/measurement + ML-driven test design.",
+      "notes": "Assessment/measurement + ML-driven test design. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "37c459c353a42daf",
       "title": "Duolingo English Test — Blog"
     },
     {
-      "url": "https://www.perplexity.ai/hub",
-      "topics": [
-        "industry",
-        "product",
-        "llm"
-      ],
-      "notes": "Provider announcements, product and research partnerships.",
-      "id": "9a25d619c0101be8",
-      "title": "Perplexity — Hub"
-    },
-    {
-      "url": "https://github.com/All-Hands-AI/openhands",
+      "url": "https://github.com/All-Hands-AI/openhands/releases.atom",
       "topics": [
         "agents",
         "ai-for-code",
         "open-source"
       ],
-      "notes": "Agentic software-engineering framework.",
+      "notes": "Agentic software-engineering framework. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "27a3c0486cd7ac82",
       "title": "OpenHands — GitHub"
     },
     {
-      "url": "https://github.com/Significant-Gravitas/AutoGPT",
+      "url": "https://github.com/Significant-Gravitas/AutoGPT/releases.atom",
       "topics": [
         "agents",
         "workflows",
         "open-source"
       ],
-      "notes": "Agent workflows; frequent ecosystem changes.",
+      "notes": "Agent workflows; frequent ecosystem changes. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "7fc08de27bce1b0c",
       "title": "AutoGPT — GitHub"
     },
@@ -2902,60 +1452,15 @@
       "title": "arXiv — cs.AI RSS"
     },
     {
-      "url": "https://www.amd.com/en/technologies/rocm/blogs.html",
-      "topics": [
-        "accelerators",
-        "optimization",
-        "inference"
-      ],
-      "notes": "Official ROCm engineering posts; kernels, runtimes, deployment. Page advertises RSS; frequent updates.",
-      "id": "1ef09deabb13281c",
-      "title": "AMD ROCm — Blogs"
-    },
-    {
-      "url": "https://community.arm.com/arm-community-blogs/b/ai-blog",
-      "topics": [
-        "edge",
-        "on-device",
-        "accelerators",
-        "optimization"
-      ],
-      "notes": "First-party Arm AI/ML insights for embedded/edge NPUs and toolchains; active 2025 cadence.",
-      "id": "33c91748e0480bca",
-      "title": "Arm — AI & ML Blog"
-    },
-    {
-      "url": "https://blog.llvm.org/tags/mlir/",
+      "url": "https://blog.llvm.org/tags/mlir/index.xml",
       "topics": [
         "compilers",
         "optimization",
         "accelerators"
       ],
-      "notes": "Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects, lowering). Maintained under LLVM; feed autodiscovery.",
+      "notes": "Compiler-IR updates central to AI stacks (IREE/XLA integrations, dialects, lowering). Maintained under LLVM; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "807a2a1630af1988",
       "title": "MLIR — The LLVM Project Blog"
-    },
-    {
-      "url": "https://www.ftc.gov/feeds/blog-business.xml",
-      "topics": [
-        "governance",
-        "regulation",
-        "privacy"
-      ],
-      "notes": "U.S. federal enforcement guidance on AI/ads/data claims; official .gov feed; frequent policy/complaint analysis.",
-      "id": "231f8b7a061b8b6b",
-      "title": "FTC Business Blog — RSS"
-    },
-    {
-      "url": "https://www.jair.org",
-      "topics": [
-        "research",
-        "papers",
-        "ai"
-      ],
-      "notes": "Peer-reviewed, long-standing open AI journal; indexed in ACM DL and major indices; feed autodiscovery from site.",
-      "id": "b9edcea7e5067db8",
-      "title": "Journal of Artificial Intelligence Research (JAIR)"
     },
     {
       "url": "https://quantumcomputingreport.com/feed/",
@@ -2969,16 +1474,6 @@
       "title": "Quantum Computing Report"
     },
     {
-      "url": "https://thequantuminsider.com/feed",
-      "topics": [
-        "research",
-        "industry"
-      ],
-      "notes": "RSS 2.0 format. Excellent for quantum computing business and market news. Last build: 2025-10-29.",
-      "id": "c87eea6960de906c",
-      "title": "The Quantum Insider"
-    },
-    {
       "url": "https://news.mit.edu/topic/mitquantum-computing-rss.xml",
       "topics": [
         "research"
@@ -2988,60 +1483,2098 @@
       "title": "MIT News — Quantum Computing"
     },
     {
-      "url": "https://research.ibm.com/blog",
-      "topics": [
-        "research",
-        "industry",
-        "hardware"
-      ],
-      "notes": "Platform URL; RSS autodiscovery. Filter by quantum-computing tag. 20+ years quantum R&D, 127+ qubit systems, Qiskit framework.",
-      "id": "da8ebfcd6a451d00",
-      "title": "IBM Research Blog — Quantum Computing"
-    },
-    {
-      "url": "https://quantumai.google/",
-      "topics": [
-        "research",
-        "industry",
-        "hardware"
-      ],
-      "notes": "Platform URL; RSS autodiscovery. Demonstrated quantum supremacy (2019). Willow chip breakthrough in error correction (2024).",
-      "id": "d94657e6bf284e3c",
-      "title": "Google Quantum AI"
-    },
-    {
-      "url": "https://azure.microsoft.com/en-us/blog/quantum/",
+      "url": "https://azure.microsoft.com/en-us/blog/quantum/feed",
       "topics": [
         "research",
         "industry",
         "infra-economics",
         "open-source"
       ],
-      "notes": "Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti.",
+      "notes": "Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "ac90267ef4e5af9f",
       "title": "Microsoft Azure Quantum Blog"
     },
     {
-      "url": "https://ionq.com/blog",
+      "url": "https://ionq.com/blog/rss.xml",
       "topics": [
         "research",
         "industry",
         "hardware"
       ],
-      "notes": "Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google.",
+      "notes": "Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "78f1d7b84e39ad8c",
       "title": "IonQ Blog"
     },
     {
-      "url": "https://rigetti.com/blog",
+      "url": "https://distill.pub/rss.xml",
+      "topics": [
+        "research",
+        "papers",
+        "gans",
+        "interpretability"
+      ],
+      "title": "Distill",
+      "notes": "Interactive ML journal (archived but RSS active)",
+      "id": "distill-pub-rss-xml-dbdfac65b0"
+    },
+    {
+      "url": "https://www.ft.com/artificial-intelligence?format=rss",
+      "topics": [
+        "industry",
+        "finance-ai"
+      ],
+      "title": "Financial Times AI",
+      "notes": "FT AI section RSS",
+      "id": "ft-com-artificial-intelligence-dbe74cfddb"
+    },
+    {
+      "url": "https://feeds.bloomberg.com/technology/news.rss",
+      "topics": [
+        "industry",
+        "finance-ai"
+      ],
+      "title": "Bloomberg Technology",
+      "notes": "Bloomberg tech news",
+      "id": "feeds-bloomberg-com-technology-news-rss-eb8c3c4efa"
+    },
+    {
+      "url": "https://artificiallawyer.com/feed/",
+      "topics": [
+        "blogs",
+        "legal-ai",
+        "governance"
+      ],
+      "title": "Artificial Lawyer",
+      "notes": "Legal AI industry blog",
+      "id": "artificiallawyer-com-feed-1440a62e1b"
+    },
+    {
+      "url": "https://www.nature.com/npjdigitalmed.rss",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "title": "NPJ Digital Medicine",
+      "notes": "Nature digital health journal",
+      "id": "nature-com-npjdigitalmed-rss-47258164a4"
+    },
+    {
+      "url": "https://venturebeat.com/category/ai/feed/",
+      "topics": [
+        "industry",
+        "product"
+      ],
+      "title": "VentureBeat AI",
+      "notes": "VB AI category feed",
+      "id": "venturebeat-com-category-ai-feed-39256bb1bf"
+    },
+    {
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "topics": [
+        "industry",
+        "product"
+      ],
+      "title": "TechCrunch AI",
+      "notes": "TC AI category feed",
+      "id": "techcrunch-com-category-artificial-intelligence-a654756600"
+    },
+    {
+      "url": "https://www.wired.com/feed/tag/ai/latest/rss",
+      "topics": [
+        "industry",
+        "governance"
+      ],
+      "title": "Wired AI",
+      "notes": "Wired AI tag feed",
+      "id": "wired-com-feed-tag-ai-latest-rss-044484a943"
+    },
+    {
+      "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+      "topics": [
+        "industry",
+        "research"
+      ],
+      "title": "MIT Tech Review AI",
+      "notes": "MIT TR AI topic feed",
+      "id": "technologyreview-com-topic-artificial-intelligen-14307d0907"
+    },
+    {
+      "url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
+      "topics": [
+        "industry",
+        "research"
+      ],
+      "title": "IEEE Spectrum AI",
+      "notes": "IEEE Spectrum AI topic",
+      "id": "spectrum-ieee-org-feeds-topic-artificial-intelli-f28777e184"
+    },
+    {
+      "url": "https://blog.duolingo.com/tag/ai/feed/",
+      "topics": [
+        "industry",
+        "edtech-ai",
+        "product"
+      ],
+      "title": "Duolingo AI Blog",
+      "notes": "Duolingo AI tag feed",
+      "id": "blog-duolingo-com-tag-ai-feed-1229032012"
+    },
+    {
+      "url": "https://blog.khanacademy.org/feed/",
+      "topics": [
+        "industry",
+        "edtech-ai",
+        "education"
+      ],
+      "title": "Khan Academy Blog",
+      "notes": "EdTech with AI coverage",
+      "id": "blog-khanacademy-org-feed-d58bb37aa1"
+    },
+    {
+      "url": "https://waymo.com/blog/rss.xml",
+      "topics": [
+        "industry",
+        "simulation",
+        "mlops",
+        "synthetic-data",
+        "synthetic-agents"
+      ],
+      "title": "Waymo Blog",
+      "notes": "Autonomy/simulation at scale",
+      "id": "waymo-com-blog-rss-xml-6aadc12fc9"
+    },
+    {
+      "url": "https://blog.unity.com/feed",
+      "topics": [
+        "industry",
+        "simulation",
+        "mlops",
+        "synthetic-data"
+      ],
+      "title": "Unity Blog",
+      "notes": "Simulation and game-engine ML",
+      "id": "blog-unity-com-feed-63aa772360"
+    },
+    {
+      "url": "https://www.lesswrong.com/feed.xml",
+      "topics": [
+        "open-source",
+        "blogs",
+        "safety",
+        "research"
+      ],
+      "title": "LessWrong",
+      "notes": "Rationalist AI discussion community",
+      "id": "lesswrong-com-feed-xml-7d900a4973"
+    },
+    {
+      "url": "https://hnrss.org/newest?q=AI",
+      "topics": [
+        "open-source",
+        "blogs",
+        "industry",
+        "research"
+      ],
+      "title": "Hacker News AI",
+      "notes": "HN AI stories via hnrss",
+      "id": "hnrss-org-newest-3620a27060"
+    },
+    {
+      "url": "https://discuss.pytorch.org/posts.rss",
+      "topics": [
+        "open-source",
+        "blogs",
+        "ml"
+      ],
+      "title": "PyTorch Forum",
+      "notes": "PyTorch community discussions",
+      "id": "discuss-pytorch-org-posts-rss-8ce15f8257"
+    },
+    {
+      "url": "https://discuss.huggingface.co/latest.rss",
+      "topics": [
+        "open-source",
+        "blogs",
+        "llm"
+      ],
+      "title": "Hugging Face Forum",
+      "notes": "HF community latest posts",
+      "id": "discuss-huggingface-co-latest-rss-2c9b1e73fe"
+    },
+    {
+      "url": "https://stackoverflow.com/feeds/tag?tagnames=artificial-intelligence&sort=newest",
+      "topics": [
+        "open-source",
+        "blogs",
+        "ai-for-code",
+        "education"
+      ],
+      "title": "Stack Overflow AI",
+      "notes": "SO AI tag feed",
+      "id": "stackoverflow-com-feeds-tag-bbe31e9417"
+    },
+    {
+      "url": "https://kubernetes.io/feed.xml",
+      "topics": [
+        "devtools",
+        "education",
+        "infra",
+        "mlops"
+      ],
+      "title": "Kubernetes Blog",
+      "notes": "K8s blog for ML infra",
+      "id": "kubernetes-io-feed-xml-74a7d8675f"
+    },
+    {
+      "url": "https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology.atom",
+      "topics": [
+        "industry",
+        "governance",
+        "regulation"
+      ],
+      "title": "UK DSIT",
+      "notes": "UK science/innovation department",
+      "id": "gov-uk-government-organisations-department-for-s-b49e299fa1"
+    },
+    {
+      "url": "https://sakana.ai/feed",
+      "topics": [
+        "industry",
+        "research",
+        "llm"
+      ],
+      "title": "Sakana AI",
+      "notes": "Tokyo-based AI lab",
+      "id": "sakana-ai-feed-29147d8ca1"
+    },
+    {
+      "url": "https://www.bensbites.com/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "product"
+      ],
+      "title": "Ben's Bites",
+      "notes": "Daily AI product/news digest",
+      "id": "bensbites-com-feed-96fe006ed5"
+    },
+    {
+      "url": "https://lastweekin.ai/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "research"
+      ],
+      "title": "Last Week in AI",
+      "notes": "Weekly AI news roundup",
+      "id": "lastweekin-ai-feed-5135495edd"
+    },
+    {
+      "url": "https://buttondown.email/ainews/rss",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "title": "AI News (Karpathy)",
+      "notes": "Curated AI links newsletter",
+      "id": "buttondown-email-ainews-rss-93fec47b82"
+    },
+    {
+      "url": "https://tldr.tech/rss",
+      "topics": [
+        "newsletters",
+        "industry",
+        "devtools"
+      ],
+      "title": "TLDR AI",
+      "notes": "Concise AI/tech newsletter",
+      "id": "tldr-tech-rss-73156f2091"
+    },
+    {
+      "url": "https://aisupremacy.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "governance"
+      ],
+      "title": "AI Supremacy",
+      "notes": "Substack AI strategy newsletter",
+      "id": "aisupremacy-substack-com-feed-cfa0410083"
+    },
+    {
+      "url": "https://syncedreview.com/feed/",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "title": "Synced Review",
+      "notes": "AI research/industry news",
+      "id": "syncedreview-com-feed-755fa30acf"
+    },
+    {
+      "url": "https://www.platformer.news/feed",
+      "topics": [
+        "newsletters",
+        "governance",
+        "industry"
+      ],
+      "title": "Platformer",
+      "notes": "Tech policy and platforms",
+      "id": "platformer-news-feed-a8fa096745"
+    },
+    {
+      "url": "https://jack-clark.net/feed/",
+      "topics": [
+        "newsletters",
+        "safety",
+        "governance"
+      ],
+      "title": "Import AI (Jack Clark)",
+      "notes": "Author blog; complements Import AI newsletter entry",
+      "id": "jack-clark-net-feed-69d22f821f"
+    },
+    {
+      "url": "https://twimlai.com/feed",
+      "topics": [
+        "podcasts",
+        "ml",
+        "industry"
+      ],
+      "title": "TWIML AI Podcast",
+      "notes": "This Week in Machine Learning & AI",
+      "id": "twimlai-com-feed-8dff19dd94"
+    },
+    {
+      "url": "https://feeds.megaphone.fm/nopriors",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "title": "No Priors",
+      "notes": "VC AI founders podcast",
+      "id": "feeds-megaphone-fm-nopriors-0da4183fe4"
+    },
+    {
+      "url": "https://thedataexchange.media/feed/",
+      "topics": [
+        "podcasts",
+        "mlops",
+        "data"
+      ],
+      "title": "The Data Exchange",
+      "notes": "Data/ML practitioners podcast",
+      "id": "thedataexchange-media-feed-f1cd540f50"
+    },
+    {
+      "url": "https://lexfridman.com/feed/podcast/",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "Lex Fridman Podcast",
+      "notes": "Long-form AI/tech interviews",
+      "id": "lexfridman-com-feed-podcast-c14e8eb7fa"
+    },
+    {
+      "url": "https://changelog.com/friends/feed",
+      "topics": [
+        "podcasts",
+        "open-source",
+        "devtools"
+      ],
+      "title": "Changelog & Friends",
+      "notes": "Changelog network show",
+      "id": "changelog-com-friends-feed-dd714420f3"
+    },
+    {
+      "url": "https://www.superdatascience.com/feed",
+      "topics": [
+        "podcasts",
+        "ml",
+        "education"
+      ],
+      "title": "Super Data Science",
+      "notes": "ML career and practice podcast",
+      "id": "superdatascience-com-feed-c963da8e36"
+    },
+    {
+      "url": "https://simonwillison.net/atom/everything/",
+      "topics": [
+        "blogs",
+        "llm",
+        "devtools"
+      ],
+      "title": "Simon Willison",
+      "notes": "LLM tooling and engineering notes",
+      "id": "simonwillison-net-atom-everything-3733c65b9a"
+    },
+    {
+      "url": "https://gwern.net/feed",
+      "topics": [
+        "blogs",
+        "research",
+        "evaluation"
+      ],
+      "title": "Gwern",
+      "notes": "Long-form AI/statistics research",
+      "id": "gwern-net-feed-1b83fb0832"
+    },
+    {
+      "url": "https://www.jeremykun.com/feed/",
+      "topics": [
+        "blogs",
+        "education",
+        "ml"
+      ],
+      "title": "Jeremy Kun",
+      "notes": "Math and ML explanations",
+      "id": "jeremykun-com-feed-4658c2e2e9"
+    },
+    {
+      "url": "https://karpathy.github.io/feed.xml",
+      "topics": [
+        "blogs",
+        "education",
+        "llm"
+      ],
+      "title": "Andrej Karpathy",
+      "notes": "Karpathy engineering blog",
+      "id": "karpathy-github-io-feed-xml-a7527e0464"
+    },
+    {
+      "url": "https://colah.github.io/rss.xml",
+      "topics": [
+        "blogs",
+        "research",
+        "interpretability"
+      ],
+      "title": "Colah's Blog",
+      "notes": "Neural network interpretability",
+      "id": "colah-github-io-rss-xml-b51a96506b"
+    },
+    {
+      "url": "https://minimaxir.com/index.xml",
+      "topics": [
+        "blogs",
+        "ml",
+        "evaluation"
+      ],
+      "title": "Minimaxir",
+      "notes": "Data/ML analysis and commentary",
+      "id": "minimaxir-com-index-xml-8a16d3dbf1"
+    },
+    {
+      "url": "https://www.interconnects.ai/feed",
+      "topics": [
+        "blogs",
+        "industry",
+        "llm"
+      ],
+      "title": "Interconnects",
+      "notes": "Nathan Lambert AI analysis",
+      "id": "interconnects-ai-feed-633e5ebcb8"
+    },
+    {
+      "url": "https://www.oneusefulthing.org/feed",
+      "topics": [
+        "blogs",
+        "product",
+        "education"
+      ],
+      "title": "One Useful Thing",
+      "notes": "Ethan Mollick on AI in work/education",
+      "id": "oneusefulthing-org-feed-59f6b09081"
+    },
+    {
+      "url": "https://stratechery.com/feed/",
+      "topics": [
+        "blogs",
+        "industry",
+        "product"
+      ],
+      "title": "Stratechery",
+      "notes": "Ben Thompson strategy analysis",
+      "id": "stratechery-com-feed-12b095abbc"
+    },
+    {
+      "url": "https://flowingdata.com/feed/",
+      "topics": [
+        "blogs",
+        "data-viz",
+        "education"
+      ],
+      "title": "FlowingData",
+      "notes": "Data visualization and statistics",
+      "id": "flowingdata-com-feed-81f4798a06"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.CY",
+      "topics": [
+        "research",
+        "papers",
+        "safety"
+      ],
+      "title": "arXiv cs.CY",
+      "notes": "Computers and Society (safety/ethics)",
+      "id": "export-arxiv-org-rss-cs-cy-40660f8dc1"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.AI",
+      "topics": [
+        "research",
+        "papers",
+        "llm"
+      ],
+      "title": "arXiv cs.AI",
+      "notes": "Artificial Intelligence preprints",
+      "id": "export-arxiv-org-rss-cs-ai-a3775245c7"
+    },
+    {
+      "url": "https://research.facebook.com/feed/",
+      "topics": [
+        "industry",
+        "research",
+        "open-source"
+      ],
+      "title": "Meta Research",
+      "notes": "Meta FAIR research feed",
+      "id": "research-facebook-com-feed-0ec5d1f614"
+    },
+    {
+      "url": "https://research.nvidia.com/rss.xml",
+      "topics": [
+        "industry",
+        "research",
+        "inference"
+      ],
+      "title": "NVIDIA Research",
+      "notes": "NVIDIA research publications",
+      "id": "research-nvidia-com-rss-xml-5caca3978e"
+    },
+    {
+      "url": "https://crfm.stanford.edu/feed.xml",
+      "topics": [
+        "industry",
+        "research",
+        "safety"
+      ],
+      "title": "Stanford CRFM",
+      "notes": "Center for Research on Foundation Models",
+      "id": "crfm-stanford-edu-feed-xml-002480f229"
+    },
+    {
+      "url": "https://www.fiddler.ai/blog/rss.xml",
+      "topics": [
+        "industry",
+        "evaluation",
+        "governance"
+      ],
+      "title": "Fiddler AI Blog",
+      "notes": "Model observability and governance",
+      "id": "fiddler-ai-blog-rss-xml-a6d00469d2"
+    },
+    {
+      "url": "https://www.gov.uk/government/organisations/ai-safety-institute.atom",
+      "topics": [
+        "industry",
+        "governance",
+        "safety"
+      ],
+      "title": "UK AI Safety Institute",
+      "notes": "UK AISI government atom feed",
+      "id": "gov-uk-government-organisations-ai-safety-instit-74eeea0380"
+    },
+    {
+      "url": "https://futureoflife.org/feed/",
+      "topics": [
+        "industry",
+        "safety",
+        "governance"
+      ],
+      "title": "Future of Life Institute",
+      "notes": "AI safety and policy org",
+      "id": "futureoflife-org-feed-d39f28f65a"
+    },
+    {
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "topics": [
+        "industry",
+        "supply-chain",
+        "security"
+      ],
+      "title": "CISA Advisories",
+      "notes": "Supply chain / security advisories",
+      "id": "cisa-gov-cybersecurity-advisories-all-xml-beab471c53"
+    },
+    {
+      "url": "https://theaiinsider.tech/feed/",
+      "topics": [
+        "blogs",
+        "industry",
+        "research"
+      ],
+      "title": "AI Insider",
+      "notes": "In-depth AI articles, interviews and funding news",
+      "id": "theaiinsider-tech-feed-fda6154730"
+    },
+    {
+      "url": "https://www.aitrends.com/feed",
+      "topics": [
+        "blogs",
+        "industry"
+      ],
+      "title": "AI Trends",
+      "notes": "AI industry trends and analysis",
+      "id": "aitrends-com-feed-ac816baf11"
+    },
+    {
+      "url": "https://aiweirdness.com/rss",
+      "topics": [
+        "blogs",
+        "ml",
+        "research"
+      ],
+      "title": "AI Weirdness",
+      "notes": "Fun and insightful AI weirdness blog",
+      "id": "aiweirdness-com-rss-86994f8dba"
+    },
+    {
+      "url": "https://mlinproduction.com/feed",
+      "topics": [
+        "blogs",
+        "mlops",
+        "industry"
+      ],
+      "title": "ML in Production",
+      "notes": "Practical ML production and engineering",
+      "id": "mlinproduction-com-feed-acd08e3d71"
+    },
+    {
+      "url": "https://davidstutz.de/feed",
+      "topics": [
+        "blogs",
+        "research",
+        "ml"
+      ],
+      "title": "David Stutz",
+      "notes": "ML research blog and paper notes",
+      "id": "davidstutz-de-feed-7050d0c25f"
+    },
+    {
+      "url": "https://danieltakeshi.github.io/feed.xml",
+      "topics": [
+        "blogs",
+        "education",
+        "ml"
+      ],
+      "title": "Seita's Place",
+      "notes": "Daniel Takeshi blog on ML, RL and research",
+      "id": "danieltakeshi-github-io-feed-xml-58efa21a0d"
+    },
+    {
+      "url": "https://feeds.megaphone.fm/MLN2155636147",
+      "topics": [
+        "podcasts",
+        "ml",
+        "industry",
+        "research"
+      ],
+      "title": "The TWIML AI Podcast",
+      "notes": "This Week in Machine Learning & AI podcast (long running)",
+      "id": "feeds-megaphone-fm-mln2155636147-055a26dd85"
+    },
+    {
+      "url": "https://blog.google/technology/ai/rss/",
+      "topics": [
+        "industry",
+        "research",
+        "product"
+      ],
+      "title": "Google AI Blog",
+      "notes": "Google AI / blog updates (distinct from research.google)",
+      "id": "blog-google-technology-ai-rss-04a252572c"
+    },
+    {
+      "url": "https://www.abortretry.fail/feed",
+      "topics": [
+        "blogs",
+        "industry",
+        "infra"
+      ],
+      "title": "Abort Retry Fail",
+      "notes": "Deep technical dives on AI infra, systems and reliability",
+      "id": "abortretry-fail-feed-a84582a94d"
+    },
+    {
+      "url": "https://kelvinmu.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "llm"
+      ],
+      "title": "AI Musings by Mu",
+      "notes": "AI research and musings newsletter",
+      "id": "kelvinmu-substack-com-feed-7f1a4371ec"
+    },
+    {
+      "url": "https://www.cognitiverevolution.ai/latest/rss/",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "The Cognitive Revolution",
+      "notes": "AI podcast on builders, researchers and analysis",
+      "id": "cognitiverevolution-ai-latest-rss-a6b70f09c8"
+    },
+    {
+      "url": "https://www.aisnakeoil.com/feed/",
+      "topics": [
+        "blogs",
+        "research",
+        "industry"
+      ],
+      "title": "AI as Normal Technology",
+      "notes": "Blog by Arvind Narayanan on AI",
+      "id": "aisnakeoil-com-feed-0690bd2c88"
+    },
+    {
+      "url": "https://thealgorithmicbridge.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "research"
+      ],
+      "title": "The Algorithmic Bridge",
+      "notes": "Newsletter bridging AI research and practice",
+      "id": "thealgorithmicbridge-substack-com-feed-5945a567f9"
+    },
+    {
+      "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
+      "topics": [
+        "research",
+        "industry"
+      ],
+      "title": "ScienceDaily AI News",
+      "notes": "Aggregated AI research and science news",
+      "id": "sciencedaily-com-rss-computers-math-artificial-i-302a642018"
+    },
+    {
+      "url": "https://vitalab.github.io/feed.xml",
+      "topics": [
+        "research",
+        "ml"
+      ],
+      "title": "VITALab",
+      "notes": "VITALab Montreal AI research blog",
+      "id": "vitalab-github-io-feed-xml-77ae1e106e"
+    },
+    {
+      "url": "https://www.inference.vc/rss",
+      "topics": [
+        "blogs",
+        "research",
+        "ml"
+      ],
+      "title": "inFERENCe",
+      "notes": "Ferenc Huszar research blog on ML/inference",
+      "id": "inference-vc-rss-2b89991fe0"
+    },
+    {
+      "url": "http://jalammar.github.io/feed.xml",
+      "topics": [
+        "blogs",
+        "education",
+        "research"
+      ],
+      "title": "Jay Alammar",
+      "notes": "Visual explanations of ML and LLMs",
+      "id": "jalammar-github-io-feed-xml-5df5a2c75b"
+    },
+    {
+      "url": "https://aiguide.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "title": "AI A Guide for Thinking Humans",
+      "notes": "Melanie Mitchell AI newsletter / substack",
+      "id": "aiguide-substack-com-feed-ac9b65355c"
+    },
+    {
+      "url": "https://deepmind.google/blog/rss.xml",
       "topics": [
         "research",
         "industry",
-        "hardware"
+        "llm"
       ],
-      "notes": "Company page; RSS autodiscovery. Pioneer in quantum-classical hybrid computing. Ankaa and Novera quantum processors.",
-      "id": "7088018a6bbabdf8",
-      "title": "Rigetti Computing Blog"
+      "title": "Google DeepMind News",
+      "notes": "Official DeepMind / Google DeepMind research and news blog feed",
+      "id": "deepmind-google-blog-rss-xml-9c92f29eb2"
+    },
+    {
+      "url": "https://blogs.nvidia.com/feed/",
+      "topics": [
+        "research",
+        "industry",
+        "mlops"
+      ],
+      "title": "NVIDIA Blog",
+      "notes": "NVIDIA technical blog covering GPUs, deep learning, AI infrastructure and announcements",
+      "id": "blogs-nvidia-com-feed-1a449b5584"
+    },
+    {
+      "url": "https://karpathy.bearblog.dev/feed/",
+      "topics": [
+        "blogs",
+        "research",
+        "education"
+      ],
+      "title": "Andrej Karpathy",
+      "notes": "Personal blog of Andrej Karpathy on AI, LLMs, and building",
+      "id": "karpathy-bearblog-dev-feed-bb528078b4"
+    },
+    {
+      "url": "https://gradientflow.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "title": "Gradient Flow",
+      "notes": "Newsletter on ML research, production and industry trends",
+      "id": "gradientflow-substack-com-feed-85adc0766d"
+    },
+    {
+      "url": "https://aiweekly.co/issues.rss",
+      "topics": [
+        "newsletters",
+        "industry",
+        "research"
+      ],
+      "title": "AI Weekly — AI News & Updates",
+      "notes": "Weekly collection of the best AI and machine learning news and resources",
+      "id": "aiweekly-co-issues-rss-e287890129"
+    },
+    {
+      "url": "https://gwern.substack.com/feed",
+      "topics": [
+        "research",
+        "blogs",
+        "safety"
+      ],
+      "title": "Gwern.net Newsletter",
+      "notes": "Gwern Branwen newsletter with deep research notes on AI scaling, psychology and long-form essays",
+      "id": "gwern-substack-com-feed-5fceae60a1"
+    },
+    {
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+      "topics": [
+        "industry",
+        "product",
+        "blogs"
+      ],
+      "title": "AI | The Verge",
+      "notes": "The Verge coverage of AI products, news and consumer tech developments",
+      "id": "theverge-com-rss-ai-artificial-intelligence-inde-30d3075711"
+    },
+    {
+      "url": "https://docs.langchain.com/oss/python/releases/changelog/rss.xml",
+      "topics": [
+        "devtools",
+        "llm",
+        "education"
+      ],
+      "title": "LangChain Changelog",
+      "notes": "LangChain OSS release changelogs",
+      "id": "docs-langchain-com-oss-python-releases-changelog-36a7007ef7"
+    },
+    {
+      "url": "https://github.com/run-llama/llama_index/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "LlamaIndex Releases",
+      "notes": "LlamaIndex GitHub release notes",
+      "id": "github-com-run-llama-llama-index-releases-atom-947d8c9056"
+    },
+    {
+      "url": "https://github.com/gradio-app/gradio/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "product"
+      ],
+      "title": "Gradio Releases",
+      "notes": "Gradio UI library release notes",
+      "id": "github-com-gradio-app-gradio-releases-atom-e45f492447"
+    },
+    {
+      "url": "https://github.com/keras-team/keras/releases.atom",
+      "topics": [
+        "open-source",
+        "ml",
+        "devtools"
+      ],
+      "title": "Keras Releases",
+      "notes": "Keras deep learning releases",
+      "id": "github-com-keras-team-keras-releases-atom-db7a352564"
+    },
+    {
+      "url": "https://github.com/explosion/spaCy/releases.atom",
+      "topics": [
+        "open-source",
+        "nlp",
+        "devtools"
+      ],
+      "title": "spaCy Releases",
+      "notes": "spaCy NLP library releases",
+      "id": "github-com-explosion-spacy-releases-atom-0460c8a13e"
+    },
+    {
+      "url": "https://github.com/explosion/thinc/releases.atom",
+      "topics": [
+        "open-source",
+        "ml",
+        "devtools"
+      ],
+      "title": "Thinc Releases",
+      "notes": "Thinc ML framework releases",
+      "id": "github-com-explosion-thinc-releases-atom-f8c33e1538"
+    },
+    {
+      "url": "https://www.reddit.com/r/artificial/hot/.rss",
+      "topics": [
+        "community",
+        "industry"
+      ],
+      "title": "r/artificial",
+      "notes": "Reddit AI community discussions",
+      "id": "reddit-com-r-artificial-hot-rss-7f226ab933"
+    },
+    {
+      "url": "https://ai.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "education",
+        "research"
+      ],
+      "title": "Artificial Intelligence Stack Exchange",
+      "notes": "Q&A forum for AI questions",
+      "id": "ai-stackexchange-com-feeds-68082b0b46"
+    },
+    {
+      "url": "https://mlops.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "mlops",
+        "industry"
+      ],
+      "title": "MLOps Newsletter",
+      "notes": "Developments in machine learning operations",
+      "id": "mlops-substack-com-feed-a0e73b7258"
+    },
+    {
+      "url": "https://newsletter.theaiedge.io/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "education"
+      ],
+      "title": "The AiEdge Newsletter",
+      "notes": "Practical AI and edge ML newsletter",
+      "id": "newsletter-theaiedge-io-feed-5a1db1dce0"
+    },
+    {
+      "url": "https://rss.beehiiv.com/feeds/2R3C6Bt5wj.xml",
+      "topics": [
+        "newsletters",
+        "industry",
+        "product"
+      ],
+      "title": "The Rundown AI",
+      "notes": "Daily concise AI news and tools",
+      "id": "rss-beehiiv-com-feeds-2r3c6bt5wj-xml-4461110737"
+    },
+    {
+      "url": "https://thesequence.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "title": "TheSequence",
+      "notes": "AI research and industry newsletter",
+      "id": "thesequence-substack-com-feed-09e7a6260e"
+    },
+    {
+      "url": "https://www.dwarkesh.com/feed",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "Dwarkesh Podcast",
+      "notes": "Deeply researched interviews with AI leaders and thinkers",
+      "id": "dwarkesh-com-feed-4d0498cdac"
+    },
+    {
+      "url": "https://cognitiverevolution.substack.com/feed",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "The Cognitive Revolution",
+      "notes": "In-depth expert interviews and AI scouting reports",
+      "id": "cognitiverevolution-substack-com-feed-728b04cb88"
+    },
+    {
+      "url": "https://anchor.fm/s/f7cac464/podcast/rss",
+      "topics": [
+        "podcasts",
+        "industry"
+      ],
+      "title": "The AI Daily Brief",
+      "notes": "Daily AI news analysis podcast",
+      "id": "anchor-fm-s-f7cac464-podcast-rss-c033f3515d"
+    },
+    {
+      "url": "https://anchor.fm/s/1e4a0eac/podcast/rss",
+      "topics": [
+        "podcasts",
+        "research",
+        "ml"
+      ],
+      "title": "Machine Learning Street Talk (MLST)",
+      "notes": "Highly technical AI research podcast",
+      "id": "anchor-fm-s-1e4a0eac-podcast-rss-b41b6eb186"
+    },
+    {
+      "url": "https://rss.libsyn.com/shows/123267/destinations/727317.xml",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "Eye On A.I.",
+      "notes": "Conversations with people building and deploying AI",
+      "id": "aneyeonai-libsyn-com-rss-429839396a"
+    },
+    {
+      "url": "https://genai.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "llm"
+      ],
+      "title": "Generative AI Stack Exchange",
+      "notes": "Generative AI Q&A (forum)",
+      "id": "genai-stackexchange-com-feeds-726cf9d45d"
+    },
+    {
+      "url": "https://datascience.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "research",
+        "industry"
+      ],
+      "title": "Data Science Stack Exchange",
+      "notes": "Data science and ML Q&A (forum)",
+      "id": "datascience-stackexchange-com-feeds-87e589e9f0"
+    },
+    {
+      "url": "https://ai.meta.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "governance"
+      ],
+      "title": "Artificial Intelligence Meta",
+      "notes": "Meta discussions for AI Stack Exchange (forum)",
+      "id": "ai-meta-stackexchange-com-feeds-7ce89dc1f3"
+    },
+    {
+      "url": "https://community.openai.com/latest.rss",
+      "topics": [
+        "community",
+        "llm",
+        "industry"
+      ],
+      "title": "OpenAI Community",
+      "notes": "OpenAI developer community forum",
+      "id": "community-openai-com-latest-rss-6d1f5b8f0c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml",
+      "topics": [
+        "industry",
+        "llm",
+        "research"
+      ],
+      "title": "Anthropic News",
+      "notes": "Anthropic news mirror (no native RSS on anthropic.com/news)",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-7e8b7366cb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml",
+      "topics": [
+        "industry",
+        "llm",
+        "research"
+      ],
+      "title": "xAI News",
+      "notes": "xAI news mirror (x.ai/blog has no native RSS)",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-1451799399"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_research.xml",
+      "topics": [
+        "research",
+        "governance"
+      ],
+      "title": "Anthropic Research",
+      "notes": "Anthropic research and alignment content mirror",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-27a4aff013"
+    },
+    {
+      "url": "https://github.com/xai-org/xai-sdk-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "xAI SDK Releases",
+      "notes": "xAI Python SDK release notes (docs)",
+      "id": "github-com-xai-org-xai-sdk-python-releases-atom-53e359fe30"
+    },
+    {
+      "url": "https://github.com/anthropics/anthropic-sdk-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "Anthropic SDK Releases",
+      "notes": "Anthropic Python SDK release notes (docs)",
+      "id": "github-com-anthropics-anthropic-sdk-python-relea-7dec23793f"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/changelog/rss.xml",
+      "topics": [
+        "devtools",
+        "llm"
+      ],
+      "title": "Claude Code Changelog",
+      "notes": "Claude developer tools changelog (docs)",
+      "id": "code-claude-com-docs-en-changelog-rss-xml-d48425535a"
+    },
+    {
+      "url": "https://berkeleyrdi.substack.com/feed",
+      "topics": [
+        "community",
+        "industry",
+        "newsletters",
+        "ai",
+        "research"
+      ],
+      "title": "Agentic AI Weekly",
+      "notes": "Substack newsletter feed",
+      "id": "berkeleyrdi-substack-com-feed-efb430931d"
+    },
+    {
+      "url": "https://magazine.sebastianraschka.com/feed",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "Ahead of AI",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "magazine-sebastianraschka-com-feed-8249346b6d"
+    },
+    {
+      "url": "https://arstechnica.com/ai/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "AI - Ars Technica",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "arstechnica-com-ai-feed-1f367bf029"
+    },
+    {
+      "url": "https://newsletter.safe.ai/feed",
+      "topics": [
+        "governance",
+        "newsletters",
+        "safety",
+        "ai"
+      ],
+      "title": "AI Safety Newsletter",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "newsletter-safe-ai-feed-34ce00ef46"
+    },
+    {
+      "url": "https://ai-supremacy.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "AI Supremacy",
+      "notes": "Substack newsletter feed",
+      "id": "ai-supremacy-substack-com-feed-d46f077bc5"
+    },
+    {
+      "url": "https://www.amazon.science/index.rss",
+      "topics": [
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Amazon Science homepage",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "amazon-science-index-rss-d42b29d192"
+    },
+    {
+      "url": "https://feeds.arstechnica.com/arstechnica/index",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Ars Technica - All content",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "feeds-arstechnica-com-arstechnica-index-7170fc473d"
+    },
+    {
+      "url": "https://www.smashingmagazine.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Articles on Smashing Magazine — For Web Designers And Developers",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "smashingmagazine-com-feed-07c83d6d0c"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/amazon-ai/feed/",
+      "topics": [
+        "blogs",
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Artificial Intelligence",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "aws-amazon-com-blogs-amazon-ai-feed-0427c22924"
+    },
+    {
+      "url": "https://artificialintelligencemadesimple.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Artificial Intelligence Made Simple",
+      "notes": "Substack newsletter feed",
+      "id": "artificialintelligencemadesimple-substack-com-fe-c5e4ef43e4"
+    },
+    {
+      "url": "https://benn.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "benn.substack",
+      "notes": "Substack newsletter feed",
+      "id": "benn-substack-com-feed-e394a03416"
+    },
+    {
+      "url": "https://commoncog.com/blog/rss/",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "Commoncog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "commoncog-com-blog-rss-6511333131"
+    },
+    {
+      "url": "https://arxiv.org/rss/cs",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "arxiv-org-rss-cs-785337eeee"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/cs.LG",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.LG updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "rss-arxiv-org-rss-cs-lg-1b573e882b"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.NE",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.NE updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "export-arxiv-org-rss-cs-ne-1063ffc816"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.RO",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.RO updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "export-arxiv-org-rss-cs-ro-d02939f15f"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.SD",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SD updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "export-arxiv-org-rss-cs-sd-e15631eb73"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.SE",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SE updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "export-arxiv-org-rss-cs-se-52b019ecf8"
+    },
+    {
+      "url": "https://decision.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Decision Intelligence",
+      "notes": "Substack newsletter feed",
+      "id": "decision-substack-com-feed-0f6bc76105"
+    },
+    {
+      "url": "https://thezvi.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Don't Worry About the Vase",
+      "notes": "Substack newsletter feed",
+      "id": "thezvi-substack-com-feed-bc6782701c"
+    },
+    {
+      "url": "https://www.eledia.org/e-air/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "ELEDIA E-AIR",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "eledia-org-e-air-feed-fbaa152d5b"
+    },
+    {
+      "url": "https://addyo.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Elevate",
+      "notes": "Substack newsletter feed",
+      "id": "addyo-substack-com-feed-72ac215ccf"
+    },
+    {
+      "url": "https://engineering.fb.com/feed/",
+      "topics": [
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Engineering at Meta",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "engineering-fb-com-feed-bc4d10019c"
+    },
+    {
+      "url": "https://slack.engineering/feed",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Engineering at Slack",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "slack-engineering-feed-067e20fcc0"
+    },
+    {
+      "url": "https://epochai.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Epoch AI",
+      "notes": "Substack newsletter feed",
+      "id": "epochai-substack-com-feed-a173206981"
+    },
+    {
+      "url": "https://ben-evans.com/benedictevans?format=rss",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Essays - Benedict Evans",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "ben-evans-com-benedictevans-0b559e89d3"
+    },
+    {
+      "url": "https://fs.blog/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Farnam Street",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "fs-blog-feed-ee53a88a09"
+    },
+    {
+      "url": "https://future.a16z.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Future",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "future-a16z-com-feed-8337103976"
+    },
+    {
+      "url": "https://guykawasaki.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Guy Kawasaki",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "guykawasaki-com-feed-77d58c12bc"
+    },
+    {
+      "url": "https://news.ycombinator.com/rss",
+      "topics": [
+        "community",
+        "ai"
+      ],
+      "title": "Hacker News",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "news-ycombinator-com-rss-7198d80d03"
+    },
+    {
+      "url": "https://hnrss.org/show",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Hacker News: Show HN",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "hnrss-org-show-132a8fdfa8"
+    },
+    {
+      "url": "https://spectrum.ieee.org/feeds/feed.rss",
+      "topics": [
+        "blogs",
+        "ai",
+        "industry"
+      ],
+      "title": "IEEE Spectrum",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "spectrum-ieee-org-feeds-feed-rss-9ab67a29e7"
+    },
+    {
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml  # may dup from pass6",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "index.xml  # may dup from pass6",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "theverge-com-rss-ai-artificial-intelligence-inde-8e1dc97850"
+    },
+    {
+      "url": "https://lethain.com/feeds/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Irrational Exuberance",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "lethain-com-feeds-c14d08f92d"
+    },
+    {
+      "url": "https://www.joelonsoftware.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Joel on Software",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "joelonsoftware-com-feed-1d3d72b787"
+    },
+    {
+      "url": "https://joshwcomeau.com/rss.xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Josh Comeau's blog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "joshwcomeau-com-rss-xml-3c388278b5"
+    },
+    {
+      "url": "https://jvns.ca/atom.xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Julia Evans",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "jvns-ca-atom-xml-249136e221"
+    },
+    {
+      "url": "https://www.kdnuggets.com/feed",
+      "topics": [
+        "devtools",
+        "ai",
+        "mlops"
+      ],
+      "title": "KDnuggets",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "kdnuggets-com-feed-a3113b1a7a"
+    },
+    {
+      "url": "https://lexfridman.com/feed/",
+      "topics": [
+        "ai",
+        "podcasts"
+      ],
+      "title": "Lex Fridman",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "lexfridman-com-feed-62085259f9"
+    },
+    {
+      "url": "https://feeds.feedburner.com/martinkl?format=xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Martin Kleppmann's blog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "feeds-feedburner-com-martinkl-47439f5006"
+    },
+    {
+      "url": "https://research.fb.com/feed/",
+      "topics": [
+        "industry",
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "Meta Research",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "research-fb-com-feed-91b4cbb37c"
+    },
+    {
+      "url": "https://news.mit.edu/rss/research",
+      "topics": [
+        "industry",
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "MIT News",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "news-mit-edu-rss-research-70a91d701d"
+    },
+    {
+      "url": "https://news.mit.edu/rss/topic/artificial-intelligence2",
+      "topics": [
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "MIT News - Artificial intelligence",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "news-mit-edu-rss-topic-artificial-intelligence2-9539d7d50e"
+    },
+    {
+      "url": "https://www.nature.com/nature/current_issue/rss",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Nature",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "nature-com-nature-current-issue-rss-ff3fcddf77"
+    },
+    {
+      "url": "https://nesslabs.com/feed",
+      "topics": [
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Ness Labs",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "nesslabs-com-feed-d8c2a8ed73"
+    },
+    {
+      "url": "https://www.nngroup.com/feed/rss/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "NN/g latest articles and announcements",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "nngroup-com-feed-rss-daa668cfe7"
+    },
+    {
+      "url": "https://www.notboring.co/feed",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "Not Boring by Packy McCormick",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "notboring-co-feed-77c1205de2"
+    },
+    {
+      "url": "https://oneusefulthing.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "One Useful Thing",
+      "notes": "Substack newsletter feed",
+      "id": "oneusefulthing-substack-com-feed-f87aeb61cc"
+    },
+    {
+      "url": "https://overreacted.io/rss.xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "overreacted — A blog by Dan Abramov",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "overreacted-io-rss-xml-449cde1ff7"
+    },
+    {
+      "url": "https://www.producthunt.com/feed",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Product Hunt — The best new products, every day",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "producthunt-com-feed-7210e36e4f"
+    },
+    {
+      "url": "https://productlife.to/feed",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Product Life",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "productlife-to-feed-8580f6d5aa"
+    },
+    {
+      "url": "https://www.all-about-psychology.com/psychology.xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Psychology Blog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "all-about-psychology-com-psychology-xml-282aae8f63"
+    },
+    {
+      "url": "https://www.quantamagazine.org/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Quanta Magazine",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "quantamagazine-org-feed-4382d5e849"
+    },
+    {
+      "url": "https://danluu.com/atom.xml",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Recent content on",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "danluu-com-atom-xml-e8ccda882f"
+    },
+    {
+      "url": "https://github.com/axolotl-ai-cloud/axolotl/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from axolotl",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-axolotl-ai-cloud-axolotl-releases-ato-e1598874a8"
+    },
+    {
+      "url": "https://github.com/comfyanonymous/ComfyUI/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from ComfyUI",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-comfyanonymous-comfyui-releases-atom-2383d16669"
+    },
+    {
+      "url": "https://github.com/crewAIInc/crewAI/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from crewAI",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-crewaiinc-crewai-releases-atom-497c68f8c3"
+    },
+    {
+      "url": "https://github.com/langgenius/dify/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from dify",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-langgenius-dify-releases-atom-9dc8974c96"
+    },
+    {
+      "url": "https://github.com/janhq/jan/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from jan",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-janhq-jan-releases-atom-f6351ef964"
+    },
+    {
+      "url": "https://github.com/langflow-ai/langflow/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from langflow",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-langflow-ai-langflow-releases-atom-630ba61ce7"
+    },
+    {
+      "url": "https://github.com/n8n-io/n8n/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from n8n",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-n8n-io-n8n-releases-atom-9181dff436"
+    },
+    {
+      "url": "https://github.com/huggingface/peft/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from peft",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-peft-releases-atom-0b428e51ab"
+    },
+    {
+      "url": "https://github.com/huggingface/trl/releases.atom",
+      "topics": [
+        "ai",
+        "product",
+        "open-source"
+      ],
+      "title": "Release notes from trl",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-trl-releases-atom-a894460717"
+    },
+    {
+      "url": "https://mistral.ai/rss.xml  # may dup",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "rss.xml  # may dup",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "mistral-ai-rss-xml-e9f4f41c47"
+    },
+    {
+      "url": "https://www.economist.com/science-and-technology/rss.xml",
+      "topics": [
+        "blogs",
+        "ai",
+        "industry"
+      ],
+      "title": "Science & technology",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "economist-com-science-and-technology-rss-xml-6ba2fd5587"
+    },
+    {
+      "url": "https://simonw.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "Simon Willison’s Newsletter",
+      "notes": "Substack newsletter feed",
+      "id": "simonw-substack-com-feed-4f7e6db1be"
+    },
+    {
+      "url": "https://singularityhub.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "SingularityHub",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "singularityhub-com-feed-12952c9fd6"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/stat.ML",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.ML updates on arXiv.org",
+      "notes": "arXiv RSS category feed",
+      "id": "export-arxiv-org-rss-stat-ml-64cb5fb601"
+    },
+    {
+      "url": "https://steveblank.com/feed/",
+      "topics": [
+        "ai",
+        "industry"
+      ],
+      "title": "Steve Blank",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "steveblank-com-feed-0db8c25bea"
+    },
+    {
+      "url": "https://theaiedge.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "The AI Edge",
+      "notes": "Substack newsletter feed",
+      "id": "theaiedge-substack-com-feed-6543732d39"
+    },
+    {
+      "url": "https://aimaker.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "The AI Maker",
+      "notes": "Substack newsletter feed",
+      "id": "aimaker-substack-com-feed-6345314a8d"
+    },
+    {
+      "url": "https://blog.cloudflare.com/rss/",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "The Cloudflare Blog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "blog-cloudflare-com-rss-2f3b69ac70"
+    },
+    {
+      "url": "https://artificialintelligenceact.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "The EU AI Act Newsletter",
+      "notes": "Substack newsletter feed",
+      "id": "artificialintelligenceact-substack-com-feed-e7eeac6328"
+    },
+    {
+      "url": "https://blog.pragmaticengineer.com/rss/",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "The Pragmatic Engineer",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "blog-pragmaticengineer-com-rss-0ed1fdcf7c"
+    },
+    {
+      "url": "https://geohot.github.io/blog/feed.xml",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "the singularity is nearer",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "geohot-github-io-blog-feed-xml-68e950f671"
+    },
+    {
+      "url": "https://coffeeandjunk.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "The Sunday Wisdom",
+      "notes": "Substack newsletter feed",
+      "id": "coffeeandjunk-substack-com-feed-f127c1b43b"
+    },
+    {
+      "url": "https://uxdesign.cc/feed",
+      "topics": [
+        "blogs",
+        "ai"
+      ],
+      "title": "UX Collective - Medium",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "uxdesign-cc-feed-efe18eb280"
+    },
+    {
+      "url": "https://www.wired.com/feed/rss",
+      "topics": [
+        "blogs",
+        "ai",
+        "industry"
+      ],
+      "title": "WIRED",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "wired-com-feed-rss-c01c14fc34"
+    },
+    {
+      "url": "https://blog.ycombinator.com/feed/",
+      "topics": [
+        "blogs",
+        "community",
+        "ai"
+      ],
+      "title": "Y Combinator Blog",
+      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
+      "id": "blog-ycombinator-com-feed-32978ae083"
+    },
+    {
+      "url": "https://diamantai.substack.com/feed",
+      "topics": [
+        "community",
+        "newsletters",
+        "ai"
+      ],
+      "title": "💎DiamantAI",
+      "notes": "Substack newsletter feed",
+      "id": "diamantai-substack-com-feed-2b1a936585"
+    },
+    {
+      "url": "https://www.alignmentforum.org/feed.xml",
+      "title": "AI Alignment Forum",
+      "topics": [
+        "research",
+        "safety",
+        "community"
+      ],
+      "id": "alignmentforum-org-feed-xml-9f0d873e19",
+      "notes": "top-up"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.HC",
+      "title": "arXiv cs.HC",
+      "topics": [
+        "research",
+        "papers"
+      ],
+      "id": "export-arxiv-org-rss-cs-hc-4e326aa50d",
+      "notes": "arxiv"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/stat.ME",
+      "title": "arXiv stat.ME",
+      "topics": [
+        "research",
+        "papers"
+      ],
+      "id": "export-arxiv-org-rss-stat-me-25835400e4",
+      "notes": "arxiv"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.DB",
+      "title": "arXiv cs.DB",
+      "topics": [
+        "research",
+        "papers"
+      ],
+      "id": "export-arxiv-org-rss-cs-db-bc0f7abb11",
+      "notes": "replace flaky reddit"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.DC",
+      "title": "arXiv cs.DC",
+      "topics": [
+        "research",
+        "papers"
+      ],
+      "id": "export-arxiv-org-rss-cs-dc-2404d5cc4b",
+      "notes": "top-up"
     }
   ]
 }

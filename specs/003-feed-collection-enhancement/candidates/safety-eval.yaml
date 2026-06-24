@@ -1,0 +1,78 @@
+sources:
+- url: http://export.arxiv.org/rss/cs.CY
+  title: arXiv cs.CY
+  topics:
+  - research
+  - papers
+  - safety
+  notes: Computers and Society (safety/ethics)
+- url: http://export.arxiv.org/rss/cs.AI
+  title: arXiv cs.AI
+  topics:
+  - research
+  - papers
+  - llm
+  notes: Artificial Intelligence preprints
+- url: https://research.google/blog/rss/
+  title: Google Research Blog
+  topics:
+  - industry
+  - research
+  - evaluation
+  notes: Official Google Research RSS
+- url: https://research.facebook.com/feed/
+  title: Meta Research
+  topics:
+  - industry
+  - research
+  - open-source
+  notes: Meta FAIR research feed
+- url: https://research.nvidia.com/rss.xml
+  title: NVIDIA Research
+  topics:
+  - industry
+  - research
+  - inference
+  notes: NVIDIA research publications
+- url: https://crfm.stanford.edu/feed.xml
+  title: Stanford CRFM
+  topics:
+  - industry
+  - research
+  - safety
+  notes: Center for Research on Foundation Models
+- url: https://blog.eleuther.ai/index.xml
+  title: EleutherAI Blog
+  topics:
+  - industry
+  - open-source
+  - safety
+  notes: Atom feed (replaces broken HTML URL)
+- url: https://www.fiddler.ai/blog/rss.xml
+  title: Fiddler AI Blog
+  topics:
+  - industry
+  - evaluation
+  - governance
+  notes: Model observability and governance
+- url: https://www.gov.uk/government/organisations/ai-safety-institute.atom
+  title: UK AI Safety Institute
+  topics:
+  - industry
+  - governance
+  - safety
+  notes: UK AISI government atom feed
+- url: https://futureoflife.org/feed/
+  title: Future of Life Institute
+  topics:
+  - industry
+  - safety
+  - governance
+  notes: AI safety and policy org
+- url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+  title: CISA Advisories
+  topics:
+  - industry
+  - supply-chain
+  - security
+  notes: Supply chain / security advisories

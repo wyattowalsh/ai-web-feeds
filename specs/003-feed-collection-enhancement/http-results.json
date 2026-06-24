@@ -1,0 +1,2622 @@
+[
+  {
+    "index": 0,
+    "id": "72831963114989b0",
+    "title": "arXiv cs.LG",
+    "url": "http://export.arxiv.org/rss/cs.LG",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 240
+  },
+  {
+    "index": 1,
+    "id": "c2e8f1ffb0b2b48b",
+    "title": "OpenAI Blog",
+    "url": "https://openai.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 1019
+  },
+  {
+    "index": 2,
+    "id": "a1156030febbd9e6",
+    "title": "Pinecone Learn",
+    "url": "https://www.pinecone.io/learn/feed.xml",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 3,
+    "id": "a5689419c24836e7",
+    "title": "Latent Space",
+    "url": "https://www.latent.space/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 4,
+    "id": "0f90c142536df254",
+    "title": "Import AI",
+    "url": "https://importai.substack.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 5,
+    "id": "935fbe5ba89ff5f9",
+    "title": "Hugging Face Blog",
+    "url": "https://huggingface.co/blog/feed.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 808
+  },
+  {
+    "index": 6,
+    "id": "f6aa679babd7a46a",
+    "title": "Anthropic News",
+    "url": "https://www.anthropic.com/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 7,
+    "id": "7151a155c27680f0",
+    "title": "OpenXLA Blog",
+    "url": "https://openxla.org/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 8,
+    "id": "05e1130929e7ac30",
+    "title": "r/MachineLearning",
+    "url": "https://www.reddit.com/r/MachineLearning",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:85:19: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 9,
+    "id": "80bd7e4b43bc6827",
+    "title": "Towards Data Science",
+    "url": "https://towardsdatascience.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 10,
+    "id": "26be51fe87907faf",
+    "title": "Two Minute Papers",
+    "url": "https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 11,
+    "id": "6ee2c2a30826817d",
+    "title": "PyTorch Releases",
+    "url": "https://github.com/pytorch/pytorch",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 12,
+    "id": "1448e130279b08bd",
+    "title": "DEV Community Machine Learning",
+    "url": "https://dev.to/t/machinelearning",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:279:2: mismatched tag",
+    "entry_count": 0
+  },
+  {
+    "index": 13,
+    "id": "eb09beb38255e4f6",
+    "title": "Andrej Karpathy",
+    "url": "https://x.com/karpathy",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:38020: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 14,
+    "id": "46a88037c9410525",
+    "title": "Yoshua Bengio - arXiv Papers",
+    "url": "https://arxiv.org/search/?searchtype=author&query=Bengio%2C+Y",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:19:14: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 15,
+    "id": "65d0cfe837afd1c3",
+    "title": "Google AI Blog",
+    "url": "https://research.google/blog/rss/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 16,
+    "id": "d02ec00905b7b5c3",
+    "title": "DeepMind \u2014 Discover/Blog",
+    "url": "https://deepmind.google/discover/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 17,
+    "id": "191cc99ce0bbb92f",
+    "title": "Meta AI \u2014 Blog",
+    "url": "https://ai.meta.com/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:4:1430: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 18,
+    "id": "689dc3f1b092fd61",
+    "title": "Microsoft Research Blog",
+    "url": "https://www.microsoft.com/en-us/research/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 19,
+    "id": "e60f411a58119b26",
+    "title": "NVIDIA Technical Blog \u2014 RSS",
+    "url": "https://developer.nvidia.com/blog/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 20,
+    "id": "50914fe5c60ced88",
+    "title": "AWS Machine Learning Blog \u2014 RSS",
+    "url": "https://aws.amazon.com/blogs/machine-learning/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 21,
+    "id": "51f8274975973f60",
+    "title": "BAIR Blog (UC Berkeley) \u2014 RSS",
+    "url": "https://bair.berkeley.edu/blog/feed.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 22,
+    "id": "d8fbfd4426ed3c35",
+    "title": "Stanford CRFM \u2014 RSS",
+    "url": "https://crfm.stanford.edu/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 23,
+    "id": "1647adede221cf8d",
+    "title": "Stanford HAI \u2014 News",
+    "url": "https://hai.stanford.edu/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:4358: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 24,
+    "id": "4f833f985ed12add",
+    "title": "The Gradient \u2014 RSS",
+    "url": "https://thegradient.pub/rss/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 15
+  },
+  {
+    "index": 25,
+    "id": "039f43877f4d8915",
+    "title": "TensorFlow Blog \u2014 RSS",
+    "url": "https://blog.tensorflow.org/feeds/posts/default?alt=rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 25
+  },
+  {
+    "index": 26,
+    "id": "e203e23af281125c",
+    "title": "Cohere \u2014 txt (RSS)",
+    "url": "https://txt.cohere.ai/rss/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 27,
+    "id": "3347f81cd4f6a214",
+    "title": "Replicate Blog \u2014 RSS",
+    "url": "https://replicate.com/blog/rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 122
+  },
+  {
+    "index": 28,
+    "id": "7f1c72c187c23c51",
+    "title": "Databricks Blog \u2014 RSS",
+    "url": "https://www.databricks.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 29,
+    "id": "c84633173b800035",
+    "title": "LMSYS \u2014 Blog",
+    "url": "https://lmsys.org/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 30,
+    "id": "e8ba7172314e48e9",
+    "title": "vLLM (GitHub)",
+    "url": "https://github.com/vllm-project/vllm",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 31,
+    "id": "754595d3bef49bf4",
+    "title": "TensorRT-LLM (GitHub)",
+    "url": "https://github.com/NVIDIA/TensorRT-LLM",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 32,
+    "id": "a639b4426b7c8da8",
+    "title": "Weaviate \u2014 Blog",
+    "url": "https://weaviate.io/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 33,
+    "id": "b8d6cb38455ac73c",
+    "title": "Milvus \u2014 Blog",
+    "url": "https://milvus.io/blog",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 34,
+    "id": "e09ae3dc4358cf27",
+    "title": "Qdrant \u2014 Articles",
+    "url": "https://qdrant.tech/articles/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 76
+  },
+  {
+    "index": 35,
+    "id": "77460b2256f18fac",
+    "title": "LangChain \u2014 Blog",
+    "url": "https://blog.langchain.com/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 36,
+    "id": "3ccc18a956cae0b1",
+    "title": "LlamaIndex \u2014 Blog",
+    "url": "https://www.llamaindex.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:204: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 37,
+    "id": "b321aa49164209fb",
+    "title": "MLOps Community \u2014 Blog",
+    "url": "https://mlops.community/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:2429: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 38,
+    "id": "066b0307e23b6bdc",
+    "title": "UK AI Safety Institute \u2014 News",
+    "url": "https://www.aisafety.gov.uk/news",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [Errno 8] nodename nor servname provided, or not known",
+    "entry_count": 0
+  },
+  {
+    "index": 39,
+    "id": "dea463fd6c8c0a3c",
+    "title": "MLCommons \u2014 News (MLPerf)",
+    "url": "https://mlcommons.org/news/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 40,
+    "id": "338c0f69c10eb1c7",
+    "title": "Sebastian Raschka \u2014 RSS",
+    "url": "https://sebastianraschka.com/rss.xml",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 41,
+    "id": "e2a35dcabe116d15",
+    "title": "Eugene Yan \u2014 RSS",
+    "url": "https://eugeneyan.com/rss/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 212
+  },
+  {
+    "index": 42,
+    "id": "1739dc2b7e937a4e",
+    "title": "Hamel Husain \u2014 Atom",
+    "url": "https://hamel.dev/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 43,
+    "id": "d1cafa5415087246",
+    "title": "Apple Machine Learning Research (Journal)",
+    "url": "https://machinelearning.apple.com/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 44,
+    "id": "86e00abd227a3a01",
+    "title": "Allen Institute for AI \u2014 Blog",
+    "url": "https://allenai.org/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 45,
+    "id": "efd5a9abfb4160fd",
+    "title": "MIT CSAIL \u2014 News",
+    "url": "https://www.csail.mit.edu/news",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 46,
+    "id": "c2e4778941fa6e5f",
+    "title": "fast.ai \u2014 Blog",
+    "url": "http://www.fast.ai/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 47,
+    "id": "d95936737ca33a17",
+    "title": "DeepLearning.AI \u2014 The Batch",
+    "url": "https://www.deeplearning.ai/the-batch/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 48,
+    "id": "fe4c4efe475f4201",
+    "title": "Robotics at Google \u2014 Blog",
+    "url": "https://robotics.googleblog.com/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 49,
+    "id": "b55443f051a2a8d2",
+    "title": "OpenMined \u2014 Blog",
+    "url": "https://openmined.org/blog",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 50,
+    "id": "6d1e4d5f90717cfb",
+    "title": "EleutherAI \u2014 Blog",
+    "url": "https://blog.eleuther.ai/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 50
+  },
+  {
+    "index": 51,
+    "id": "687b81f9a8985d70",
+    "title": "Apache TVM \u2014 Blog",
+    "url": "https://tvm.apache.org/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 52,
+    "id": "ad36bfcc986c3a4f",
+    "title": "Nixtla \u2014 Blog",
+    "url": "https://nixtla.github.io/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 2
+  },
+  {
+    "index": 53,
+    "id": "29ee65b2a0938244",
+    "title": "Roboflow \u2014 Blog",
+    "url": "https://blog.roboflow.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 15
+  },
+  {
+    "index": 54,
+    "id": "75612d096bc66dfd",
+    "title": "OpenCV \u2014 Blog",
+    "url": "https://opencv.org/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:34:0: undefined entity",
+    "entry_count": 0
+  },
+  {
+    "index": 55,
+    "id": "4d7d6afe38671dbc",
+    "title": "Neo4j \u2014 Developer Blog",
+    "url": "https://neo4j.com/developer-blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 50
+  },
+  {
+    "index": 56,
+    "id": "05e838380506f8fc",
+    "title": "ArangoDB \u2014 Blog",
+    "url": "https://www.arangodb.com/blog/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 57,
+    "id": "804715f8f1497559",
+    "title": "Arize AI \u2014 Blog",
+    "url": "https://arize.com/blog/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 58,
+    "id": "f9abf95c6ead4904",
+    "title": "Evidently AI \u2014 Blog",
+    "url": "https://www.evidentlyai.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:2348: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 59,
+    "id": "f9aecb186e9a6484",
+    "title": "WhyLabs \u2014 Blog",
+    "url": "https://whylabs.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:8:92: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 60,
+    "id": "050119dbab88ea86",
+    "title": "Anyscale (Ray) \u2014 Blog",
+    "url": "https://www.anyscale.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:3292: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 61,
+    "id": "0be5c22bd2fbf2c2",
+    "title": "Modal \u2014 Blog",
+    "url": "https://modal.com/blog/atom.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 117
+  },
+  {
+    "index": 62,
+    "id": "78bab138682cfbd0",
+    "title": "Neo4j Graph Data Science \u2014 Articles",
+    "url": "https://neo4j.com/developer/graph-data-science/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:16:181: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 63,
+    "id": "41aab499985c4dd8",
+    "title": "Cohere \u2014 Research",
+    "url": "https://cohere.com/research",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 64,
+    "id": "5b13693f8f06a94e",
+    "title": "Microsoft AI \u2014 Blog",
+    "url": "https://www.microsoft.com/en-us/ai/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 65,
+    "id": "f736744c2ef76e85",
+    "title": "Qualcomm \u2014 AI Research/Engineering",
+    "url": "https://www.qualcomm.com/research/artificial-intelligence",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:96:35: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 66,
+    "id": "ecb0da614acf3f20",
+    "title": "Langfuse \u2014 Blog",
+    "url": "https://blog.langfuse.com",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:6264: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 67,
+    "id": "c3775a125353e5c5",
+    "title": "AI Now Institute \u2014 News (RSS)",
+    "url": "https://ainowinstitute.org/category/news/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 68,
+    "id": "86667bd1884f48e9",
+    "title": "Partnership on AI \u2014 Blog",
+    "url": "https://partnershiponai.org/blog/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 69,
+    "id": "7f2bfb74575abbb6",
+    "title": "Mila \u2014 News",
+    "url": "https://mila.quebec/en/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:70:76: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 70,
+    "id": "5c3fed87d2fdc538",
+    "title": "Vector Institute \u2014 Insights",
+    "url": "https://vectorinstitute.ai/insights/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:3:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 71,
+    "id": "a76b8940cf25eaeb",
+    "title": "The Alan Turing Institute \u2014 Blog",
+    "url": "https://www.turing.ac.uk/blog",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 72,
+    "id": "c07010ac537774a6",
+    "title": "CMU Machine Learning Department \u2014 Blog (RSS)",
+    "url": "https://blog.ml.cmu.edu/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 1
+  },
+  {
+    "index": 73,
+    "id": "4ed5ebfd6d2eea30",
+    "title": "MIT News \u2014 Machine Learning (RSS)",
+    "url": "https://news.mit.edu/topic/mitmachine-learning-rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 50
+  },
+  {
+    "index": 74,
+    "id": "3194b6528d7bd7ff",
+    "title": "Vespa.ai \u2014 Blog",
+    "url": "https://blog.vespa.ai/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 75,
+    "id": "a70f33e6628745ab",
+    "title": "Jina AI \u2014 Blog",
+    "url": "https://jina.ai/blog/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 76,
+    "id": "2a336b1f05476f87",
+    "title": "Haystack (deepset) \u2014 Blog",
+    "url": "https://haystack.deepset.ai/blog/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 73
+  },
+  {
+    "index": 77,
+    "id": "d8db61643a229671",
+    "title": "MLC LLM \u2014 Blog",
+    "url": "https://llm.mlc.ai/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 78,
+    "id": "48997f89982be5dc",
+    "title": "llama.cpp \u2014 Releases (Atom)",
+    "url": "https://github.com/ggml-org/llama.cpp/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 79,
+    "id": "dc31d42bcef675c9",
+    "title": "Hugging Face TGI \u2014 Releases (Atom)",
+    "url": "https://github.com/huggingface/text-generation-inference/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 80,
+    "id": "94b482af1af4a4c2",
+    "title": "SGLang \u2014 Releases (Atom)",
+    "url": "https://github.com/sgl-project/sglang/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 81,
+    "id": "26ada7d305748c94",
+    "title": "Triton \u2014 Releases (Atom)",
+    "url": "https://github.com/triton-lang/triton/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 82,
+    "id": "42b0309b738347a3",
+    "title": "MLC-LLM \u2014 Releases (Atom)",
+    "url": "https://github.com/mlc-ai/mlc-llm/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 8
+  },
+  {
+    "index": 83,
+    "id": "b6cb4b82f8dbf7fc",
+    "title": "Neptune.ai \u2014 Blog (RSS)",
+    "url": "https://neptune.ai/blog/feed",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: ",
+    "entry_count": 0
+  },
+  {
+    "index": 84,
+    "id": "656698fe8acbfbd8",
+    "title": "ONNX \u2014 Blog",
+    "url": "https://onnx.ai/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 85,
+    "id": "266ae3c8fd4248d3",
+    "title": "Mistral AI \u2014 News",
+    "url": "https://mistral.ai/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:21: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 86,
+    "id": "2fcec7ed63a5946b",
+    "title": "Intel OpenVINO \u2014 Blog",
+    "url": "https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/blogs.html",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:16:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 87,
+    "id": "e880e6572e5a0803",
+    "title": "CrewAI \u2014 Blog",
+    "url": "https://www.crewai.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:4:42: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 88,
+    "id": "2b3e764ae193e0c3",
+    "title": "Journal of Machine Learning Research",
+    "url": "https://www.jmlr.org/jmlr.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 50
+  },
+  {
+    "index": 89,
+    "id": "e85625fb94d48199",
+    "title": "Proceedings of Machine Learning Research (PMLR)",
+    "url": "https://proceedings.mlr.press/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 309
+  },
+  {
+    "index": 90,
+    "id": "9f44675f421cf191",
+    "title": "Transactions on Machine Learning Research (TMLR)",
+    "url": "https://jmlr.org/tmlr/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:5:18: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 91,
+    "id": "0ac423b4dfcf525a",
+    "title": "Nature Machine Intelligence",
+    "url": "https://www.nature.com/natmachintell/rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 8
+  },
+  {
+    "index": 92,
+    "id": "5c45656572ca46e6",
+    "title": "NEJM AI",
+    "url": "https://ai.nejm.org",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 93,
+    "id": "3daf7af1d06a28d1",
+    "title": "NPJ Digital Medicine",
+    "url": "https://www.nature.com/npjdigitalmed/rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 8
+  },
+  {
+    "index": 94,
+    "id": "6be3b96a55bfaed0",
+    "title": "Google Earth Engine \u2014 Developer Blog",
+    "url": "https://developers.google.com/earth-engine/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 95,
+    "id": "5666b8ddb33ae1f6",
+    "title": "Microsoft Planetary Computer \u2014 Blog",
+    "url": "https://planetarycomputer.microsoft.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 96,
+    "id": "a18faccba3716085",
+    "title": "Radiant Earth \u2014 Blog",
+    "url": "https://www.radiant.earth/blog/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 37
+  },
+  {
+    "index": 97,
+    "id": "18048e8eb7a6b27d",
+    "title": "AI Incident Database \u2014 Blog",
+    "url": "https://incidentdatabase.ai/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:1785: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 98,
+    "id": "9b03b9ad08ab4f7c",
+    "title": "OpenLineage \u2014 Blog",
+    "url": "https://openlineage.io/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 99,
+    "id": "38df3d9fdf6d06bd",
+    "title": "Great Expectations (GX) \u2014 Blog",
+    "url": "https://greatexpectations.io/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:9:182: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 100,
+    "id": "78c16cb04f525c7d",
+    "title": "Monte Carlo \u2014 Data Observability Blog",
+    "url": "https://www.montecarlodata.com/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 223
+  },
+  {
+    "index": 101,
+    "id": "35b869b7beb9c7f7",
+    "title": "AssemblyAI \u2014 Blog (RSS)",
+    "url": "https://www.assemblyai.com/blog/rss/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 102,
+    "id": "94adae3f50be12a4",
+    "title": "Edge Impulse \u2014 Blog",
+    "url": "https://www.edgeimpulse.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:30:21: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 103,
+    "id": "310dae39168d617a",
+    "title": "tinyML Foundation \u2014 Blog",
+    "url": "https://www.tinyml.org/blog/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 104,
+    "id": "5d60e495d86ee1e1",
+    "title": "Weights & Biases \u2014 Release Notes (RSS)",
+    "url": "https://docs.wandb.ai/ref/release-notes/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 13
+  },
+  {
+    "index": 105,
+    "id": "4960b74b4be54c74",
+    "title": "NVIDIA Research \u2014 AI",
+    "url": "https://www.nvidia.com/en-us/research/ai/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 106,
+    "id": "6902b81365908ed8",
+    "title": "NeurIPS \u2014 Official Blog",
+    "url": "https://blog.neurips.cc/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 107,
+    "id": "32c0308e29797618",
+    "title": "ICLR \u2014 Official Blog",
+    "url": "https://blog.iclr.cc/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 108,
+    "id": "3d11b8b7e6cb0ea8",
+    "title": "Stanford AI Lab \u2014 SAIL Blog",
+    "url": "https://ai.stanford.edu/blog/feed.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 15
+  },
+  {
+    "index": 109,
+    "id": "594aced327aa13ad",
+    "title": "Hazy Research \u2014 Blog",
+    "url": "https://hazyresearch.stanford.edu/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:919: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 110,
+    "id": "49c5d77c30cdd8dc",
+    "title": "arXiv \u2014 cs.CV RSS",
+    "url": "http://export.arxiv.org/rss/cs.CV",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 196
+  },
+  {
+    "index": 111,
+    "id": "b6a481a5909b0dcd",
+    "title": "arXiv \u2014 cs.CL RSS",
+    "url": "http://export.arxiv.org/rss/cs.CL",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 145
+  },
+  {
+    "index": 112,
+    "id": "6cf01bed7152a71f",
+    "title": "arXiv \u2014 cs.IR RSS",
+    "url": "http://export.arxiv.org/rss/cs.IR",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 24
+  },
+  {
+    "index": 113,
+    "id": "18e33c6f4d298399",
+    "title": "Dagster \u2014 Blog",
+    "url": "https://dagster.io/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 114,
+    "id": "04fedffae7ee5a3f",
+    "title": "Astronomer (Airflow) \u2014 Blog",
+    "url": "https://www.astronomer.io/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:8:37: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 115,
+    "id": "24d8ae846b1dec7e",
+    "title": "dbt Labs \u2014 Blog",
+    "url": "https://www.getdbt.com/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 25
+  },
+  {
+    "index": 116,
+    "id": "a6e5614cfda0c605",
+    "title": "DuckDB \u2014 News (RSS)",
+    "url": "https://duckdb.org/feed.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 117,
+    "id": "d5a74a813c99617c",
+    "title": "SemiAnalysis \u2014 Substack (RSS)",
+    "url": "https://semianalysis.substack.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 118,
+    "id": "dcf6789803e4f5c4",
+    "title": "Chips and Cheese \u2014 RSS",
+    "url": "https://chipsandcheese.com/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 119,
+    "id": "7642be34774dc70f",
+    "title": "NIST \u2014 Cybersecurity Insights",
+    "url": "https://www.nist.gov/blogs/cybersecurity-insights/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 40
+  },
+  {
+    "index": 120,
+    "id": "a27b8d271c27aa02",
+    "title": "Center for AI Safety \u2014 Blog",
+    "url": "https://www.safe.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:2197: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 121,
+    "id": "1535857cab5f60ba",
+    "title": "Alignment Forum \u2014 RSS",
+    "url": "https://alignmentforum.org/rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 122,
+    "id": "b1969a765a98917a",
+    "title": "ACL Rolling Review \u2014 Site",
+    "url": "https://aclrollingreview.org/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 123,
+    "id": "c4458a0a7dcab4fd",
+    "title": "PyTorch \u2014 Engineering Blog",
+    "url": "https://pytorch.org/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 124,
+    "id": "990bdc6bb9af959a",
+    "title": "Lightning AI \u2014 Blog",
+    "url": "https://lightning.ai/pages/blog",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 125,
+    "id": "b4240ef1cc51e832",
+    "title": "Groq \u2014 Blog",
+    "url": "https://groq.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 126,
+    "id": "985e561bc559a1cd",
+    "title": "Together AI \u2014 Blog",
+    "url": "https://www.together.ai/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 127,
+    "id": "64b811560a52e317",
+    "title": "Fireworks.ai \u2014 Blog",
+    "url": "https://fireworks.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 128,
+    "id": "2b372a37cfd720ad",
+    "title": "Baseten \u2014 Blog",
+    "url": "https://www.baseten.co/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:178553: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 129,
+    "id": "0a9670d7d20f9381",
+    "title": "OctoAI \u2014 Blog",
+    "url": "https://octoai.cloud/blog",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'octoai.cloud'. (_ssl.c:1032)",
+    "entry_count": 0
+  },
+  {
+    "index": 130,
+    "id": "c696f25176795f99",
+    "title": "LAION \u2014 Blog",
+    "url": "https://laion.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 131,
+    "id": "e39898853af3e653",
+    "title": "Weights & Biases \u2014 Articles",
+    "url": "https://wandb.com/articles",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 132,
+    "id": "2f76f620c3ff2a8f",
+    "title": "Humanloop \u2014 Blog",
+    "url": "https://humanloop.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 133,
+    "id": "4a98c7a11f95007e",
+    "title": "Ragas \u2014 Blog",
+    "url": "https://ragas.io/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 134,
+    "id": "b2d0617883584004",
+    "title": "TruLens \u2014 Blog",
+    "url": "https://www.trulens.org/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:3:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 135,
+    "id": "3974c9e901d3b039",
+    "title": "DeepEval (Confident AI) \u2014 Blog",
+    "url": "https://www.confident-ai.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:12:54: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 136,
+    "id": "bfb82f4462f890bb",
+    "title": "KServe \u2014 GitHub",
+    "url": "https://github.com/kserve/kserve",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 137,
+    "id": "642743ad9061795a",
+    "title": "LangGraph \u2014 GitHub",
+    "url": "https://github.com/langchain-ai/langgraph",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 138,
+    "id": "c5a32632e586ab2c",
+    "title": "LangChain \u2014 GitHub",
+    "url": "https://github.com/langchain-ai/langchain",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 139,
+    "id": "a38d273f219db547",
+    "title": "JAX \u2014 GitHub",
+    "url": "https://github.com/jax-ml/jax",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 140,
+    "id": "53d940334a2a5afd",
+    "title": "Transformers \u2014 GitHub",
+    "url": "https://github.com/huggingface/transformers",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 141,
+    "id": "f6d8f5b7980b40df",
+    "title": "OpenAI \u2014 Evals",
+    "url": "https://evals.openai.com",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 142,
+    "id": "84e0da6d5092e27d",
+    "title": "U.S. AI Safety Institute (NIST)",
+    "url": "https://www.nist.gov/aisi",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:6:274: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 143,
+    "id": "52f7a3212c2dbad9",
+    "title": "OECD.AI Policy Observatory",
+    "url": "https://oecd.ai",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:3444:11: mismatched tag",
+    "entry_count": 0
+  },
+  {
+    "index": 144,
+    "id": "f9a0efcdd35439b8",
+    "title": "Redwood Research \u2014 Blog",
+    "url": "https://www.redwoodresearch.org/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 145,
+    "id": "6140873d1b290f04",
+    "title": "FAR AI \u2014 Blog",
+    "url": "https://www.far.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:21:74: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 146,
+    "id": "bea4293d5eddcb34",
+    "title": "OpenAI \u2014 News (RSS)",
+    "url": "https://openai.com/news/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 1019
+  },
+  {
+    "index": 147,
+    "id": "84894ec9fef04246",
+    "title": "European AI Office \u2014 Policy & News",
+    "url": "https://digital-strategy.ec.europa.eu/en/policies/european-artificial-intelligence-office",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:86:76: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 148,
+    "id": "46e0d36ae8327d77",
+    "title": "Georgetown CSET \u2014 Blog",
+    "url": "https://cset.georgetown.edu/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:12:277: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 149,
+    "id": "b71ced9408e9949e",
+    "title": "Robohub \u2014 RSS",
+    "url": "https://robohub.org/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 75
+  },
+  {
+    "index": 150,
+    "id": "413c7b566e2ec942",
+    "title": "vLLM \u2014 Blog",
+    "url": "https://blog.vllm.ai/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 151,
+    "id": "798984ec61f55607",
+    "title": "SkyPilot \u2014 Blog",
+    "url": "https://blog.skypilot.so/",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [Errno 8] nodename nor servname provided, or not known",
+    "entry_count": 0
+  },
+  {
+    "index": 152,
+    "id": "8f2f631625c147a5",
+    "title": "IREE \u2014 Blog (OpenXLA)",
+    "url": "https://iree.dev/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:3:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 153,
+    "id": "e02523670f8a9ffe",
+    "title": "MLX \u2014 Releases (Atom)",
+    "url": "https://github.com/ml-explore/mlx/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 154,
+    "id": "57a0984f48fb2062",
+    "title": "ONNX Runtime \u2014 Releases (Atom)",
+    "url": "https://github.com/microsoft/onnxruntime/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 155,
+    "id": "7b63143f9a99d87a",
+    "title": "NVIDIA NeMo \u2014 Releases (Atom)",
+    "url": "https://github.com/NVIDIA/NeMo/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 156,
+    "id": "cc0aa7367c6a604f",
+    "title": "FAISS \u2014 Releases (Atom)",
+    "url": "https://github.com/facebookresearch/faiss/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 157,
+    "id": "331ce1847c65b313",
+    "title": "OpenXLA IREE \u2014 Releases (Atom)",
+    "url": "https://github.com/openxla/iree/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 158,
+    "id": "30011710ddbe2a91",
+    "title": "Microsoft AutoGen \u2014 Releases (Atom)",
+    "url": "https://github.com/microsoft/autogen/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 159,
+    "id": "338291d25c668a87",
+    "title": "OpenDevin \u2014 Releases (Atom)",
+    "url": "https://github.com/OpenDevin/OpenDevin/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 160,
+    "id": "0e06fbd2db5eff7e",
+    "title": "NVIDIA FasterTransformer \u2014 Releases (Atom)",
+    "url": "https://github.com/NVIDIA/FasterTransformer/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 161,
+    "id": "30d5a932cf1ba04f",
+    "title": "FlashAttention \u2014 Releases (Atom)",
+    "url": "https://github.com/Dao-AILab/flash-attention/releases.atom",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 162,
+    "id": "a06fef82a0a4c18a",
+    "title": "Practical AI \u2014 Podcast (RSS)",
+    "url": "https://changelog.com/practicalai/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 362
+  },
+  {
+    "index": 163,
+    "id": "af79d2368a96bd92",
+    "title": "The Data Exchange \u2014 Podcast (RSS)",
+    "url": "https://feeds.buzzsprout.com/682433.rss",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 164,
+    "id": "fb43a215329b9e2a",
+    "title": "Lilian Weng \u2014 Blog",
+    "url": "https://lilianweng.github.io/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 51
+  },
+  {
+    "index": 165,
+    "id": "373d3140196b501f",
+    "title": "Neel Nanda \u2014 Mechanistic Interpretability",
+    "url": "https://www.neelnanda.io/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 166,
+    "id": "c93c85d1974e69b5",
+    "title": "OpenMetadata \u2014 Blog",
+    "url": "https://open-metadata.medium.com/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 167,
+    "id": "5f13317de4c74dd0",
+    "title": "Jigsaw \u2014 Blog",
+    "url": "https://blog.jigsaw.google/",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [Errno 8] nodename nor servname provided, or not known",
+    "entry_count": 0
+  },
+  {
+    "index": 168,
+    "id": "5785242ca67d5da7",
+    "title": "Modular Blog",
+    "url": "https://www.modular.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 100
+  },
+  {
+    "index": 169,
+    "id": "2b970ad8e9d28e5a",
+    "title": "AI Verify Foundation \u2014 Latest",
+    "url": "https://www.aiverifyfoundation.sg/latest",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 170,
+    "id": "49c7103b140ca274",
+    "title": "NASA Earthdata \u2014 News & Blog",
+    "url": "https://www.earthdata.nasa.gov/news/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:161:68: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 171,
+    "id": "fef68c7680a9013f",
+    "title": "Ontotext \u2014 Knowledge Graph Blog",
+    "url": "https://www.ontotext.com/blog/",
+    "success": false,
+    "status_code": 202,
+    "error_message": "HTTP 202",
+    "entry_count": 0
+  },
+  {
+    "index": 172,
+    "id": "22e6a14a4ffdd286",
+    "title": "IEEE Spectrum \u2014 Robotics",
+    "url": "https://spectrum.ieee.org/topic/robotics",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:242: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 173,
+    "id": "a4f5be9aef7dbd4d",
+    "title": "DataHub \u2014 Blog",
+    "url": "https://datahub.com/blog/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 12
+  },
+  {
+    "index": 174,
+    "id": "f1699c68b6a727df",
+    "title": "Agency \u2014 Substack",
+    "url": "https://blog.agen.cy/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 175,
+    "id": "c678f61aafadd507",
+    "title": "OWASP \u2014 Top 10 for LLM Applications",
+    "url": "https://genai.owasp.org/llm-top-10/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:12:28937: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 176,
+    "id": "65b321f4f6fc4343",
+    "title": "Microsoft Research \u2014 AI for Science (News & Awards)",
+    "url": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/news-and-awards/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:72:0: undefined entity",
+    "entry_count": 0
+  },
+  {
+    "index": 177,
+    "id": "179249eb8ad6fe4d",
+    "title": "Scale AI \u2014 Blog",
+    "url": "https://scale.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:14:21356: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 178,
+    "id": "7ed681c3449c37e5",
+    "title": "LangChain \u2014 Changelog",
+    "url": "https://changelog.langchain.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 178
+  },
+  {
+    "index": 179,
+    "id": "4075e0d026770dfb",
+    "title": "Mozilla.ai \u2014 Blog",
+    "url": "https://mozilla.ai/blog/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 180,
+    "id": "8ade4055a0a85622",
+    "title": "OpenDP \u2014 Blog",
+    "url": "https://opendp.org/blog",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: Server disconnected without sending a response.",
+    "entry_count": 0
+  },
+  {
+    "index": 181,
+    "id": "fb7b2a0f8bdd6135",
+    "title": "CMU Robotics Institute \u2014 News",
+    "url": "https://www.ri.cmu.edu/news/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 0
+  },
+  {
+    "index": 182,
+    "id": "db5a00c01013fff4",
+    "title": "METR (ARC Evals) \u2014 Blog",
+    "url": "https://metr.org/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 87
+  },
+  {
+    "index": 183,
+    "id": "83cb083527c32d45",
+    "title": "Lakera \u2014 Blog",
+    "url": "https://www.lakera.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:2497: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 184,
+    "id": "1784b9b1d5e3e03a",
+    "title": "HiddenLayer \u2014 Innovation Hub",
+    "url": "https://hiddenlayer.com/innovation-hub/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:1943: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 185,
+    "id": "3b885a608add9f1e",
+    "title": "Protect AI \u2014 MLSecOps Blog",
+    "url": "https://www.protectai.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 186,
+    "id": "27f9ba5272b1eded",
+    "title": "Bank Underground (Bank of England)",
+    "url": "https://bankunderground.co.uk/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 187,
+    "id": "12865c9d95018451",
+    "title": "ETH AI Center \u2014 News & Events",
+    "url": "https://ai.ethz.ch/news-and-events.html",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:13:44: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 188,
+    "id": "09effde00bd7d9f3",
+    "title": "Max Planck Institute for Intelligent Systems \u2014 News",
+    "url": "https://is.mpg.de/news/rss",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 834
+  },
+  {
+    "index": 189,
+    "id": "9e06b31a9362e513",
+    "title": "T\u00fcbingen AI Center \u2014 News",
+    "url": "https://www.tue.ai/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:235:26: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 190,
+    "id": "cdf859a80b0fd558",
+    "title": "RIKEN AIP \u2014 News",
+    "url": "https://aip.riken.jp/news-en/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 191,
+    "id": "f87eff4db9a7ed4b",
+    "title": "xAI \u2014 Blog",
+    "url": "https://x.ai/blog",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 192,
+    "id": "ed682c56f4a399ae",
+    "title": "Sakana AI \u2014 Blog",
+    "url": "https://sakana.ai/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:7:14: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 193,
+    "id": "2e33e59b5096e5d5",
+    "title": "Kyutai \u2014 Blog",
+    "url": "https://kyutai.org/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 194,
+    "id": "14866557b8777e62",
+    "title": "Ollama \u2014 Blog",
+    "url": "https://ollama.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 52
+  },
+  {
+    "index": 195,
+    "id": "0f1cd0bff5c281f6",
+    "title": "LM Studio \u2014 Blog",
+    "url": "https://lmstudio.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 196,
+    "id": "7a850c68de309111",
+    "title": "Perplexity Blog",
+    "url": "https://blog.perplexity.ai/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 197,
+    "id": "1c762c14f88b7a61",
+    "title": "OpenRouter \u2014 Blog",
+    "url": "https://blog.openrouter.ai/",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [Errno 8] nodename nor servname provided, or not known",
+    "entry_count": 0
+  },
+  {
+    "index": 198,
+    "id": "21d93218521ecaab",
+    "title": "Chroma \u2014 Blog",
+    "url": "https://trychroma.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 199,
+    "id": "28a8d725f91b4072",
+    "title": "Nomic \u2014 Blog",
+    "url": "https://blog.nomic.ai/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:15024: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 200,
+    "id": "3840e50541660c61",
+    "title": "promptfoo \u2014 Blog",
+    "url": "https://promptfoo.dev/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 20
+  },
+  {
+    "index": 201,
+    "id": "fea785acf653d20d",
+    "title": "UpTrain \u2014 Blog",
+    "url": "https://www.uptrain.ai/blog",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1032)",
+    "entry_count": 0
+  },
+  {
+    "index": 202,
+    "id": "a2f3b827e372e634",
+    "title": "Gentrace \u2014 Blog",
+    "url": "https://blog.gentrace.ai/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 203,
+    "id": "2af41b40a1e733ca",
+    "title": "Tecton \u2014 Blog",
+    "url": "https://www.tecton.ai/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:5:325462: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 204,
+    "id": "91a3d470b0a9fc69",
+    "title": "Hopsworks \u2014 Blog",
+    "url": "https://www.hopsworks.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:5573: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 205,
+    "id": "42ac26c597fb4774",
+    "title": "Flyte \u2014 Blog",
+    "url": "https://flyte.org/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 206,
+    "id": "368da37b7fb8eb0f",
+    "title": "Argo Project \u2014 Blog",
+    "url": "https://blog.argoproj.io/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 207,
+    "id": "df997f8ac78e0475",
+    "title": "Prefect \u2014 Blog",
+    "url": "https://www.prefect.io/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:6:27644: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 208,
+    "id": "251acb33677f6e4d",
+    "title": "Microsoft AutoGen \u2014 Blog",
+    "url": "https://devblogs.microsoft.com/autogen/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:9:67: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 209,
+    "id": "6ca1ef7914c94933",
+    "title": "Guardrails AI \u2014 Blog",
+    "url": "https://blog.guardrailsai.com/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 210,
+    "id": "eb69a578ceb316b9",
+    "title": "Coqui \u2014 Blog",
+    "url": "https://coqui.ai/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:8:40: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 211,
+    "id": "27576ba101af6eff",
+    "title": "Stability AI \u2014 News",
+    "url": "https://stability.ai/news",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 212,
+    "id": "9e2b6804acf69cd7",
+    "title": "OpenMMLab \u2014 Blog",
+    "url": "https://openmmlab.com/blog/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 213,
+    "id": "6bfe15ea5eb4da3f",
+    "title": "Ultralytics \u2014 Blog",
+    "url": "https://ultralytics.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 542
+  },
+  {
+    "index": 214,
+    "id": "f1de2f3335636fbc",
+    "title": "Salesforce AI Research \u2014 Blog",
+    "url": "https://blog.salesforceairesearch.com/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 215,
+    "id": "c077ecebf217afc7",
+    "title": "IBM Research \u2014 AI Blog",
+    "url": "https://research.ibm.com/blog/ai",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 216,
+    "id": "5853e288138a16dd",
+    "title": "Google Cloud \u2014 AI & ML",
+    "url": "https://cloud.google.com/blog/topics/ai-ml",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:0: syntax error",
+    "entry_count": 0
+  },
+  {
+    "index": 217,
+    "id": "146b135a6ebbf0e7",
+    "title": "Microsoft Azure \u2014 AI & ML",
+    "url": "https://azure.microsoft.com/en-us/blog/topics/ai-ml/",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  },
+  {
+    "index": 218,
+    "id": "58032d19700e464a",
+    "title": "IBM \u2014 AI Blog",
+    "url": "https://www.ibm.com/blog/ai/",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:69:18: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 219,
+    "id": "1f02eefb105a4042",
+    "title": "Yannic Kilcher \u2014 YouTube",
+    "url": "https://www.youtube.com/@YannicKilcher",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 220,
+    "id": "a64df8be753b9658",
+    "title": "Henry AI Labs \u2014 YouTube",
+    "url": "https://www.youtube.com/@HenryAILabs",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 221,
+    "id": "b32c8fb72fe2c9ff",
+    "title": "Google DeepMind \u2014 YouTube",
+    "url": "https://www.youtube.com/@GoogleDeepMind",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 222,
+    "id": "4c2d8c92979beb4a",
+    "title": "OpenAI \u2014 YouTube",
+    "url": "https://www.youtube.com/@OpenAI",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 223,
+    "id": "3775c6f15991089c",
+    "title": "Meta AI \u2014 YouTube",
+    "url": "https://www.youtube.com/@MetaAI",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:2:99: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 224,
+    "id": "e620332497754836",
+    "title": "r/LocalLLaMA",
+    "url": "https://www.reddit.com/r/LocalLLaMA",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:85:19: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 225,
+    "id": "3913a1ff067804cf",
+    "title": "r/StableDiffusion",
+    "url": "https://www.reddit.com/r/StableDiffusion",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:85:19: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 226,
+    "id": "77b4be38215d4c71",
+    "title": "Ollama \u2014 GitHub",
+    "url": "https://github.com/ollama/ollama",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 227,
+    "id": "7c94eb734f17ebfc",
+    "title": "Open WebUI \u2014 GitHub",
+    "url": "https://github.com/open-webui/open-webui",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 228,
+    "id": "22c27291c0ff8f7a",
+    "title": "Flowise \u2014 GitHub",
+    "url": "https://github.com/FlowiseAI/Flowise",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 229,
+    "id": "dab892839df45099",
+    "title": "LiteLLM \u2014 GitHub",
+    "url": "https://github.com/BerriAI/litellm",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 230,
+    "id": "1970f2aab6a882fb",
+    "title": "Unsloth \u2014 GitHub",
+    "url": "https://github.com/unslothai/unsloth",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 231,
+    "id": "70602e696a51b03d",
+    "title": "AutoAWQ \u2014 GitHub",
+    "url": "https://github.com/casper-hansen/AutoAWQ",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 232,
+    "id": "736a2e973b799d71",
+    "title": "ExLlamaV2 \u2014 GitHub",
+    "url": "https://github.com/turboderp/exllamav2",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 233,
+    "id": "1b4c7ffe2cc503af",
+    "title": "whisper.cpp \u2014 GitHub",
+    "url": "https://github.com/ggerganov/whisper.cpp",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 234,
+    "id": "e2e64792950396e4",
+    "title": "KoboldCpp \u2014 GitHub",
+    "url": "https://github.com/LostRuins/koboldcpp",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 235,
+    "id": "f083d320a47d5151",
+    "title": "Guardrails \u2014 GitHub",
+    "url": "https://github.com/guardrails-ai/guardrails",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 236,
+    "id": "f666cb1bf6da00d6",
+    "title": "Outlines \u2014 GitHub",
+    "url": "https://github.com/outlines-dev/outlines",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 237,
+    "id": "24d2ebb24ff35b75",
+    "title": "OpenAI Whisper \u2014 GitHub",
+    "url": "https://github.com/openai/whisper",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 238,
+    "id": "98e6d69888ea533c",
+    "title": "SpeechBrain \u2014 GitHub",
+    "url": "https://github.com/speechbrain/speechbrain",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 239,
+    "id": "93d4e0dab34a8829",
+    "title": "Coqui TTS \u2014 GitHub",
+    "url": "https://github.com/coqui-ai/TTS",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 240,
+    "id": "c21c34f5075aa224",
+    "title": "sktime \u2014 GitHub",
+    "url": "https://github.com/sktime/sktime",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 241,
+    "id": "fb6f1c126d55707b",
+    "title": "Darts \u2014 GitHub",
+    "url": "https://github.com/unit8co/darts",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 242,
+    "id": "5083d746c2728ff2",
+    "title": "Transformer Circuits",
+    "url": "https://transformer-circuits.pub/feed.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 53
+  },
+  {
+    "index": 243,
+    "id": "1f3bf69da87690b7",
+    "title": "Stanford CodeX \u2014 Legal Informatics",
+    "url": "https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 244,
+    "id": "37c459c353a42daf",
+    "title": "Duolingo English Test \u2014 Blog",
+    "url": "https://blog.englishtest.duolingo.com/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 15
+  },
+  {
+    "index": 245,
+    "id": "9a25d619c0101be8",
+    "title": "Perplexity \u2014 Hub",
+    "url": "https://www.perplexity.ai/hub",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 246,
+    "id": "27a3c0486cd7ac82",
+    "title": "OpenHands \u2014 GitHub",
+    "url": "https://github.com/All-Hands-AI/openhands",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 247,
+    "id": "7fc08de27bce1b0c",
+    "title": "AutoGPT \u2014 GitHub",
+    "url": "https://github.com/Significant-Gravitas/AutoGPT",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:20:75: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 248,
+    "id": "4317c649bc1b9ce7",
+    "title": "arXiv \u2014 cs.AI RSS",
+    "url": "https://rss.arxiv.org/rss/cs.AI",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 299
+  },
+  {
+    "index": 249,
+    "id": "1ef09deabb13281c",
+    "title": "AMD ROCm \u2014 Blogs",
+    "url": "https://www.amd.com/en/technologies/rocm/blogs.html",
+    "success": false,
+    "status_code": null,
+    "error_message": "Timeout after 30.0s",
+    "entry_count": 0
+  },
+  {
+    "index": 250,
+    "id": "33c91748e0480bca",
+    "title": "Arm \u2014 AI & ML Blog",
+    "url": "https://community.arm.com/arm-community-blogs/b/ai-blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:4:766: not well-formed (invalid token)",
+    "entry_count": 0
+  },
+  {
+    "index": 251,
+    "id": "807a2a1630af1988",
+    "title": "MLIR \u2014 The LLVM Project Blog",
+    "url": "https://blog.llvm.org/tags/mlir/index.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 293
+  },
+  {
+    "index": 252,
+    "id": "231f8b7a061b8b6b",
+    "title": "FTC Business Blog \u2014 RSS",
+    "url": "https://www.ftc.gov/feeds/blog-business.xml",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 253,
+    "id": "b9edcea7e5067db8",
+    "title": "Journal of Artificial Intelligence Research (JAIR)",
+    "url": "https://www.jair.org",
+    "success": false,
+    "status_code": 200,
+    "error_message": "Feed parse error: <unknown>:18:2: mismatched tag",
+    "entry_count": 0
+  },
+  {
+    "index": 254,
+    "id": "580eb14015a8c19d",
+    "title": "Quantum Computing Report",
+    "url": "https://quantumcomputingreport.com/feed/",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 255,
+    "id": "c87eea6960de906c",
+    "title": "The Quantum Insider",
+    "url": "https://thequantuminsider.com/feed",
+    "success": false,
+    "status_code": 403,
+    "error_message": "HTTP 403",
+    "entry_count": 0
+  },
+  {
+    "index": 256,
+    "id": "9b1f428f43a34025",
+    "title": "MIT News \u2014 Quantum Computing",
+    "url": "https://news.mit.edu/topic/mitquantum-computing-rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 50
+  },
+  {
+    "index": 257,
+    "id": "da8ebfcd6a451d00",
+    "title": "IBM Research Blog \u2014 Quantum Computing",
+    "url": "https://research.ibm.com/blog",
+    "success": false,
+    "status_code": 200,
+    "error_message": "No entries found in feed",
+    "entry_count": 0
+  },
+  {
+    "index": 258,
+    "id": "d94657e6bf284e3c",
+    "title": "Google Quantum AI",
+    "url": "https://quantumai.google/",
+    "success": false,
+    "status_code": null,
+    "error_message": "Request error: ",
+    "entry_count": 0
+  },
+  {
+    "index": 259,
+    "id": "ac90267ef4e5af9f",
+    "title": "Microsoft Azure Quantum Blog",
+    "url": "https://azure.microsoft.com/en-us/blog/quantum/feed",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 10
+  },
+  {
+    "index": 260,
+    "id": "78f1d7b84e39ad8c",
+    "title": "IonQ Blog",
+    "url": "https://ionq.com/blog/rss.xml",
+    "success": true,
+    "status_code": 200,
+    "error_message": null,
+    "entry_count": 90
+  },
+  {
+    "index": 261,
+    "id": "7088018a6bbabdf8",
+    "title": "Rigetti Computing Blog",
+    "url": "https://rigetti.com/blog",
+    "success": false,
+    "status_code": 404,
+    "error_message": "HTTP 404",
+    "entry_count": 0
+  }
+]

@@ -1,0 +1,36 @@
+sources:
+- url: https://www.abortretry.fail/feed
+  title: Abort Retry Fail
+  topics:
+  - blogs
+  - industry
+  - infra
+  notes: Deep technical dives on AI infra, systems and reliability
+- url: https://kelvinmu.substack.com/feed
+  title: AI Musings by Mu
+  topics:
+  - newsletters
+  - research
+  - llm
+  notes: AI research and musings newsletter
+- url: https://www.cognitiverevolution.ai/latest/rss/
+  title: The Cognitive Revolution
+  topics:
+  - podcasts
+  - research
+  - industry
+  notes: AI podcast on builders, researchers and analysis
+- url: https://www.aisnakeoil.com/feed/
+  title: AI as Normal Technology
+  topics:
+  - blogs
+  - research
+  - industry
+  notes: Blog by Arvind Narayanan on AI
+- url: https://thealgorithmicbridge.substack.com/feed
+  title: The Algorithmic Bridge
+  topics:
+  - newsletters
+  - industry
+  - research
+  notes: Newsletter bridging AI research and practice

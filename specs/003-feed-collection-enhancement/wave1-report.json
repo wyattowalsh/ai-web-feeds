@@ -1,0 +1,50 @@
+{
+  "fixed": 0,
+  "pruned": 8,
+  "remaining": 314,
+  "details": {
+    "fixed": [],
+    "pruned": [
+      {
+        "id": "e620332497754836",
+        "title": "r/LocalLLaMA",
+        "url": "https://www.reddit.com/r/LocalLLaMA/hot/.rss"
+      },
+      {
+        "id": "intelligence-org-feed-bfc0206ab4",
+        "title": "Machine Intelligence Research Institute",
+        "url": "https://intelligence.org/feed/"
+      },
+      {
+        "id": "euractiv-com-topics-artificial-intelligence-feed-4e3c20be6f",
+        "title": "Euractiv AI",
+        "url": "https://www.euractiv.com/topics/artificial-intelligence/feed/"
+      },
+      {
+        "id": "reddit-com-r-machinelearning-hot-rss-484edc2e80",
+        "title": "r/MachineLearning",
+        "url": "https://www.reddit.com/r/MachineLearning/hot/.rss"
+      },
+      {
+        "id": "reddit-com-r-stablediffusion-hot-rss-1653ddfaa2",
+        "title": "r/StableDiffusion",
+        "url": "https://www.reddit.com/r/StableDiffusion/hot/.rss"
+      },
+      {
+        "id": "adaptcentre-ie-feed-69f33bc55e",
+        "title": "ADAPT, the Research Ireland Research Centre for AI-Driven Digital...",
+        "url": "https://www.adaptcentre.ie/feed"
+      },
+      {
+        "id": "reddit-com-r-artificial-rss-73540a5081",
+        "title": "www.reddit.com",
+        "url": "https://www.reddit.com/r/artificial/.rss"
+      },
+      {
+        "id": "reddit-com-r-localllama-rss-3ad8011b69",
+        "title": "www.reddit.com",
+        "url": "https://www.reddit.com/r/LocalLLaMA/.rss"
+      }
+    ]
+  }
+}

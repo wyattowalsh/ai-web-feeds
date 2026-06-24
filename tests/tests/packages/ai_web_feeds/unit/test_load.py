@@ -12,6 +12,8 @@ from ai_web_feeds.load import (
     load_topics,
     save_feeds,
     save_topics,
+    _is_forum_domain,
+    _is_docs_feed,
 )
 from hypothesis import given
 from hypothesis import strategies as st
@@ -507,3 +509,64 @@ class TestLoadSaveRoundTrip:
                 loaded_data["sources"][0]["description"]
                 == original_data["sources"][0]["description"]
             )
+
+
+@pytest.mark.unit
+class TestForumAndDocsDetection:
+    """Tests for private forum/docs helpers and infer_source_type forum/docs paths."""
+
+    @pytest.mark.parametrize(
+        ("domain", "expected"),
+        [
+            ("discuss.pytorch.org", True),
+            ("stackoverflow.com", True),
+            ("stackexchange.com", True),
+            ("community.example.com", True),
+            ("forum.ai.org", True),
+            ("example.com", False),
+            ("blog.example.com", False),
+            ("", False),
+        ],
+    )
+    def test_is_forum_domain(self, domain: str, expected: bool) -> None:
+        """Test forum domain detection markers."""
+        assert _is_forum_domain(domain) is expected
+
+    @pytest.mark.parametrize(
+        ("path", "expected"),
+        [
+            ("/releases.atom", True),
+            ("/changelog", True),
+            ("/docs/index.html", True),
+            ("/releases/v1.0", True),
+            ("/feed.xml", False),
+            ("/blog/posts", False),
+            ("", False),
+            ("/random", False),
+        ],
+    )
+    def test_is_docs_feed(self, path: str, expected: bool) -> None:
+        """Test docs feed path detection."""
+        assert _is_docs_feed(path) is expected
+
+    @pytest.mark.parametrize(
+        ("source", "expected"),
+        [
+            ({"url": "https://discuss.pytorch.org/t/feed", "topics": []}, "forum"),
+            ({"url": "https://community.openai.com/feed", "topics": ["community"]}, "forum"),
+            ({"url": "https://forum.example.com/rss", "topics": []}, "forum"),
+            (
+                {"url": "https://github.com/org/repo/releases.atom", "topics": []},
+                "docs",
+            ),
+            ({"url": "https://example.com/docs/feed.xml", "topics": ["docs"]}, "docs"),
+            (
+                {"url": "https://example.com/changelog", "topics": ["documentation"]},
+                "docs",
+            ),
+            ({"url": "https://example.com/feed", "topics": ["forum"]}, "forum"),
+        ],
+    )
+    def test_infer_source_type_forum_and_docs_paths(self, source: dict, expected: str) -> None:
+        """Test infer_source_type for forum and docs paths (load.py update)."""
+        assert infer_source_type(source) == expected
