@@ -2,6 +2,8 @@
  * Ring buffer for client-side diagnostic logs (max 500 entries).
  */
 
+import { makeClientId } from "@/lib/random-id";
+
 export type DiagnosticLevel = "debug" | "info" | "warn" | "error";
 
 export interface DiagnosticEntry {
@@ -16,7 +18,7 @@ const MAX_ENTRIES = 500;
 const buffer: DiagnosticEntry[] = [];
 
 function nextId(): string {
-  return `log_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return makeClientId("log_");
 }
 
 export function appendDiagnostic(

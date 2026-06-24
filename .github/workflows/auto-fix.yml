@@ -36,8 +36,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run auto-fix via uv scripts
-        run: uv run fix
+      - name: Run auto-fix via Ruff
+        run: |
+          uv run ruff check --fix .
+          uv run ruff format .
 
       - name: Check for changes
         id: verify-changed-files

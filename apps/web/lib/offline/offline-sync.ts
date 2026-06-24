@@ -11,6 +11,7 @@
  */
 
 import { articles, syncQueue, type Article, type SyncQueueItem } from "@/lib/db";
+import { makeClientId } from "@/lib/random-id";
 
 export type OfflineOperationType = "read" | "star" | "archive" | "tag" | "annotation" | "save";
 
@@ -39,7 +40,7 @@ export interface SyncResult {
  * Generate a unique operation id.
  */
 function generateId(): string {
-  return `op_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  return makeClientId("op_");
 }
 
 /**

@@ -3,6 +3,7 @@
  */
 
 import type { Article } from "@/lib/db";
+import { randomSuffix } from "@/lib/random-id";
 import type { WorkerArticle, WorkerSearchHit } from "../../workers/search.worker";
 
 export type SearchWorkerResult = {
@@ -95,7 +96,7 @@ export class SearchIndexManager {
       throw new Error("Search worker is not started");
     }
 
-    const requestId = `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const requestId = `q_${Date.now()}_${randomSuffix()}`;
 
     return new Promise<SearchWorkerResult>((resolve, reject) => {
       this.pending.set(requestId, { resolve, reject });

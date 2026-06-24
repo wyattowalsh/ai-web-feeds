@@ -2,6 +2,8 @@
  * Web app bridge for browser extension messages.
  */
 
+import { makeClientId } from "@/lib/random-id";
+
 export type ExtensionMessageType = "SAVE_ARTICLE" | "SUBSCRIBE_FEED" | "PING";
 
 export interface ExtensionMessage {
@@ -55,7 +57,7 @@ export function saveExtensionQueue(items: ExtensionQueueItem[]): void {
 
 export function enqueueExtensionMessage(message: ExtensionMessage): ExtensionQueueItem {
   const item: ExtensionQueueItem = {
-    id: `ext_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    id: makeClientId("ext_"),
     type: message.type,
     payload: message.payload ?? {},
     receivedAt: Date.now(),

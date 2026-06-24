@@ -15,7 +15,6 @@ from ai_web_feeds.config import Settings
 from ai_web_feeds.digests import DigestManager
 from ai_web_feeds.load import load_feeds
 from ai_web_feeds.models import NotificationFrequency
-from ai_web_feeds.nlp.scheduler import NLPScheduler
 from ai_web_feeds.notifications import NotificationManager
 from ai_web_feeds.polling import FeedPoller
 from ai_web_feeds.storage import DatabaseManager
@@ -43,9 +42,18 @@ class SchedulerManager:
         self.notifier = NotificationManager(db, settings)
         self.trending = TrendingDetector(db, settings)
         self.digests = DigestManager(db, settings)
-        self.nlp_scheduler = NLPScheduler(settings)
+        self._nlp_scheduler = None
 
         logger.info("Scheduler manager initialized")
+
+    @property
+    def nlp_scheduler(self):
+        """Lazy-load NLP scheduler so optional NLP deps are not required at import time."""
+        if self._nlp_scheduler is None:
+            from ai_web_feeds.nlp.scheduler import NLPScheduler
+
+            self._nlp_scheduler = NLPScheduler(self.settings)
+        return self._nlp_scheduler
 
     def start(self) -> None:
         """Start background scheduler with all jobs."""

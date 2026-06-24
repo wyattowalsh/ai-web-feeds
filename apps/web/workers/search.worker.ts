@@ -36,6 +36,22 @@ type IndexQueryMessage = {
 
 type WorkerInbound = IndexBuildMessage | IndexQueryMessage;
 
+function isWorkerInbound(data: unknown): data is WorkerInbound {
+  if (!data || typeof data !== "object") return false;
+  const record = data as Record<string, unknown>;
+  if (record.type === "build") return Array.isArray(record.articles);
+  if (record.type === "query") {
+    return typeof record.query === "string" && typeof record.requestId === "string";
+  }
+  return false;
+}
+
+function isTrustedWorkerEvent(event: MessageEvent): boolean {
+  if (!event.origin || event.origin === "") return true;
+  const workerOrigin = globalThis.location?.origin;
+  return !workerOrigin || event.origin === workerOrigin;
+}
+
 let articles: WorkerArticle[] = [];
 
 function scoreArticle(article: WorkerArticle, terms: string[]): WorkerSearchHit {
@@ -88,6 +104,10 @@ function scoreArticle(article: WorkerArticle, terms: string[]): WorkerSearchHit 
 }
 
 self.onmessage = (event: MessageEvent<WorkerInbound>) => {
+  if (!isTrustedWorkerEvent(event) || !isWorkerInbound(event.data)) {
+    return;
+  }
+
   const message = event.data;
 
   if (message.type === "build") {

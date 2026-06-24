@@ -15,6 +15,20 @@ function escapeRegExp(value) {
 }
 
 // workers/search.worker.ts
+function isWorkerInbound(data) {
+  if (!data || typeof data !== "object") return false;
+  const record = data;
+  if (record.type === "build") return Array.isArray(record.articles);
+  if (record.type === "query") {
+    return typeof record.query === "string" && typeof record.requestId === "string";
+  }
+  return false;
+}
+function isTrustedWorkerEvent(event) {
+  if (!event.origin || event.origin === "") return true;
+  const workerOrigin = globalThis.location?.origin;
+  return !workerOrigin || event.origin === workerOrigin;
+}
 var articles = [];
 function scoreArticle(article, terms) {
   const title = (article.title || "").toLowerCase();
@@ -61,6 +75,9 @@ function scoreArticle(article, terms) {
   return { id: article.id, score, matchedFields: Array.from(matched) };
 }
 self.onmessage = (event) => {
+  if (!isTrustedWorkerEvent(event) || !isWorkerInbound(event.data)) {
+    return;
+  }
   const message = event.data;
   if (message.type === "build") {
     articles = message.articles;

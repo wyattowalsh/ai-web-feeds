@@ -1,4 +1,5 @@
 import { folders, type Folder } from "@/lib/db";
+import { randomSuffix } from "@/lib/random-id";
 
 export async function listFolders(): Promise<Folder[]> {
   const all = await folders.getAll();
@@ -19,7 +20,7 @@ export async function createFolder(input: {
   const siblings = await listChildFolders(input.parentId);
   const now = Date.now();
   const folder: Folder = {
-    id: `folder_${now}_${Math.random().toString(36).slice(2, 8)}`,
+    id: `folder_${now}_${randomSuffix()}`,
     name: input.name.trim(),
     parentId: input.parentId,
     position: siblings.length,

@@ -5,10 +5,6 @@ from apscheduler.triggers.cron import CronTrigger
 from loguru import logger
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
-from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
-from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
-from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 
 
 class NLPScheduler:
@@ -100,6 +96,8 @@ class NLPScheduler:
     def _run_quality_job(self) -> None:
         """Execute quality scoring batch job."""
         try:
+            from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
+
             logger.info("Starting scheduled quality scoring job")
             job = QualityBatchJob(self.settings)
             stats = job.run()
@@ -110,6 +108,8 @@ class NLPScheduler:
     def _run_entity_job(self) -> None:
         """Execute entity extraction batch job."""
         try:
+            from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
+
             logger.info("Starting scheduled entity extraction job")
             job = EntityBatchJob(self.settings)
             stats = job.run()
@@ -120,6 +120,8 @@ class NLPScheduler:
     def _run_sentiment_job(self) -> None:
         """Execute sentiment analysis batch job."""
         try:
+            from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
+
             logger.info("Starting scheduled sentiment analysis job")
             job = SentimentBatchJob(self.settings)
             stats = job.run()
@@ -130,6 +132,8 @@ class NLPScheduler:
     def _run_topic_job(self) -> None:
         """Execute topic modeling batch job."""
         try:
+            from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
+
             logger.info("Starting scheduled topic modeling job")
             job = TopicModelingJob(self.settings)
             stats = job.run()
