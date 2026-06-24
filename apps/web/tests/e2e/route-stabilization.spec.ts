@@ -567,11 +567,11 @@ test.describe("Route stabilization smoke", () => {
 
   // FIX-018: Dark mode stabilization for hub chrome surfaces (/, /reader, /docs)
   test.describe("dark theme smoke", () => {
-    const DARK_ROUTES = [
+    const DARK_ROUTES: Array<{ path: string; text: string; exact?: boolean }> = [
       { path: "/", text: "Read AI writing across the open web" },
       { path: "/reader", text: "Read AI writing across the open web" },
       { path: "/docs", text: "Documentation", exact: true },
-    ] as const;
+    ];
 
     for (const route of DARK_ROUTES) {
       test(`loads ${route.path} in dark mode`, async ({ page }) => {
