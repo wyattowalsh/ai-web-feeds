@@ -22,6 +22,9 @@ function trackClientErrors(page: Page) {
     /Failed to load chunk .*turbopack|hmr-client/i,
     /hmr-client/i,
     /turbopack/i,
+    // WebKit/Firefox: SW registration or Next dev overlay fetches blocked by CORS in e2e
+    /sw\.js due to access control checks/i,
+    /__nextjs_original-stack-frames due to access control checks/i,
   ];
 
   page.on("console", (message) => {
@@ -567,7 +570,7 @@ test.describe("Route stabilization smoke", () => {
     const DARK_ROUTES = [
       { path: "/", text: "Read AI writing across the open web" },
       { path: "/reader", text: "Read AI writing across the open web" },
-      { path: "/docs", text: "Documentation" },
+      { path: "/docs", text: "Documentation", exact: true },
     ] as const;
 
     for (const route of DARK_ROUTES) {
@@ -577,7 +580,9 @@ test.describe("Route stabilization smoke", () => {
         await gotoWithRetry(page, route.path, { waitUntil: "domcontentloaded" });
         await forceDarkTheme(page);
         // Re-assert after theme flip in case of hydration paint
-        await expect(page.getByRole("heading", { name: route.text })).toBeVisible({
+        await expect(
+          page.getByRole("heading", { name: route.text, exact: route.exact ?? false }),
+        ).toBeVisible({
           timeout: 15000,
         });
         // Verify dark class is present for visual QA signal

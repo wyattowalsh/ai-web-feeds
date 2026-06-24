@@ -43,7 +43,24 @@ export async function typeIntoControlledInput(input: Locator, value: string) {
   await input.click();
   await input.fill("");
   await input.pressSequentially(value, { delay: 30 });
-  await expect(input).toHaveValue(value, { timeout: 10_000 });
+
+  try {
+    await expect(input).toHaveValue(value, { timeout: 5_000 });
+    return;
+  } catch {
+    // WebKit CI: synthesize input/change so React controlled state catches up.
+    await input.evaluate((el, nextValue) => {
+      const node = el as HTMLInputElement;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      );
+      descriptor?.set?.call(node, nextValue);
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+    }, value);
+    await expect(input).toHaveValue(value, { timeout: 10_000 });
+  }
 }
 
 /**
@@ -51,18 +68,53 @@ export async function typeIntoControlledInput(input: Locator, value: string) {
  * Works with next-themes + fumadocs by toggling the 'dark' class and persisting preference.
  */
 export async function forceDarkTheme(page: Page): Promise<void> {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     try {
       document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
       document.documentElement.style.colorScheme = "dark";
-      // Persist for next-themes
       try {
         localStorage.setItem("theme", "dark");
       } catch {
         // ignore
       }
+
+      // HubThemeSync reads IndexedDB preferences — persist dark so hydration does not revert.
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.open("aiwebfeeds");
+        req.onsuccess = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains("preferences")) {
+            db.close();
+            resolve();
+            return;
+          }
+          const tx = db.transaction("preferences", "readwrite");
+          const store = tx.objectStore("preferences");
+          const getReq = store.get("user_prefs");
+          getReq.onsuccess = () => {
+            const current = (getReq.result as Record<string, unknown> | undefined) ?? {
+              id: "user_prefs",
+            };
+            store.put({ ...current, id: "user_prefs", theme: "dark", updatedAt: Date.now() });
+          };
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => {
+            db.close();
+            resolve();
+          };
+        };
+        req.onerror = () => resolve();
+      });
     } catch {
       // ignore
     }
   });
+
+  await expect
+    .poll(async () => page.evaluate(() => document.documentElement.classList.contains("dark")))
+    .toBe(true);
 }

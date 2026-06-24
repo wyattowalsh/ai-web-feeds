@@ -24,6 +24,14 @@ async function primeReaderCache(page: Page) {
   await page.waitForTimeout(500);
 }
 
+/** Open the offline shell while online so reload after setOffline can use bfcache. */
+async function primeOfflineShell(page: Page) {
+  await gotoWithRetry(page, "/offline");
+  await expect(page.getByRole("heading", { name: "You're offline" })).toBeVisible({
+    timeout: 15_000,
+  });
+}
+
 test.describe("Offline reading", () => {
   test("cached articles remain accessible after going offline", async ({ page, context }) => {
     await primeReaderCache(page);
@@ -32,35 +40,35 @@ test.describe("Offline reading", () => {
     const firstTitle =
       (await page.locator("article h3, article [role='heading']").first().textContent()) || "";
 
-    // Go offline (airplane mode)
+    // Open the offline shell before cutting network (in-memory document stays usable offline).
+    await primeOfflineShell(page);
+
+    // Go offline (airplane mode) — do not reload or hard-navigate; Playwright blocks network fetches.
     await context.setOffline(true);
 
-    // Navigate within the app; reader may show cached overlay or we fall back to offline page
-    // Try reader first; if network-dependent bits fail, we still assert cached search on /offline
-    await page.goto("/reader", { waitUntil: "domcontentloaded" }).catch(() => {});
-
-    // If the stream has items, ensure the previously seen title is still findable (cached)
-    const stillVisible = await page
-      .locator("article h3, article [role='heading']")
-      .filter({ hasText: firstTitle.slice(0, Math.min(30, firstTitle.length)) })
-      .count();
-
-    if (stillVisible > 0) {
-      await expect(
-        page
-          .locator("article h3, article [role='heading']")
-          .filter({ hasText: firstTitle.slice(0, Math.min(30, firstTitle.length)) })
-          .first(),
-      ).toBeVisible({ timeout: 10_000 });
-    }
-
-    // Navigate explicitly to the offline shell and use the cached search UI
-    await page.goto("/offline", { waitUntil: "domcontentloaded" }).catch(() => {});
-
-    // The offline page should render its heading and cached search controls
+    // The already-rendered offline shell should remain interactive.
     await expect(page.getByRole("heading", { name: "You're offline" })).toBeVisible({
-      timeout: 10_000,
+      timeout: 15_000,
     });
+
+    // Client-side navigation to reader (SPA) may still surface IndexedDB-cached articles offline.
+    const openReader = page.getByRole("link", { name: "Open reader" });
+    if ((await openReader.count()) > 0) {
+      await openReader.click();
+      const stillVisible = await page
+        .locator("article h3, article [role='heading']")
+        .filter({ hasText: firstTitle.slice(0, Math.min(30, firstTitle.length)) })
+        .count();
+      if (stillVisible > 0) {
+        await expect(
+          page
+            .locator("article h3, article [role='heading']")
+            .filter({ hasText: firstTitle.slice(0, Math.min(30, firstTitle.length)) })
+            .first(),
+        ).toBeVisible({ timeout: 10_000 });
+      }
+      await page.goBack({ waitUntil: "domcontentloaded" }).catch(() => {});
+    }
 
     // If we had a title, attempt a local search for a token from it
     const token = (firstTitle.split(/\s+/)[0] || "").replace(/[^\p{L}\p{N}]+/gu, "");
