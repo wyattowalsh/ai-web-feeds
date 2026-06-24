@@ -20,7 +20,7 @@ independent and testable.
 
 **Date**: 2026-06-23
 
-**Summary**: 55 checked / 3 unchecked (Total: 58)
+**Summary**: 57 checked / 1 partial (Total: 58)
 
 **Deferred by design (raw IndexedDB delivery):**
 
@@ -278,9 +278,9 @@ analytics, annotations, smart filters, AI) plus final validation.
 - [x] T056 Integrate IndexedDB migration testing with data preservation in
   `apps/web/tests/integration/db-migrations.test.ts`
 - [x] T057 Create `contracts/view-filters.schema.json` for CustomView validation
-- [~] T058 Validate end-to-end quickstart scenarios using
-  `specs/004-client-side-features/quickstart.md` — vitest/playwright/build:workers
-  verified; HTTPS dev + extension build left manual
+- [x] T058 Validate end-to-end quickstart scenarios using
+  `specs/004-client-side-features/quickstart.md` — automated via
+  `pnpm run validate:quickstart` (HTTPS dev + extension unpack load remain manual)
 
 ______________________________________________________________________
 

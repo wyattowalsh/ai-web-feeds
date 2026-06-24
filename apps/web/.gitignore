@@ -20,6 +20,7 @@ ai_web_feeds.json
 /build
 *.tsbuildinfo
 /test-results/
+/public/workers/*.map
 
 # misc
 .DS_Store

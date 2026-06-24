@@ -22,7 +22,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "build:workers": "tsx scripts/build-workers.ts",
-    "build:workers:watch": "tsx scripts/build-workers.ts --watch"
+    "build:workers:watch": "tsx scripts/build-workers.ts --watch",
+    "validate:quickstart": "bash scripts/validate-quickstart.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
