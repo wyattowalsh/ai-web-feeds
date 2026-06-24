@@ -1,5 +1,7 @@
 """Wave 0 baseline + HTTP audit for feed collection enhancement."""
 
+# ruff: noqa: T201
+
 from __future__ import annotations
 
 import argparse

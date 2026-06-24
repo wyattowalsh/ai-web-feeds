@@ -38,8 +38,8 @@ jobs:
 
       - name: Run auto-fix via Ruff
         run: |
-          uv run ruff check --fix .
-          uv run ruff format .
+          uv run ruff check --fix apps/cli packages tests
+          uv run ruff format apps/cli packages tests
 
       - name: Check for changes
         id: verify-changed-files
