@@ -1,0 +1,42 @@
+---
+title: Client-Side Features
+description: Offline reading, cached search, organization, extension bridge, and data portability.
+---
+
+# Client-Side Features
+
+AI Web Feeds stores reader state locally using **raw IndexedDB** (`apps/web/lib/db`) — not Dexie.
+
+## Offline reading
+
+- Service worker: `apps/web/public/sw.js`
+- Sync manager: `apps/web/lib/offline/offline-sync.ts`
+- Offline hub: `/offline`
+- Conflict review: `/offline/conflicts`
+
+## Cached search
+
+- Web Worker index: `apps/web/workers/search.worker.ts`
+- Index manager: `apps/web/lib/search/index-manager.ts`
+- UI: `/search` (cached section) + `AdvancedSearchPanel`
+
+## Organization
+
+- Folders repository: `apps/web/lib/organization/folders-repository.ts`
+- Custom views: `apps/web/lib/organization/custom-view-schema.ts`
+- UI: `/feeds/views`
+
+## Browser extension
+
+- Manifest V3 scaffold: `apps/web/extension/manifest.json`
+- Reading list queue: `/feeds/reading-list`
+
+## Data portability
+
+- Export/import services: `apps/web/lib/exports/*`
+- Settings UI: `/settings/data-portability`
+
+## Diagnostics
+
+- Ring buffer: `apps/web/lib/diagnostics/log-buffer.ts`
+- Export UI: `/settings/diagnostics`

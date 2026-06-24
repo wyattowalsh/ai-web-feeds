@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "AI Web Feeds Saver",
+  "version": "0.1.0",
+  "description": "Save articles and subscribe to feeds in AI Web Feeds.",
+  "permissions": ["storage", "contextMenus", "activeTab"],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "AI Web Feeds"
+  }
+}

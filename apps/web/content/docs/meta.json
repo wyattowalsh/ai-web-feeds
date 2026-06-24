@@ -31,7 +31,8 @@
       "twitter-arxiv-integration",
       "platform-integrations",
       "llms-full-format",
-      "visualization"
+      "visualization",
+      "client-side"
     ]
   },
   "---Guides": {

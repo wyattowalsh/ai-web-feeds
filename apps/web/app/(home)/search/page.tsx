@@ -15,6 +15,7 @@ import { CANONICAL_READER_PATH } from "@/lib/reader-routes";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { buildImmersiveReaderHref } from "@/lib/reader/reader-href";
+import { CachedSearchResults } from "@/components/search/cached-search-results";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Search - AI Web Feeds",
@@ -173,6 +174,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {browse.corpus.latest_published_at ?? "n/a"}
           </p>
         )}
+
+        <div className="space-y-3 pt-4">
+          <h2 className="text-lg font-semibold text-(--ink)">Cached articles (offline)</h2>
+          <p className="text-sm text-(--ink-muted)">
+            Search articles stored on this device via the Web Worker index. No network required.
+          </p>
+          <CachedSearchResults initialQuery={query ?? ""} />
+        </div>
       </HubPage>
     </div>
   );

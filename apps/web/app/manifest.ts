@@ -10,6 +10,23 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#f8f5ed",
     theme_color: "#f8f5ed",
+    categories: ["news", "productivity"],
+    orientation: "any",
+    shortcuts: [
+      { name: "Reader", short_name: "Reader", url: "/reader", description: "Open the feed reader" },
+      {
+        name: "Search",
+        short_name: "Search",
+        url: "/search",
+        description: "Search cached articles",
+      },
+      {
+        name: "Offline",
+        short_name: "Offline",
+        url: "/offline",
+        description: "Manage offline feeds",
+      },
+    ],
     icons: [
       {
         src: "/android-chrome-192x192.png",

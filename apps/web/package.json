@@ -20,7 +20,9 @@
     "test:unit": "vitest run",
     "test:vitest": "vitest",
     "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "build:workers": "tsx scripts/build-workers.ts",
+    "build:workers:watch": "tsx scripts/build-workers.ts --watch"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -88,6 +90,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "axe-core": "^4.11.3",
     "axe-playwright": "^2.2.2",
+    "esbuild": "^0.28.1",
     "eslint": "^9.39.3",
     "eslint-config-next": "15.5.12",
     "fake-indexeddb": "^6.2.5",
