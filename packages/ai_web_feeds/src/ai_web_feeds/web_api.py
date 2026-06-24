@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, FastAPI, Query, Response
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import desc
@@ -259,11 +259,11 @@ def get_article_quality(
     article_id: int,
     *,
     session: DbSession,
-) -> dict[str, Any] | JSONResponse:
+) -> dict[str, Any]:
     """Return quality score for a specific article."""
     quality = session.get(ArticleQualityScore, article_id)
     if quality is None:
-        return error_response("Quality score not found", 404, "QUALITY_NOT_FOUND")
+        raise HTTPException(status_code=404, detail="Quality score not found")
 
     return {
         "article_id": quality.article_id,
@@ -370,11 +370,11 @@ def get_article_sentiment(
     article_id: int,
     *,
     session: DbSession,
-) -> dict[str, Any] | JSONResponse:
+) -> dict[str, Any]:
     """Return sentiment analysis for a specific article."""
     sentiment = session.get(ArticleSentiment, article_id)
     if sentiment is None:
-        return error_response("Sentiment not found", 404, "SENTIMENT_NOT_FOUND")
+        raise HTTPException(status_code=404, detail="Sentiment not found")
 
     return {
         "article_id": sentiment.article_id,

@@ -6,6 +6,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { createPageMetadata } from "@/lib/seo";
 
+import { OfflineFeedView } from "@/components/offline/offline-feed-view";
+
 import { OfflineCachedSearch } from "./offline-cached-search";
 import { OfflineTryAgainButton } from "./offline-actions";
 
@@ -43,6 +45,17 @@ export default function OfflinePage() {
           </Link>
         </div>
       </section>
+
+      <OfflineFeedView />
+
+      <div className="mx-auto mt-6 w-full max-w-xl text-center text-sm">
+        <Link
+          href="/offline/conflicts"
+          className="text-(--accent) underline-offset-4 hover:underline"
+        >
+          Review sync conflicts
+        </Link>
+      </div>
 
       <OfflineCachedSearch />
     </div>

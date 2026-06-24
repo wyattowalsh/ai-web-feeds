@@ -510,6 +510,27 @@ class TestCLIAddCommand:
         assert result.exit_code == 0
         assert "add" in result.output
 
+    def test_add_rejects_non_feed_site_url(self, tmp_path: Path):
+        """Plain site URLs without feed indicators should be rejected."""
+        from ai_web_feeds.cli.commands.add import app as add_app
+
+        runner = CliRunner()
+        with runner.isolated_filesystem(temp_dir=tmp_path):
+            feeds_file = Path("feeds.yaml")
+            feeds_file.write_text(
+                yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}, sort_keys=False),
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(
+                add_app,
+                ["https://example.com/about", "--input", str(feeds_file)],
+            )
+
+            assert result.exit_code != 0
+            data = yaml.safe_load(feeds_file.read_text(encoding="utf-8"))
+            assert data["sources"] == []
+
     def test_add_feed_url_to_catalog(self, tmp_path: Path):
         """Test adding a feed URL creates an entry in feeds.yaml."""
         from ai_web_feeds.cli.commands.add import app as add_app

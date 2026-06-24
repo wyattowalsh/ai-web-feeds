@@ -176,11 +176,13 @@ for entity_data in entities:
 Entity extraction runs hourly via APScheduler:
 
 ```python
-from ai_web_feeds.nlp.scheduler import NLPScheduler
+from ai_web_feeds.config import Settings
+from ai_web_feeds.scheduler import SchedulerManager
+from ai_web_feeds.storage import DatabaseManager
 
-nlp_scheduler = NLPScheduler(scheduler)
-nlp_scheduler.register_jobs()
-# Registers: Entity extraction job (every hour)
+manager = SchedulerManager(DatabaseManager(), Settings())
+manager.start()
+# Registers entity extraction and other NLP batch jobs
 ```
 
 ## Database Schema

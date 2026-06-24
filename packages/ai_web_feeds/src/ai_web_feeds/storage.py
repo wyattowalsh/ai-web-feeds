@@ -32,6 +32,7 @@ from ai_web_feeds.models import (
     TopicNode,
     TopicStats,
     TrendingTopic,
+    UserProfile,
     UserSourceFollow,
 )
 
@@ -1491,6 +1492,19 @@ class DatabaseManager:
         with self.get_session() as session:
             statement = select(UserSourceFollow.user_id).distinct()
             return list(session.exec(statement).all())
+
+    def get_user_profile(self, user_id: str) -> UserProfile | None:
+        """Return a user's profile for personalization and notification targeting."""
+        with self.get_session() as session:
+            return session.get(UserProfile, user_id)
+
+    def get_feed_topics(self, source_id: str) -> list[str]:
+        """Return canonical topic IDs for a feed source."""
+        with self.get_session() as session:
+            feed = session.get(FeedSource, source_id)
+            if feed is None:
+                return []
+            return list(feed.topics or [])
 
 
 _db_manager: DatabaseManager | None = None

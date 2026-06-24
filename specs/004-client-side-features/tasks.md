@@ -20,7 +20,7 @@ independent and testable.
 
 **Date**: 2026-06-23
 
-**Summary**: 5 checked / 53 unchecked (Total: 58)
+**Summary**: 12 checked / 46 unchecked (Total: 58)
 
 **Verified gaps (true remaining work, not unverifiable):**
 
@@ -86,7 +86,7 @@ storage warnings, and conflict resolution flow when reconnected.
 
 - [x] T011 [P] [US1] Add Playwright offline reading scenario in
   `apps/web/tests/e2e/offline-reading.spec.ts`
-- [ ] T012 [P] [US1] Add Vitest offline sync + conflict resolution suite in
+- [x] T012 [P] [US1] Add Vitest offline sync + conflict resolution suite in
   `apps/web/tests/integration/offline-sync.test.ts`
 
 ### Implementation (RED-GREEN-REFACTOR: Start after tests fail)
@@ -103,15 +103,15 @@ storage warnings, and conflict resolution flow when reconnected.
   - Provides: `queueOperation`, `queueSaveForOffline`, `queueMarkRead`, `queueMarkStar`,
     `reconcilePending` (local wins), `getPendingOperations`, `processBackgroundSync`.
   - Task note amended per implementation constraint: raw IndexedDB (lib/db), not Dexie.
-- [ ] T015 [US1] Build offline feed view with status badge and timestamp in
-  `apps/web/app/feeds/offline/offline-feed.tsx` (Depends: T011)
+- [x] T015 [US1] Build offline feed view with status badge and timestamp in
+  `apps/web/components/offline/offline-feed-view.tsx` (Depends: T011)
 - [x] T016 [US1] Build storage warning + cleanup UI in
   `apps/web/components/offline/storage-banner.tsx` (Depends: T011)
   - Uses `getStorageQuota()` from `lib/db/schema.ts`.
   - Thresholds: 70% (info), 80% (warning), 90% (critical).
   - Wired globally via `HubProviders` (fixed container) for reader/hub surfaces.
-- [ ] T017 [US1] Build conflict resolution panel in
-  `apps/web/app/offline/conflicts/page.tsx` (Depends: T012)
+- [x] T017 [US1] Build conflict resolution panel in
+  `apps/web/app/(home)/offline/conflicts/page.tsx` (Depends: T012)
 
 **Parallel Work Example**: While T013 focuses on Service Worker logic, another developer
 can implement the UI tasks (T015–T017) once T011/T012 define expectations.
@@ -128,16 +128,16 @@ highlighted results within performance budget while filters update instantly.
 
 ### Tests (write first) — COMPLETE BEFORE IMPLEMENTATION
 
-- [ ] T018 [P] [US2] Add Vitest tokenizer & indexer unit tests in
+- [x] T018 [P] [US2] Add Vitest tokenizer & indexer unit tests in
   `apps/web/tests/unit/search/tokenize.test.ts`
 - [ ] T019 [P] [US2] Add Playwright search filtering performance spec (\<50ms threshold)
   in `apps/web/tests/e2e/search-filters.spec.ts`
 
 ### Implementation (RED-GREEN-REFACTOR: Start after tests fail)
 
-- [ ] T020 [US2] Implement `apps/web/workers/search.worker.ts` (index build + query
+- [x] T020 [US2] Implement `apps/web/workers/search.worker.ts` (index build + query
   execution) (Depends: T018, T019)
-- [ ] T021 [US2] Implement index manager orchestration in
+- [x] T021 [US2] Implement index manager orchestration in
   `apps/web/lib/search/index-manager.ts` (Depends: T018)
 - [ ] T022 [US2] Build advanced search panel with filters in
   `apps/web/components/search/advanced-search-panel.tsx` (Depends: T019)

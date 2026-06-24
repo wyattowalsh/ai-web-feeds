@@ -18,6 +18,9 @@ def mock_db():
     db.get_due_digests = MagicMock(return_value=[])
     db.get_active_user_ids = MagicMock(return_value=["user-1", "user-2", "user-3"])
     db.get_user_preferences = MagicMock(return_value=[])
+    db.get_user_profile = MagicMock(return_value=None)
+    db.get_user_followed_sources = MagicMock(return_value=[])
+    db.get_feed_topics = MagicMock(return_value=[])
     return db
 
 
@@ -227,6 +230,36 @@ class TestTrendingNotificationFiltering:
 
         users = scheduler._get_interested_users_for_trending(["u1"])
         assert users == ["u1"]  # per-feed OFF does not affect trending
+
+    def test_get_interested_users_topic_preferred(self, scheduler, mock_db):
+        """Users with preferred topics only receive matching trending topics."""
+        from ai_web_feeds.models import UserProfile
+
+        profile = UserProfile(user_id="u_pref", preferred_topics=["ai"], blocked_topics=[])
+        mock_db.get_user_preferences = MagicMock(return_value=[])
+        mock_db.get_user_profile = MagicMock(
+            side_effect=lambda uid: profile if uid == "u_pref" else None
+        )
+        mock_db.get_user_followed_sources = MagicMock(return_value=["feed-1"])
+        mock_db.get_feed_topics = MagicMock(return_value=["ml"])
+        scheduler.db = mock_db
+
+        assert "u_pref" in scheduler._get_interested_users_for_trending(["u_pref"], "ai")
+        assert "u_pref" not in scheduler._get_interested_users_for_trending(["u_pref"], "ml")
+
+    def test_get_interested_users_topic_blocked(self, scheduler, mock_db):
+        """Blocked topics are excluded from trending notifications."""
+        from ai_web_feeds.models import UserProfile
+
+        profile = UserProfile(user_id="u_block", preferred_topics=[], blocked_topics=["crypto"])
+        mock_db.get_user_preferences = MagicMock(return_value=[])
+        mock_db.get_user_profile = MagicMock(return_value=profile)
+        mock_db.get_user_followed_sources = MagicMock(return_value=["feed-1"])
+        mock_db.get_feed_topics = MagicMock(return_value=["crypto"])
+        scheduler.db = mock_db
+
+        users = scheduler._get_interested_users_for_trending(["u_block"], "crypto")
+        assert users == []
 
     def test_get_interested_users_mixed_prefs(self, scheduler, mock_db):
         """Mixed: one global OFF, one with per-feed, one none."""

@@ -47,10 +47,12 @@ def _looks_like_feed_url(url: str) -> bool:
     if not parsed.scheme or not parsed.netloc:
         return False
     lower = url.lower()
+    if parsed.scheme not in {"http", "https"}:
+        return False
     # Common feed indicators
     if any(x in lower for x in (".xml", ".rss", "/rss", "/feed", "/atom")):
         return True
-    return True  # Assume valid http(s) URL can be a source page
+    return False
 
 
 @app.command()
@@ -107,7 +109,11 @@ def add(
         raise typer.Exit(1)
 
     if not _looks_like_feed_url(url):
-        console.print(f"[yellow]Warning:[/yellow] URL may not be a feed: {url}")
+        console.print(f"[red]Error: URL does not look like a feed: {url}[/red]")
+        console.print(
+            "[dim]Use a feed URL containing .xml, .rss, /rss, /feed, or /atom[/dim]",
+        )
+        raise typer.Exit(1)
 
     # Load existing catalog
     try:

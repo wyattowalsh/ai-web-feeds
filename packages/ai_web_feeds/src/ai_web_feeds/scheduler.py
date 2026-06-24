@@ -161,7 +161,9 @@ class SchedulerManager:
 
             # Send notifications for each trending topic, filtered by user prefs
             for topic in trending_topics[:5]:  # Top 5 trending
-                interested_users = self._get_interested_users_for_trending(active_users)
+                interested_users = self._get_interested_users_for_trending(
+                    active_users, topic.topic_id
+                )
                 if interested_users:
                     await self.notifier.notify_trending_topic(topic, interested_users)
 
@@ -170,14 +172,18 @@ class SchedulerManager:
         except Exception as e:
             logger.error(f"Trending detection job failed: {e}")
 
-    def _get_interested_users_for_trending(self, user_ids: list[str]) -> list[str]:
-        """Filter users by NotificationPreference (global prefs apply to trending).
+    def _get_interested_users_for_trending(
+        self, user_ids: list[str], topic_id: str | None = None
+    ) -> list[str]:
+        """Filter users for trending notifications by prefs and topic interest.
 
-        Notify users unless they have explicitly set global frequency to OFF.
-        Defaults to notifying active users who have not opted out.
+        Global notification OFF always excludes a user. When ``topic_id`` is set,
+        users must not block the topic and must either prefer it, follow a feed
+        tagged with it, or have no follows yet (discovery default).
 
         Args:
             user_ids: Candidate active user IDs
+            topic_id: Trending topic ID from taxonomy
 
         Returns:
             List of user IDs to receive trending notifications
@@ -185,12 +191,33 @@ class SchedulerManager:
         interested: list[str] = []
         for user_id in user_ids:
             prefs = self.db.get_user_preferences(user_id)
-            # Check global prefs (feed_id=None) for OFF
             opted_out = any(
                 (p.feed_id is None and p.frequency == NotificationFrequency.OFF) for p in prefs
             )
-            if not opted_out:
+            if opted_out:
+                continue
+
+            if topic_id is None:
                 interested.append(user_id)
+                continue
+
+            profile = self.db.get_user_profile(user_id)
+            if profile and topic_id in (profile.blocked_topics or []):
+                continue
+
+            if profile and profile.preferred_topics:
+                if topic_id in profile.preferred_topics:
+                    interested.append(user_id)
+                continue
+
+            followed = self.db.get_user_followed_sources(user_id)
+            if not followed:
+                interested.append(user_id)
+                continue
+
+            if any(topic_id in self.db.get_feed_topics(source_id) for source_id in followed):
+                interested.append(user_id)
+
         return interested
 
     async def _send_digests(self) -> None:

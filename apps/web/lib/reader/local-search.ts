@@ -9,6 +9,9 @@
  */
 
 import { articles, type Article } from "@/lib/db";
+import { escapeRegExp, tokenizeQuery } from "@/lib/search/tokenize";
+
+export { tokenizeQuery } from "@/lib/search/tokenize";
 
 export interface LocalSearchOptions {
   /** Maximum number of results to return (default 50) */
@@ -34,23 +37,6 @@ export interface LocalSearchResult {
 }
 
 const DEFAULT_LIMIT = 50;
-
-/**
- * Tokenize a query into normalized, lowercased terms.
- * Supports simple quoted phrases by treating "..." as a single term.
- */
-export function tokenizeQuery(query: string): string[] {
-  const q = (query || "").trim();
-  if (!q) return [];
-
-  const terms: string[] = [];
-  const re = /"([^"]+)"|'([^']+)'|(\S+)/g;
-  for (const m of q.matchAll(re)) {
-    const t = (m[1] || m[2] || m[3] || "").trim().toLowerCase();
-    if (t) terms.push(t);
-  }
-  return terms;
-}
 
 /**
  * Score a single article against a set of query terms.
@@ -119,10 +105,6 @@ function scoreArticle(
   if (ageDays >= 0 && ageDays < 30) score += 1;
 
   return { score, matchedFields: Array.from(matched) };
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**

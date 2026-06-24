@@ -357,7 +357,10 @@ export const syncQueue = {
   getAll: () => getAll<SyncQueueItem>(STORES.SYNC_QUEUE),
   put: (item: SyncQueueItem) => put(STORES.SYNC_QUEUE, item),
   delete: (id: string) => del(STORES.SYNC_QUEUE, id),
-  getPending: () => getByIndex<SyncQueueItem>(STORES.SYNC_QUEUE, "synced", false),
+  getPending: async () => {
+    const all = await getAll<SyncQueueItem>(STORES.SYNC_QUEUE);
+    return all.filter((item) => item.synced === false);
+  },
   clear: () => clear(STORES.SYNC_QUEUE),
 };
 
