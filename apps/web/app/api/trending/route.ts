@@ -6,15 +6,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { clampNumber } from "@/lib/backend";
+import { trendingStore } from "@/lib/server/trending-store";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import {
-  BackendConfigurationError,
-  clampNumber,
-  createFeatureUnavailableResponse,
-  fetchBackend,
-  formatBackendErrorResponse,
-  getBackendErrorStatus,
-} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -22,34 +16,13 @@ const GETHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const limit = clampNumber(parseInt(searchParams.get("limit") || "10", 10), 1, 100);
 
-  try {
-    const data = await fetchBackend("/storage/trending", {
-      method: "GET",
-      params: { limit },
-    });
+  const data = await trendingStore.list(limit);
 
-    return NextResponse.json({
-      trending: data,
-      count: Array.isArray(data) ? data.length : 0,
-      updated_at: new Date().toISOString(),
-    });
-  } catch (error) {
-    if (error instanceof BackendConfigurationError) {
-      return NextResponse.json(
-        createFeatureUnavailableResponse(
-          "Trending",
-          "Trending topics are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
-        ),
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
-  }
+  return NextResponse.json({
+    trending: data,
+    count: data.length,
+    updated_at: new Date().toISOString(),
+  });
 };
 
-export const GET = withRouteTelemetry("trending.list", GETHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("trending.list", GETHandler);

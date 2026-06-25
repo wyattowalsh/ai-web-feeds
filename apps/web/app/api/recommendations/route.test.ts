@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fetchBackendMock } = vi.hoisted(() => ({
+const { fetchBackendMock, getSqlMock, recordRecommendationInteractionMock } = vi.hoisted(() => ({
   fetchBackendMock: vi.fn(),
+  getSqlMock: vi.fn(() => null),
+  recordRecommendationInteractionMock: vi.fn(),
 }));
 
 vi.mock("@/lib/telemetry-route", () => ({
@@ -15,6 +17,18 @@ vi.mock("@/lib/backend", async () => {
     fetchBackend: fetchBackendMock,
   };
 });
+
+vi.mock("@/lib/server/db", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/server/db")>("@/lib/server/db");
+  return {
+    ...actual,
+    getSql: getSqlMock,
+  };
+});
+
+vi.mock("@/lib/server/recommendation-interactions", () => ({
+  recordRecommendationInteraction: recordRecommendationInteractionMock,
+}));
 
 import { BackendConfigurationError, BackendError } from "@/lib/backend";
 
@@ -30,6 +44,9 @@ describe("/api/recommendations route", () => {
   beforeEach(() => {
     vi.resetModules();
     fetchBackendMock.mockReset();
+    getSqlMock.mockReset();
+    getSqlMock.mockReturnValue(null);
+    recordRecommendationInteractionMock.mockReset();
   });
 
   it("forwards user_id, topics, and limit on GET", async () => {
@@ -98,6 +115,36 @@ describe("/api/recommendations route", () => {
         reason: "similar_topics",
       },
     });
+  });
+
+  it("persists recommendation interactions to Neon when DATABASE_URL is configured", async () => {
+    const { POST } = await loadRouteModule();
+    getSqlMock.mockReturnValue(vi.fn() as never);
+    recordRecommendationInteractionMock.mockResolvedValue({
+      id: "interaction-1",
+      user_id: "user-1",
+      feed_id: "feed-1",
+      interaction_type: "subscribe",
+      context: { reason: "similar_topics" },
+      timestamp: "2026-06-25T12:00:00.000Z",
+    });
+
+    const response = await POST(
+      createRequest("http://localhost/api/recommendations", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: "user-1",
+          feed_id: "feed-1",
+          interaction_type: "subscribe",
+          reason: "similar_topics",
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(recordRecommendationInteractionMock).toHaveBeenCalled();
+    expect(fetchBackendMock).not.toHaveBeenCalled();
   });
 
   it("preserves backend status codes on POST failures", async () => {

@@ -5,6 +5,7 @@ import { CommandPalette } from "@/components/hub/command-palette";
 import { HubThemeSync } from "@/components/hub/hub-theme-sync";
 import { StorageBanner } from "@/components/offline/storage-banner";
 import { SwStatusBanner } from "@/components/offline/sw-status-banner";
+import { AccountSessionBootstrap } from "@/components/auth/account-session-bootstrap";
 import { ToastProvider } from "@/components/utility/toast";
 import { IndexedDbProvider } from "@/components/providers/indexeddb-provider";
 import { ServiceWorkerRegister } from "@/components/utility/service-worker-register";
@@ -16,6 +17,7 @@ type HubProvidersProps = {
 export function HubProviders({ children }: HubProvidersProps) {
   return (
     <ToastProvider>
+      <AccountSessionBootstrap />
       <IndexedDbProvider>
         <HubThemeSync />
         {children}

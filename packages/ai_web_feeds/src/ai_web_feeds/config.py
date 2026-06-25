@@ -16,6 +16,11 @@ def default_database_url() -> str:
     return DEFAULT_DATABASE_URL
 
 
+def resolve_database_url(*, explicit: str | None = None) -> str:
+    """Resolve the database URL from an explicit override or project default."""
+    return explicit or default_database_url()
+
+
 class LoggingConfig(BaseSettings):
     """Logging-specific configs."""
 

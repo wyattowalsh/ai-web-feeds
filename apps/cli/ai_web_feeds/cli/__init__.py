@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any
 
 import typer
-from ai_web_feeds.config import DEFAULT_DATABASE_URL
+from ai_web_feeds.catalog_sync import sync_catalog_to_db
+from ai_web_feeds.config import DEFAULT_DATABASE_URL, resolve_database_url
 from loguru import logger
 from rich.console import Console
 
@@ -276,58 +277,30 @@ def process(
         export_all_formats(feeds_data, output_dir, prefix)
         console.print("[green]✓ Exported to JSON and OPML formats[/green]")
 
-    # Step 6: Store in database
-    console.print("\n[bold]Step 6:[/bold] Storing in database...")
+    # Step 6: Catalog sync (topics, sources, junctions)
+    console.print("\n[bold]Step 6:[/bold] Syncing catalog to database...")
+    resolved_database_url = resolve_database_url(explicit=database_url)
+    sources = feeds_data.get("sources", [])
+    stored_count = 0
+    errors: list[str] = []
     try:
-        upgrade_database_to_head(database_url)
-        db = DatabaseManager(database_url)
-
-        # Store feed sources
-        from ai_web_feeds.models import FeedSource
-
-        sources = feeds_data.get("sources", [])
-        stored_count = 0
-
-        errors = []
-        for source_data in sources:
-            try:
-                # Canonicalization guarantees an ID; keep a defensive error for invalid inputs.
-                source_id = source_data.get("id", source_data.get("url", ""))
-                if not source_id:
-                    raise ValueError("source is missing id")
-
-                feed_source = FeedSource(
-                    id=source_id,
-                    feed=source_data.get("feed"),
-                    site=source_data.get("site"),
-                    title=source_data.get("title", source_data.get("url", "")),
-                    source_type=source_data.get("source_type"),
-                    mediums=source_data.get("mediums", []),
-                    topics=source_data.get("topics", []),
-                    language=source_data.get("language"),
-                    description=source_data.get("description"),
-                    curation_status=source_data.get("curation_status"),
-                    notes=source_data.get("notes"),
-                    tags=source_data.get("tags", []),
-                    topic_weights=source_data.get("topic_weights", {}),
-                )
-                db.add_feed_source(feed_source)
-                stored_count += 1
-            except Exception as e:
-                error_msg = f"{source_data.get('url', 'unknown')}: {e}"
-                errors.append(error_msg)
-                logger.warning(f"Failed to store source: {error_msg}")
-
-        console.print(f"[green]✓ Stored {stored_count}/{len(sources)} sources in database[/green]")
-
-        if errors and len(errors) <= 5:
-            console.print("[yellow]⚠ Storage warnings:[/yellow]")
-            for error in errors[:5]:
-                console.print(f"  • {error}")
-
+        sync_result = sync_catalog_to_db(
+            feeds_path=input_file,
+            enriched_path=output_file,
+            database_url=resolved_database_url,
+        )
+        stored_count = sync_result.sources_count
+        typer.echo(
+            "✓ Catalog sync complete "
+            f"(Topics: {sync_result.topics_count}, "
+            f"Sources: {sync_result.sources_count}, "
+            f"Junctions: {sync_result.junction_count})"
+        )
+        if sync_result.pipeline_run_id:
+            typer.echo(f"  • Pipeline run: {sync_result.pipeline_run_id}")
     except Exception as e:
-        console.print(f"[red]✗ Database storage failed: {e}[/red]")
-        logger.exception("Database error")
+        console.print(f"[red]✗ Catalog sync failed: {e}[/red]")
+        logger.exception("Catalog sync error")
         raise typer.Exit(1) from e
 
     # Summary
@@ -341,7 +314,7 @@ def process(
         console.print(
             f"  • OPML (categorized): {output_file.parent}/{output_prefix}.categorized.opml"
         )
-    console.print(f"  • Database: {database_url}")
+    console.print(f"  • Database: {resolved_database_url}")
     console.print("\n[bold]Statistics:[/bold]")
     console.print(f"  • Sources processed: {len(sources)}")
     console.print(f"  • Sources stored: {stored_count}")

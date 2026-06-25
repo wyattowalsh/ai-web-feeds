@@ -7,8 +7,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { userStore } from "@/lib/server/user-store";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
 
 const PATCHHandler = async (
@@ -28,7 +29,7 @@ const PATCHHandler = async (
       user_id?: string;
     };
     const requestedUserId = body.user_id ?? request.nextUrl.searchParams.get("user_id");
-    const identity = getUserIdentity(request, requestedUserId);
+    const identity = await getUserIdentity(request, requestedUserId);
     const { action } = body;
 
     if (requestedUserId && identity.source === "anonymous") {
@@ -53,12 +54,14 @@ const PATCHHandler = async (
       );
     }
 
-    await fetchBackend(`/storage/notifications/${notificationId}/${action}`, {
-      method: "PATCH",
-      params: {
-        user_id: identity.user_id,
-      },
-    });
+    const updated =
+      action === "mark_read"
+        ? await userStore.notifications.markRead(identity.user_id, notificationId)
+        : await userStore.notifications.dismiss(identity.user_id, notificationId);
+
+    if (!updated) {
+      return NextResponse.json({ error: "Notification not found" }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -66,12 +69,15 @@ const PATCHHandler = async (
       action,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Notifications are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
-export const PATCH = withRouteTelemetry("notifications.update", PATCHHandler, {
-  backendTarget: "python-backend",
-});
+export const PATCH = withRouteTelemetry("notifications.update", PATCHHandler);

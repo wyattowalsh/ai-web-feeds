@@ -40,7 +40,8 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       NEXT_TELEMETRY_DISABLED: "1",
-      DATABASE_URL: process.env.DATABASE_URL || "postgresql://localhost:5432/test?sslmode=require",
+      // Unset DATABASE_URL yields graceful 503 on user-store routes in e2e (see auth-filters.spec.ts).
+      DATABASE_URL: process.env.DATABASE_URL ?? "",
       BETTER_AUTH_SECRET:
         process.env.BETTER_AUTH_SECRET || "test-better-auth-secret-key-for-playwright",
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "test-google-client-id",

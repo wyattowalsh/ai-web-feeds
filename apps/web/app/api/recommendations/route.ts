@@ -8,6 +8,8 @@ import {
   formatBackendErrorResponse,
   getBackendErrorStatus,
 } from "@/lib/backend";
+import { DatabaseNotConfiguredError, getSql } from "@/lib/server/db";
+import { recordRecommendationInteraction } from "@/lib/server/recommendation-interactions";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +76,35 @@ const POSTHandler = async (request: Request) => {
       );
     }
 
+    if (getSql()) {
+      try {
+        const record = await recordRecommendationInteraction({
+          user_id: userId,
+          feed_id: feedId,
+          interaction_type: interactionType,
+          reason,
+        });
+
+        return NextResponse.json({
+          tracked: true,
+          id: record.id,
+          interaction_type: record.interaction_type,
+        });
+      } catch (error) {
+        if (error instanceof DatabaseNotConfiguredError) {
+          return NextResponse.json(
+            createFeatureUnavailableResponse(
+              "Recommendations",
+              "Recommendation interactions are unavailable until DATABASE_URL is configured.",
+            ),
+            { status: 503 },
+          );
+        }
+
+        throw error;
+      }
+    }
+
     const data = await fetchBackend("/recommendations/interactions", {
       method: "POST",
       body: {
@@ -106,5 +137,5 @@ export const GET = withRouteTelemetry("recommendations.list", GETHandler, {
   backendTarget: "python-backend",
 });
 export const POST = withRouteTelemetry("recommendations.interaction", POSTHandler, {
-  backendTarget: "python-backend",
+  backendTarget: "neon-or-python-backend",
 });

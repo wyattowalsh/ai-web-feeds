@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fetchBackendMock, searchArticlesInCorpusMock, searchCatalogSourcesMock } = vi.hoisted(
+const { logSearchQueryMock, searchArticlesInCorpusMock, searchCatalogSourcesMock } = vi.hoisted(
   () => ({
-    fetchBackendMock: vi.fn(),
+    logSearchQueryMock: vi.fn(),
     searchArticlesInCorpusMock: vi.fn(),
     searchCatalogSourcesMock: vi.fn(),
   }),
@@ -18,16 +18,11 @@ vi.mock("@/lib/article-corpus", () => ({
   searchCatalogSources: searchCatalogSourcesMock,
 }));
 
-vi.mock("@/lib/backend", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/backend")>("@/lib/backend");
-  return {
-    ...actual,
-    fetchBackend: fetchBackendMock,
-  };
-});
+vi.mock("@/lib/server/search-log", () => ({
+  logSearchQuery: logSearchQueryMock,
+}));
 
 import { ANON_USER_BINDING_COOKIE } from "@/lib/user-auth";
-import { BackendConfigurationError, BackendError } from "@/lib/backend";
 
 function createRequest(url: string, init?: RequestInit): Request {
   return new Request(url, init);
@@ -40,7 +35,7 @@ async function loadRouteModule() {
 describe("/api/search route", () => {
   beforeEach(() => {
     vi.resetModules();
-    fetchBackendMock.mockReset();
+    logSearchQueryMock.mockReset();
     searchArticlesInCorpusMock.mockReset();
     searchCatalogSourcesMock.mockReset();
   });
@@ -221,9 +216,18 @@ describe("/api/search route", () => {
     expect(searchArticlesInCorpusMock).not.toHaveBeenCalled();
   });
 
-  it("binds anonymous identity and forwards user_id for POST analytics", async () => {
+  it("binds anonymous identity and inserts SearchQuery for POST analytics", async () => {
     const { POST } = await loadRouteModule();
-    fetchBackendMock.mockResolvedValue({ success: true });
+    logSearchQueryMock.mockResolvedValue({
+      id: "0194f2a0-0000-7000-8000-000000000001",
+      user_id: "user-1",
+      query_text: "test query",
+      search_type: "full_text",
+      filters_applied: {},
+      result_count: 12,
+      clicked_results: [],
+      timestamp: "2026-06-25T12:00:00.000Z",
+    });
 
     const response = await POST(
       createRequest("http://localhost/api/search", {
@@ -241,22 +245,35 @@ describe("/api/search route", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("set-cookie")).toContain(ANON_USER_BINDING_COOKIE);
-    expect(fetchBackendMock).toHaveBeenCalledWith("/search/log", {
-      method: "POST",
-      body: expect.objectContaining({
-        query: "test query",
-        type: "full_text",
-        result_count: 12,
-        user_id: expect.stringMatching(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-        ),
-      }),
+    expect(logSearchQueryMock).toHaveBeenCalledWith({
+      user_id: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      ),
+      query_text: "test query",
+      search_type: "full_text",
+      filters_applied: {},
+      clicked_results: [],
+      result_count: 12,
     });
+    await expect(response.json()).resolves.toEqual({ success: true });
   });
 
-  it("normalizes whitespace and filters before forwarding POST analytics", async () => {
+  it("normalizes whitespace and filters before inserting POST analytics", async () => {
     const { POST } = await loadRouteModule();
-    fetchBackendMock.mockResolvedValue({ success: true });
+    logSearchQueryMock.mockResolvedValue({
+      id: "0194f2a0-0000-7000-8000-000000000002",
+      user_id: "user-1",
+      query_text: "agent systems",
+      search_type: "semantic",
+      filters_applied: {
+        topics: ["ml", "agents"],
+        verified: false,
+        threshold: 0.5,
+      },
+      result_count: 0,
+      clicked_results: [],
+      timestamp: "2026-06-25T12:00:00.000Z",
+    });
 
     const response = await POST(
       createRequest("http://localhost/api/search", {
@@ -276,49 +293,24 @@ describe("/api/search route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(fetchBackendMock).toHaveBeenCalledWith("/search/log", {
-      method: "POST",
-      body: expect.objectContaining({
-        query: "agent systems",
-        type: "semantic",
-        filters: {
-          topics: ["ml", "agents"],
-          verified: false,
-          threshold: 0.5,
-        },
-      }),
+    expect(logSearchQueryMock).toHaveBeenCalledWith({
+      user_id: expect.any(String),
+      query_text: "agent systems",
+      search_type: "semantic",
+      filters_applied: {
+        topics: ["ml", "agents"],
+        verified: false,
+        threshold: 0.5,
+      },
+      clicked_results: [],
+      result_count: 0,
     });
   });
 
-  it("preserves backend status code fidelity on POST failures", async () => {
+  it("returns an accepted response when Neon logging is unavailable", async () => {
+    const { DatabaseNotConfiguredError } = await import("@/lib/server/db");
     const { POST } = await loadRouteModule();
-    fetchBackendMock.mockRejectedValue(
-      new BackendError(422, "UNPROCESSABLE_ENTITY", "Search analytics rejected the payload"),
-    );
-
-    const response = await POST(
-      createRequest("http://localhost/api/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: "test query",
-          type: "sources",
-          filters: {},
-          clicked_results: [],
-        }),
-      }),
-    );
-
-    expect(response.status).toBe(422);
-    await expect(response.json()).resolves.toEqual({
-      error: "Search analytics rejected the payload",
-      code: "UNPROCESSABLE_ENTITY",
-    });
-  });
-
-  it("returns an accepted response when backend logging is unavailable", async () => {
-    const { POST } = await loadRouteModule();
-    fetchBackendMock.mockRejectedValue(new BackendConfigurationError("missing backend"));
+    logSearchQueryMock.mockRejectedValue(new DatabaseNotConfiguredError("missing database"));
 
     const response = await POST(
       createRequest("http://localhost/api/search", {
@@ -337,8 +329,34 @@ describe("/api/search route", () => {
     await expect(response.json()).resolves.toEqual({
       success: false,
       skipped: true,
-      code: "BACKEND_UNAVAILABLE",
+      code: "DATABASE_UNAVAILABLE",
       error: "Search analytics logging is unavailable in this deployment.",
+    });
+  });
+
+  it("best-effort skips POST analytics when Neon insert fails", async () => {
+    const { POST } = await loadRouteModule();
+    logSearchQueryMock.mockRejectedValue(new Error("connection reset"));
+
+    const response = await POST(
+      createRequest("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "test query",
+          type: "sources",
+          filters: {},
+          clicked_results: [],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    await expect(response.json()).resolves.toEqual({
+      success: false,
+      skipped: true,
+      code: "LOGGING_FAILED",
+      error: "Search analytics logging failed; search results are unaffected.",
     });
   });
 });

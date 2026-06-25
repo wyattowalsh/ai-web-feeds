@@ -9,21 +9,18 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { clampNumber } from "@/lib/backend";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { userStore } from "@/lib/server/user-store";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import {
-  clampNumber,
-  fetchBackend,
-  formatBackendErrorResponse,
-  getBackendErrorStatus,
-} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const requestedUserId = searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+  const identity = await getUserIdentity(request, requestedUserId);
   const unreadOnly = searchParams.get("unread_only") === "true";
   const limit = clampNumber(parseInt(searchParams.get("limit") || "50", 10), 1, 1000);
 
@@ -40,27 +37,26 @@ const GETHandler = async (request: NextRequest) => {
   }
 
   try {
-    const data = await fetchBackend("/storage/notifications", {
-      method: "GET",
-      params: {
-        user_id: identity.user_id,
-        unread_only: unreadOnly,
-        limit,
-      },
+    const data = await userStore.notifications.list(identity.user_id, {
+      unreadOnly,
+      limit,
     });
 
     return NextResponse.json({
       user_id: identity.user_id,
       notifications: data,
-      count: Array.isArray(data) ? data.length : 0,
+      count: data.length,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Notifications are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
-export const GET = withRouteTelemetry("notifications.list", GETHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("notifications.list", GETHandler);

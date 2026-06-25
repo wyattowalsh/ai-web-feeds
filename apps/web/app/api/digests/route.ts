@@ -9,13 +9,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-const GETHandler = async (request: NextRequest) => {
-  const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+const NOT_IMPLEMENTED_BODY = {
+  error: "Email digests are not available in this deployment.",
+  code: "NOT_IMPLEMENTED",
+};
+
+async function rejectUnauthenticated(
+  request: NextRequest,
+  requestedUserId: string | null,
+): Promise<Response | null> {
+  const identity = await getUserIdentity(request, requestedUserId);
 
   if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
@@ -29,23 +35,17 @@ const GETHandler = async (request: NextRequest) => {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
   }
 
-  try {
-    const data = await fetchBackend("/storage/digests", {
-      method: "GET",
-      params: {
-        user_id: identity.user_id,
-      },
-    });
+  return null;
+}
 
-    return NextResponse.json({
-      user_id: identity.user_id,
-      digests: data,
-    });
-  } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+const GETHandler = async (request: NextRequest) => {
+  const requestedUserId = request.nextUrl.searchParams.get("user_id");
+  const authError = await rejectUnauthenticated(request, requestedUserId);
+  if (authError) {
+    return authError;
   }
+
+  return NextResponse.json(NOT_IMPLEMENTED_BODY, { status: 501 });
 };
 
 const POSTHandler = async (request: NextRequest) => {
@@ -57,24 +57,12 @@ const POSTHandler = async (request: NextRequest) => {
       schedule_cron?: string;
       timezone?: string;
     };
-    const identity = getUserIdentity(request, body.user_id ?? null);
-    const { email, schedule_type, schedule_cron, timezone } = body;
-
-    if (body.user_id && identity.source === "anonymous") {
-      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    const authError = await rejectUnauthenticated(request, body.user_id ?? null);
+    if (authError) {
+      return authError;
     }
 
-    if (body.user_id && !validateUserOwnership(body.user_id, identity)) {
-      return NextResponse.json(
-        { error: "user_id does not match request identity" },
-        { status: 403 },
-      );
-    }
-
-    if (identity.source === "anonymous") {
-      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-    }
-
+    const { email, schedule_type, schedule_cron } = body;
     const validScheduleTypes = ["daily", "weekly", "custom"];
 
     if (!email || !schedule_type || !schedule_cron) {
@@ -96,69 +84,22 @@ const POSTHandler = async (request: NextRequest) => {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    const data = await fetchBackend("/storage/digests", {
-      method: "POST",
-      body: {
-        user_id: identity.user_id,
-        email,
-        schedule_type,
-        schedule_cron,
-        timezone: timezone || "UTC",
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      digest: data,
-    });
-  } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return NextResponse.json(NOT_IMPLEMENTED_BODY, { status: 501 });
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 };
 
 const DELETEHandler = async (request: NextRequest) => {
   const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
-
-  if (requestedUserId && identity.source === "anonymous") {
-    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  const authError = await rejectUnauthenticated(request, requestedUserId);
+  if (authError) {
+    return authError;
   }
 
-  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
-    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
-  }
-
-  if (identity.source === "anonymous") {
-    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
-  }
-
-  try {
-    await fetchBackend("/storage/digests", {
-      method: "DELETE",
-      params: {
-        user_id: identity.user_id,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      user_id: identity.user_id,
-    });
-  } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
-  }
+  return NextResponse.json(NOT_IMPLEMENTED_BODY, { status: 501 });
 };
 
-export const GET = withRouteTelemetry("digests.list", GETHandler, {
-  backendTarget: "python-backend",
-});
-export const POST = withRouteTelemetry("digests.create", POSTHandler, {
-  backendTarget: "python-backend",
-});
-export const DELETE = withRouteTelemetry("digests.delete", DELETEHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("digests.list", GETHandler);
+export const POST = withRouteTelemetry("digests.create", POSTHandler);
+export const DELETE = withRouteTelemetry("digests.delete", DELETEHandler);

@@ -6,15 +6,17 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { userStore } from "@/lib/server/user-store";
+import type { DeliveryMethod, NotificationFrequency } from "@/lib/server/user-store";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+  const identity = await getUserIdentity(request, requestedUserId);
 
   if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
@@ -29,21 +31,21 @@ const GETHandler = async (request: NextRequest) => {
   }
 
   try {
-    const data = await fetchBackend("/storage/preferences", {
-      method: "GET",
-      params: {
-        user_id: identity.user_id,
-      },
-    });
+    const data = await userStore.preferences.get(identity.user_id);
 
     return NextResponse.json({
       user_id: identity.user_id,
       preferences: data,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Notification preferences are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
@@ -57,7 +59,7 @@ const POSTHandler = async (request: NextRequest) => {
       quiet_hours_start?: string | null;
       quiet_hours_end?: string | null;
     };
-    const identity = getUserIdentity(request, body.user_id ?? null);
+    const identity = await getUserIdentity(request, body.user_id ?? null);
     const { feed_id, delivery_method, frequency, quiet_hours_start, quiet_hours_end } = body;
 
     if (body.user_id && identity.source === "anonymous") {
@@ -92,16 +94,13 @@ const POSTHandler = async (request: NextRequest) => {
       );
     }
 
-    const data = await fetchBackend("/storage/preferences", {
-      method: "POST",
-      body: {
-        user_id: identity.user_id,
-        feed_id: feed_id || null,
-        delivery_method,
-        frequency,
-        quiet_hours_start: quiet_hours_start || null,
-        quiet_hours_end: quiet_hours_end || null,
-      },
+    const data = await userStore.preferences.upsert({
+      user_id: identity.user_id,
+      feed_id: feed_id || null,
+      delivery_method: delivery_method as DeliveryMethod,
+      frequency: frequency as NotificationFrequency,
+      quiet_hours_start: quiet_hours_start || null,
+      quiet_hours_end: quiet_hours_end || null,
     });
 
     return NextResponse.json({
@@ -109,15 +108,16 @@ const POSTHandler = async (request: NextRequest) => {
       preference: data,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Notification preferences are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
-export const GET = withRouteTelemetry("preferences.list", GETHandler, {
-  backendTarget: "python-backend",
-});
-export const POST = withRouteTelemetry("preferences.save", POSTHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("preferences.list", GETHandler);
+export const POST = withRouteTelemetry("preferences.save", POSTHandler);

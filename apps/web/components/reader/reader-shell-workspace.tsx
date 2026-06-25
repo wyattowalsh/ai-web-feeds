@@ -1,6 +1,9 @@
 "use client";
 
+import { useCallback } from "react";
+
 import { cn } from "@/lib/cn";
+import { trackReaderArticleOpen, trackReaderFilterApply } from "@/hooks/use-reader-telemetry";
 import type { FeedSource } from "@/lib/feeds-filters";
 import type { ReaderWorkspaceChrome } from "@/lib/reader/build-reader-workspace-chrome";
 import type { ReaderArticleState, WorkspaceArticle } from "@/lib/reader";
@@ -19,7 +22,12 @@ import { ReaderArticleStream } from "@/components/reader/reader-article-stream";
 import { ReaderCorpusEmpty } from "@/components/reader/reader-corpus-empty";
 import { ReaderFilterRail } from "@/components/reader/reader-filter-rail";
 import { ReaderPreviewPane } from "@/components/reader/reader-preview-pane";
+import { SavedReaderFilters } from "@/components/reader/saved-reader-filters";
 import { ReaderShellHeader } from "@/components/reader/reader-shell-header";
+import {
+  filterPayloadToUrlOverrides,
+  useSavedReaderFilters,
+} from "@/hooks/use-saved-reader-filters";
 
 export type ReaderShellWorkspaceProps = {
   corpusEmpty: boolean;
@@ -88,6 +96,26 @@ export function ReaderShellWorkspace({
   onResetDrafts,
   onPaginate,
 }: ReaderShellWorkspaceProps) {
+  const handleSelectArticle = useCallback(
+    (articleId: string) => {
+      if (selectedArticle?.id !== articleId) {
+        trackReaderArticleOpen(articleId);
+      }
+      onSelectArticle(articleId);
+    },
+    [onSelectArticle, selectedArticle?.id],
+  );
+
+  const handleApplyFilters = useCallback(() => {
+    trackReaderFilterApply(filterFormProps.draftState);
+    filterFormProps.applyDrafts();
+  }, [filterFormProps]);
+
+  const filtersWithTelemetry = {
+    ...filterFormProps,
+    applyDrafts: handleApplyFilters,
+  };
+
   const noOverlay = corpusEmpty && overlayCount === 0;
   const showCorpusEmptyPanel = noOverlay && !refreshing;
   const selectedArticleSource = selectedArticle ? feedLookup.get(selectedArticle.feed_id) : null;
@@ -99,6 +127,18 @@ export function ReaderShellWorkspace({
     currentState.feedIds.length > 0 ||
     currentState.topics.length > 0;
   const filtersDisabled = noOverlay && !hasActiveUrlFilters;
+
+  const handleApplyFilterPayload = useCallback(
+    (payload: Parameters<typeof filterPayloadToUrlOverrides>[0]) => {
+      onFilterChip(filterPayloadToUrlOverrides(payload));
+    },
+    [onFilterChip],
+  );
+
+  const savedReaderFilters = useSavedReaderFilters({
+    currentState,
+    onApplyPayload: handleApplyFilterPayload,
+  });
 
   return (
     <div className="reader-shell space-y-5">
@@ -119,27 +159,61 @@ export function ReaderShellWorkspace({
             "xl:grid-cols-[18rem_minmax(0,1fr)_22rem] 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]",
         )}
       >
-        <ReaderFilterRail
-          variant="desktop"
-          filters={filterFormProps}
-          filterSummary={chrome.filterSummary}
-          visibleArticleCountLabel={chrome.visibleArticleCountLabel}
-          visibleCount={visibleArticles.length}
-          corpusArticleCount={browse.corpus.article_count}
-          corpusFeedCount={browse.corpus.feed_count}
-          catalogTotal={statsTotal}
-          catalogTopicCount={statsTopicCount}
-          filtersDisabled={filtersDisabled}
-        />
+        <div className="hidden space-y-4 xl:block">
+          <ReaderFilterRail
+            variant="desktop"
+            filters={filtersWithTelemetry}
+            filterSummary={chrome.filterSummary}
+            visibleArticleCountLabel={chrome.visibleArticleCountLabel}
+            visibleCount={visibleArticles.length}
+            corpusArticleCount={browse.corpus.article_count}
+            corpusFeedCount={browse.corpus.feed_count}
+            catalogTotal={statsTotal}
+            catalogTopicCount={statsTopicCount}
+            filtersDisabled={filtersDisabled}
+          />
+          <SavedReaderFilters
+            variant="desktop"
+            userId={savedReaderFilters.userId}
+            filters={savedReaderFilters.filters}
+            loading={savedReaderFilters.loading}
+            saving={savedReaderFilters.saving}
+            error={savedReaderFilters.error}
+            canSave={savedReaderFilters.canSave}
+            onSave={async (filterName): Promise<void> => {
+              await savedReaderFilters.saveFilter(filterName);
+            }}
+            onLoad={savedReaderFilters.loadFilter}
+            onDelete={async (filterId): Promise<void> => {
+              await savedReaderFilters.deleteFilter(filterId);
+            }}
+          />
+        </div>
 
         <section className="space-y-5">
           <ReaderFilterRail
             variant="mobile"
-            filters={filterFormProps}
+            filters={filtersWithTelemetry}
             mobileOpen={mobileRail.open}
             onMobileOpenChange={mobileRail.onOpenChange}
             activeFilterCount={chrome.activeFilterChips.length}
             filtersDisabled={filtersDisabled}
+          />
+          <SavedReaderFilters
+            variant="mobile"
+            userId={savedReaderFilters.userId}
+            filters={savedReaderFilters.filters}
+            loading={savedReaderFilters.loading}
+            saving={savedReaderFilters.saving}
+            error={savedReaderFilters.error}
+            canSave={savedReaderFilters.canSave}
+            onSave={async (filterName): Promise<void> => {
+              await savedReaderFilters.saveFilter(filterName);
+            }}
+            onLoad={savedReaderFilters.loadFilter}
+            onDelete={async (filterId): Promise<void> => {
+              await savedReaderFilters.deleteFilter(filterId);
+            }}
           />
 
           <ReaderArticleStream
@@ -164,7 +238,7 @@ export function ReaderShellWorkspace({
             clearArticleFiltersHref={chrome.clearArticleFiltersHref}
             resetWorkspaceHref={chrome.resetWorkspaceHref}
             catalogRecoveryHref={chrome.catalogRecoveryHref}
-            onSelectArticle={onSelectArticle}
+            onSelectArticle={handleSelectArticle}
             onUpdateState={onUpdateState}
             onClosePreview={onClosePreview}
             onFilterChip={onFilterChip}

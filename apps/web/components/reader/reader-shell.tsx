@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { FeedSource } from "@/lib/feeds-filters";
@@ -19,7 +19,9 @@ import { useReaderOverlayBridge } from "@/hooks/use-reader-overlay-bridge";
 import { useReaderPreview } from "@/hooks/use-reader-preview";
 import { useReaderRouteState } from "@/hooks/use-reader-route-state";
 import { useReaderShortcutHandlers } from "@/hooks/use-reader-shortcut-handlers";
+import { useReaderTelemetry } from "@/hooks/use-reader-telemetry";
 import { useReaderPreferences } from "@/lib/use-reader-preferences";
+import type { ReaderArticleState } from "@/lib/reader";
 
 import { ReaderShellWorkspace } from "@/components/reader/reader-shell-workspace";
 import { ReaderShortcutsSheet } from "@/components/reader/reader-shortcuts-sheet";
@@ -109,13 +111,24 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
     visibleCount: visibleArticles.length,
   });
 
+  const { trackArticleStar } = useReaderTelemetry();
+  const handleUpdateState = useCallback(
+    (articleId: string, partial: Partial<ReaderArticleState>) => {
+      if (typeof partial.starred === "boolean") {
+        trackArticleStar(articleId, partial.starred);
+      }
+      updateState(articleId, partial);
+    },
+    [trackArticleStar, updateState],
+  );
+
   const { handleSelectArticle } = useReaderShortcutHandlers({
     visibleArticles,
     previewArticleId,
     setPreviewArticleId,
     selectedArticle,
     selectedArticleState,
-    updateState,
+    updateState: handleUpdateState,
     refreshLatest,
     queryInputRef,
     router,
@@ -153,7 +166,7 @@ export function ReaderShell({ feeds, stats, initialState, initialBrowse }: Reade
         statsTotal={stats.total}
         statsTopicCount={stats.topicCount}
         onSelectArticle={handleSelectArticle}
-        onUpdateState={updateState}
+        onUpdateState={handleUpdateState}
         onClosePreview={clearPreview}
         onFilterChip={updateUrl}
         onResetDrafts={resetDrafts}

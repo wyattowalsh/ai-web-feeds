@@ -14,7 +14,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
     headers: requestHeaders,
   });
 
-  if (!session?.user || !isAdminUser(session.user)) {
+  if (!session?.user || !isAdminUser(session.user as { role?: string })) {
     redirect("/admin/login");
   }
 

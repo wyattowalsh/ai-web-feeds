@@ -1,0 +1,36 @@
+{
+  "goal": "feed-catalog-expansion-rounds-20-21",
+  "in_scope_paths": [
+    "data/feeds.yaml",
+    "data/feeds.enriched.yaml",
+    "data/feeds.json",
+    "data/feeds.enriched.json",
+    "data/feeds*.opml",
+    "data/ai-web-feeds.db",
+    "specs/003-feed-collection-enhancement/existing-urls.txt",
+    "specs/003-feed-collection-enhancement/gap-matrix.md",
+    "specs/003-feed-collection-enhancement/saturation-passes.json",
+    "specs/003-feed-collection-enhancement/saturation.md",
+    "specs/003-feed-collection-enhancement/extend_prune_round.py",
+    "specs/003-feed-collection-enhancement/rounds/pass-20.yaml",
+    "specs/003-feed-collection-enhancement/rounds/pass-21.yaml",
+    "specs/003-feed-collection-enhancement/candidates/saturation-pass-20-research.yaml",
+    "specs/003-feed-collection-enhancement/candidates/saturation-pass-21-research.yaml",
+    "specs/003-feed-collection-enhancement/extend-prune-round-20.json",
+    "specs/003-feed-collection-enhancement/extend-prune-round-21.json",
+    "specs/003-feed-collection-enhancement/extend-prune-summary.json"
+  ],
+  "explicitly_out_of_scope": [
+    "apps/web/**",
+    "packages/ai_web_feeds/src/ai_web_feeds/enrich.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/models.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/storage.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/validate.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/catalog_sync/**",
+    "packages/alembic/versions/008_*",
+    "packages/alembic/versions/009_*",
+    "packages/alembic/versions/010_*",
+    ".github/workflows/**"
+  ],
+  "note": "Rounds 20–21 deliverable is data catalog growth (555→584 net +29) plus specs/003 round artifacts; DB sync via catalog_sync.sync_catalog_to_db; flaky feeds pruned for 0-failure HTTP gate; saturation stop rule met at passes 17/18/19 (<5 each)."
+}

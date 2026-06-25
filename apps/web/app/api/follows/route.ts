@@ -9,15 +9,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { userStore } from "@/lib/server/user-store";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
 import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
-import { fetchBackend, formatBackendErrorResponse, getBackendErrorStatus } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: NextRequest) => {
   const requestedUserId = request.nextUrl.searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+  const identity = await getUserIdentity(request, requestedUserId);
 
   if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
@@ -32,32 +33,32 @@ const GETHandler = async (request: NextRequest) => {
   }
 
   try {
-    const data = await fetchBackend("/storage/follows", {
-      method: "GET",
-      params: {
-        user_id: identity.user_id,
-      },
-    });
+    const data = await userStore.follows.list(identity.user_id);
 
     return NextResponse.json({
       user_id: identity.user_id,
       follows: data,
-      count: Array.isArray(data) ? data.length : 0,
+      count: data.length,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Source follows are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
 const POSTHandler = async (request: NextRequest) => {
   let body: { user_id?: string; source_id?: string } | undefined;
-  let identity = getUserIdentity(request);
+  let identity = await getUserIdentity(request);
 
   try {
     body = (await request.json()) as { user_id?: string; source_id?: string };
-    identity = getUserIdentity(request, body.user_id ?? null);
+    identity = await getUserIdentity(request, body.user_id ?? null);
     const { source_id } = body;
 
     if (body.user_id && identity.source === "anonymous") {
@@ -79,31 +80,29 @@ const POSTHandler = async (request: NextRequest) => {
       return NextResponse.json({ error: "Missing required field: source_id" }, { status: 400 });
     }
 
-    const data = await fetchBackend("/storage/follows", {
-      method: "POST",
-      body: {
-        user_id: identity.user_id,
-        source_id,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      follow: data,
-    });
-  } catch (error) {
-    if (typeof error === "object" && error !== null && "status" in error && error.status === 409) {
+    const result = await userStore.follows.follow(identity.user_id, source_id);
+    if (!result.created) {
       return NextResponse.json({
         success: true,
         already_following: true,
         user_id: identity.user_id,
-        source_id: body?.source_id,
+        source_id,
       });
     }
 
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
+    return NextResponse.json({
+      success: true,
+      follow: result.follow,
     });
+  } catch (error) {
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Source follows are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
@@ -111,7 +110,7 @@ const DELETEHandler = async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const sourceId = searchParams.get("source_id");
   const requestedUserId = searchParams.get("user_id");
-  const identity = getUserIdentity(request, requestedUserId);
+  const identity = await getUserIdentity(request, requestedUserId);
 
   if (requestedUserId && identity.source === "anonymous") {
     return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
@@ -130,13 +129,10 @@ const DELETEHandler = async (request: NextRequest) => {
   }
 
   try {
-    await fetchBackend("/storage/follows", {
-      method: "DELETE",
-      params: {
-        user_id: identity.user_id,
-        source_id: sourceId,
-      },
-    });
+    const removed = await userStore.follows.unfollow(identity.user_id, sourceId);
+    if (!removed) {
+      return NextResponse.json({ error: "Follow not found" }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -144,18 +140,17 @@ const DELETEHandler = async (request: NextRequest) => {
       source_id: sourceId,
     });
   } catch (error) {
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    if (error instanceof DatabaseNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Source follows are unavailable until DATABASE_URL is configured." },
+        { status: 503 },
+      );
+    }
+
+    throw error;
   }
 };
 
-export const GET = withRouteTelemetry("follows.list", GETHandler, {
-  backendTarget: "python-backend",
-});
-export const POST = withRouteTelemetry("follows.create", POSTHandler, {
-  backendTarget: "python-backend",
-});
-export const DELETE = withRouteTelemetry("follows.delete", DELETEHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("follows.list", GETHandler);
+export const POST = withRouteTelemetry("follows.create", POSTHandler);
+export const DELETE = withRouteTelemetry("follows.delete", DELETEHandler);

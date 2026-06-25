@@ -79,6 +79,7 @@
       "architecture",
       "runtime-authority",
       "security-csp-nonce",
+      "observability",
       "search-architecture",
       "implementation",
       "database",

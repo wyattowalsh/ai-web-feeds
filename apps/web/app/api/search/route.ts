@@ -6,13 +6,9 @@ import {
   resolveUserIdentity,
   validateTrustedUserOwnership,
 } from "@/lib/user-auth";
-import {
-  BackendConfigurationError,
-  clampNumber,
-  fetchBackend,
-  getBackendErrorStatus,
-  formatBackendErrorResponse,
-} from "@/lib/backend";
+import { clampNumber } from "@/lib/backend";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { logSearchQuery } from "@/lib/server/search-log";
 import { searchArticlesInCorpus, searchCatalogSources } from "@/lib/article-corpus";
 import {
   normalizeSearchFilters,
@@ -99,7 +95,7 @@ const POSTHandler = async (request: Request) => {
     result_count?: number;
     user_id?: string;
   } | null = null;
-  let resolvedIdentity = resolveUserIdentity(request);
+  let resolvedIdentity = await resolveUserIdentity(request);
 
   try {
     body = (await request.json()) as {
@@ -113,7 +109,7 @@ const POSTHandler = async (request: Request) => {
     if (body.user_id && !isValidUserId(body.user_id)) {
       return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
     }
-    resolvedIdentity = resolveUserIdentity(request, body.user_id ?? null);
+    resolvedIdentity = await resolveUserIdentity(request, body.user_id ?? null);
     const identity = resolvedIdentity.identity;
     const query = normalizeSearchQuery(body.query);
     if (body.type && !isPublicSearchType(body.type)) {
@@ -138,28 +134,25 @@ const POSTHandler = async (request: Request) => {
       return NextResponse.json({ error: "Missing required field: query" }, { status: 400 });
     }
 
-    const data = await fetchBackend("/search/log", {
-      method: "POST",
-      body: {
-        query,
-        type: searchType === "articles" ? "semantic" : "full_text",
-        filters,
-        clicked_results: clicked_results || [],
-        result_count: resultCount,
-        user_id: identity.user_id,
-      },
+    await logSearchQuery({
+      user_id: identity.user_id,
+      query_text: query,
+      search_type: searchType === "articles" ? "semantic" : "full_text",
+      filters_applied: filters,
+      clicked_results: clicked_results || [],
+      result_count: resultCount,
     });
 
-    const response = NextResponse.json(data);
+    const response = NextResponse.json({ success: true });
     applyUserIdentityBinding(response, resolvedIdentity);
     return response;
   } catch (error) {
-    if (error instanceof BackendConfigurationError) {
+    if (error instanceof DatabaseNotConfiguredError) {
       const response = NextResponse.json(
         {
           success: false,
           skipped: true,
-          code: "BACKEND_UNAVAILABLE",
+          code: "DATABASE_UNAVAILABLE",
           error: "Search analytics logging is unavailable in this deployment.",
         },
         { status: 202 },
@@ -168,9 +161,18 @@ const POSTHandler = async (request: Request) => {
       return response;
     }
 
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    console.error("Search analytics logging failed", error);
+    const response = NextResponse.json(
+      {
+        success: false,
+        skipped: true,
+        code: "LOGGING_FAILED",
+        error: "Search analytics logging failed; search results are unaffected.",
+      },
+      { status: 202 },
+    );
+    applyUserIdentityBinding(response, resolvedIdentity);
+    return response;
   }
 };
 
@@ -178,7 +180,7 @@ export const GET = withRouteTelemetry("search.query", GETHandler, {
   backendTarget: "local-catalog-search",
 });
 export const POST = withRouteTelemetry("search.log", POSTHandler, {
-  backendTarget: "python-backend",
+  backendTarget: "neon-search-queries",
 });
 
 function isPublicSearchType(value: string): boolean {

@@ -1,0 +1,268 @@
+---
+title: Observability & Telemetry
+description: Dual-write NDJSON and Postgres telemetry, usage_events schema, client trackEvent API, and optional Python Logfire.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+AI Web Feeds uses a **dual-write telemetry model**: every API route observation is always appended to local NDJSON files, and—when `DATABASE_URL` is configured—the same payload is persisted asynchronously to Postgres (`api_request_logs`). Product analytics events from the browser follow the same pattern via `usage_events`.
+
+<Callout type="info">NDJSON remains the default sink for local development and CI without Neon. Postgres is additive, not a replacement. See [Admin Observability](/docs/features/admin-observability) for the protected `/admin` dashboard that reads NDJSON summaries.</Callout>
+
+## Architecture
+
+```
+Browser (trackEvent)
+       │
+       ▼
+POST /api/telemetry/events ──► usage_events (Postgres, when configured)
+
+App Router handler (withRouteTelemetry)
+       │
+       ├──► data/telemetry/api-events.ndjson   (always)
+       └──► api_request_logs (Postgres, when configured)
+```
+
+| Layer             | Storage                                  | Purpose                                                |
+| ----------------- | ---------------------------------------- | ------------------------------------------------------ |
+| Route telemetry   | `api-events.ndjson` + `api_request_logs` | Latency, status codes, errors, request correlation     |
+| Admin audit       | `admin-audit.ndjson`                     | Privileged admin actions (login, telemetry reads)      |
+| Product analytics | `usage_events`                           | Reader, search, auth, and sync interaction events      |
+| Python tracing    | Logfire (optional)                       | Catalog sync and CLI spans when `LOGFIRE_TOKEN` is set |
+
+Implementation lives in:
+
+- `apps/web/lib/telemetry.ts` — NDJSON append and summary aggregation
+- `apps/web/lib/telemetry-route.ts` — `withRouteTelemetry` wrapper
+- `apps/web/lib/server/telemetry-store.ts` — Postgres dual-write
+- `apps/web/lib/track-event.ts` — browser `trackEvent()` helper
+- `packages/ai_web_feeds/src/ai_web_feeds/observability.py` — optional Logfire
+
+## Route telemetry (`withRouteTelemetry`)
+
+Wrap App Router handlers to record one row per request without blocking the response:
+
+```ts
+import { withRouteTelemetry } from "@/lib/telemetry-route";
+
+export const GET = withRouteTelemetry("articles.list", GETHandler);
+```
+
+The wrapper:
+
+1. Assigns or forwards an `x-request-id` header
+2. Measures handler duration and captures status, pathname, method, and sorted query keys
+3. Hashes client IPs (never stores raw addresses)
+4. Redacts error messages before persistence
+5. Queues writes via Next.js `after()` so the client response is not delayed
+
+Dual-write order inside `queueTelemetryWrite`:
+
+1. **NDJSON** — `recordApiTelemetry()` appends to `api-events.ndjson` (always succeeds when the directory is writable)
+2. **Postgres** — `recordApiRequestLog()` inserts into `api_request_logs` (skipped silently when `DATABASE_URL` is unset; errors are logged otherwise)
+
+Pass `backendTarget` when a route proxies to the Python service:
+
+```ts
+export const POST = withRouteTelemetry("search.log", POSTHandler, {
+  backendTarget: process.env.BACKEND_URL ?? null,
+});
+```
+
+### NDJSON event shape (`ApiTelemetryEvent`)
+
+Written to `{AIWF_TELEMETRY_DIR}/api-events.ndjson`:
+
+| Field                 | Type           | Description                                      |
+| --------------------- | -------------- | ------------------------------------------------ |
+| `requestId`           | string         | Correlation id (also returned as `x-request-id`) |
+| `timestamp`           | ISO-8601       | Handler completion time                          |
+| `routeKey`            | string         | Stable identifier, e.g. `articles.list`          |
+| `pathname`            | string         | Request path                                     |
+| `method`              | string         | HTTP method                                      |
+| `statusCode`          | number         | Response status                                  |
+| `durationMs`          | number         | Wall-clock handler time                          |
+| `cacheControl`        | string \| null | Response `Cache-Control` header                  |
+| `backendTarget`       | string \| null | Upstream URL when proxied                        |
+| `errorCode`           | string \| null | Set on 5xx or unhandled exceptions               |
+| `errorMessage`        | string \| null | Redacted exception text                          |
+| `userAgent`           | string \| null | `User-Agent` header                              |
+| `ipHash`              | string \| null | SHA-256 prefix of salted client IP               |
+| `adminSessionPresent` | boolean        | Whether an admin session cookie was present      |
+| `queryKeys`           | string[]       | Sorted unique query parameter names              |
+| `source`              | string         | Always `next-route-handler`                      |
+
+Admin audit events use a separate file: `admin-audit.ndjson`.
+
+## `usage_events` schema
+
+Product analytics events use contract version **`usage-event-v1`**. The TypeScript types are in `apps/web/lib/server/usage-events.ts`; the SQLModel mirror is `UsageEvent` in `packages/ai_web_feeds/src/ai_web_feeds/models.py`. Alembic migration `008_usage_events` creates the tables for the Python catalog database; the Next.js app bootstraps equivalent DDL inline on first write when using Neon.
+
+| Column           | Type         | Notes                                                                       |
+| ---------------- | ------------ | --------------------------------------------------------------------------- |
+| `id`             | UUID         | Primary key                                                                 |
+| `schema_version` | text         | Default `usage-event-v1`                                                    |
+| `event_name`     | text         | Dotted name, indexed — e.g. `reader.article.open`                           |
+| `surface`        | text         | Indexed product area (see below)                                            |
+| `user_id`        | text \| null | Authenticated user id when known                                            |
+| `session_id`     | text \| null | Anonymous browser session (`aiwf_telemetry_session_id` in `sessionStorage`) |
+| `request_id`     | text \| null | Optional correlation to an API request                                      |
+| `properties`     | JSONB        | Event-specific payload (default `{}`)                                       |
+| `occurred_at`    | timestamptz  | Client- or server-reported time, indexed                                    |
+
+### Event surfaces
+
+| `surface` | Typical emitters                           |
+| --------- | ------------------------------------------ |
+| `reader`  | Article open, scroll depth, filter changes |
+| `search`  | Query submission, result clicks            |
+| `api`     | Server-side product events                 |
+| `auth`    | Sign-in, sign-out, identity merge          |
+| `sync`    | Catalog sync stages                        |
+| `admin`   | Admin panel interactions                   |
+
+### `api_request_logs` schema
+
+Mirrors `ApiTelemetryEvent` with an additional `ingested_at` timestamptz defaulting to `NOW()`. Indexed on `route_key`, `timestamp`, and `request_id`.
+
+## Client `trackEvent` API
+
+Import from `apps/web/lib/track-event.ts` in client components and hooks:
+
+```ts
+import { trackEvent } from "@/lib/track-event";
+
+await trackEvent("reader.article.open", {
+  surface: "reader",
+  properties: {
+    articleId: article.id,
+    openedFrom: "feed",
+  },
+});
+```
+
+Behavior:
+
+- **Browser-only** — no-op during SSR
+- **Session id** — auto-generated via `crypto.randomUUID()` and stored in `sessionStorage` under `aiwf_telemetry_session_id`
+- **User id** — defaults to `getStoredUserId()` when omitted
+- **Transport** — `POST /api/telemetry/events` with `keepalive: true` so events survive navigation
+- **Failure handling** — network errors are swallowed; analytics must never break reader or search UX
+
+### Ingest endpoint
+
+`POST /api/telemetry/events` accepts:
+
+```json
+{
+  "events": [
+    {
+      "eventName": "reader.filter.apply",
+      "surface": "reader",
+      "properties": { "filterId": "ml-only" }
+    }
+  ]
+}
+```
+
+- Batch size limit: **25** events per request
+- Returns **202** with `{ "accepted": N }` on success
+- Returns **503** when `DATABASE_URL` is not configured (usage events require Postgres)
+- Binds `userId` from the authenticated session when the client omits it
+
+The ingest route itself is wrapped with `withRouteTelemetry("telemetry.events.ingest", …)` so its own latency is recorded in the dual-write pipeline.
+
+## Optional Python Logfire
+
+Python paths (catalog sync, CLI, storage) support **optional** [Pydantic Logfire](https://logfire.pydantic.dev/) tracing. When `LOGFIRE_TOKEN` is unset, all observability calls are no-ops.
+
+```python
+from ai_web_feeds.observability import configure_observability, span
+
+configure_observability()
+
+with span("catalog_sync.stage", stage="topics"):
+    ...
+```
+
+- `configure_observability()` reads `LOGFIRE_TOKEN` and `LOGFIRE_SERVICE_NAME` (default `ai-web-feeds`)
+- Returns `False` when the token is missing or the `logfire` package is not installed
+- `span()` opens a Logfire span only when observability is active; otherwise it yields immediately
+
+Catalog sync calls `configure_observability()` at startup in `catalog_sync/sync.py`.
+
+## Environment variables
+
+### Next.js / NDJSON
+
+| Variable              | Required                       | Default                                             | Purpose                                                    |
+| --------------------- | ------------------------------ | --------------------------------------------------- | ---------------------------------------------------------- |
+| `AIWF_TELEMETRY_DIR`  | No                             | `../../data/telemetry` (from web workspace)         | Directory for `api-events.ndjson` and `admin-audit.ndjson` |
+| `AIWF_TELEMETRY_SALT` | No                             | Falls back to `BETTER_AUTH_SECRET`, then a dev salt | Salt for hashing client IPs in route telemetry             |
+| `BETTER_AUTH_SECRET`  | For auth + IP hashing fallback | —                                                   | Session signing; secondary telemetry salt                  |
+
+### Postgres dual-write
+
+| Variable       | Required                                  | Purpose                                                            |
+| -------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| `DATABASE_URL` | For `usage_events` and `api_request_logs` | Neon Postgres connection string (`postgresql://…?sslmode=require`) |
+
+When `DATABASE_URL` is unset:
+
+- NDJSON route telemetry continues to work
+- `POST /api/telemetry/events` returns **503**
+- `recordApiRequestLog` is skipped without failing the request
+
+### Python Logfire
+
+| Variable               | Required        | Default        | Purpose                     |
+| ---------------------- | --------------- | -------------- | --------------------------- |
+| `LOGFIRE_TOKEN`        | Yes (to enable) | —              | Logfire project write token |
+| `LOGFIRE_SERVICE_NAME` | No              | `ai-web-feeds` | Service name in Logfire UI  |
+
+Example local `.env` fragment (see root `.env.example`):
+
+```bash
+AIWF_TELEMETRY_DIR=../../data/telemetry
+# AIWF_TELEMETRY_SALT=replace-with-a-stable-hashing-salt
+DATABASE_URL=postgresql://user:pass@host.neon.tech/db?sslmode=require  # pragma: allowlist secret
+# LOGFIRE_TOKEN=pylf_...
+# LOGFIRE_SERVICE_NAME=ai-web-feeds
+```
+
+## Retention and operations
+
+| Store                | Recommended retention                        | Notes                                                                            |
+| -------------------- | -------------------------------------------- | -------------------------------------------------------------------------------- |
+| `api-events.ndjson`  | Rotate or truncate after **30 days** locally | No automatic rotation is built in; treat as an ops concern on long-running hosts |
+| `admin-audit.ndjson` | **90 days**                                  | Aligns with audit-log retention in project spec                                  |
+| `usage_events`       | Query-time windowing in admin/reporting      | No TTL job ships with the app; prune stale rows in Neon as volume grows          |
+| `api_request_logs`   | Same as `usage_events`                       | High-cardinality; index on `timestamp` supports time-bounded deletes             |
+| Logfire              | Per Logfire project settings                 | External SaaS retention                                                          |
+
+For local development, NDJSON files under `data/telemetry/` are gitignored. Delete them freely when resetting a dev environment.
+
+## Verification
+
+```bash
+# Web unit tests (telemetry store, trackEvent, route wrapper)
+cd apps/web && pnpm vitest run lib/telemetry lib/track-event lib/server/telemetry-store
+
+# Python observability (optional Logfire paths)
+uv run pytest tests/tests/packages/ai_web_feeds/unit/test_observability.py -q
+```
+
+With `DATABASE_URL` set, exercise the ingest path:
+
+```bash
+curl -s -X POST http://localhost:3000/api/telemetry/events \
+  -H 'Content-Type: application/json' \
+  -d '{"events":[{"eventName":"reader.filter.apply","surface":"reader","properties":{"test":true}}]}'
+```
+
+Confirm dual-write by checking both `data/telemetry/api-events.ndjson` (after hitting any instrumented API route) and the `usage_events` / `api_request_logs` tables in Neon.
+
+## Related documentation
+
+- [Admin Observability](/docs/features/admin-observability) — OAuth-protected `/admin` dashboard and security model
+- [Runtime authority](/docs/development/runtime-authority) — which stores own catalog vs. operational data

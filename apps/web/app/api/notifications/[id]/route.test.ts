@@ -1,23 +1,38 @@
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchBackend } from "@/lib/backend";
+
+const VALID_USER_ID = "11111111-1111-4111-8111-111111111111";
+
+const { markReadMock, dismissMock, getUserIdentityMock } = vi.hoisted(() => ({
+  markReadMock: vi.fn(),
+  dismissMock: vi.fn(),
+  getUserIdentityMock: vi.fn(),
+}));
 
 vi.mock("@/lib/telemetry-route", () => ({
   withRouteTelemetry: (_routeKey: string, handler: unknown) => handler,
 }));
 
-vi.mock("@/lib/backend", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/backend")>("@/lib/backend");
-
+vi.mock("@/lib/user-auth", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/user-auth")>("@/lib/user-auth");
   return {
     ...actual,
-    fetchBackend: vi.fn(),
+    getUserIdentity: getUserIdentityMock,
   };
 });
 
-import { PATCH } from "./route";
+vi.mock("@/lib/server/user-store", () => ({
+  userStore: {
+    notifications: {
+      list: vi.fn(),
+      markRead: markReadMock,
+      dismiss: dismissMock,
+    },
+  },
+}));
 
-const VALID_USER_ID = "11111111-1111-4111-8111-111111111111";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { PATCH } from "./route";
 
 function createRequest(url: string, body: Record<string, unknown>): NextRequest {
   const request = new Request(url, {
@@ -37,7 +52,16 @@ function createRequest(url: string, body: Record<string, unknown>): NextRequest 
 
 describe("PATCH /api/notifications/[id]", () => {
   beforeEach(() => {
-    vi.mocked(fetchBackend).mockReset();
+    markReadMock.mockReset();
+    dismissMock.mockReset();
+    getUserIdentityMock.mockReset();
+    getUserIdentityMock.mockImplementation(async (_request, candidateUserId?: string | null) => {
+      const userId = candidateUserId?.trim();
+      if (userId && /^[0-9a-f-]{36}$/i.test(userId)) {
+        return { user_id: userId, source: "client" as const };
+      }
+      return { user_id: "anonymous", source: "anonymous" as const };
+    });
   });
 
   it("rejects notification updates without a valid user identity", async () => {
@@ -50,11 +74,12 @@ describe("PATCH /api/notifications/[id]", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Missing or invalid user_id",
     });
-    expect(fetchBackend).not.toHaveBeenCalled();
+    expect(markReadMock).not.toHaveBeenCalled();
+    expect(dismissMock).not.toHaveBeenCalled();
   });
 
-  it("forwards the resolved query user identity to the backend mutation", async () => {
-    vi.mocked(fetchBackend).mockResolvedValue({ success: true });
+  it("dismisses a notification for the resolved user identity", async () => {
+    dismissMock.mockResolvedValue(true);
 
     const response = await PATCH(
       createRequest(`http://localhost/api/notifications/42?user_id=${VALID_USER_ID}`, {
@@ -63,12 +88,7 @@ describe("PATCH /api/notifications/[id]", () => {
       { params: Promise.resolve({ id: "42" }) },
     );
 
-    expect(fetchBackend).toHaveBeenCalledWith("/storage/notifications/42/dismiss", {
-      method: "PATCH",
-      params: {
-        user_id: VALID_USER_ID,
-      },
-    });
+    expect(dismissMock).toHaveBeenCalledWith(VALID_USER_ID, 42);
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       success: true,
@@ -77,8 +97,8 @@ describe("PATCH /api/notifications/[id]", () => {
     });
   });
 
-  it("forwards the resolved body user identity to the backend mutation", async () => {
-    vi.mocked(fetchBackend).mockResolvedValue({ success: true });
+  it("marks a notification read from the body user identity", async () => {
+    markReadMock.mockResolvedValue(true);
 
     await PATCH(
       createRequest("http://localhost/api/notifications/7", {
@@ -88,11 +108,23 @@ describe("PATCH /api/notifications/[id]", () => {
       { params: Promise.resolve({ id: "7" }) },
     );
 
-    expect(fetchBackend).toHaveBeenCalledWith("/storage/notifications/7/mark_read", {
-      method: "PATCH",
-      params: {
+    expect(markReadMock).toHaveBeenCalledWith(VALID_USER_ID, 7);
+  });
+
+  it("returns 503 when DATABASE_URL is not configured", async () => {
+    markReadMock.mockRejectedValue(new DatabaseNotConfiguredError());
+
+    const response = await PATCH(
+      createRequest("http://localhost/api/notifications/7", {
+        action: "mark_read",
         user_id: VALID_USER_ID,
-      },
+      }),
+      { params: Promise.resolve({ id: "7" }) },
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      error: "Notifications are unavailable until DATABASE_URL is configured.",
     });
   });
 });

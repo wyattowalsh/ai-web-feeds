@@ -40,6 +40,10 @@ jobs:
             tests/packages/ai_web_feeds/unit/test_models.py \
             tests/packages/ai_web_feeds/unit/test_storage.py \
             tests/packages/ai_web_feeds/unit/test_validate.py \
+            tests/packages/ai_web_feeds/unit/test_articles.py \
+            tests/packages/ai_web_feeds/unit/test_catalog_sync_mapper.py \
+            tests/packages/ai_web_feeds/unit/test_catalog_sync_stages.py \
+            tests/cli/unit/test_process_catalog_sync.py \
             tests/packages/test_notifications.py \
             tests/packages/test_polling.py \
             tests/packages/test_scheduler.py \

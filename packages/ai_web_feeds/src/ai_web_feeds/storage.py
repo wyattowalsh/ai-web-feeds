@@ -9,8 +9,9 @@ from typing import Any
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from loguru import logger
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, delete, desc, inspect, text
 from sqlalchemy.engine import make_url
 from sqlmodel import Session, SQLModel, select
 
@@ -29,6 +30,7 @@ from ai_web_feeds.models import (
     Notification,
     NotificationPreference,
     SavedSearch,
+    SourceTopic,
     TopicNode,
     TopicStats,
     TrendingTopic,
@@ -50,8 +52,164 @@ def upgrade_database_to_head(database_url: str = DEFAULT_DATABASE_URL) -> None:
 
     alembic_config = Config(str(config_path))
     alembic_config.set_main_option("sqlalchemy.url", database_url)
-    command.upgrade(alembic_config, "head")
+    script = ScriptDirectory.from_config(alembic_config)
+    head_revision = script.get_current_head()
+
+    engine = create_engine(database_url)
+    inspector = inspect(engine)
+    has_sources = inspector.has_table("sources")
+    has_alembic = inspector.has_table("alembic_version")
+
+    if has_sources and not has_alembic and head_revision:
+        command.stamp(alembic_config, head_revision)
+        logger.info("Stamped existing schema to Alembic head: {}", head_revision)
+        return
+
+    if has_alembic and head_revision:
+        with engine.begin() as connection:
+            current = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
+        known_revisions = {rev.revision for rev in script.walk_revisions()}
+        if current and current not in known_revisions:
+            with engine.begin() as connection:
+                connection.execute(
+                    text("UPDATE alembic_version SET version_num = :head"),
+                    {"head": head_revision},
+                )
+            logger.warning(
+                "Unknown Alembic revision {} rewritten to head {}",
+                current,
+                head_revision,
+            )
+            return
+
+    try:
+        command.upgrade(alembic_config, "head")
+    except Exception as exc:
+        if has_sources and head_revision and "already exists" in str(exc).lower():
+            command.stamp(alembic_config, head_revision)
+            logger.warning("Schema already present; stamped Alembic head after upgrade conflict")
+            return
+        raise
     logger.info("Database migrations applied to head")
+
+
+def _topics_table_columns(session: Session) -> set[str]:
+    try:
+        inspector = inspect(session.get_bind())
+        if not inspector.has_table("topics"):
+            return set()
+        return {column["name"] for column in inspector.get_columns("topics")}
+    except Exception:
+        return set()
+
+
+def _sync_legacy_topic_name(session: Session, topic: TopicNode) -> None:
+    """Populate legacy ``topics.name`` when Alembic schemas still require it."""
+    if "name" not in _topics_table_columns(session):
+        return
+    session.execute(
+        text("UPDATE topics SET name = :name WHERE id = :id"),
+        {"name": topic.label, "id": topic.id},
+    )
+
+
+def upsert_topic(session: Session, topic: TopicNode) -> tuple[TopicNode, bool]:
+    """Insert or update a taxonomy node by primary key."""
+    columns = _topics_table_columns(session)
+    existing = session.get(TopicNode, topic.id)
+    if existing is None:
+        if "name" in columns:
+            session.execute(
+                text(
+                    "INSERT INTO topics (id, name, label, facet, created_at, updated_at) "
+                    "VALUES (:id, :name, :label, :facet, :created_at, :updated_at)"
+                ),
+                {
+                    "id": topic.id,
+                    "name": topic.label,
+                    "label": topic.label,
+                    "facet": topic.facet,
+                    "created_at": topic.created_at,
+                    "updated_at": topic.updated_at,
+                },
+            )
+            persisted = session.get(TopicNode, topic.id)
+            if persisted is not None:
+                for field_name in (
+                    "facet_group",
+                    "description",
+                    "aliases",
+                    "parents",
+                    "relations",
+                    "examples",
+                    "uri",
+                    "mappings",
+                    "i18n",
+                    "rank_hint",
+                    "tags",
+                    "notes",
+                ):
+                    setattr(persisted, field_name, getattr(topic, field_name))
+                session.add(persisted)
+                return persisted, True
+        session.add(topic)
+        session.flush()
+        _sync_legacy_topic_name(session, topic)
+        return topic, True
+
+    for field_name in (
+        "label",
+        "facet",
+        "facet_group",
+        "description",
+        "aliases",
+        "parents",
+        "relations",
+        "examples",
+        "uri",
+        "mappings",
+        "i18n",
+        "rank_hint",
+        "tags",
+        "notes",
+    ):
+        setattr(existing, field_name, getattr(topic, field_name))
+    existing.updated_at = datetime.now(UTC)
+    session.add(existing)
+    session.flush()
+    _sync_legacy_topic_name(session, topic)
+    return existing, False
+
+
+def replace_source_topics(
+    session: Session,
+    *,
+    source_id: str,
+    topic_ids: list[str],
+    origin: str = "catalog",
+    weight: float = 1.0,
+    confidence: float = 1.0,
+) -> int:
+    """Replace catalog-origin topic assignments for a single feed source."""
+    session.exec(
+        delete(SourceTopic).where(
+            SourceTopic.source_id == source_id,
+            SourceTopic.origin == origin,
+        )
+    )
+    inserted = 0
+    for topic_id in topic_ids:
+        session.add(
+            SourceTopic(
+                source_id=source_id,
+                topic_id=topic_id,
+                origin=origin,
+                weight=weight,
+                confidence=confidence,
+            )
+        )
+        inserted += 1
+    return inserted
 
 
 class DatabaseManager:

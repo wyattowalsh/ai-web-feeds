@@ -1,8 +1,8 @@
 /**
  * User authentication utilities
  *
- * Derives user identity from request headers or the client-generated anonymous UUID
- * used for user-scoped browser features.
+ * Derives user identity from Better Auth session, request headers, or the
+ * client-generated anonymous UUID used for user-scoped browser features.
  */
 
 import { validateUUID } from "@/lib/backend";
@@ -20,6 +20,14 @@ export type ResolvedUserIdentity = {
   shouldBindCookie: boolean;
 };
 
+export type SessionUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  role?: string;
+};
+
 function normalizeUserId(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
@@ -29,22 +37,60 @@ function normalizeUserId(value: string | null | undefined): string | null {
   return validateUUID(trimmed) ? trimmed : null;
 }
 
+function normalizeSessionUserId(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed.length > 128) {
+    return null;
+  }
+
+  return /^[a-zA-Z0-9_-]+$/.test(trimmed) ? trimmed : null;
+}
+
+/**
+ * Resolve the authenticated Better Auth user for a request, if any.
+ */
+export async function getSessionUser(request: Request): Promise<SessionUser | null> {
+  try {
+    const { auth } = await import("@/lib/auth");
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user?.id) {
+      return null;
+    }
+
+    return session.user as SessionUser;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Get user identity from request
  *
  * Checks multiple sources in priority order:
- * 1. Trusted x-user-id header (only when explicitly enabled for trusted contexts)
- * 2. Client-generated UUID used to scope anonymous browser data
- * 3. Falls back to anonymous
+ * 1. Better Auth session user id
+ * 2. Trusted x-user-id header (only when explicitly enabled for trusted contexts)
+ * 3. Client-generated UUID used to scope anonymous browser data
+ * 4. Falls back to anonymous
  *
  * Anonymous browser features in this app intentionally do not require end-user auth,
  * but they do require a stable UUID to scope user-specific state.
  */
-export function getUserIdentity(
+export async function getUserIdentity(
   request: Request,
   candidateUserId?: string | null,
   options: { allowTrustedHeader?: boolean } = {},
-): UserIdentity {
+): Promise<UserIdentity> {
+  const sessionUserId = normalizeSessionUserId((await getSessionUser(request))?.id);
+  if (sessionUserId) {
+    return {
+      user_id: sessionUserId,
+      source: "session",
+    };
+  }
+
   if (options.allowTrustedHeader) {
     const headerUserId = normalizeUserId(request.headers.get("x-user-id"));
     if (headerUserId) {
@@ -73,12 +119,12 @@ export function isValidUserId(value: string | null | undefined): boolean {
   return normalizeUserId(value) !== null;
 }
 
-export function resolveUserIdentity(
+export async function resolveUserIdentity(
   request: Request,
   candidateUserId?: string | null,
   options: { allowTrustedHeader?: boolean } = {},
-): ResolvedUserIdentity {
-  const directIdentity = getUserIdentity(request, candidateUserId, options);
+): Promise<ResolvedUserIdentity> {
+  const directIdentity = await getUserIdentity(request, candidateUserId, options);
   if (directIdentity.source !== "anonymous") {
     return {
       identity: directIdentity,
@@ -120,13 +166,16 @@ export function validateUserOwnership(
   clientSuppliedId: string | null,
   actualIdentity: UserIdentity,
 ): boolean {
-  const normalizedClientId = normalizeUserId(clientSuppliedId);
-
-  if (!normalizedClientId) {
+  if (actualIdentity.source === "anonymous") {
     return false;
   }
 
-  if (actualIdentity.source === "anonymous") {
+  const normalizedClientId =
+    actualIdentity.source === "session"
+      ? normalizeSessionUserId(clientSuppliedId)
+      : normalizeUserId(clientSuppliedId);
+
+  if (!normalizedClientId) {
     return false;
   }
 
@@ -155,6 +204,10 @@ export function applyUserIdentityBinding(
     `${ANON_USER_BINDING_COOKIE}=${resolvedIdentity.identity.user_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`,
   );
   return response;
+}
+
+export function getAnonymousBindingUserId(request: Request): string | null {
+  return normalizeUserId(readBindingCookie(request));
 }
 
 function readBindingCookie(request: Request): string | null {

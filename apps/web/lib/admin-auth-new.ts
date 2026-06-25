@@ -9,7 +9,9 @@ export async function withBetterAuthAdminGuard(
     if (!session?.user) {
       return { user: null };
     }
-    return { user: session.user as { id: string; email: string; role: string } };
+    return {
+      user: session.user as unknown as { id: string; email: string; role: string },
+    };
   } catch (error) {
     // Log at debug level to avoid leaking auth internals in production.
     console.debug("Admin guard session check failed:", error);

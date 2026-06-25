@@ -5,7 +5,7 @@ import { applyUserIdentityBinding, resolveUserIdentity } from "@/lib/user-auth";
 export const dynamic = "force-dynamic";
 
 const GETHandler = async (request: Request) => {
-  const resolvedIdentity = resolveUserIdentity(request);
+  const resolvedIdentity = await resolveUserIdentity(request);
   const response = NextResponse.json(
     {
       user_id: resolvedIdentity.identity.user_id,

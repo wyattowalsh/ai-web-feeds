@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { after, NextResponse } from "next/server";
+import { DatabaseNotConfiguredError } from "@/lib/server/db";
+import { recordApiRequestLog } from "@/lib/server/telemetry-store";
 import {
   hashClientIp,
   recordApiTelemetry,
@@ -35,6 +37,14 @@ function resolveQueryKeys(url: URL): string[] {
 function queueTelemetryWrite(event: ApiTelemetryEvent): void {
   after(async () => {
     await recordApiTelemetry(event);
+
+    try {
+      await recordApiRequestLog(event);
+    } catch (error) {
+      if (!(error instanceof DatabaseNotConfiguredError)) {
+        console.error("Failed to persist api_request_log", error);
+      }
+    }
   });
 }
 
