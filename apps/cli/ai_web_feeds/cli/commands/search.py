@@ -1,9 +1,10 @@
 """CLI commands for search and discovery."""
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import typer
 from ai_web_feeds.config import DEFAULT_DATABASE_URL
+from ai_web_feeds.models import FeedSource
 from ai_web_feeds.storage import DatabaseManager
 from rich.console import Console
 from rich.table import Table
@@ -73,15 +74,16 @@ def search_query(
         return
 
     if search_type == "semantic":
+        semantic_results = cast(list[tuple[FeedSource, float]], results)
         # Semantic search returns (feed, score) tuples
-        table = Table(title=f"Search Results ({len(results)})", show_header=True)
+        table = Table(title=f"Search Results ({len(semantic_results)})", show_header=True)
         table.add_column("Rank", style="dim", width=5)
         table.add_column("Title", style="cyan")
         table.add_column("Topics", style="green")
         table.add_column("Similarity", style="yellow", justify="right")
         table.add_column("URL", style="blue")
 
-        for idx, (feed, similarity) in enumerate(results, 1):
+        for idx, (feed, similarity) in enumerate(semantic_results, 1):
             topics_str = ", ".join(feed.topics[:3]) if feed.topics else "-"
             if len(feed.topics) > 3:
                 topics_str += f" +{len(feed.topics) - 3} more"
@@ -94,15 +96,16 @@ def search_query(
                 (feed.feed or feed.site or "")[:40],
             )
     else:
+        feed_results = cast(list[FeedSource], results)
         # Full-text search returns feeds
-        table = Table(title=f"Search Results ({len(results)})", show_header=True)
+        table = Table(title=f"Search Results ({len(feed_results)})", show_header=True)
         table.add_column("Rank", style="dim", width=5)
         table.add_column("Title", style="cyan")
         table.add_column("Topics", style="green")
         table.add_column("Verified", style="yellow", justify="center")
         table.add_column("URL", style="blue")
 
-        for idx, feed in enumerate(results, 1):
+        for idx, feed in enumerate(feed_results, 1):
             topics_str = ", ".join(feed.topics[:3]) if feed.topics else "-"
             if len(feed.topics) > 3:
                 topics_str += f" +{len(feed.topics) - 3} more"

@@ -537,7 +537,7 @@ class FeedAnalytics(SQLModel, table=True):
 class FeedSourceEnriched(SQLModel):
     """Enriched feed source for YAML export (matches feeds.enriched.yaml structure)."""
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=True)  # ty: ignore[invalid-assignment]
 
     # Core fields
     id: str
@@ -574,7 +574,7 @@ class FeedSourceEnriched(SQLModel):
 class OPMLOutline(SQLModel):
     """OPML outline element."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True)  # ty: ignore[invalid-assignment]
 
     text: str
     title: str | None = None

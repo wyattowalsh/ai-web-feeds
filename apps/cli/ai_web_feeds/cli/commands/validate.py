@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, Optional, TypedDict, cast
 
 import typer
 import yaml  # type: ignore[import-untyped]
@@ -17,6 +17,15 @@ from ai_web_feeds import DatabaseManager
 
 app = typer.Typer(help="Validate feed data against schemas")
 console = Console()
+
+
+class FeedHealthRow(TypedDict):
+    id: str
+    title: str
+    health: float
+    success_rate: float
+    validations: int
+    verified: bool
 
 
 def get_data_dir() -> Path:
@@ -358,7 +367,7 @@ def validation_report(
     console.print(f"[dim]Analyzing {len(feed_sources)} feeds...[/dim]\n")
 
     # Build health report
-    health_data = []
+    health_data: list[FeedHealthRow] = []
     for feed in feed_sources:
         history = db.get_validation_history(feed.id, limit=recent)
         if history:
