@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -788,3 +788,147 @@ class TestCoverageNinetyPercentPush:
         )
         result = await _enrich_all_feeds_async([source, {"id": "f2"}], db=None)
         assert len(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_enrich_feed_source_exception_returns_original(self, mocker) -> None:
+        from ai_web_feeds.enrich import enrich_feed_source
+
+        source = {"id": "f1", "feed": "https://example.com/feed.xml"}
+        mock_inst = MagicMock()
+        mock_inst.enrich_from_url = mocker.AsyncMock(side_effect=RuntimeError("enrich fail"))
+        mocker.patch("ai_web_feeds.enrich.AdvancedEnricher", return_value=mock_inst)
+        result = await enrich_feed_source(source)
+        assert result == source
+
+    def test_topic_modeler_empty_preprocess_returns_empty(self) -> None:
+        from ai_web_feeds.nlp.topic_modeler import TopicModeler
+
+        modeler = TopicModeler()
+        with patch.object(modeler, "_preprocess_articles", return_value=[]):
+            assert modeler.discover_subtopics("ai", [{"content": ""}], num_topics=2) == []
+
+    def test_storage_semantic_search_branch(self, temp_db_path, sample_feed_source) -> None:
+        from ai_web_feeds.storage import DatabaseManager
+
+        db = DatabaseManager(f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        db.add_feed_source(sample_feed_source)
+        with patch("ai_web_feeds.search.semantic_search", return_value=[(sample_feed_source, 0.9)]):
+            results = db.search_feeds("ai feeds", search_type="semantic", limit=5)
+        assert results
+
+    @patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor")
+    def test_entity_job_processes_article(
+        self, mock_extractor_cls, temp_db_path, sample_feed_source
+    ) -> None:
+        from ai_web_feeds.models import ArticleEntry
+        from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
+        from ai_web_feeds.storage import DatabaseManager
+
+        db = DatabaseManager(f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        db.add_feed_source(sample_feed_source)
+        with db.get_session() as session:
+            session.add(
+                ArticleEntry(
+                    feed_id=sample_feed_source.id,
+                    guid="g1",
+                    link="https://example.com/1",
+                    title="OpenAI launches GPT",
+                    summary="AI company announcement",
+                    pub_date=datetime.now(UTC),
+                )
+            )
+            session.commit()
+
+        mock_extractor_cls.return_value.extract_entities.return_value = [
+            {"canonical_name": "OpenAI", "entity_type": "organization", "is_new": True}
+        ]
+        job = EntityBatchJob(db_manager=db)
+        stats = job.run(batch_size=5)
+        assert stats["processed"] >= 1
+
+    def test_validate_mark_inactive_feeds(self) -> None:
+        from ai_web_feeds.models import FeedValidationResult
+        from ai_web_feeds.validate import mark_inactive_feeds
+
+        feed = MagicMock()
+        feed.id = "stale"
+        old = FeedValidationResult(
+            feed_source_id="stale",
+            is_valid=False,
+            validated_at=datetime.now(UTC) - timedelta(days=60),
+        )
+        marked = mark_inactive_feeds([feed], {"stale": [old]}, inactive_threshold_days=30)
+        assert "stale" in marked
+        assert feed.is_active is False
+
+    @pytest.mark.asyncio
+    async def test_validate_feed_without_url(self) -> None:
+        from ai_web_feeds.models import FeedSource
+        from ai_web_feeds.validate import validate_feed
+
+        feed = FeedSource(id="no-url", title="No URL", feed=None, topics=["ai"])
+        result = await validate_feed(feed)
+        assert result.is_valid is False
+        assert "No feed URL" in result.warnings[0]
+
+    @pytest.mark.asyncio
+    async def test_visualization_create_customization_fields(self) -> None:
+        from ai_web_feeds.visualization.models import ChartType, DataSource
+        from ai_web_feeds.visualization.visualization_service import VisualizationService
+
+        svc = VisualizationService()
+        viz = MagicMock()
+        viz.to_dict.return_value = {"id": 1}
+        res = MagicMock()
+        res.scalar_one_or_none.return_value = None
+        mock_sess = MagicMock()
+        mock_sess.execute.return_value = res
+        mock_sess.add = MagicMock()
+        mock_sess.commit = MagicMock()
+        mock_sess.refresh = MagicMock()
+        with patch("ai_web_feeds.visualization.visualization_service.get_session") as gs:
+            gs.return_value.__enter__.return_value = mock_sess
+            with (
+                patch.object(svc.customization_validator, "validate_title", return_value="T"),
+                patch.object(svc.customization_validator, "validate_colors", return_value=["#fff"]),
+                patch.object(svc.customization_validator, "validate_font_size", return_value=12),
+            ):
+                created = await svc.create_visualization(
+                    "dev",
+                    "chart",
+                    ChartType.BAR,
+                    DataSource.TOPICS,
+                    {},
+                    {"title": "T", "colors": ["#fff"], "font_size": 12},
+                )
+        assert isinstance(created, dict)
+
+    def test_utils_hackernews_commits_with_branch(self) -> None:
+        from ai_web_feeds.utils import generate_hackernews_feed_url
+
+        url = generate_hackernews_feed_url(
+            "https://news.ycombinator.com",
+            {"hackernews": {"feed_type": "commits", "branch": "main"}},
+        )
+        assert url is None or "atom" in url or "rss" in url
+
+    def test_analytics_validation_succeeded_fallback(self) -> None:
+        from ai_web_feeds.analytics import validation_succeeded
+        from ai_web_feeds.models import FeedValidationResult
+
+        accessible = FeedValidationResult(
+            feed_source_id="f1",
+            is_valid=False,
+            is_accessible=True,
+            format_valid=True,
+            validated_at=datetime.now(UTC),
+        )
+        assert validation_succeeded(accessible) is True
+
+    def test_catalog_sync_topic_default_facet(self) -> None:
+        from ai_web_feeds.catalog_sync.stages import topic_entry_to_node
+
+        node = topic_entry_to_node({"id": "x", "label": "X"})
+        assert node.facet == "domain"

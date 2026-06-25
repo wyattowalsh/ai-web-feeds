@@ -163,7 +163,12 @@ def sync_edges(
     return result
 
 
-def _coerce_enum(value: Any, enum_cls: type, *, _field_name: str) -> Any:
+def _coerce_enum(
+    value: Any,
+    enum_cls: type,
+    *,
+    field_name: str,  # noqa: ARG001 — documents caller field at coercion sites
+) -> Any:
     if value is None:
         return None
     if isinstance(value, enum_cls):

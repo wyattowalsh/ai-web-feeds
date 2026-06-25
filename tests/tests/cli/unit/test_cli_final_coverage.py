@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -572,3 +573,97 @@ class TestCLIFinalNinetyPush:
                 ["csv", "--input", str(feeds), "--output", str(tmp_path / "out.csv")],
             )
             assert result.exit_code == 1
+
+    def test_monitor_status_and_follow(self) -> None:
+        from ai_web_feeds.cli.commands.monitor import app as monitor_app
+
+        runner = CliRunner()
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as msched,
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager"),
+        ):
+            inst = MagicMock()
+            inst.scheduler.running = True
+            inst.list_jobs.return_value = [
+                {"id": "j1", "name": "Poll", "next_run": "soon", "trigger": "interval"}
+            ]
+            msched.return_value = inst
+            result = runner.invoke(monitor_app, ["status"])
+            assert result.exit_code == 0
+
+        with patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+            follow = MagicMock(followed_at=datetime.now(UTC))
+            mdb.return_value.follow_source.return_value = follow
+            result = runner.invoke(monitor_app, ["follow", "user-1", "feed-a"])
+            assert result.exit_code == 0
+
+    def test_test_command_watch_and_debug_paths(self, tmp_path: Path) -> None:
+        from ai_web_feeds.cli.commands.test import app as test_app
+
+        runner = CliRunner()
+        with (
+            patch("ai_web_feeds.cli.commands.test.resolve_uv_executable", return_value="uv"),
+            patch("ai_web_feeds.cli.commands.test.get_tests_dir", return_value=tmp_path),
+            patch("ai_web_feeds.cli.commands.test.run_uv_command", return_value=0) as mock_run,
+        ):
+            runner.invoke(test_app, ["watch"])
+            runner.invoke(test_app, ["debug", "tests/unit/test_x.py"])
+            runner.invoke(test_app, ["coverage", "--open"])
+            assert mock_run.call_count >= 3
+
+    def test_monitor_follow_unfollow_and_digests(self) -> None:
+        from ai_web_feeds.cli.commands.monitor import app as monitor_app
+
+        runner = CliRunner()
+        with patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+            inst = MagicMock()
+            inst.unfollow_source.return_value = None
+            inst.get_user_followed_sources.return_value = ["feed-a", "feed-b"]
+            digest = MagicMock(
+                id=1,
+                email="u@example.com",
+                schedule_type="daily",
+                is_active=True,
+                next_send_at=datetime.now(UTC),
+            )
+            inst.create_email_digest.return_value = digest
+            inst.get_user_digests.return_value = [digest]
+            inst.get_email_digest.return_value = digest
+            inst.update_email_digest.return_value = digest
+            mdb.return_value = inst
+
+            assert runner.invoke(monitor_app, ["unfollow", "user-1", "feed-a"]).exit_code == 0
+            assert runner.invoke(monitor_app, ["list-follows", "user-1"]).exit_code == 0
+            assert (
+                runner.invoke(
+                    monitor_app, ["subscribe-digest", "user-1", "u@example.com"]
+                ).exit_code
+                == 0
+            )
+            assert runner.invoke(monitor_app, ["list-digests", "user-1"]).exit_code == 0
+            assert runner.invoke(monitor_app, ["unsubscribe-digest", "1"]).exit_code == 0
+
+        with patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+            mdb.return_value.get_user_followed_sources.return_value = []
+            assert runner.invoke(monitor_app, ["list-follows", "user-2"]).exit_code == 0
+            mdb.return_value.get_email_digest.return_value = None
+            assert runner.invoke(monitor_app, ["unsubscribe-digest", "99"]).exit_code == 1
+            assert (
+                runner.invoke(
+                    monitor_app,
+                    ["subscribe-digest", "user-1", "u@example.com", "--schedule", "bad"],
+                ).exit_code
+                == 1
+            )
+
+    def test_search_cli_query_and_autocomplete(self) -> None:
+        from ai_web_feeds.cli.commands.search import app as search_app
+
+        runner = CliRunner()
+        with patch("ai_web_feeds.cli.commands.search.DatabaseManager") as mdb:
+            inst = MagicMock()
+            inst.search_feeds.return_value = []
+            inst.autocomplete_search.return_value = {"feeds": [], "topics": []}
+            mdb.return_value = inst
+            assert runner.invoke(search_app, ["query", "machine learning"]).exit_code == 0
+            assert runner.invoke(search_app, ["autocomplete", "ma"]).exit_code == 0

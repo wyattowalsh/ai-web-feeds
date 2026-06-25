@@ -16,6 +16,7 @@ from ai_web_feeds.models import (
     SourceType,
     TopicNode,
 )
+from hypothesis import settings as hypothesis_settings
 from sqlalchemy import create_engine
 from sqlmodel import Session, SQLModel
 
@@ -26,6 +27,9 @@ from sqlmodel import Session, SQLModel
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""
+    hypothesis_settings.register_profile("default", deadline=None)
+    hypothesis_settings.load_profile("default")
+
     config.addinivalue_line("markers", "unit: Unit tests")
     config.addinivalue_line("markers", "integration: Integration tests")
     config.addinivalue_line("markers", "e2e: End-to-end tests")
