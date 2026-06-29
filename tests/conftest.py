@@ -1,5 +1,6 @@
 """Pytest configuration and fixtures for ai-web-feeds tests."""
 
+import os
 import tempfile
 from collections.abc import Generator
 from datetime import UTC, datetime
@@ -27,8 +28,10 @@ from sqlmodel import Session, SQLModel
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    hypothesis_settings.register_profile("default", deadline=None)
-    hypothesis_settings.load_profile("default")
+    hypothesis_settings.register_profile("dev", deadline=None)
+    hypothesis_settings.register_profile("ci", deadline=5000)
+    profile = "ci" if os.environ.get("CI") == "true" else "dev"
+    hypothesis_settings.load_profile(profile)
 
     config.addinivalue_line("markers", "unit: Unit tests")
     config.addinivalue_line("markers", "integration: Integration tests")

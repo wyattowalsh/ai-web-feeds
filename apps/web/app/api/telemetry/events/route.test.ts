@@ -134,6 +134,60 @@ describe("POST /api/telemetry/events", () => {
     expect(userId).toBeNull();
   });
 
+  it("ignores spoofed userId for session-bound identity", async () => {
+    resolveUserIdentityMock.mockResolvedValue({
+      identity: {
+        user_id: VALID_USER_ID,
+        source: "session",
+      },
+      shouldBindCookie: false,
+    });
+
+    await POST(
+      createPostRequest({
+        events: [
+          {
+            eventName: "reader.filter.apply",
+            surface: "reader",
+            userId: "99999999-9999-4999-8999-999999999999",
+          },
+        ],
+      }),
+    );
+
+    const insertCall = usageEventsInsertCall();
+    expect(insertCall).toBeDefined();
+    const userId = (insertCall as unknown[])[4];
+    expect(userId).toBe(VALID_USER_ID);
+  });
+
+  it("does not persist client-supplied userId for anonymous identity", async () => {
+    resolveUserIdentityMock.mockResolvedValue({
+      identity: {
+        user_id: "anon-user",
+        source: "anonymous",
+      },
+      shouldBindCookie: false,
+    });
+
+    await POST(
+      createPostRequest({
+        events: [
+          {
+            eventName: "search.query.submit",
+            surface: "search",
+            userId: VALID_USER_ID,
+          },
+        ],
+      }),
+    );
+
+    const insertCall = usageEventsInsertCall();
+    expect(insertCall).toBeDefined();
+    const userId = (insertCall as unknown[])[4];
+    expect(userId).toBeNull();
+  });
+
   it("returns 400 for invalid payloads", async () => {
     const response = await POST(
       createPostRequest({

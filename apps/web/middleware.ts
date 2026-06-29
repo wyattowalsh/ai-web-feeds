@@ -29,8 +29,17 @@ export async function middleware(request: NextRequest) {
 
   let response: NextResponse;
 
-  // Protect /admin routes - redirect to login if no session cookie
-  if ((pathname === "/admin" || pathname.startsWith("/admin/")) && pathname !== "/admin/login") {
+  // Admin API routes rely on withBetterAuthAdminGuard for role checks; require a session cookie here.
+  if (pathname.startsWith("/api/admin/")) {
+    if (!hasAdminSession) {
+      response = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    } else {
+      response = NextResponse.next({ request: { headers: requestHeaders } });
+    }
+  } else if (
+    (pathname === "/admin" || pathname.startsWith("/admin/")) &&
+    pathname !== "/admin/login"
+  ) {
     if (!hasAdminSession) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("next", pathname);
@@ -88,7 +97,6 @@ export async function middleware(request: NextRequest) {
     response.headers.set("x-nonce", nonce);
   }
 
-  // Static security headers (also set here so they apply to redirects/rewrites).
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -97,5 +105,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|llms).*)"],
+  matcher: ["/api/admin/:path*", "/((?!api|_next/static|_next/image|favicon.ico|llms).*)"],
 };

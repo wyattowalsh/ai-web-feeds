@@ -109,7 +109,7 @@ const POSTHandler = async (request: Request) => {
       parsedEvents.map((event) =>
         recordUsageEvent({
           ...event,
-          userId: event.userId ?? boundUserId,
+          userId: boundUserId,
         }),
       ),
     );
