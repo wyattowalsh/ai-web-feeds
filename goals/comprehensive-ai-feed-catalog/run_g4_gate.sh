@@ -24,7 +24,7 @@ record_check() {
 declare -a CHECKS=()
 
 log_step "preflight: no apps/web in diff"
-if git diff --name-only origin/main 2>/dev/null | rg -q '^apps/web/'; then
+if git diff --name-only origin/main 2>/dev/null | grep -qE '^apps/web/'; then
   echo "FAIL: apps/web paths still in diff vs origin/main" | tee "$SCRATCH/preflight.log"
   record_check "scope_isolation" "false" "preflight.log" "apps/web present in git diff"
   exit 1
@@ -75,10 +75,22 @@ uv run ai-web-feeds validate all >"$SCRATCH/validate-all.log" 2>&1
 grep -q "All validations passed" "$SCRATCH/validate-all.log"
 record_check "validate_all" "true" "validate-all.log" "schema + topics green"
 
-log_step "step2 validate http (default concurrency)"
-uv run ai-web-feeds validate http >"$SCRATCH/validate-http.log" 2>&1
-rg -q 'Failed:\s+0(\s+\(0\.0%\))?' "$SCRATCH/validate-http.log"
-record_check "validate_http" "true" "validate-http.log" "Failed: 0 (default CLI concurrency)"
+log_step "step2 validate http (default concurrency, retry up to 3)"
+HTTP_OK=0
+for attempt in 1 2 3; do
+  uv run ai-web-feeds validate http >"$SCRATCH/validate-http.log" 2>&1 || true
+  if grep -qE 'Failed:[[:space:]]+0([[:space:]]+\(0\.0%\))?' "$SCRATCH/validate-http.log"; then
+    HTTP_OK=1
+    record_check "validate_http" "true" "validate-http.log" "Failed: 0 attempt $attempt"
+    break
+  fi
+  echo "HTTP attempt $attempt had failures; retrying..." >>"$SCRATCH/gate-run.log"
+  sleep 5
+done
+if [[ "$HTTP_OK" -ne 1 ]]; then
+  record_check "validate_http" "false" "validate-http.log" "HTTP failures after 3 attempts"
+  exit 1
+fi
 
 log_step "step3 enrichment parity + data assets"
 uv run python -c "
