@@ -96,7 +96,8 @@ async def discover(round_num: int) -> dict:
         yaml.safe_dump({"sources": verified}, sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
-    return {"round": round_num, "candidate_file": str(out), "verified": len(verified), **stats}
+    rel_out = out.relative_to(ROOT).as_posix()
+    return {"round": round_num, "candidate_file": rel_out, "verified": len(verified), **stats}
 
 
 def run_py(script: str, *args: str) -> None:

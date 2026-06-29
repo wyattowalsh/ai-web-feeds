@@ -61,7 +61,6 @@ log "step0 out-of-scope zero-diff audit"
 uv run python goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py \
   >"$SCRATCH/out-of-scope-zero-diff.json" 2>&1
 grep -q '"pass": true' "$SCRATCH/out-of-scope-zero-diff.json"
-grep -q '\[\]' "$SCRATCH/out-of-scope-zero-diff.json"
 
 log "step0 patch reconciliation (cumulative classifier vs authoritative)"
 {

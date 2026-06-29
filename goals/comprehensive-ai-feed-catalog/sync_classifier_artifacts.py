@@ -11,12 +11,8 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
-FORBIDDEN_PREFIXES = (
-    "apps/web/",
-    "apps/cli/",
-    ".github/",
-    "packages/ai_web_feeds/src/",
-)
+sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
+from scope_constants import is_forbidden_path  # noqa: E402
 HARNESS_DEBRIS = frozenset({
     "authoritative.patch",
     "CHANGED_FILES.authoritative.json",

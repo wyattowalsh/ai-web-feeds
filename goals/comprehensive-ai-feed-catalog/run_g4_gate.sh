@@ -23,14 +23,17 @@ record_check() {
 
 declare -a CHECKS=()
 
-log_step "preflight: no apps/web in diff"
-if git diff --name-only origin/main 2>/dev/null | grep -qE '^apps/web/'; then
-  echo "FAIL: apps/web paths still in diff vs origin/main" | tee "$SCRATCH/preflight.log"
-  record_check "scope_isolation" "false" "preflight.log" "apps/web present in git diff"
+log_step "preflight: forbidden path prefixes"
+uv run python goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py \
+  >"$SCRATCH/preflight-audit.json" 2>&1
+if ! grep -q '"pass": true' "$SCRATCH/preflight-audit.json"; then
+  echo "FAIL: forbidden paths in diff vs origin/main" | tee "$SCRATCH/preflight.log"
+  cat "$SCRATCH/preflight-audit.json" >>"$SCRATCH/preflight.log"
+  record_check "scope_isolation" "false" "preflight.log" "forbidden paths in git diff"
   exit 1
 fi
-echo "OK: zero apps/web paths" | tee "$SCRATCH/preflight.log"
-record_check "scope_isolation" "true" "preflight.log" "zero apps/web paths in diff vs origin/main"
+echo "OK: zero forbidden path prefixes in diff" | tee "$SCRATCH/preflight.log"
+record_check "scope_isolation" "true" "preflight.log" "zero forbidden prefixes in diff vs origin/main"
 
 log_step "finalize"
 uv run python specs/003-feed-collection-enhancement/orchestrate.py finalize \
