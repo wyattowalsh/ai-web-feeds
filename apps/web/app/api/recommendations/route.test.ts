@@ -194,7 +194,7 @@ describe("/api/recommendations route", () => {
     });
   });
 
-  it("returns 400 when session user omits feed_id and interaction_type", async () => {
+  it("returns 400 when session user omits feed_id", async () => {
     const { POST } = await loadRouteModule();
     getUserIdentityMock.mockResolvedValue({
       user_id: SESSION_USER_ID,
