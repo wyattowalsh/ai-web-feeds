@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-06-29T00:46:21Z",
+  "timestamp": "2026-06-29T03:47:33Z",
   "overall_pass": true,
-  "scratch_dir": "/tmp/g4-gate/scratch",
+  "scratch_dir": "/tmp/g4-gate-final2/scratch",
   "generated_by": "run_g4_gate.sh",
   "checks": [
     {
@@ -26,7 +26,7 @@
       "id": "yaml_db_parity",
       "pass": true,
       "log": "db-parity.log",
-      "summary": "yaml_db_parity OK 628"
+      "summary": "yaml_db_parity OK 633"
     },
     {
       "id": "validate_all",
@@ -38,13 +38,13 @@
       "id": "validate_http",
       "pass": true,
       "log": "validate-http.log",
-      "summary": "Failed: 0 attempt 2"
+      "summary": "Failed: 0 attempt 1"
     },
     {
       "id": "enrichment_parity",
       "pass": true,
       "log": "parity.log",
-      "summary": "parity OK 628"
+      "summary": "parity OK 633"
     },
     {
       "id": "validate_data_assets",
@@ -68,7 +68,7 @@
       "id": "pytest_coverage",
       "pass": true,
       "log": "pytest.log",
-      "summary": "90.05%"
+      "summary": "90.07%"
     },
     {
       "id": "validate_report",
@@ -80,7 +80,7 @@
       "id": "catalog_sources",
       "pass": true,
       "log": "health.log",
-      "summary": "628 sources"
+      "summary": "633 sources"
     }
   ]
 }
