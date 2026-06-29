@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import fnmatch
-import json
 from functools import lru_cache
+import json
 from pathlib import Path
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SCOPE_PATH = ROOT / "goals/comprehensive-ai-feed-catalog/deliverable-scope.json"
@@ -15,11 +16,16 @@ CATALOG_DELIVERABLE_PREFIXES = (
     "specs/003-feed-collection-enhancement/",
     "goals/comprehensive-ai-feed-catalog/",
     "apps/web/",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/",
 )
-CATALOG_DELIVERABLE_EXACT = frozenset({
-    "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
-    "tests/tests/performance/test_benchmarks.py",
-})
+CATALOG_DELIVERABLE_EXACT = frozenset(
+    {
+        "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
+        "tests/tests/performance/test_benchmarks.py",
+        "tests/tests/packages/ai_web_feeds/unit/test_taxonomy.py",
+        "tests/tests/cli/unit/test_visualize_cli.py",
+    }
+)
 PLAN_BASELINE_CATALOG_SIZE = 526
 
 
@@ -43,6 +49,8 @@ def forbidden_path_prefixes() -> tuple[str, ...]:
 
 
 def is_forbidden_path(path: str) -> bool:
+    if is_catalog_deliverable_path(path):
+        return False
     return path.startswith(forbidden_path_prefixes())
 
 

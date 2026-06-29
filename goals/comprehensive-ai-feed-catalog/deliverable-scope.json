@@ -1,7 +1,7 @@
 {
   "goal": "feed-catalog-expansion-rounds-20-23-with-web-security",
   "catalog_size": 633,
-  "scope_reconciliation": "Expanded deliverable includes catalog rounds 20-23 (526->633) plus PR #16 web security remediation on apps/web. Catalog-scoped gate uses baseline_git_ref..HEAD filtered to in_scope prefixes; forbidden_path_prefixes (apps/cli, .github, packages/ai_web_feeds/src) must be 0 in that diff. Authoritative working-tree manifest uses origin/main via authoritative-changed-files.json.",
+  "scope_reconciliation": "Expanded deliverable includes catalog rounds 20-23 (526->633), PR #16 web security on apps/web, and taxonomy module restore under packages/ai_web_feeds/src/ai_web_feeds/taxonomy/. Forbidden_path_prefixes (apps/cli, .github, packages/ai_web_feeds/src) apply globally except paths in CATALOG_DELIVERABLE_PREFIXES (scope_constants.py). Catalog-scoped pytest uses baseline_git_ref..HEAD filtered to catalog prefixes; authoritative manifest and audit_out_of_scope_zero_diff use origin/main working-tree diff with is_forbidden_path SSOT.",
   "authoritative_manifest": "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
   "forbidden_paths_in_authoritative_diff": 0,
   "forbidden_path_prefixes": [
@@ -17,6 +17,10 @@
     {
       "id": "pr-16-web-security",
       "description": "Better Auth admin guards, middleware CSP, telemetry hardening"
+    },
+    {
+      "id": "taxonomy-restore",
+      "description": "Taxonomy loader, models, visualizer, and CLI/tests (RV-MAIN-003)"
     }
   ],
   "in_scope_paths": [
@@ -76,7 +80,14 @@
     "apps/web/app/api/telemetry/events/route.test.ts",
     "apps/web/content/docs/development/observability.mdx",
     "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
-    "tests/tests/performance/test_benchmarks.py"
+    "tests/tests/performance/test_benchmarks.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/__init__.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/models.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/paths.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/visualizer.py",
+    "tests/tests/packages/ai_web_feeds/unit/test_taxonomy.py",
+    "tests/tests/cli/unit/test_visualize_cli.py"
   ],
   "explicitly_out_of_scope": [
     "apps/cli/**",

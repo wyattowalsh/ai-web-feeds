@@ -3,24 +3,24 @@
 
 from __future__ import annotations
 
-import fnmatch
 import json
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
+
 
 ROOT = Path(__file__).resolve().parents[2]
-SCOPE_PATH = ROOT / "goals/comprehensive-ai-feed-catalog/deliverable-scope.json"
-DEFAULT_FORBIDDEN_PREFIXES = (
-    "apps/cli/",
-    ".github/",
-    "packages/ai_web_feeds/src/",
+sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
+from scope_constants import (  # noqa: E402
+    is_forbidden_path,
+    load_scope,
+    matches_out_of_scope_pattern,
 )
 
 
 def _git_diff_names() -> list[str]:
     result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main"],
+        ["git", "diff", "--name-only", "origin/main"],  # nosec B603
         capture_output=True,
         text=True,
         cwd=ROOT,
@@ -29,22 +29,8 @@ def _git_diff_names() -> list[str]:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
-def _matches_pattern(path: str, pattern: str) -> bool:
-    if pattern.endswith("/**"):
-        return path.startswith(pattern[:-3])
-    return fnmatch.fnmatch(path, pattern)
-
-
-def _forbidden_prefixes(scope: dict) -> tuple[str, ...]:
-    configured = scope.get("forbidden_path_prefixes")
-    if configured:
-        return tuple(configured)
-    return DEFAULT_FORBIDDEN_PREFIXES
-
-
 def main() -> int:
-    scope = json.loads(SCOPE_PATH.read_text(encoding="utf-8"))
-    forbidden_prefixes = _forbidden_prefixes(scope)
+    scope = load_scope()
     out_of_scope: list[str] = scope.get("explicitly_out_of_scope", [])
     changed = _git_diff_names()
 
@@ -55,27 +41,27 @@ def main() -> int:
         for path in changed:
             if path in seen:
                 continue
-            if _matches_pattern(path, pattern):
+            if matches_out_of_scope_pattern(path, pattern):
                 violations.append({"pattern": pattern, "path": path})
                 seen.add(path)
 
     for path in changed:
         if path in seen:
             continue
-        if path.startswith(forbidden_prefixes):
+        if is_forbidden_path(path):
             violations.append({"pattern": "forbidden_path_prefixes", "path": path})
             seen.add(path)
 
     forbidden_paths = sorted({v["path"] for v in violations})
     doc = {
         "source": "git diff --name-only origin/main vs deliverable-scope",
-        "forbidden_path_prefixes": list(forbidden_prefixes),
+        "forbidden_path_prefixes": list(scope.get("forbidden_path_prefixes", [])),
         "changed_paths_count": len(changed),
         "forbidden_paths_with_nonempty_diff": forbidden_paths,
         "violations": violations,
         "pass": len(forbidden_paths) == 0,
     }
-    print(json.dumps(doc, indent=2))
+    print(json.dumps(doc, indent=2))  # noqa: T201
     return 0 if doc["pass"] else 1
 
 
