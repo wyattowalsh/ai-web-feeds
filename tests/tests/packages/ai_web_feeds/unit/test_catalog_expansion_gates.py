@@ -79,10 +79,53 @@ def test_g4_verification_catalog_sources_matches_scope() -> None:
 
 
 @pytest.mark.unit
+def test_audit_out_of_scope_zero_diff_passes() -> None:
+    """Harness preflight audit must pass on the PR branch (RV-REV-004)."""
+    audit_script = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py"
+    result = subprocess.run(
+        ["uv", "run", "python", str(audit_script)],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    doc = json.loads(result.stdout)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert doc["pass"] is True
+
+
+@pytest.mark.unit
+def test_authoritative_scope_zero_forbidden_paths() -> None:
+    """Authoritative manifest must report zero forbidden paths vs origin/main."""
+    script = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/write_authoritative_scope.py"
+    result = subprocess.run(
+        ["uv", "run", "python", str(script)],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    doc = json.loads(result.stdout)
+    assert doc["forbidden_paths_count"] == 0
+    assert doc["forbidden_paths"] == []
+
+
+@pytest.mark.unit
+def test_g4_scope_isolation_summary_matches_gate_script() -> None:
+    """g4-verification scope_isolation summary must match run_g4_gate.sh wording."""
+    g4 = json.loads(G4_JSON.read_text(encoding="utf-8"))
+    scope_check = next((c for c in g4["checks"] if c["id"] == "scope_isolation"), None)
+    assert scope_check is not None
+    assert "forbidden prefixes" in scope_check["summary"]
+
+
+@pytest.mark.unit
 def test_extend_prune_round_json_uses_portable_paths() -> None:
     """extend-prune-round reports must not embed absolute machine paths."""
     for round_num in (20, 21, 22, 23):
-        path = REPO_ROOT / f"specs/003-feed-collection-enhancement/extend-prune-round-{round_num}.json"
+        path = (
+            REPO_ROOT / f"specs/003-feed-collection-enhancement/extend-prune-round-{round_num}.json"
+        )
         report = json.loads(path.read_text(encoding="utf-8"))
         candidate = report["discovery"]["candidate_file"]
         assert not candidate.startswith("/")
@@ -174,9 +217,7 @@ def test_deliverable_scope_artifacts_tracked() -> None:
 @pytest.mark.unit
 def test_evidence_script_dependencies_are_tracked() -> None:
     text = EVIDENCE_SCRIPT.read_text(encoding="utf-8")
-    invoked = sorted(
-        set(re.findall(r"goals/comprehensive-ai-feed-catalog/[a-z_]+\.py", text))
-    )
+    invoked = sorted(set(re.findall(r"goals/comprehensive-ai-feed-catalog/[a-z_]+\.py", text)))
     untracked = [
         rel
         for rel in invoked
