@@ -101,7 +101,7 @@ def sync_patches(goal_dir: Path, patch_src: Path) -> dict[str, object]:
 
 def write_changed_files(scratch: Path, tracked: list[str], untracked: list[str]) -> Path:
     paths = tracked + untracked
-    forbidden = [p for p in paths if p.startswith(FORBIDDEN_PREFIXES)]
+    forbidden = [p for p in paths if is_forbidden_path(p)]
     out = scratch / "CHANGED_FILES.authoritative.txt"
     out.write_text("\n".join(paths) + ("\n" if paths else ""), encoding="utf-8")
     meta = {

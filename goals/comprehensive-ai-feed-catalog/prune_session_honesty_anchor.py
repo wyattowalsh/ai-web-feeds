@@ -13,12 +13,8 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
-FORBIDDEN_PREFIXES = (
-    "apps/web/",
-    "apps/cli/",
-    ".github/",
-    "packages/ai_web_feeds/src/",
-)
+sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
+from scope_constants import is_forbidden_path as _scope_is_forbidden  # noqa: E402
 
 
 def _rel_path(file_path: str) -> str:
@@ -31,7 +27,7 @@ def _rel_path(file_path: str) -> str:
 
 
 def is_forbidden(rel: str) -> bool:
-    return rel.startswith(FORBIDDEN_PREFIXES)
+    return _scope_is_forbidden(rel)
 
 
 def prune_hunk_records(session_dir: Path) -> dict[str, object]:
@@ -105,7 +101,7 @@ def authoritative_paths() -> list[str]:
 
 def write_session_changed_files(session_dir: Path, scratch: Path) -> Path:
     paths = authoritative_paths()
-    forbidden = [p for p in paths if p.startswith(FORBIDDEN_PREFIXES)]
+    forbidden = [p for p in paths if _scope_is_forbidden(p)]
     doc = {
         "source": "git diff --name-only origin/main + untracked",
         "paths": paths,

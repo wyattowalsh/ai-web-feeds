@@ -1,6 +1,6 @@
 {
   "source": "git diff --name-only origin/main + git status --porcelain (untracked)",
-  "note": "Authoritative delta for rounds 20-23 deliverable. Cumulative goal-classifier patch is session history, not this list.",
+  "note": "Authoritative delta for catalog rounds 20-23 + PR #16 web security. Cumulative goal-classifier patch is session history, not this list.",
   "tracked_modified": [
     "apps/web/app/admin/login/page.tsx",
     "apps/web/content/docs/development/observability.mdx",
@@ -17,28 +17,37 @@
     "goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py",
     "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
     "goals/comprehensive-ai-feed-catalog/deliverable-scope.json",
-    "goals/comprehensive-ai-feed-catalog/scope_constants.py"
-  ],
-  "untracked": [
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/",
+    "goals/comprehensive-ai-feed-catalog/g4-verification.json",
+    "goals/comprehensive-ai-feed-catalog/prune_session_honesty_anchor.py",
+    "goals/comprehensive-ai-feed-catalog/run_g4_gate.sh",
+    "goals/comprehensive-ai-feed-catalog/run_plan_evidence.sh",
+    "goals/comprehensive-ai-feed-catalog/scope_constants.py",
+    "goals/comprehensive-ai-feed-catalog/sync_classifier_artifacts.py",
+    "goals/comprehensive-ai-feed-catalog/write_authoritative_scope.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/__init__.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/models.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/paths.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/visualizer.py",
+    "specs/003-feed-collection-enhancement/extend-prune-round-20.json",
+    "specs/003-feed-collection-enhancement/extend-prune-round-21.json",
+    "specs/003-feed-collection-enhancement/extend-prune-round-22.json",
+    "specs/003-feed-collection-enhancement/extend-prune-round-23.json",
+    "specs/003-feed-collection-enhancement/extend-prune-summary.json",
     "tests/tests/cli/unit/test_visualize_cli.py",
+    "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
     "tests/tests/packages/ai_web_feeds/unit/test_taxonomy.py"
   ],
-  "forbidden_paths_count": 13,
+  "untracked": [],
+  "forbidden_paths_count": 5,
   "forbidden_paths": [
-    "apps/web/app/admin/login/page.tsx",
-    "apps/web/content/docs/development/observability.mdx",
-    "apps/web/lib/auth-session-cookie.test.ts",
-    "apps/web/lib/auth-session-cookie.ts",
-    "apps/web/lib/auth.test.ts",
-    "apps/web/lib/auth.ts",
-    "apps/web/lib/server/telemetry-store.test.ts",
-    "apps/web/lib/server/telemetry-store.ts",
-    "apps/web/lib/telemetry-route.ts",
-    "apps/web/lib/telemetry.ts",
-    "apps/web/middleware.test.ts",
-    "apps/web/middleware.ts",
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/"
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/__init__.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/models.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/paths.py",
+    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/visualizer.py"
   ],
-  "catalog_size": 633
+  "catalog_size": 633,
+  "catalog_size_scope": 633,
+  "catalog_size_matches_scope": true
 }

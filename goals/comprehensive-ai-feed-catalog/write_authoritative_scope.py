@@ -4,17 +4,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import subprocess
-
+import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-FORBIDDEN_PREFIXES = (
-    "apps/web/",
-    "apps/cli/",
-    ".github/",
-    "packages/ai_web_feeds/src/",
-)
+sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
+from scope_constants import catalog_size_from_scope, is_forbidden_path  # noqa: E402
+
 HARNESS_DEBRIS = frozenset({
     "authoritative.patch",
     "CHANGED_FILES.authoritative.json",
@@ -54,21 +51,24 @@ def main() -> None:
     tracked = _git_tracked()
     untracked = _git_untracked()
     all_paths = tracked + untracked
-    forbidden = [p for p in all_paths if p.startswith(FORBIDDEN_PREFIXES)]
+    forbidden = [p for p in all_paths if is_forbidden_path(p)]
     import yaml
 
-    catalog_size = len(yaml.safe_load((ROOT / "data/feeds.yaml").read_text())["sources"])
+    live_count = len(yaml.safe_load((ROOT / "data/feeds.yaml").read_text())["sources"])
+    scope_count = catalog_size_from_scope()
     doc = {
         "source": "git diff --name-only origin/main + git status --porcelain (untracked)",
         "note": (
-            "Authoritative delta for rounds 20-23 deliverable. "
+            "Authoritative delta for catalog rounds 20-23 + PR #16 web security. "
             "Cumulative goal-classifier patch is session history, not this list."
         ),
         "tracked_modified": tracked,
         "untracked": untracked,
         "forbidden_paths_count": len(forbidden),
         "forbidden_paths": forbidden,
-        "catalog_size": catalog_size,
+        "catalog_size": live_count,
+        "catalog_size_scope": scope_count,
+        "catalog_size_matches_scope": live_count == scope_count,
     }
     out = ROOT / "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json"
     out.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")

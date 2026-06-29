@@ -164,7 +164,7 @@ for line in Path('$SCRATCH/checks.tsv').read_text().splitlines():
 payload = {
     'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
     'overall_pass': $FAIL == 0,
-    'scratch_dir': '$SCRATCH',
+    'scratch_dir': 'goals/comprehensive-ai-feed-catalog/scratch',
     'generated_by': 'run_g4_gate.sh',
     'checks': checks,
 }

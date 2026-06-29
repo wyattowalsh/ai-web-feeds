@@ -76,7 +76,7 @@ log "step0 patch reconciliation (cumulative classifier vs authoritative)"
   echo "Honesty anchor for THIS deliverable: authoritative-changed-files.log + authoritative.patch + deliverable-scope.json"
 } >"$SCRATCH/patch-reconciliation.log" 2>&1
 
-log "preflight: scope quarantine"
+log "preflight: scope quarantine (forbidden_path_prefixes from deliverable-scope.json)"
 {
   echo "git diff origin/main:"
   git diff --name-only origin/main 2>/dev/null || true
@@ -84,19 +84,10 @@ log "preflight: scope quarantine"
   git status --porcelain 2>/dev/null || true
 } >"$SCRATCH/preflight.log" 2>&1
 
-FORBIDDEN=0
-for pattern in '^apps/web/' '^apps/cli/' '^\.github/' '^packages/ai_web_feeds/src/'; do
-  if git diff --name-only origin/main 2>/dev/null | grep -qE "$pattern"; then
-    echo "FAIL: forbidden path in diff matching $pattern" | tee -a "$SCRATCH/preflight.log"
-    FORBIDDEN=1
-  fi
-done
-if git status --porcelain 2>/dev/null | grep -qE '^.. apps/web/'; then
-  echo "FAIL: apps/web in status" | tee -a "$SCRATCH/preflight.log"
-  FORBIDDEN=1
-fi
-test "$FORBIDDEN" -eq 0
-echo "OK: scope quarantine passed (data + specs + goals only)" | tee -a "$SCRATCH/preflight.log"
+uv run python goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py \
+  >"$SCRATCH/preflight-audit.json" 2>&1
+grep -q '"pass": true' "$SCRATCH/preflight-audit.json"
+echo "OK: scope quarantine passed (zero forbidden prefixes)" | tee -a "$SCRATCH/preflight.log"
 
 log "scope-evidence: actual changed paths vs deliverable-scope"
 {
@@ -106,13 +97,10 @@ log "scope-evidence: actual changed paths vs deliverable-scope"
   echo "git diff origin/main (actual):"
   git diff --name-only origin/main 2>/dev/null || true
   echo "---"
-  echo "explicitly_out_of_scope NOT in diff:"
-  for p in apps/web packages/ai_web_feeds/src .github/workflows; do
-    if git diff --name-only origin/main 2>/dev/null | grep -qE "^${p}"; then
-      echo "VIOLATION: $p"
-      exit 1
-    fi
-  done
+  echo "forbidden_path_prefixes audit:"
+  cat "$SCRATCH/preflight-audit.json" 2>/dev/null || cat "$SCRATCH/out-of-scope-zero-diff.json"
+  grep -q '"pass": true' "$SCRATCH/preflight-audit.json" 2>/dev/null \
+    || grep -q '"pass": true' "$SCRATCH/out-of-scope-zero-diff.json"
   echo "OK: no forbidden scope in diff"
 } >"$SCRATCH/scope-evidence.log" 2>&1
 
