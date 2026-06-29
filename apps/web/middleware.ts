@@ -62,6 +62,22 @@ export async function middleware(request: NextRequest) {
     response = NextResponse.next({ request: { headers: requestHeaders } });
   }
 
+  // Canonical nonce-based CSP for Next.js 15 App Router in production.
+  // This allows our dynamic inline JsonLd <script type="application/ld+json"> without
+  // 'unsafe-inline' or 'unsafe-eval' on script-src.
+  // Nonce is generated per-request (only possible in middleware) and exposed to Server
+  // Components via the 'x-nonce' header so they can forward it to <JsonLd nonce={...} />.
+  // Next dev still emits inline/eval bootstrap scripts, so local dev keeps the script policy
+  // permissive while production stays nonce-only.
+  //
+  // style-src still requires 'unsafe-inline' because Tailwind 4, Fumadocs UI, shadcn/ui,
+  // katex, and tw-animate-css emit style rules that are not practical to nonce at this time.
+  //
+  // connect-src is intentionally broad for now (covers same-origin APIs, future WS,
+  // OAuth provider callbacks, and remote feed images). It can be further scoped once
+  // reader real-time and any additional third-party origins are finalized.
+  //
+  // img-src allows https: because article content comes from arbitrary external feeds.
   const csp = [
     "default-src 'self'",
     isDevelopment

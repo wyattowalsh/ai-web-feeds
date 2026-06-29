@@ -194,6 +194,29 @@ describe("/api/recommendations route", () => {
     });
   });
 
+  it("returns 400 when session user omits feed_id and interaction_type", async () => {
+    const { POST } = await loadRouteModule();
+    getUserIdentityMock.mockResolvedValue({
+      user_id: SESSION_USER_ID,
+      source: "session",
+    });
+
+    const response = await POST(
+      createRequest("http://localhost/api/recommendations", {
+        method: "POST",
+        body: JSON.stringify({ interaction_type: "view" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Missing required fields: feed_id, interaction_type",
+    });
+    expect(fetchBackendMock).not.toHaveBeenCalled();
+    expect(recordRecommendationInteractionMock).not.toHaveBeenCalled();
+  });
+
   it("rejects GET requests that spoof a different session user_id", async () => {
     const { GET } = await loadRouteModule();
     getUserIdentityMock.mockResolvedValue({

@@ -95,7 +95,7 @@ const POSTHandler = async (request: Request) => {
 
     if (!feedId || !interactionType) {
       return NextResponse.json(
-        { error: "Missing required fields: user_id, feed_id, interaction_type" },
+        { error: "Missing required fields: feed_id, interaction_type" },
         { status: 400 },
       );
     }

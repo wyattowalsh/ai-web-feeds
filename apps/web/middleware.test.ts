@@ -15,6 +15,8 @@ vi.mock("fumadocs-core/negotiation", () => ({
 import { NextRequest } from "next/server";
 import { middleware } from "./middleware";
 
+// Middleware checks session cookie presence only; role enforcement is deferred to
+// withBetterAuthAdminGuard in /api/admin/* route handlers.
 describe("middleware admin auth", () => {
   beforeEach(() => {
     isMarkdownPreferredMock.mockReset();
