@@ -8,7 +8,7 @@
       "id": "scope_isolation",
       "pass": true,
       "log": "preflight.log",
-      "summary": "zero apps/web paths in diff vs origin/main"
+      "summary": "zero forbidden prefixes in diff vs origin/main"
     },
     {
       "id": "finalize",

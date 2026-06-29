@@ -34,19 +34,14 @@
     "specs/003-feed-collection-enhancement/extend-prune-round-22.json",
     "specs/003-feed-collection-enhancement/extend-prune-round-23.json",
     "specs/003-feed-collection-enhancement/extend-prune-summary.json",
+    "specs/003-feed-collection-enhancement/extend_prune_round.py",
     "tests/tests/cli/unit/test_visualize_cli.py",
     "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
     "tests/tests/packages/ai_web_feeds/unit/test_taxonomy.py"
   ],
   "untracked": [],
-  "forbidden_paths_count": 5,
-  "forbidden_paths": [
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/__init__.py",
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py",
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/models.py",
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/paths.py",
-    "packages/ai_web_feeds/src/ai_web_feeds/taxonomy/visualizer.py"
-  ],
+  "forbidden_paths_count": 0,
+  "forbidden_paths": [],
   "catalog_size": 633,
   "catalog_size_scope": 633,
   "catalog_size_matches_scope": true

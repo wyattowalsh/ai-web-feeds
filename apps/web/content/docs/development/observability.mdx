@@ -73,24 +73,24 @@ export const POST = withRouteTelemetry("search.log", POSTHandler, {
 
 Written to `{AIWF_TELEMETRY_DIR}/api-events.ndjson`:
 
-| Field                  | Type           | Description                                                           |
-| ---------------------- | -------------- | --------------------------------------------------------------------- |
-| `requestId`            | string         | Correlation id (also returned as `x-request-id`)                      |
-| `timestamp`            | ISO-8601       | Handler completion time                                               |
-| `routeKey`             | string         | Stable identifier, e.g. `articles.list`                               |
-| `pathname`             | string         | Request path                                                          |
-| `method`               | string         | HTTP method                                                           |
-| `statusCode`           | number         | Response status                                                       |
-| `durationMs`           | number         | Wall-clock handler time                                               |
-| `cacheControl`         | string \| null | Response `Cache-Control` header                                       |
-| `backendTarget`        | string \| null | Upstream URL when proxied                                             |
-| `errorCode`            | string \| null | Set on 5xx or unhandled exceptions                                    |
-| `errorMessage`         | string \| null | Redacted exception text                                               |
-| `userAgent`            | string \| null | `User-Agent` header                                                   |
-| `ipHash`               | string \| null | SHA-256 prefix of salted client IP                                    |
-| `sessionCookiePresent` | boolean        | Whether a Better Auth session cookie was present (not role-validated) |
-| `queryKeys`            | string[]       | Sorted unique query parameter names                                   |
-| `source`               | string         | Always `next-route-handler`                                           |
+| Field                  | Type           | Description                                                                                                                                                    |
+| ---------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestId`            | string         | Correlation id (also returned as `x-request-id`)                                                                                                               |
+| `timestamp`            | ISO-8601       | Handler completion time                                                                                                                                        |
+| `routeKey`             | string         | Stable identifier, e.g. `articles.list`                                                                                                                        |
+| `pathname`             | string         | Request path                                                                                                                                                   |
+| `method`               | string         | HTTP method                                                                                                                                                    |
+| `statusCode`           | number         | Response status                                                                                                                                                |
+| `durationMs`           | number         | Wall-clock handler time                                                                                                                                        |
+| `cacheControl`         | string \| null | Response `Cache-Control` header                                                                                                                                |
+| `backendTarget`        | string \| null | Upstream URL when proxied                                                                                                                                      |
+| `errorCode`            | string \| null | Set on 5xx or unhandled exceptions                                                                                                                             |
+| `errorMessage`         | string \| null | Redacted exception text                                                                                                                                        |
+| `userAgent`            | string \| null | `User-Agent` header                                                                                                                                            |
+| `ipHash`               | string \| null | SHA-256 prefix of salted client IP                                                                                                                             |
+| `sessionCookiePresent` | boolean        | Whether a Better Auth session cookie was present (not role-validated). **SQL column:** `admin_session_present` (legacy name; no migration in this deliverable) |
+| `queryKeys`            | string[]       | Sorted unique query parameter names                                                                                                                            |
+| `source`               | string         | Always `next-route-handler`                                                                                                                                    |
 
 Admin audit events use a separate file: `admin-audit.ndjson`.
 
