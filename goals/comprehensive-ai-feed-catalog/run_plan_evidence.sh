@@ -149,6 +149,20 @@ log "step2 validate all"
 uv run ai-web-feeds validate all >"$SCRATCH/validate-all.log" 2>&1
 grep -q "All validations passed" "$SCRATCH/validate-all.log"
 
+log "step2b sync catalog to db (HTTP validate reads SQLite feed list)"
+uv run python -c "
+from pathlib import Path
+from ai_web_feeds.catalog_sync import sync_catalog_to_db
+sync_catalog_to_db(
+    feeds_path=Path('data/feeds.yaml'),
+    topics_path=Path('data/topics.yaml'),
+    enriched_path=Path('data/feeds.enriched.yaml'),
+    database_url='sqlite:///data/ai-web-feeds.db',
+)
+print('sync OK')
+" >"$SCRATCH/pre-http-sync.log" 2>&1
+grep -q 'sync OK' "$SCRATCH/pre-http-sync.log"
+
 log "step3 validate http (default concurrency, retry up to 3)"
 HTTP_OK=0
 for attempt in 1 2 3; do

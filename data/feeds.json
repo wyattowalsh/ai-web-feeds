@@ -2,7 +2,7 @@
   "schema_version": "feeds-3.0.0",
   "document_meta": {
     "created": "2025-10-15",
-    "updated": "2026-06-24",
+    "updated": "2026-06-28",
     "generated_with": {
       "tool": "aiwebfeeds-cli",
       "version": "0.1.0"
@@ -76,20 +76,6 @@
       "notes": "Popular Medium publication with custom title HTTP fix: feed URL discovered 2026-06-24.",
       "id": "80bd7e4b43bc6827",
       "title": "Towards Data Science"
-    },
-    {
-      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
-      "topics": [
-        "research",
-        "videos",
-        "education",
-        "industry",
-        "open-source",
-        "vlm"
-      ],
-      "notes": "Excellent AI research video summaries HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "26be51fe87907faf",
-      "title": "Two Minute Papers"
     },
     {
       "url": "https://github.com/pytorch/pytorch/releases.atom",
@@ -533,18 +519,6 @@
       "title": "SGLang — Releases (Atom)"
     },
     {
-      "url": "https://github.com/triton-lang/triton/releases.atom",
-      "topics": [
-        "compilers",
-        "optimization",
-        "accelerators",
-        "open-source"
-      ],
-      "notes": "Kernel DSL & compiler; fused ops, matmul, attention kernels.",
-      "id": "26ada7d305748c94",
-      "title": "Triton — Releases (Atom)"
-    },
-    {
       "url": "https://github.com/mlc-ai/mlc-llm/releases.atom",
       "topics": [
         "on-device",
@@ -610,29 +584,6 @@
       "notes": "Digital medicine / clinical AI journal. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3daf7af1d06a28d1",
       "title": "NPJ Digital Medicine"
-    },
-    {
-      "url": "https://www.radiant.earth/blog/index.xml",
-      "topics": [
-        "geospatial-ml",
-        "datasets",
-        "ai-for-science"
-      ],
-      "notes": "Earth observation / ML datasets & methods. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "a18faccba3716085",
-      "title": "Radiant Earth — Blog"
-    },
-    {
-      "url": "https://www.montecarlodata.com/blog/feed",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "data-governance",
-        "incident-response"
-      ],
-      "notes": "Observability patterns, lineage, incident response. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "78c16cb04f525c7d",
-      "title": "Monte Carlo — Data Observability Blog"
     },
     {
       "url": "https://docs.wandb.ai/ref/release-notes/index.xml",
@@ -714,39 +665,6 @@
       "notes": "Official category feed (Information Retrieval).",
       "id": "6cf01bed7152a71f",
       "title": "arXiv — cs.IR RSS"
-    },
-    {
-      "url": "https://dagster.io/blog/rss.xml",
-      "topics": [
-        "mlops",
-        "workflows",
-        "orchestration"
-      ],
-      "notes": "Practitioner posts on pipelines, lineage, assets; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "18e33c6f4d298399",
-      "title": "Dagster — Blog"
-    },
-    {
-      "url": "https://www.getdbt.com/blog/feed",
-      "topics": [
-        "data",
-        "data-governance",
-        "workflows"
-      ],
-      "notes": "Analytics engineering, testing, docs, deployments. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "24d8ae846b1dec7e",
-      "title": "dbt Labs — Blog"
-    },
-    {
-      "url": "https://duckdb.org/feed.xml",
-      "topics": [
-        "data",
-        "optimization",
-        "product"
-      ],
-      "notes": "Release notes and engineering posts; official RSS endpoint.",
-      "id": "a6e5614cfda0c605",
-      "title": "DuckDB — News (RSS)"
     },
     {
       "url": "https://semianalysis.substack.com/feed",
@@ -1081,7 +999,7 @@
       "title": "Agency — Substack"
     },
     {
-      "url": "https://changelog.langchain.com/feed",
+      "url": "https://docs.langchain.com/langsmith/changelog/rss.xml",
       "topics": [
         "llmops",
         "evaluation",
@@ -1147,19 +1065,6 @@
       "title": "Bank Underground (Bank of England)"
     },
     {
-      "url": "https://is.mpg.de/news/rss",
-      "topics": [
-        "research",
-        "robotics",
-        "cv",
-        "ml",
-        "blogs"
-      ],
-      "notes": "Tübingen/Stuttgart; academic highlights and project updates. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "09effde00bd7d9f3",
-      "title": "Max Planck Institute for Intelligent Systems — News"
-    },
-    {
       "url": "https://ollama.com/blog/rss.xml",
       "topics": [
         "on-device",
@@ -1185,19 +1090,6 @@
       "notes": "LLM evaluation tooling, prompts-as-tests, CI/CD patterns. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "3840e50541660c61",
       "title": "promptfoo — Blog"
-    },
-    {
-      "url": "https://blog.argoproj.io/feed",
-      "topics": [
-        "orchestration",
-        "workflows",
-        "ai-infra-stacks",
-        "open-source",
-        "blogs"
-      ],
-      "notes": "Kubernetes-native workflows (Workflows, CD, Events). HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "368da37b7fb8eb0f",
-      "title": "Argo Project — Blog"
     },
     {
       "url": "https://ultralytics.com/blog/rss.xml",
@@ -1407,18 +1299,6 @@
       "title": "Transformer Circuits"
     },
     {
-      "url": "https://blog.englishtest.duolingo.com/feed",
-      "topics": [
-        "edtech-ai",
-        "education",
-        "evaluation",
-        "blogs"
-      ],
-      "notes": "Assessment/measurement + ML-driven test design. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "37c459c353a42daf",
-      "title": "Duolingo English Test — Blog"
-    },
-    {
       "url": "https://github.com/All-Hands-AI/openhands/releases.atom",
       "topics": [
         "agents",
@@ -1463,49 +1343,6 @@
       "title": "MLIR — The LLVM Project Blog"
     },
     {
-      "url": "https://quantumcomputingreport.com/feed/",
-      "topics": [
-        "research",
-        "industry",
-        "hardware"
-      ],
-      "notes": "RSS 2.0 with ~10 recent entries. Established industry publication since 2016. Comprehensive quantum company database.",
-      "id": "580eb14015a8c19d",
-      "title": "Quantum Computing Report"
-    },
-    {
-      "url": "https://news.mit.edu/topic/mitquantum-computing-rss.xml",
-      "topics": [
-        "research"
-      ],
-      "notes": "RSS 2.0 with 10 entries. MIT Research Lab of Electronics pioneers quantum computing. Strong industry collaborations.",
-      "id": "9b1f428f43a34025",
-      "title": "MIT News — Quantum Computing"
-    },
-    {
-      "url": "https://azure.microsoft.com/en-us/blog/quantum/feed",
-      "topics": [
-        "research",
-        "industry",
-        "infra-economics",
-        "open-source"
-      ],
-      "notes": "Blog landing page; RSS autodiscovery. Q# language, quantum development kit. Partnerships with IonQ, Quantinuum, Rigetti. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "ac90267ef4e5af9f",
-      "title": "Microsoft Azure Quantum Blog"
-    },
-    {
-      "url": "https://ionq.com/blog/rss.xml",
-      "topics": [
-        "research",
-        "industry",
-        "hardware"
-      ],
-      "notes": "Blog platform; RSS autodiscovery. Publicly traded (NYSE: IONQ). Trapped-ion technology leader. Cloud access via AWS/Azure/Google. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "78f1d7b84e39ad8c",
-      "title": "IonQ Blog"
-    },
-    {
       "url": "https://distill.pub/rss.xml",
       "topics": [
         "research",
@@ -1526,16 +1363,6 @@
       "title": "Financial Times AI",
       "notes": "FT AI section RSS",
       "id": "ft-com-artificial-intelligence-dbe74cfddb"
-    },
-    {
-      "url": "https://feeds.bloomberg.com/technology/news.rss",
-      "topics": [
-        "industry",
-        "finance-ai"
-      ],
-      "title": "Bloomberg Technology",
-      "notes": "Bloomberg tech news",
-      "id": "feeds-bloomberg-com-technology-news-rss-eb8c3c4efa"
     },
     {
       "url": "https://artificiallawyer.com/feed/",
@@ -1645,18 +1472,6 @@
       "id": "waymo-com-blog-rss-xml-6aadc12fc9"
     },
     {
-      "url": "https://blog.unity.com/feed",
-      "topics": [
-        "industry",
-        "simulation",
-        "mlops",
-        "synthetic-data"
-      ],
-      "title": "Unity Blog",
-      "notes": "Simulation and game-engine ML",
-      "id": "blog-unity-com-feed-63aa772360"
-    },
-    {
       "url": "https://www.lesswrong.com/feed.xml",
       "topics": [
         "open-source",
@@ -1667,18 +1482,6 @@
       "title": "LessWrong",
       "notes": "Rationalist AI discussion community",
       "id": "lesswrong-com-feed-xml-7d900a4973"
-    },
-    {
-      "url": "https://hnrss.org/newest?q=AI",
-      "topics": [
-        "open-source",
-        "blogs",
-        "industry",
-        "research"
-      ],
-      "title": "Hacker News AI",
-      "notes": "HN AI stories via hnrss",
-      "id": "hnrss-org-newest-3620a27060"
     },
     {
       "url": "https://discuss.pytorch.org/posts.rss",
@@ -1713,18 +1516,6 @@
       "title": "Stack Overflow AI",
       "notes": "SO AI tag feed",
       "id": "stackoverflow-com-feeds-tag-bbe31e9417"
-    },
-    {
-      "url": "https://kubernetes.io/feed.xml",
-      "topics": [
-        "devtools",
-        "education",
-        "infra",
-        "mlops"
-      ],
-      "title": "Kubernetes Blog",
-      "notes": "K8s blog for ML infra",
-      "id": "kubernetes-io-feed-xml-74a7d8675f"
     },
     {
       "url": "https://www.gov.uk/government/organisations/department-for-science-innovation-and-technology.atom",
@@ -1815,17 +1606,6 @@
       "id": "syncedreview-com-feed-755fa30acf"
     },
     {
-      "url": "https://www.platformer.news/feed",
-      "topics": [
-        "newsletters",
-        "governance",
-        "industry"
-      ],
-      "title": "Platformer",
-      "notes": "Tech policy and platforms",
-      "id": "platformer-news-feed-a8fa096745"
-    },
-    {
       "url": "https://jack-clark.net/feed/",
       "topics": [
         "newsletters",
@@ -1870,28 +1650,6 @@
       "id": "thedataexchange-media-feed-f1cd540f50"
     },
     {
-      "url": "https://lexfridman.com/feed/podcast/",
-      "topics": [
-        "podcasts",
-        "research",
-        "industry"
-      ],
-      "title": "Lex Fridman Podcast",
-      "notes": "Long-form AI/tech interviews",
-      "id": "lexfridman-com-feed-podcast-c14e8eb7fa"
-    },
-    {
-      "url": "https://changelog.com/friends/feed",
-      "topics": [
-        "podcasts",
-        "open-source",
-        "devtools"
-      ],
-      "title": "Changelog & Friends",
-      "notes": "Changelog network show",
-      "id": "changelog-com-friends-feed-dd714420f3"
-    },
-    {
       "url": "https://www.superdatascience.com/feed",
       "topics": [
         "podcasts",
@@ -1923,17 +1681,6 @@
       "title": "Gwern",
       "notes": "Long-form AI/statistics research",
       "id": "gwern-net-feed-1b83fb0832"
-    },
-    {
-      "url": "https://www.jeremykun.com/feed/",
-      "topics": [
-        "blogs",
-        "education",
-        "ml"
-      ],
-      "title": "Jeremy Kun",
-      "notes": "Math and ML explanations",
-      "id": "jeremykun-com-feed-4658c2e2e9"
     },
     {
       "url": "https://karpathy.github.io/feed.xml",
@@ -1989,28 +1736,6 @@
       "title": "One Useful Thing",
       "notes": "Ethan Mollick on AI in work/education",
       "id": "oneusefulthing-org-feed-59f6b09081"
-    },
-    {
-      "url": "https://stratechery.com/feed/",
-      "topics": [
-        "blogs",
-        "industry",
-        "product"
-      ],
-      "title": "Stratechery",
-      "notes": "Ben Thompson strategy analysis",
-      "id": "stratechery-com-feed-12b095abbc"
-    },
-    {
-      "url": "https://flowingdata.com/feed/",
-      "topics": [
-        "blogs",
-        "data-viz",
-        "education"
-      ],
-      "title": "FlowingData",
-      "notes": "Data visualization and statistics",
-      "id": "flowingdata-com-feed-81f4798a06"
     },
     {
       "url": "http://export.arxiv.org/rss/cs.CY",
@@ -2101,17 +1826,6 @@
       "id": "futureoflife-org-feed-d39f28f65a"
     },
     {
-      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
-      "topics": [
-        "industry",
-        "supply-chain",
-        "security"
-      ],
-      "title": "CISA Advisories",
-      "notes": "Supply chain / security advisories",
-      "id": "cisa-gov-cybersecurity-advisories-all-xml-beab471c53"
-    },
-    {
       "url": "https://theaiinsider.tech/feed/",
       "topics": [
         "blogs",
@@ -2155,14 +1869,14 @@
       "id": "mlinproduction-com-feed-acd08e3d71"
     },
     {
-      "url": "https://davidstutz.de/feed",
+      "url": "https://davidstutz.de/feed/feed",
       "topics": [
         "blogs",
         "research",
         "ml"
       ],
       "title": "David Stutz",
-      "notes": "ML research blog and paper notes",
+      "notes": "ML research blog and paper notes HTTP fix: feed URL discovered 2026-06-24.",
       "id": "davidstutz-de-feed-7050d0c25f"
     },
     {
@@ -2352,17 +2066,6 @@
       "id": "gradientflow-substack-com-feed-85adc0766d"
     },
     {
-      "url": "https://aiweekly.co/issues.rss",
-      "topics": [
-        "newsletters",
-        "industry",
-        "research"
-      ],
-      "title": "AI Weekly — AI News & Updates",
-      "notes": "Weekly collection of the best AI and machine learning news and resources",
-      "id": "aiweekly-co-issues-rss-e287890129"
-    },
-    {
       "url": "https://gwern.substack.com/feed",
       "topics": [
         "research",
@@ -2451,27 +2154,6 @@
       "id": "github-com-explosion-thinc-releases-atom-f8c33e1538"
     },
     {
-      "url": "https://www.reddit.com/r/artificial/hot/.rss",
-      "topics": [
-        "community",
-        "industry"
-      ],
-      "title": "r/artificial",
-      "notes": "Reddit AI community discussions",
-      "id": "reddit-com-r-artificial-hot-rss-7f226ab933"
-    },
-    {
-      "url": "https://ai.stackexchange.com/feeds",
-      "topics": [
-        "community",
-        "education",
-        "research"
-      ],
-      "title": "Artificial Intelligence Stack Exchange",
-      "notes": "Q&A forum for AI questions",
-      "id": "ai-stackexchange-com-feeds-68082b0b46"
-    },
-    {
       "url": "https://mlops.substack.com/feed",
       "topics": [
         "newsletters",
@@ -2487,7 +2169,8 @@
       "topics": [
         "newsletters",
         "industry",
-        "education"
+        "education",
+        "edge"
       ],
       "title": "The AiEdge Newsletter",
       "notes": "Practical AI and edge ML newsletter",
@@ -2557,48 +2240,6 @@
       "title": "Machine Learning Street Talk (MLST)",
       "notes": "Highly technical AI research podcast",
       "id": "anchor-fm-s-1e4a0eac-podcast-rss-b41b6eb186"
-    },
-    {
-      "url": "https://rss.libsyn.com/shows/123267/destinations/727317.xml",
-      "topics": [
-        "podcasts",
-        "research",
-        "industry"
-      ],
-      "title": "Eye On A.I.",
-      "notes": "Conversations with people building and deploying AI",
-      "id": "aneyeonai-libsyn-com-rss-429839396a"
-    },
-    {
-      "url": "https://genai.stackexchange.com/feeds",
-      "topics": [
-        "community",
-        "llm"
-      ],
-      "title": "Generative AI Stack Exchange",
-      "notes": "Generative AI Q&A (forum)",
-      "id": "genai-stackexchange-com-feeds-726cf9d45d"
-    },
-    {
-      "url": "https://datascience.stackexchange.com/feeds",
-      "topics": [
-        "community",
-        "research",
-        "industry"
-      ],
-      "title": "Data Science Stack Exchange",
-      "notes": "Data science and ML Q&A (forum)",
-      "id": "datascience-stackexchange-com-feeds-87e589e9f0"
-    },
-    {
-      "url": "https://ai.meta.stackexchange.com/feeds",
-      "topics": [
-        "community",
-        "governance"
-      ],
-      "title": "Artificial Intelligence Meta",
-      "notes": "Meta discussions for AI Stack Exchange (forum)",
-      "id": "ai-meta-stackexchange-com-feeds-7ce89dc1f3"
     },
     {
       "url": "https://community.openai.com/latest.rss",
@@ -2753,16 +2394,6 @@
       "id": "feeds-arstechnica-com-arstechnica-index-7170fc473d"
     },
     {
-      "url": "https://www.smashingmagazine.com/feed/",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Articles on Smashing Magazine — For Web Designers And Developers",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "smashingmagazine-com-feed-07c83d6d0c"
-    },
-    {
       "url": "https://aws.amazon.com/blogs/amazon-ai/feed/",
       "topics": [
         "blogs",
@@ -2784,27 +2415,6 @@
       "title": "Artificial Intelligence Made Simple",
       "notes": "Substack newsletter feed",
       "id": "artificialintelligencemadesimple-substack-com-fe-c5e4ef43e4"
-    },
-    {
-      "url": "https://benn.substack.com/feed",
-      "topics": [
-        "community",
-        "newsletters",
-        "ai"
-      ],
-      "title": "benn.substack",
-      "notes": "Substack newsletter feed",
-      "id": "benn-substack-com-feed-e394a03416"
-    },
-    {
-      "url": "https://commoncog.com/blog/rss/",
-      "topics": [
-        "blogs",
-        "ai"
-      ],
-      "title": "Commoncog",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "commoncog-com-blog-rss-6511333131"
     },
     {
       "url": "https://arxiv.org/rss/cs",
@@ -2905,17 +2515,6 @@
       "id": "eledia-org-e-air-feed-fbaa152d5b"
     },
     {
-      "url": "https://addyo.substack.com/feed",
-      "topics": [
-        "community",
-        "newsletters",
-        "ai"
-      ],
-      "title": "Elevate",
-      "notes": "Substack newsletter feed",
-      "id": "addyo-substack-com-feed-72ac215ccf"
-    },
-    {
       "url": "https://engineering.fb.com/feed/",
       "topics": [
         "ai",
@@ -2948,16 +2547,6 @@
       "id": "epochai-substack-com-feed-a173206981"
     },
     {
-      "url": "https://ben-evans.com/benedictevans?format=rss",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Essays - Benedict Evans",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "ben-evans-com-benedictevans-0b559e89d3"
-    },
-    {
       "url": "https://fs.blog/feed/",
       "topics": [
         "ai",
@@ -2978,16 +2567,6 @@
       "id": "future-a16z-com-feed-8337103976"
     },
     {
-      "url": "https://guykawasaki.com/feed/",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Guy Kawasaki",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "guykawasaki-com-feed-77d58c12bc"
-    },
-    {
       "url": "https://news.ycombinator.com/rss",
       "topics": [
         "community",
@@ -2996,16 +2575,6 @@
       "title": "Hacker News",
       "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
       "id": "news-ycombinator-com-rss-7198d80d03"
-    },
-    {
-      "url": "https://hnrss.org/show",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Hacker News: Show HN",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "hnrss-org-show-132a8fdfa8"
     },
     {
       "url": "https://spectrum.ieee.org/feeds/feed.rss",
@@ -3029,46 +2598,6 @@
       "id": "theverge-com-rss-ai-artificial-intelligence-inde-8e1dc97850"
     },
     {
-      "url": "https://lethain.com/feeds/",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Irrational Exuberance",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "lethain-com-feeds-c14d08f92d"
-    },
-    {
-      "url": "https://www.joelonsoftware.com/feed/",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Joel on Software",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "joelonsoftware-com-feed-1d3d72b787"
-    },
-    {
-      "url": "https://joshwcomeau.com/rss.xml",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Josh Comeau's blog",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "joshwcomeau-com-rss-xml-3c388278b5"
-    },
-    {
-      "url": "https://jvns.ca/atom.xml",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Julia Evans",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "jvns-ca-atom-xml-249136e221"
-    },
-    {
       "url": "https://www.kdnuggets.com/feed",
       "topics": [
         "devtools",
@@ -3078,26 +2607,6 @@
       "title": "KDnuggets",
       "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
       "id": "kdnuggets-com-feed-a3113b1a7a"
-    },
-    {
-      "url": "https://lexfridman.com/feed/",
-      "topics": [
-        "ai",
-        "podcasts"
-      ],
-      "title": "Lex Fridman",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "lexfridman-com-feed-62085259f9"
-    },
-    {
-      "url": "https://feeds.feedburner.com/martinkl?format=xml",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Martin Kleppmann's blog",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "feeds-feedburner-com-martinkl-47439f5006"
     },
     {
       "url": "https://research.fb.com/feed/",
@@ -3145,37 +2654,6 @@
       "id": "nature-com-nature-current-issue-rss-ff3fcddf77"
     },
     {
-      "url": "https://nesslabs.com/feed",
-      "topics": [
-        "ai",
-        "research",
-        "industry"
-      ],
-      "title": "Ness Labs",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "nesslabs-com-feed-d8c2a8ed73"
-    },
-    {
-      "url": "https://www.nngroup.com/feed/rss/",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "NN/g latest articles and announcements",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "nngroup-com-feed-rss-daa668cfe7"
-    },
-    {
-      "url": "https://www.notboring.co/feed",
-      "topics": [
-        "blogs",
-        "ai"
-      ],
-      "title": "Not Boring by Packy McCormick",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "notboring-co-feed-77c1205de2"
-    },
-    {
       "url": "https://oneusefulthing.substack.com/feed",
       "topics": [
         "community",
@@ -3195,16 +2673,6 @@
       "title": "overreacted — A blog by Dan Abramov",
       "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
       "id": "overreacted-io-rss-xml-449cde1ff7"
-    },
-    {
-      "url": "https://www.producthunt.com/feed",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Product Hunt — The best new products, every day",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "producthunt-com-feed-7210e36e4f"
     },
     {
       "url": "https://productlife.to/feed",
@@ -3287,7 +2755,7 @@
         "open-source"
       ],
       "title": "Release notes from dify",
-      "notes": "GitHub releases.atom feed",
+      "notes": "GitHub releases.atom feed HTTP fix: feed URL discovered 2026-06-24.",
       "id": "github-com-langgenius-dify-releases-atom-9dc8974c96"
     },
     {
@@ -3354,17 +2822,6 @@
       "title": "rss.xml  # may dup",
       "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
       "id": "mistral-ai-rss-xml-e9f4f41c47"
-    },
-    {
-      "url": "https://www.economist.com/science-and-technology/rss.xml",
-      "topics": [
-        "blogs",
-        "ai",
-        "industry"
-      ],
-      "title": "Science & technology",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "economist-com-science-and-technology-rss-xml-6ba2fd5587"
     },
     {
       "url": "https://simonw.substack.com/feed",
@@ -3483,16 +2940,6 @@
       "id": "coffeeandjunk-substack-com-feed-f127c1b43b"
     },
     {
-      "url": "https://uxdesign.cc/feed",
-      "topics": [
-        "blogs",
-        "ai"
-      ],
-      "title": "UX Collective - Medium",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "uxdesign-cc-feed-efe18eb280"
-    },
-    {
       "url": "https://www.wired.com/feed/rss",
       "topics": [
         "blogs",
@@ -3575,6 +3022,3978 @@
       ],
       "id": "export-arxiv-org-rss-cs-dc-2404d5cc4b",
       "notes": "top-up"
+    },
+    {
+      "url": "https://aneyeonai.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Eye On A.I.",
+      "notes": "Verified Libsyn RSS for Eye On A.I. podcast",
+      "id": "aneyeonai-libsyn-com-rss-429839396a"
+    },
+    {
+      "url": "https://www.exponentialview.co/feed",
+      "topics": [
+        "newsletters",
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "Exponential View",
+      "notes": "Verified RSS for Azeem Azhar Exponential View newsletter/podcast",
+      "id": "exponentialview-co-feed-bfef6b0010"
+    },
+    {
+      "url": "https://aiaustralia.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "AI Australia Podcast",
+      "notes": "Verified Libsyn AI Australia podcast",
+      "id": "aiaustralia-libsyn-com-rss-6c7f9f7b08"
+    },
+    {
+      "url": "https://rsnaradiologyai.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "healthcare-ai"
+      ],
+      "title": "Radiology AI Podcast | RSNA",
+      "notes": "Verified RSNA Radiology AI podcast",
+      "id": "rsnaradiologyai-libsyn-com-rss-0cdd911f71"
+    },
+    {
+      "url": "https://feeds.simplecast.com/6HKOhNgS",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "Hard Fork",
+      "notes": "Verified NYT Hard Fork podcast feed (AI/tech focus)",
+      "id": "feeds-simplecast-com-6hkohngs-395dd2ee8a"
+    },
+    {
+      "url": "https://aiandbanking.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "finance-ai",
+        "industry"
+      ],
+      "title": "AI in Financial Services Podcast",
+      "notes": "Verified AI in Financial Services podcast",
+      "id": "aiandbanking-libsyn-com-rss-83edb6e3b4"
+    },
+    {
+      "url": "https://jonathanneo.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "ai",
+        "industry"
+      ],
+      "title": "Data Engineer Camp",
+      "notes": "Verified Substack newsletter feed",
+      "id": "jonathanneo-substack-com-feed-569a951e1c"
+    },
+    {
+      "url": "https://pivottoai.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "Pivot to AI",
+      "notes": "Verified Pivot to AI podcast RSS",
+      "id": "pivottoai-libsyn-com-rss-97336123e7"
+    },
+    {
+      "url": "https://machinelearningguide.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ml",
+        "education",
+        "ai"
+      ],
+      "title": "Machine Learning Guide",
+      "notes": "Verified Machine Learning Guide podcast",
+      "id": "machinelearningguide-libsyn-com-rss-2956153f57"
+    },
+    {
+      "url": "https://thoughtworks.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry",
+        "devtools"
+      ],
+      "title": "Thoughtworks Technology Podcast",
+      "notes": "Verified Thoughtworks tech/AI podcast",
+      "id": "thoughtworks-libsyn-com-rss-605f5436a6"
+    },
+    {
+      "url": "https://aiechoes.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "ai",
+        "community"
+      ],
+      "title": "AI Echoes",
+      "notes": "Verified Substack AI newsletter",
+      "id": "aiechoes-substack-com-feed-995726dd57"
+    },
+    {
+      "url": "https://afterhoursai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "ai",
+        "industry"
+      ],
+      "title": "After Hours",
+      "notes": "Verified Substack AI newsletter",
+      "id": "afterhoursai-substack-com-feed-547139223f"
+    },
+    {
+      "url": "https://pivot-to-ai.com/feed",
+      "topics": [
+        "newsletters",
+        "podcasts",
+        "ai"
+      ],
+      "title": "Pivot to AI",
+      "notes": "Verified Pivot to AI feed",
+      "id": "pivot-to-ai-com-feed-de0964a1fb"
+    },
+    {
+      "url": "https://hashtagtrending.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "Hashtag Trending",
+      "notes": "Verified Hashtag Trending podcast (AI segments)",
+      "id": "hashtagtrending-libsyn-com-rss-611c9119ea"
+    },
+    {
+      "url": "https://betakit.libsyn.com/rss",
+      "topics": [
+        "podcasts",
+        "ai",
+        "industry"
+      ],
+      "title": "The BetaKit Podcast Channel",
+      "notes": "Verified BetaKit tech/AI podcast",
+      "id": "betakit-libsyn-com-rss-d631938896"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cohere.xml",
+      "topics": [
+        "industry",
+        "product",
+        "llm",
+        "research"
+      ],
+      "title": "The Cohere Blog",
+      "notes": "Olshansk proxy feed for company blog without native RSS; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-10371ea33a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_groq.xml",
+      "topics": [
+        "industry",
+        "product",
+        "inference"
+      ],
+      "title": "Groq Blog",
+      "notes": "Olshansk proxy feed for company blog; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-e36d40e296"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_perplexity_hub.xml",
+      "topics": [
+        "industry",
+        "product",
+        "research"
+      ],
+      "title": "Perplexity Blog",
+      "notes": "Olshansk proxy feed for Perplexity Hub; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-488d76f4c0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml",
+      "topics": [
+        "industry",
+        "research",
+        "product"
+      ],
+      "title": "Anthropic Engineering Blog",
+      "notes": "Olshansk proxy feed for Anthropic Engineering (target missing org); HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-5c8a006240"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_red.xml",
+      "topics": [
+        "industry",
+        "research",
+        "safety"
+      ],
+      "title": "Anthropic Frontier Red Team Blog",
+      "notes": "Olshansk proxy feed for Anthropic Red Team (target missing org); HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-e3d7f15d0b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_pinecone.xml",
+      "topics": [
+        "industry",
+        "product",
+        "vector",
+        "retrieval"
+      ],
+      "title": "Pinecone Blog",
+      "notes": "Olshansk proxy feed; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-f93917e867"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml",
+      "topics": [
+        "industry",
+        "research",
+        "product"
+      ],
+      "title": "AI at Meta Blog",
+      "notes": "Olshansk proxy for AI at Meta; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-f12748c5a1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_the_batch.xml",
+      "topics": [
+        "industry",
+        "education",
+        "research"
+      ],
+      "title": "The Batch | DeepLearning.AI",
+      "notes": "Olshansk proxy for DeepLearning.AI The Batch; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-5b897f267d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml",
+      "topics": [
+        "industry",
+        "product",
+        "devtools",
+        "ai-for-code"
+      ],
+      "title": "Cursor Blog",
+      "notes": "Olshansk proxy feed; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-6eed6f95b9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml",
+      "topics": [
+        "industry",
+        "product",
+        "llm"
+      ],
+      "title": "Claude Blog",
+      "notes": "Olshansk proxy for Claude blog; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-e580ae2823"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml",
+      "topics": [
+        "industry",
+        "product"
+      ],
+      "title": "Windsurf Blog",
+      "notes": "Olshansk proxy feed; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-0162399dc0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_blogsurgeai.xml",
+      "topics": [
+        "industry",
+        "research"
+      ],
+      "title": "Surge AI Blog",
+      "notes": "Olshansk proxy for Surge AI; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-e12aeef815"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_thinkingmachines.xml",
+      "topics": [
+        "industry",
+        "research"
+      ],
+      "title": "Thinking Machines Lab - Connectionism",
+      "notes": "Olshansk proxy; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-9d897b9db1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_google_ai.xml",
+      "topics": [
+        "industry",
+        "research"
+      ],
+      "title": "Google Developers Blog - AI",
+      "notes": "Olshansk proxy; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-26dc76cebb"
+    },
+    {
+      "url": "https://blog.icml.cc/feed",
+      "topics": [
+        "conferences",
+        "research",
+        "papers"
+      ],
+      "title": "ICML Blog",
+      "notes": "Official ICML blog feed (target conference); HTTP verified",
+      "id": "blog-icml-cc-feed-77654a7221"
+    },
+    {
+      "url": "https://blog.intelligenthealth.ai/rss.xml",
+      "topics": [
+        "healthcare-ai",
+        "research",
+        "industry"
+      ],
+      "title": "Intelligent Health Blog.",
+      "notes": "Domain app healthcare AI blog; HTTP verified",
+      "id": "blog-intelligenthealth-ai-rss-xml-22e29877ec"
+    },
+    {
+      "url": "https://www.healthtechmagazines.com/feed/",
+      "topics": [
+        "healthcare-ai",
+        "industry"
+      ],
+      "title": "HealthTech Magazines",
+      "notes": "HealthTech AI coverage feed; HTTP verified",
+      "id": "healthtechmagazines-com-feed-eb7e038bab"
+    },
+    {
+      "url": "https://blog.latch.bio/feed",
+      "topics": [
+        "healthcare-ai",
+        "research",
+        "industry"
+      ],
+      "title": "LatchBio",
+      "notes": "LatchBio biocomputing/health AI; HTTP verified",
+      "id": "blog-latch-bio-feed-13987c0212"
+    },
+    {
+      "url": "https://www.simbo.ai/blog/index.php/feed/",
+      "topics": [
+        "healthcare-ai",
+        "industry"
+      ],
+      "title": "Simbo AI – Blogs",
+      "notes": "Simbo voice AI for healthcare; HTTP verified",
+      "id": "simbo-ai-blog-index-php-feed-ac9e388acd"
+    },
+    {
+      "url": "https://viz.ai/blog/feed",
+      "topics": [
+        "healthcare-ai",
+        "industry",
+        "cv"
+      ],
+      "title": "Latest blog posts on AI-powered healthcare | Viz.ai",
+      "notes": "Viz.ai healthcare imaging AI blog; HTTP verified",
+      "id": "viz-ai-blog-feed-0c6997e82d"
+    },
+    {
+      "url": "https://github.com/ray-project/ray/releases.atom",
+      "topics": [
+        "open-source",
+        "infra",
+        "mlops"
+      ],
+      "title": "Release notes from ray",
+      "notes": "Ray (Anyscale) releases.atom feed (infra); HTTP verified",
+      "id": "github-com-ray-project-ray-releases-atom-8406498e67"
+    },
+    {
+      "url": "https://github.com/dmlc/xgboost/releases.atom",
+      "topics": [
+        "open-source",
+        "ml"
+      ],
+      "title": "Release notes from xgboost",
+      "notes": "XGBoost releases; HTTP verified",
+      "id": "github-com-dmlc-xgboost-releases-atom-1dd2964c36"
+    },
+    {
+      "url": "https://github.com/stanfordnlp/dspy/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "agents",
+        "devtools"
+      ],
+      "title": "Release notes from dspy",
+      "notes": "DSPy (Stanford) releases; HTTP verified",
+      "id": "github-com-stanfordnlp-dspy-releases-atom-66f892e707"
+    },
+    {
+      "url": "https://github.com/eleutherAI/gpt-neox/releases.atom",
+      "topics": [
+        "open-source",
+        "research",
+        "llm"
+      ],
+      "title": "Release notes from gpt-neox",
+      "notes": "EleutherAI releases; HTTP verified",
+      "id": "github-com-eleutherai-gpt-neox-releases-atom-bbc52fa067"
+    },
+    {
+      "url": "https://github.com/huggingface/diffusers/releases.atom",
+      "topics": [
+        "open-source",
+        "diffusion",
+        "genai"
+      ],
+      "title": "Release notes from diffusers",
+      "notes": "Hugging Face Diffusers releases; HTTP verified",
+      "id": "github-com-huggingface-diffusers-releases-atom-223ea8b1e7"
+    },
+    {
+      "url": "https://github.com/pytorch/vision/releases.atom",
+      "topics": [
+        "open-source",
+        "cv"
+      ],
+      "title": "Release notes from vision",
+      "notes": "PyTorch Vision releases; HTTP verified",
+      "id": "github-com-pytorch-vision-releases-atom-b87561e699"
+    },
+    {
+      "url": "https://github.com/pytorch/audio/releases.atom",
+      "topics": [
+        "open-source",
+        "audio-speech"
+      ],
+      "title": "Release notes from audio",
+      "notes": "PyTorch Audio; HTTP verified",
+      "id": "github-com-pytorch-audio-releases-atom-d9654d5799"
+    },
+    {
+      "url": "https://github.com/onnx/onnx/releases.atom",
+      "topics": [
+        "open-source",
+        "infra"
+      ],
+      "title": "Release notes from onnx",
+      "notes": "ONNX releases; HTTP verified",
+      "id": "github-com-onnx-onnx-releases-atom-4b9bd1e893"
+    },
+    {
+      "url": "https://github.com/apache/tvm/releases.atom",
+      "topics": [
+        "open-source",
+        "compilers",
+        "infra"
+      ],
+      "title": "Release notes from tvm",
+      "notes": "Apache TVM; HTTP verified",
+      "id": "github-com-apache-tvm-releases-atom-faa3d01fe6"
+    },
+    {
+      "url": "https://github.com/ROCm/ROCm/releases.atom",
+      "topics": [
+        "open-source",
+        "hardware",
+        "accelerators"
+      ],
+      "title": "Release notes from ROCm",
+      "notes": "AMD ROCm releases; HTTP verified",
+      "id": "github-com-rocm-rocm-releases-atom-b8e355ae87"
+    },
+    {
+      "url": "https://github.com/microsoft/semantic-kernel/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "devtools"
+      ],
+      "title": "Release notes from semantic-kernel",
+      "notes": "Semantic Kernel (Microsoft); HTTP verified",
+      "id": "github-com-microsoft-semantic-kernel-releases-at-fc5e74d80e"
+    },
+    {
+      "url": "https://github.com/PaddlePaddle/Paddle/releases.atom",
+      "topics": [
+        "open-source",
+        "industry",
+        "research"
+      ],
+      "title": "Release notes from Paddle",
+      "notes": "Baidu PaddlePaddle (target org Baidu AI); HTTP verified",
+      "id": "github-com-paddlepaddle-paddle-releases-atom-9a879abb1c"
+    },
+    {
+      "url": "https://github.com/keras-team/autokeras/releases.atom",
+      "topics": [
+        "open-source",
+        "ml",
+        "research"
+      ],
+      "title": "Release notes from autokeras",
+      "notes": "AutoKeras releases; HTTP verified",
+      "id": "github-com-keras-team-autokeras-releases-atom-e81adbb033"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_changelog.xml",
+      "topics": [
+        "product",
+        "industry"
+      ],
+      "title": "Windsurf Changelog",
+      "notes": "Olshansk proxy changelog; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-d8e349e431"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_next_changelog.xml",
+      "topics": [
+        "product",
+        "industry"
+      ],
+      "title": "Windsurf Next Changelog",
+      "notes": "Olshansk proxy; HTTP verified",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-8e21f43b28"
+    },
+    {
+      "url": "https://github.com/deepseek-ai/DeepSeek-V3/releases.atom",
+      "topics": [
+        "industry",
+        "research",
+        "llm",
+        "open-source"
+      ],
+      "title": "Release notes from DeepSeek-V3",
+      "notes": "DeepSeek releases (target org); HTTP verified",
+      "id": "github-com-deepseek-ai-deepseek-v3-releases-atom-a4ffaf144f"
+    },
+    {
+      "url": "https://github.com/microsoft/DeepSpeed/releases.atom",
+      "topics": [
+        "open-source",
+        "training",
+        "infra"
+      ],
+      "title": "Release notes from DeepSpeed",
+      "notes": "Microsoft DeepSpeed; HTTP verified",
+      "id": "github-com-microsoft-deepspeed-releases-atom-1adf4f2e28"
+    },
+    {
+      "url": "https://github.com/sony/ai-research-code/releases.atom",
+      "topics": [
+        "industry",
+        "research",
+        "open-source"
+      ],
+      "title": "Release notes from ai-research-code",
+      "notes": "Sony AI research code releases (target org); HTTP verified",
+      "id": "github-com-sony-ai-research-code-releases-atom-2eb2be291a"
+    },
+    {
+      "url": "https://github.com/Lightning-AI/pytorch-lightning/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "training"
+      ],
+      "title": "Release notes from pytorch-lightning",
+      "notes": "Lightning AI PyTorch Lightning; HTTP verified",
+      "id": "github-com-lightning-ai-pytorch-lightning-releas-dcc70feb87"
+    },
+    {
+      "url": "https://github.com/Lightning-AI/lightning/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops"
+      ],
+      "title": "Release notes from pytorch-lightning",
+      "notes": "Lightning AI; HTTP verified",
+      "id": "github-com-lightning-ai-lightning-releases-atom-7590f0166a"
+    },
+    {
+      "url": "https://github.com/zenml-io/zenml/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "workflows"
+      ],
+      "title": "Release notes from zenml",
+      "notes": "ZenML MLOps; HTTP verified HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "github-com-zenml-io-zenml-releases-atom-289a6e7032"
+    },
+    {
+      "url": "https://github.com/deepset-ai/haystack/releases.atom",
+      "topics": [
+        "open-source",
+        "retrieval",
+        "rag",
+        "llm"
+      ],
+      "title": "Release notes from haystack",
+      "notes": "Haystack (deepset); HTTP verified",
+      "id": "github-com-deepset-ai-haystack-releases-atom-c927cb571d"
+    },
+    {
+      "url": "https://github.com/evidentlyai/evidently/releases.atom",
+      "topics": [
+        "open-source",
+        "monitoring",
+        "evaluation"
+      ],
+      "title": "Release notes from evidently",
+      "notes": "Evidently AI monitoring; HTTP verified",
+      "id": "github-com-evidentlyai-evidently-releases-atom-dd45537aac"
+    },
+    {
+      "url": "https://github.com/feast-dev/feast/releases.atom",
+      "topics": [
+        "open-source",
+        "data",
+        "mlops"
+      ],
+      "title": "Release notes from feast",
+      "notes": "Feast feature store; HTTP verified",
+      "id": "github-com-feast-dev-feast-releases-atom-1bc0b32a12"
+    },
+    {
+      "url": "https://github.com/SeldonIO/seldon-core/releases.atom",
+      "topics": [
+        "open-source",
+        "serving",
+        "mlops"
+      ],
+      "title": "Release notes from seldon-core",
+      "notes": "Seldon Core; HTTP verified HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "github-com-seldonio-seldon-core-releases-atom-68fecb1ad9"
+    },
+    {
+      "url": "https://github.com/openai/openai-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "OpenAI Python Releases",
+      "notes": "GitHub releases.atom feed HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "github-com-openai-openai-python-releases-atom-944f0efb74"
+    },
+    {
+      "url": "https://github.com/openai/openai-agents-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "OpenAI Agents Python Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-openai-openai-agents-python-releases-11f1a5c8bd"
+    },
+    {
+      "url": "https://github.com/tensorflow/tensorflow/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "TensorFlow Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-tensorflow-tensorflow-releases-atom-caf1f533ab"
+    },
+    {
+      "url": "https://github.com/google/flax/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Flax Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-google-flax-releases-atom-2a8ee19b8e"
+    },
+    {
+      "url": "https://github.com/continuedev/continue/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Continue Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-continuedev-continue-releases-atom-506bcb0a2c"
+    },
+    {
+      "url": "https://github.com/Aider-AI/aider/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Aider Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-aider-ai-aider-releases-atom-ecb84b0b45"
+    },
+    {
+      "url": "https://github.com/hiyouga/LLaMA-Factory/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "LlamaFactory Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-hiyouga-llama-factory-releases-atom-cb3558b2b6"
+    },
+    {
+      "url": "https://github.com/groq/groq-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Groq Python Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-groq-groq-python-releases-atom-ff381cc8b3"
+    },
+    {
+      "url": "https://github.com/cohere-ai/cohere-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Cohere Python Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-cohere-ai-cohere-python-releases-atom-68d642fb19"
+    },
+    {
+      "url": "https://github.com/togethercomputer/together-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Together Python Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-togethercomputer-together-python-rele-be444c30dd"
+    },
+    {
+      "url": "https://github.com/replicate/replicate-python/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Replicate Python Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-replicate-replicate-python-releases-a-3ac4701518"
+    },
+    {
+      "url": "https://github.com/huggingface/datasets/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml",
+        "datasets"
+      ],
+      "title": "Datasets Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-datasets-releases-atom-9584c7bc6f"
+    },
+    {
+      "url": "https://github.com/huggingface/accelerate/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Accelerate Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-accelerate-releases-atom-35062055c3"
+    },
+    {
+      "url": "https://github.com/huggingface/safetensors/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Safetensors Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-safetensors-releases-atom-e1487e2a70"
+    },
+    {
+      "url": "https://github.com/huggingface/tokenizers/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Tokenizers Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-huggingface-tokenizers-releases-atom-4a5ac2d2f5"
+    },
+    {
+      "url": "https://github.com/deepseek-ai/DeepSeek-V2/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "Deepseek V2 Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-deepseek-ai-deepseek-v2-releases-atom-098531376b"
+    },
+    {
+      "url": "https://github.com/QwenLM/Qwen/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "llm"
+      ],
+      "title": "Qwen Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-qwenlm-qwen-releases-atom-564b68b8e3"
+    },
+    {
+      "url": "https://github.com/THUDM/ChatGLM3/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "ChatGLM3 Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-thudm-chatglm3-releases-atom-0e44e1d886"
+    },
+    {
+      "url": "https://github.com/Lightning-AI/lit-llama/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Lit-Llama Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-lightning-ai-lit-llama-releases-atom-823a33c8c0"
+    },
+    {
+      "url": "https://github.com/mosaicml/composer/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Composer Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-mosaicml-composer-releases-atom-18b22625dc"
+    },
+    {
+      "url": "https://github.com/EleutherAI/lm-evaluation-harness/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "LM Evaluation Harness Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-eleutherai-lm-evaluation-harness-rele-440d7dc3b0"
+    },
+    {
+      "url": "https://github.com/anyscale/ray/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "mlops"
+      ],
+      "title": "Ray Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-anyscale-ray-releases-atom-936cd7a2da"
+    },
+    {
+      "url": "https://github.com/pytorch/FBGEMM/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "FBGEMM Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-pytorch-fbgemm-releases-atom-df9551068e"
+    },
+    {
+      "url": "https://github.com/pytorch/executorch/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "ExecuTorch Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-pytorch-executorch-releases-atom-741984c8ce"
+    },
+    {
+      "url": "https://github.com/pytorch/torchtune/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Torchtune Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-pytorch-torchtune-releases-atom-23e492d402"
+    },
+    {
+      "url": "https://github.com/pytorch/ignite/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Ignite Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-pytorch-ignite-releases-atom-e16a3e6a63"
+    },
+    {
+      "url": "https://github.com/tensorflow/models/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "ml"
+      ],
+      "title": "Models Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-tensorflow-models-releases-atom-f894d431c7"
+    },
+    {
+      "url": "https://github.com/keras-team/keras-cv/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Keras-CV Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-keras-team-keras-cv-releases-atom-9593292589"
+    },
+    {
+      "url": "https://github.com/onnx/onnx-tensorrt/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "ONNX TensorRT Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-onnx-onnx-tensorrt-releases-atom-bd59568e0d"
+    },
+    {
+      "url": "https://github.com/onnx/onnx-mlir/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "ONNX MLIR Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-onnx-onnx-mlir-releases-atom-ae94b52aec"
+    },
+    {
+      "url": "https://github.com/Intel/neural-compressor/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools"
+      ],
+      "title": "Intel Neural Compressor Releases",
+      "notes": "GitHub releases.atom feed",
+      "id": "github-com-intel-neural-compressor-releases-atom-ab4e4ce187"
+    },
+    {
+      "url": "https://forum.effectivealtruism.org/feed.xml",
+      "topics": [
+        "community",
+        "research",
+        "governance"
+      ],
+      "title": "Effective Altruism Forum",
+      "notes": "EA Forum feed (community/research)",
+      "id": "forum-effectivealtruism-org-feed-xml-48b321d2aa"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/cs.SY",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SY updates on arXiv.org",
+      "notes": "arXiv RSS for Systems and Control (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-cs-sy-c051a1d012"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/stat.AP",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.AP updates on arXiv.org",
+      "notes": "arXiv RSS Statistics Applications (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-stat-ap-eea3184c12"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/eess.AS",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "eess.AS updates on arXiv.org",
+      "notes": "arXiv RSS Audio and Speech Processing (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-eess-as-09ff60d2a9"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/q-bio.QM",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio.QM updates on arXiv.org",
+      "notes": "arXiv RSS Quantitative Methods (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-q-bio-qm-76c82942fc"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/q-bio.BM",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio.BM updates on arXiv.org",
+      "notes": "arXiv RSS Biomolecules (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-q-bio-bm-f069dc3661"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/q-bio.GN",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio.GN updates on arXiv.org",
+      "notes": "arXiv RSS Genomics (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-q-bio-gn-ad2c398690"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/q-bio.NC",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio.NC updates on arXiv.org",
+      "notes": "arXiv RSS Neurons and Cognition (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-q-bio-nc-75729998d2"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/physics.comp-ph",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "physics.comp-ph updates on arXiv.org",
+      "notes": "arXiv RSS Computational Physics (target gap); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-physics-comp-ph-75f03c074a"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.SY",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SY updates on arXiv.org",
+      "notes": "arXiv export RSS for cs.SY (verified); HTTP verified via validate_feed_url",
+      "id": "export-arxiv-org-rss-cs-sy-db1b5b3c72"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/stat.AP",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.AP updates on arXiv.org",
+      "notes": "arXiv export RSS (verified); HTTP verified via validate_feed_url",
+      "id": "export-arxiv-org-rss-stat-ap-8b4fc8898b"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/eess.AS",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "eess.AS updates on arXiv.org",
+      "notes": "arXiv export RSS (verified); HTTP verified via validate_feed_url",
+      "id": "export-arxiv-org-rss-eess-as-c3b8833c87"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/physics.comp-ph",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "physics.comp-ph updates on arXiv.org",
+      "notes": "arXiv export RSS (verified); HTTP verified via validate_feed_url",
+      "id": "export-arxiv-org-rss-physics-comp-ph-a250d5c5ee"
+    },
+    {
+      "url": "https://arxiv.org/rss/cs.SY",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SY updates on arXiv.org",
+      "notes": "arXiv RSS category feed (verified); HTTP verified via validate_feed_url",
+      "id": "arxiv-org-rss-cs-sy-7562cd8c80"
+    },
+    {
+      "url": "https://arxiv.org/rss/stat.AP",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.AP updates on arXiv.org",
+      "notes": "arXiv RSS category feed (verified); HTTP verified via validate_feed_url",
+      "id": "arxiv-org-rss-stat-ap-bba94a5052"
+    },
+    {
+      "url": "https://arxiv.org/rss/q-bio.QM",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio.QM updates on arXiv.org",
+      "notes": "arXiv RSS category feed (verified); HTTP verified via validate_feed_url",
+      "id": "arxiv-org-rss-q-bio-qm-d94fe5c9f0"
+    },
+    {
+      "url": "https://arxiv.org/rss/physics.comp-ph",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "physics.comp-ph updates on arXiv.org",
+      "notes": "arXiv RSS category feed (verified); HTTP verified via validate_feed_url",
+      "id": "arxiv-org-rss-physics-comp-ph-0d797f2ca2"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/cs.SY",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.SY updates on arXiv.org",
+      "notes": "arXiv Atom feed (verified); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-atom-cs-sy-f5af5bae19"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/stat.AP",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.AP updates on arXiv.org",
+      "notes": "arXiv Atom feed (verified); HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-atom-stat-ap-ace21c0dd8"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/cs.CC",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.CC updates on arXiv.org",
+      "notes": "arXiv RSS Computational Complexity; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-cs-cc-e28e8f20c2"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/stat.TH",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "stat.TH updates on arXiv.org",
+      "notes": "arXiv RSS Statistics Theory; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-stat-th-9f658d298d"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/eess.SP",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "eess.SP updates on arXiv.org",
+      "notes": "arXiv RSS Signal Processing; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-eess-sp-2e4f0c6068"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/math.OC",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "math.OC updates on arXiv.org",
+      "notes": "arXiv RSS Optimization and Control; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-math-oc-49f7c82612"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/cs.IR",
+      "topics": [
+        "ai",
+        "research",
+        "papers",
+        "nlp"
+      ],
+      "title": "cs.IR updates on arXiv.org",
+      "notes": "arXiv RSS Information Retrieval; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-cs-ir-9320229adb"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/q-bio",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "q-bio updates on arXiv.org",
+      "notes": "arXiv RSS Quantitative Biology; HTTP verified via validate_feed_url",
+      "id": "rss-arxiv-org-rss-q-bio-1ae8732c8b"
+    },
+    {
+      "url": "https://www.nature.com/natmachintell.rss",
+      "topics": [
+        "ai",
+        "ml",
+        "research",
+        "papers"
+      ],
+      "title": "Nature Machine Intelligence",
+      "notes": "Nature ML journal RSS (verified path); HTTP verified via validate_feed_url",
+      "id": "nature-com-natmachintell-rss-02736d1b8f"
+    },
+    {
+      "url": "https://www.nature.com/subjects/machine-learning.rss",
+      "topics": [
+        "ai",
+        "ml",
+        "research",
+        "papers"
+      ],
+      "title": "Machine learning : nature.com subject feeds",
+      "notes": "Nature subject feed for ML; HTTP verified via validate_feed_url",
+      "id": "nature-com-subjects-machine-learning-rss-def57bc76c"
+    },
+    {
+      "url": "https://www.nature.com/subjects/computer-science.rss",
+      "topics": [
+        "ai",
+        "ml",
+        "research",
+        "papers"
+      ],
+      "title": "Computer science : nature.com subject feeds",
+      "notes": "Nature subject feed; HTTP verified via validate_feed_url",
+      "id": "nature-com-subjects-computer-science-rss-0b0eee29a9"
+    },
+    {
+      "url": "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics",
+      "topics": [
+        "ai",
+        "ml",
+        "research",
+        "papers"
+      ],
+      "title": "AAAS: Science Robotics: Table of Contents",
+      "notes": "Science Robotics journal TOC RSS (target gap); HTTP verified via validate_feed_url",
+      "id": "science-org-action-showfeed-3101964ace"
+    },
+    {
+      "url": "https://blog.ai.princeton.edu/feed",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "Princeton Laboratory for Artificial Intelligence Research Blog",
+      "notes": "Princeton AI Lab research blog (verified); HTTP verified via validate_feed_url",
+      "id": "blog-ai-princeton-edu-feed-056620eb0a"
+    },
+    {
+      "url": "https://news.mit.edu/topic/mitrobotics-rss.xml",
+      "topics": [
+        "ai",
+        "research",
+        "papers",
+        "robotics"
+      ],
+      "title": "MIT News - Robotics",
+      "notes": "MIT News robotics research feed; HTTP verified via validate_feed_url",
+      "id": "news-mit-edu-topic-mitrobotics-rss-xml-ec16d0162f"
+    },
+    {
+      "url": "https://spectrum.ieee.org/feeds/topic/robotics.rss",
+      "topics": [
+        "ai",
+        "research",
+        "papers",
+        "robotics"
+      ],
+      "title": "IEEE Spectrum",
+      "notes": "IEEE Spectrum robotics coverage; HTTP verified via validate_feed_url",
+      "id": "spectrum-ieee-org-feeds-topic-robotics-rss-3020e5081b"
+    },
+    {
+      "url": "https://netflixtechblog.com/feed",
+      "topics": [
+        "ai",
+        "research",
+        "industry"
+      ],
+      "title": "Netflix TechBlog - Medium",
+      "notes": "Netflix ML and infra research; HTTP verified via validate_feed_url",
+      "id": "netflixtechblog-com-feed-cde22301cc"
+    },
+    {
+      "url": "https://news.mit.edu/topic/mitcomputers-rss.xml",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "MIT News - Computer Science and Artificial Intelligence Laboratory (CSAIL)",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "news-mit-edu-topic-mitcomputers-rss-xml-4126cb5071"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/eess.IV",
+      "topics": [
+        "ai",
+        "research",
+        "papers",
+        "cv"
+      ],
+      "title": "eess.IV updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-rss-eess-iv-a0236c8edd"
+    },
+    {
+      "url": "https://rss.arxiv.org/rss/eess.SY",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "eess.SY updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-rss-eess-sy-70d6b6e5c3"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/cs.ET",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.ET updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-atom-cs-et-7ae2a10d37"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/cs.AR",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.AR updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-atom-cs-ar-9bcec98991"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/cs.GT",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.GT updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-atom-cs-gt-f7afd92efa"
+    },
+    {
+      "url": "https://rss.arxiv.org/atom/cs.PL",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "cs.PL updates on arXiv.org",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "rss-arxiv-org-atom-cs-pl-086bc7896f"
+    },
+    {
+      "url": "https://mila.quebec/rss.xml",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "Mila - Quebec Artificial Intelligence Institute",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "mila-quebec-rss-xml-6eb1787665"
+    },
+    {
+      "url": "https://vectorinstitute.ai/feed/",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "Vector Institute for Artificial Intelligence",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "vectorinstitute-ai-feed-746f6f5cc9"
+    },
+    {
+      "url": "https://blog.inria.fr/feed/",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "INRIA Blog (French National Institute for Research in Digital Science and Technology)",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "blog-inria-fr-feed-9df6c2fcbf"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/research/lab/microsoft-research-ai-for-science/feed/",
+      "topics": [
+        "ai",
+        "research",
+        "papers",
+        "ai-for-science"
+      ],
+      "title": "Microsoft Research AI for Science",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24",
+      "id": "microsoft-com-en-us-research-lab-microsoft-resea-944f9f3e24"
+    },
+    {
+      "url": "https://www.byhand.ai/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "AI by Hand ✍️",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "byhand-ai-feed-2d36b316a2"
+    },
+    {
+      "url": "https://aifrontiersmedia.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "AI Frontiers",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "aifrontiersmedia-substack-com-feed-f7ab490154"
+    },
+    {
+      "url": "https://www.theaiopportunities.com/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "AI MARKET FIT",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "theaiopportunities-com-feed-d3df8e6ebd"
+    },
+    {
+      "url": "https://www.aitidbits.ai/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "AI Tidbits",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "aitidbits-ai-feed-cfcfc4b893"
+    },
+    {
+      "url": "https://aixeducation.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "AI x Education",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "aixeducation-substack-com-feed-cbb0e89767"
+    },
+    {
+      "url": "https://dev.to/feed/tag/ai",
+      "topics": [
+        "community"
+      ],
+      "title": "DEV Community: ai",
+      "notes": "HTTP-verified DEV Community tag feed for discussions (AI/ML focus)",
+      "id": "dev-to-feed-tag-ai-485a71f613"
+    },
+    {
+      "url": "https://dev.to/feed/tag/deeplearning",
+      "topics": [
+        "community"
+      ],
+      "title": "DEV Community: deeplearning",
+      "notes": "HTTP-verified DEV Community tag feed for discussions (AI/ML focus)",
+      "id": "dev-to-feed-tag-deeplearning-4b6729c7f5"
+    },
+    {
+      "url": "https://dev.to/feed/tag/llm",
+      "topics": [
+        "community"
+      ],
+      "title": "DEV Community: llm",
+      "notes": "HTTP-verified DEV Community tag feed for discussions (AI/ML focus)",
+      "id": "dev-to-feed-tag-llm-3d3b3ed49d"
+    },
+    {
+      "url": "https://dev.to/feed/tag/mlops",
+      "topics": [
+        "community"
+      ],
+      "title": "DEV Community: mlops",
+      "notes": "HTTP-verified DEV Community tag feed for discussions (AI/ML focus)",
+      "id": "dev-to-feed-tag-mlops-c48868e644"
+    },
+    {
+      "url": "https://dev.to/feed/tag/rag",
+      "topics": [
+        "community"
+      ],
+      "title": "DEV Community: rag",
+      "notes": "HTTP-verified DEV Community tag feed for discussions (AI/ML focus)",
+      "id": "dev-to-feed-tag-rag-25bbcc51b2"
+    },
+    {
+      "url": "https://nickpotkalitsky.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Educating AI",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "nickpotkalitsky-substack-com-feed-92af279707"
+    },
+    {
+      "url": "https://honestai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Human Override",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "honestai-substack-com-feed-2bde657e50"
+    },
+    {
+      "url": "https://ninaschick.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Industrial Intelligence",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "ninaschick-substack-com-feed-105d43b33a"
+    },
+    {
+      "url": "https://lemmy.world/feeds/c/machinelearning.xml",
+      "topics": [
+        "community"
+      ],
+      "title": "Lemmy.World - machinelearning",
+      "notes": "HTTP-verified Lemmy federated community feed (AI/ML focus)",
+      "id": "lemmy-world-feeds-c-machinelearning-xml-aafd144bfa"
+    },
+    {
+      "url": "https://notabotai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Not A Bot",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "notabotai-substack-com-feed-4fc2fe8bbe"
+    },
+    {
+      "url": "https://discuss.pytorch.org/latest.rss",
+      "topics": [
+        "community"
+      ],
+      "title": "PyTorch Forums - Latest topics",
+      "notes": "HTTP-verified forum/community discussion RSS (AI/ML focus)",
+      "id": "discuss-pytorch-org-latest-rss-0c31fddfbe"
+    },
+    {
+      "url": "https://amistrongeryet.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Second Thoughts",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "amistrongeryet-substack-com-feed-0106c3143d"
+    },
+    {
+      "url": "https://theagentarchitect.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "The AI Agent Architect",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "theagentarchitect-substack-com-feed-6cc872968e"
+    },
+    {
+      "url": "https://aiagenteconomy.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "The AI Agent Economy",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "aiagenteconomy-substack-com-feed-ed20cbf012"
+    },
+    {
+      "url": "https://rss.libsyn.com/shows/335018/destinations/2729618.xml",
+      "topics": [
+        "podcasts",
+        "community"
+      ],
+      "title": "The AI Consulting Podcast",
+      "notes": "HTTP-verified podcast RSS feed (AI/ML focus)",
+      "id": "rss-libsyn-com-shows-335018-destinations-2729618-44d33bcdf3"
+    },
+    {
+      "url": "https://brief.montrealethics.ai/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "The AI Ethics Brief",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "brief-montrealethics-ai-feed-db34b27d08"
+    },
+    {
+      "url": "https://theaimonitor.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "The AI Monitor",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "theaimonitor-substack-com-feed-704cef1075"
+    },
+    {
+      "url": "https://theaiphilosopher.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "The AI Philosopher",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "theaiphilosopher-substack-com-feed-26e2e2e2a7"
+    },
+    {
+      "url": "https://www.theneuron.ai/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "The Neuron",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "theneuron-ai-feed-ff9db63ab0"
+    },
+    {
+      "url": "https://thebatch.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "the/batch",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "thebatch-substack-com-feed-60e7a01144"
+    },
+    {
+      "url": "https://unhypedai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "community"
+      ],
+      "title": "Unhyped AI",
+      "notes": "HTTP-verified Substack newsletter feed (AI/ML focus)",
+      "id": "unhypedai-substack-com-feed-4d6752bc78"
+    },
+    {
+      "url": "https://www.whytryai.com/feed",
+      "topics": [
+        "blogs",
+        "community"
+      ],
+      "title": "Why Try AI",
+      "notes": "HTTP-verified indie blog / community source (AI/ML focus)",
+      "id": "whytryai-com-feed-6a33342386"
+    },
+    {
+      "url": "https://www.artificial-intelligence.blog/ai-news?format=rss",
+      "topics": [
+        "industry",
+        "blogs"
+      ],
+      "title": "Artificial Intelligence Blog & News - AI Blog",
+      "notes": "International/non-US; HTTP verified (rss, ~20 entries); saturation-pass-9",
+      "id": "artificial-intelligence-blog-ai-news-4d0337155b"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/rss.xml",
+      "topics": [
+        "governance",
+        "regulation",
+        "industry"
+      ],
+      "title": "CNIL Actualités (data protection)",
+      "notes": "EU policy / digital regulation focus; HTTP verified",
+      "id": "cnil-fr-fr-rss-xml-b40511459f"
+    },
+    {
+      "url": "https://www.cnil.fr/en/rss.xml",
+      "topics": [
+        "governance",
+        "regulation",
+        "industry"
+      ],
+      "title": "CNIL Actualités (data protection)",
+      "notes": "EU policy / digital regulation focus; HTTP verified",
+      "id": "cnil-fr-en-rss-xml-9a8f0f2db5"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
+      "topics": [
+        "governance",
+        "regulation",
+        "industry"
+      ],
+      "title": "Shaping Europe’s digital future",
+      "notes": "EU policy / digital regulation focus; HTTP verified",
+      "id": "digital-strategy-ec-europa-eu-en-rss-xml-bb6b18aab5"
+    },
+    {
+      "url": "https://ec.europa.eu/commission/presscorner/api/rss?language=en&pagesize=50&dept=CONNECT",
+      "topics": [
+        "governance",
+        "regulation",
+        "industry"
+      ],
+      "title": "Press releases - RSS",
+      "notes": "EU policy / digital regulation focus; HTTP verified",
+      "id": "ec-europa-eu-commission-presscorner-api-rss-afd2f13b72"
+    },
+    {
+      "url": "https://www.therobotreport.com/feed/",
+      "topics": [
+        "robotics",
+        "industry",
+        "product"
+      ],
+      "title": "The Robot Report",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "therobotreport-com-feed-60c1bf5b0e"
+    },
+    {
+      "url": "https://www.finextra.com/rss/channel.aspx?channel=ai",
+      "topics": [
+        "industry",
+        "product",
+        "governance"
+      ],
+      "title": "Finextra AI",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "finextra-com-rss-channel-aspx-72ba9e5267"
+    },
+    {
+      "url": "https://www.autonomousvehicleinternational.com/feed",
+      "topics": [
+        "robotics",
+        "industry",
+        "product"
+      ],
+      "title": "Autonomous Vehicle International",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "autonomousvehicleinternational-com-feed-473f488678"
+    },
+    {
+      "url": "https://www.creativebloq.com/feeds/tag/ai",
+      "topics": [
+        "product",
+        "industry"
+      ],
+      "title": "Creative Bloq AI",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "creativebloq-com-feeds-tag-ai-865c350bd8"
+    },
+    {
+      "url": "https://www.nature.com/nbt.rss",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers"
+      ],
+      "title": "Nature Biotechnology",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "nature-com-nbt-rss-eef52f982c"
+    },
+    {
+      "url": "https://www.science.org/rss/news_current.xml",
+      "topics": [
+        "ai-for-science",
+        "research"
+      ],
+      "title": "Science Magazine News",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "science-org-rss-news-current-xml-e1793a9532"
+    },
+    {
+      "url": "https://www.nature.com/nature.rss",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "papers"
+      ],
+      "title": "Nature",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "nature-com-nature-rss-d592eddffe"
+    },
+    {
+      "url": "https://www.theguardian.com/technology/artificialintelligenceai/rss",
+      "topics": [
+        "industry",
+        "governance",
+        "ai"
+      ],
+      "title": "Guardian AI",
+      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
+      "id": "theguardian-com-technology-artificialintelligenc-80c23f2f1c"
+    },
+    {
+      "url": "https://genai.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "llm"
+      ],
+      "title": "Generative AI Stack Exchange",
+      "notes": "Generative AI Q&A (forum)",
+      "id": "genai-stackexchange-com-feeds-726cf9d45d"
+    },
+    {
+      "url": "https://datascience.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "research",
+        "industry"
+      ],
+      "title": "Data Science Stack Exchange",
+      "notes": "Data science and ML Q&A (forum)",
+      "id": "datascience-stackexchange-com-feeds-87e589e9f0"
+    },
+    {
+      "url": "https://ai.meta.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "governance"
+      ],
+      "title": "Artificial Intelligence Meta",
+      "notes": "Meta discussions for AI Stack Exchange (forum)",
+      "id": "ai-meta-stackexchange-com-feeds-7ce89dc1f3"
+    },
+    {
+      "url": "https://ai.stackexchange.com/feeds",
+      "topics": [
+        "community",
+        "education",
+        "research"
+      ],
+      "title": "Artificial Intelligence Stack Exchange",
+      "notes": "Q&A forum for AI questions",
+      "id": "ai-stackexchange-com-feeds-68082b0b46"
+    },
+    {
+      "url": "https://rss.libsyn.com/shows/123267/destinations/727317.xml",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "title": "Eye On A.I.",
+      "notes": "Conversations with people building and deploying AI",
+      "id": "rss-libsyn-com-shows-123267-destinations-727317-8515ae55e7"
+    },
+    {
+      "url": "https://jalammar.github.io/feed.xml",
+      "topics": [
+        "blogs",
+        "education",
+        "nlp"
+      ],
+      "title": "Jay Alammar",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "jalammar-github-io-feed-xml-428cd21fc3"
+    },
+    {
+      "url": "https://www.comet.com/site/blog/feed/",
+      "topics": [
+        "industry",
+        "mlops",
+        "evaluation"
+      ],
+      "title": "Comet ML Blog",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "comet-com-site-blog-feed-1c812c386c"
+    },
+    {
+      "url": "https://github.com/triton-inference-server/server/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "serving"
+      ],
+      "title": "Triton Inference Server Releases",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "github-com-triton-inference-server-server-releas-2879414001"
+    },
+    {
+      "url": "https://github.com/chroma-core/chroma/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "retrieval"
+      ],
+      "title": "Chroma Releases",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "github-com-chroma-core-chroma-releases-atom-eae1459cc2"
+    },
+    {
+      "url": "https://domino.ai/feed.xml",
+      "topics": [
+        "mlops",
+        "industry",
+        "product"
+      ],
+      "title": "Domino Data Lab Blog",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "domino-ai-feed-xml-8c2dde85c6"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.AI",
+      "topics": [
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "arXiv cs.AI",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-ai-9551f3398e"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.NE",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "title": "arXiv cs.NE",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-ne-f77b379d5c"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CL",
+      "topics": [
+        "research",
+        "papers",
+        "nlp"
+      ],
+      "title": "arXiv cs.CL",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-cl-411d0d2a33"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CV",
+      "topics": [
+        "research",
+        "papers",
+        "cv"
+      ],
+      "title": "arXiv cs.CV",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-cv-2f7b78170f"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.HC",
+      "topics": [
+        "research",
+        "papers",
+        "ai"
+      ],
+      "title": "arXiv cs.HC",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-hc-0a8ea911e4"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.RO",
+      "topics": [
+        "research",
+        "papers",
+        "robotics"
+      ],
+      "title": "arXiv cs.RO",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-cs-ro-bcc6140429"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/stat.ML",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "title": "arXiv stat.ML",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "export-arxiv-org-rss-stat-ml-d3e0c70d53"
+    },
+    {
+      "url": "https://machinelearningmastery.com/blog/feed",
+      "topics": [
+        "education",
+        "ml",
+        "blogs"
+      ],
+      "title": "Machine Learning Mastery",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "machinelearningmastery-com-blog-feed-9fb1fc3426"
+    },
+    {
+      "url": "https://github.com/mlflow/mlflow/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "devtools"
+      ],
+      "title": "MLflow Releases",
+      "notes": "Research pass-10; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "github-com-mlflow-mlflow-releases-atom-73a97b6e2e"
+    },
+    {
+      "url": "https://allenai.org/rss.xml",
+      "topics": [
+        "ai",
+        "research",
+        "papers"
+      ],
+      "title": "Allen Institute for AI",
+      "notes": "AI2 research blog; HTTP verified via validate_feed_url HTTP fix: feed URL corrected 2026-06-24.",
+      "id": "blog-allenai-org-feed-e173b8ad6d"
+    },
+    {
+      "url": "https://www.reddit.com/r/MachineLearning/hot/.rss",
+      "topics": [
+        "community",
+        "research",
+        "ml"
+      ],
+      "title": "r/MachineLearning",
+      "notes": "Reddit ML discussions (forum) HTTP fix: feed URL discovered 2026-06-24.",
+      "id": "reddit-com-r-machinelearning-hot-rss-484edc2e80"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_mistral.xml",
+      "topics": [
+        "industry",
+        "llm",
+        "open-source"
+      ],
+      "title": "Mistral (Olshansk mirror)",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-264a294dd3"
+    },
+    {
+      "url": "https://dev.to/feed/tag/openai",
+      "topics": [
+        "community",
+        "llm",
+        "industry"
+      ],
+      "title": "DEV Community: openai",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "dev-to-feed-tag-openai-36eda2deeb"
+    },
+    {
+      "url": "https://dev.to/feed/tag/transformers",
+      "topics": [
+        "community",
+        "llm",
+        "education"
+      ],
+      "title": "DEV Community: transformers",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "dev-to-feed-tag-transformers-dad171d0a0"
+    },
+    {
+      "url": "https://aiweirdness.com/feed",
+      "topics": [
+        "blogs",
+        "genai",
+        "education"
+      ],
+      "title": "AI Weirdness",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "aiweirdness-com-feed-d20a5e6fec"
+    },
+    {
+      "url": "https://aithority.com/tag/mlops/feed/",
+      "topics": [
+        "industry",
+        "mlops",
+        "blogs"
+      ],
+      "title": "AiThority MLOps",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "aithority-com-tag-mlops-feed-2db2d332c1"
+    },
+    {
+      "url": "https://aithority.com/tag/generative-ai/feed/",
+      "topics": [
+        "industry",
+        "genai",
+        "blogs"
+      ],
+      "title": "AiThority Generative AI",
+      "notes": "Research pass-11; HTTP verified via validate_feed_url 2026-06-24",
+      "id": "aithority-com-tag-generative-ai-feed-7cd5312e3f"
+    },
+    {
+      "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml",
+      "topics": [
+        "research",
+        "industry",
+        "education"
+      ],
+      "title": "MIT News — Artificial Intelligence",
+      "notes": "Extend-prune round 14; HTTP verified 2026-06-24",
+      "id": "news-mit-edu-topic-mitartificial-intelligence2-r-0274e48fef"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/research/blog/category/artificial-intelligence/feed/",
+      "topics": [
+        "research",
+        "industry",
+        "ai"
+      ],
+      "title": "Microsoft Research — AI",
+      "notes": "Extend-prune round 14; HTTP verified 2026-06-24",
+      "id": "microsoft-com-en-us-research-blog-category-artif-23734b2d4f"
+    },
+    {
+      "url": "https://developer.nvidia.com/blog/category/ai/feed/",
+      "topics": [
+        "hardware",
+        "industry",
+        "training"
+      ],
+      "title": "NVIDIA Developer AI Blog",
+      "notes": "Extend-prune round 14; HTTP verified 2026-06-24",
+      "id": "developer-nvidia-com-blog-category-ai-feed-866db14627"
+    },
+    {
+      "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/",
+      "title": "Google Cloud AI Blog",
+      "topics": [
+        "mlops",
+        "industry",
+        "ai-infra-stacks"
+      ],
+      "notes": "URL recovery after extend-prune rounds 12-14",
+      "id": "cloudblog-withgoogle-com-products-ai-machine-lea-02181c6419"
+    },
+    {
+      "url": "http://export.arxiv.org/rss/cs.MA",
+      "topics": [
+        "research",
+        "agents",
+        "papers"
+      ],
+      "title": "arXiv Multi-Agent Systems",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-ma-c478bd3a20"
+    },
+    {
+      "url": "https://dev.to/feed/tag/agents",
+      "topics": [
+        "agents",
+        "community",
+        "blogs"
+      ],
+      "title": "DEV.to Agents",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "dev-to-feed-tag-agents-b272f1de02"
+    },
+    {
+      "url": "https://lemmy.world/feeds/c/artificialintelligence.xml",
+      "topics": [
+        "community",
+        "ai",
+        "industry"
+      ],
+      "title": "Lemmy Artificial Intelligence",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "lemmy-world-feeds-c-artificialintelligence-xml-3c3e12660f"
+    },
+    {
+      "url": "https://lemmy.world/feeds/c/OpenAI.xml",
+      "topics": [
+        "community",
+        "llm",
+        "industry"
+      ],
+      "title": "Lemmy OpenAI",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "lemmy-world-feeds-c-openai-xml-7651d2a5d0"
+    },
+    {
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/releases.atom",
+      "topics": [
+        "evaluation",
+        "safety",
+        "open-source"
+      ],
+      "title": "Inspect AI Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-ukgovernmentbeis-inspect-ai-releases-602e3e241f"
+    },
+    {
+      "url": "https://dev.to/feed/tag/llmops",
+      "topics": [
+        "llmops",
+        "community",
+        "blogs"
+      ],
+      "title": "DEV.to LLMOps",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "dev-to-feed-tag-llmops-fa478dec6b"
+    },
+    {
+      "url": "https://github.com/guidance-ai/guidance/releases.atom",
+      "topics": [
+        "structured-generation",
+        "llm",
+        "open-source"
+      ],
+      "title": "Guidance Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-guidance-ai-guidance-releases-atom-269265a5bc"
+    },
+    {
+      "url": "https://github.com/instructor-ai/instructor/releases.atom",
+      "topics": [
+        "structured-generation",
+        "llm",
+        "open-source"
+      ],
+      "title": "Instructor Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-instructor-ai-instructor-releases-ato-ad142f067f"
+    },
+    {
+      "url": "https://github.com/mudler/LocalAI/releases.atom",
+      "topics": [
+        "inference",
+        "on-device",
+        "open-source"
+      ],
+      "title": "LocalAI Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-mudler-localai-releases-atom-78e1008ed3"
+    },
+    {
+      "url": "https://github.com/microsoft/graphrag/releases.atom",
+      "topics": [
+        "rag",
+        "retrieval",
+        "open-source"
+      ],
+      "title": "GraphRAG Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-microsoft-graphrag-releases-atom-7f94152304"
+    },
+    {
+      "url": "https://github.com/promptfoo/promptfoo/releases.atom",
+      "topics": [
+        "evaluation",
+        "llmops",
+        "open-source"
+      ],
+      "title": "promptfoo Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-promptfoo-promptfoo-releases-atom-3356b40abb"
+    },
+    {
+      "url": "https://github.com/explodinggradients/ragas/releases.atom",
+      "topics": [
+        "evaluation",
+        "rag",
+        "open-source"
+      ],
+      "title": "RAGAS Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-explodinggradients-ragas-releases-ato-48b8f6e118"
+    },
+    {
+      "url": "https://github.com/huggingface/smolagents/releases.atom",
+      "topics": [
+        "agents",
+        "open-source",
+        "llm"
+      ],
+      "title": "smolagents Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-huggingface-smolagents-releases-atom-3f118dafc9"
+    },
+    {
+      "url": "https://github.com/ml-explore/mlx-lm/releases.atom",
+      "topics": [
+        "inference",
+        "on-device",
+        "open-source"
+      ],
+      "title": "mlx-lm Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-ml-explore-mlx-lm-releases-atom-d9ad66646b"
+    },
+    {
+      "url": "https://github.com/pydantic/pydantic-ai/releases.atom",
+      "topics": [
+        "agents",
+        "structured-generation",
+        "open-source"
+      ],
+      "title": "Pydantic AI Releases",
+      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
+      "id": "github-com-pydantic-pydantic-ai-releases-atom-13fd17cdb6"
+    },
+    {
+      "url": "https://www.redhat.com/en/rss/blog/channel/artificial-intelligence",
+      "topics": [
+        "mlops",
+        "infra",
+        "industry"
+      ],
+      "title": "Red Hat AI Blog",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "redhat-com-en-rss-blog-channel-artificial-intell-a81eb3cce3"
+    },
+    {
+      "url": "https://evals.alignment.org/feed.xml",
+      "topics": [
+        "evaluation",
+        "safety",
+        "benchops"
+      ],
+      "title": "Alignment Evals",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "evals-alignment-org-feed-xml-7986a516fc"
+    },
+    {
+      "url": "https://github.com/Arize-ai/phoenix/releases.atom",
+      "topics": [
+        "monitoring",
+        "mlops",
+        "open-source"
+      ],
+      "title": "Phoenix Releases",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "github-com-arize-ai-phoenix-releases-atom-893fe536d8"
+    },
+    {
+      "url": "https://arize.com/blog/category/ml-observability/feed/",
+      "topics": [
+        "monitoring",
+        "mlops",
+        "llmops",
+        "incident-response"
+      ],
+      "title": "Arize ML Observability",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "arize-com-blog-category-ml-observability-feed-5f7cc24740"
+    },
+    {
+      "url": "https://github.com/langfuse/langfuse/releases.atom",
+      "topics": [
+        "llmops",
+        "monitoring",
+        "open-source"
+      ],
+      "title": "Langfuse Releases",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "github-com-langfuse-langfuse-releases-atom-ecdc327b1b"
+    },
+    {
+      "url": "https://github.com/wandb/wandb/releases.atom",
+      "topics": [
+        "mlops",
+        "open-source",
+        "product"
+      ],
+      "title": "Weights & Biases Releases",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "github-com-wandb-wandb-releases-atom-7c7d304e1f"
+    },
+    {
+      "url": "https://github.com/stanford-crfm/helm/releases.atom",
+      "topics": [
+        "evaluation",
+        "research",
+        "open-source"
+      ],
+      "title": "HELM Releases",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "github-com-stanford-crfm-helm-releases-atom-4fc49db7cd"
+    },
+    {
+      "url": "https://www.politico.eu/tag/artificial-intelligence/feed/",
+      "topics": [
+        "regulation",
+        "governance",
+        "industry"
+      ],
+      "title": "Politico EU — Artificial Intelligence",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "politico-eu-tag-artificial-intelligence-feed-5c350f876d"
+    },
+    {
+      "url": "https://www.gov.uk/government/organisations/office-for-artificial-intelligence.atom",
+      "topics": [
+        "regulation",
+        "governance"
+      ],
+      "title": "UK Office for Artificial Intelligence",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "gov-uk-government-organisations-office-for-artif-868653706e"
+    },
+    {
+      "url": "https://www.gov.uk/search/news-and-communications.atom?organisations[]=office-for-artificial-intelligence",
+      "topics": [
+        "regulation",
+        "governance",
+        "industry"
+      ],
+      "title": "UK Office for AI — News",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "gov-uk-search-news-and-communications-atom-850ebdebed"
+    },
+    {
+      "url": "https://artificialintelligenceact.eu/feed/",
+      "topics": [
+        "regulation",
+        "governance"
+      ],
+      "title": "EU AI Act Tracker",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "artificialintelligenceact-eu-feed-7338cdb6ea"
+    },
+    {
+      "url": "https://nlp.elvissaravia.com/feed",
+      "topics": [
+        "newsletters",
+        "nlp",
+        "education"
+      ],
+      "title": "NLP Newsletter",
+      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
+      "id": "nlp-elvissaravia-com-feed-b658c061ff"
+    },
+    {
+      "url": "https://lobste.rs/t/ai.rss",
+      "topics": [
+        "community",
+        "industry",
+        "blogs"
+      ],
+      "title": "Lobsters AI",
+      "notes": "Extend-prune round 17; HTTP verified 2026-06-25",
+      "id": "lobste-rs-t-ai-rss-c1411c6456"
+    },
+    {
+      "url": "https://github.com/letta-ai/letta/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "llm"
+      ],
+      "title": "Letta Releases",
+      "notes": "Extend-prune round 17; HTTP verified 2026-06-25",
+      "id": "github-com-letta-ai-letta-releases-atom-0cce487274"
+    },
+    {
+      "url": "https://github.com/mem0ai/mem0/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "devtools"
+      ],
+      "title": "mem0 Releases",
+      "notes": "Extend-prune round 17; HTTP verified 2026-06-25",
+      "id": "github-com-mem0ai-mem0-releases-atom-90623448f9"
+    },
+    {
+      "url": "https://github.com/browser-use/browser-use/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "devtools"
+      ],
+      "title": "browser-use Releases",
+      "notes": "Extend-prune round 17; HTTP verified 2026-06-25",
+      "id": "github-com-browser-use-browser-use-releases-atom-0934362bf3"
+    },
+    {
+      "url": "https://github.com/confident-ai/deepeval/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "llm"
+      ],
+      "title": "DeepEval Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-confident-ai-deepeval-releases-atom-42aed4b95d"
+    },
+    {
+      "url": "https://github.com/milvus-io/milvus/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "title": "Milvus Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-milvus-io-milvus-releases-atom-8337cf0567"
+    },
+    {
+      "url": "https://github.com/truera/trulens/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "llm"
+      ],
+      "title": "TruLens Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-truera-trulens-releases-atom-c09824cb69"
+    },
+    {
+      "url": "https://github.com/assafelovic/gpt-researcher/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "synthetic-agents"
+      ],
+      "title": "GPT Researcher Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-assafelovic-gpt-researcher-releases-a-973c3e136a"
+    },
+    {
+      "url": "https://github.com/OpenInterpreter/open-interpreter/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "ai-for-code"
+      ],
+      "title": "Open Interpreter Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-openinterpreter-open-interpreter-rele-7082dd534c"
+    },
+    {
+      "url": "https://github.com/qdrant/qdrant/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "title": "Qdrant Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-qdrant-qdrant-releases-atom-f95ca648a0"
+    },
+    {
+      "url": "https://github.com/weaviate/weaviate/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "title": "Weaviate Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-weaviate-weaviate-releases-atom-31fd304ea9"
+    },
+    {
+      "url": "https://github.com/neo4j-labs/llm-graph-builder/releases.atom",
+      "topics": [
+        "open-source",
+        "knowledge-graphs",
+        "rag"
+      ],
+      "title": "Neo4j LLM Graph Builder Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-neo4j-labs-llm-graph-builder-releases-45c83be9cf"
+    },
+    {
+      "url": "https://github.com/Arize-ai/openinference/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "evaluation"
+      ],
+      "title": "OpenInference Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-arize-ai-openinference-releases-atom-3bbb86a6c0"
+    },
+    {
+      "url": "https://github.com/567-labs/instructor/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "devtools"
+      ],
+      "title": "instructor Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-567-labs-instructor-releases-atom-6c1afb3691"
+    },
+    {
+      "url": "https://github.com/whylabs/whylogs/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "monitoring"
+      ],
+      "title": "whylogs Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-whylabs-whylogs-releases-atom-8c4f424b13"
+    },
+    {
+      "url": "https://github.com/Netflix/metaflow/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "training"
+      ],
+      "title": "Metaflow Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-netflix-metaflow-releases-atom-572decadf7"
+    },
+    {
+      "url": "https://github.com/kubeflow/kubeflow/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "training"
+      ],
+      "title": "Kubeflow Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-kubeflow-kubeflow-releases-atom-7371c35531"
+    },
+    {
+      "url": "https://github.com/dagster-io/dagster/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "orchestration"
+      ],
+      "title": "Dagster Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-dagster-io-dagster-releases-atom-a63006596e"
+    },
+    {
+      "url": "https://github.com/UKPLab/sentence-transformers/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "nlp"
+      ],
+      "title": "sentence-transformers Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-ukplab-sentence-transformers-releases-0e506ce49f"
+    },
+    {
+      "url": "https://github.com/activeloopai/deeplake/releases.atom",
+      "topics": [
+        "open-source",
+        "datasets",
+        "training"
+      ],
+      "title": "Deep Lake Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-activeloopai-deeplake-releases-atom-0283b15725"
+    },
+    {
+      "url": "https://github.com/PrefectHQ/prefect/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "orchestration"
+      ],
+      "title": "Prefect Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-prefecthq-prefect-releases-atom-cd2aab9588"
+    },
+    {
+      "url": "https://github.com/huggingface/optimum/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "training"
+      ],
+      "title": "Optimum Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-huggingface-optimum-releases-atom-d1332d6390"
+    },
+    {
+      "url": "https://github.com/deepseek-ai/DeepSeek-R1/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "reasoning-models"
+      ],
+      "title": "DeepSeek R1 Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-deepseek-ai-deepseek-r1-releases-atom-a98f78b1d8"
+    },
+    {
+      "url": "https://github.com/meta-llama/llama/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "training"
+      ],
+      "title": "Llama Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-meta-llama-llama-releases-atom-8db0feab40"
+    },
+    {
+      "url": "https://github.com/ggerganov/llama.cpp/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "on-device"
+      ],
+      "title": "llama.cpp Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-ggerganov-llama-cpp-releases-atom-9b9fe91420"
+    },
+    {
+      "url": "https://github.com/mistralai/mistral-inference/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "llm"
+      ],
+      "title": "Mistral Inference Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-mistralai-mistral-inference-releases-ae30e47384"
+    },
+    {
+      "url": "https://github.com/01-ai/Yi/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "training"
+      ],
+      "title": "Yi Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-01-ai-yi-releases-atom-239ad3b5f4"
+    },
+    {
+      "url": "https://github.com/InternLM/InternLM/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "training"
+      ],
+      "title": "InternLM Releases",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "github-com-internlm-internlm-releases-atom-07719e2a0a"
+    },
+    {
+      "url": "https://dev.to/feed/tag/langchain",
+      "topics": [
+        "community",
+        "rag",
+        "agents"
+      ],
+      "title": "DEV Community — langchain",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "dev-to-feed-tag-langchain-1e494b278f"
+    },
+    {
+      "url": "https://dev.to/feed/tag/nlp",
+      "topics": [
+        "community",
+        "nlp",
+        "education"
+      ],
+      "title": "DEV Community — nlp",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "dev-to-feed-tag-nlp-72d4a80436"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.SE",
+      "topics": [
+        "research",
+        "papers",
+        "ai-for-code"
+      ],
+      "title": "arXiv cs.SE (Software Engineering)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-se-d7947c2614"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.IR",
+      "topics": [
+        "research",
+        "papers",
+        "retrieval"
+      ],
+      "title": "arXiv cs.IR (Information Retrieval)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-ir-260fdf0f26"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.SD",
+      "topics": [
+        "research",
+        "papers",
+        "audio-speech"
+      ],
+      "title": "arXiv cs.SD (Sound)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-sd-e94a01afeb"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CY",
+      "topics": [
+        "research",
+        "papers",
+        "ethics"
+      ],
+      "title": "arXiv cs.CY (Computers & Society)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-cy-a38150159c"
+    },
+    {
+      "url": "https://dev.to/feed/tag/pytorch",
+      "topics": [
+        "community",
+        "training",
+        "ml"
+      ],
+      "title": "DEV Community — pytorch",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "dev-to-feed-tag-pytorch-223f10ef85"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CR",
+      "topics": [
+        "research",
+        "papers",
+        "privacy"
+      ],
+      "title": "arXiv cs.CR (Cryptography & Security)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-cr-ec0e0ce40a"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.DB",
+      "topics": [
+        "research",
+        "papers",
+        "knowledge-graphs"
+      ],
+      "title": "arXiv cs.DB (Databases)",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "export-arxiv-org-rss-cs-db-5c21c042ec"
+    },
+    {
+      "url": "https://www.rand.org/topics/artificial-intelligence.xml",
+      "topics": [
+        "governance",
+        "privacy",
+        "regulation"
+      ],
+      "title": "RAND Artificial Intelligence",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "rand-org-topics-artificial-intelligence-xml-1ad2286126"
+    },
+    {
+      "url": "https://neo4j.com/blog/tag/artificial-intelligence/feed/",
+      "topics": [
+        "industry",
+        "knowledge-graphs",
+        "rag"
+      ],
+      "title": "Neo4j AI Blog",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "neo4j-com-blog-tag-artificial-intelligence-feed-56e5d86d91"
+    },
+    {
+      "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml",
+      "topics": [
+        "industry",
+        "product",
+        "llm"
+      ],
+      "title": "ZDNet AI",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "zdnet-com-topic-artificial-intelligence-rss-xml-9983226131"
+    },
+    {
+      "url": "https://roboticsbusinessreview.com/feed/",
+      "topics": [
+        "robotics",
+        "industry",
+        "product"
+      ],
+      "title": "Robotics Business Review",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "roboticsbusinessreview-com-feed-2ab09cdd1e"
+    },
+    {
+      "url": "https://www.compliance.ai/feed/",
+      "topics": [
+        "legal-ai",
+        "governance",
+        "industry"
+      ],
+      "title": "Compliance.ai",
+      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
+      "id": "compliance-ai-feed-efc99c323a"
+    },
+    {
+      "url": "https://github.com/nomic-ai/gpt4all/releases.atom",
+      "topics": [
+        "open-source",
+        "on-device",
+        "llm"
+      ],
+      "id": "github-com-nomic-ai-gpt4all-releases-atom-429822b7dd",
+      "title": "GPT4All Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25 HTTP fix: feed URL discovered 2026-06-24."
+    },
+    {
+      "url": "https://github.com/modal-labs/modal-client/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "mlops"
+      ],
+      "id": "github-com-modal-labs-modal-client-releases-atom-f479a149a6",
+      "title": "Modal Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/google-deepmind/gemma/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "training"
+      ],
+      "id": "github-com-google-deepmind-gemma-releases-atom-82b89368ef",
+      "title": "Gemma Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/Unstructured-IO/unstructured/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "devtools"
+      ],
+      "id": "github-com-unstructured-io-unstructured-releases-816ffc64da",
+      "title": "Unstructured Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/lancedb/lancedb/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "id": "github-com-lancedb-lancedb-releases-atom-1ed0dd0b9a",
+      "title": "LanceDB Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/openai/swarm/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "llm"
+      ],
+      "id": "github-com-openai-swarm-releases-atom-189d3c1743",
+      "title": "OpenAI Swarm Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/docling-project/docling/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "devtools"
+      ],
+      "id": "github-com-docling-project-docling-releases-atom-4363a7a216",
+      "title": "Docling Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/huggingface/datatrove/releases.atom",
+      "topics": [
+        "open-source",
+        "datasets",
+        "training"
+      ],
+      "id": "github-com-huggingface-datatrove-releases-atom-2e3afd87fc",
+      "title": "DataTrove Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/google-gemini/cookbook/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "education"
+      ],
+      "id": "github-com-google-gemini-cookbook-releases-atom-ddae432188",
+      "title": "Gemini Cookbook Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/predibase/lorax/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "llm"
+      ],
+      "id": "github-com-predibase-lorax-releases-atom-ecebef5fd3",
+      "title": "LoRAX Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/huggingface/lighteval/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "llm"
+      ],
+      "id": "github-com-huggingface-lighteval-releases-atom-25167dc805",
+      "title": "LightEval Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/run-llama/llama_parse/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "devtools"
+      ],
+      "id": "github-com-run-llama-llama-parse-releases-atom-5559e01614",
+      "title": "LlamaParse Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/TransformerOptimus/SuperAGI/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "synthetic-agents"
+      ],
+      "id": "github-com-transformeroptimus-superagi-releases-7f99a84ceb",
+      "title": "SuperAGI Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/run-llama/llama_deploy/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "mlops"
+      ],
+      "id": "github-com-run-llama-llama-deploy-releases-atom-0ffcd94b0a",
+      "title": "LlamaDeploy Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/google-gemini/generative-ai-python/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "devtools"
+      ],
+      "id": "github-com-google-gemini-generative-ai-python-re-3287e629b9",
+      "title": "Gemini SDK Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/streamlit/streamlit/releases.atom",
+      "topics": [
+        "open-source",
+        "devtools",
+        "product"
+      ],
+      "id": "github-com-streamlit-streamlit-releases-atom-92f041bea3",
+      "title": "Streamlit Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/timescale/pgai/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "id": "github-com-timescale-pgai-releases-atom-402338ae9b",
+      "title": "pgai Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/huggingface",
+      "topics": [
+        "community",
+        "open-source",
+        "training"
+      ],
+      "id": "dev-to-feed-tag-huggingface-8f4e315a08",
+      "title": "DEV Community — huggingface",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/tensorchord/vechord/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "id": "github-com-tensorchord-vechord-releases-atom-384ccb415f",
+      "title": "Vechord Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/mindsdb/mindsdb/releases.atom",
+      "topics": [
+        "open-source",
+        "ml",
+        "devtools"
+      ],
+      "id": "github-com-mindsdb-mindsdb-releases-atom-d15eedb72e",
+      "title": "MindsDB Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.GL",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-gl-eeeb3a84ca",
+      "title": "arXiv cs.GL (General Literature)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.OH",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-oh-4c3db0cbf4",
+      "title": "arXiv cs.OH (Other Computer Science)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.NC",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-nc-12c5461ace",
+      "title": "arXiv q-bio.NC (Neurons & Cognition)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.SY",
+      "topics": [
+        "research",
+        "papers",
+        "robotics"
+      ],
+      "id": "export-arxiv-org-rss-cs-sy-649674505f",
+      "title": "arXiv cs.SY (Systems & Control)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/kedro-org/kedro/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "training"
+      ],
+      "id": "github-com-kedro-org-kedro-releases-atom-ed5d6b8e22",
+      "title": "Kedro Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.QM",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-qm-38ca6cbd5f",
+      "title": "arXiv q-bio.QM (Quantitative Methods)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.BM",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-bm-2c75faf6d8",
+      "title": "arXiv q-bio.BM (Biomolecules)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.GN",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-gn-7628b61f0b",
+      "title": "arXiv q-bio.GN (Genomics)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/eess.IV",
+      "topics": [
+        "research",
+        "papers",
+        "cv"
+      ],
+      "id": "export-arxiv-org-rss-eess-iv-24c01ec9b9",
+      "title": "arXiv eess.IV (Image & Video Processing)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/eess.SP",
+      "topics": [
+        "research",
+        "papers",
+        "audio-speech"
+      ],
+      "id": "export-arxiv-org-rss-eess-sp-e0dcdc643b",
+      "title": "arXiv eess.SP (Signal Processing)",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://machinelearningmastery.com/feed/",
+      "topics": [
+        "education",
+        "training",
+        "ml"
+      ],
+      "id": "machinelearningmastery-com-feed-d7d6ec7077",
+      "title": "Machine Learning Mastery",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://www.marketingaiinstitute.com/blog/rss.xml",
+      "topics": [
+        "industry",
+        "product",
+        "education"
+      ],
+      "id": "marketingaiinstitute-com-blog-rss-xml-6a944a5cd4",
+      "title": "Marketing AI Institute",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/Chainlit/chainlit/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "devtools"
+      ],
+      "id": "github-com-chainlit-chainlit-releases-atom-0bda6deee4",
+      "title": "Chainlit Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/paradedb/paradedb/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "id": "github-com-paradedb-paradedb-releases-atom-b4bdb7a5b4",
+      "title": "ParadeDB Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/iterative/dvc/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "datasets"
+      ],
+      "id": "github-com-iterative-dvc-releases-atom-4d674c7541",
+      "title": "DVC Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://aisnakeoil.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "ethics"
+      ],
+      "id": "aisnakeoil-substack-com-feed-686e4c2f71",
+      "title": "AI Snake Oil",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/flyteorg/flyte/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "orchestration"
+      ],
+      "id": "github-com-flyteorg-flyte-releases-atom-cbf5a66e29",
+      "title": "Flyte Releases",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://lemmy.ml/feeds/c/machinelearning.xml",
+      "topics": [
+        "community",
+        "ml"
+      ],
+      "id": "lemmy-ml-feeds-c-machinelearning-xml-067e8b9655",
+      "title": "Lemmy.ml — machinelearning",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://www.artificialintelligence-news.com/feed/",
+      "topics": [
+        "industry",
+        "product",
+        "llm"
+      ],
+      "id": "artificialintelligence-news-com-feed-a69cb801a0",
+      "title": "AI News",
+      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml",
+      "topics": [
+        "open-source",
+        "on-device",
+        "llm"
+      ],
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-3b0696dfd4",
+      "title": "Ollama Blog (Olshansk mirror)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_changelog_claude_code.xml",
+      "topics": [
+        "industry",
+        "llm",
+        "devtools"
+      ],
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-52d27b4568",
+      "title": "Anthropic Claude Code Changelog (Olshansk mirror)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_openai_research.xml",
+      "topics": [
+        "research",
+        "llm",
+        "industry"
+      ],
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-ae652563b3",
+      "title": "OpenAI Research (Olshansk mirror)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_weaviate.xml",
+      "topics": [
+        "industry",
+        "embeddings",
+        "rag"
+      ],
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-8feaa65a20",
+      "title": "Weaviate Blog (Olshansk mirror)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ai_first_podcast.xml",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-144ac82d8a",
+      "title": "AI First Podcast (Olshansk mirror)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.DM",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-dm-5a7c0c0d3a",
+      "title": "arXiv cs.DM (Discrete Mathematics)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.CB",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-cb-ac5b4db85b",
+      "title": "arXiv q-bio.CB (Cell Behavior)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.MS",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-ms-3634b6419c",
+      "title": "arXiv cs.MS (Mathematical Software)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.PF",
+      "topics": [
+        "research",
+        "papers",
+        "hardware"
+      ],
+      "id": "export-arxiv-org-rss-cs-pf-95dda03e39",
+      "title": "arXiv cs.PF (Performance)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.TO",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-to-0a413b9ddb",
+      "title": "arXiv q-bio.TO (Tissues and Organs)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.IT",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-it-c916013025",
+      "title": "arXiv cs.IT (Information Theory)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.NA",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-na-74e0c60edf",
+      "title": "arXiv cs.NA (Numerical Analysis)",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/composiohq/composio/releases.atom",
+      "topics": [
+        "open-source",
+        "agents",
+        "devtools"
+      ],
+      "id": "github-com-composiohq-composio-releases-atom-84ddccd90b",
+      "title": "Composio Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/jina-ai/reader/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "devtools"
+      ],
+      "id": "github-com-jina-ai-reader-releases-atom-066b0ff252",
+      "title": "Jina Reader Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/BentoML/BentoML/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "mlops"
+      ],
+      "id": "github-com-bentoml-bentoml-releases-atom-ed1d45c6db",
+      "title": "BentoML Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/skypilot-org/skypilot/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "training"
+      ],
+      "id": "github-com-skypilot-org-skypilot-releases-atom-7dfa61c267",
+      "title": "SkyPilot Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/cleanlab/cleanlab/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "ml"
+      ],
+      "id": "github-com-cleanlab-cleanlab-releases-atom-423219a60d",
+      "title": "cleanlab Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/argilla-io/argilla/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "datasets"
+      ],
+      "id": "github-com-argilla-io-argilla-releases-atom-7ef407e7ce",
+      "title": "Argilla Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/mosaicml/llm-foundry/releases.atom",
+      "topics": [
+        "open-source",
+        "training",
+        "llm"
+      ],
+      "id": "github-com-mosaicml-llm-foundry-releases-atom-e6ef9ba21a",
+      "title": "LLM Foundry Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/AllenAI/OLMo/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "training"
+      ],
+      "id": "github-com-allenai-olmo-releases-atom-53138c859b",
+      "title": "OLMo Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/marqo-ai/marqo/releases.atom",
+      "topics": [
+        "open-source",
+        "embeddings",
+        "rag"
+      ],
+      "id": "github-com-marqo-ai-marqo-releases-atom-25ee7e6578",
+      "title": "Marqo Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/helicone/helicone/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "evaluation"
+      ],
+      "id": "github-com-helicone-helicone-releases-atom-1db3c4d574",
+      "title": "Helicone Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/traceloop/openllmetry/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "evaluation"
+      ],
+      "id": "github-com-traceloop-openllmetry-releases-atom-7d9c3503d7",
+      "title": "OpenLLMetry Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/TabbyML/tabby/releases.atom",
+      "topics": [
+        "open-source",
+        "ai-for-code",
+        "devtools"
+      ],
+      "id": "github-com-tabbyml-tabby-releases-atom-91c9ffc90d",
+      "title": "Tabby Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/braintrustdata/braintrust-sdk/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "llm"
+      ],
+      "id": "github-com-braintrustdata-braintrust-sdk-release-c980e59bdd",
+      "title": "Braintrust SDK Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/comet-ml/opik/releases.atom",
+      "topics": [
+        "open-source",
+        "evaluation",
+        "llm"
+      ],
+      "id": "github-com-comet-ml-opik-releases-atom-3799c30565",
+      "title": "Opik Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/ray-project/kuberay/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "orchestration"
+      ],
+      "id": "github-com-ray-project-kuberay-releases-atom-f4072c14da",
+      "title": "KubeRay Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/langwatch/langwatch/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "evaluation"
+      ],
+      "id": "github-com-langwatch-langwatch-releases-atom-4dcce95254",
+      "title": "LangWatch Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/SeldonIO/MLServer/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "mlops"
+      ],
+      "id": "github-com-seldonio-mlserver-releases-atom-41307ba6bb",
+      "title": "MLServer Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/openvinotoolkit/openvino/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "hardware"
+      ],
+      "id": "github-com-openvinotoolkit-openvino-releases-ato-cc0fcc8df5",
+      "title": "OpenVINO Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/vercel/ai/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "devtools"
+      ],
+      "id": "github-com-vercel-ai-releases-atom-b924611dcd",
+      "title": "Vercel AI SDK Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/instructlab/instructlab/releases.atom",
+      "topics": [
+        "open-source",
+        "training",
+        "llm"
+      ],
+      "id": "github-com-instructlab-instructlab-releases-atom-b0d1b996f2",
+      "title": "InstructLab Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/anthropic",
+      "topics": [
+        "community",
+        "llm",
+        "industry"
+      ],
+      "id": "dev-to-feed-tag-anthropic-3b97ae4017",
+      "title": "DEV Community — anthropic",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/mistral",
+      "topics": [
+        "community",
+        "llm",
+        "open-source"
+      ],
+      "id": "dev-to-feed-tag-mistral-8f4dd311a4",
+      "title": "DEV Community — mistral",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/google/jax/releases.atom",
+      "topics": [
+        "open-source",
+        "training",
+        "ml"
+      ],
+      "id": "github-com-google-jax-releases-atom-654f4790d6",
+      "title": "JAX Releases",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/finetuning",
+      "topics": [
+        "community",
+        "training",
+        "llm"
+      ],
+      "id": "dev-to-feed-tag-finetuning-6567ebec72",
+      "title": "DEV Community — finetuning",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/embeddings",
+      "topics": [
+        "community",
+        "embeddings",
+        "rag"
+      ],
+      "id": "dev-to-feed-tag-embeddings-512a50fd5c",
+      "title": "DEV Community — embeddings",
+      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CE",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-ce-1e2f82b605",
+      "title": "arXiv cs.CE (Computational Engineering)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.DL",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-dl-6a2855c6c7",
+      "title": "arXiv cs.DL (Digital Libraries)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/stat.TH",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-stat-th-6790b041da",
+      "title": "arXiv stat.TH (Statistics Theory)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.PE",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-pe-8ddb7e82d3",
+      "title": "arXiv q-bio.PE (Populations and Evolution)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/q-bio.MN",
+      "topics": [
+        "research",
+        "papers",
+        "healthcare-ai"
+      ],
+      "id": "export-arxiv-org-rss-q-bio-mn-211966552a",
+      "title": "arXiv q-bio.MN (Molecular Networks)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/physics.soc-ph",
+      "topics": [
+        "research",
+        "papers",
+        "governance"
+      ],
+      "id": "export-arxiv-org-rss-physics-soc-ph-0140cb80c8",
+      "title": "arXiv physics.soc-ph (Physics and Society)",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/unclecode/crawl4ai/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "agents"
+      ],
+      "id": "github-com-unclecode-crawl4ai-releases-atom-fd8b980589",
+      "title": "Crawl4AI Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/simonw/llm/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "devtools"
+      ],
+      "id": "github-com-simonw-llm-releases-atom-82e9bbc948",
+      "title": "simonw/llm Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/NVIDIA/TensorRT/releases.atom",
+      "topics": [
+        "open-source",
+        "inference",
+        "hardware"
+      ],
+      "id": "github-com-nvidia-tensorrt-releases-atom-f8fc721e0d",
+      "title": "TensorRT Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/Portkey-AI/gateway/releases.atom",
+      "topics": [
+        "open-source",
+        "llmops",
+        "inference"
+      ],
+      "id": "github-com-portkey-ai-gateway-releases-atom-913f9b2dd9",
+      "title": "Portkey Gateway Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/lobehub/lobe-chat/releases.atom",
+      "topics": [
+        "open-source",
+        "llm",
+        "product"
+      ],
+      "id": "github-com-lobehub-lobe-chat-releases-atom-4cc8558d80",
+      "title": "Lobe Chat Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/infiniflow/ragflow/releases.atom",
+      "topics": [
+        "open-source",
+        "rag",
+        "agents"
+      ],
+      "id": "github-com-infiniflow-ragflow-releases-atom-04a18ececc",
+      "title": "RAGFlow Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://github.com/invoke-ai/InvokeAI/releases.atom",
+      "topics": [
+        "open-source",
+        "genai",
+        "diffusion"
+      ],
+      "id": "github-com-invoke-ai-invokeai-releases-atom-4f4dab8eff",
+      "title": "InvokeAI Releases",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://dev.to/feed/tag/ollama",
+      "topics": [
+        "community",
+        "on-device",
+        "llm"
+      ],
+      "id": "dev-to-feed-tag-ollama-46538de261",
+      "title": "DEV Community — ollama",
+      "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
     }
   ]
 }
