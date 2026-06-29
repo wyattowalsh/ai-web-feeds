@@ -158,7 +158,9 @@ function createAuthInstance() {
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
     },
-    cookiePrefix: "aiwf",
+    advanced: {
+      cookiePrefix: "aiwf",
+    },
   });
 }
 

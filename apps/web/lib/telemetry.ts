@@ -16,7 +16,8 @@ export type ApiTelemetryEvent = {
   errorMessage: string | null;
   userAgent: string | null;
   ipHash: string | null;
-  adminSessionPresent: boolean;
+  /** True when any Better Auth session cookie is present (not role-validated). */
+  sessionCookiePresent: boolean;
   queryKeys: string[];
   source: "next-route-handler";
 };

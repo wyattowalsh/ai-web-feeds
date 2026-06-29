@@ -1,9 +1,24 @@
 {
-  "goal": "feed-catalog-expansion-rounds-20-23",
-  "catalog_size": 628,
-  "scope_reconciliation": "Authoritative delta is git diff origin/main (see authoritative-changed-files.json). Cumulative goal-classifier-*.patch and prompt CHANGED_FILES are session history from waves 0-4; forbidden_paths_count must be 0 in authoritative manifest.",
+  "goal": "feed-catalog-expansion-rounds-20-23-with-web-security",
+  "catalog_size": 633,
+  "scope_reconciliation": "Expanded deliverable includes catalog rounds 20-23 (526->633) plus PR #16 web security remediation on apps/web. Catalog-scoped gate uses baseline_git_ref..HEAD filtered to in_scope prefixes; forbidden_path_prefixes (apps/cli, .github, packages/ai_web_feeds/src) must be 0 in that diff. Authoritative working-tree manifest uses origin/main via authoritative-changed-files.json.",
   "authoritative_manifest": "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
   "forbidden_paths_in_authoritative_diff": 0,
+  "forbidden_path_prefixes": [
+    "apps/cli/",
+    ".github/",
+    "packages/ai_web_feeds/src/"
+  ],
+  "bundled_deliverables": [
+    {
+      "id": "catalog-rounds-20-23",
+      "description": "Data catalog growth 526->633 with specs/003 round artifacts"
+    },
+    {
+      "id": "pr-16-web-security",
+      "description": "Better Auth admin guards, middleware CSP, telemetry hardening"
+    }
+  ],
   "in_scope_paths": [
     "data/feeds.yaml",
     "data/feeds.enriched.yaml",
@@ -30,18 +45,41 @@
     "specs/003-feed-collection-enhancement/extend-prune-round-23.json",
     "specs/003-feed-collection-enhancement/extend-prune-summary.json",
     "goals/comprehensive-ai-feed-catalog/run_plan_evidence.sh",
+    "goals/comprehensive-ai-feed-catalog/run_g4_gate.sh",
+    "goals/comprehensive-ai-feed-catalog/scope_constants.py",
     "goals/comprehensive-ai-feed-catalog/write_authoritative_scope.py",
     "goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py",
     "goals/comprehensive-ai-feed-catalog/sync_classifier_artifacts.py",
     "goals/comprehensive-ai-feed-catalog/prune_session_honesty_anchor.py",
     "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
+    "goals/comprehensive-ai-feed-catalog/g4-verification.json",
+    "goals/comprehensive-ai-feed-catalog/deliverable-scope.json",
     "specs/003-feed-collection-enhancement/ai_relevance.py",
+    "apps/web/middleware.ts",
+    "apps/web/middleware.test.ts",
+    "apps/web/lib/auth.ts",
+    "apps/web/lib/auth.test.ts",
+    "apps/web/lib/auth-session-cookie.ts",
+    "apps/web/lib/auth-session-cookie.test.ts",
+    "apps/web/lib/admin-auth-new.ts",
+    "apps/web/lib/admin-auth-new.test.ts",
+    "apps/web/lib/telemetry-route.ts",
+    "apps/web/lib/server/rate-limit.ts",
+    "apps/web/app/admin/login/page.tsx",
+    "apps/web/app/api/admin/telemetry/events/route.ts",
+    "apps/web/app/api/admin/telemetry/events/route.test.ts",
+    "apps/web/app/api/admin/telemetry/summary/route.ts",
+    "apps/web/app/api/admin/telemetry/summary/route.test.ts",
+    "apps/web/app/api/recommendations/route.ts",
+    "apps/web/app/api/recommendations/route.test.ts",
+    "apps/web/app/api/telemetry/events/route.ts",
+    "apps/web/app/api/telemetry/events/route.test.ts",
+    "apps/web/content/docs/development/observability.mdx",
     "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
     "tests/tests/performance/test_benchmarks.py"
   ],
   "explicitly_out_of_scope": [
     "apps/cli/**",
-    "apps/web/**",
     "packages/ai_web_feeds/src/ai_web_feeds/enrich.py",
     "packages/ai_web_feeds/src/ai_web_feeds/models.py",
     "packages/ai_web_feeds/src/ai_web_feeds/storage.py",
@@ -52,5 +90,6 @@
     "packages/alembic/versions/010_*",
     ".github/workflows/**"
   ],
-  "note": "Rounds 20–23 deliverable is data catalog growth (526→628 net +102) plus specs/003 round artifacts; DB sync via catalog_sync.sync_catalog_to_db; flaky feeds pruned for 0-failure HTTP gate (ICML blog unreachable, AiThority generative-ai timeout flake); pass22: 40, pass23: 20 integrated."
+  "note": "Rounds 20-23 deliverable is data catalog growth (526->633 net +107) plus PR #16 web security on apps/web; DB sync via catalog_sync.sync_catalog_to_db; flaky feeds pruned for 0-failure HTTP gate; pass22: 40, pass23: 20 integrated.",
+  "baseline_git_ref": "adbdc9d"
 }

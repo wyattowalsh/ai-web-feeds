@@ -39,6 +39,17 @@ describe("middleware admin auth", () => {
 
     expect(response?.status).toBe(200);
   });
+
+  it("allows /admin/login when an invalid session cookie is present (no redirect loop)", async () => {
+    const response = await middleware(
+      new NextRequest("http://127.0.0.1:3000/admin/login", {
+        headers: { cookie: "aiwf.session_token=invalid-or-expired" },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("location")).toBeNull();
+  });
   it("returns 401 JSON for unauthenticated admin API requests", async () => {
     const response = await middleware(
       new NextRequest("http://127.0.0.1:3000/api/admin/telemetry/summary"),
@@ -52,11 +63,22 @@ describe("middleware admin auth", () => {
     const response = await middleware(
       new NextRequest("http://127.0.0.1:3000/api/admin/telemetry/summary", {
         headers: {
-          cookie: "aiwf_session_token=test-token",
+          cookie: "aiwf.session_token=test-token",
         },
       }),
     );
 
     expect(response?.status).toBe(200);
+  });
+
+  it("returns 401 when only legacy underscore session cookie is present", async () => {
+    const response = await middleware(
+      new NextRequest("http://127.0.0.1:3000/api/admin/telemetry/summary", {
+        headers: { cookie: "aiwf_session_token=test-token" },
+      }),
+    );
+
+    expect(response?.status).toBe(401);
+    await expect(response?.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 });

@@ -5,7 +5,7 @@
   "net": 37,
   "discovery": {
     "round": 20,
-    "candidate_file": "/Users/ww/dev/projects/ai-web-feeds/specs/003-feed-collection-enhancement/candidates/saturation-pass-20-research.yaml",
+    "candidate_file": "specs/003-feed-collection-enhancement/candidates/saturation-pass-20-research.yaml",
     "verified": 41,
     "seeds": 41,
     "skip_existing": 0,

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { getCookies } from "better-auth/cookies";
 
-import { buildSocialProviders } from "./auth";
+import { buildSocialProviders, getAuth } from "./auth";
 
 describe("buildSocialProviders", () => {
   const originalEnv = { ...process.env };
@@ -28,5 +29,13 @@ describe("buildSocialProviders", () => {
     expect(buildSocialProviders()).toEqual({
       google: { clientId: "google-id", clientSecret: "google-credential" }, // pragma: allowlist secret
     });
+  });
+});
+
+describe("auth cookie prefix", () => {
+  it("uses aiwf session token cookie names via advanced.cookiePrefix", () => {
+    const auth = getAuth();
+    const cookies = getCookies(auth.options);
+    expect(cookies.sessionToken.name).toBe("aiwf.session_token");
   });
 });

@@ -73,24 +73,24 @@ export const POST = withRouteTelemetry("search.log", POSTHandler, {
 
 Written to `{AIWF_TELEMETRY_DIR}/api-events.ndjson`:
 
-| Field                 | Type           | Description                                      |
-| --------------------- | -------------- | ------------------------------------------------ |
-| `requestId`           | string         | Correlation id (also returned as `x-request-id`) |
-| `timestamp`           | ISO-8601       | Handler completion time                          |
-| `routeKey`            | string         | Stable identifier, e.g. `articles.list`          |
-| `pathname`            | string         | Request path                                     |
-| `method`              | string         | HTTP method                                      |
-| `statusCode`          | number         | Response status                                  |
-| `durationMs`          | number         | Wall-clock handler time                          |
-| `cacheControl`        | string \| null | Response `Cache-Control` header                  |
-| `backendTarget`       | string \| null | Upstream URL when proxied                        |
-| `errorCode`           | string \| null | Set on 5xx or unhandled exceptions               |
-| `errorMessage`        | string \| null | Redacted exception text                          |
-| `userAgent`           | string \| null | `User-Agent` header                              |
-| `ipHash`              | string \| null | SHA-256 prefix of salted client IP               |
-| `adminSessionPresent` | boolean        | Whether an admin session cookie was present      |
-| `queryKeys`           | string[]       | Sorted unique query parameter names              |
-| `source`              | string         | Always `next-route-handler`                      |
+| Field                  | Type           | Description                                                           |
+| ---------------------- | -------------- | --------------------------------------------------------------------- |
+| `requestId`            | string         | Correlation id (also returned as `x-request-id`)                      |
+| `timestamp`            | ISO-8601       | Handler completion time                                               |
+| `routeKey`             | string         | Stable identifier, e.g. `articles.list`                               |
+| `pathname`             | string         | Request path                                                          |
+| `method`               | string         | HTTP method                                                           |
+| `statusCode`           | number         | Response status                                                       |
+| `durationMs`           | number         | Wall-clock handler time                                               |
+| `cacheControl`         | string \| null | Response `Cache-Control` header                                       |
+| `backendTarget`        | string \| null | Upstream URL when proxied                                             |
+| `errorCode`            | string \| null | Set on 5xx or unhandled exceptions                                    |
+| `errorMessage`         | string \| null | Redacted exception text                                               |
+| `userAgent`            | string \| null | `User-Agent` header                                                   |
+| `ipHash`               | string \| null | SHA-256 prefix of salted client IP                                    |
+| `sessionCookiePresent` | boolean        | Whether a Better Auth session cookie was present (not role-validated) |
+| `queryKeys`            | string[]       | Sorted unique query parameter names                                   |
+| `source`               | string         | Always `next-route-handler`                                           |
 
 Admin audit events use a separate file: `admin-audit.ndjson`.
 
@@ -236,7 +236,7 @@ DATABASE_URL=postgresql://user:pass@host.neon.tech/db?sslmode=require  # pragma:
 
 For strict cross-instance limits, add a shared store (for example Vercel KV or Redis) in front of the ingest route. Until then, treat rate limits as best-effort and monitor anomalous ingest volume via `usage_events` and `api_request_logs`.
 
-Admin API authorization is enforced in route handlers via `withBetterAuthAdminGuard` (role must be `admin`). Middleware only checks for the presence of a session cookie on `/api/admin/*` and `/admin/*` pages as defense in depth.
+Admin API authorization is enforced in route handlers via `withBetterAuthAdminGuard` (role must be `admin`). Middleware checks for Better Auth session cookie **presence** on `/api/admin/*` and `/admin/*` via the shared `hasBetterAuthSessionCookie` helper (`apps/web/lib/auth-session-cookie.ts`), which matches `aiwf.session_token` / `aiwf-session_token` (and `__Secure-*` variants). The helper also accepts `better-auth.*` session cookies for one release after migrating `advanced.cookiePrefix` to `aiwf`. Role enforcement remains in route handlers only.
 
 ## Retention and operations
 

@@ -1,7 +1,7 @@
 {
   "timestamp": "2026-06-29T03:47:33Z",
   "overall_pass": true,
-  "scratch_dir": "/tmp/g4-gate-final2/scratch",
+  "scratch_dir": "goals/comprehensive-ai-feed-catalog/scratch",
   "generated_by": "run_g4_gate.sh",
   "checks": [
     {

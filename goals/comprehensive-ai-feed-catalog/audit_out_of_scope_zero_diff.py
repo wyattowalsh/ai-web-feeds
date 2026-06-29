@@ -11,8 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCOPE_PATH = ROOT / "goals/comprehensive-ai-feed-catalog/deliverable-scope.json"
-FORBIDDEN_PREFIXES = (
-    "apps/web/",
+DEFAULT_FORBIDDEN_PREFIXES = (
     "apps/cli/",
     ".github/",
     "packages/ai_web_feeds/src/",
@@ -36,8 +35,16 @@ def _matches_pattern(path: str, pattern: str) -> bool:
     return fnmatch.fnmatch(path, pattern)
 
 
+def _forbidden_prefixes(scope: dict) -> tuple[str, ...]:
+    configured = scope.get("forbidden_path_prefixes")
+    if configured:
+        return tuple(configured)
+    return DEFAULT_FORBIDDEN_PREFIXES
+
+
 def main() -> int:
     scope = json.loads(SCOPE_PATH.read_text(encoding="utf-8"))
+    forbidden_prefixes = _forbidden_prefixes(scope)
     out_of_scope: list[str] = scope.get("explicitly_out_of_scope", [])
     changed = _git_diff_names()
 
@@ -55,13 +62,14 @@ def main() -> int:
     for path in changed:
         if path in seen:
             continue
-        if path.startswith(FORBIDDEN_PREFIXES):
-            violations.append({"pattern": "forbidden_prefix", "path": path})
+        if path.startswith(forbidden_prefixes):
+            violations.append({"pattern": "forbidden_path_prefixes", "path": path})
             seen.add(path)
 
     forbidden_paths = sorted({v["path"] for v in violations})
     doc = {
-        "source": "git diff --name-only origin/main vs deliverable-scope explicitly_out_of_scope",
+        "source": "git diff --name-only origin/main vs deliverable-scope",
+        "forbidden_path_prefixes": list(forbidden_prefixes),
         "changed_paths_count": len(changed),
         "forbidden_paths_with_nonempty_diff": forbidden_paths,
         "violations": violations,

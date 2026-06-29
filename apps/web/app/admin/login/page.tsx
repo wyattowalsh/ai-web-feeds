@@ -1,10 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
+import { hasBetterAuthSessionCookie } from "@/lib/auth-session-cookie";
 
 export const dynamic = "force-dynamic";
-
-const ADMIN_SESSION_COOKIE = "aiwf_session_token";
 
 function sanitizeAdminNextPath(next?: string): string {
   if (!next) {
@@ -19,16 +18,6 @@ function sanitizeAdminNextPath(next?: string): string {
   return next;
 }
 
-function hasAdminSessionCookie(cookieHeader: string | null): boolean {
-  if (!cookieHeader) {
-    return false;
-  }
-
-  return cookieHeader
-    .split(";")
-    .some((segment) => segment.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
-}
-
 export default async function AdminLoginPage({
   searchParams,
 }: {
@@ -36,7 +25,7 @@ export default async function AdminLoginPage({
 }) {
   const requestHeaders = await headers();
   let session = null;
-  if (hasAdminSessionCookie(requestHeaders.get("cookie"))) {
+  if (hasBetterAuthSessionCookie(requestHeaders.get("cookie"))) {
     const { auth } = await import("@/lib/auth");
     session = await auth.api
       .getSession({

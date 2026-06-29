@@ -161,7 +161,7 @@ export async function recordApiRequestLog(event: ApiTelemetryEvent): Promise<voi
       ${event.errorMessage},
       ${event.userAgent},
       ${event.ipHash},
-      ${event.adminSessionPresent},
+      ${event.sessionCookiePresent},
       ${JSON.stringify(event.queryKeys)}::jsonb,
       ${event.source}
     )

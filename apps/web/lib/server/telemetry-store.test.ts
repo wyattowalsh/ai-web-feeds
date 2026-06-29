@@ -39,7 +39,7 @@ const sampleApiEvent: ApiTelemetryEvent = {
   errorMessage: null,
   userAgent: "vitest",
   ipHash: "abc123",
-  adminSessionPresent: false,
+  sessionCookiePresent: false,
   queryKeys: ["q", "scope"],
   source: "next-route-handler",
 };

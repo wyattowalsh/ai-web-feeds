@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { after, NextResponse } from "next/server";
 import { DatabaseNotConfiguredError } from "@/lib/server/db";
 import { recordApiRequestLog } from "@/lib/server/telemetry-store";
+import { hasBetterAuthSessionCookie } from "@/lib/auth-session-cookie";
 import {
   hashClientIp,
   recordApiTelemetry,
@@ -27,8 +28,6 @@ type RouteHandler<TRequest extends Request = Request, TContext = RouteHandlerCon
 type TelemetryOptions = {
   backendTarget?: string | null;
 };
-
-const ADMIN_SESSION_COOKIE = "aiwf_session_token";
 
 function resolveQueryKeys(url: URL): string[] {
   return [...new Set([...url.searchParams.keys()])].sort();
@@ -86,17 +85,6 @@ function readClientIp(request: Request): string | null {
   return readHeader(request, "x-real-ip") ?? readHeader(request, "cf-connecting-ip");
 }
 
-function hasAdminSessionCookie(request: Request): boolean {
-  const cookieHeader = readHeader(request, "cookie");
-  if (!cookieHeader) {
-    return false;
-  }
-
-  return cookieHeader
-    .split(";")
-    .some((segment) => segment.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
-}
-
 export function withRouteTelemetry<TRequest extends Request = Request>(
   routeKey: string,
   handler: RouteHandlerWithoutContext<TRequest>,
@@ -144,7 +132,7 @@ export function withRouteTelemetry<
         errorMessage: null,
         userAgent: readHeader(request, "user-agent"),
         ipHash,
-        adminSessionPresent: hasAdminSessionCookie(request),
+        sessionCookiePresent: hasBetterAuthSessionCookie(readHeader(request, "cookie")),
         queryKeys: resolveQueryKeys(url),
         source: "next-route-handler",
       });
@@ -167,7 +155,7 @@ export function withRouteTelemetry<
         errorMessage: redactErrorMessage(error),
         userAgent: readHeader(request, "user-agent"),
         ipHash,
-        adminSessionPresent: hasAdminSessionCookie(request),
+        sessionCookiePresent: hasBetterAuthSessionCookie(readHeader(request, "cookie")),
         queryKeys: resolveQueryKeys(url),
         source: "next-route-handler",
       });

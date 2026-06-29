@@ -1,25 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isMarkdownPreferred, rewritePath } from "fumadocs-core/negotiation";
-
-const ADMIN_SESSION_COOKIE = "aiwf_session_token";
+import { hasBetterAuthSessionCookie } from "@/lib/auth-session-cookie";
 
 const { rewrite: rewriteLLM } = rewritePath("/docs/*path", "/llms.mdx/*path");
-
-function hasAdminSessionCookie(request: NextRequest): boolean {
-  const cookieHeader = request.headers.get("cookie");
-  if (!cookieHeader) {
-    return false;
-  }
-
-  return cookieHeader
-    .split(";")
-    .some((segment) => segment.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
-}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  const hasAdminSession = hasAdminSessionCookie(request);
+  const hasAdminSession = hasBetterAuthSessionCookie(request.headers.get("cookie"));
   const isDevelopment = process.env.NODE_ENV !== "production";
   const nonce = btoa(crypto.randomUUID());
   const requestHeaders = new Headers(request.headers);
@@ -47,8 +35,6 @@ export async function middleware(request: NextRequest) {
     } else {
       response = NextResponse.next({ request: { headers: requestHeaders } });
     }
-  } else if (pathname === "/admin/login" && hasAdminSession) {
-    response = NextResponse.redirect(new URL("/admin", request.url));
   } else if (isMarkdownPreferred(request)) {
     const result = rewriteLLM(request.nextUrl.pathname);
     if (result) {
