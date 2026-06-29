@@ -81,6 +81,24 @@ function getBaseUrl(): string {
   return "http://localhost:3000";
 }
 
+export function buildSocialProviders(): Record<string, { clientId: string; clientSecret: string }> {
+  const providers: Record<string, { clientId: string; clientSecret: string }> = {};
+
+  const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  if (googleClientId && googleClientSecret) {
+    providers.google = { clientId: googleClientId, clientSecret: googleClientSecret };
+  }
+
+  const githubClientId = process.env.GITHUB_CLIENT_ID?.trim();
+  const githubClientSecret = process.env.GITHUB_CLIENT_SECRET?.trim();
+  if (githubClientId && githubClientSecret) {
+    providers.github = { clientId: githubClientId, clientSecret: githubClientSecret };
+  }
+
+  return providers;
+}
+
 function createAuthInstance() {
   const databaseUrl = getDatabaseUrl();
   const sql = databaseUrl ? neon(databaseUrl) : null;
@@ -112,16 +130,7 @@ function createAuthInstance() {
         },
       }),
     ],
-    socialProviders: {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      },
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID!,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      },
-    },
+    socialProviders: buildSocialProviders(),
     user: {
       additionalFields: {
         role: {
