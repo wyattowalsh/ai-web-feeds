@@ -10,6 +10,7 @@ import {
 } from "@/lib/backend";
 import { DatabaseNotConfiguredError, getSql } from "@/lib/server/db";
 import { recordRecommendationInteraction } from "@/lib/server/recommendation-interactions";
+import { getUserIdentity, validateUserOwnership } from "@/lib/user-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,20 @@ const GETHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
   const seed_topics = searchParams.get("topics")?.split(",").filter(Boolean) || undefined;
-  const userId = searchParams.get("user_id")?.trim() || undefined;
+  const requestedUserId = searchParams.get("user_id")?.trim() || undefined;
   const limit = clampNumber(parseInt(searchParams.get("limit") || "20", 10), 1, 100);
+
+  const identity = await getUserIdentity(request, requestedUserId ?? null);
+
+  if (requestedUserId && identity.source === "anonymous") {
+    return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+  }
+
+  if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+    return NextResponse.json({ error: "user_id does not match request identity" }, { status: 403 });
+  }
+
+  const userId = identity.source !== "anonymous" ? identity.user_id : requestedUserId;
 
   try {
     const data = await fetchBackend("/recommendations", {
@@ -55,13 +68,32 @@ const GETHandler = async (request: Request) => {
 const POSTHandler = async (request: Request) => {
   try {
     const body = await request.json();
-    const userId = typeof body?.user_id === "string" ? body.user_id.trim() : "";
+    const requestedUserId = typeof body?.user_id === "string" ? body.user_id.trim() : "";
     const feedId = typeof body?.feed_id === "string" ? body.feed_id.trim() : "";
     const interactionType =
       typeof body?.interaction_type === "string" ? body.interaction_type.trim() : "";
     const reason = typeof body?.reason === "string" ? body.reason : null;
 
-    if (!userId || !feedId || !interactionType) {
+    const identity = await getUserIdentity(request, requestedUserId || null);
+
+    if (requestedUserId && identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    if (requestedUserId && !validateUserOwnership(requestedUserId, identity)) {
+      return NextResponse.json(
+        { error: "user_id does not match request identity" },
+        { status: 403 },
+      );
+    }
+
+    if (identity.source === "anonymous") {
+      return NextResponse.json({ error: "Missing or invalid user_id" }, { status: 400 });
+    }
+
+    const userId = identity.user_id;
+
+    if (!feedId || !interactionType) {
       return NextResponse.json(
         { error: "Missing required fields: user_id, feed_id, interaction_type" },
         { status: 400 },
