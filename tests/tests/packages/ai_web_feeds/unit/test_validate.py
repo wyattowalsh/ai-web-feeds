@@ -732,3 +732,76 @@ class TestValidateAdditionalBranches:
         # explicit list also
         res2 = validate_topics({"topics": []})
         assert isinstance(res2, ValidationResult)
+
+    @pytest.mark.asyncio
+    async def test_validate_single_feed_without_url_returns_warning(self):
+        """Early-return when feed URL is missing."""
+        from ai_web_feeds.models import FeedSource
+        from ai_web_feeds.validate import validate_feed
+
+        source = FeedSource(id="no-url", title="No URL Feed", feed=None, topics=["ai"])
+        result = await validate_feed(source)
+        assert result.is_valid is False
+        assert result.warnings == ["No feed URL provided"]
+
+    def test_validate_feeds_raises_when_jsonschema_missing(self, monkeypatch):
+        """ImportError path when jsonschema is unavailable."""
+        import builtins
+
+        real_import = builtins.__import__
+
+        def fake_import(name: str, *args, **kwargs):
+            if name == "jsonschema":
+                raise ImportError("blocked for test")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        with pytest.raises(ImportError, match="jsonschema not installed"):
+            validate_feeds({"sources": []})
+
+    def test_validate_topics_raises_when_jsonschema_missing(self, monkeypatch):
+        """validate_topics ImportError branch."""
+        import builtins
+
+        real_import = builtins.__import__
+
+        def fake_import(name: str, *args, **kwargs):
+            if name == "jsonschema":
+                raise ImportError("blocked for test")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        with pytest.raises(ImportError, match="jsonschema not installed"):
+            validate_topics({"topics": []})
+
+    @pytest.mark.asyncio
+    async def test_validate_feed_maps_successful_url_result(self, mocker):
+        """validate_feed conversion from validate_feed_url dict."""
+        from datetime import datetime
+
+        from ai_web_feeds.models import FeedSource
+        from ai_web_feeds.validate import validate_feed
+
+        source = FeedSource(
+            id="ok-feed",
+            title="OK Feed",
+            feed="https://example.com/feed.xml",
+            topics=["ai"],
+        )
+        payload = {
+            "success": True,
+            "status_code": 200,
+            "response_time_ms": 42,
+            "error_message": None,
+            "entry_count": 3,
+            "validated_at": datetime.now(),
+        }
+        mocker.patch(
+            "ai_web_feeds.validate.validate_feed_url",
+            new_callable=mocker.AsyncMock,
+            return_value=payload,
+        )
+        result = await validate_feed(source)
+        assert result.is_valid is True
+        assert result.is_accessible is True
+        assert result.item_count == 3
