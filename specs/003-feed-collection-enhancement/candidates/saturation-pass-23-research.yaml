@@ -1,0 +1,141 @@
+sources:
+- url: https://export.arxiv.org/rss/cs.MM
+  title: arXiv cs.MM (Multimedia)
+  topics:
+  - research
+  - papers
+  - multimodal
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.CE
+  title: arXiv cs.CE (Computational Engineering)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.GT
+  title: arXiv cs.GT (Game Theory)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.DL
+  title: arXiv cs.DL (Digital Libraries)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.DS
+  title: arXiv cs.DS (Data Structures)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/stat.TH
+  title: arXiv stat.TH (Statistics Theory)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/q-bio.PE
+  title: arXiv q-bio.PE (Populations and Evolution)
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.SI
+  title: arXiv cs.SI (Social Networks)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/physics.data-an
+  title: arXiv physics.data-an (Data Analysis)
+  topics:
+  - research
+  - papers
+  - ai-for-science
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/q-bio.MN
+  title: arXiv q-bio.MN (Molecular Networks)
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/physics.soc-ph
+  title: arXiv physics.soc-ph (Physics and Society)
+  topics:
+  - research
+  - papers
+  - governance
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/unclecode/crawl4ai/releases.atom
+  title: Crawl4AI Releases
+  topics:
+  - open-source
+  - rag
+  - agents
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/simonw/llm/releases.atom
+  title: simonw/llm Releases
+  topics:
+  - open-source
+  - llm
+  - devtools
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/NVIDIA/TensorRT/releases.atom
+  title: TensorRT Releases
+  topics:
+  - open-source
+  - inference
+  - hardware
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/Portkey-AI/gateway/releases.atom
+  title: Portkey Gateway Releases
+  topics:
+  - open-source
+  - llmops
+  - inference
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/lobehub/lobe-chat/releases.atom
+  title: Lobe Chat Releases
+  topics:
+  - open-source
+  - llm
+  - product
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/infiniflow/ragflow/releases.atom
+  title: RAGFlow Releases
+  topics:
+  - open-source
+  - rag
+  - agents
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://github.com/invoke-ai/InvokeAI/releases.atom
+  title: InvokeAI Releases
+  topics:
+  - open-source
+  - genai
+  - diffusion
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://dev.to/feed/tag/ollama
+  title: DEV Community — ollama
+  topics:
+  - community
+  - on-device
+  - llm
+  notes: Extend-prune round 23; HTTP verified 2026-06-25
+- url: https://davidstutz.de/feed
+  title: David Stutz AI Papers
+  topics:
+  - blogs
+  - research
+  - papers
+  notes: Extend-prune round 23; HTTP verified 2026-06-25

@@ -1,0 +1,146 @@
+# Round 23: Olshansk gaps, arXiv categories, OSS releases, community tags, podcasts/video
+sources:
+  # Olshansk RSS mirrors (failed HTTP in round 22 — retry)
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_chanderramesh.xml
+    title: Chander Ramesh (Olshansk mirror)
+    topics: [blogs, industry, llm]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_dagster.xml
+    title: Dagster Blog (Olshansk mirror)
+    topics: [mlops, industry, orchestration]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_hamel.xml
+    title: Hamel Husain Blog (Olshansk mirror)
+    topics: [blogs, evaluation, llm]
+
+  # arXiv category gaps
+  - url: https://export.arxiv.org/rss/cs.CE
+    title: arXiv cs.CE (Computational Engineering)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.DL
+    title: arXiv cs.DL (Digital Libraries)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.DS
+    title: arXiv cs.DS (Data Structures)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.GT
+    title: arXiv cs.GT (Game Theory)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.MM
+    title: arXiv cs.MM (Multimedia)
+    topics: [research, papers, multimodal]
+  - url: https://export.arxiv.org/rss/cs.SI
+    title: arXiv cs.SI (Social Networks)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/stat.TH
+    title: arXiv stat.TH (Statistics Theory)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/q-bio.PE
+    title: arXiv q-bio.PE (Populations and Evolution)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/q-bio.MN
+    title: arXiv q-bio.MN (Molecular Networks)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/physics.data-an
+    title: arXiv physics.data-an (Data Analysis)
+    topics: [research, papers, ai-for-science]
+  - url: https://export.arxiv.org/rss/physics.soc-ph
+    title: arXiv physics.soc-ph (Physics and Society)
+    topics: [research, papers, governance]
+
+  # Agent / OSS GitHub releases
+  - url: https://github.com/infiniflow/ragflow/releases.atom
+    title: RAGFlow Releases
+    topics: [open-source, rag, agents]
+  - url: https://github.com/unclecode/crawl4ai/releases.atom
+    title: Crawl4AI Releases
+    topics: [open-source, rag, agents]
+  - url: https://github.com/Portkey-AI/gateway/releases.atom
+    title: Portkey Gateway Releases
+    topics: [open-source, llmops, inference]
+  - url: https://github.com/simonw/llm/releases.atom
+    title: simonw/llm Releases
+    topics: [open-source, llm, devtools]
+  - url: https://github.com/lobehub/lobe-chat/releases.atom
+    title: Lobe Chat Releases
+    topics: [open-source, llm, product]
+  - url: https://github.com/invoke-ai/InvokeAI/releases.atom
+    title: InvokeAI Releases
+    topics: [open-source, genai, diffusion]
+  - url: https://github.com/jax-ml/mlx/releases.atom
+    title: MLX Releases
+    topics: [open-source, on-device, training]
+  - url: https://github.com/onnx/onnxruntime/releases.atom
+    title: ONNX Runtime Releases
+    topics: [open-source, inference, mlops]
+  - url: https://github.com/NVIDIA/TensorRT/releases.atom
+    title: TensorRT Releases
+    topics: [open-source, inference, hardware]
+  - url: https://github.com/neptune-ai/neptune/releases.atom
+    title: Neptune Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/databricks/mosaicml-composer/releases.atom
+    title: MosaicML Composer Releases
+    topics: [open-source, training, ml]
+
+  # Research blogs & proceedings
+  - url: https://dtransposed.github.io/feed.xml
+    title: RL Paper Review
+    topics: [blogs, research, ml]
+  - url: https://proceedings.mlr.press/feed.xml
+    title: PMLR Proceedings
+    topics: [research, papers, ml]
+  - url: https://blog.promptlayer.com/rss/
+    title: PromptLayer Blog
+    topics: [industry, llmops, evaluation]
+  - url: https://davidstutz.de/feed
+    title: David Stutz AI Papers
+    topics: [blogs, research, papers]
+  - url: https://wandb.ai/fully-connected/rss.xml
+    title: W&B Fully Connected
+    topics: [mlops, industry, education]
+
+  # DEV community tags
+  - url: https://dev.to/feed/tag/langgraph
+    title: DEV Community — langgraph
+    topics: [community, agents, llm]
+  - url: https://dev.to/feed/tag/ollama
+    title: DEV Community — ollama
+    topics: [community, on-device, llm]
+  - url: https://dev.to/feed/tag/claude
+    title: DEV Community — claude
+    topics: [community, llm, industry]
+
+  # Forums / aggregators
+  - url: https://lemmy.world/feeds/c/LocalLLaMA.xml
+    title: Lemmy LocalLLaMA
+    topics: [community, llm, open-source]
+  - url: https://lemmy.ml/feeds/c/artificialintelligence.xml
+    title: Lemmy.ml — artificialintelligence
+    topics: [community, ai, industry]
+  - url: https://lobste.rs/t/generative.rss
+    title: Lobsters — generative
+    topics: [community, genai, research]
+  - url: https://lobste.rs/t/ml.rss
+    title: Lobsters — ml
+    topics: [community, ml, research]
+
+  # Podcasts & video (orphan topic: videos)
+  - url: https://feeds.megaphone.fm/lexfridman
+    title: Lex Fridman Podcast
+    topics: [podcasts, research, ai]
+  - url: https://feeds.simplecast.com/54nAGcIl
+    title: Data Skeptic
+    topics: [podcasts, ml, education]
+  - url: https://changelog.com/practicalai/feed
+    title: Practical AI Podcast
+    topics: [podcasts, ml, industry]
+  - url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyUYHbPc7_7tgwqbZ_w
+    title: Two Minute Papers (YouTube)
+    topics: [videos, research, cv]
+
+  # Policy & newsletters
+  - url: https://www.euractiv.com/section/digital/feed/
+    title: Euractiv Digital
+    topics: [regulation, industry, governance]
+  - url: https://www.deeplearning.ai/the-batch/feed/
+    title: DeepLearning.AI The Batch (native)
+    topics: [newsletters, education, industry]

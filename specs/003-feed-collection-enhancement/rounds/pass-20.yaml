@@ -1,0 +1,125 @@
+# Round 20: embeddings/RAG OSS, knowledge graphs, privacy/ethics arXiv, reasoning OSS, vertical gaps
+sources:
+  - url: https://github.com/weaviate/weaviate/releases.atom
+    title: Weaviate Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/qdrant/qdrant/releases.atom
+    title: Qdrant Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/milvus-io/milvus/releases.atom
+    title: Milvus Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/neo4j-labs/llm-graph-builder/releases.atom
+    title: Neo4j LLM Graph Builder Releases
+    topics: [open-source, knowledge-graphs, rag]
+  - url: https://github.com/assafelovic/gpt-researcher/releases.atom
+    title: GPT Researcher Releases
+    topics: [open-source, agents, synthetic-agents]
+  - url: https://github.com/OpenInterpreter/open-interpreter/releases.atom
+    title: Open Interpreter Releases
+    topics: [open-source, agents, ai-for-code]
+  - url: https://github.com/confident-ai/deepeval/releases.atom
+    title: DeepEval Releases
+    topics: [open-source, evaluation, llm]
+  - url: https://github.com/truera/trulens/releases.atom
+    title: TruLens Releases
+    topics: [open-source, evaluation, llm]
+  - url: https://github.com/Arize-ai/openinference/releases.atom
+    title: OpenInference Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/UKPLab/sentence-transformers/releases.atom
+    title: sentence-transformers Releases
+    topics: [open-source, embeddings, nlp]
+  - url: https://github.com/567-labs/instructor/releases.atom
+    title: instructor Releases
+    topics: [open-source, llm, devtools]
+  - url: https://github.com/kubeflow/kubeflow/releases.atom
+    title: Kubeflow Releases
+    topics: [open-source, mlops, training]
+  - url: https://github.com/whylabs/whylogs/releases.atom
+    title: whylogs Releases
+    topics: [open-source, mlops, monitoring]
+  - url: https://github.com/Netflix/metaflow/releases.atom
+    title: Metaflow Releases
+    topics: [open-source, mlops, training]
+  - url: https://github.com/PrefectHQ/prefect/releases.atom
+    title: Prefect Releases
+    topics: [open-source, mlops, orchestration]
+  - url: https://github.com/dagster-io/dagster/releases.atom
+    title: Dagster Releases
+    topics: [open-source, mlops, orchestration]
+  - url: https://github.com/activeloopai/deeplake/releases.atom
+    title: Deep Lake Releases
+    topics: [open-source, datasets, training]
+  - url: https://github.com/huggingface/optimum/releases.atom
+    title: Optimum Releases
+    topics: [open-source, inference, training]
+  - url: https://github.com/ggerganov/llama.cpp/releases.atom
+    title: llama.cpp Releases
+    topics: [open-source, inference, on-device]
+  - url: https://github.com/deepseek-ai/DeepSeek-R1/releases.atom
+    title: DeepSeek R1 Releases
+    topics: [open-source, llm, reasoning-models]
+  - url: https://github.com/meta-llama/llama/releases.atom
+    title: Llama Releases
+    topics: [open-source, llm, training]
+  - url: https://github.com/mistralai/mistral-inference/releases.atom
+    title: Mistral Inference Releases
+    topics: [open-source, inference, llm]
+  - url: https://github.com/InternLM/InternLM/releases.atom
+    title: InternLM Releases
+    topics: [open-source, llm, training]
+  - url: https://github.com/01-ai/Yi/releases.atom
+    title: Yi Releases
+    topics: [open-source, llm, training]
+  - url: https://dev.to/feed/tag/langchain
+    title: DEV Community — langchain
+    topics: [community, rag, agents]
+  - url: https://dev.to/feed/tag/nlp
+    title: DEV Community — nlp
+    topics: [community, nlp, education]
+  - url: https://dev.to/feed/tag/pytorch
+    title: DEV Community — pytorch
+    topics: [community, training, ml]
+  - url: https://export.arxiv.org/rss/cs.IR
+    title: arXiv cs.IR (Information Retrieval)
+    topics: [research, papers, retrieval]
+  - url: https://export.arxiv.org/rss/cs.CY
+    title: arXiv cs.CY (Computers & Society)
+    topics: [research, papers, ethics]
+  - url: https://export.arxiv.org/rss/cs.CR
+    title: arXiv cs.CR (Cryptography & Security)
+    topics: [research, papers, privacy]
+  - url: https://export.arxiv.org/rss/cs.SD
+    title: arXiv cs.SD (Sound)
+    topics: [research, papers, audio-speech]
+  - url: https://export.arxiv.org/rss/cs.MM
+    title: arXiv cs.MM (Multimedia)
+    topics: [research, papers, multimodal]
+  - url: https://export.arxiv.org/rss/cs.SE
+    title: arXiv cs.SE (Software Engineering)
+    topics: [research, papers, ai-for-code]
+  - url: https://export.arxiv.org/rss/cs.DB
+    title: arXiv cs.DB (Databases)
+    topics: [research, papers, knowledge-graphs]
+  - url: https://export.arxiv.org/rss/cs.DS
+    title: arXiv cs.DS (Data Structures)
+    topics: [research, papers, ml]
+  - url: https://neo4j.com/blog/tag/artificial-intelligence/feed/
+    title: Neo4j AI Blog
+    topics: [industry, knowledge-graphs, rag]
+  - url: https://www.partnershiponai.org/feed/
+    title: Partnership on AI
+    topics: [governance, ethics, industry]
+  - url: https://www.rand.org/topics/artificial-intelligence.xml
+    title: RAND Artificial Intelligence
+    topics: [governance, privacy, regulation]
+  - url: https://roboticsbusinessreview.com/feed/
+    title: Robotics Business Review
+    topics: [robotics, industry, product]
+  - url: https://www.compliance.ai/feed/
+    title: Compliance.ai
+    topics: [legal-ai, governance, industry]
+  - url: https://www.zdnet.com/topic/artificial-intelligence/rss.xml
+    title: ZDNet AI
+    topics: [industry, product, llm]

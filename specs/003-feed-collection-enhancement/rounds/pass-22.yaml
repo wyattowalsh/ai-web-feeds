@@ -1,0 +1,188 @@
+# Round 22: Olshansk mirrors, arXiv gaps, agent/OSS releases, dev.to tags, blogs/community
+sources:
+  # Olshansk RSS mirrors (not yet in catalog)
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ai_first_podcast.xml
+    title: AI First Podcast (Olshansk mirror)
+    topics: [podcasts, industry, product]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_changelog_claude_code.xml
+    title: Anthropic Claude Code Changelog (Olshansk mirror)
+    topics: [industry, llm, devtools]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_chanderramesh.xml
+    title: Chander Ramesh (Olshansk mirror)
+    topics: [blogs, industry, llm]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_dagster.xml
+    title: Dagster Blog (Olshansk mirror)
+    topics: [mlops, industry, orchestration]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_hamel.xml
+    title: Hamel Husain Blog (Olshansk mirror)
+    topics: [blogs, evaluation, llm]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml
+    title: Ollama Blog (Olshansk mirror)
+    topics: [open-source, on-device, llm]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_openai_research.xml
+    title: OpenAI Research (Olshansk mirror)
+    topics: [research, llm, industry]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_weaviate.xml
+    title: Weaviate Blog (Olshansk mirror)
+    topics: [industry, embeddings, rag]
+  - url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cerebras.xml
+    title: Cerebras (Olshansk mirror)
+    topics: [industry, hardware, inference]
+
+  # arXiv category gaps
+  - url: https://export.arxiv.org/rss/cs.DM
+    title: arXiv cs.DM (Discrete Mathematics)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.CG
+    title: arXiv cs.CG (Computational Geometry)
+    topics: [research, papers, cv]
+  - url: https://export.arxiv.org/rss/cs.IT
+    title: arXiv cs.IT (Information Theory)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.MS
+    title: arXiv cs.MS (Mathematical Software)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.NA
+    title: arXiv cs.NA (Numerical Analysis)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.PF
+    title: arXiv cs.PF (Performance)
+    topics: [research, papers, hardware]
+  - url: https://export.arxiv.org/rss/q-bio.CB
+    title: arXiv q-bio.CB (Cell Behavior)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/q-bio.TO
+    title: arXiv q-bio.TO (Tissues and Organs)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/stat.CO
+    title: arXiv stat.CO (Computation)
+    topics: [research, papers, ml]
+
+  # Agent / OSS GitHub releases
+  - url: https://github.com/composiohq/composio/releases.atom
+    title: Composio Releases
+    topics: [open-source, agents, devtools]
+  - url: https://github.com/vercel/ai/releases.atom
+    title: Vercel AI SDK Releases
+    topics: [open-source, llm, devtools]
+  - url: https://github.com/BentoML/BentoML/releases.atom
+    title: BentoML Releases
+    topics: [open-source, inference, mlops]
+  - url: https://github.com/argilla-io/argilla/releases.atom
+    title: Argilla Releases
+    topics: [open-source, evaluation, datasets]
+  - url: https://github.com/cleanlab/cleanlab/releases.atom
+    title: cleanlab Releases
+    topics: [open-source, evaluation, ml]
+  - url: https://github.com/AllenAI/OLMo/releases.atom
+    title: OLMo Releases
+    topics: [open-source, llm, training]
+  - url: https://github.com/mosaicml/llm-foundry/releases.atom
+    title: LLM Foundry Releases
+    topics: [open-source, training, llm]
+  - url: https://github.com/skypilot-org/skypilot/releases.atom
+    title: SkyPilot Releases
+    topics: [open-source, mlops, training]
+  - url: https://github.com/jina-ai/reader/releases.atom
+    title: Jina Reader Releases
+    topics: [open-source, rag, devtools]
+  - url: https://github.com/marqo-ai/marqo/releases.atom
+    title: Marqo Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/helicone/helicone/releases.atom
+    title: Helicone Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/braintrustdata/braintrust-sdk/releases.atom
+    title: Braintrust SDK Releases
+    topics: [open-source, evaluation, llm]
+  - url: https://github.com/langwatch/langwatch/releases.atom
+    title: LangWatch Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/lunary-ai/lunary/releases.atom
+    title: Lunary Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/traceloop/openllmetry/releases.atom
+    title: OpenLLMetry Releases
+    topics: [open-source, mlops, evaluation]
+  - url: https://github.com/comet-ml/opik/releases.atom
+    title: Opik Releases
+    topics: [open-source, evaluation, llm]
+  - url: https://github.com/instructlab/instructlab/releases.atom
+    title: InstructLab Releases
+    topics: [open-source, training, llm]
+  - url: https://github.com/TabbyML/tabby/releases.atom
+    title: Tabby Releases
+    topics: [open-source, ai-for-code, devtools]
+  - url: https://github.com/ray-project/kuberay/releases.atom
+    title: KubeRay Releases
+    topics: [open-source, mlops, orchestration]
+  - url: https://github.com/SeldonIO/MLServer/releases.atom
+    title: MLServer Releases
+    topics: [open-source, inference, mlops]
+  - url: https://github.com/openvinotoolkit/openvino/releases.atom
+    title: OpenVINO Releases
+    topics: [open-source, inference, hardware]
+  - url: https://github.com/fireworks-ai/fireworks-ai/releases.atom
+    title: Fireworks AI Releases
+    topics: [open-source, inference, llm]
+  - url: https://github.com/google/jax/releases.atom
+    title: JAX Releases
+    topics: [open-source, training, ml]
+  - url: https://github.com/google/flax/releases.atom
+    title: Flax Releases
+    topics: [open-source, training, ml]
+
+  # DEV community tags
+  - url: https://dev.to/feed/tag/vectorsearch
+    title: DEV Community — vectorsearch
+    topics: [community, embeddings, rag]
+  - url: https://dev.to/feed/tag/gemini
+    title: DEV Community — gemini
+    topics: [community, llm, industry]
+  - url: https://dev.to/feed/tag/anthropic
+    title: DEV Community — anthropic
+    topics: [community, llm, industry]
+  - url: https://dev.to/feed/tag/finetuning
+    title: DEV Community — finetuning
+    topics: [community, training, llm]
+  - url: https://dev.to/feed/tag/embeddings
+    title: DEV Community — embeddings
+    topics: [community, embeddings, rag]
+  - url: https://dev.to/feed/tag/mistral
+    title: DEV Community — mistral
+    topics: [community, llm, open-source]
+  - url: https://dev.to/feed/tag/copilot
+    title: DEV Community — copilot
+    topics: [community, ai-for-code, devtools]
+
+  # Blogs, news, community
+  - url: https://maginative.com/feed/
+    title: Maginative
+    topics: [industry, product, llm]
+  - url: https://the-decoder.com/feed/
+    title: The Decoder
+    topics: [industry, research, llm]
+  - url: https://www.infoq.com/ai-ml-data-eng/rss/
+    title: InfoQ AI/ML/Data Eng
+    topics: [industry, mlops, education]
+  - url: https://blog.langchain.dev/rss/
+    title: LangChain Blog
+    topics: [industry, agents, llm]
+  - url: https://stability.ai/news/rss
+    title: Stability AI News
+    topics: [industry, genai, product]
+  - url: https://scale.com/blog/rss
+    title: Scale AI Blog
+    topics: [industry, evaluation, product]
+  - url: https://lobste.rs/t/machinelearning.rss
+    title: Lobsters — machinelearning
+    topics: [community, ml, research]
+  - url: https://www.reddit.com/r/LocalLLaMA/hot/.rss
+    title: Reddit r/LocalLLaMA
+    topics: [community, on-device, llm]
+  - url: https://www.reddit.com/r/ClaudeAI/hot/.rss
+    title: Reddit r/ClaudeAI
+    topics: [community, llm, product]
+  - url: https://www.reddit.com/r/OpenAI/hot/.rss
+    title: Reddit r/OpenAI
+    topics: [community, llm, industry]

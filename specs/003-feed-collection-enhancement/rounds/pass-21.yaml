@@ -1,0 +1,146 @@
+# Round 21: RAG/embeddings OSS, MLOps tooling, arXiv gaps, forums, education/news
+sources:
+  - url: https://github.com/lancedb/lancedb/releases.atom
+    title: LanceDB Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/Unstructured-IO/unstructured/releases.atom
+    title: Unstructured Releases
+    topics: [open-source, rag, devtools]
+  - url: https://github.com/docling-project/docling/releases.atom
+    title: Docling Releases
+    topics: [open-source, rag, devtools]
+  - url: https://github.com/modal-labs/modal-client/releases.atom
+    title: Modal Releases
+    topics: [open-source, inference, mlops]
+  - url: https://github.com/nomic-ai/gpt4all/releases.atom
+    title: GPT4All Releases
+    topics: [open-source, on-device, llm]
+  - url: https://github.com/predibase/lorax/releases.atom
+    title: LoRAX Releases
+    topics: [open-source, inference, llm]
+  - url: https://github.com/huggingface/lighteval/releases.atom
+    title: LightEval Releases
+    topics: [open-source, evaluation, llm]
+  - url: https://github.com/huggingface/datatrove/releases.atom
+    title: DataTrove Releases
+    topics: [open-source, datasets, training]
+  - url: https://github.com/google-deepmind/gemma/releases.atom
+    title: Gemma Releases
+    topics: [open-source, llm, training]
+  - url: https://github.com/openai/swarm/releases.atom
+    title: OpenAI Swarm Releases
+    topics: [open-source, agents, llm]
+  - url: https://github.com/run-llama/llama_deploy/releases.atom
+    title: LlamaDeploy Releases
+    topics: [open-source, agents, mlops]
+  - url: https://github.com/run-llama/llama_parse/releases.atom
+    title: LlamaParse Releases
+    topics: [open-source, rag, devtools]
+  - url: https://github.com/google-gemini/generative-ai-python/releases.atom
+    title: Gemini SDK Releases
+    topics: [open-source, llm, devtools]
+  - url: https://github.com/google-gemini/cookbook/releases.atom
+    title: Gemini Cookbook Releases
+    topics: [open-source, llm, education]
+  - url: https://github.com/TransformerOptimus/SuperAGI/releases.atom
+    title: SuperAGI Releases
+    topics: [open-source, agents, synthetic-agents]
+  - url: https://github.com/paradedb/paradedb/releases.atom
+    title: ParadeDB Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/timescale/pgai/releases.atom
+    title: pgai Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/tensorchord/vechord/releases.atom
+    title: Vechord Releases
+    topics: [open-source, embeddings, rag]
+  - url: https://github.com/mindsdb/mindsdb/releases.atom
+    title: MindsDB Releases
+    topics: [open-source, ml, devtools]
+  - url: https://github.com/streamlit/streamlit/releases.atom
+    title: Streamlit Releases
+    topics: [open-source, devtools, product]
+  - url: https://github.com/Chainlit/chainlit/releases.atom
+    title: Chainlit Releases
+    topics: [open-source, agents, devtools]
+  - url: https://github.com/flyteorg/flyte/releases.atom
+    title: Flyte Releases
+    topics: [open-source, mlops, orchestration]
+  - url: https://github.com/kedro-org/kedro/releases.atom
+    title: Kedro Releases
+    topics: [open-source, mlops, training]
+  - url: https://github.com/iterative/dvc/releases.atom
+    title: DVC Releases
+    topics: [open-source, mlops, datasets]
+  - url: https://dev.to/feed/tag/vectorsearch
+    title: DEV Community — vectorsearch
+    topics: [community, embeddings, rag]
+  - url: https://dev.to/feed/tag/huggingface
+    title: DEV Community — huggingface
+    topics: [community, open-source, training]
+  - url: https://export.arxiv.org/rss/cs.AR
+    title: arXiv cs.AR (Hardware Architecture)
+    topics: [research, papers, hardware]
+  - url: https://export.arxiv.org/rss/cs.ET
+    title: arXiv cs.ET (Emerging Technologies)
+    topics: [research, papers, hardware]
+  - url: https://export.arxiv.org/rss/cs.PL
+    title: arXiv cs.PL (Programming Languages)
+    topics: [research, papers, ai-for-code]
+  - url: https://export.arxiv.org/rss/cs.GL
+    title: arXiv cs.GL (General Literature)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.OH
+    title: arXiv cs.OH (Other Computer Science)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.SC
+    title: arXiv cs.SC (Symbolic Computation)
+    topics: [research, papers, ml]
+  - url: https://export.arxiv.org/rss/cs.SY
+    title: arXiv cs.SY (Systems & Control)
+    topics: [research, papers, robotics]
+  - url: https://export.arxiv.org/rss/q-bio.NC
+    title: arXiv q-bio.NC (Neurons & Cognition)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/q-bio.BM
+    title: arXiv q-bio.BM (Biomolecules)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/q-bio.GN
+    title: arXiv q-bio.GN (Genomics)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/q-bio.QM
+    title: arXiv q-bio.QM (Quantitative Methods)
+    topics: [research, papers, healthcare-ai]
+  - url: https://export.arxiv.org/rss/eess.IV
+    title: arXiv eess.IV (Image & Video Processing)
+    topics: [research, papers, cv]
+  - url: https://export.arxiv.org/rss/eess.SP
+    title: arXiv eess.SP (Signal Processing)
+    topics: [research, papers, audio-speech]
+  - url: https://www.marktechpost.com/feed/
+    title: MarkTechPost
+    topics: [newsletters, industry, research]
+  - url: https://www.marketingaiinstitute.com/blog/rss.xml
+    title: Marketing AI Institute
+    topics: [industry, product, education]
+  - url: https://www.artificialintelligence-news.com/feed/
+    title: AI News
+    topics: [industry, product, llm]
+  - url: https://www.analyticsvidhya.com/feed/
+    title: Analytics Vidhya
+    topics: [education, ml, training]
+  - url: https://machinelearningmastery.com/feed/
+    title: Machine Learning Mastery
+    topics: [education, training, ml]
+  - url: https://aisnakeoil.substack.com/feed
+    title: AI Snake Oil
+    topics: [newsletters, research, ethics]
+  - url: https://lexfridman.com/feed/podcast/
+    title: Lex Fridman Podcast
+    topics: [podcasts, research, industry]
+  - url: https://lemmy.ml/feeds/c/machinelearning.xml
+    title: Lemmy.ml — machinelearning
+    topics: [community, ml]
+  - url: https://www.reddit.com/r/LocalLLaMA/hot/.rss
+    title: Reddit r/LocalLLaMA
+    topics: [forum, community, on-device]
