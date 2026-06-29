@@ -1,0 +1,281 @@
+sources:
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml
+  title: Ollama Blog (Olshansk mirror)
+  topics:
+  - open-source
+  - on-device
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_changelog_claude_code.xml
+  title: Anthropic Claude Code Changelog (Olshansk mirror)
+  topics:
+  - industry
+  - llm
+  - devtools
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_openai_research.xml
+  title: OpenAI Research (Olshansk mirror)
+  topics:
+  - research
+  - llm
+  - industry
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_weaviate.xml
+  title: Weaviate Blog (Olshansk mirror)
+  topics:
+  - industry
+  - embeddings
+  - rag
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ai_first_podcast.xml
+  title: AI First Podcast (Olshansk mirror)
+  topics:
+  - podcasts
+  - industry
+  - product
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.CG
+  title: arXiv cs.CG (Computational Geometry)
+  topics:
+  - research
+  - papers
+  - cv
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.DM
+  title: arXiv cs.DM (Discrete Mathematics)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/q-bio.CB
+  title: arXiv q-bio.CB (Cell Behavior)
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.MS
+  title: arXiv cs.MS (Mathematical Software)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.PF
+  title: arXiv cs.PF (Performance)
+  topics:
+  - research
+  - papers
+  - hardware
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/q-bio.TO
+  title: arXiv q-bio.TO (Tissues and Organs)
+  topics:
+  - research
+  - papers
+  - healthcare-ai
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.IT
+  title: arXiv cs.IT (Information Theory)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/cs.NA
+  title: arXiv cs.NA (Numerical Analysis)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://export.arxiv.org/rss/stat.CO
+  title: arXiv stat.CO (Computation)
+  topics:
+  - research
+  - papers
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/composiohq/composio/releases.atom
+  title: Composio Releases
+  topics:
+  - open-source
+  - agents
+  - devtools
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/jina-ai/reader/releases.atom
+  title: Jina Reader Releases
+  topics:
+  - open-source
+  - rag
+  - devtools
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/BentoML/BentoML/releases.atom
+  title: BentoML Releases
+  topics:
+  - open-source
+  - inference
+  - mlops
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/skypilot-org/skypilot/releases.atom
+  title: SkyPilot Releases
+  topics:
+  - open-source
+  - mlops
+  - training
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/cleanlab/cleanlab/releases.atom
+  title: cleanlab Releases
+  topics:
+  - open-source
+  - evaluation
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/argilla-io/argilla/releases.atom
+  title: Argilla Releases
+  topics:
+  - open-source
+  - evaluation
+  - datasets
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/mosaicml/llm-foundry/releases.atom
+  title: LLM Foundry Releases
+  topics:
+  - open-source
+  - training
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/AllenAI/OLMo/releases.atom
+  title: OLMo Releases
+  topics:
+  - open-source
+  - llm
+  - training
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/marqo-ai/marqo/releases.atom
+  title: Marqo Releases
+  topics:
+  - open-source
+  - embeddings
+  - rag
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/helicone/helicone/releases.atom
+  title: Helicone Releases
+  topics:
+  - open-source
+  - mlops
+  - evaluation
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/traceloop/openllmetry/releases.atom
+  title: OpenLLMetry Releases
+  topics:
+  - open-source
+  - mlops
+  - evaluation
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/TabbyML/tabby/releases.atom
+  title: Tabby Releases
+  topics:
+  - open-source
+  - ai-for-code
+  - devtools
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/braintrustdata/braintrust-sdk/releases.atom
+  title: Braintrust SDK Releases
+  topics:
+  - open-source
+  - evaluation
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/comet-ml/opik/releases.atom
+  title: Opik Releases
+  topics:
+  - open-source
+  - evaluation
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/ray-project/kuberay/releases.atom
+  title: KubeRay Releases
+  topics:
+  - open-source
+  - mlops
+  - orchestration
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/langwatch/langwatch/releases.atom
+  title: LangWatch Releases
+  topics:
+  - open-source
+  - mlops
+  - evaluation
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/SeldonIO/MLServer/releases.atom
+  title: MLServer Releases
+  topics:
+  - open-source
+  - inference
+  - mlops
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/openvinotoolkit/openvino/releases.atom
+  title: OpenVINO Releases
+  topics:
+  - open-source
+  - inference
+  - hardware
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/vercel/ai/releases.atom
+  title: Vercel AI SDK Releases
+  topics:
+  - open-source
+  - llm
+  - devtools
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/instructlab/instructlab/releases.atom
+  title: InstructLab Releases
+  topics:
+  - open-source
+  - training
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://dev.to/feed/tag/anthropic
+  title: DEV Community — anthropic
+  topics:
+  - community
+  - llm
+  - industry
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://dev.to/feed/tag/mistral
+  title: DEV Community — mistral
+  topics:
+  - community
+  - llm
+  - open-source
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://github.com/google/jax/releases.atom
+  title: JAX Releases
+  topics:
+  - open-source
+  - training
+  - ml
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://dev.to/feed/tag/finetuning
+  title: DEV Community — finetuning
+  topics:
+  - community
+  - training
+  - llm
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://www.reddit.com/r/OpenAI/hot/.rss
+  title: Reddit r/OpenAI
+  topics:
+  - community
+  - llm
+  - industry
+  notes: Extend-prune round 22; HTTP verified 2026-06-25
+- url: https://dev.to/feed/tag/embeddings
+  title: DEV Community — embeddings
+  topics:
+  - community
+  - embeddings
+  - rag
+  notes: Extend-prune round 22; HTTP verified 2026-06-25

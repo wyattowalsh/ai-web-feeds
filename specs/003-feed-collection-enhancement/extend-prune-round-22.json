@@ -1,0 +1,23 @@
+{
+  "round": 22,
+  "catalog_before": 582,
+  "catalog_after": 620,
+  "net": 38,
+  "discovery": {
+    "round": 22,
+    "candidate_file": "/Users/ww/dev/projects/ai-web-feeds/specs/003-feed-collection-enhancement/candidates/saturation-pass-22-research.yaml",
+    "verified": 40,
+    "seeds": 59,
+    "skip_existing": 1,
+    "skip_relevance": 10,
+    "fail_http": 8,
+    "ok": 40
+  },
+  "integrated": 40,
+  "http_fix": {
+    "fixed": 1,
+    "pruned": 0,
+    "remaining": 620
+  },
+  "existing_urls_before": 582
+}

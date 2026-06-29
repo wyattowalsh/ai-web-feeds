@@ -7,9 +7,12 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const GETHandler = async (request: Request) => {
-  const { user } = await withBetterAuthAdminGuard(request);
-  if (!user) {
+  const guard = await withBetterAuthAdminGuard(request);
+  if (guard.status === "unauthorized") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (guard.status === "forbidden") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const searchParams = new URL(request.url).searchParams;

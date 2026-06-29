@@ -230,6 +230,14 @@ DATABASE_URL=postgresql://user:pass@host.neon.tech/db?sslmode=require  # pragma:
 # LOGFIRE_SERVICE_NAME=ai-web-feeds
 ```
 
+## Rate limiting on serverless
+
+`POST /api/telemetry/events` applies a per-IP in-memory limiter (`apps/web/lib/server/rate-limit.ts`). Buckets live in a process-local `Map`, so on serverless platforms each instance enforces its own window. This is sufficient for abuse mitigation at the edge of a single replica but is **not** a globally consistent quota across all deployments.
+
+For strict cross-instance limits, add a shared store (for example Vercel KV or Redis) in front of the ingest route. Until then, treat rate limits as best-effort and monitor anomalous ingest volume via `usage_events` and `api_request_logs`.
+
+Admin API authorization is enforced in route handlers via `withBetterAuthAdminGuard` (role must be `admin`). Middleware only checks for the presence of a session cookie on `/api/admin/*` and `/admin/*` pages as defense in depth.
+
 ## Retention and operations
 
 | Store                | Recommended retention                        | Notes                                                                            |

@@ -488,3 +488,9 @@ $RECYCLE.BIN/
 !apps/web/lib/
 !apps/web/lib/**
 .gstack/
+
+# Harness session artifacts (regenerated under SCRATCH)
+/authoritative.patch
+/CHANGED_FILES.authoritative.json
+/CHANGED_FILES.authoritative.txt
+goals/comprehensive-ai-feed-catalog/scratch/

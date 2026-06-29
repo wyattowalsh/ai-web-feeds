@@ -1,5 +1,11 @@
 import "server-only";
 
+/**
+ * In-memory rate limit buckets are scoped to a single Node.js process.
+ * On serverless hosts each instance maintains its own map, so limits are best-effort
+ * rather than globally enforced across all replicas.
+ */
+
 export type RateLimitResult = {
   allowed: boolean;
   retryAfterSeconds?: number;

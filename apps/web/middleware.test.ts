@@ -15,6 +15,8 @@ vi.mock("fumadocs-core/negotiation", () => ({
 import { NextRequest } from "next/server";
 import { middleware } from "./middleware";
 
+// Middleware checks session cookie presence only; role enforcement is deferred to
+// withBetterAuthAdminGuard in /api/admin/* route handlers.
 describe("middleware admin auth", () => {
   beforeEach(() => {
     isMarkdownPreferredMock.mockReset();
@@ -34,6 +36,26 @@ describe("middleware admin auth", () => {
 
   it("allows /admin/login for unauthenticated users", async () => {
     const response = await middleware(new NextRequest("http://127.0.0.1:3000/admin/login"));
+
+    expect(response?.status).toBe(200);
+  });
+  it("returns 401 JSON for unauthenticated admin API requests", async () => {
+    const response = await middleware(
+      new NextRequest("http://127.0.0.1:3000/api/admin/telemetry/summary"),
+    );
+
+    expect(response?.status).toBe(401);
+    await expect(response?.json()).resolves.toEqual({ error: "Unauthorized" });
+  });
+
+  it("allows admin API requests when the session cookie is present", async () => {
+    const response = await middleware(
+      new NextRequest("http://127.0.0.1:3000/api/admin/telemetry/summary", {
+        headers: {
+          cookie: "aiwf_session_token=test-token",
+        },
+      }),
+    );
 
     expect(response?.status).toBe(200);
   });

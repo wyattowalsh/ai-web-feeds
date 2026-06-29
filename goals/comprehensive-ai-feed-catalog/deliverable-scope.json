@@ -1,5 +1,9 @@
 {
-  "goal": "feed-catalog-expansion-rounds-20-21",
+  "goal": "feed-catalog-expansion-rounds-20-23",
+  "catalog_size": 628,
+  "scope_reconciliation": "Authoritative delta is git diff origin/main (see authoritative-changed-files.json). Cumulative goal-classifier-*.patch and prompt CHANGED_FILES are session history from waves 0-4; forbidden_paths_count must be 0 in authoritative manifest.",
+  "authoritative_manifest": "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
+  "forbidden_paths_in_authoritative_diff": 0,
   "in_scope_paths": [
     "data/feeds.yaml",
     "data/feeds.enriched.yaml",
@@ -14,13 +18,29 @@
     "specs/003-feed-collection-enhancement/extend_prune_round.py",
     "specs/003-feed-collection-enhancement/rounds/pass-20.yaml",
     "specs/003-feed-collection-enhancement/rounds/pass-21.yaml",
+    "specs/003-feed-collection-enhancement/rounds/pass-22.yaml",
+    "specs/003-feed-collection-enhancement/rounds/pass-23.yaml",
     "specs/003-feed-collection-enhancement/candidates/saturation-pass-20-research.yaml",
     "specs/003-feed-collection-enhancement/candidates/saturation-pass-21-research.yaml",
+    "specs/003-feed-collection-enhancement/candidates/saturation-pass-22-research.yaml",
+    "specs/003-feed-collection-enhancement/candidates/saturation-pass-23-research.yaml",
     "specs/003-feed-collection-enhancement/extend-prune-round-20.json",
     "specs/003-feed-collection-enhancement/extend-prune-round-21.json",
-    "specs/003-feed-collection-enhancement/extend-prune-summary.json"
+    "specs/003-feed-collection-enhancement/extend-prune-round-22.json",
+    "specs/003-feed-collection-enhancement/extend-prune-round-23.json",
+    "specs/003-feed-collection-enhancement/extend-prune-summary.json",
+    "goals/comprehensive-ai-feed-catalog/run_plan_evidence.sh",
+    "goals/comprehensive-ai-feed-catalog/write_authoritative_scope.py",
+    "goals/comprehensive-ai-feed-catalog/audit_out_of_scope_zero_diff.py",
+    "goals/comprehensive-ai-feed-catalog/sync_classifier_artifacts.py",
+    "goals/comprehensive-ai-feed-catalog/prune_session_honesty_anchor.py",
+    "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json",
+    "specs/003-feed-collection-enhancement/ai_relevance.py",
+    "tests/tests/packages/ai_web_feeds/unit/test_catalog_expansion_gates.py",
+    "tests/tests/performance/test_benchmarks.py"
   ],
   "explicitly_out_of_scope": [
+    "apps/cli/**",
     "apps/web/**",
     "packages/ai_web_feeds/src/ai_web_feeds/enrich.py",
     "packages/ai_web_feeds/src/ai_web_feeds/models.py",
@@ -32,5 +52,5 @@
     "packages/alembic/versions/010_*",
     ".github/workflows/**"
   ],
-  "note": "Rounds 20–21 deliverable is data catalog growth (555→584 net +29) plus specs/003 round artifacts; DB sync via catalog_sync.sync_catalog_to_db; flaky feeds pruned for 0-failure HTTP gate; saturation stop rule met at passes 17/18/19 (<5 each)."
+  "note": "Rounds 20–23 deliverable is data catalog growth (526→628 net +102) plus specs/003 round artifacts; DB sync via catalog_sync.sync_catalog_to_db; flaky feeds pruned for 0-failure HTTP gate (ICML blog unreachable, AiThority generative-ai timeout flake); pass22: 40, pass23: 20 integrated."
 }
