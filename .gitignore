@@ -494,3 +494,6 @@ $RECYCLE.BIN/
 /CHANGED_FILES.authoritative.json
 /CHANGED_FILES.authoritative.txt
 goals/comprehensive-ai-feed-catalog/scratch/
+
+# CLI visualize default output (generated at repo root)
+/taxonomy.mermaid
