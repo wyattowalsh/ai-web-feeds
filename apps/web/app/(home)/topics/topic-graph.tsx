@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   GraphVisualizer,
+  getDefaultGraphControls,
   type GraphControls,
   type LayoutType,
 } from "@/components/graph-visualizer";
@@ -15,10 +16,12 @@ export function TopicGraph({
 }: {
   data: TopicRecord[];
   visualizer: typeof GraphVisualizer;
-  initialControls: GraphControls;
+  initialControls?: GraphControls;
 }) {
   const [layout, setLayout] = useState<LayoutType>("force");
-  const [graphControls, setGraphControls] = useState<GraphControls>(initialControls);
+  const [graphControls, setGraphControls] = useState<GraphControls>(
+    initialControls ?? getDefaultGraphControls("topics"),
+  );
 
   return (
     <Visualizer

@@ -32,7 +32,8 @@ import { assertDbConfigured, DatabaseNotConfiguredError } from "@/lib/server/db"
 import { resetRateLimitForTests } from "@/lib/server/rate-limit";
 import { resetTelemetryStoreForTests } from "@/lib/server/telemetry-store";
 import { USAGE_EVENT_SCHEMA_VERSION } from "@/lib/server/usage-events";
-import { MAX_TELEMETRY_BODY_BYTES, POST } from "./route";
+import { MAX_TELEMETRY_BODY_BYTES } from "./limits";
+import { POST } from "./route";
 
 function createPostRequest(body: unknown): Request {
   return new Request("http://localhost/api/telemetry/events", {

@@ -5,13 +5,12 @@ import { type EventSurface, type UsageEventInput } from "@/lib/server/usage-even
 import { checkRateLimit, getClientRateLimitKey } from "@/lib/server/rate-limit";
 import { resolveUserIdentity } from "@/lib/user-auth";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
+import { MAX_TELEMETRY_BODY_BYTES } from "./limits";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const MAX_BATCH_SIZE = 25;
-/** keepalive analytics posts are small; reject larger bodies before parse or persist. */
-export const MAX_TELEMETRY_BODY_BYTES = 64 * 1024;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 60;
 
