@@ -577,7 +577,7 @@ class TestCLICommandsWithMocks:
         stats_app = _stats_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mock_db:
             inst = MagicMock()
             # Return plain objects the command can iterate
             src = MagicMock()
@@ -595,7 +595,7 @@ class TestCLICommandsWithMocks:
         opml_app = _opml_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.opml.DatabaseManager") as mock_db:
             inst = MagicMock()
             src = MagicMock()
             src.id = "s1"
@@ -620,7 +620,7 @@ class TestCLICommandsWithMocks:
         search_app = _search_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.search.DatabaseManager") as mock_db:
             inst = MagicMock()
             inst.search_feeds.return_value = []
             inst.autocomplete_search.return_value = {"feeds": [], "topics": []}
@@ -633,7 +633,7 @@ class TestCLICommandsWithMocks:
         rec_app = _recommend_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.recommend.DatabaseManager") as mock_db:
             inst = MagicMock()
             inst.get_recommendations.return_value = []
             inst.get_user_recommendations.return_value = []
@@ -647,7 +647,7 @@ class TestCLICommandsWithMocks:
 
         runner = CliRunner()
         with (
-            patch("ai_web_feeds.storage.DatabaseManager") as mock_db,
+            patch("ai_web_feeds.cli.commands.analytics.DatabaseManager") as mock_db,
             patch("ai_web_feeds.cli.commands.analytics.calculate_summary_metrics") as mock_calc,
         ):
             inst = MagicMock()
@@ -668,7 +668,7 @@ class TestCLICommandsWithMocks:
         corpus_app = _corpus_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.corpus.DatabaseManager") as mock_db:
             inst = MagicMock()
             inst.export_articles_corpus.return_value = {
                 "metadata": {"article_count": 0, "feed_count": 0, "latest_published_at": None}
@@ -683,7 +683,7 @@ class TestCLICommandsWithMocks:
         mon_app = _monitor_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
+        with patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mock_db:
             inst = MagicMock()
             inst.follow_source.return_value = MagicMock(followed_at="now")
             mock_db.return_value = inst
@@ -696,7 +696,7 @@ class TestCLICommandsWithMocks:
 
         runner = CliRunner()
         with (
-            patch("ai_web_feeds.storage.DatabaseManager") as mock_db,
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mock_db,
             patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
         ):
             inst = MagicMock()
@@ -1680,7 +1680,7 @@ class TestDeepCLIMoreCommands:
         st_app = _stats_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb:
+        with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mdb:
             inst = MagicMock()
             src = MagicMock()
             src.id = "s1"
@@ -1698,7 +1698,7 @@ class TestDeepCLIMoreCommands:
 
         runner = CliRunner()
         out = tmp_path / "c.json"
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb:
+        with patch("ai_web_feeds.cli.commands.corpus.DatabaseManager") as mdb:
             inst = MagicMock()
             inst.export_articles_corpus.return_value = {"metadata": {"article_count": 5}}
             mdb.return_value = inst
@@ -1746,7 +1746,7 @@ class TestDeepCLIMoreCommands:
         runner = CliRunner()
         out_c = tmp_path / "cat.opml"
         out_f = tmp_path / "filt.opml"
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb:
+        with patch("ai_web_feeds.cli.commands.opml.DatabaseManager") as mdb:
             inst = MagicMock()
             fs = MagicMock()
             fs.id = "f1"
@@ -1787,7 +1787,7 @@ class TestDeepCLIMoreCommands:
         runner = CliRunner()
         out = tmp_path / "r.json"
         with (
-            patch("ai_web_feeds.storage.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.corpus.DatabaseManager") as mdb,
             patch("ai_web_feeds.cli.commands.corpus.FeedPoller") as mpoller,
             patch("ai_web_feeds.cli.commands.corpus.Settings"),
         ):
@@ -1878,7 +1878,7 @@ class TestDeepCLIMoreCommands:
 
         runner = CliRunner()
         with (
-            patch("ai_web_feeds.storage.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
             patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
         ):
             inst = MagicMock()
