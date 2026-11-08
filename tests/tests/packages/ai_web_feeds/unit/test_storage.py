@@ -9,6 +9,7 @@ import pytest
 from ai_web_feeds.models import (
     AnalyticsSnapshot,
     ArticleEntry,
+    DeliveryMethod,
     EmailDigest,
     FeedAnalytics,
     FeedEnrichmentData,
@@ -17,7 +18,6 @@ from ai_web_feeds.models import (
     FeedSource,
     FeedValidationResult,
     Notification,
-    DeliveryMethod,
     NotificationFrequency,
     NotificationPreference,
     NotificationType,
@@ -214,10 +214,6 @@ class TestFetchLogOperations:
         db.add_feed_source(sample_feed_source)
 
         # Add multiple logs
-        from datetime import UTC
-
-        from ai_web_feeds.models import FeedFetchLog
-
         for i in range(3):
             log = FeedFetchLog(
                 feed_source_id=sample_feed_source.id,
@@ -579,7 +575,7 @@ class TestAnalyticsOperations:
         assert saved is not None
 
         latest = db.get_latest_analytics_snapshot()
-        assert latest is not None or True  # may return based on date
+        assert latest is None or isinstance(latest, AnalyticsSnapshot)
 
     def test_get_health_summary_and_analytics_summary(self, temp_db_path, sample_feed_source):
         """Test summary methods."""
@@ -650,7 +646,7 @@ class TestArticleAdditionalOps:
         db.add_article(entry)
 
         found = db.get_article_by_identity(sample_feed_source.id, "gid", "https://ex.com/id")
-        assert found is not None or True  # depending
+        assert found is None or isinstance(found, ArticleEntry)
 
 
 @pytest.mark.unit
@@ -736,8 +732,7 @@ class TestPollJobAndNotificationOps:
         assert created is not None
 
         got = db.get_email_digest(created.id) if hasattr(created, "id") and created.id else None
-        # tolerate
-        assert got is not None or True
+        assert got is None or isinstance(got, EmailDigest)
 
         user_ds = db.get_user_digests("u1")
         assert isinstance(user_ds, list)
@@ -804,7 +799,7 @@ class TestSearchAndRecsInStorage:
             pass
 
         try:
-            ac = db.autocomplete_search("te")
+            ac = db.autocomplete_search("test")
             assert ac is not None
         except Exception:
             pass
@@ -825,7 +820,7 @@ class TestSearchAndRecsInStorage:
 
         try:
             searches = db.get_user_saved_searches("u1")
-            assert searches is not None or True
+            assert searches is not None
         except Exception:
             pass
 
@@ -859,7 +854,7 @@ class TestDatabaseManagerModuleFunctions:
         # get_session may require setup
         try:
             sess = get_session()
-            assert sess is not None or True
+            assert sess is not None
         except Exception:
             pass
 
@@ -883,8 +878,16 @@ class TestDatabaseManagerModuleFunctions:
         storage.save_user_search("ux", "sn", "sq", {"t": ["a"]})
         storage.get_user_saved_searches("ux")
         from datetime import UTC, datetime, timedelta
+
         from ai_web_feeds.models import EmailDigest
-        ed = EmailDigest(user_id="ux", email="e@e", schedule_type="daily", schedule_cron="*", next_send_at=datetime.now(UTC) + timedelta(1))
+
+        ed = EmailDigest(
+            user_id="ux",
+            email="e@e",
+            schedule_type="daily",
+            schedule_cron="*",
+            next_send_at=datetime.now(UTC) + timedelta(1),
+        )
         ce = storage.create_email_digest(ed)
         storage.get_email_digest(ce.id)
         storage.get_user_digests("ux")
@@ -894,13 +897,14 @@ class TestDatabaseManagerModuleFunctions:
 
 def test_storage_edge_branches_more(tmp_path, sample_feed_source):
     from ai_web_feeds.storage import DatabaseManager
+
     dbp = tmp_path / "e.db"
     storage = DatabaseManager(database_url=f"sqlite:///{dbp}")
     storage.create_db_and_tables()
     # empty cases
     assert storage.get_feed_source("no") is None
     assert storage.search_feeds("none") == []
-    # add 
+    # add
     storage.add_feed_source(sample_feed_source)
     assert len(storage.get_all_feed_sources()) >= 1
     storage.get_all_articles()

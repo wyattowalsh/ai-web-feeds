@@ -119,9 +119,28 @@ class TestSchedulerManagerNLPIntegration:
         return SchedulerManager(mock_db, mock_settings)
 
     def test_scheduler_manager_has_nlp_scheduler(self, scheduler):
-        """SchedulerManager should have an nlp_scheduler attribute."""
+        """SchedulerManager should expose the NLPScheduler its module binds.
+
+        The test module and SchedulerManager can each load
+        ``ai_web_feeds.nlp.scheduler`` as a distinct module object. Compare
+        against the class on the package object that defined this manager,
+        which is the same import the property performs.
+        """
+        import importlib
+        import sys
+
         assert hasattr(scheduler, "nlp_scheduler")
-        assert isinstance(scheduler.nlp_scheduler, NLPScheduler)
+        nlp = scheduler.nlp_scheduler
+
+        manager_module = sys.modules[type(scheduler).__module__]
+        nlp_module = importlib.import_module(
+            ".nlp.scheduler",
+            package=manager_module.__package__,
+        )
+        bound = nlp_module.NLPScheduler
+        assert bound.__name__ == "NLPScheduler"
+        assert bound.__module__ == f"{manager_module.__package__}.nlp.scheduler"
+        assert isinstance(nlp, bound)
 
     def test_start_registers_nlp_jobs(self, scheduler):
         """SchedulerManager.start() should register NLP jobs."""
@@ -143,8 +162,10 @@ class TestSchedulerManagerNLPIntegration:
                     # (actual call depends on running state)
                     assert mock_nlp_shutdown is not None
 
+
 def test_scheduler_more_jobs_and_error():
     from ai_web_feeds.nlp.scheduler import NLPScheduler
+
     sch = NLPScheduler()
     # exercise job run methods via direct for coverage
     try:

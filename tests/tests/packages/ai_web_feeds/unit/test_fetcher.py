@@ -357,7 +357,7 @@ class TestAdditionalModuleCoverage:
     """Exercise other modules for coverage without full logic testing (mocks, inits)."""
 
     def test_import_and_basic_polling(self, mocker):
-        import ai_web_feeds.polling as polling
+        from ai_web_feeds import polling
 
         assert polling is not None
         # avoid real work
@@ -385,15 +385,15 @@ class TestAdditionalModuleCoverage:
         assert rec is not None
 
     def test_import_trending_notifications_digests(self):
-        import ai_web_feeds.trending as tr
-        import ai_web_feeds.notifications as notif
         import ai_web_feeds.digests as digs
         import ai_web_feeds.embeddings as emb
+        import ai_web_feeds.notifications as notif
+        import ai_web_feeds.trending as tr
 
         for m in (tr, notif, digs, emb):
             assert m is not None
 
     def test_import_embeddings_and_load_export_more(self):
-        from ai_web_feeds import load, export
+        from ai_web_feeds import export, load
 
         assert load is not None and export is not None

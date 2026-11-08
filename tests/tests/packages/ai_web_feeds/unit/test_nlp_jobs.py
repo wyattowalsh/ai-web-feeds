@@ -4,11 +4,10 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from sqlmodel import Session
-
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import ArticleEntry
 from ai_web_feeds.storage import DatabaseManager
+from sqlmodel import Session
 
 
 @pytest.mark.unit
@@ -16,8 +15,10 @@ class TestEntityBatchJob:
     """Tests for EntityBatchJob."""
 
     def test_init_default(self):
-        with patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor") as mock_ext, \
-             patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager") as mock_db:
+        with (
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor") as mock_ext,
+            patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager") as mock_db,
+        ):
             mock_ext.return_value = Mock()
             mock_db.return_value = Mock()
             from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
@@ -28,8 +29,10 @@ class TestEntityBatchJob:
 
     def test_init_with_settings(self):
         settings = Settings()
-        with patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"), \
-             patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"),
+            patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
 
             job = EntityBatchJob(settings=settings)
@@ -103,8 +106,10 @@ class TestEntityBatchJob:
         mock_session.commit.assert_called()
 
     def test_load_existing_entities(self):
-        with patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"), \
-             patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"),
+            patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
 
             job = EntityBatchJob()
@@ -114,8 +119,10 @@ class TestEntityBatchJob:
             assert isinstance(ents, dict)
 
     def test_extract_context(self):
-        with patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"), \
-             patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityExtractor"),
+            patch("ai_web_feeds.nlp.jobs.entity_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
 
             job = EntityBatchJob()
@@ -129,8 +136,10 @@ class TestSentimentBatchJob:
     """Tests for SentimentBatchJob."""
 
     def test_init(self):
-        with patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentAnalyzer"), \
-             patch("ai_web_feeds.nlp.jobs.sentiment_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentAnalyzer"),
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
 
             job = SentimentBatchJob()
@@ -190,8 +199,10 @@ class TestSentimentBatchJob:
         mock_session.commit.assert_called()
 
     def test_stats_increment(self):
-        with patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentAnalyzer"), \
-             patch("ai_web_feeds.nlp.jobs.sentiment_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentAnalyzer"),
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
 
             job = SentimentBatchJob()
@@ -203,8 +214,10 @@ class TestTopicModelingJob:
     """Tests for TopicModelingJob."""
 
     def test_init(self):
-        with patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler"), \
-             patch("ai_web_feeds.nlp.jobs.topic_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler"),
+            patch("ai_web_feeds.nlp.jobs.topic_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 
             job = TopicModelingJob()
@@ -226,8 +239,16 @@ class TestTopicModelingJob:
         from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 
         job = TopicModelingJob(db_manager=mock_db)
-        stats = job.run(min_articles=1)
-        assert stats["topics_processed"] == 0 or "subtopics_discovered" in stats
+        stats = job.run()
+        assert stats == {
+            "processed": 0,
+            "skipped": 0,
+            "topics_processed": 0,
+            "subtopics_discovered": 0,
+            "articles_analyzed": 0,
+            "failed": 0,
+            "duration_seconds": 0.0,
+        }
 
     @patch("ai_web_feeds.nlp.jobs.topic_job.DatabaseManager")
     @patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler")
@@ -238,7 +259,9 @@ class TestTopicModelingJob:
         article.id = "t1"
         article.title = "AI News"
         article.content_html = "Deep learning and neural nets advance AI capabilities."
+        article.summary = None
         article.topics = ["artificial-intelligence"]
+        article.topics_processed = False
         mock_session.exec.return_value.all.return_value = [article]
         mock_ctx = MagicMock()
         mock_ctx.__enter__.return_value = mock_session
@@ -247,21 +270,30 @@ class TestTopicModelingJob:
         mock_db_cls.return_value = mock_db
 
         mock_modeler = Mock()
-        mock_modeler.discover_subtopics.return_value = [
-            {"name": "deep-learning", "articles": ["t1"], "coherence": 0.7}
-        ]
+        mock_modeler.model = None
+        mock_modeler.ensure_ml.side_effect = ImportError("optional ml extra is missing")
         mock_modeler_cls.return_value = mock_modeler
 
         from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 
         job = TopicModelingJob(db_manager=mock_db)
-        stats = job.run(topic="artificial-intelligence", force=True)
-        assert stats["topics_processed"] >= 0
-        assert isinstance(stats.get("subtopics_discovered", 0), int)
+        stats = job.run(force=True)
+        assert stats["processed"] == 1
+        assert stats["skipped"] == 1
+        assert stats["topics_processed"] == 0
+        assert stats["subtopics_discovered"] == 0
+        assert stats["articles_analyzed"] == 0
+        assert stats["failed"] == 0
+        assert isinstance(stats["duration_seconds"], float)
+        assert stats["duration_seconds"] >= 0
+        assert article.topics_processed is False
+        mock_session.commit.assert_called()
 
     def test_job_handles_force_and_min(self):
-        with patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler"), \
-             patch("ai_web_feeds.nlp.jobs.topic_job.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler"),
+            patch("ai_web_feeds.nlp.jobs.topic_job.DatabaseManager"),
+        ):
             from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
 
             job = TopicModelingJob()
@@ -274,11 +306,13 @@ class TestNLPJobsModule:
 
     def test_jobs_importable(self):
         # trigger imports for coverage of top level
-        from ai_web_feeds.nlp.jobs import entity_job, sentiment_job, topic_job  # noqa: F401
+        from ai_web_feeds.nlp.jobs import entity_job, sentiment_job, topic_job
+
         assert entity_job is not None
 
     def test_nlp_pkg_init_lazy(self):
         import ai_web_feeds.nlp as nmod
+
         # accessing triggers __getattr__ for partial cov of nlp/__init__.py
         names = ["EntityExtractor", "QualityScorer", "SentimentAnalyzer", "TopicModeler"]
         for n in names:
@@ -295,8 +329,9 @@ class TestQualityJobRun:
     """Additional run coverage for quality job."""
 
     def test_quality_batch_run(self):
-        with patch("ai_web_feeds.nlp.jobs.quality_job.DatabaseManager") as mdb, patch(
-            "ai_web_feeds.nlp.jobs.quality_job.QualityScorer"
+        with (
+            patch("ai_web_feeds.nlp.jobs.quality_job.DatabaseManager") as mdb,
+            patch("ai_web_feeds.nlp.jobs.quality_job.QualityScorer"),
         ):
             sess = MagicMock()
             sess.exec.return_value.all.return_value = []

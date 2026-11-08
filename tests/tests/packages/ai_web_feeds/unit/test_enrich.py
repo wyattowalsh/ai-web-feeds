@@ -187,8 +187,8 @@ class TestEnrichExtractors:
     """Test private extractors with mocked or minimal inputs for coverage."""
 
     def test_extract_site_title(self):
-        from bs4 import BeautifulSoup
         from ai_web_feeds.enrich import AdvancedEnricher
+        from bs4 import BeautifulSoup
 
         enricher = AdvancedEnricher()
         soup = BeautifulSoup("<html><head><title>Site Title</title></head></html>", "html.parser")
@@ -196,8 +196,8 @@ class TestEnrichExtractors:
         assert title == "Site Title" or title is None or isinstance(title, str)
 
     def test_extract_site_description(self):
-        from bs4 import BeautifulSoup
         from ai_web_feeds.enrich import AdvancedEnricher
+        from bs4 import BeautifulSoup
 
         enricher = AdvancedEnricher()
         soup = BeautifulSoup('<html><meta name="description" content="Desc"></html>', "html.parser")
@@ -205,8 +205,8 @@ class TestEnrichExtractors:
         assert desc is None or isinstance(desc, str)
 
     def test_extract_site_language(self):
-        from bs4 import BeautifulSoup
         from ai_web_feeds.enrich import AdvancedEnricher
+        from bs4 import BeautifulSoup
 
         enricher = AdvancedEnricher()
         soup = BeautifulSoup('<html lang="en"></html>', "html.parser")
@@ -214,11 +214,14 @@ class TestEnrichExtractors:
         assert lang is None or isinstance(lang, str)
 
     def test_extract_favicon_and_logo(self):
-        from bs4 import BeautifulSoup
         from ai_web_feeds.enrich import AdvancedEnricher
+        from bs4 import BeautifulSoup
 
         enricher = AdvancedEnricher()
-        soup = BeautifulSoup('<html><link rel="icon" href="/icon.png"><img class="logo" src="/logo.png"></html>', "html.parser")
+        soup = BeautifulSoup(
+            '<html><link rel="icon" href="/icon.png"><img class="logo" src="/logo.png"></html>',
+            "html.parser",
+        )
         fav = enricher._extract_favicon(soup, "https://ex.com")
         logo = enricher._extract_logo(soup)
         assert fav is None or "icon" in (fav or "")
@@ -241,14 +244,13 @@ class TestEnrichAllFeeds:
         except Exception:
             pass
 
-
     def test_enrich_all_feeds_sync_wrapper(self, mocker):
         from ai_web_feeds.enrich import enrich_all_feeds
 
         # may be sync wrapper
         try:
-            res = enrich_all_feeds([])
-            assert res is not None or True
+            res = enrich_all_feeds({"sources": []})
+            assert res is not None
         except Exception:
             pass
 
@@ -319,8 +321,8 @@ class TestEnrichFromFeedAndSite:
         enr = await enricher.enrich_from_url("https://ex.com/feed.rss", url_type="feed")
         assert enr.title == "Rich Feed" or enr.title is not None
         assert enr.entry_count >= 1
-        assert enr.has_itunes or True
-        assert enr.has_dublin_core or True  # may vary
+        assert isinstance(enr.has_itunes, bool)
+        assert isinstance(enr.has_dublin_core, bool)
         assert 0 <= enr.quality_score <= 1
 
     @pytest.mark.asyncio
@@ -391,6 +393,7 @@ class TestEnrichMorePrivateAndBatch:
     def test_extract_content_type_and_itunes(self):
         from ai_web_feeds.enrich import AdvancedEnricher
         from bs4 import BeautifulSoup
+
         enricher = AdvancedEnricher()
         soup = BeautifulSoup('<html><link type="application/rss+xml"></html>', "html.parser")
         # indirect via feed parse usually; cover existing extractors
@@ -400,6 +403,7 @@ class TestEnrichMorePrivateAndBatch:
     @pytest.mark.asyncio
     async def test_analyze_update_pattern(self):
         from ai_web_feeds.enrich import AdvancedEnricher
+
         enricher = AdvancedEnricher()
         enr = FeedEnrichment()
         enr.entry_count = 3
@@ -425,6 +429,7 @@ class TestEnrichMorePrivateAndBatch:
     @pytest.mark.asyncio
     async def test_enrich_non200_error_branches(self, mocker):
         from ai_web_feeds.enrich import AdvancedEnricher
+
         enricher = AdvancedEnricher()
         mock_client = mocker.patch("ai_web_feeds.enrich.httpx.AsyncClient")
         inst = mock_client.return_value.__aenter__.return_value
@@ -435,6 +440,7 @@ class TestEnrichMorePrivateAndBatch:
 
     def test_score_bounds_and_extracts(self):
         from ai_web_feeds.enrich import AdvancedEnricher, FeedEnrichment
+
         e = AdvancedEnricher()
         en = FeedEnrichment()
         assert 0.0 <= e._calculate_quality_score(en) <= 1.0
@@ -442,13 +448,19 @@ class TestEnrichMorePrivateAndBatch:
 
     def test_calculate_scores_with_entries_and_links(self):
         from ai_web_feeds.enrich import AdvancedEnricher, FeedEnrichment
+
         e = AdvancedEnricher()
         en = FeedEnrichment()
         en.entry_count = 25
-        en.links = ["http://a", "http://b"] * 5
-        en.content_sample = "word " * 200
-        en.update_frequency_days = 1.0
+        en.title = "Feed"
+        en.description = "A feed with entries"
+        en.has_full_content = True
+        en.estimated_frequency = "daily"
+        en.update_regularity = 1.0
+        en.icon_url = "https://ex.com/icon.png"
         en.response_time_ms = 123
+        en.last_updated = datetime.now(UTC)
+        en.content_types = ["text"]
         qs = e._calculate_quality_score(en)
         hs = e._calculate_health_score(en)
         cs = e._calculate_completeness_score(en)
@@ -459,16 +471,22 @@ class TestEnrichMorePrivateAndBatch:
     @pytest.mark.asyncio
     async def test_enrich_from_site_html_paths(self, mocker):
         from ai_web_feeds.enrich import AdvancedEnricher
+
         enricher = AdvancedEnricher()
         mock_client = mocker.patch("ai_web_feeds.enrich.httpx.AsyncClient")
         inst = mock_client.return_value.__aenter__.return_value
-        resp = mocker.Mock(status_code=200, text="<html><head><title>SiteT</title><link rel='alternate' type='application/rss+xml' href='/f.xml'></head></html>", headers={"content-type": "text/html"})
+        resp = mocker.Mock(
+            status_code=200,
+            text="<html><head><title>SiteT</title><link rel='alternate' type='application/rss+xml' href='/f.xml'></head></html>",
+            headers={"content-type": "text/html"},
+        )
         inst.get = mocker.AsyncMock(return_value=resp)
         en = await enricher.enrich_from_url("https://example.com", url_type="site")
         assert en is not None
 
     def test_detect_and_format_variations(self):
-        from ai_web_feeds.enrich import detect_platform, detect_feed_format, AdvancedEnricher
+        from ai_web_feeds.enrich import AdvancedEnricher, detect_feed_format, detect_platform
+
         assert detect_platform("https://github.com/foo") == "github"
         assert detect_platform("https://www.youtube.com/watch") == "youtube"
         # use direct mock call for coverage without net or event loop issues

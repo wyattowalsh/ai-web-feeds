@@ -159,7 +159,7 @@ class TestCLITestCommandCoverage:
     """Cover apps/cli/commands/test.py branches."""
 
     def test_get_project_root_and_tests_dir(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli.commands import test as test_cmd
+        from ai_web_feeds.cli.commands import test as test_cmd  # ty: ignore[unresolved-import]
 
         (tmp_path / "tests").mkdir()
         (tmp_path / "packages").mkdir()
@@ -174,14 +174,18 @@ class TestCLITestCommandCoverage:
             assert test_cmd.get_tests_dir() == tmp_path / "tests"
 
     def test_resolve_uv_executable_missing(self) -> None:
-        from ai_web_feeds.cli.commands.test import resolve_uv_executable
+        from ai_web_feeds.cli.commands.test import (  # ty: ignore[unresolved-import]
+            resolve_uv_executable,
+        )  # ty: ignore[unresolved-import]
 
         with patch("ai_web_feeds.cli.commands.test.shutil.which", return_value=None):
             with pytest.raises(RuntimeError, match="uv executable not found"):
                 resolve_uv_executable()
 
     def test_run_uv_command_invokes_subprocess(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli.commands.test import run_uv_command
+        from ai_web_feeds.cli.commands.test import (  # ty: ignore[unresolved-import]
+            run_uv_command,
+        )  # ty: ignore[unresolved-import]
 
         with (
             patch("ai_web_feeds.cli.commands.test.resolve_uv_executable", return_value="uv"),
@@ -193,7 +197,9 @@ class TestCLITestCommandCoverage:
             mock_run.assert_called_once()
 
     def test_all_cli_subcommands(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli.commands.test import app as test_app
+        from ai_web_feeds.cli.commands.test import (  # ty: ignore[unresolved-import]
+            app as test_app,
+        )  # ty: ignore[unresolved-import]
 
         runner = CliRunner()
         patches = {
@@ -320,6 +326,7 @@ class TestEnrichCoverageGaps:
 
     def test_score_branches(self) -> None:
         from ai_web_feeds.enrich import AdvancedEnricher, FeedEnrichment
+        from ai_web_feeds.models import FeedFormat
 
         enricher = AdvancedEnricher()
         enrichment = FeedEnrichment()
@@ -335,7 +342,7 @@ class TestEnrichCoverageGaps:
         enrichment.response_time_ms = 2500
         enrichment.language = "en"
         enrichment.author = "A"
-        enrichment.format = "rss"
+        enrichment.format = FeedFormat.RSS
         enrichment.content_types = ["text"]
 
         assert enricher._calculate_quality_score(enrichment) > 0.5
@@ -364,6 +371,7 @@ class TestEnrichCoverageGaps:
             )
             await enricher._enrich_from_site("https://example.com", enrichment)
         assert enrichment.title == "OG Title"
+        assert enrichment.icon_url is not None
         assert enrichment.icon_url.endswith("favicon.ico")
 
 
@@ -372,7 +380,9 @@ class TestCLIEnrichCommandGaps:
     """Cover CLI enrich command handlers."""
 
     def test_enrich_all_and_one(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli.commands.enrich import app as enrich_app
+        from ai_web_feeds.cli.commands.enrich import (  # ty: ignore[unresolved-import]
+            app as enrich_app,
+        )  # ty: ignore[unresolved-import]
 
         runner = CliRunner()
         feeds = tmp_path / "feeds.yaml"
@@ -450,7 +460,7 @@ class TestCLIMainModuleGaps:
     """Cover ai_web_feeds.cli __init__ helpers and pipeline branches."""
 
     def test_private_helper_functions(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli import (
+        from ai_web_feeds.cli import (  # ty: ignore[unresolved-import]
             _load_existing_enriched_sources,
             _looks_like_url_title,
             _reuse_existing_enrichment,
@@ -486,7 +496,7 @@ class TestCLIMainModuleGaps:
         assert reused["sources"][0]["title"] == "Kept Title"
 
     def test_process_and_load_error_paths(self, tmp_path: Path) -> None:
-        from ai_web_feeds.cli import app as main_app
+        from ai_web_feeds.cli import app as main_app  # ty: ignore[unresolved-import]
 
         runner = CliRunner()
         missing = tmp_path / "missing.yaml"
@@ -500,7 +510,7 @@ class TestCLIMainModuleGaps:
             assert result.exit_code == 1
 
     def test_main_entrypoint(self) -> None:
-        from ai_web_feeds.cli import main
+        from ai_web_feeds.cli import main  # ty: ignore[unresolved-import]
 
         with patch("ai_web_feeds.cli.app") as mock_app:
             main()
@@ -514,18 +524,24 @@ class TestUtilsAndValidateGaps:
     def test_reddit_and_medium_feed_url_generators(self) -> None:
         from ai_web_feeds.utils import generate_medium_feed_url, generate_reddit_feed_url
 
-        assert "machinelearning" in generate_reddit_feed_url("https://reddit.com/r/machinelearning")
-        assert generate_reddit_feed_url(
+        reddit_url = generate_reddit_feed_url("https://reddit.com/r/machinelearning")
+        assert reddit_url is not None
+        assert "machinelearning" in reddit_url
+        reddit_top = generate_reddit_feed_url(
             "https://reddit.com/r/ml",
             {"reddit": {"subreddit": "ml", "sort": "top", "time": "week"}},
-        ).endswith("t=week")
-        assert generate_medium_feed_url("https://towardsdatascience.com").endswith(
-            "towardsdatascience"
         )
-        assert generate_medium_feed_url(
+        assert reddit_top is not None
+        assert reddit_top.endswith("t=week")
+        medium_url = generate_medium_feed_url("https://towardsdatascience.com")
+        assert medium_url is not None
+        assert medium_url.endswith("towardsdatascience")
+        medium_user = generate_medium_feed_url(
             "https://medium.com",
             {"medium": {"username": "@writer"}},
-        ).endswith("@writer")
+        )
+        assert medium_user is not None
+        assert medium_user.endswith("@writer")
 
     def test_validate_feeds_canonical_branches(self, tmp_path: Path) -> None:
         from ai_web_feeds.validate import ValidationResult, validate_feeds, validate_topics
@@ -623,28 +639,19 @@ class TestVisualizationCoverageGaps:
     @pytest.mark.asyncio
     async def test_dashboard_service_error_paths(self) -> None:
         from ai_web_feeds.visualization.dashboard_service import DashboardService
-        from ai_web_feeds.visualization.validators import ValidationError
 
         service = DashboardService()
-        with patch("ai_web_feeds.visualization.dashboard_service.get_session") as mock_sess:
-            mock_sess.side_effect = RuntimeError("db")
-            assert await service.list_dashboards("d1") == []
-
-            mock_sess.side_effect = None
-            session = MagicMock()
-            mock_sess.return_value.__enter__.return_value = session
-
-            class _Dash:
-                version = 2
-                name = "old"
-                description = None
-                layout: dict[str, object]
-
-            dash = _Dash()
-            dash.layout = {}
-            session.execute.return_value.scalar_one_or_none.return_value = dash
-            with pytest.raises(ValidationError, match="Version mismatch"):
-                await service.update_dashboard(1, "d1", name="New", expected_version=1)
+        disabled = {"enabled": False, "reason": "dashboard builder is not enabled"}
+        assert await service.list_dashboards("d1") == disabled
+        assert (
+            await service.update_dashboard(
+                1,
+                "d1",
+                name="New",
+                expected_version=1,
+            )
+            == disabled
+        )
 
     @pytest.mark.asyncio
     async def test_auth_and_export_api_paths(self) -> None:
@@ -738,7 +745,9 @@ class TestSentimentJobCoverageGaps:
             model_name="test",
             confidence=0.8,
         )
-        job.analyzer.analyze_sentiment.side_effect = [pos, None, neg]
+        analyzer = MagicMock()
+        analyzer.analyze_sentiment.side_effect = [pos, None, neg]
+        job.analyzer = analyzer
         stats = job.run(batch_size=10, force=True)
         assert stats["analyzed"] >= 1
 
@@ -767,7 +776,9 @@ class TestSentimentJobCoverageGaps:
             session.commit()
 
         job = SentimentBatchJob(db_manager=db)
-        job.analyzer.analyze_sentiment.side_effect = RuntimeError("boom")
+        analyzer = MagicMock()
+        analyzer.analyze_sentiment.side_effect = RuntimeError("boom")
+        job.analyzer = analyzer
         stats = job.run(batch_size=5)
         assert stats["failed"] >= 1
 
@@ -776,63 +787,101 @@ class TestSentimentJobCoverageGaps:
 class TestTopicJobAndForecastGaps:
     """Cover topic modeling job and forecast service branches."""
 
-    def test_topic_modeling_job_skip_and_failure(self, temp_db_path) -> None:
-        from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
+    def test_topic_modeling_job_skip_and_failure(self, temp_db_path, sample_feed_source) -> None:
+        from ai_web_feeds.models import ArticleEntry
+        from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob, _empty_stats
         from ai_web_feeds.storage import DatabaseManager
 
         db = DatabaseManager(f"sqlite:///{temp_db_path}")
         db.create_db_and_tables()
         job = TopicModelingJob(db_manager=db)
-        stats = job.run(min_articles=100)
-        assert stats["topics_processed"] == 0
+        empty = job.run(batch_size=100)
+        assert set(empty) == set(_empty_stats())
+        assert empty["processed"] == 0
+        assert empty["skipped"] == 0
+        assert empty["topics_processed"] == 0
+        assert empty["failed"] == 0
 
-        with patch.object(job.modeler, "discover_subtopics", side_effect=RuntimeError("fail")):
-            with patch.object(job, "db_manager") as mock_db:
-                mock_db.get_session.return_value.__enter__.return_value.exec.return_value.all.return_value = [
-                    MagicMock(
-                        id=i, title=f"T{i}", content_html="x", summary="y", topics_processed=False
-                    )
-                    for i in range(12)
-                ]
-                stats = job.run(min_articles=5)
-        assert stats["failed"] >= 1
-
-    def test_topic_modeling_job_success_path(self, temp_db_path) -> None:
-        from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
-        from ai_web_feeds.storage import DatabaseManager
-
-        db = DatabaseManager(f"sqlite:///{temp_db_path}")
-        db.create_db_and_tables()
-        job = TopicModelingJob(db_manager=db)
-        discovered = MagicMock(name="Sub", keywords=["ml"], coherence_score=0.5, article_count=3)
-        articles = [
-            MagicMock(
-                id=f"a{i}",
-                title="ML",
-                content_html="text",
-                summary="s",
-                topics_processed=False,
+        db.add_feed_source(sample_feed_source)
+        with db.get_session() as session:
+            session.add(
+                ArticleEntry(
+                    feed_id=sample_feed_source.id,
+                    title="Machine learning",
+                    summary="stored article text",
+                    content_html="<p>neural nets</p>",
+                    guid="topic-skip",
+                    link="https://example.com/topic-skip",
+                    pub_date=datetime.now(UTC),
+                )
             )
-            for i in range(12)
-        ]
-        with patch.object(job.modeler, "discover_subtopics", return_value=[discovered]):
-            with patch.object(job.db_manager, "get_session") as mock_sess:
-                session = MagicMock()
-                mock_sess.return_value.__enter__.return_value = session
-                session.exec.return_value.all.return_value = articles
-                stats = job.run(min_articles=5)
+            session.commit()
+
+        skipped = job.run(batch_size=5, force=False)
+        assert set(skipped) == set(_empty_stats())
+        assert skipped["processed"] >= 1
+        assert skipped["skipped"] >= 1
+        assert skipped["failed"] == 0
+        assert skipped["topics_processed"] == 0
+
+        def _fail(_text: str) -> None:
+            raise RuntimeError("fail")
+
+        failing = TopicModelingJob(db_manager=db, model=_fail)
+        failed = failing.run(batch_size=5, force=True)
+        assert set(failed) == set(_empty_stats())
+        assert failed["failed"] >= 1
+        assert failed["skipped"] == 0
+
+    def test_topic_modeling_job_success_path(self, temp_db_path, sample_feed_source) -> None:
+        from ai_web_feeds.models import ArticleEntry
+        from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob, _empty_stats
+        from ai_web_feeds.storage import DatabaseManager
+
+        db = DatabaseManager(f"sqlite:///{temp_db_path}")
+        db.create_db_and_tables()
+        db.add_feed_source(sample_feed_source)
+        with db.get_session() as session:
+            session.add(
+                ArticleEntry(
+                    feed_id=sample_feed_source.id,
+                    title="Machine learning",
+                    summary="stored article text",
+                    content_html="<p>neural nets</p>",
+                    guid="topic-ok",
+                    link="https://example.com/topic-ok",
+                    pub_date=datetime.now(UTC),
+                )
+            )
+            session.commit()
+
+        def _score(_text: str) -> dict[str, object]:
+            return {
+                "name": "Sub",
+                "keywords": ["ml"],
+                "coherence_score": 0.5,
+                "article_count": 3,
+            }
+
+        job = TopicModelingJob(db_manager=db, model=_score)
+        stats = job.run(batch_size=5, force=True)
+        assert set(stats) == set(_empty_stats())
         assert stats["subtopics_discovered"] >= 1
+        assert stats["topics_processed"] >= 1
+        assert stats["articles_analyzed"] >= 1
+        assert stats["failed"] == 0
+        assert stats["skipped"] == 0
 
     @pytest.mark.asyncio
     async def test_forecast_service_metrics_and_validation(self) -> None:
-        import pandas as pd
-        from ai_web_feeds.visualization.forecast_service import ForecastService
+        from ai_web_feeds.visualization.forecast_service import ForecastService, _empty_series
 
         service = ForecastService(MagicMock())
-        with pytest.raises(ValueError, match="ds"):
-            await service.generate_forecast(
-                "device-1",
-                "topics",
-                pd.DataFrame({"value": [1, 2, 3]}),
-                horizon_days=7,
-            )
+        payload = await service.generate_forecast(
+            "device-1",
+            "topics",
+            [{"value": 1}, {"value": 2}, {"value": 3}],
+            horizon_days=7,
+        )
+        assert payload == {"enabled": False, "reason": "forecast is not enabled"}
+        assert _empty_series() == {"ds": [], "y": []}

@@ -4,9 +4,8 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy.exc import OperationalError
-
 from ai_web_feeds.visualization.data_service import DataService
+from sqlalchemy.exc import OperationalError
 
 
 def _make_row(mapping: dict):

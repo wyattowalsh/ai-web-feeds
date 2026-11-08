@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-
 from ai_web_feeds.visualization.api_key_service import (
     APIKeyService,
     verify_api_key_and_get_device,
@@ -28,7 +27,6 @@ class TestAPIKeyService:
 
         def do_refresh(obj):
             obj.id = 1
-            return None
 
         mock_session.__enter__ = Mock(return_value=mock_session)
         mock_session.__exit__ = Mock(return_value=False)
@@ -36,8 +34,13 @@ class TestAPIKeyService:
         mock_session.commit = Mock()
         mock_session.refresh = Mock(side_effect=do_refresh)
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
-            with patch("ai_web_feeds.visualization.api_key_service.generate_api_key", return_value=("plain-key", "hashed-key")):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
+            with patch(
+                "ai_web_feeds.visualization.api_key_service.generate_api_key",
+                return_value=("plain-key", "hashed-key"),
+            ):
                 plaintext, record = await service.create_api_key("device-123", "test-key")
 
         assert plaintext == "plain-key"
@@ -55,8 +58,13 @@ class TestAPIKeyService:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.add.side_effect = Exception("db error")
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
-            with patch("ai_web_feeds.visualization.api_key_service.generate_api_key", return_value=("k", "h")):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
+            with patch(
+                "ai_web_feeds.visualization.api_key_service.generate_api_key",
+                return_value=("k", "h"),
+            ):
                 with pytest.raises(Exception):
                     await service.create_api_key("d", "n")
 
@@ -75,7 +83,9 @@ class TestAPIKeyService:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.return_value = mock_result
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             keys = await service.list_api_keys("device-123")
 
         assert len(keys) == 1
@@ -91,7 +101,9 @@ class TestAPIKeyService:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.side_effect = Exception("fail")
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             keys = await service.list_api_keys("d")
 
         assert keys == []
@@ -110,7 +122,9 @@ class TestAPIKeyService:
         mock_session.execute.return_value = mock_result
         mock_session.commit = Mock()
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             result = await service.revoke_api_key(5, "device-123")
 
         assert result is True
@@ -130,7 +144,9 @@ class TestAPIKeyService:
         mock_session.execute.return_value = mock_result
         mock_session.commit = Mock()
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             result = await service.revoke_api_key(99, "d")
 
         assert result is False
@@ -145,7 +161,9 @@ class TestAPIKeyService:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.side_effect = Exception("boom")
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             result = await service.revoke_api_key(1, "d")
 
         assert result is False
@@ -162,7 +180,9 @@ class TestAPIKeyService:
         mock_session.execute = Mock()
         mock_session.commit = Mock()
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             await service.log_api_usage(
                 api_key_id=1,
                 endpoint="/export",
@@ -185,7 +205,9 @@ class TestAPIKeyService:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.add.side_effect = Exception("log fail")
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             # Should not raise
             await service.log_api_usage(1, "/x", {}, 200, None, 10)
 
@@ -208,8 +230,12 @@ class TestVerifyAPIKeyAndGetDevice:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.return_value = mock_result
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
-            with patch("ai_web_feeds.visualization.api_key_service.verify_api_key_hash", return_value=True):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
+            with patch(
+                "ai_web_feeds.visualization.api_key_service.verify_api_key_hash", return_value=True
+            ):
                 dev = await verify_api_key_and_get_device("plain")
 
         assert dev == "dev-42"
@@ -227,8 +253,12 @@ class TestVerifyAPIKeyAndGetDevice:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.return_value = mock_result
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
-            with patch("ai_web_feeds.visualization.api_key_service.verify_api_key_hash", return_value=False):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
+            with patch(
+                "ai_web_feeds.visualization.api_key_service.verify_api_key_hash", return_value=False
+            ):
                 dev = await verify_api_key_and_get_device("plain")
 
         assert dev is None
@@ -241,7 +271,9 @@ class TestVerifyAPIKeyAndGetDevice:
         mock_session.__exit__ = Mock(return_value=False)
         mock_session.execute.side_effect = Exception("db")
 
-        with patch("ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session):
+        with patch(
+            "ai_web_feeds.visualization.api_key_service.get_session", return_value=mock_session
+        ):
             dev = await verify_api_key_and_get_device("k")
 
         assert dev is None

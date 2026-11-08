@@ -175,6 +175,7 @@ class TestTopicModeler:
     @patch("ai_web_feeds.nlp.topic_modeler.CoherenceModel")
     def test_compute_coherence(self, mock_coherence_model, modeler):
         """Test coherence computation"""
+        pytest.importorskip("gensim")
         mock_cm = MagicMock()
         mock_cm.get_coherence.return_value = 0.72
         mock_coherence_model.return_value = mock_cm
@@ -340,13 +341,16 @@ class TestTopicModelerCorePaths:
     def modeler(self):
         return TopicModeler()
 
-    def _mk_articles(self, n: int = 12, base: str = "machine learning deep learning neural networks") -> list[dict]:
+    def _mk_articles(
+        self, n: int = 12, base: str = "machine learning deep learning neural networks"
+    ) -> list[dict]:
         return [{"id": i, "content": f"{base} article {i}"} for i in range(n)]
 
     @patch("ai_web_feeds.nlp.topic_modeler.models.LdaModel")
     @patch("ai_web_feeds.nlp.topic_modeler.corpora.Dictionary")
     def test_discover_subtopics_success_path(self, mock_dict_cls, mock_lda_cls, modeler):
         """Exercise main LDA path in discover_subtopics with sufficient articles."""
+        pytest.importorskip("gensim")
         mock_dictionary = MagicMock()
         mock_dictionary.filter_extremes = MagicMock()
         mock_dict_cls.return_value = mock_dictionary
@@ -370,12 +374,15 @@ class TestTopicModelerCorePaths:
         assert isinstance(subs, list)
 
     def test_discover_subtopics_below_min_articles(self, modeler):
-        subs = modeler.discover_subtopics(topic="X", articles=[{"id": 1, "content": "a"}], min_articles=10)
+        subs = modeler.discover_subtopics(
+            topic="X", articles=[{"id": 1, "content": "a"}], min_articles=10
+        )
         assert subs == []
 
     @patch("ai_web_feeds.nlp.topic_modeler.models.LdaModel")
     @patch("ai_web_feeds.nlp.topic_modeler.corpora.Dictionary")
     def test_discover_subtopics_filters_by_coherence(self, mock_dict_cls, mock_lda_cls, modeler):
+        pytest.importorskip("gensim")
         mock_dict_cls.return_value = MagicMock(filter_extremes=MagicMock())
         mock_model = MagicMock()
         mock_model.get_document_topics.return_value = []
@@ -384,7 +391,9 @@ class TestTopicModelerCorePaths:
 
         # Force coherence below threshold (default min_coherence ~0.3 in Settings)
         with patch.object(modeler, "_compute_coherence", return_value=0.1):
-            subs = modeler.discover_subtopics(topic="T", articles=self._mk_articles(12), num_topics=1)
+            subs = modeler.discover_subtopics(
+                topic="T", articles=self._mk_articles(12), num_topics=1
+            )
         # All filtered out
         assert subs == []
 
@@ -398,7 +407,11 @@ class TestTopicModelerCorePaths:
 
     def test_preprocess_articles_with_title_summary_and_content(self, modeler):
         articles = [
-            {"title": "Intro to ML", "summary": "A summary here", "content": "Machine learning is great"},
+            {
+                "title": "Intro to ML",
+                "summary": "A summary here",
+                "content": "Machine learning is great",
+            },
             {"title": "No content", "summary": None},
             {"content": ["not", "a", "dict", {"value": "ignored"}], "title": ""},
         ]
@@ -419,6 +432,7 @@ class TestTopicModelerCorePaths:
 
     @patch("ai_web_feeds.nlp.topic_modeler.CoherenceModel")
     def test_compute_coherence_invoked(self, mock_cm_cls, modeler):
+        pytest.importorskip("gensim")
         mock_cm = MagicMock()
         mock_cm.get_coherence.return_value = 0.55
         mock_cm_cls.return_value = mock_cm
@@ -440,18 +454,30 @@ class TestTopicModelerCorePaths:
     def test_subtopics_similar_and_cosine(self, modeler):
         from ai_web_feeds.nlp.topic_modeler import DiscoveredSubtopic
 
-        a = DiscoveredSubtopic(name="A", keywords=["alpha", "beta", "gamma"], coherence_score=0.5, article_count=1)
-        b = DiscoveredSubtopic(name="B", keywords=["alpha", "beta", "delta"], coherence_score=0.5, article_count=1)
+        a = DiscoveredSubtopic(
+            name="A", keywords=["alpha", "beta", "gamma"], coherence_score=0.5, article_count=1
+        )
+        b = DiscoveredSubtopic(
+            name="B", keywords=["alpha", "beta", "delta"], coherence_score=0.5, article_count=1
+        )
         sim = modeler._subtopics_similar(a, b, 0.1)
         assert isinstance(sim, bool)
 
     def test_detect_split_merge_basic(self, modeler):
         from ai_web_feeds.nlp.topic_modeler import DiscoveredSubtopic
 
-        prev = [DiscoveredSubtopic(name="P", keywords=["x", "y", "z"], coherence_score=0.5, article_count=1)]
+        prev = [
+            DiscoveredSubtopic(
+                name="P", keywords=["x", "y", "z"], coherence_score=0.5, article_count=1
+            )
+        ]
         curr = [
-            DiscoveredSubtopic(name="C1", keywords=["x", "y", "a"], coherence_score=0.5, article_count=1),
-            DiscoveredSubtopic(name="C2", keywords=["x", "y", "b"], coherence_score=0.5, article_count=1),
+            DiscoveredSubtopic(
+                name="C1", keywords=["x", "y", "a"], coherence_score=0.5, article_count=1
+            ),
+            DiscoveredSubtopic(
+                name="C2", keywords=["x", "y", "b"], coherence_score=0.5, article_count=1
+            ),
         ]
         events: list[dict] = []
         modeler._detect_split_merge(events, prev, curr, "p1", 0.1)
@@ -459,8 +485,11 @@ class TestTopicModelerCorePaths:
         assert isinstance(events, list)
 
     def test_discover_subtopics_exception_path(self, modeler):
+        pytest.importorskip("gensim")
         # Force an exception inside try by providing articles but mocking to blow up
-        with patch("ai_web_feeds.nlp.topic_modeler.corpora.Dictionary", side_effect=RuntimeError("boom")):
+        with patch(
+            "ai_web_feeds.nlp.topic_modeler.corpora.Dictionary", side_effect=RuntimeError("boom")
+        ):
             res = modeler.discover_subtopics(topic="Err", articles=self._mk_articles(12))
             assert res == []
 

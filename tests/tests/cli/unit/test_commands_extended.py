@@ -5,6 +5,7 @@ export, opml, stats, corpus, test coverage commands.
 """
 
 import asyncio
+import importlib
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
@@ -39,12 +40,13 @@ class TestCLINLPExtended:
     """Smoke tests for NLP CLI commands."""
 
     def test_nlp_command_exists(self):
-        from ai_web_feeds.cli.commands import nlp
+        nlp = importlib.import_module("ai_web_feeds.cli.commands.nlp")
 
         assert nlp.app is not None
 
     def test_nlp_quality_help(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         result = runner.invoke(nlp_app, ["quality", "--help"])
@@ -52,38 +54,43 @@ class TestCLINLPExtended:
         assert "quality" in result.output.lower() or "batch" in result.output.lower()
 
     def test_nlp_entities_help(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         result = runner.invoke(nlp_app, ["entities", "--help"])
         assert result.exit_code == 0
 
     def test_nlp_sentiment_help(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         result = runner.invoke(nlp_app, ["sentiment", "--help"])
         assert result.exit_code == 0
 
     def test_nlp_topics_help(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         result = runner.invoke(nlp_app, ["topics", "--help"])
         assert result.exit_code == 0
 
     def test_nlp_scheduler_help(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         result = runner.invoke(nlp_app, ["scheduler", "--help"])
         assert result.exit_code == 0
 
     def test_nlp_stats_smoke(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
-        # Simpler smoke: just ensure command is invokable; heavy DB paths are hard to mock here
+        # Simpler smoke: just ensure command is invocable; heavy DB paths are hard to mock here
         result = runner.invoke(nlp_app, ["stats", "--help"])
         assert result.exit_code == 0
 
@@ -93,19 +100,21 @@ class TestCLIMonitorExtended:
     """Smoke tests for monitor CLI commands."""
 
     def test_monitor_command_exists(self):
-        from ai_web_feeds.cli.commands import monitor
+        monitor = importlib.import_module("ai_web_feeds.cli.commands.monitor")
 
         assert monitor.app is not None
 
     def test_monitor_help(self):
-        from ai_web_feeds.cli.commands.monitor import app as monitor_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        monitor_app = _monitor_mod.app
 
         runner = CliRunner()
         result = runner.invoke(monitor_app, ["--help"])
         assert result.exit_code == 0
 
     def test_monitor_status_smoke(self):
-        from ai_web_feeds.cli.commands.monitor import app as monitor_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        monitor_app = _monitor_mod.app
 
         runner = CliRunner()
         # Mock scheduler and DB to avoid real connections
@@ -118,7 +127,8 @@ class TestCLIMonitorExtended:
             assert result.exit_code in (0, 1)
 
     def test_monitor_follow_help(self):
-        from ai_web_feeds.cli.commands.monitor import app as monitor_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        monitor_app = _monitor_mod.app
 
         runner = CliRunner()
         result = runner.invoke(monitor_app, ["follow", "--help"])
@@ -130,33 +140,37 @@ class TestCLISearchExtended:
     """Smoke tests for search CLI commands."""
 
     def test_search_command_exists(self):
-        from ai_web_feeds.cli.commands import search
+        search = importlib.import_module("ai_web_feeds.cli.commands.search")
 
         assert search.app is not None
 
     def test_search_query_help(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         result = runner.invoke(search_app, ["query", "--help"])
         assert result.exit_code == 0
 
     def test_search_autocomplete_help(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         result = runner.invoke(search_app, ["autocomplete", "--help"])
         assert result.exit_code == 0
 
     def test_search_init_help(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         result = runner.invoke(search_app, ["init", "--help"])
         assert result.exit_code == 0
 
     def test_search_save_help(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         result = runner.invoke(search_app, ["save", "--help"])
@@ -168,40 +182,45 @@ class TestCLIAnalyticsExtended:
     """Smoke tests for analytics CLI commands."""
 
     def test_analytics_command_exists(self):
-        from ai_web_feeds.cli.commands import analytics
+        analytics = importlib.import_module("ai_web_feeds.cli.commands.analytics")
 
         assert analytics.app is not None
 
     def test_analytics_summary_help(self):
-        from ai_web_feeds.cli.commands.analytics import app as analytics_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        analytics_app = _analytics_mod.app
 
         runner = CliRunner()
         result = runner.invoke(analytics_app, ["summary", "--help"])
         assert result.exit_code == 0
 
     def test_analytics_trending_help(self):
-        from ai_web_feeds.cli.commands.analytics import app as analytics_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        analytics_app = _analytics_mod.app
 
         runner = CliRunner()
         result = runner.invoke(analytics_app, ["trending", "--help"])
         assert result.exit_code == 0
 
     def test_analytics_velocity_help(self):
-        from ai_web_feeds.cli.commands.analytics import app as analytics_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        analytics_app = _analytics_mod.app
 
         runner = CliRunner()
         result = runner.invoke(analytics_app, ["velocity", "--help"])
         assert result.exit_code == 0
 
     def test_analytics_snapshot_help(self):
-        from ai_web_feeds.cli.commands.analytics import app as analytics_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        analytics_app = _analytics_mod.app
 
         runner = CliRunner()
         result = runner.invoke(analytics_app, ["snapshot", "--help"])
         assert result.exit_code == 0
 
     def test_analytics_export_help(self):
-        from ai_web_feeds.cli.commands.analytics import app as analytics_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        analytics_app = _analytics_mod.app
 
         runner = CliRunner()
         result = runner.invoke(analytics_app, ["export", "--help"])
@@ -213,33 +232,37 @@ class TestCLIVisualizeExtended:
     """Smoke tests for visualize CLI commands."""
 
     def test_visualize_command_exists(self):
-        from ai_web_feeds.cli.commands import visualize
+        visualize = importlib.import_module("ai_web_feeds.cli.commands.visualize")
 
         assert visualize.app is not None
 
     def test_visualize_mermaid_help(self):
-        from ai_web_feeds.cli.commands.visualize import app as visualize_app
+        _visualize_mod = importlib.import_module("ai_web_feeds.cli.commands.visualize")
+        visualize_app = _visualize_mod.app
 
         runner = CliRunner()
         result = runner.invoke(visualize_app, ["mermaid", "--help"])
         assert result.exit_code == 0
 
     def test_visualize_json_help(self):
-        from ai_web_feeds.cli.commands.visualize import app as visualize_app
+        _visualize_mod = importlib.import_module("ai_web_feeds.cli.commands.visualize")
+        visualize_app = _visualize_mod.app
 
         runner = CliRunner()
         result = runner.invoke(visualize_app, ["json", "--help"])
         assert result.exit_code == 0
 
     def test_visualize_stats_help(self):
-        from ai_web_feeds.cli.commands.visualize import app as visualize_app
+        _visualize_mod = importlib.import_module("ai_web_feeds.cli.commands.visualize")
+        visualize_app = _visualize_mod.app
 
         runner = CliRunner()
         result = runner.invoke(visualize_app, ["stats", "--help"])
         assert result.exit_code == 0
 
     def test_visualize_stats_smoke(self):
-        from ai_web_feeds.cli.commands.visualize import app as visualize_app
+        _visualize_mod = importlib.import_module("ai_web_feeds.cli.commands.visualize")
+        visualize_app = _visualize_mod.app
 
         runner = CliRunner()
         result = runner.invoke(visualize_app, ["stats", "--help"])
@@ -251,26 +274,29 @@ class TestCLIRecommendExtended:
     """Smoke tests for recommend CLI commands."""
 
     def test_recommend_command_exists(self):
-        from ai_web_feeds.cli.commands import recommend
+        recommend = importlib.import_module("ai_web_feeds.cli.commands.recommend")
 
         assert recommend.app is not None
 
     def test_recommend_get_help(self):
-        from ai_web_feeds.cli.commands.recommend import app as recommend_app
+        _recommend_mod = importlib.import_module("ai_web_feeds.cli.commands.recommend")
+        recommend_app = _recommend_mod.app
 
         runner = CliRunner()
         result = runner.invoke(recommend_app, ["get", "--help"])
         assert result.exit_code == 0
 
     def test_recommend_track_help(self):
-        from ai_web_feeds.cli.commands.recommend import app as recommend_app
+        _recommend_mod = importlib.import_module("ai_web_feeds.cli.commands.recommend")
+        recommend_app = _recommend_mod.app
 
         runner = CliRunner()
         result = runner.invoke(recommend_app, ["track", "--help"])
         assert result.exit_code == 0
 
     def test_recommend_weights_help(self):
-        from ai_web_feeds.cli.commands.recommend import app as recommend_app
+        _recommend_mod = importlib.import_module("ai_web_feeds.cli.commands.recommend")
+        recommend_app = _recommend_mod.app
 
         runner = CliRunner()
         result = runner.invoke(recommend_app, ["weights", "--help"])
@@ -282,19 +308,21 @@ class TestCLIFetchExtended:
     """Smoke tests for fetch CLI commands."""
 
     def test_fetch_command_exists(self):
-        from ai_web_feeds.cli.commands import fetch
+        fetch = importlib.import_module("ai_web_feeds.cli.commands.fetch")
 
         assert fetch.app is not None
 
     def test_fetch_one_help(self):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
 
         runner = CliRunner()
         result = runner.invoke(fetch_app, ["one", "--help"])
         assert result.exit_code == 0
 
     def test_fetch_all_help(self):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
 
         runner = CliRunner()
         result = runner.invoke(fetch_app, ["all", "--help"])
@@ -306,12 +334,13 @@ class TestCLIEnrichExtended:
     """Smoke tests for enrich CLI commands."""
 
     def test_enrich_command_exists(self):
-        from ai_web_feeds.cli.commands import enrich
+        enrich = importlib.import_module("ai_web_feeds.cli.commands.enrich")
 
         assert enrich.app is not None
 
     def test_enrich_all_help(self):
-        from ai_web_feeds.cli.commands.enrich import app as enrich_app
+        _enrich_mod = importlib.import_module("ai_web_feeds.cli.commands.enrich")
+        enrich_app = _enrich_mod.app
 
         runner = CliRunner()
         result = runner.invoke(enrich_app, ["all", "--help"])
@@ -323,26 +352,29 @@ class TestCLIExportExtended:
     """Smoke tests for export CLI commands."""
 
     def test_export_command_exists(self):
-        from ai_web_feeds.cli.commands import export
+        export = importlib.import_module("ai_web_feeds.cli.commands.export")
 
         assert export.app is not None
 
     def test_export_json_help(self):
-        from ai_web_feeds.cli.commands.export import app as export_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        export_app = _export_mod.app
 
         runner = CliRunner()
         result = runner.invoke(export_app, ["json", "--help"])
         assert result.exit_code == 0
 
     def test_export_opml_help(self):
-        from ai_web_feeds.cli.commands.export import app as export_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        export_app = _export_mod.app
 
         runner = CliRunner()
         result = runner.invoke(export_app, ["opml", "--help"])
         assert result.exit_code == 0
 
     def test_export_csv_help(self):
-        from ai_web_feeds.cli.commands.export import app as export_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        export_app = _export_mod.app
 
         runner = CliRunner()
         result = runner.invoke(export_app, ["csv", "--help"])
@@ -354,26 +386,29 @@ class TestCLIOPMLExtended:
     """Smoke tests for OPML CLI commands."""
 
     def test_opml_command_exists(self):
-        from ai_web_feeds.cli.commands import opml
+        opml = importlib.import_module("ai_web_feeds.cli.commands.opml")
 
         assert opml.app is not None
 
     def test_opml_all_help(self):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         result = runner.invoke(opml_app, ["all", "--help"])
         assert result.exit_code == 0
 
     def test_opml_categorized_help(self):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         result = runner.invoke(opml_app, ["categorized", "--help"])
         assert result.exit_code == 0
 
     def test_opml_filtered_help(self):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         result = runner.invoke(opml_app, ["filtered", "--help"])
@@ -385,19 +420,21 @@ class TestCLIStatsExtended:
     """Smoke tests for stats CLI commands."""
 
     def test_stats_command_exists(self):
-        from ai_web_feeds.cli.commands import stats
+        stats = importlib.import_module("ai_web_feeds.cli.commands.stats")
 
         assert stats.app is not None
 
     def test_stats_show_help(self):
-        from ai_web_feeds.cli.commands.stats import app as stats_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        stats_app = _stats_mod.app
 
         runner = CliRunner()
         result = runner.invoke(stats_app, ["show", "--help"])
         assert result.exit_code == 0
 
     def test_stats_show_smoke(self):
-        from ai_web_feeds.cli.commands.stats import app as stats_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        stats_app = _stats_mod.app
 
         runner = CliRunner()
         result = runner.invoke(stats_app, ["show", "--help"])
@@ -409,19 +446,21 @@ class TestCLICorpusExtended:
     """Smoke tests for corpus CLI commands."""
 
     def test_corpus_command_exists(self):
-        from ai_web_feeds.cli.commands import corpus
+        corpus = importlib.import_module("ai_web_feeds.cli.commands.corpus")
 
         assert corpus.app is not None
 
     def test_corpus_export_help(self):
-        from ai_web_feeds.cli.commands.corpus import app as corpus_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        corpus_app = _corpus_mod.app
 
         runner = CliRunner()
         result = runner.invoke(corpus_app, ["export", "--help"])
         assert result.exit_code == 0
 
     def test_corpus_refresh_help(self):
-        from ai_web_feeds.cli.commands.corpus import app as corpus_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        corpus_app = _corpus_mod.app
 
         runner = CliRunner()
         result = runner.invoke(corpus_app, ["refresh", "--help"])
@@ -433,44 +472,54 @@ class TestCLITestCommandExtended:
     """Smoke tests for test CLI commands."""
 
     def test_test_command_exists(self):
-        from ai_web_feeds.cli.commands import test as test_cmd
+        _commands_mod = importlib.import_module("ai_web_feeds.cli.commands")
+        test_cmd = importlib.import_module("ai_web_feeds.cli.commands.test")
 
         assert test_cmd.app is not None
 
     def test_test_all_help(self):
-        from ai_web_feeds.cli.commands.test import app as test_app
+        _test_mod = importlib.import_module("ai_web_feeds.cli.commands.test")
+        test_app = _test_mod.app
 
         runner = CliRunner()
         result = runner.invoke(test_app, ["all", "--help"])
         assert result.exit_code == 0
 
     def test_test_unit_help(self):
-        from ai_web_feeds.cli.commands.test import app as test_app
+        _test_mod = importlib.import_module("ai_web_feeds.cli.commands.test")
+        test_app = _test_mod.app
 
         runner = CliRunner()
         result = runner.invoke(test_app, ["unit", "--help"])
         assert result.exit_code == 0
 
     def test_test_coverage_help(self):
-        from ai_web_feeds.cli.commands.test import app as test_app
+        _test_mod = importlib.import_module("ai_web_feeds.cli.commands.test")
+        test_app = _test_mod.app
 
         runner = CliRunner()
         result = runner.invoke(test_app, ["coverage", "--help"])
         assert result.exit_code == 0
 
     def test_test_file_help(self):
-        from ai_web_feeds.cli.commands.test import app as test_app
+        _test_mod = importlib.import_module("ai_web_feeds.cli.commands.test")
+        test_app = _test_mod.app
 
         runner = CliRunner()
         result = runner.invoke(test_app, ["file", "--help"])
         assert result.exit_code == 0
 
     def test_test_cli_commands_branches_mocked(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.test import app as test_app, get_project_root, run_uv_command
+        _test_mod = importlib.import_module("ai_web_feeds.cli.commands.test")
+        test_app = _test_mod.app
+        get_project_root = _test_mod.get_project_root
+        run_uv_command = _test_mod.run_uv_command
         runner = CliRunner()
-        with patch("ai_web_feeds.cli.commands.test.resolve_uv_executable", return_value="uv"), \
-             patch("ai_web_feeds.cli.commands.test.get_tests_dir", return_value=tmp_path), \
-             patch("ai_web_feeds.cli.commands.test.run_uv_command", return_value=0):
+        with (
+            patch("ai_web_feeds.cli.commands.test.resolve_uv_executable", return_value="uv"),
+            patch("ai_web_feeds.cli.commands.test.get_tests_dir", return_value=tmp_path),
+            patch("ai_web_feeds.cli.commands.test.run_uv_command", return_value=0),
+        ):
             r = runner.invoke(test_app, ["all", "--verbose", "--coverage"])
             assert r.exit_code == 0 or "All tests" in (r.output or "")
             r = runner.invoke(test_app, ["unit", "--fast"])
@@ -487,13 +536,13 @@ class TestCLITestCommandExtended:
             assert r.exit_code in (0, 1) or r is not None
 
 
-
 @pytest.mark.unit
 class TestCLIMainAppExtended:
     """Smoke tests for main CLI app commands."""
 
     def test_main_app_help(self):
-        from ai_web_feeds.cli import app
+        _cli_mod = importlib.import_module("ai_web_feeds.cli")
+        app = _cli_mod.app
 
         runner = CliRunner()
         result = runner.invoke(app, ["--help"])
@@ -503,14 +552,16 @@ class TestCLIMainAppExtended:
             assert cmd in result.output
 
     def test_load_command_help(self):
-        from ai_web_feeds.cli import app
+        _cli_mod = importlib.import_module("ai_web_feeds.cli")
+        app = _cli_mod.app
 
         runner = CliRunner()
         result = runner.invoke(app, ["load", "--help"])
         assert result.exit_code == 0
 
     def test_process_help(self):
-        from ai_web_feeds.cli import app
+        _cli_mod = importlib.import_module("ai_web_feeds.cli")
+        app = _cli_mod.app
 
         runner = CliRunner()
         result = runner.invoke(app, ["process", "--help"])
@@ -522,7 +573,8 @@ class TestCLICommandsWithMocks:
     """Invoke actual CLI command handlers with mocks to increase coverage."""
 
     def test_stats_show_with_data(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.stats import app as stats_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        stats_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -539,7 +591,8 @@ class TestCLICommandsWithMocks:
             assert result is not None
 
     def test_opml_all_with_sources(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -556,12 +609,15 @@ class TestCLICommandsWithMocks:
             inst.get_all_feed_sources.return_value = [src]
             mock_db.return_value = inst
             out = tmp_path / "out.opml"
-            result = runner.invoke(opml_app, ["all", "--output", str(out), "--database", "sqlite:///:memory:"])
+            result = runner.invoke(
+                opml_app, ["all", "--output", str(out), "--database", "sqlite:///:memory:"]
+            )
             # May succeed or fail depending on export internals; ensure no crash on import/construct
             assert result.exit_code in (0, 1, 2)
 
     def test_search_query_smoke_mocked(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -573,7 +629,8 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_recommend_get_smoke_mocked(self):
-        from ai_web_feeds.cli.commands.recommend import app as rec_app
+        _recommend_mod = importlib.import_module("ai_web_feeds.cli.commands.recommend")
+        rec_app = _recommend_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -585,12 +642,14 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_analytics_summary_smoke_mocked(self):
-        from ai_web_feeds.cli.commands.analytics import app as an_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        an_app = _analytics_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db, patch(
-            "ai_web_feeds.cli.commands.analytics.calculate_summary_metrics"
-        ) as mock_calc:
+        with (
+            patch("ai_web_feeds.storage.DatabaseManager") as mock_db,
+            patch("ai_web_feeds.cli.commands.analytics.calculate_summary_metrics") as mock_calc,
+        ):
             inst = MagicMock()
             inst.get_session.return_value.__enter__.return_value = MagicMock()
             mock_db.return_value = inst
@@ -605,7 +664,8 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_corpus_export_smoke_mocked(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.corpus import app as corpus_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        corpus_app = _corpus_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -619,7 +679,8 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_monitor_follow_smoke_mocked(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mock_db:
@@ -630,11 +691,13 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_fetch_one_missing_feed(self):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mock_db, patch(
-            "ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"
+        with (
+            patch("ai_web_feeds.storage.DatabaseManager") as mock_db,
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
         ):
             inst = MagicMock()
             inst.get_feed_source.return_value = None
@@ -643,18 +706,23 @@ class TestCLICommandsWithMocks:
             assert result.exit_code != 0  # Should error
 
     def test_enrich_all_smoke(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.enrich import app as enrich_app
+        _enrich_mod = importlib.import_module("ai_web_feeds.cli.commands.enrich")
+        enrich_app = _enrich_mod.app
 
         runner = CliRunner()
         inp = tmp_path / "feeds.yaml"
         out = tmp_path / "out.yaml"
         schema = tmp_path / "schema.json"
-        inp.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8")
-        with patch("ai_web_feeds.cli.commands.enrich.load_feeds_yaml", return_value={"sources": []}), \
-             patch("ai_web_feeds.cli.commands.enrich.save_feeds_yaml"), \
-             patch("ai_web_feeds.cli.commands.enrich.save_json_schema"), \
-             patch("ai_web_feeds.cli.commands.enrich.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.enrich.DatabaseManager"):
+        inp.write_text(
+            yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8"
+        )
+        with (
+            patch("ai_web_feeds.cli.commands.enrich.load_feeds_yaml", return_value={"sources": []}),
+            patch("ai_web_feeds.cli.commands.enrich.save_feeds_yaml"),
+            patch("ai_web_feeds.cli.commands.enrich.save_json_schema"),
+            patch("ai_web_feeds.cli.commands.enrich.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.enrich.DatabaseManager"),
+        ):
             result = runner.invoke(
                 enrich_app,
                 ["all", "--input", str(inp), "--output", str(out), "--schema", str(schema)],
@@ -662,7 +730,8 @@ class TestCLICommandsWithMocks:
             assert result.exit_code in (0, 1)
 
     def test_export_json_smoke(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.export import app as export_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        export_app = _export_mod.app
 
         runner = CliRunner()
         inp = tmp_path / "in.yaml"
@@ -685,7 +754,8 @@ class TestDeepCLINLPCommands:
     """Deep tests exercising nlp.py command bodies, success + error paths."""
 
     def test_nlp_quality_success_and_warning(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         stats_ok = {
@@ -702,9 +772,10 @@ class TestDeepCLINLPCommands:
             "failed": 2,
             "duration_seconds": 1.0,
         }
-        with patch("ai_web_feeds.config.Settings") as mset, patch(
-            "ai_web_feeds.nlp.jobs.quality_job.QualityBatchJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings") as mset,
+            patch("ai_web_feeds.nlp.jobs.quality_job.QualityBatchJob") as mjob,
+        ):
             mset_inst = MagicMock()
             mset_inst.phase5.quality_batch_size = 20
             mset.return_value = mset_inst
@@ -720,25 +791,35 @@ class TestDeepCLINLPCommands:
             assert "failed" in r2.output.lower()
 
     def test_nlp_quality_error_path(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.quality_job.QualityBatchJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.quality_job.QualityBatchJob") as mjob,
+        ):
             mjob.return_value.run.side_effect = RuntimeError("boom")
             r = runner.invoke(nlp_app, ["quality"])
             assert r.exit_code == 1
             assert "Quality scoring failed" in r.output
 
     def test_nlp_entities_success_error(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
-        stats = {"processed": 4, "entities_found": 12, "unique_entities": 5, "failed": 0, "duration_seconds": 0.5}
-        with patch("ai_web_feeds.config.Settings") as mset, patch(
-            "ai_web_feeds.nlp.jobs.entity_job.EntityBatchJob"
-        ) as mjob:
+        stats = {
+            "processed": 4,
+            "entities_found": 12,
+            "unique_entities": 5,
+            "failed": 0,
+            "duration_seconds": 0.5,
+        }
+        with (
+            patch("ai_web_feeds.config.Settings") as mset,
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityBatchJob") as mjob,
+        ):
             mset_inst = MagicMock()
             mset_inst.phase5.entity_batch_size = 10
             mset.return_value = mset_inst
@@ -747,16 +828,18 @@ class TestDeepCLINLPCommands:
             assert r.exit_code == 0
             assert "Entity Extraction Results" in r.output
 
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.entity_job.EntityBatchJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.entity_job.EntityBatchJob") as mjob,
+        ):
             mjob.return_value.run.side_effect = Exception("ent fail")
             r = runner.invoke(nlp_app, ["entities"])
             assert r.exit_code == 1
             assert "Entity extraction failed" in r.output
 
     def test_nlp_sentiment_success_error(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         stats = {
@@ -768,24 +851,27 @@ class TestDeepCLINLPCommands:
             "failed": 0,
             "duration_seconds": 3.2,
         }
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.sentiment_job.SentimentBatchJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentBatchJob") as mjob,
+        ):
             mjob.return_value.run.return_value = stats
             r = runner.invoke(nlp_app, ["sentiment", "--force"])
             assert r.exit_code == 0
             assert "Sentiment Analysis" in r.output or "Positive" in r.output
             assert "Positive" in r.output or "analyzed" in r.output.lower()
 
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.sentiment_job.SentimentBatchJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.sentiment_job.SentimentBatchJob") as mjob,
+        ):
             mjob.return_value.run.side_effect = RuntimeError("sent")
             r = runner.invoke(nlp_app, ["sentiment"])
             assert r.exit_code == 1
 
     def test_nlp_topics_success_error(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         stats = {
@@ -795,28 +881,32 @@ class TestDeepCLINLPCommands:
             "failed": 0,
             "duration_seconds": 10.1,
         }
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.topic_job.TopicModelingJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.topic_job.TopicModelingJob") as mjob,
+        ):
             mjob.return_value.run.return_value = stats
             r = runner.invoke(nlp_app, ["topics", "--topic", "AI", "--min-articles", "5"])
             assert r.exit_code == 0
             assert "TopicNode Modeling Results" in r.output
 
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.jobs.topic_job.TopicModelingJob"
-        ) as mjob:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.jobs.topic_job.TopicModelingJob") as mjob,
+        ):
             mjob.return_value.run.side_effect = Exception("topic err")
             r = runner.invoke(nlp_app, ["topics"])
             assert r.exit_code == 1
 
     def test_nlp_scheduler_actions(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.scheduler.NLPScheduler"
-        ) as msched:
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.scheduler.NLPScheduler") as msched,
+        ):
             inst = MagicMock()
             inst.scheduler.running = True
             msched.return_value = inst
@@ -828,27 +918,32 @@ class TestDeepCLINLPCommands:
             assert "Invalid action" in rbad.output
 
     def test_nlp_scheduler_error(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.config.Settings"), patch(
-            "ai_web_feeds.nlp.scheduler.NLPScheduler", side_effect=RuntimeError("sch")
+        with (
+            patch("ai_web_feeds.config.Settings"),
+            patch("ai_web_feeds.nlp.scheduler.NLPScheduler", side_effect=RuntimeError("sch")),
         ):
             r = runner.invoke(nlp_app, ["scheduler", "start"])
             assert r.exit_code == 1
 
     def test_nlp_stats_success_and_error(self):
-        from ai_web_feeds.cli.commands.nlp import app as nlp_app
+        _nlp_mod = importlib.import_module("ai_web_feeds.cli.commands.nlp")
+        nlp_app = _nlp_mod.app
 
         runner = CliRunner()
         # Mock sqlmodel heavy usage inside stats; protect missing database module
         dbmod = MagicMock()
         dbmod.get_engine.return_value = MagicMock()
-        with patch.dict("sys.modules", {"ai_web_feeds.database": dbmod}), \
-             patch("ai_web_feeds.config.Settings"), \
-             patch("sqlmodel.Session") as msession, \
-             patch("sqlmodel.select") as msel, \
-             patch("sqlmodel.func") as mfunc:
+        with (
+            patch.dict("sys.modules", {"ai_web_feeds.database": dbmod}),
+            patch("ai_web_feeds.config.Settings"),
+            patch("sqlmodel.Session") as msession,
+            patch("sqlmodel.select") as msel,
+            patch("sqlmodel.func") as mfunc,
+        ):
             mock_sess = MagicMock()
             mock_sess.exec.return_value.one.side_effect = [100, 50, 72.5, 30, 20, 10]
             msession.return_value.__enter__.return_value = mock_sess
@@ -857,8 +952,10 @@ class TestDeepCLINLPCommands:
             assert r.exit_code == 0
             assert "NLP" in r.output
 
-        with patch.dict("sys.modules", {"ai_web_feeds.database": MagicMock()}), \
-             patch("ai_web_feeds.config.Settings"):
+        with (
+            patch.dict("sys.modules", {"ai_web_feeds.database": MagicMock()}),
+            patch("ai_web_feeds.config.Settings"),
+        ):
             r = runner.invoke(nlp_app, ["stats"])
             assert r.exit_code == 1
 
@@ -868,12 +965,15 @@ class TestDeepCLIMonitorCommands:
     """Deep tests for monitor.py including async, db ops, errors."""
 
     def test_monitor_status_with_jobs(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as msched:
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as msched,
+        ):
             dbinst = MagicMock()
             mdb.return_value = dbinst
             sch = MagicMock()
@@ -887,11 +987,14 @@ class TestDeepCLIMonitorCommands:
             assert "Scheduled Jobs" in r.output or "Running" in r.output
 
     def test_monitor_follow_unfollow_list_success_error(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+        ):
             dbinst = MagicMock()
             follow_obj = MagicMock()
             follow_obj.followed_at = "2026-01-01"
@@ -912,14 +1015,17 @@ class TestDeepCLIMonitorCommands:
             assert r4.exit_code == 0
             assert "No followed" in r4.output
 
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+        ):
             mdb.return_value.follow_source.side_effect = Exception("no")
             r = runner.invoke(mon_app, ["follow", "u", "s"])
             assert r.exit_code == 1
 
     def test_monitor_digests_crud(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
 
         runner = CliRunner()
         created = MagicMock()
@@ -930,9 +1036,13 @@ class TestDeepCLIMonitorCommands:
         created.timezone = "UTC"
         created.next_send_at = datetime.now(UTC)
         created.is_active = True
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.monitor.EmailDigest", create=True, return_value=created):
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+            patch(
+                "ai_web_feeds.cli.commands.monitor.EmailDigest", create=True, return_value=created
+            ),
+        ):
             dbinst = MagicMock()
             dbinst.create_email_digest.return_value = created
             dbinst.get_email_digest.return_value = created
@@ -940,7 +1050,9 @@ class TestDeepCLIMonitorCommands:
             dbinst.get_user_digests.return_value = [created]
             mdb.return_value = dbinst
 
-            r1 = runner.invoke(mon_app, ["subscribe-digest", "u1", "e@x.com", "--schedule", "daily"])
+            r1 = runner.invoke(
+                mon_app, ["subscribe-digest", "u1", "e@x.com", "--schedule", "daily"]
+            )
             assert r1.exit_code == 0
             assert "Subscribed" in r1.output
 
@@ -952,27 +1064,36 @@ class TestDeepCLIMonitorCommands:
             assert "Email Digest" in r3.output
 
         # bad schedule
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), patch("ai_web_feeds.cli.commands.monitor.DatabaseManager"):
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager"),
+        ):
             r = runner.invoke(mon_app, ["subscribe-digest", "u", "e@x", "--schedule", "bad"])
             assert r.exit_code == 1
 
         # not found
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb:
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+        ):
             mdb.return_value.get_email_digest.return_value = None
             r = runner.invoke(mon_app, ["unsubscribe-digest", "404"])
             assert r.exit_code == 1
 
     def test_monitor_start_smoke_mocked_async(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app, _run_monitoring
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
+        _run_monitoring = _monitor_mod._run_monitoring
 
         runner = CliRunner()
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as ms, \
-             patch("ai_web_feeds.cli.commands.monitor.WebSocketServer") as mw, \
-             patch("ai_web_feeds.cli.commands.monitor.asyncio.run") as marun:
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as ms,
+            patch("ai_web_feeds.cli.commands.monitor.WebSocketServer") as mw,
+            patch("ai_web_feeds.cli.commands.monitor.asyncio.run") as marun,
+        ):
             mdb.return_value = MagicMock()
             ms.return_value = MagicMock()
             mw.return_value = MagicMock()
@@ -980,30 +1101,42 @@ class TestDeepCLIMonitorCommands:
             r = runner.invoke(mon_app, ["start", "--port", "9876"])
             assert r.exit_code == 0 or "Starting" in (r.output or "")
             # also directly call async func under patch to cover body
-            with patch("ai_web_feeds.cli.commands.monitor.console"), patch("ai_web_feeds.cli.commands.monitor._print_job_status"):
+            with (
+                patch("ai_web_feeds.cli.commands.monitor.console"),
+                patch("ai_web_feeds.cli.commands.monitor._print_job_status"),
+            ):
                 sch = MagicMock()
                 ws = MagicMock()
                 ws.port = 1
+
                 # simulate short run without infinite loop
                 async def fake_run():
                     await _run_monitoring(sch, ws)  # would hang, but we'll patch inside
+
                 # instead patch sleep
-                with patch("ai_web_feeds.cli.commands.monitor.asyncio.sleep", new_callable=AsyncMock, side_effect=[None, asyncio.CancelledError()]):
+                with patch(
+                    "ai_web_feeds.cli.commands.monitor.asyncio.sleep",
+                    new_callable=AsyncMock,
+                    side_effect=[None, asyncio.CancelledError()],
+                ):
                     try:
                         asyncio.run(fake_run())
                     except Exception:
                         pass
 
     def test_monitor_start_keyboard_interrupt(self):
-        from ai_web_feeds.cli.commands.monitor import app as mon_app
+        _monitor_mod = importlib.import_module("ai_web_feeds.cli.commands.monitor")
+        mon_app = _monitor_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.cli.commands.monitor.Settings"), \
-             patch("ai_web_feeds.cli.commands.monitor.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.monitor.DatabaseManager"), \
-             patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as ms, \
-             patch("ai_web_feeds.cli.commands.monitor.WebSocketServer") as mw, \
-             patch("ai_web_feeds.cli.commands.monitor.asyncio.run", side_effect=KeyboardInterrupt):
+        with (
+            patch("ai_web_feeds.cli.commands.monitor.Settings"),
+            patch("ai_web_feeds.cli.commands.monitor.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.monitor.DatabaseManager"),
+            patch("ai_web_feeds.cli.commands.monitor.SchedulerManager") as ms,
+            patch("ai_web_feeds.cli.commands.monitor.WebSocketServer") as mw,
+            patch("ai_web_feeds.cli.commands.monitor.asyncio.run", side_effect=KeyboardInterrupt),
+        ):
             sch = MagicMock()
             ms.return_value = sch
             mw.return_value = MagicMock()
@@ -1017,7 +1150,8 @@ class TestDeepCLISearchCommands:
     """Deep coverage for search.py commands."""
 
     def test_search_query_fulltext_and_semantic(self):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         feed = MagicMock()
@@ -1049,7 +1183,8 @@ class TestDeepCLISearchCommands:
             assert "No results" in r.output
 
     def test_search_autocomplete_init_embeddings_save_list(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.search import app as search_app
+        _search_mod = importlib.import_module("ai_web_feeds.cli.commands.search")
+        search_app = _search_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.search.DatabaseManager") as mdb:
@@ -1062,7 +1197,12 @@ class TestDeepCLISearchCommands:
             inst.get_session.return_value.__enter__.return_value = MagicMock()
             inst.save_user_search.return_value = MagicMock(id=1)
             inst.get_user_saved_searches.return_value = [
-                MagicMock(search_name="s", query_text="q", filters={"t": ["a"]}, last_used_at=datetime.now(UTC))
+                MagicMock(
+                    search_name="s",
+                    query_text="q",
+                    filters={"t": ["a"]},
+                    last_used_at=datetime.now(UTC),
+                )
             ]
             mdb.return_value = inst
 
@@ -1074,8 +1214,10 @@ class TestDeepCLISearchCommands:
             assert r.exit_code == 0
             assert "initialized" in r.output.lower()
 
-            with patch("ai_web_feeds.cli.commands.search.settings", create=True) as mst, \
-                 patch("ai_web_feeds.embeddings.refresh_all_embeddings"):
+            with (
+                patch("ai_web_feeds.cli.commands.search.settings", create=True) as mst,
+                patch("ai_web_feeds.embeddings.refresh_all_embeddings"),
+            ):
                 mst.embedding.provider = "local"
                 r = runner.invoke(search_app, ["embeddings", "--provider", "local"])
                 assert r.exit_code == 0
@@ -1093,7 +1235,8 @@ class TestDeepCLIAnalyticsCommands:
     """Deep for analytics.py CLI + covers some analytics.py gaps."""
 
     def test_analytics_all_subcommands_success_error(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.analytics import app as an_app
+        _analytics_mod = importlib.import_module("ai_web_feeds.cli.commands.analytics")
+        an_app = _analytics_mod.app
 
         runner = CliRunner()
         metrics = {
@@ -1103,21 +1246,42 @@ class TestDeepCLIAnalyticsCommands:
             "avg_response_time": 123.4,
             "health_distribution": {"healthy": 70, "warning": 20, "critical": 10},
         }
-        trending = [{"topic": "AI", "feed_count": 5, "validation_frequency": 1.2, "avg_health_score": 0.9}]
+        trending = [
+            {"topic": "AI", "feed_count": 5, "validation_frequency": 1.2, "avg_health_score": 0.9}
+        ]
         velocity = {
             "avg_per_feed": 3.2,
             "most_active_feed": {"title": "Top", "count": 99},
             "least_active_feed": {"title": "Bot", "count": 1},
             "data_points": [{"date": "2026-01-01", "count": 10} for _ in range(5)],
         }
-        snap = MagicMock(snapshot_date="2026-06-24", total_feeds=100, active_feeds=80, validation_success_rate=0.9, avg_response_time=100.0)
+        snap = MagicMock(
+            snapshot_date="2026-06-24",
+            total_feeds=100,
+            active_feeds=80,
+            validation_success_rate=0.9,
+            avg_response_time=100.0,
+        )
 
-        with patch("ai_web_feeds.cli.commands.analytics.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.analytics.calculate_summary_metrics", return_value=metrics), \
-             patch("ai_web_feeds.cli.commands.analytics.get_trending_topics", return_value=trending), \
-             patch("ai_web_feeds.cli.commands.analytics.get_publication_velocity", return_value=velocity), \
-             patch("ai_web_feeds.cli.commands.analytics.generate_analytics_snapshot", return_value=snap), \
-             patch("ai_web_feeds.cli.commands.analytics.export_analytics_csv", return_value="col1,col2\n1,2"):
+        with (
+            patch("ai_web_feeds.cli.commands.analytics.DatabaseManager") as mdb,
+            patch(
+                "ai_web_feeds.cli.commands.analytics.calculate_summary_metrics",
+                return_value=metrics,
+            ),
+            patch("ai_web_feeds.cli.commands.analytics.get_trending_topics", return_value=trending),
+            patch(
+                "ai_web_feeds.cli.commands.analytics.get_publication_velocity",
+                return_value=velocity,
+            ),
+            patch(
+                "ai_web_feeds.cli.commands.analytics.generate_analytics_snapshot", return_value=snap
+            ),
+            patch(
+                "ai_web_feeds.cli.commands.analytics.export_analytics_csv",
+                return_value="col1,col2\n1,2",
+            ),
+        ):
             inst = MagicMock()
             inst.get_session.return_value.__enter__.return_value = MagicMock()
             mdb.return_value = inst
@@ -1139,7 +1303,9 @@ class TestDeepCLIAnalyticsCommands:
                 assert r.exit_code == 1
 
         # cover error in db etc
-        with patch("ai_web_feeds.cli.commands.analytics.DatabaseManager", side_effect=Exception("dban")):
+        with patch(
+            "ai_web_feeds.cli.commands.analytics.DatabaseManager", side_effect=Exception("dban")
+        ):
             r = runner.invoke(an_app, ["summary"])
             # command catches? may be 1 or print error, but line covered via invoke
             assert r is not None
@@ -1150,17 +1316,22 @@ class TestDeepCLIVisualizeCommands:
     """Deep tests for visualize.py (mock taxonomy since module may be absent)."""
 
     def test_visualize_mermaid_json_stats_success_and_error(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.visualize import app as viz_app
+        _visualize_mod = importlib.import_module("ai_web_feeds.cli.commands.visualize")
+        viz_app = _visualize_mod.app
 
         runner = CliRunner()
         mock_tax = MagicMock()
         mock_tax.topics = [1, 2, 3]
         mock_vis = MagicMock()
         mock_vis.to_mermaid.return_value = "graph TD\nA-->B"
-        mock_vis.to_json_graph.return_value = {"nodes": [{"id":1}], "links": []}
+        mock_vis.to_json_graph.return_value = {"nodes": [{"id": 1}], "links": []}
         mock_vis.get_statistics.return_value = {
-            "total_topics": 3, "root_topics": 1, "max_depth": 2, "avg_depth": 1.0,
-            "facets": {"a": 1}, "facet_groups": {"g": 2},
+            "total_topics": 3,
+            "root_topics": 1,
+            "max_depth": 2,
+            "avg_depth": 1.0,
+            "facets": {"a": 1},
+            "facet_groups": {"g": 2},
         }
 
         tax_mod = MagicMock()
@@ -1170,7 +1341,11 @@ class TestDeepCLIVisualizeCommands:
             outm = tmp_path / "t.mmd"
             r = runner.invoke(viz_app, ["mermaid", "--output", str(outm), "--no-preview"])
             assert r.exit_code == 0
-            assert outm.exists() or "Mermaid" in (r.output or "") or "saved" in (r.output or "").lower()
+            assert (
+                outm.exists()
+                or "Mermaid" in (r.output or "")
+                or "saved" in (r.output or "").lower()
+            )
 
             outj = tmp_path / "t.json"
             r = runner.invoke(viz_app, ["json", "--output", str(outj), "--no-preview"])
@@ -1181,7 +1356,20 @@ class TestDeepCLIVisualizeCommands:
             assert "Taxonomy" in (r.output or "") or "Statistics" in (r.output or "")
 
             # more branches for viz
-            r = runner.invoke(viz_app, ["mermaid", "--direction", "LR", "--max-depth", "2", "--no-relations", "--facets", "a,b", "--no-preview"])
+            r = runner.invoke(
+                viz_app,
+                [
+                    "mermaid",
+                    "--direction",
+                    "LR",
+                    "--max-depth",
+                    "2",
+                    "--no-relations",
+                    "--facets",
+                    "a,b",
+                    "--no-preview",
+                ],
+            )
             assert r.exit_code in (0, 1)
 
         # error paths
@@ -1196,15 +1384,18 @@ class TestDeepCLIRecommendCommands:
     """Deep tests for recommend.py."""
 
     def test_recommend_get_track_weights(self):
-        from ai_web_feeds.cli.commands.recommend import app as rec_app
+        _recommend_mod = importlib.import_module("ai_web_feeds.cli.commands.recommend")
+        rec_app = _recommend_mod.app
 
         runner = CliRunner()
         recs = [
             (MagicMock(id="f1", title="Feed1", topics=["ai"]), 0.95, "similar_topics"),
             (MagicMock(id="f2", title="Feed2", topics=[]), 0.80, "popular"),
         ]
-        with patch("ai_web_feeds.cli.commands.recommend.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.recommend.settings") as mset:
+        with (
+            patch("ai_web_feeds.cli.commands.recommend.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.recommend.settings") as mset,
+        ):
             inst = MagicMock()
             inst.get_user_recommendations.return_value = recs
             inst.get_recommendations.return_value = recs
@@ -1246,7 +1437,8 @@ class TestDeepCLIFetchCommands:
     """Deep tests for fetch.py using poller mocks, asyncio, branches."""
 
     def test_fetch_one_success_error(self):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
 
         runner = CliRunner()
         feed = MagicMock()
@@ -1258,9 +1450,11 @@ class TestDeepCLIFetchCommands:
         job.articles_discovered = 3
         job.response_time_ms = 120
 
-        with patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.fetch.asyncio.run") as mar:
+        with (
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.fetch.asyncio.run") as mar,
+        ):
             inst = MagicMock()
             inst.get_feed_source.return_value = feed
             mdb.return_value = inst
@@ -1269,17 +1463,21 @@ class TestDeepCLIFetchCommands:
             assert r.exit_code == 0
             assert "Fetch successful" in r.output
 
-        with patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb:
+        with (
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
+        ):
             inst = MagicMock()
             inst.get_feed_source.return_value = None
             mdb.return_value = inst
             r = runner.invoke(fetch_app, ["one", "nope"])
             assert r.exit_code != 0
 
-        with patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.fetch.asyncio.run", side_effect=RuntimeError("poll")):
+        with (
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.fetch.asyncio.run", side_effect=RuntimeError("poll")),
+        ):
             inst = MagicMock()
             inst.get_feed_source.return_value = feed
             mdb.return_value = inst
@@ -1287,13 +1485,21 @@ class TestDeepCLIFetchCommands:
             assert r.exit_code != 0
 
     def test_fetch_all_paths(self):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app, _select_feeds
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
+        _select_feeds = _fetch_mod._select_feeds
         from ai_web_feeds.models import CurationStatus
 
         runner = CliRunner()
-        f1 = MagicMock(id="1", feed="u", title="t1", curation_status=CurationStatus.VERIFIED, verified=True)
-        f2 = MagicMock(id="2", feed=None, title="t2", curation_status=CurationStatus.VERIFIED, verified=True)
-        f3 = MagicMock(id="3", feed="u", title="t3", curation_status=CurationStatus.ARCHIVED, verified=False)
+        f1 = MagicMock(
+            id="1", feed="u", title="t1", curation_status=CurationStatus.VERIFIED, verified=True
+        )
+        f2 = MagicMock(
+            id="2", feed=None, title="t2", curation_status=CurationStatus.VERIFIED, verified=True
+        )
+        f3 = MagicMock(
+            id="3", feed="u", title="t3", curation_status=CurationStatus.ARCHIVED, verified=False
+        )
 
         # test selector
         selected = _select_feeds([f1, f2, f3], limit=5, verified_only=False)
@@ -1302,9 +1508,11 @@ class TestDeepCLIFetchCommands:
         assert len(selectedv) == 1
 
         jobok = MagicMock(status=MagicMock(value="ok"), articles_discovered=1, response_time_ms=10)
-        with patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.fetch.asyncio.run") as mar:
+        with (
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.fetch.asyncio.run") as mar,
+        ):
             inst = MagicMock()
             inst.get_all_feed_sources.return_value = [f1]
             mdb.return_value = inst
@@ -1313,8 +1521,10 @@ class TestDeepCLIFetchCommands:
             assert r.exit_code == 0
             assert "Fetch Results" in r.output
 
-        with patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"), \
-             patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb:
+        with (
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+            patch("ai_web_feeds.cli.commands.fetch.DatabaseManager") as mdb,
+        ):
             inst = MagicMock()
             inst.get_all_feed_sources.return_value = []
             mdb.return_value = inst
@@ -1328,17 +1538,25 @@ class TestDeepCLIValidateCommands:
     """Deep coverage for CLI validate.py (not core). Covers schema, http, report, branches, data dir."""
 
     def test_validate_feeds_topics_references_all(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.validate import app as val_app
+        _validate_mod = importlib.import_module("ai_web_feeds.cli.commands.validate")
+        val_app = _validate_mod.app
 
         runner = CliRunner()
         # use real data but to isolate, patch get_data_dir and jsonschema
-        with patch("ai_web_feeds.cli.commands.validate.get_data_dir", return_value=tmp_path), \
-             patch("ai_web_feeds.cli.commands.validate.jsonschema", create=True) as mjs:
+        with (
+            patch("ai_web_feeds.cli.commands.validate.get_data_dir", return_value=tmp_path),
+            patch("ai_web_feeds.cli.commands.validate.jsonschema", create=True) as mjs,
+        ):
             mjs.validate.return_value = None
             # write files so open works
-            (tmp_path / "feeds.yaml").write_text(yaml.safe_dump({"schema_version": "v", "sources": [{"id": "a", "topics": ["t"]}]}), encoding="utf-8")
+            (tmp_path / "feeds.yaml").write_text(
+                yaml.safe_dump({"schema_version": "v", "sources": [{"id": "a", "topics": ["t"]}]}),
+                encoding="utf-8",
+            )
             (tmp_path / "feeds.schema.json").write_text("{}", encoding="utf-8")
-            (tmp_path / "topics.yaml").write_text(yaml.safe_dump({"topics": [{"id": "t"}]}), encoding="utf-8")
+            (tmp_path / "topics.yaml").write_text(
+                yaml.safe_dump({"topics": [{"id": "t"}]}), encoding="utf-8"
+            )
             (tmp_path / "topics.schema.json").write_text("{}", encoding="utf-8")
 
             r = runner.invoke(val_app, ["feeds"])
@@ -1354,7 +1572,8 @@ class TestDeepCLIValidateCommands:
             assert r.exit_code == 0
 
     def test_validate_feeds_errors(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.validate import app as val_app
+        _validate_mod = importlib.import_module("ai_web_feeds.cli.commands.validate")
+        val_app = _validate_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.validate.get_data_dir", return_value=tmp_path):
@@ -1365,17 +1584,21 @@ class TestDeepCLIValidateCommands:
         # patch sys to intercept import inside fn for error branch
         fake_js = MagicMock()
         import jsonschema as realjs
+
         fake_js.ValidationError = realjs.ValidationError
         fake_js.validate.side_effect = realjs.ValidationError("bad", path=["x"])
-        with patch.dict("sys.modules", {"jsonschema": fake_js}), \
-             patch("ai_web_feeds.cli.commands.validate.get_data_dir", return_value=tmp_path):
+        with (
+            patch.dict("sys.modules", {"jsonschema": fake_js}),
+            patch("ai_web_feeds.cli.commands.validate.get_data_dir", return_value=tmp_path),
+        ):
             (tmp_path / "feeds.yaml").write_text("{}", encoding="utf-8")
             (tmp_path / "feeds.schema.json").write_text("{}", encoding="utf-8")
             r = runner.invoke(val_app, ["feeds"])
             assert r.exit_code != 0
 
     def test_validate_http_and_report(self):
-        from ai_web_feeds.cli.commands.validate import app as val_app
+        _validate_mod = importlib.import_module("ai_web_feeds.cli.commands.validate")
+        val_app = _validate_mod.app
 
         runner = CliRunner()
         mock_res = MagicMock()
@@ -1387,9 +1610,11 @@ class TestDeepCLIValidateCommands:
         mock_res2.response_time_ms = 50
         mock_res2.warnings = ["timeout: foo"]
 
-        with patch("ai_web_feeds.cli.commands.validate.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.validate.asyncio.run") as mar, \
-             patch("ai_web_feeds.cli.commands.validate.validate_all_feeds", new=AsyncMock()):
+        with (
+            patch("ai_web_feeds.cli.commands.validate.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.validate.asyncio.run") as mar,
+            patch("ai_web_feeds.cli.commands.validate.validate_all_feeds", new=AsyncMock()),
+        ):
             inst = MagicMock()
             fs = MagicMock(id="f1", title="t")
             inst.get_feed_source.return_value = fs
@@ -1398,7 +1623,7 @@ class TestDeepCLIValidateCommands:
             mdb.return_value = inst
             mar.return_value = [mock_res, mock_res2]
             r = runner.invoke(val_app, ["http", "--feed-id", "f1"])
-            assert r.exit_code == 0 or r.exit_code == 1  # may exit on failure count
+            assert r.exit_code in {0, 1}  # may exit on failure count
             r = runner.invoke(val_app, ["http", "--concurrency", "2"])
             # covered
             assert r is not None
@@ -1407,8 +1632,10 @@ class TestDeepCLIValidateCommands:
             r = runner.invoke(val_app, ["http"])
             assert r is not None
 
-        with patch("ai_web_feeds.cli.commands.validate.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.validate.calculate_health_score", return_value=0.85):
+        with (
+            patch("ai_web_feeds.cli.commands.validate.DatabaseManager") as mdb,
+            patch("ai_web_feeds.validate.calculate_health_score", return_value=0.85),
+        ):
             inst = MagicMock()
             fs = MagicMock(id="f1", title="t1", verified=True)
             hist = [MagicMock(is_valid=True)]
@@ -1429,7 +1656,8 @@ class TestDeepCLIValidateCommands:
             assert r.exit_code == 0 or "No validation" in (r.output or "")
 
     def test_validate_http_no_feeds_error(self):
-        from ai_web_feeds.cli.commands.validate import app as val_app
+        _validate_mod = importlib.import_module("ai_web_feeds.cli.commands.validate")
+        val_app = _validate_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.validate.DatabaseManager") as mdb:
@@ -1448,7 +1676,8 @@ class TestDeepCLIMoreCommands:
     """Additional deep coverage for other CLI to help overall % (topics, corpus, etc not required but useful)."""
 
     def test_stats_show_deep(self):
-        from ai_web_feeds.cli.commands.stats import app as st_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        st_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.storage.DatabaseManager") as mdb:
@@ -1464,7 +1693,8 @@ class TestDeepCLIMoreCommands:
             assert r is not None
 
     def test_corpus_export_deep(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.corpus import app as c_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        c_app = _corpus_mod.app
 
         runner = CliRunner()
         out = tmp_path / "c.json"
@@ -1476,7 +1706,8 @@ class TestDeepCLIMoreCommands:
             assert r.exit_code in (0, 1)
 
     def test_stats_show_no_feeds(self):
-        from ai_web_feeds.cli.commands.stats import app as st_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        st_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mdb:
@@ -1488,7 +1719,8 @@ class TestDeepCLIMoreCommands:
             assert "No feed sources" in (r.output or "")
 
     def test_stats_show_with_varied_types(self):
-        from ai_web_feeds.cli.commands.stats import app as st_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        st_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mdb:
@@ -1508,7 +1740,8 @@ class TestDeepCLIMoreCommands:
             assert "Total Feeds: 2" in (r.output or "")
 
     def test_opml_categorized_and_filtered(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         out_c = tmp_path / "cat.opml"
@@ -1534,10 +1767,12 @@ class TestDeepCLIMoreCommands:
             assert r2.exit_code in (0, 1, 2)
 
     def test_opml_no_sources_errors(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb:
+        # Command binds DatabaseManager at import; patch that name, not storage.
+        with patch("ai_web_feeds.cli.commands.opml.DatabaseManager") as mdb:
             inst = MagicMock()
             inst.get_all_feed_sources.return_value = []
             mdb.return_value = inst
@@ -1546,33 +1781,48 @@ class TestDeepCLIMoreCommands:
                 assert r.exit_code != 0  # raises Exit(1)
 
     def test_corpus_refresh_smoke(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.corpus import app as c_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        c_app = _corpus_mod.app
 
         runner = CliRunner()
         out = tmp_path / "r.json"
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.corpus.FeedPoller") as mpoller, \
-             patch("ai_web_feeds.cli.commands.corpus.Settings"):
+        with (
+            patch("ai_web_feeds.storage.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.corpus.FeedPoller") as mpoller,
+            patch("ai_web_feeds.cli.commands.corpus.Settings"),
+        ):
             inst = MagicMock()
-            inst.export_articles_corpus.return_value = {"metadata": {"article_count": 3, "feed_count": 1}}
+            inst.export_articles_corpus.return_value = {
+                "metadata": {"article_count": 3, "feed_count": 1}
+            }
             mdb.return_value = inst
             poller_inst = MagicMock()
-            poller_inst.refresh_corpus.return_value = {"successful_feeds": 1, "attempted_feeds": 1, "failed_feeds": 0, "failed_feed_ids": []}
+            poller_inst.refresh_corpus.return_value = {
+                "successful_feeds": 1,
+                "attempted_feeds": 1,
+                "failed_feeds": 0,
+                "failed_feed_ids": [],
+            }
             mpoller.return_value = poller_inst
             r = runner.invoke(c_app, ["refresh", "--output", str(out)])
             assert r.exit_code in (0, 1)
 
     def test_corpus_error_paths(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.corpus import app as c_app
+        _corpus_mod = importlib.import_module("ai_web_feeds.cli.commands.corpus")
+        c_app = _corpus_mod.app
 
         runner = CliRunner()
         out = tmp_path / "e.json"
-        with patch("ai_web_feeds.storage.DatabaseManager", side_effect=Exception("db err")):
+        # Command binds DatabaseManager at import; patch that name, not storage.
+        with patch(
+            "ai_web_feeds.cli.commands.corpus.DatabaseManager", side_effect=Exception("db err")
+        ):
             r = runner.invoke(c_app, ["export", "--output", str(out)])
             assert r.exit_code != 0
 
     def test_topics_list_and_add_smoke(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.topics import app as t_app
+        _topics_mod = importlib.import_module("ai_web_feeds.cli.commands.topics")
+        t_app = _topics_mod.app
 
         runner = CliRunner()
         # patch load to avoid real fs
@@ -1581,36 +1831,56 @@ class TestDeepCLIMoreCommands:
             r = runner.invoke(t_app, ["list", "--limit", "5"])
             assert r.exit_code in (0, 1)
         # add subcmd
-        with patch("ai_web_feeds.cli.commands.topics._get_topics_path", return_value=tmp_path / "topics.yaml"), \
-             patch("pathlib.Path.exists", return_value=True), \
-             patch("builtins.open", create=True) as mopen:
+        with (
+            patch(
+                "ai_web_feeds.cli.commands.topics._get_topics_path",
+                return_value=tmp_path / "topics.yaml",
+            ),
+            patch("pathlib.Path.exists", return_value=True),
+            patch("builtins.open", create=True) as mopen,
+        ):
             # simulate write without actual
             mopen.return_value.__enter__.return_value.write = Mock()
             r = runner.invoke(t_app, ["add", "newtopic", "--name", "New", "--facet", "domain"])
             assert r is not None
 
     def test_add_more_branches_deep(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.add import app as add_app
+        _add_mod = importlib.import_module("ai_web_feeds.cli.commands.add")
+        add_app = _add_mod.app
 
         runner = CliRunner()
         fpath = tmp_path / "feeds.yaml"
-        fpath.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8")
+        fpath.write_text(
+            yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": []}), encoding="utf-8"
+        )
         # trigger looks_like false already covered elsewhere; here hit duplicate + enrich path
         fpath2 = tmp_path / "f2.yaml"
-        fpath2.write_text(yaml.safe_dump({"schema_version": "feeds-3.0.0", "sources": [{"feed": "https://dup2.com/f.xml"}]}), encoding="utf-8")
-        with patch("ai_web_feeds.enrich.enrich_feed_source") as menrich, \
-             patch("ai_web_feeds.validate.validate_feeds"):
+        fpath2.write_text(
+            yaml.safe_dump(
+                {"schema_version": "feeds-3.0.0", "sources": [{"feed": "https://dup2.com/f.xml"}]}
+            ),
+            encoding="utf-8",
+        )
+        with (
+            patch("ai_web_feeds.enrich.enrich_feed_source") as menrich,
+            patch("ai_web_feeds.validate.validate_feeds"),
+        ):
             menrich.return_value = {"id": "d"}
             # use 'feed' key match for dup
-            r = runner.invoke(add_app, ["https://dup2.com/f.xml", "--enrich", "--input", str(fpath2)])
+            r = runner.invoke(
+                add_app, ["https://dup2.com/f.xml", "--enrich", "--input", str(fpath2)]
+            )
             assert r.exit_code in (0, 1)
 
     def test_fetch_more_paths(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.fetch import app as fetch_app
+        _fetch_mod = importlib.import_module("ai_web_feeds.cli.commands.fetch")
+        fetch_app = _fetch_mod.app
 
         runner = CliRunner()
-        with patch("ai_web_feeds.storage.DatabaseManager") as mdb, \
-             patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"):
+        with (
+            patch("ai_web_feeds.storage.DatabaseManager") as mdb,
+            patch("ai_web_feeds.cli.commands.fetch.upgrade_database_to_head"),
+        ):
             inst = MagicMock()
             # one missing
             inst.get_feed_source.return_value = None
@@ -1622,7 +1892,8 @@ class TestDeepCLIMoreCommands:
             assert r is not None
 
     def test_export_more_paths(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.export import app as exp_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        exp_app = _export_mod.app
 
         runner = CliRunner()
         inp = tmp_path / "in.yaml"
@@ -1633,11 +1904,14 @@ class TestDeepCLIMoreCommands:
             assert r.exit_code in (0, 1, 2)
         # error load - patch at source of name used in module
         with patch("ai_web_feeds.cli.commands.export.load_feeds", side_effect=Exception("bad")):
-            r = runner.invoke(exp_app, ["json", "--input", str(inp), "--output", str(tmp_path / "e.json")])
+            r = runner.invoke(
+                exp_app, ["json", "--input", str(inp), "--output", str(tmp_path / "e.json")]
+            )
             assert r.exit_code != 0
 
     def test_export_opml_wrap_branch(self, tmp_path: Path):
-        from ai_web_feeds.cli.commands.export import app as exp_app
+        _export_mod = importlib.import_module("ai_web_feeds.cli.commands.export")
+        exp_app = _export_mod.app
 
         runner = CliRunner()
         inp = tmp_path / "in.yaml"
@@ -1655,7 +1929,8 @@ class TestOpmlCommandsDeep:
     """Exercise OPML CLI command bodies with real FeedSource objects."""
 
     def test_opml_all_generates_file(self, tmp_path: Path, sample_feed_source):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         out = tmp_path / "feeds.opml"
@@ -1670,7 +1945,8 @@ class TestOpmlCommandsDeep:
         assert "AI Web Feeds" in out.read_text(encoding="utf-8")
 
     def test_opml_categorized_generates_file(self, tmp_path: Path, sample_feed_sources):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         out = tmp_path / "cat.opml"
@@ -1684,7 +1960,8 @@ class TestOpmlCommandsDeep:
         assert out.exists()
 
     def test_opml_filtered_by_topic(self, tmp_path: Path, sample_feed_sources):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         out = tmp_path / "filtered.opml"
@@ -1705,7 +1982,8 @@ class TestOpmlCommandsDeep:
         assert out.exists()
 
     def test_opml_all_empty_exits_error(self):
-        from ai_web_feeds.cli.commands.opml import app as opml_app
+        _opml_mod = importlib.import_module("ai_web_feeds.cli.commands.opml")
+        opml_app = _opml_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.opml.DatabaseManager") as mock_db:
@@ -1719,7 +1997,8 @@ class TestStatsCommandsDeep:
     """Exercise stats CLI show command output."""
 
     def test_stats_show_prints_counts(self, sample_feed_sources):
-        from ai_web_feeds.cli.commands.stats import app as stats_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        stats_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mock_db:
@@ -1730,7 +2009,8 @@ class TestStatsCommandsDeep:
         assert "Total Feeds:" in result.output
 
     def test_stats_show_empty(self):
-        from ai_web_feeds.cli.commands.stats import app as stats_app
+        _stats_mod = importlib.import_module("ai_web_feeds.cli.commands.stats")
+        stats_app = _stats_mod.app
 
         runner = CliRunner()
         with patch("ai_web_feeds.cli.commands.stats.DatabaseManager") as mock_db:

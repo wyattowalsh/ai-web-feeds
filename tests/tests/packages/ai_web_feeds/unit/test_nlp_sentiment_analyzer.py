@@ -64,13 +64,17 @@ class TestSentimentAnalyzer:
         """Test SentimentAnalyzer with custom settings"""
         settings = Settings()
         settings.phase5.sentiment_model = "custom-model"
+        injected_model = MagicMock()
 
+        # model= returns before pipeline(), so custom-model is never resolved on the hub.
         with patch("ai_web_feeds.nlp.sentiment_analyzer.pipeline") as mock_pipeline:
-            mock_pipe = MagicMock()
-            mock_pipeline.return_value = mock_pipe
-            analyzer = SentimentAnalyzer(settings)
+            analyzer = SentimentAnalyzer(settings, model=injected_model)
 
             assert analyzer.config.sentiment_model == "custom-model"
+            assert analyzer.model_name == "custom-model"
+            assert analyzer.settings is settings
+            assert analyzer.pipeline is injected_model
+            mock_pipeline.assert_not_called()
 
     def test_analyze_positive_sentiment(self, analyzer, positive_article):
         """Test positive sentiment classification"""

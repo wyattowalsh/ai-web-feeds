@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from ai_web_feeds.models import FeedSource, FeedValidationResult
 from ai_web_feeds.validate import (
     ValidationError,
     ValidationResult,
@@ -16,7 +17,6 @@ from ai_web_feeds.validate import (
     validate_feeds,
     validate_topics,
 )
-from ai_web_feeds.models import FeedSource, FeedValidationResult
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -495,9 +495,7 @@ class TestValidateFeedUrl:
 
     @patch("ai_web_feeds.validate.feedparser.parse")
     @patch("ai_web_feeds.validate.httpx.AsyncClient")
-    async def test_validate_feed_url_retries_on_rate_limit(
-        self, mock_client_class, mock_parse
-    ):
+    async def test_validate_feed_url_retries_on_rate_limit(self, mock_client_class, mock_parse):
         """HTTP 429 should retry and succeed on a later attempt."""
         rate_limited = Mock(status_code=429, text="")
         success = Mock(status_code=200, text="<rss></rss>")
@@ -651,10 +649,14 @@ class TestHealthAndInactiveMarking:
 
         history = {
             "active1": [
-                FeedValidationResult(feed_source_id="active1", is_valid=True, validated_at=recent_date)
+                FeedValidationResult(
+                    feed_source_id="active1", is_valid=True, validated_at=recent_date
+                )
             ],
             "inactive1": [
-                FeedValidationResult(feed_source_id="inactive1", is_valid=True, validated_at=old_date)
+                FeedValidationResult(
+                    feed_source_id="inactive1", is_valid=True, validated_at=old_date
+                )
             ],
             "inactive2": [],  # no history -> skipped per impl
         }
@@ -675,7 +677,11 @@ class TestHealthAndInactiveMarking:
         feed.is_active = True  # pre-set
         feeds = [feed]
         hist = {
-            "f1": [FeedValidationResult(feed_source_id="f1", is_valid=True, validated_at=datetime.now())]
+            "f1": [
+                FeedValidationResult(
+                    feed_source_id="f1", is_valid=True, validated_at=datetime.now()
+                )
+            ]
         }
         marked = mark_inactive_feeds(feeds, hist, inactive_threshold_days=30)
         assert marked == []
@@ -687,9 +693,10 @@ class TestValidateAdditionalBranches:
     """Cover remaining branches in validate: feed validation, all, health, no-feed cases."""
 
     def test_validate_feed_no_url(self):
+        import asyncio
+
         from ai_web_feeds.models import FeedSource
         from ai_web_feeds.validate import validate_feed
-        import asyncio
 
         fs = FeedSource(id="no", title="NoFeed", feed=None, url="http://ex")
         res = asyncio.run(validate_feed(fs))
@@ -698,8 +705,8 @@ class TestValidateAdditionalBranches:
 
     @pytest.mark.asyncio
     async def test_validate_all_feeds_no_progress(self, mocker):
-        from ai_web_feeds.validate import validate_all_feeds
         from ai_web_feeds.models import FeedSource
+        from ai_web_feeds.validate import validate_all_feeds
 
         mock_v = mocker.patch("ai_web_feeds.validate.validate_feed", new_callable=mocker.AsyncMock)
         mock_v.return_value = FeedValidationResult(feed_source_id="x", is_valid=True)
@@ -708,24 +715,33 @@ class TestValidateAdditionalBranches:
         assert len(res) == 1
 
     def test_calculate_health_score_edges(self):
-        from ai_web_feeds.validate import calculate_health_score
         from ai_web_feeds.models import FeedValidationResult
+        from ai_web_feeds.validate import calculate_health_score
 
         assert calculate_health_score([]) == 0.0
-        res = [FeedValidationResult(feed_source_id="1", is_valid=True), FeedValidationResult(feed_source_id="2", is_valid=False)]
+        res = [
+            FeedValidationResult(feed_source_id="1", is_valid=True),
+            FeedValidationResult(feed_source_id="2", is_valid=False),
+        ]
         score = calculate_health_score(res)
         assert 0.0 <= score <= 1.0
 
     @pytest.mark.asyncio
     async def test_validate_feed_url_timeout_path(self, mocker):
         from ai_web_feeds.validate import validate_feed_url
-        mocker.patch("ai_web_feeds.validate.httpx.AsyncClient.get", new_callable=mocker.AsyncMock, side_effect=Exception("timeout sim"))
+
+        mocker.patch(
+            "ai_web_feeds.validate.httpx.AsyncClient.get",
+            new_callable=mocker.AsyncMock,
+            side_effect=Exception("timeout sim"),
+        )
         r = await validate_feed_url("https://slow")
         assert r["success"] is False
         assert r["error_message"] is not None
 
     def test_validate_topics_non_list(self):
         from ai_web_feeds.validate import validate_topics
+
         # missing key uses default [], covers post-get code path without crash
         res = validate_topics({})
         assert isinstance(res, ValidationResult)

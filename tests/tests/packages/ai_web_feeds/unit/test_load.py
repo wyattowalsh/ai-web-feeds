@@ -6,14 +6,14 @@ from pathlib import Path
 import pytest
 import yaml
 from ai_web_feeds.load import (
+    _is_docs_feed,
+    _is_forum_domain,
     canonicalize_catalog,
     infer_source_type,
     load_feeds,
     load_topics,
     save_feeds,
     save_topics,
-    _is_forum_domain,
-    _is_docs_feed,
 )
 from hypothesis import given
 from hypothesis import strategies as st

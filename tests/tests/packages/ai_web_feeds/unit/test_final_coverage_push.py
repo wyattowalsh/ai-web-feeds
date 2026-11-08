@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -32,11 +34,15 @@ class TestUtilsPlatformGeneratorsPush:
             generate_substack_feed_url,
         )
 
-        assert "dev.to/feed" in generate_devto_feed_url("https://dev.to/user")
-        assert generate_devto_feed_url(
+        devto_url = generate_devto_feed_url("https://dev.to/user")
+        assert devto_url is not None
+        assert "dev.to/feed" in devto_url
+        devto_user = generate_devto_feed_url(
             "https://dev.to",
             {"devto": {"username": "alice"}},
-        ).endswith("alice")
+        )
+        assert devto_user is not None
+        assert devto_user.endswith("alice")
         assert generate_github_feed_url("https://github.com/org/repo")
         assert generate_substack_feed_url("https://example.substack.com")
 
@@ -181,7 +187,10 @@ class TestEntityExtractorFinalPush:
     def extractor(self):
         from ai_web_feeds.nlp.entity_extractor import EntityExtractor
 
-        with patch("spacy.load", return_value=MagicMock()):
+        with patch(
+            "ai_web_feeds.nlp.entity_extractor.spacy.load",
+            return_value=MagicMock(),
+        ):
             yield EntityExtractor()
 
     def test_normalize_entity_list_path(self, extractor) -> None:
@@ -209,7 +218,7 @@ class TestAnalyticsTopicStatsPush:
         session.exec.return_value.first.return_value = date.today()
         ts = TopicStats(
             topic="ai",
-            snapshot_date=date.today(),
+            snapshot_date=date.today().isoformat(),
             feed_count=10,
             validation_frequency=0.5,
             avg_health_score=0.8,
@@ -673,7 +682,7 @@ class TestCoverageNinetyPercentPush:
                 format=ExportFormat.CSV,
                 limit=3,
                 device_id="dev-1",
-                session=None,
+                session=cast(Any, None),
             )
             assert csv_resp.media_type == "text/csv"
             stream = await stream_export(
@@ -684,16 +693,17 @@ class TestCoverageNinetyPercentPush:
     def test_utils_github_and_hackernews_config_paths(self) -> None:
         from ai_web_feeds.utils import generate_github_feed_url, generate_hackernews_feed_url
 
-        assert generate_hackernews_feed_url(
+        newest = generate_hackernews_feed_url(
             "https://news.ycombinator.com",
             {"hackernews": {"feed_type": "newest"}},
-        ).endswith("newest.rss")
+        )
+        assert newest is not None
+        assert newest.endswith("newest.rss")
         assert generate_github_feed_url("https://github.com/org/repo/releases.atom")
 
-    @patch("ai_web_feeds.nlp.jobs.topic_job.TopicModeler")
-    def test_topic_modeler_job_success_with_db(
-        self, mock_modeler_cls, temp_db_path, sample_feed_source
-    ) -> None:
+    def test_topic_modeler_job_success_with_db(self, temp_db_path, sample_feed_source) -> None:
+        import importlib.util
+
         from ai_web_feeds.models import ArticleEntry
         from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
         from ai_web_feeds.storage import DatabaseManager
@@ -716,15 +726,25 @@ class TestCoverageNinetyPercentPush:
                 )
             session.commit()
 
-        discovered = MagicMock()
-        discovered.name = "Subtopic"
-        discovered.keywords = ["ml"]
-        discovered.coherence_score = 0.6
-        discovered.article_count = 5
-        mock_modeler_cls.return_value.discover_subtopics.return_value = [discovered]
         job = TopicModelingJob(db_manager=db)
-        stats = job.run(min_articles=5)
-        assert stats["subtopics_discovered"] >= 1
+        stats = job.run(batch_size=12, force=False)
+        assert set(stats) == {
+            "processed",
+            "skipped",
+            "topics_processed",
+            "subtopics_discovered",
+            "articles_analyzed",
+            "failed",
+            "duration_seconds",
+        }
+        assert stats["processed"] == 12
+        assert stats["duration_seconds"] >= 0
+        if importlib.util.find_spec("gensim") is None:
+            assert stats["skipped"] == 12
+            assert stats["topics_processed"] == 0
+            assert stats["subtopics_discovered"] == 0
+            assert stats["articles_analyzed"] == 0
+            assert stats["failed"] == 0
 
     def test_generate_analytics_snapshot_and_csv(self) -> None:
         from ai_web_feeds.analytics import export_analytics_csv, generate_analytics_snapshot

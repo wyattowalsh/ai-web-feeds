@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from ai_web_feeds.models import Notification, NotificationType
 from ai_web_feeds.storage import DatabaseManager
 from ai_web_feeds.websocket_server import WebSocketServer
