@@ -59,9 +59,9 @@ export async function middleware(request: NextRequest) {
   // style-src still requires 'unsafe-inline' because Tailwind 4, Fumadocs UI, shadcn/ui,
   // katex, and tw-animate-css emit style rules that are not practical to nonce at this time.
   //
-  // connect-src is intentionally broad for now (covers same-origin APIs, future WS,
-  // OAuth provider callbacks, and remote feed images). It can be further scoped once
-  // reader real-time and any additional third-party origins are finalized.
+  // connect-src is same-origin only. Cross-origin fetches and websockets need an
+  // explicit origin once reader real-time and OAuth callbacks are finalized.
+  // Remote feed images stay on img-src, not connect-src.
   //
   // img-src allows https: because article content comes from arbitrary external feeds.
   const csp = [
@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https: wss:",
+    "connect-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

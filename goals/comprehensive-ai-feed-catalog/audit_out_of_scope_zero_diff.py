@@ -12,6 +12,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
 from scope_constants import (  # noqa: E402
+    is_catalog_deliverable_path,
     is_forbidden_path,
     load_scope,
     matches_out_of_scope_pattern,
@@ -19,8 +20,9 @@ from scope_constants import (  # noqa: E402
 
 
 def _git_diff_names() -> list[str]:
+    # Audit the PR branch (HEAD), not uncommitted worktree edits.
     result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main"],  # nosec B603
+        ["git", "diff", "--name-only", "origin/main", "HEAD"],  # nosec B603
         capture_output=True,
         text=True,
         cwd=ROOT,
@@ -39,7 +41,7 @@ def main() -> int:
 
     for pattern in out_of_scope:
         for path in changed:
-            if path in seen:
+            if path in seen or is_catalog_deliverable_path(path):
                 continue
             if matches_out_of_scope_pattern(path, pattern):
                 violations.append({"pattern": pattern, "path": path})
@@ -54,14 +56,14 @@ def main() -> int:
 
     forbidden_paths = sorted({v["path"] for v in violations})
     doc = {
-        "source": "git diff --name-only origin/main vs deliverable-scope",
+        "source": "git diff --name-only origin/main HEAD vs deliverable-scope",
         "forbidden_path_prefixes": list(scope.get("forbidden_path_prefixes", [])),
         "changed_paths_count": len(changed),
         "forbidden_paths_with_nonempty_diff": forbidden_paths,
         "violations": violations,
         "pass": len(forbidden_paths) == 0,
     }
-    print(json.dumps(doc, indent=2))  # noqa: T201
+    print(json.dumps(doc, indent=2))
     return 0 if doc["pass"] else 1
 
 

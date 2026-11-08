@@ -5,7 +5,7 @@ description: Heuristic-based article quality assessment for AI Web Feeds
 
 # Quality Scoring
 
-Quality Scoring analyzes articles using heuristic metrics to compute quality scores ranging from 0-100. This helps surface high-quality content and filter low-quality articles.
+Quality scoring reads stored article text and applies heuristics. An optional model from the ml extra can be injected; importing the scorer does not download weights. Scores range from 0-100. This helps surface high-quality content and filter low-quality articles.
 
 ## Overview
 
@@ -15,7 +15,7 @@ The quality scorer evaluates articles across multiple dimensions:
 - **References**: External links, academic citations, reputable domains
 - **Author Authority**: Author credentials and expertise (partial)
 - **Domain Reputation**: Feed source quality and reliability
-- **Engagement**: Read time estimates and user signals (partial)
+- **Engagement**: Estimated read time only
 
 ## Architecture
 
@@ -208,10 +208,8 @@ PHASE5_QUALITY_MIN_WORDS=100
 
 Planned improvements for quality scoring:
 
-1. **Author Authority**: H-index, publication history, expert verification
-2. **Engagement Metrics**: Read time tracking, shares, comments
-3. **Machine Learning**: Train models on user feedback to refine scoring
-4. **Domain Reputation**: Crowdsourced feed quality ratings
+1. **Author Authority**: Richer use of stored author fields, such as publication history and expert verification
+2. **Domain Reputation**: Crowdsourced feed quality ratings
 
 ## Troubleshooting
 

@@ -13,11 +13,23 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
 from scope_constants import is_forbidden_path  # noqa: E402
-HARNESS_DEBRIS = frozenset({
-    "authoritative.patch",
-    "CHANGED_FILES.authoritative.json",
-    "CHANGED_FILES.authoritative.txt",
-})
+
+
+HARNESS_DEBRIS = frozenset(
+    {
+        "authoritative.patch",
+        "CHANGED_FILES.authoritative.json",
+        "CHANGED_FILES.authoritative.txt",
+    }
+)
+
+
+def _is_harness_debris(path: str) -> bool:
+    return (
+        path in HARNESS_DEBRIS
+        or path.startswith("goals/comprehensive-ai-feed-catalog/scratch/")
+        or (path.startswith("tmp-log") and path.endswith(".md"))
+    )
 
 
 def _git_tracked() -> list[str]:
@@ -40,12 +52,7 @@ def _git_untracked() -> list[str]:
         check=False,
     )
     paths = [line[3:].strip() for line in result.stdout.splitlines() if line.startswith("?? ")]
-    return [
-        p
-        for p in paths
-        if p not in HARNESS_DEBRIS
-        and not p.startswith("goals/comprehensive-ai-feed-catalog/scratch/")
-    ]
+    return [p for p in paths if not _is_harness_debris(p)]
 
 
 def authoritative_paths() -> tuple[list[str], list[str]]:
@@ -65,6 +72,23 @@ def write_authoritative_patch(scratch: Path) -> Path:
     return patch
 
 
+def diff_header_paths(line: str) -> tuple[str, ...]:
+    if not line.startswith("diff --git "):
+        return ()
+    parts = line.split()
+    if len(parts) < 4:
+        return ()
+    paths: list[str] = []
+    for token in parts[2:4]:
+        if token.startswith(("a/", "b/")):
+            paths.append(token[2:])
+    return tuple(paths)
+
+
+def patch_head_has_forbidden_path(line: str) -> bool:
+    return any(is_forbidden_path(path) for path in diff_header_paths(line))
+
+
 def sync_patches(goal_dir: Path, patch_src: Path) -> dict[str, object]:
     patches = sorted(goal_dir.glob("goal-classifier-*.patch"))
     report: dict[str, object] = {
@@ -78,10 +102,7 @@ def sync_patches(goal_dir: Path, patch_src: Path) -> dict[str, object]:
         path.write_bytes(src_bytes)
         head = path.read_text(encoding="utf-8", errors="replace").splitlines()[:1]
         first = head[0] if head else ""
-        forbidden = any(
-            prefix in first
-            for prefix in (".github/", "apps/cli/", "apps/web/", "packages/ai_web_feeds/src/")
-        )
+        forbidden = patch_head_has_forbidden_path(first)
         entry = {
             "path": str(path),
             "bytes_before": before,
@@ -123,10 +144,7 @@ def verify_latest_patch(goal_dir: Path, patch_src: Path) -> dict[str, object]:
         "latest": str(latest),
         "first_line": first,
         "byte_match": latest.read_bytes() == patch_src.read_bytes(),
-        "forbidden_head": any(
-            prefix in first
-            for prefix in (".github/", "apps/cli/", "apps/web/", "packages/ai_web_feeds/src/")
-        ),
+        "forbidden_head": patch_head_has_forbidden_path(first),
     }
 
 

@@ -1,13 +1,15 @@
 """Batch job for quality scoring articles (Phase 5A)."""
 
+from collections.abc import Callable
 from datetime import UTC, datetime
+from typing import Any
 
 from loguru import logger
 from sqlmodel import select
 
 from ai_web_feeds.config import Settings
 from ai_web_feeds.models import ArticleEntry, ArticleQualityScore
-from ai_web_feeds.nlp.quality_scorer import QualityScorer
+from ai_web_feeds.nlp.quality_scorer import MissingOptionalDependencyError, QualityScorer
 from ai_web_feeds.storage import DatabaseManager
 
 
@@ -27,11 +29,21 @@ class QualityBatchJob:
         self,
         settings: Settings | None = None,
         db_manager: DatabaseManager | None = None,
+        *,
+        model: Callable[..., Any] | None = None,
     ):
-        """Initialize quality batch job."""
+        """Initialize quality batch job.
+
+        Args:
+            settings: Application settings. Defaults are used when omitted.
+            db_manager: Database that holds stored article rows.
+            model: Optional injected model forwarded to the scorer.
+                Importing this module does not construct or download one.
+        """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.scorer = QualityScorer(self.settings)
+        self.model = model
+        self.scorer = QualityScorer(self.settings, model=model)
         self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:
@@ -118,10 +130,9 @@ class QualityBatchJob:
                         "author_detail": author_detail,
                         "url": article.link,
                         "feed_id": article.feed_id,
-                        "share_count": 0,  # TODO: Add social sharing metrics
                     }
 
-                    # Score article (pass feed for domain scoring)
+                    # Score the stored row. A missing ml extra is a skip, not a failure.
                     score_result = self.scorer.score_article(article_dict, feed=feed_dict)
 
                     if score_result is None:
@@ -164,6 +175,11 @@ class QualityBatchJob:
                     logger.debug(
                         f"Scored article {article.id}: overall={score_result.overall_score}"
                     )
+
+                except MissingOptionalDependencyError as exc:
+                    stats["skipped"] += 1
+                    logger.warning(f"Skipping article {article.id}: {exc}")
+                    continue
 
                 except Exception as e:
                     stats["failed"] += 1

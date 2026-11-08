@@ -1,0 +1,120 @@
+- id: lex-fridman-podcast
+  title: Lex Fridman Podcast
+  feed: https://lexfridman.com/feed/podcast/
+  source_type: podcast
+  topics:
+  - podcasts
+  - research
+  - industry
+- id: gradient-dissent
+  title: 'Gradient Dissent: Conversations on AI'
+  feed: https://feeds.captivate.fm/gradient-dissent/
+  source_type: podcast
+  topics:
+  - podcasts
+  - ml
+  - industry
+- id: nvidia-ai-podcast
+  title: NVIDIA AI Podcast
+  feed: https://feeds.megaphone.fm/nvidiaaipodcast
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - product
+- id: robot-brains-podcast
+  title: The Robot Brains Podcast
+  feed: https://feeds.acast.com/public/shows/the-robot-brains
+  source_type: podcast
+  topics:
+  - podcasts
+  - robotics
+  - research
+- id: me-myself-and-ai
+  title: Me, Myself, and AI
+  feed: https://feeds.megaphone.fm/TPG7603691495
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - product
+- id: axrp
+  title: AXRP - the AI X-risk Research Podcast
+  feed: https://rss.libsyn.com/shows/312947/destinations/2517215.xml
+  source_type: podcast
+  topics:
+  - podcasts
+  - safety
+  - research
+- id: google-deepmind-podcast
+  title: 'Google DeepMind: The Podcast'
+  feed: https://feeds.simplecast.com/JT6pbPkg
+  source_type: podcast
+  topics:
+  - podcasts
+  - research
+  - industry
+- id: training-data
+  title: Training Data
+  feed: https://feeds.megaphone.fm/trainingdata
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - product
+- id: unsupervised-learning
+  title: Unsupervised Learning with Jacob Effron
+  feed: https://feeds.simplecast.com/dOSE_bdP
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - product
+- id: mad-podcast
+  title: 'The MAD Podcast: How AI Gets Built — with Matt Turck'
+  feed: https://anchor.fm/s/f2ee4948/podcast/rss
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - mlops
+- id: how-i-ai
+  title: How I AI
+  feed: https://anchor.fm/s/1035b1568/podcast/rss
+  source_type: podcast
+  topics:
+  - podcasts
+  - product
+  - llm
+- id: ai-plus-a16z
+  title: AI + a16z
+  feed: https://feeds.simplecast.com/Hb_IuXOo
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - llm
+- id: talkrl
+  title: 'TalkRL: The Reinforcement Learning Podcast'
+  feed: https://feeds.transistor.fm/talkrl
+  source_type: podcast
+  topics:
+  - podcasts
+  - research
+  - ml
+- id: thursdai
+  title: ThursdAI - The top AI news from the past week
+  feed: https://api.substack.com/feed/podcast/1801228.rss
+  source_type: podcast
+  topics:
+  - podcasts
+  - industry
+  - llm
+- id: agentic-conversations
+  title: Agentic Conversations (MLOps Community)
+  feed: https://anchor.fm/s/174cb1b8/podcast/rss
+  source_type: podcast
+  topics:
+  - podcasts
+  - mlops
+  - industry

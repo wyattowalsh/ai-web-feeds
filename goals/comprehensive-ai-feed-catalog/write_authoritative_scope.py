@@ -4,24 +4,37 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
+
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "goals/comprehensive-ai-feed-catalog"))
 from scope_constants import catalog_size_from_scope, is_forbidden_path  # noqa: E402
 
-HARNESS_DEBRIS = frozenset({
-    "authoritative.patch",
-    "CHANGED_FILES.authoritative.json",
-    "CHANGED_FILES.authoritative.txt",
-})
+
+HARNESS_DEBRIS = frozenset(
+    {
+        "authoritative.patch",
+        "CHANGED_FILES.authoritative.json",
+        "CHANGED_FILES.authoritative.txt",
+    }
+)
+
+
+def _is_harness_debris(path: str) -> bool:
+    return (
+        path in HARNESS_DEBRIS
+        or path.startswith("goals/comprehensive-ai-feed-catalog/scratch/")
+        or (path.startswith("tmp-log") and path.endswith(".md"))
+    )
 
 
 def _git_tracked() -> list[str]:
+    # Tracked delta is the PR branch (HEAD), not uncommitted worktree edits.
     result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main"],
+        ["git", "diff", "--name-only", "origin/main", "HEAD"],
         capture_output=True,
         text=True,
         cwd=ROOT,
@@ -39,12 +52,7 @@ def _git_untracked() -> list[str]:
         check=False,
     )
     paths = [line[3:].strip() for line in result.stdout.splitlines() if line.startswith("?? ")]
-    return [
-        p
-        for p in paths
-        if p not in HARNESS_DEBRIS
-        and not p.startswith("goals/comprehensive-ai-feed-catalog/scratch/")
-    ]
+    return [p for p in paths if not _is_harness_debris(p)]
 
 
 def main() -> None:
@@ -57,7 +65,7 @@ def main() -> None:
     live_count = len(yaml.safe_load((ROOT / "data/feeds.yaml").read_text())["sources"])
     scope_count = catalog_size_from_scope()
     doc = {
-        "source": "git diff --name-only origin/main + git status --porcelain (untracked)",
+        "source": "git diff --name-only origin/main HEAD + git status --porcelain (untracked)",
         "note": (
             "Authoritative delta for catalog rounds 20-23 + PR #16 web security. "
             "Cumulative goal-classifier patch is session history, not this list."

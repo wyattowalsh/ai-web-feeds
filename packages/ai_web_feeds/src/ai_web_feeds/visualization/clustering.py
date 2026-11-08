@@ -17,6 +17,21 @@ from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+def _positions_from_embeddings(embeddings: np.ndarray) -> np.ndarray:
+    """Place stored vectors on three axes.
+
+    Uses only values already present on the vectors. Does not sample coordinates.
+    """
+    row_count = int(embeddings.shape[0]) if embeddings.ndim >= 1 else 0
+    positions = np.zeros((row_count, 3), dtype=float)
+    if embeddings.ndim != 2 or row_count == 0:
+        return positions
+    usable = min(int(embeddings.shape[1]), 3)
+    if usable > 0:
+        positions[:, :usable] = embeddings[:, :usable]
+    return positions
+
+
 @dataclass
 class TopicNode:
     """Represents a topic node in 3D space."""
@@ -49,7 +64,6 @@ class TopicClusteringService:
             method: Clustering method ('force-directed', 'kmeans', 'dbscan', 'pca')
         """
         self.method = method
-        self._rng = np.random.default_rng(42)
 
     def cluster_topics(
         self,
@@ -69,6 +83,9 @@ class TopicClusteringService:
             Tuple of (nodes, links)
         """
         topic_ids = list(topic_embeddings.keys())
+        if not topic_ids:
+            return [], []
+
         embeddings = np.array([topic_embeddings[tid] for tid in topic_ids])
 
         # Calculate 3D positions
@@ -125,8 +142,8 @@ class TopicClusteringService:
         # Calculate similarity matrix
         similarity = cosine_similarity(embeddings)
 
-        # Initialize positions randomly in 3D space
-        positions = self._rng.standard_normal((n_topics, 3)) * 20
+        # Stored embedding axes only. No sampled coordinates.
+        positions = _positions_from_embeddings(embeddings)
 
         # Force-directed layout parameters
         k = 20  # Optimal distance
@@ -279,29 +296,19 @@ class TopicClusteringService:
 
 
 def generate_sample_embeddings(n_topics: int = 15, dim: int = 128) -> dict[str, np.ndarray]:
-    """
-    Generate sample topic embeddings for testing.
+    """Return no synthetic topic embeddings.
+
+    Grouping uses stored topic assignments. This helper does not sample
+    cluster centers, noise, coordinates, or a demo series.
 
     Args:
-        n_topics: Number of topics
-        dim: Embedding dimension
+        n_topics: Caller-facing count. Must be non-negative. Not used to invent rows.
+        dim: Caller-facing width. Must be non-negative. Not used to invent rows.
 
     Returns:
-        Map of topic_id -> embedding vector
+        Empty mapping. No generated vectors.
     """
-    topics = [f"topic-{i}" for i in range(n_topics)]
-    embeddings = {}
-
-    # Create 3 clusters of related topics
-    rng = np.random.default_rng(42)
-    cluster_centers = rng.standard_normal((3, dim)) * 2
-
-    for i, topic_id in enumerate(topics):
-        cluster_idx = i % 3
-        # Generate embedding near cluster center with some noise
-        embedding = cluster_centers[cluster_idx] + rng.standard_normal(dim) * 0.5
-        # Normalize
-        embedding = embedding / np.linalg.norm(embedding)
-        embeddings[topic_id] = embedding
-
-    return embeddings
+    if n_topics < 0 or dim < 0:
+        msg = "n_topics and dim must be non-negative"
+        raise ValueError(msg)
+    return {}

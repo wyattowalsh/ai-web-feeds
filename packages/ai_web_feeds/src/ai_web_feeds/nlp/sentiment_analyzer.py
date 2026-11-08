@@ -1,10 +1,30 @@
-"""Sentiment analysis using Hugging Face transformers (Phase 5C)."""
+"""Sentiment analysis using Hugging Face transformers (Phase 5C).
+
+The transformers pipeline lives in the optional ml extra. This module does not
+import it, download weights, or open a network connection at import time.
+Pass ``model`` to score with an injected callable instead of loading weights.
+"""
+
+from collections.abc import Callable
+from typing import Any
 
 from loguru import logger
 from pydantic import BaseModel, Field
-from transformers import pipeline
 
 from ai_web_feeds.config import Settings
+
+# Scores one text and returns Hugging Face label/score mappings.
+SentimentModel = Callable[[str], Any]
+
+
+def pipeline(*args: object, **kwargs: object) -> Any:
+    """Load ``transformers.pipeline`` only when a model is actually built.
+
+    Tests replace this global. Importing the module must not call it.
+    """
+    from transformers import pipeline as hf_pipeline
+
+    return hf_pipeline(*args, **kwargs)
 
 
 class SentimentResult(BaseModel):
@@ -36,27 +56,46 @@ class SentimentAnalyzer:
     - Positive: > +0.3
     """
 
-    def __init__(self, settings: Settings | None = None):
-        """Initialize sentiment analyzer with transformer model.
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        *,
+        model: SentimentModel | None = None,
+    ):
+        """Initialize sentiment analyzer with an injected or lazy-loaded model.
 
         Args:
             settings: Application settings (uses defaults if None)
+            model: Callable scorer. When omitted, the ml extra pipeline is
+                loaded on construction. A missing extra is logged and rows
+                are skipped instead of raising.
         """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
         self.model_name = self.config.sentiment_model
+        self._missing_ml_extra: ImportError | None = None
+        if model is not None:
+            self.pipeline = model
+            return
 
-        # Initialize Hugging Face pipeline
         try:
             self.pipeline = pipeline(
                 "sentiment-analysis",
                 model=self.model_name,
                 device=-1,  # CPU (-1), use 0 for GPU
             )
-            logger.info(f"Loaded sentiment model: {self.model_name}")
-        except Exception as e:
-            logger.error(f"Failed to load sentiment model {self.model_name}: {e}")
+        except ImportError as exc:
+            self.pipeline = None
+            self._missing_ml_extra = exc
+            logger.warning(
+                "Optional ml extra is missing; sentiment rows will be skipped "
+                f"({self.model_name}): {exc}"
+            )
+            return
+        except Exception as exc:
+            logger.error(f"Failed to load sentiment model {self.model_name}: {exc}")
             raise
+        logger.info(f"Loaded sentiment model: {self.model_name}")
 
     def analyze_sentiment(self, article: dict) -> SentimentResult | None:
         """Analyze article sentiment.
@@ -75,6 +114,9 @@ class SentimentAnalyzer:
                 return None
             if len(content.strip()) < 20:
                 logger.debug(f"Content too short for sentiment analysis: {article.get('id')}")
+                return None
+            if self.pipeline is None:
+                self._log_missing_extra(article.get("id"))
                 return None
 
             # Truncate to model's max length (512 tokens for DistilBERT)
@@ -113,9 +155,20 @@ class SentimentAnalyzer:
                 model_name=self.model_name,
             )
 
+        except ImportError as exc:
+            self._log_missing_extra(article.get("id"), exc)
+            return None
         except Exception as e:
             logger.error(f"Failed to analyze sentiment for article {article.get('id')}: {e}")
             return None
+
+    def _log_missing_extra(self, article_id: object, exc: BaseException | None = None) -> None:
+        """Log that this stored row was not scored because ml deps are absent."""
+        detail = self._missing_ml_extra if exc is None else exc
+        logger.warning(
+            "Skipping sentiment row; optional ml extra is missing "
+            f"for article {article_id}: {detail}"
+        )
 
     def _get_content(self, article: dict) -> str:
         """Extract text content from article."""

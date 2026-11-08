@@ -1,6 +1,7 @@
 """Batch job for entity extraction (Phase 5B)."""
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 from loguru import logger
@@ -28,11 +29,19 @@ class EntityBatchJob:
         self,
         settings: Settings | None = None,
         db_manager: DatabaseManager | None = None,
+        nlp: Any | None = None,
     ):
-        """Initialize entity batch job."""
+        """Initialize entity batch job.
+
+        Args:
+            settings: Application settings (uses defaults if None)
+            db_manager: Database that holds stored article rows
+            nlp: Optional spaCy model injected into the extractor. When omitted, the
+                extractor loads the configured local model on first use.
+        """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.extractor = EntityExtractor(self.settings)
+        self.extractor = EntityExtractor(self.settings, nlp=nlp)
         self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:
@@ -47,6 +56,7 @@ class EntityBatchJob:
                 "processed": 42,
                 "entities_found": 150,
                 "unique_entities": 45,
+                "skipped": 0,
                 "failed": 0,
                 "duration_seconds": 25.3
             }
@@ -58,6 +68,7 @@ class EntityBatchJob:
             "processed": 0,
             "entities_found": 0,
             "unique_entities": 0,
+            "skipped": 0,
             "failed": 0,
             "duration_seconds": 0.0,
         }
@@ -81,11 +92,16 @@ class EntityBatchJob:
 
             logger.info(f"Found {len(articles)} articles to process for entity extraction")
 
-            # Load existing entities for normalization
-            existing_entities = self._load_existing_entities(session)
+            # Injected model, or a local spaCy install. A missing ml extra skips rows.
+            model_ready = self.extractor.ensure_model()
+            existing_entities = self._load_existing_entities(session) if model_ready else {}
 
             for article in articles:
                 stats["processed"] += 1
+                if not model_ready:
+                    stats["skipped"] += 1
+                    logger.warning(f"Skipping article {article.id}; optional ml extra is missing")
+                    continue
 
                 try:
                     # Convert SQLModel to dict
@@ -184,8 +200,8 @@ class EntityBatchJob:
         logger.info(
             f"Entity extraction batch job completed: "
             f"processed={stats['processed']}, entities_found={stats['entities_found']}, "
-            f"unique={stats['unique_entities']}, failed={stats['failed']}, "
-            f"duration={stats['duration_seconds']:.2f}s"
+            f"unique={stats['unique_entities']}, skipped={stats['skipped']}, "
+            f"failed={stats['failed']}, duration={stats['duration_seconds']:.2f}s"
         )
 
         return stats

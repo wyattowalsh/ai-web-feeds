@@ -42,6 +42,13 @@ members = [
 ai-web-feeds = { workspace = true }
 ai-web-feeds-cli = { workspace = true }
 
+# The CLI is an editable namespace over ai_web_feeds (apps/cli/ai_web_feeds).
+# ty does not follow that setuptools finder. extra-paths covers a bare source
+# check; packages/ai_web_feeds/src/ai_web_feeds/cli is a symlink so the regular
+# core package also exposes ai_web_feeds.cli when site-packages wins.
+[tool.ty.environment]
+extra-paths = ["apps/cli"]
+
 # =======================
 # Ruff Configuration
 # =======================
@@ -167,6 +174,9 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Ignore specific rules in test files
 "tests/**/*.py" = [
     "S101",    # Allow assert in tests
+    "S108",    # Tests assert on temp paths; they do not create insecure files
+    "S603",    # Tests invoke fixed git and uv commands
+    "S607",    # Those commands use partial executable names on PATH
     "ANN",     # Don't require annotations in tests
     "PLR2004", # Allow magic values in tests
     "ARG001",  # Allow unused arguments in test fixtures
@@ -188,6 +198,8 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "packages/alembic/**/*.py" = ["ERA001", "INP001"]
 # Ignore certain rules in scripts
 "**/scripts/**/*.py" = ["INP001", "S607", "T20"]
+# Goal scripts shell out to git and print a maintainer log. They are not a package.
+"goals/**/*.py" = ["EXE001", "INP001", "PERF401", "S603", "S607", "T201"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["ai_web_feeds", "ai_web_feeds_cli"]
@@ -348,7 +360,7 @@ markers = [
 # Coverage Configuration
 # =======================
 [tool.coverage.run]
-source = ["src", "apps"]
+source = ["ai_web_feeds"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
@@ -385,4 +397,4 @@ dev = [
 ]
 
 [tool.bandit]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "goals"]

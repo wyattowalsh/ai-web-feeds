@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,7 +14,6 @@ import {
   type ChartOptions,
 } from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
-import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
 import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
 import { useTheme } from "@/lib/theme-manager";
 
@@ -30,58 +28,50 @@ ChartJS.register(
   Filler,
 );
 
-interface VelocityData {
-  granularity: string;
-  data_points: Array<{ date: string; count: number }>;
-  avg_per_feed: number;
-  most_active_feed: { id: string; title: string; count: number } | null;
-  least_active_feed: { id: string; title: string; count: number } | null;
+interface VelocityPoint {
+  date: string;
+  count: number;
+}
+
+interface VelocityFeedSummary {
+  id: string;
+  title: string;
+  count: number;
+}
+
+interface VelocityChartProps {
+  data_points?: VelocityPoint[] | null;
+  avg_per_feed?: number | null;
+  most_active_feed?: VelocityFeedSummary | null;
+  least_active_feed?: VelocityFeedSummary | null;
+  error?: string | null;
 }
 
 export function VelocityChart({
-  dateRange = "30d",
-  granularity = "daily",
-}: {
-  dateRange?: string;
-  granularity?: "daily" | "weekly" | "monthly";
-}) {
-  const [velocity, setVelocity] = useState<VelocityData | null>(null);
-  const [loading, setLoading] = useState(true);
+  data_points,
+  avg_per_feed = null,
+  most_active_feed = null,
+  least_active_feed = null,
+  error = null,
+}: VelocityChartProps) {
   const { isDark } = useTheme();
   const chartTheme = getAnalyticsChartTheme(isDark);
-
-  useEffect(() => {
-    const fetchVelocity = async () => {
-      setLoading(true);
-
-      try {
-        const response = await fetch(
-          `/api/analytics/velocity?granularity=${granularity}&date_range=${dateRange}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch velocity data");
-
-        const data = await response.json();
-        setVelocity(data);
-      } catch (err) {
-        console.error("Error fetching velocity:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVelocity();
-  }, [dateRange, granularity]);
-
-  if (loading || !velocity) {
-    return <ChartSkeleton className="h-[34rem]" />;
-  }
+  const points = Array.isArray(data_points) ? data_points : [];
+  const errorMessage = typeof error === "string" ? error.trim() : "";
+  const averagePerFeed =
+    typeof avg_per_feed === "number" && Number.isFinite(avg_per_feed) ? avg_per_feed : null;
+  const series = {
+    demo: false,
+    labels: points.map((point) => point.date),
+    counts: points.map((point) => point.count),
+  };
 
   const chartData = {
-    labels: velocity.data_points.map((dp) => dp.date),
+    labels: series.labels,
     datasets: [
       {
         label: "Validation Count",
-        data: velocity.data_points.map((dp) => dp.count),
+        data: series.counts,
         fill: true,
         backgroundColor: chartTheme.successSoft,
         borderColor: chartTheme.success,
@@ -141,49 +131,69 @@ export function VelocityChart({
     },
   };
 
+  const footer =
+    averagePerFeed !== null || most_active_feed || least_active_feed ? (
+      <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+        {averagePerFeed !== null ? (
+          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-4">
+            <p className="metric-label">Average per feed</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--brand-strong)]">
+              {averagePerFeed.toFixed(1)}
+            </p>
+          </div>
+        ) : null}
+
+        {most_active_feed ? (
+          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
+            <p className="metric-label">Most active</p>
+            <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
+              {most_active_feed.title}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+              {most_active_feed.count} validations
+            </p>
+          </div>
+        ) : null}
+
+        {least_active_feed ? (
+          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
+            <p className="metric-label">Least active</p>
+            <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
+              {least_active_feed.title}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+              {least_active_feed.count} validation
+              {least_active_feed.count !== 1 ? "s" : ""}
+            </p>
+          </div>
+        ) : null}
+      </div>
+    ) : null;
+
   return (
     <ChartShell
       eyebrow="Velocity"
       title="Publication velocity"
       description="Validation counts are used as a practical proxy for ongoing publication activity across the catalog."
-      footer={
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-4">
-            <p className="metric-label">Average per feed</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--brand-strong)]">
-              {velocity.avg_per_feed.toFixed(1)}
-            </p>
-          </div>
-
-          {velocity.most_active_feed ? (
-            <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
-              <p className="metric-label">Most active</p>
-              <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
-                {velocity.most_active_feed.title}
-              </p>
-              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {velocity.most_active_feed.count} validations
-              </p>
-            </div>
-          ) : null}
-
-          {velocity.least_active_feed ? (
-            <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
-              <p className="metric-label">Least active</p>
-              <p className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
-                {velocity.least_active_feed.title}
-              </p>
-              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {velocity.least_active_feed.count} validation
-                {velocity.least_active_feed.count !== 1 ? "s" : ""}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      }
+      empty={points.length === 0}
+      error={errorMessage.length > 0 ? errorMessage : null}
+      footer={footer}
     >
-      <div className="h-96">
-        <Line data={chartData} options={options} />
+      <div className="space-y-4" data-demo={`${series.demo}`}>
+        <div className="h-96">
+          <Line data={chartData} options={options} />
+        </div>
+        <ul aria-label="Velocity points" className="space-y-2">
+          {points.map((point, index) => (
+            <li
+              key={`${point.date}-${index}`}
+              className="flex items-baseline justify-between gap-4 text-sm text-[color:var(--ink)]"
+            >
+              <span>{point.date}</span>
+              <span className="tabular-nums">{point.count}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </ChartShell>
   );

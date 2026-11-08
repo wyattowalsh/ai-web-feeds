@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import importlib
 from pathlib import Path
+from typing import Any
 
 import pytest
-from ai_web_feeds.cli.commands.visualize import app as visualize_app
 from typer.testing import CliRunner
+
+visualize_app: Any = importlib.import_module("ai_web_feeds.cli.commands.visualize").app
 
 
 @pytest.mark.unit

@@ -109,7 +109,7 @@ repos:
   - id: codespell
     args:
     - --ignore-words-list
-    - crate,nd,sav,ba,als,datas,socio,ser,oint,asent,lod,mape,afterAll
+    - crate,nd,sav,ba,als,datas,socio,ser,oint,asent,lod,mape,afterAll,dependant
     exclude: ^(.*\.json|.*\.yaml|.*\.lock|.*\.svg|pnpm-lock\.yaml)$
 
   # ============================================================================

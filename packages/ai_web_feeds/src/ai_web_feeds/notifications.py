@@ -1,9 +1,11 @@
 """ai_web_feeds.notifications -- Notification creation and delivery
 
 This module handles notification creation, bundling, and WebSocket broadcasting
-for real-time alerts.
+for real-time alerts. Outbound delivery goes through a replaceable sender that
+records payloads in memory. Importing this module does not open a socket.
 """
 
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
@@ -17,6 +19,53 @@ from ai_web_feeds.models import (
     TrendingTopic,
 )
 from ai_web_feeds.storage import DatabaseManager
+
+
+@dataclass(frozen=True, slots=True)
+class NotificationPayload:
+    """Content accepted by a notification sender."""
+
+    user_id: str
+    title: str
+    message: str
+    notification_type: str = "system_alert"
+
+
+class NotificationSender(Protocol):
+    """Replaceable delivery target for one notification payload."""
+
+    def send(self, payload: NotificationPayload) -> None:
+        """Accept one payload. Implementations must not run at import."""
+
+
+class RecordingNotificationSender:
+    """In-memory sender. Records payloads and never contacts a mail server."""
+
+    def __init__(self) -> None:
+        self.recorded: list[NotificationPayload] = []
+        self.mail_sent: int = 0
+
+    def send(self, payload: NotificationPayload) -> None:
+        """Record one payload without opening a socket or sending mail."""
+        self.recorded.append(payload)
+
+
+notification_sender: RecordingNotificationSender = RecordingNotificationSender()
+
+
+def deliver_notification(
+    payload: NotificationPayload,
+    sender: NotificationSender | None = None,
+) -> None:
+    """Deliver one payload through an explicit sender or the in-memory default.
+
+    Args:
+        payload: Notification content to deliver.
+        sender: Replacement sender. When omitted, the module default records the
+            payload and does not send mail.
+    """
+    target = notification_sender if sender is None else sender
+    target.send(payload)
 
 
 class NotificationBroadcaster(Protocol):

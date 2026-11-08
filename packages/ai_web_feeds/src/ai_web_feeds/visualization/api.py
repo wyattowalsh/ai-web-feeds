@@ -9,6 +9,8 @@ Implements FR-055 through FR-065:
 - Rate limiting
 """
 
+import os
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -35,6 +37,79 @@ router = APIRouter(prefix="/api/v1", tags=["visualization"])
 # Services (will be initialized on startup)
 visualization_service: VisualizationService | None = None
 dashboard_service: DashboardService | None = None
+
+_VIZ_ENABLED_ENV = "AWF_VIZ_ENABLED"
+
+
+def _empty_series() -> dict[str, Any]:
+    """Empty series. Demo stays off and no points are invented."""
+    return {"demo": False, "points": []}
+
+
+def _viz_series_enabled() -> bool:
+    """True only when AWF_VIZ_ENABLED is set to a non-empty value."""
+    raw = os.environ.get(_VIZ_ENABLED_ENV)
+    if raw is None:
+        return False
+    return raw.strip() != ""
+
+
+def _dashboard_disabled() -> dict[str, bool | str]:
+    """Frozen dashboard-builder response. Nothing is stored."""
+    return {
+        "enabled": False,
+        "reason": "dashboard builder is not enabled",
+    }
+
+
+def _catalog_path(filename: str) -> Path:
+    """Locate a catalog file from the cwd or the repo that contains this package."""
+    cwd_candidate = Path("data") / filename
+    if cwd_candidate.is_file():
+        return cwd_candidate
+    for parent in Path(__file__).resolve().parents:
+        candidate = parent / "data" / filename
+        if candidate.is_file():
+            return candidate
+    return cwd_candidate
+
+
+def _dict_rows(rows: object, limit: int) -> list[dict[str, Any]]:
+    """Keep stored dict rows only, capped by limit. No rows are synthesized."""
+    if not isinstance(rows, list) or limit <= 0:
+        return []
+    points: list[dict[str, Any]] = []
+    for row in rows:
+        if isinstance(row, dict):
+            points.append(row)
+        if len(points) >= limit:
+            break
+    return points
+
+
+def _catalog_points(data_source: object, limit: int) -> list[dict[str, Any]]:
+    """Load real catalog rows for feeds or topics. Other sources stay empty."""
+    if data_source == "feeds":
+        filename = "feeds.yaml"
+        key = "sources"
+    elif data_source == "topics":
+        filename = "topics.yaml"
+        key = "topics"
+    else:
+        return []
+
+    try:
+        from ai_web_feeds.load import load_feeds, load_topics
+
+        path = _catalog_path(filename)
+        payload = load_feeds(path) if key == "sources" else load_topics(path)
+    except Exception as exc:
+        logger.warning(f"Catalog rows unavailable: {exc}")
+        return []
+
+    if not isinstance(payload, dict):
+        return []
+    return _dict_rows(payload.get(key), limit)
 
 
 # ============================================================================
@@ -318,7 +393,13 @@ async def get_visualization_data(
     """
     await check_rate_limit(device_id)
 
-    # Get visualization config
+    # Unset or blank AWF_VIZ_ENABLED: frozen empty series, no catalog read.
+    if not _viz_series_enabled():
+        return _empty_series()
+
+    if visualization_service is None:
+        return _empty_series()
+
     visualization = await visualization_service.get_visualization(
         visualization_id=visualization_id,
         device_id=device_id,
@@ -330,17 +411,9 @@ async def get_visualization_data(
             detail="Visualization not found",
         )
 
-    # Fetch data based on visualization config
-    data = await visualization_service.fetch_visualization_data(
-        visualization=visualization,
-        date_range=request.date_range,
-        limit=request.limit,
-    )
-
-    logger.debug(
-        f"Fetched {len(data.get('records', []))} data points for visualization {visualization_id}"
-    )
-    return data
+    points = _catalog_points(visualization.get("data_source"), request.limit)
+    logger.debug(f"Fetched {len(points)} catalog rows for visualization {visualization_id}")
+    return {"demo": False, "points": points}
 
 
 # ============================================================================
@@ -352,37 +425,32 @@ async def get_visualization_data(
 async def list_dashboards(
     device_id: str = Depends(get_current_device_id),
     limit: int = Query(default=50, le=100),
-) -> list[dict[str, Any]]:
-    """List all dashboards for current device."""
+) -> dict[str, bool | str]:
+    """List all dashboards for current device. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    dashboards = await dashboard_service.list_dashboards(
-        device_id=device_id,
-        limit=limit,
-    )
-
-    logger.info(f"Listed {len(dashboards)} dashboards for device {device_id[:8]}")
-    return dashboards
+    if dashboard_service is not None:
+        await dashboard_service.list_dashboards(device_id=device_id, limit=limit)
+    logger.info(f"Dashboard builder is not enabled for device {device_id[:8]}")
+    return _dashboard_disabled()
 
 
 @router.post("/dashboards", status_code=status.HTTP_201_CREATED)
 async def create_dashboard(
     request: CreateDashboardRequest,
     device_id: str = Depends(get_current_device_id),
-) -> dict[str, Any]:
-    """Create a new dashboard."""
+) -> dict[str, bool | str]:
+    """Create a new dashboard. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    dashboard = await dashboard_service.create_dashboard(
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        template_id=request.template_id,
-        layout=request.layout,
-    )
-
-    logger.info(f"Created dashboard {dashboard['id']} for device {device_id[:8]}")
-    return dashboard
+    if dashboard_service is not None:
+        await dashboard_service.create_dashboard(
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            template_id=request.template_id,
+            layout=request.layout,
+        )
+    logger.info(f"Dashboard builder is not enabled for device {device_id[:8]}")
+    return _dashboard_disabled()
 
 
 @router.get("/dashboards/{dashboard_id}")
@@ -390,23 +458,16 @@ async def get_dashboard(
     dashboard_id: int,
     device_id: str = Depends(get_current_device_id),
     include_widgets: bool = Query(default=True),
-) -> dict[str, Any]:
-    """Get a specific dashboard."""
+) -> dict[str, bool | str]:
+    """Get a specific dashboard. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    dashboard = await dashboard_service.get_dashboard(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        include_widgets=include_widgets,
-    )
-
-    if not dashboard:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Dashboard not found",
+    if dashboard_service is not None:
+        await dashboard_service.get_dashboard(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            include_widgets=include_widgets,
         )
-
-    return dashboard
+    return _dashboard_disabled()
 
 
 @router.put("/dashboards/{dashboard_id}")
@@ -414,49 +475,36 @@ async def update_dashboard(
     dashboard_id: int,
     request: UpdateDashboardRequest,
     device_id: str = Depends(get_current_device_id),
-) -> dict[str, Any]:
-    """Update a dashboard."""
+) -> dict[str, bool | str]:
+    """Update a dashboard. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    dashboard = await dashboard_service.update_dashboard(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        name=request.name,
-        description=request.description,
-        layout=request.layout,
-        expected_version=request.version,
-    )
-
-    if not dashboard:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Dashboard not found",
+    if dashboard_service is not None:
+        await dashboard_service.update_dashboard(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            name=request.name,
+            description=request.description,
+            layout=request.layout,
+            expected_version=request.version,
         )
+    logger.info(f"Dashboard builder is not enabled for dashboard {dashboard_id}")
+    return _dashboard_disabled()
 
-    logger.info(f"Updated dashboard {dashboard_id}")
-    return dashboard
 
-
-@router.delete("/dashboards/{dashboard_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/dashboards/{dashboard_id}")
 async def delete_dashboard(
     dashboard_id: int,
     device_id: str = Depends(get_current_device_id),
-) -> None:
-    """Delete a dashboard."""
+) -> dict[str, bool | str]:
+    """Delete a dashboard. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    success = await dashboard_service.delete_dashboard(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-    )
-
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Dashboard not found",
+    if dashboard_service is not None:
+        await dashboard_service.delete_dashboard(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
         )
-
-    logger.info(f"Deleted dashboard {dashboard_id}")
+    logger.info(f"Dashboard builder is not enabled for dashboard {dashboard_id}")
+    return _dashboard_disabled()
 
 
 @router.post("/dashboards/{dashboard_id}/widgets", status_code=status.HTTP_201_CREATED)
@@ -464,24 +512,23 @@ async def add_widget(
     dashboard_id: int,
     request: AddWidgetRequest,
     device_id: str = Depends(get_current_device_id),
-) -> dict[str, Any]:
-    """Add a widget to dashboard."""
+) -> dict[str, bool | str]:
+    """Add a widget to dashboard. The builder stays disabled."""
     await check_rate_limit(device_id)
-
-    widget = await dashboard_service.add_widget(
-        dashboard_id=dashboard_id,
-        device_id=device_id,
-        widget_type=request.widget_type,
-        data_source=request.data_source,
-        filters=request.filters,
-        refresh_interval_seconds=request.refresh_interval_seconds,
-        position=request.position,
-        config=request.config,
-        visualization_id=request.visualization_id,
-    )
-
-    logger.info(f"Added widget {widget['id']} to dashboard {dashboard_id}")
-    return widget
+    if dashboard_service is not None:
+        await dashboard_service.add_widget(
+            dashboard_id=dashboard_id,
+            device_id=device_id,
+            widget_type=request.widget_type,
+            data_source=request.data_source,
+            filters=request.filters,
+            refresh_interval_seconds=request.refresh_interval_seconds,
+            position=request.position,
+            config=request.config,
+            visualization_id=request.visualization_id,
+        )
+    logger.info(f"Dashboard builder is not enabled for dashboard {dashboard_id}")
+    return _dashboard_disabled()
 
 
 # ============================================================================

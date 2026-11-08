@@ -36,6 +36,12 @@ export type UpdateVisualizationInput = Partial<
 };
 
 let memoryVisualizations: Visualization[] = [];
+let visualizationSequence = 0;
+
+function createVisualizationId(nowMs: number): string {
+  visualizationSequence += 1;
+  return `viz_${nowMs.toString(36)}_${visualizationSequence.toString(36)}`;
+}
 
 function getStorage(): Storage | null {
   if (typeof window === "undefined") {
@@ -147,11 +153,12 @@ function normalizeCustomization(customization?: object): Record<string, unknown>
 }
 
 export async function createVisualization(input: CreateVisualizationInput): Promise<Visualization> {
-  const now = new Date().toISOString();
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
   const visualizations = readVisualizations();
 
   const visualization: Visualization = {
-    id: `viz_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+    id: createVisualizationId(nowMs),
     device_id: input.device_id,
     name: input.name,
     chart_type: input.chart_type,
@@ -217,119 +224,12 @@ export async function deleteVisualization(id: string, deviceId?: string): Promis
   writeVisualizations(visualizations.filter((item) => item.id !== id));
 }
 
-function createSampleValues(seed: string, length: number): number[] {
-  let value = seed.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-
-  return Array.from({ length }, () => {
-    value = (value * 9301 + 49297) % 233280;
-    return Math.round((value / 233280) * 100);
-  });
-}
-
-function createDateLabels(range?: { start: string; end: string }): string[] {
-  if (!range?.start || !range?.end) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  }
-
-  const start = new Date(range.start);
-  const end = new Date(range.end);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  }
-
-  const labels: string[] = [];
-  const current = new Date(start);
-  while (current <= end && labels.length < 12) {
-    labels.push(current.toLocaleDateString());
-    current.setDate(
-      current.getDate() +
-        Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 6))),
-    );
-  }
-
-  return labels.length > 0 ? labels : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-}
-
-export async function getVisualizationData(id: string, deviceId?: string): Promise<unknown> {
-  const visualization = ensureVisualization(id, deviceId);
-  const labels = createDateLabels(visualization.filters.date_range);
-  const values = createSampleValues(visualization.id, labels.length);
-
-  switch (visualization.chart_type) {
-    case "scatter":
-      return {
-        datasets: [
-          {
-            label: visualization.data_source,
-            data: values.map((value, index) => ({
-              x: index + 1,
-              y: value,
-            })),
-            backgroundColor: "rgba(59, 130, 246, 0.6)",
-            borderColor: "rgb(59, 130, 246)",
-          },
-        ],
-      };
-    case "pie":
-      return {
-        labels: ["Healthy", "Moderate", "Unhealthy"],
-        datasets: [
-          {
-            data: [values[0] ?? 40, values[1] ?? 35, values[2] ?? 25],
-            backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
-            borderColor: ["#059669", "#d97706", "#dc2626"],
-            borderWidth: 1,
-          },
-        ],
-      };
-    case "heatmap": {
-      const xLabels = labels;
-      const yLabels = ["Week 1", "Week 2", "Week 3"];
-      const data = yLabels.flatMap((rowLabel, rowIndex) =>
-        xLabels.map((columnLabel, columnIndex) => ({
-          x: columnLabel,
-          y: rowLabel,
-          v: (values[(rowIndex + columnIndex) % values.length] ?? 0) + rowIndex * 5,
-        })),
-      );
-
-      return {
-        data,
-        xLabels,
-        yLabels,
-      };
-    }
-    case "bar":
-      return {
-        labels,
-        datasets: [
-          {
-            label: visualization.data_source,
-            data: values,
-            backgroundColor: "rgba(59, 130, 246, 0.6)",
-            borderColor: "rgb(59, 130, 246)",
-            borderWidth: 1,
-          },
-        ],
-      };
-    case "area":
-    case "line":
-    default:
-      return {
-        labels,
-        datasets: [
-          {
-            label: visualization.data_source,
-            data: values,
-            borderColor: "rgb(59, 130, 246)",
-            backgroundColor: "rgba(59, 130, 246, 0.2)",
-            borderWidth: 2,
-            fill: visualization.chart_type === "area",
-            tension: 0.3,
-          },
-        ],
-      };
-  }
+export async function getVisualizationData(
+  id: string,
+  deviceId?: string,
+): Promise<{ demo: false; points: [] }> {
+  ensureVisualization(id, deviceId);
+  return { demo: false, points: [] };
 }
 
 export async function listVisualizations(deviceId?: string): Promise<Visualization[]> {

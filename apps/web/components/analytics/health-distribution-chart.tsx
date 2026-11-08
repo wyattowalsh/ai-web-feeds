@@ -1,147 +1,179 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
-  Tooltip,
   Legend,
   Title,
+  Tooltip,
+  type ChartData,
   type ChartOptions,
   type TooltipItem,
 } from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
-import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
 import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
 import { useTheme } from "@/lib/theme-manager";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
-interface HealthDistribution {
+export interface HealthDistribution {
   healthy: number;
   moderate: number;
   unhealthy: number;
 }
 
+interface HealthDistributionChartProps {
+  distribution?: HealthDistribution | null;
+  error?: string | null;
+}
+
+function isFiniteCount(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function countsFromDistribution(
+  distribution: HealthDistribution | null | undefined,
+): HealthDistribution | null {
+  if (distribution == null) {
+    return null;
+  }
+
+  const { healthy, moderate, unhealthy } = distribution;
+  if (!isFiniteCount(healthy) || !isFiniteCount(moderate) || !isFiniteCount(unhealthy)) {
+    return null;
+  }
+
+  if (healthy === 0 && moderate === 0 && unhealthy === 0) {
+    return null;
+  }
+
+  return { healthy, moderate, unhealthy };
+}
+
+function shareText(count: number, counts: HealthDistribution): string {
+  const counted = counts.healthy + counts.moderate + counts.unhealthy;
+  if (counted === 0) {
+    return "0.0%";
+  }
+
+  return `${((count / counted) * 100).toFixed(1)}%`;
+}
+
+function CountGrid({ counts }: { counts: HealthDistribution }) {
+  const bands = [
+    {
+      key: "healthy" as const,
+      label: "Healthy",
+      value: counts.healthy,
+      cardClassName:
+        "rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4",
+      valueClassName: "mt-2 text-3xl font-semibold tabular-nums text-[color:var(--success-tone)]",
+    },
+    {
+      key: "moderate" as const,
+      label: "Moderate",
+      value: counts.moderate,
+      cardClassName:
+        "rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4",
+      valueClassName: "mt-2 text-3xl font-semibold tabular-nums text-[color:var(--warning-tone)]",
+    },
+    {
+      key: "unhealthy" as const,
+      label: "Unhealthy",
+      value: counts.unhealthy,
+      cardClassName:
+        "rounded-2xl border border-[color:color-mix(in_oklab,var(--danger-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--danger-tone)_12%,var(--surface))] p-4",
+      valueClassName: "mt-2 text-3xl font-semibold tabular-nums text-[color:var(--danger-tone)]",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 gap-4 text-center">
+      {bands.map((band) => (
+        <div key={band.key} className={band.cardClassName}>
+          <p className="metric-label">{band.label}</p>
+          <p className={band.valueClassName} data-health-count={band.key}>
+            {band.value}
+          </p>
+          <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+            {shareText(band.value, counts)}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function HealthDistributionChart({
-  dateRange = "30d",
-  topic,
-}: {
-  dateRange?: string;
-  topic?: string;
-}) {
-  const [distribution, setDistribution] = useState<HealthDistribution | null>(null);
-  const [loading, setLoading] = useState(true);
+  distribution = null,
+  error = null,
+}: HealthDistributionChartProps) {
+  const counts = countsFromDistribution(distribution);
+  const errorMessage = typeof error === "string" ? error.trim() : "";
+  const hasError = errorMessage.length > 0;
+  const showChart = counts !== null && !hasError;
   const { isDark } = useTheme();
   const chartTheme = getAnalyticsChartTheme(isDark);
 
-  useEffect(() => {
-    const fetchDistribution = async () => {
-      setLoading(true);
+  let chartData: ChartData<"pie", number[], string> | null = null;
+  let options: ChartOptions<"pie"> | null = null;
 
-      try {
-        const params = new URLSearchParams({ date_range: dateRange });
-        if (topic) params.set("topic", topic);
-
-        const response = await fetch(`/api/analytics/summary?${params}`);
-        if (!response.ok) throw new Error("Failed to fetch data");
-
-        const data = await response.json();
-        setDistribution(data.health_distribution);
-      } catch (err) {
-        console.error("Error fetching health distribution:", err);
-      } finally {
-        setLoading(false);
-      }
+  if (showChart && counts !== null) {
+    chartData = {
+      labels: ["Healthy (≥0.8)", "Moderate (0.5-0.8)", "Unhealthy (<0.5)"],
+      datasets: [
+        {
+          label: "Feed Count",
+          data: [counts.healthy, counts.moderate, counts.unhealthy],
+          backgroundColor: [chartTheme.successSoft, chartTheme.warningSoft, chartTheme.dangerSoft],
+          borderColor: [chartTheme.success, chartTheme.warning, chartTheme.danger],
+          borderWidth: 2,
+        },
+      ],
     };
 
-    fetchDistribution();
-  }, [dateRange, topic]);
-
-  if (loading || !distribution) {
-    return <ChartSkeleton className="h-[32rem]" />;
-  }
-
-  const total = distribution.healthy + distribution.moderate + distribution.unhealthy;
-
-  const chartData = {
-    labels: ["Healthy (≥0.8)", "Moderate (0.5-0.8)", "Unhealthy (<0.5)"],
-    datasets: [
-      {
-        label: "Feed Count",
-        data: [distribution.healthy, distribution.moderate, distribution.unhealthy],
-        backgroundColor: [chartTheme.successSoft, chartTheme.warningSoft, chartTheme.dangerSoft],
-        borderColor: [chartTheme.success, chartTheme.warning, chartTheme.danger],
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const options: ChartOptions<"pie"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom" as const,
-        labels: {
-          color: chartTheme.textMuted,
+    options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: chartTheme.textMuted,
+          },
         },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: TooltipItem<"pie">) => {
-            const value = typeof context.raw === "number" ? context.raw : Number(context.raw);
-            const percentage = ((value / total) * 100).toFixed(1);
-            return `${context.label}: ${value} (${percentage}%)`;
+        tooltip: {
+          callbacks: {
+            label: (context: TooltipItem<"pie">) => {
+              const value = typeof context.raw === "number" ? context.raw : Number.NaN;
+              const label = context.label ?? "";
+              if (!Number.isFinite(value)) {
+                return label;
+              }
+
+              return `${label}: ${value} (${shareText(value, counts)})`;
+            },
           },
         },
       },
-    },
-  };
+    };
+  }
 
   return (
     <ChartShell
       eyebrow="Reliability"
       title="Health distribution"
       description="Healthy, moderate, and unhealthy bands make it easier to reason about quality and maintenance posture across the catalog."
-      footer={
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--success-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--success-tone)_12%,var(--surface))] p-4">
-            <p className="metric-label">Healthy</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--success-tone)]">
-              {distribution.healthy}
-            </p>
-            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-              {((distribution.healthy / total) * 100).toFixed(1)}%
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--warning-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-4">
-            <p className="metric-label">Moderate</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--warning-tone)]">
-              {distribution.moderate}
-            </p>
-            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-              {((distribution.moderate / total) * 100).toFixed(1)}%
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--danger-tone)_24%,var(--line))] bg-[color:color-mix(in_oklab,var(--danger-tone)_12%,var(--surface))] p-4">
-            <p className="metric-label">Unhealthy</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums text-[color:var(--danger-tone)]">
-              {distribution.unhealthy}
-            </p>
-            <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-              {((distribution.unhealthy / total) * 100).toFixed(1)}%
-            </p>
-          </div>
-        </div>
-      }
+      empty={counts === null && !hasError}
+      error={hasError ? errorMessage : null}
+      footer={showChart && counts !== null ? <CountGrid counts={counts} /> : null}
     >
-      <div className="h-96">
-        <Pie data={chartData} options={options} />
-      </div>
+      {showChart && chartData !== null && options !== null ? (
+        <div className="h-96" data-demo="false">
+          <Pie data={chartData} options={options} />
+        </div>
+      ) : null}
     </ChartShell>
   );
 }

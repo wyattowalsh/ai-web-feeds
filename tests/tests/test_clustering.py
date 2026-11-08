@@ -17,8 +17,18 @@ class TestTopicClusteringService:
 
     @pytest.fixture
     def sample_data(self):
-        """Generate sample topic data."""
-        embeddings = generate_sample_embeddings(n_topics=10, dim=64)
+        """Build deterministic topic vectors for layout checks.
+
+        The product helper returns no synthetic embeddings. These vectors
+        exist only inside the test.
+        """
+        dim = 64
+        rng = np.random.default_rng(0)
+        centers = rng.normal(size=(3, dim))
+        embeddings: dict[str, np.ndarray] = {}
+        for index in range(10):
+            vector = centers[index % 3] + rng.normal(scale=0.05, size=dim)
+            embeddings[f"topic-{index}"] = vector / np.linalg.norm(vector)
         metadata = {
             topic_id: {
                 "label": f"TopicNode {i}",
@@ -105,29 +115,13 @@ class TestTopicClusteringService:
 
 
 class TestSampleDataGeneration:
-    """Test sample data generation."""
+    """The product helper does not invent topic vectors."""
 
-    def test_generate_sample_embeddings(self):
-        """Test sample embedding generation."""
-        embeddings = generate_sample_embeddings(n_topics=20, dim=128)
+    def test_generate_sample_embeddings_returns_empty(self):
+        """Stored assignments are the source of groupings."""
+        assert generate_sample_embeddings(n_topics=20, dim=128) == {}
 
-        assert len(embeddings) == 20
-        assert all(emb.shape == (128,) for emb in embeddings.values())
-
-        # Check embeddings are normalized
-        for emb in embeddings.values():
-            norm = np.linalg.norm(emb)
-            assert abs(norm - 1.0) < 0.01
-
-    def test_sample_embeddings_clustering(self):
-        """Test that sample embeddings form clusters."""
-        embeddings = generate_sample_embeddings(n_topics=15, dim=64)
-
-        # Calculate pairwise similarities
-        from sklearn.metrics.pairwise import cosine_similarity
-
-        emb_array = np.array(list(embeddings.values()))
-        similarities = cosine_similarity(emb_array)
-
-        # Should have some high similarity pairs (from same cluster)
-        assert np.any(similarities > 0.5)
+    def test_generate_sample_embeddings_rejects_negative(self):
+        """Negative sizes are rejected before the empty result."""
+        with pytest.raises(ValueError, match="non-negative"):
+            generate_sample_embeddings(n_topics=-1, dim=8)

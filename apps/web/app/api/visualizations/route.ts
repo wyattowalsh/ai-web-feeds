@@ -1,78 +1,69 @@
 import { NextResponse } from "next/server";
+
+import { loadFeedCatalog } from "@/lib/feeds";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import {
-  BackendConfigurationError,
-  createFeatureUnavailableResponse,
-  fetchBackend,
-  formatBackendErrorResponse,
-  getBackendErrorStatus,
-} from "@/lib/backend";
+import { catalogSeries, type CatalogSeries } from "@/lib/visualization/catalog-series";
 
 export const dynamic = "force-dynamic";
 
-const GETHandler = async (request: Request) => {
-  const { searchParams } = new URL(request.url);
+const SERIES_HEADERS = {
+  "Cache-Control": "private, s-maxage=60, stale-while-revalidate=300",
+} as const;
+
+function readStoredCatalog(): unknown {
+  try {
+    return loadFeedCatalog();
+  } catch {
+    return undefined;
+  }
+}
+
+async function readSeriesInput(request: Request): Promise<unknown> {
+  const method = request.method.toUpperCase();
+  if (method === "GET" || method === "HEAD") {
+    return readStoredCatalog();
+  }
+
+  let raw = "";
+  try {
+    raw = await request.text();
+  } catch {
+    return undefined;
+  }
+
+  if (raw.trim().length === 0) {
+    return readStoredCatalog();
+  }
 
   try {
-    const data = await fetchBackend("/api/v1/visualizations", {
-      params: {
-        limit: searchParams.get("limit") || "50",
-        offset: searchParams.get("offset") || "0",
-      },
-    });
-
-    return NextResponse.json(data, {
-      headers: {
-        "Cache-Control": "private, s-maxage=60, stale-while-revalidate=300",
-      },
-    });
-  } catch (error) {
-    if (error instanceof BackendConfigurationError) {
-      return NextResponse.json(
-        createFeatureUnavailableResponse(
-          "Visualizations",
-          "Visualizations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
-        ),
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return undefined;
   }
+}
+
+function seriesBody(input: unknown): CatalogSeries {
+  // Stored or caller catalog rows only. Forecasts stay disabled. ML is copied only when supplied.
+  const series = catalogSeries(input);
+
+  if (series.ml === undefined) {
+    return { demo: false, points: series.points };
+  }
+
+  return { demo: false, points: series.points, ml: series.ml };
+}
+
+function seriesResponse(input: unknown): NextResponse {
+  return NextResponse.json(seriesBody(input), { headers: SERIES_HEADERS });
+}
+
+const GETHandler = async (request: Request) => {
+  return seriesResponse(await readSeriesInput(request));
 };
 
 const POSTHandler = async (request: Request) => {
-  try {
-    const body = await request.json();
-    const data = await fetchBackend("/api/v1/visualizations", {
-      method: "POST",
-      body,
-    });
-
-    return NextResponse.json(data, { status: 201 });
-  } catch (error) {
-    if (error instanceof BackendConfigurationError) {
-      return NextResponse.json(
-        createFeatureUnavailableResponse(
-          "Visualizations",
-          "Visualizations are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
-        ),
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
-  }
+  return seriesResponse(await readSeriesInput(request));
 };
 
-export const GET = withRouteTelemetry("visualizations.list", GETHandler, {
-  backendTarget: "python-backend",
-});
-
-export const POST = withRouteTelemetry("visualizations.create", POSTHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("visualizations.list", GETHandler);
+export const POST = withRouteTelemetry("visualizations.create", POSTHandler);

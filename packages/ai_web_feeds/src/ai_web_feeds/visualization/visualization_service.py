@@ -1,6 +1,8 @@
 """Visualization service with business logic.
 
-Implements T021: Chart generation, caching, validation
+Implements T021: Chart generation, caching, validation.
+
+Chart data is stored catalog rows only. Demo series and forecasts stay off.
 """
 
 from datetime import UTC, datetime
@@ -22,6 +24,12 @@ from ai_web_feeds.visualization.validators import (
     ValidationError,
 )
 
+# Empty store has no fabricated points. Forecast rows are not added.
+_EMPTY_CHART_SERIES: dict[str, Any] = {
+    "demo": False,
+    "points": [],
+}
+
 
 class VisualizationService:
     """Service for managing visualizations."""
@@ -30,6 +38,29 @@ class VisualizationService:
         """Initialize service."""
         self.data_service = DataService()
         self.customization_validator = CustomizationValidator()
+
+    @staticmethod
+    def _stored_chart_rows(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Return stored rows. An empty query stays an empty disabled series.
+
+        Args:
+            records: Rows already loaded for the chart. Not invented.
+
+        Returns:
+            The stored rows, or no points when the store is empty.
+        """
+        if records:
+            return records
+
+        points = _EMPTY_CHART_SERIES["points"]
+        if _EMPTY_CHART_SERIES["demo"] is not False or not isinstance(points, list):
+            return []
+
+        stored: list[dict[str, Any]] = []
+        for row in points:
+            if isinstance(row, dict):
+                stored.append(row)
+        return stored
 
     async def list_visualizations(
         self,
@@ -308,8 +339,10 @@ class VisualizationService:
                     limit=limit,
                 )
             else:
-                # Other data sources can be added here
+                # Other data sources are not filled with a demo or forecast series
                 records = []
+
+            records = self._stored_chart_rows(records)
 
             return {
                 "records": records,
@@ -320,8 +353,9 @@ class VisualizationService:
             }
         except Exception as e:
             logger.error(f"Error fetching visualization data: {e}")
+            records = self._stored_chart_rows([])
             return {
-                "records": [],
-                "count": 0,
+                "records": records,
+                "count": len(records),
                 "error": str(e),
             }

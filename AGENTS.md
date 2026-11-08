@@ -266,8 +266,8 @@ ______________________________________________________________________
 - SQLite (development), PostgreSQL (production option) for validation cache, enrichment
   data, and feed entry metadata (001-core-project-spec)
 - TypeScript 5.9 (strict) with React 19 on Next.js 15 App Router + Next.js 15, React 19,
-  FumaDocs UI, Chart.js, Dexie.js 4, `onnxruntime-web`, Service Worker/Web Worker APIs
-  (004-client-side-features)
+  FumaDocs UI, Chart.js, raw IndexedDB, `onnxruntime-web`, Service Worker/Web Worker
+  APIs (004-client-side-features)
 - IndexedDB (articles, search index, annotations), Cache Storage (assets), localStorage
   (preferences, folders) (004-client-side-features)
 

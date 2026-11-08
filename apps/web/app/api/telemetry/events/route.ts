@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const MAX_BATCH_SIZE = 25;
+/** keepalive analytics posts are small; reject larger bodies before parse or persist. */
+export const MAX_TELEMETRY_BODY_BYTES = 64 * 1024;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 60;
 
@@ -44,6 +46,20 @@ function parseUsageEventInput(raw: unknown): UsageEventInput | null {
   };
 }
 
+function declaredBodyBytes(request: Request): number | null {
+  const header = request.headers.get("content-length");
+  if (!header) {
+    return null;
+  }
+
+  const length = Number(header);
+  if (!Number.isFinite(length) || length < 0) {
+    return null;
+  }
+
+  return length;
+}
+
 const POSTHandler = async (request: Request) => {
   const rateLimit = checkRateLimit(
     `telemetry.events:${getClientRateLimitKey(request)}`,
@@ -63,10 +79,27 @@ const POSTHandler = async (request: Request) => {
     );
   }
 
+  const declaredBytes = declaredBodyBytes(request);
+  if (declaredBytes !== null && declaredBytes > MAX_TELEMETRY_BODY_BYTES) {
+    return NextResponse.json({ error: "Request body is too large" }, { status: 413 });
+  }
+
+  let rawBody: string;
+
+  try {
+    rawBody = await request.text();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  if (new TextEncoder().encode(rawBody).byteLength > MAX_TELEMETRY_BODY_BYTES) {
+    return NextResponse.json({ error: "Request body is too large" }, { status: 413 });
+  }
+
   let body: unknown;
 
   try {
-    body = await request.json();
+    body = JSON.parse(rawBody) as unknown;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
@@ -133,7 +166,7 @@ const POSTHandler = async (request: Request) => {
       );
     }
 
-    throw error;
+    return NextResponse.json({ error: "Telemetry ingest failed" }, { status: 500 });
   }
 };
 

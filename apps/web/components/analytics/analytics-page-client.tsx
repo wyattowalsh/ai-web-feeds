@@ -6,7 +6,10 @@ import { ArrowUpRight, Database, Download, RefreshCcw } from "lucide-react";
 import { SummaryMetrics } from "@/components/analytics/summary-metrics";
 import { TrendingTopicsChart } from "@/components/analytics/trending-topics-chart";
 import { VelocityChart } from "@/components/analytics/velocity-chart";
-import { HealthDistributionChart } from "@/components/analytics/health-distribution-chart";
+import {
+  HealthDistributionChart,
+  type HealthDistribution,
+} from "@/components/analytics/health-distribution-chart";
 import { AnalyticsFilters } from "@/components/analytics/analytics-filters";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,7 +20,308 @@ type AnalyticsPageClientProps = {
   backendConfigured?: boolean;
 };
 
+type SummaryMetricValues = {
+  total_feeds: number;
+  active_feeds: number;
+  validation_success_rate: number;
+  avg_response_time: number;
+  health_distribution: HealthDistribution;
+  last_updated?: string | null;
+};
+
+type TrendingTopic = {
+  topic: string;
+  feed_count: number;
+  validation_frequency: number;
+  avg_health_score: number;
+};
+
+type VelocityPoint = {
+  date: string;
+  count: number;
+};
+
+type ErrorBody = {
+  error?: unknown;
+  code?: unknown;
+};
+
+type SummaryLoad =
+  | { status: "unavailable"; message: string }
+  | {
+      status: "ready";
+      metrics: SummaryMetricValues | null;
+      distribution: HealthDistribution | null;
+      error: string | null;
+    };
+
+type TopicLoad = {
+  topics: TrendingTopic[];
+  error: string | null;
+};
+
+type VelocityLoad = {
+  points: VelocityPoint[];
+  error: string | null;
+};
+
 const unavailableCopy = "Analytics require the optional ai-web-feeds backend service.";
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function textOrFallback(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+
+  return fallback;
+}
+
+function asErrorBody(value: unknown): ErrorBody | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  return value as ErrorBody;
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function distributionFrom(value: unknown): HealthDistribution | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const healthy = record.healthy;
+  const moderate = record.moderate;
+  const unhealthy = record.unhealthy;
+
+  if (!isFiniteNumber(healthy) || !isFiniteNumber(moderate) || !isFiniteNumber(unhealthy)) {
+    return null;
+  }
+
+  return { healthy, moderate, unhealthy };
+}
+
+// Catalog fields only. Missing counts, frequencies, and scores stay empty.
+function summaryFromPayload(payload: unknown): {
+  metrics: SummaryMetricValues | null;
+  distribution: HealthDistribution | null;
+} {
+  if (!payload || typeof payload !== "object") {
+    return { metrics: null, distribution: null };
+  }
+
+  const record = payload as Record<string, unknown>;
+  const distribution = distributionFrom(record.health_distribution);
+  const totalFeeds = record.total_feeds;
+  const activeFeeds = record.active_feeds;
+  const successRate = record.validation_success_rate;
+  const responseTime = record.avg_response_time;
+
+  if (
+    !distribution ||
+    !isFiniteNumber(totalFeeds) ||
+    !isFiniteNumber(activeFeeds) ||
+    !isFiniteNumber(successRate) ||
+    !isFiniteNumber(responseTime)
+  ) {
+    return { metrics: null, distribution };
+  }
+
+  const metrics: SummaryMetricValues = {
+    total_feeds: totalFeeds,
+    active_feeds: activeFeeds,
+    validation_success_rate: successRate,
+    avg_response_time: responseTime,
+    health_distribution: distribution,
+  };
+
+  if (typeof record.last_updated === "string" || record.last_updated === null) {
+    metrics.last_updated = record.last_updated;
+  }
+
+  return { metrics, distribution };
+}
+
+function trendingTopicsFromPayload(payload: unknown): TrendingTopic[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const points = (payload as { points?: unknown }).points;
+  if (!Array.isArray(points)) {
+    return [];
+  }
+
+  const topics: TrendingTopic[] = [];
+
+  for (const point of points) {
+    if (!point || typeof point !== "object") {
+      continue;
+    }
+
+    const record = point as Record<string, unknown>;
+    if (typeof record.topic !== "string") {
+      continue;
+    }
+
+    const topic = record.topic.trim();
+    const feedCount = record.feed_count;
+    const validationFrequency = record.validation_frequency;
+    const avgHealthScore = record.avg_health_score;
+
+    if (
+      !topic ||
+      !isFiniteNumber(feedCount) ||
+      !isFiniteNumber(validationFrequency) ||
+      !isFiniteNumber(avgHealthScore)
+    ) {
+      continue;
+    }
+
+    topics.push({
+      topic,
+      feed_count: feedCount,
+      validation_frequency: validationFrequency,
+      avg_health_score: avgHealthScore,
+    });
+  }
+
+  return topics;
+}
+
+function velocityPointsFromPayload(payload: unknown): VelocityPoint[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const points = (payload as { points?: unknown }).points;
+  if (!Array.isArray(points)) {
+    return [];
+  }
+
+  const parsed: VelocityPoint[] = [];
+
+  for (const point of points) {
+    if (!point || typeof point !== "object") {
+      continue;
+    }
+
+    const record = point as Record<string, unknown>;
+    const count = record.count;
+    if (typeof record.date !== "string" || record.date.trim() === "" || !isFiniteNumber(count)) {
+      continue;
+    }
+
+    parsed.push({ date: record.date, count });
+  }
+
+  return parsed;
+}
+
+async function loadSummary(dateRange: string, topic: string | undefined): Promise<SummaryLoad> {
+  try {
+    const params = new URLSearchParams({ date_range: dateRange });
+    if (topic) {
+      params.set("topic", topic);
+    }
+
+    const response = await fetch(`/api/analytics/summary?${params.toString()}`, {
+      cache: "no-store",
+    });
+    const payload = await readJson(response);
+
+    if (!response.ok) {
+      const errorBody = asErrorBody(payload);
+      if (response.status === 503 || errorBody?.code === "FEATURE_UNAVAILABLE") {
+        return {
+          status: "unavailable",
+          message: textOrFallback(errorBody?.error, unavailableCopy),
+        };
+      }
+
+      return {
+        status: "ready",
+        metrics: null,
+        distribution: null,
+        error: textOrFallback(errorBody?.error, "Failed to load analytics"),
+      };
+    }
+
+    const parsed = summaryFromPayload(payload);
+    return {
+      status: "ready",
+      metrics: parsed.metrics,
+      distribution: parsed.distribution,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Analytics availability error:", error);
+    return {
+      status: "ready",
+      metrics: null,
+      distribution: null,
+      error: "Failed to load analytics",
+    };
+  }
+}
+
+async function loadTrendingTopics(): Promise<TopicLoad> {
+  try {
+    const params = new URLSearchParams({ limit: "10" });
+    const response = await fetch(`/api/analytics/trending?${params.toString()}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const errorBody = asErrorBody(await readJson(response));
+      return {
+        topics: [],
+        error: textOrFallback(errorBody?.error, "Failed to load trending topics"),
+      };
+    }
+
+    return { topics: trendingTopicsFromPayload(await readJson(response)), error: null };
+  } catch (error) {
+    console.error("Analytics trending error:", error);
+    return { topics: [], error: "Failed to load trending topics" };
+  }
+}
+
+async function loadVelocityPoints(dateRange: string): Promise<VelocityLoad> {
+  try {
+    const params = new URLSearchParams({
+      date_range: dateRange,
+      granularity: "daily",
+    });
+    const response = await fetch(`/api/analytics/velocity?${params.toString()}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const errorBody = asErrorBody(await readJson(response));
+      return {
+        points: [],
+        error: textOrFallback(errorBody?.error, "Failed to load publication velocity"),
+      };
+    }
+
+    return { points: velocityPointsFromPayload(await readJson(response)), error: null };
+  } catch (error) {
+    console.error("Analytics velocity error:", error);
+    return { points: [], error: "Failed to load publication velocity" };
+  }
+}
 
 export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageClientProps) {
   const [dateRange, setDateRange] = useState("30d");
@@ -29,6 +333,13 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
   const [backendMessage, setBackendMessage] = useState<string | null>(
     backendConfigured ? null : unavailableCopy,
   );
+  const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetricValues | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [healthDistribution, setHealthDistribution] = useState<HealthDistribution | null>(null);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [trendingError, setTrendingError] = useState<string | null>(null);
+  const [velocityPoints, setVelocityPoints] = useState<VelocityPoint[]>([]);
+  const [velocityError, setVelocityError] = useState<string | null>(null);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
@@ -38,53 +349,59 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
     if (!backendConfigured) {
       setBackendStatus("unavailable");
       setBackendMessage(unavailableCopy);
+      setSummaryMetrics(null);
+      setSummaryError(null);
+      setHealthDistribution(null);
+      setTrendingTopics([]);
+      setTrendingError(null);
+      setVelocityPoints([]);
+      setVelocityError(null);
       return;
     }
 
     let cancelled = false;
 
-    const checkAvailability = async () => {
+    const load = async () => {
       setBackendStatus("checking");
 
-      try {
-        const params = new URLSearchParams({ date_range: dateRange });
-        if (topic) params.set("topic", topic);
-
-        const response = await fetch(`/api/analytics/summary?${params.toString()}`, {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as {
-            error?: string;
-            code?: string;
-          } | null;
-
-          if (response.status === 503 || payload?.code === "FEATURE_UNAVAILABLE") {
-            if (!cancelled) {
-              setBackendStatus("unavailable");
-              setBackendMessage(payload?.error || unavailableCopy);
-            }
-            return;
-          }
-
-          throw new Error(payload?.error || "Failed to load analytics");
-        }
-
-        if (!cancelled) {
-          setBackendStatus("available");
-          setBackendMessage(null);
-        }
-      } catch (error) {
-        console.error("Analytics availability error:", error);
-        if (!cancelled) {
-          setBackendStatus("available");
-          setBackendMessage(null);
-        }
+      const summary = await loadSummary(dateRange, topic);
+      if (cancelled) {
+        return;
       }
+
+      if (summary.status === "unavailable") {
+        setBackendStatus("unavailable");
+        setBackendMessage(summary.message);
+        setSummaryMetrics(null);
+        setSummaryError(null);
+        setHealthDistribution(null);
+        setTrendingTopics([]);
+        setTrendingError(null);
+        setVelocityPoints([]);
+        setVelocityError(null);
+        return;
+      }
+
+      const [trending, velocity] = await Promise.all([
+        loadTrendingTopics(),
+        loadVelocityPoints(dateRange),
+      ]);
+      if (cancelled) {
+        return;
+      }
+
+      setSummaryMetrics(summary.metrics);
+      setSummaryError(summary.error);
+      setHealthDistribution(summary.distribution);
+      setTrendingTopics(trending.topics);
+      setTrendingError(trending.error);
+      setVelocityPoints(velocity.points);
+      setVelocityError(velocity.error);
+      setBackendStatus("available");
+      setBackendMessage(null);
     };
 
-    void checkAvailability();
+    void load();
 
     return () => {
       cancelled = true;
@@ -213,25 +530,28 @@ export function AnalyticsPageClient({ backendConfigured = true }: AnalyticsPageC
               onExport={handleExport}
             />
 
-            <SummaryMetrics key={`summary-${refreshKey}`} dateRange={dateRange} topic={topic} />
+            <SummaryMetrics
+              key={`summary-${refreshKey}`}
+              metrics={summaryMetrics}
+              error={summaryError}
+            />
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <TrendingTopicsChart
                 key={`trending-${refreshKey}`}
-                dateRange={dateRange}
-                limit={10}
+                topics={trendingTopics}
+                error={trendingError}
               />
               <HealthDistributionChart
                 key={`health-${refreshKey}`}
-                dateRange={dateRange}
-                topic={topic}
+                distribution={healthDistribution}
               />
             </div>
 
             <VelocityChart
               key={`velocity-${refreshKey}`}
-              dateRange={dateRange}
-              granularity="daily"
+              data_points={velocityPoints}
+              error={velocityError}
             />
 
             <div className="surface-card-soft space-y-4">

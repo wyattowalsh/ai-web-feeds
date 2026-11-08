@@ -150,6 +150,50 @@ def wrap_opml_with_root_folder(opml_xml: str, folder_name: str = OPML_ROOT_FOLDE
     return _serialize_xml(root)
 
 
+class OpmlStructureError(ValueError):
+    """Generated OPML failed the OPML 2.0 structural check."""
+
+
+def check_opml_structure(opml_xml: str) -> Element:
+    """Confirm generated OPML has version 2.0, an opml root, a body, and outlines.
+
+    Parses with the defused XML parser already used by this module. Meant for
+    documents ``generate_opml`` already returns, including the CLI root-folder wrap.
+
+    Args:
+        opml_xml: OPML document text.
+
+    Returns:
+        Parsed ``opml`` root element.
+
+    Raises:
+        OpmlStructureError: If the root, version, body, or outlines are wrong.
+    """
+
+    root = cast(Element, fromstring(opml_xml))
+    problems = _opml_structure_problems(root)
+    if problems:
+        message = "OPML structural check failed: " + ", ".join(problems)
+        raise OpmlStructureError(message)
+    return root
+
+
+def _opml_structure_problems(root: Element) -> list[str]:
+    """Return structural problems for an OPML 2.0 document."""
+
+    problems: list[str] = []
+    if root.tag != "opml":
+        problems.append("root is not opml")
+    if root.get("version") != "2.0":
+        problems.append("version is not 2.0")
+    body = root.find("body")
+    if body is None:
+        problems.append("missing body")
+    elif next(body.iter("outline"), None) is None:
+        problems.append("missing outline elements")
+    return problems
+
+
 def _outline_matches_folder(outline: Element, folder_name: str) -> bool:
     """Return whether an outline element already matches the wrapper folder."""
 

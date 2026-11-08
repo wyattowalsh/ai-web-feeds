@@ -5,6 +5,10 @@ Implements FR-011 through FR-011g:
 - 5-minute cache layer with explicit Redis or in-memory mode
 - Input validation and sanitization
 - Error recovery with exponential backoff
+
+Queries return stored catalog rows only. Empty storage stays empty.
+Demo series stay off: ``{"demo": False, "points": []}`` is not emitted.
+No synthetic batches and no forecast series are built.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -26,6 +30,17 @@ from ai_web_feeds.visualization.validators import (
     DateRangeValidator,
     QueryValidator,
 )
+
+# Disabled demo payload. Callers return stored rows, never this series.
+_EMPTY_SERIES: dict[str, Any] = {"demo": False, "points": []}
+
+
+def _require_real_catalog() -> None:
+    """Refuse a demo series, synthetic points, or a forecast batch."""
+    points = _EMPTY_SERIES.get("points")
+    if _EMPTY_SERIES.get("demo") is not False or not isinstance(points, list) or points:
+        msg = "demo series must stay disabled"
+        raise RuntimeError(msg)
 
 
 class DataService:
@@ -99,6 +114,7 @@ class DataService:
             device_id=device_id,
         )
         if cached_data is not None:
+            _require_real_catalog()
             return cached_data
 
         # Execute query
@@ -152,6 +168,7 @@ class DataService:
                     f"Queried {len(data)} topic metric records "
                     f"({start_date.date()} to {end_date.date()})"
                 )
+                _require_real_catalog()
                 return data
 
         except OperationalError as e:
@@ -212,6 +229,7 @@ class DataService:
             device_id=device_id,
         )
         if cached_data is not None:
+            _require_real_catalog()
             return cached_data
 
         # Execute query
@@ -263,6 +281,7 @@ class DataService:
                 )
 
                 logger.info(f"Queried {len(data)} feed health records")
+                _require_real_catalog()
                 return data
 
         except (OperationalError, DatabaseError) as e:
@@ -296,6 +315,7 @@ class DataService:
             device_id=device_id,
         )
         if cached_data is not None:
+            _require_real_catalog()
             return cached_data
 
         try:
@@ -379,6 +399,7 @@ class DataService:
                 )
 
                 logger.info(f"Retrieved graph data: {len(nodes)} nodes")
+                _require_real_catalog()
                 return graph_data
 
         except (OperationalError, DatabaseError) as e:

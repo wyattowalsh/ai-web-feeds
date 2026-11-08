@@ -12,6 +12,7 @@ from loguru import logger
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm as async_tqdm
 
+from ai_web_feeds.config import settings
 from ai_web_feeds.models import FeedSource, FeedValidationResult
 
 
@@ -339,13 +340,16 @@ async def validate_all_feeds(
 
     Args:
         feed_sources: List of FeedSource models to validate
-        concurrency_limit: Maximum concurrent HTTP requests
+        concurrency_limit: Maximum concurrent HTTP requests. Cannot exceed
+            ``settings.phase3b.feed_poll_max_concurrent`` (default 10).
         show_progress: Whether to show progress bar
 
     Returns:
         List of FeedValidationResult models
     """
-    semaphore = asyncio.Semaphore(concurrency_limit)
+    # Settings is the ceiling. Callers may request a smaller pool, not a larger one.
+    pool_limit = min(concurrency_limit, settings.phase3b.feed_poll_max_concurrent)
+    semaphore = asyncio.Semaphore(pool_limit)
 
     async def validate_with_semaphore(feed: FeedSource) -> FeedValidationResult:
         async with semaphore:

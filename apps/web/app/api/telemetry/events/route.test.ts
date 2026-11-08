@@ -32,7 +32,7 @@ import { assertDbConfigured, DatabaseNotConfiguredError } from "@/lib/server/db"
 import { resetRateLimitForTests } from "@/lib/server/rate-limit";
 import { resetTelemetryStoreForTests } from "@/lib/server/telemetry-store";
 import { USAGE_EVENT_SCHEMA_VERSION } from "@/lib/server/usage-events";
-import { POST } from "./route";
+import { MAX_TELEMETRY_BODY_BYTES, POST } from "./route";
 
 function createPostRequest(body: unknown): Request {
   return new Request("http://localhost/api/telemetry/events", {
@@ -238,5 +238,134 @@ describe("POST /api/telemetry/events", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Telemetry persistence is not configured",
     });
+  });
+
+  it("accepts a small analytics event without logging cookies or emails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const response = await POST(
+        new Request("http://localhost/api/telemetry/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: "aiwf.session_token=raw-session-secret; email=person@example.com",
+          },
+          body: JSON.stringify({
+            events: [
+              {
+                eventName: "reader.article.open",
+                surface: "reader",
+                sessionId: "session-telemetry-small",
+                properties: { topic: "llm" },
+              },
+            ],
+          }),
+        }),
+      );
+
+      expect(response.status).toBe(202);
+      await expect(response.json()).resolves.toEqual({ accepted: 1 });
+      expect(sqlMock).toHaveBeenCalled();
+
+      const logged = [errorSpy, logSpy, warnSpy]
+        .flatMap((spy) => spy.mock.calls)
+        .flat()
+        .map((value) => (typeof value === "string" ? value : JSON.stringify(value)))
+        .join(" ");
+
+      expect(logged).not.toContain("raw-session-secret");
+      expect(logged).not.toContain("person@example.com");
+      expect(logged).not.toContain("aiwf.session_token");
+    } finally {
+      errorSpy.mockRestore();
+      logSpy.mockRestore();
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("returns 400 for a malformed body before writing", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/telemetry/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: "Invalid JSON body" });
+    expect(sqlMock).not.toHaveBeenCalled();
+    expect(resolveUserIdentityMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for an oversized event batch before writing", async () => {
+    const response = await POST(
+      createPostRequest({
+        events: Array.from({ length: 26 }, () => ({
+          eventName: "reader.filter.apply",
+          surface: "reader",
+        })),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(sqlMock).not.toHaveBeenCalled();
+    expect(resolveUserIdentityMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 413 for an oversized body before writing", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/telemetry/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          events: [
+            {
+              eventName: "reader.article.open",
+              surface: "reader",
+              properties: { blob: "x".repeat(MAX_TELEMETRY_BODY_BYTES) },
+            },
+          ],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({ error: "Request body is too large" });
+    expect(sqlMock).not.toHaveBeenCalled();
+    expect(resolveUserIdentityMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 instead of throwing when persistence fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    sqlMock.mockRejectedValueOnce(
+      new Error(
+        "connect failed postgres://user:super-secret-token@db.example/app person@example.com cookie=raw-session-secret", // pragma: allowlist secret
+      ),
+    );
+
+    try {
+      const response = await POST(
+        createPostRequest({
+          events: [{ eventName: "reader.filter.apply", surface: "reader" }],
+        }),
+      );
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toEqual({ error: "Telemetry ingest failed" });
+
+      const logged = errorSpy.mock.calls
+        .flat()
+        .map((value) => (typeof value === "string" ? value : JSON.stringify(value)))
+        .join(" ");
+      expect(logged).not.toContain("super-secret-token");
+      expect(logged).not.toContain("person@example.com");
+      expect(logged).not.toContain("raw-session-secret");
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });

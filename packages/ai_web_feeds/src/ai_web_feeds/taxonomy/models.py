@@ -4,7 +4,50 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any
+
+
+class TopicFacet(StrEnum):
+    """Primary classification axis from topics.schema.json."""
+
+    DOMAIN = "domain"
+    SUBFIELD = "subfield"
+    TASK = "task"
+    METHODOLOGY = "methodology"
+    MODALITY = "modality"
+    DATA = "data"
+    WORKFLOW = "workflow"
+    OPS = "ops"
+    DEPLOYMENT = "deployment"
+    INFRA = "infra"
+    DEVTOOLS = "devtools"
+    HARDWARE = "hardware"
+    RESEARCH = "research"
+    SAFETY = "safety"
+    ETHICS = "ethics"
+    PRIVACY = "privacy"
+    SECURITY = "security"
+    GOVERNANCE = "governance"
+    REGULATION = "regulation"
+    EDUCATION = "education"
+    INDUSTRY = "industry"
+    COMMUNITY = "community"
+    PRODUCT = "product"
+    OPEN_SOURCE = "open-source"
+    MEDIA = "media"
+    PROMPTING = "prompting"
+
+
+class RelationType(StrEnum):
+    """Typed non-hierarchical topic edges from topics.schema.json."""
+
+    DEPENDS_ON = "depends_on"
+    IMPLEMENTS = "implements"
+    INFLUENCES = "influences"
+    CONTRASTS_WITH = "contrasts_with"
+    SAME_AS = "same_as"
+    RELATED_TO = "related_to"
 
 
 @dataclass(frozen=True)

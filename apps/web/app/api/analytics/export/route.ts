@@ -1,61 +1,47 @@
 import { NextResponse } from "next/server";
+import { loadFeedCatalog, type FeedSource } from "@/lib/feeds";
+import { getValidationStats, type ValidationStats } from "@/lib/validation-stats";
 import { withRouteTelemetry } from "@/lib/telemetry-route";
-import {
-  BackendConfigurationError,
-  buildBackendUrl,
-  createFeatureUnavailableResponse,
-  formatBackendErrorResponse,
-  getBackendErrorStatus,
-} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-const GETHandler = async (request: Request) => {
-  const { searchParams } = new URL(request.url);
-
+function readCatalogRows(): FeedSource[] {
   try {
-    const response = await fetch(
-      buildBackendUrl("/analytics/export", {
-        date_range: searchParams.get("date_range") || "30d",
-      }),
-    );
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      return NextResponse.json(
-        {
-          error: errorBody.message || `Backend returned ${response.status}`,
-          code: errorBody.code || `HTTP_${response.status}`,
-        },
-        { status: response.status },
-      );
-    }
-
-    return new NextResponse(await response.text(), {
-      status: 200,
-      headers: {
-        "Content-Type": response.headers.get("content-type") || "text/csv",
-        "Content-Disposition":
-          response.headers.get("content-disposition") || 'attachment; filename="analytics.csv"',
-      },
-    });
-  } catch (error) {
-    if (error instanceof BackendConfigurationError) {
-      return NextResponse.json(
-        createFeatureUnavailableResponse(
-          "Analytics",
-          "Analytics are unavailable until BACKEND_URL points to the ai-web-feeds backend.",
-        ),
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json(formatBackendErrorResponse(error), {
-      status: getBackendErrorStatus(error),
-    });
+    const sources = loadFeedCatalog().sources;
+    return Array.isArray(sources) ? sources : [];
+  } catch {
+    return [];
   }
+}
+
+function readRecordedSnapshotPoints(snapshot: ValidationStats): unknown[] {
+  if (!snapshot.validation_data_available) {
+    return [];
+  }
+
+  const recorded = (snapshot as { points?: unknown }).points;
+  return Array.isArray(recorded) ? recorded : [];
+}
+
+async function readValidationSnapshotPoints(): Promise<unknown[]> {
+  try {
+    return readRecordedSnapshotPoints(await getValidationStats());
+  } catch {
+    return [];
+  }
+}
+
+const GETHandler = async () => {
+  // Catalog rows win. A recorded validation snapshot may already carry points.
+  // Forecasts stay disabled. This handler does not create counts or call ML.
+  const catalogRows = readCatalogRows();
+  const points = catalogRows.length > 0 ? catalogRows : await readValidationSnapshotPoints();
+
+  if (points.length === 0) {
+    return NextResponse.json({ demo: false, points: [] });
+  }
+
+  return NextResponse.json({ demo: false, points });
 };
 
-export const GET = withRouteTelemetry("analytics.export", GETHandler, {
-  backendTarget: "python-backend",
-});
+export const GET = withRouteTelemetry("analytics.export", GETHandler);

@@ -149,7 +149,10 @@ ignore = ["ANN401", "PLC0415", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0
     "ARG005",    # unused lambda arguments (test mocks)
     "A006",      # builtin names in lambdas/mocks
     "S105",      # hardcoded passwords (test data)
+    "S108",      # assertions about temp paths, not insecure file creation
     "S314",      # XML parsing (test data)
+    "S603",      # tests invoke fixed git and uv commands
+    "S607",      # those commands use partial executable names on PATH
     "T201",      # print statements (benchmark output)
     "BLE001",    # broad exception catching (test robustness)
     "E712",      # == True comparisons (explicit test assertions)
@@ -170,3 +173,8 @@ ignore = ["ANN401", "PLC0415", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0
 ]
 # conftest.py: pytest configuration patterns
 "conftest.py" = ["ANN001", "ANN201"]
+
+# CLI commands are a namespace under apps/cli, not the core src layout.
+# ty does not execute the setuptools editable finder that exposes them.
+[tool.ty.environment]
+extra-paths = ["../apps/cli"]

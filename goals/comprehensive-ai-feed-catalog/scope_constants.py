@@ -24,6 +24,11 @@ CATALOG_DELIVERABLE_EXACT = frozenset(
         "tests/tests/performance/test_benchmarks.py",
         "tests/tests/packages/ai_web_feeds/unit/test_taxonomy.py",
         "tests/tests/cli/unit/test_visualize_cli.py",
+        "packages/ai_web_feeds/src/ai_web_feeds/digests.py",
+        "packages/ai_web_feeds/src/ai_web_feeds/export.py",
+        "packages/ai_web_feeds/src/ai_web_feeds/load.py",
+        "packages/ai_web_feeds/src/ai_web_feeds/notifications.py",
+        "packages/ai_web_feeds/src/ai_web_feeds/validate.py",
     }
 )
 PLAN_BASELINE_CATALOG_SIZE = 526

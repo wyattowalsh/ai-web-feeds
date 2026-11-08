@@ -3,7 +3,7 @@
 from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 from urllib.parse import urlparse
 
 import yaml
@@ -38,6 +38,59 @@ _VALID_SOURCE_TYPES = frozenset(
 )
 
 
+# Parsed YAML keyed by (resolved path, st_mtime_ns). Failures are not stored.
+_YAML_PARSE_CACHE: dict[tuple[str, int], dict[str, Any]] = {}
+
+
+def _evict_yaml_parse_cache(resolved_path: str) -> None:
+    stale_keys = [key for key in _YAML_PARSE_CACHE if key[0] == resolved_path]
+    for key in stale_keys:
+        del _YAML_PARSE_CACHE[key]
+
+
+def _load_cached_yaml(path: Path | str, *, kind: str) -> dict[str, Any]:
+    """Load a YAML object, reusing the parse when the resolved mtime is unchanged.
+
+    Args:
+        path: YAML file to load.
+        kind: Noun used in error messages, such as ``Feeds`` or ``Topics``.
+
+    Returns:
+        Parsed mapping. An empty file becomes an empty dictionary.
+
+    Raises:
+        FileNotFoundError: If the file does not exist. That miss is not cached.
+        TypeError: If the document is not a YAML object.
+        yaml.YAMLError: If the YAML is invalid.
+    """
+    source = Path(path)
+    resolved = source.resolve()
+    resolved_key = str(resolved)
+
+    if not source.exists():
+        _evict_yaml_parse_cache(resolved_key)
+        msg = f"{kind} file not found: {source}"
+        raise FileNotFoundError(msg)
+
+    cache_key = (resolved_key, resolved.stat().st_mtime_ns)
+    cached = _YAML_PARSE_CACHE.get(cache_key)
+    if cached is not None:
+        return deepcopy(cached)
+
+    with resolved.open(encoding="utf-8") as handle:
+        parsed = yaml.safe_load(handle)
+
+    if parsed is None:
+        parsed = {}
+    if not isinstance(parsed, dict):
+        msg = f"{kind} file must contain a YAML object: {source}"
+        raise TypeError(msg)
+
+    _evict_yaml_parse_cache(resolved_key)
+    _YAML_PARSE_CACHE[cache_key] = parsed
+    return deepcopy(parsed)
+
+
 def load_feeds(path: Path | str) -> dict[str, Any]:
     """Load feeds from YAML file.
 
@@ -51,28 +104,14 @@ def load_feeds(path: Path | str) -> dict[str, Any]:
         FileNotFoundError: If the file doesn't exist
         yaml.YAMLError: If the YAML is invalid
     """
-    path = Path(path)
-
-    if not path.exists():
-        msg = f"Feeds file not found: {path}"
-        raise FileNotFoundError(msg)
+    data = _load_cached_yaml(path, kind="Feeds")
 
     logger.info(f"Loading feeds from {path}")
-
-    with path.open(encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-
-    # Handle empty/None YAML files
-    if data is None:
-        data = {}
-    if not isinstance(data, dict):
-        msg = f"Feeds file must contain a YAML object: {path}"
-        raise TypeError(msg)
 
     sources = data.get("sources", [])
     logger.info(f"Loaded {len(sources)} feed sources")
 
-    return cast(dict[str, Any], data)
+    return data
 
 
 def load_topics(path: Path | str) -> dict[str, Any]:
@@ -88,27 +127,14 @@ def load_topics(path: Path | str) -> dict[str, Any]:
         FileNotFoundError: If the file doesn't exist
         yaml.YAMLError: If the YAML is invalid
     """
-    path = Path(path)
-
-    if not path.exists():
-        msg = f"Topics file not found: {path}"
-        raise FileNotFoundError(msg)
+    data = _load_cached_yaml(path, kind="Topics")
 
     logger.info(f"Loading topics from {path}")
-
-    with path.open(encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-
-    if data is None:
-        data = {}
-    if not isinstance(data, dict):
-        msg = f"Topics file must contain a YAML object: {path}"
-        raise TypeError(msg)
 
     topics = data.get("topics", [])
     logger.info(f"Loaded {len(topics)} topics")
 
-    return cast(dict[str, Any], data)
+    return data
 
 
 def canonicalize_catalog(data: dict[str, Any], *, enriched: bool = False) -> dict[str, Any]:

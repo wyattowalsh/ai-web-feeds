@@ -1,12 +1,35 @@
 """Named entity extraction using spaCy (Phase 5B)."""
 
-from typing import ClassVar
+from __future__ import annotations
 
-import spacy
+import importlib
+from typing import Any, ClassVar, Protocol
+
 from loguru import logger
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
+
+
+class _TokenSpan(Protocol):
+    """spaCy span fields the extractor reads. Tests can supply the same shape."""
+
+    text: str
+    label_: str
+    start_char: int
+    end_char: int
+
+
+class _LazySpacy:
+    """Patchable spaCy loader. The package is imported only when a model is requested."""
+
+    def load(self, name: str, *args: object, **kwargs: object) -> Any:
+        module = importlib.import_module("spacy")
+        return module.load(name, *args, **kwargs)
+
+
+# Name kept so callers can patch `entity_extractor.spacy.load` without importing spaCy.
+spacy = _LazySpacy()
 
 
 class ExtractedEntity(BaseModel):
@@ -54,26 +77,45 @@ class EntityExtractor:
         "FAC": "organization",  # Facilities like labs
     }
 
-    def __init__(self, settings: Settings | None = None):
-        """Initialize entity extractor with spaCy model.
+    def __init__(self, settings: Settings | None = None, nlp: Any | None = None):
+        """Initialize entity extractor.
+
+        The model is injected. Construction does not import spaCy or download weights.
+        A missing model is resolved later by :meth:`ensure_model`.
 
         Args:
             settings: Application settings (uses defaults if None)
+            nlp: Optional callable spaCy language model. When omitted, the configured
+                model is loaded on first use if the optional ml extra is installed.
         """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
         self.min_confidence = self.config.entity_confidence_threshold
+        self.nlp = nlp
+        self._model_unavailable = False
 
-        # Load spaCy model
+    def ensure_model(self) -> bool:
+        """Return whether a model is ready.
+
+        An injected model is used as-is. Otherwise load the configured spaCy model
+        from the local install. A missing optional ml extra or model is logged once
+        and does not download weights.
+        """
+        if self.nlp is not None:
+            return True
+        if self._model_unavailable:
+            return False
         try:
             self.nlp = spacy.load(self.config.spacy_model)
-            logger.info(f"Loaded spaCy model: {self.config.spacy_model}")
-        except OSError:
+        except (ImportError, OSError) as exc:
+            self._model_unavailable = True
             logger.warning(
-                f"spaCy model {self.config.spacy_model} not found. "
-                f"Download with: python -m spacy download {self.config.spacy_model}"
+                "Optional ml extra is missing or spaCy model "
+                f"{self.config.spacy_model} is unavailable: {exc}"
             )
-            raise
+            return False
+        logger.info(f"Loaded spaCy model: {self.config.spacy_model}")
+        return True
 
     def extract_entities(
         self, article: dict, min_confidence: float | None = None
@@ -95,9 +137,14 @@ class EntityExtractor:
             if not content:
                 logger.debug(f"No content to extract entities from: {article.get('id')}")
                 return []
+            if not self.ensure_model():
+                return []
+            model = self.nlp
+            if model is None:
+                return []
 
-            # Process with spaCy
-            doc = self.nlp(content[:10000])  # Keep extraction bounded on long articles
+            # Process with the injected or locally installed model.
+            doc = model(content[:10000])  # Keep extraction bounded on long articles
 
             # Extract entities above confidence threshold
             entities = []
@@ -187,7 +234,7 @@ class EntityExtractor:
 
         return self.ENTITY_TYPE_MAP.get(label)
 
-    def _extract_context(self, ent: spacy.tokens.Span, doc, window: int = 50) -> str:
+    def _extract_context(self, ent: _TokenSpan, doc: Any, window: int = 50) -> str:
         """Extract a short text window around an entity span."""
 
         start = max(0, ent.start_char - window)
@@ -221,7 +268,7 @@ class EntityExtractor:
 
         return " ".join(parts)
 
-    def _calculate_confidence(self, ent: spacy.tokens.Span) -> float:
+    def _calculate_confidence(self, ent: _TokenSpan) -> float:
         """Calculate confidence score for an entity.
 
         spaCy doesn't provide confidence directly, so we use heuristics:

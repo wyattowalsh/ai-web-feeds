@@ -1,0 +1,121 @@
+sources:
+- id: youtube-two-minute-papers
+  title: Two Minute Papers
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg
+  source_type: youtube
+  topics:
+  - research
+  - papers
+  - cv
+  - ml
+- id: youtube-yannic-kilcher
+  title: Yannic Kilcher
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew
+  source_type: youtube
+  topics:
+  - research
+  - papers
+  - ml
+- id: youtube-andrej-karpathy
+  title: Andrej Karpathy
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCXUPKJO5MZQN11PqgIvyuvQ
+  source_type: youtube
+  topics:
+  - llm
+  - education
+  - training
+- id: youtube-deeplearningai
+  title: DeepLearningAI
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCcIXc5mJsHVYTZR1maL5l9w
+  source_type: youtube
+  topics:
+  - education
+  - ml
+- id: youtube-ml-street-talk
+  title: Machine Learning Street Talk
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCMLtBahI5DMrt0NPvDSoIRQ
+  source_type: youtube
+  topics:
+  - research
+  - podcasts
+  - ml
+- id: youtube-ai-explained
+  title: AI Explained
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw
+  source_type: youtube
+  topics:
+  - llm
+  - evaluation
+  - research
+- id: youtube-arxiv-insights
+  title: Arxiv Insights
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCNIkB2IeJ-6AmZv7bQ1oBYg
+  source_type: youtube
+  topics:
+  - research
+  - papers
+  - ml
+- id: youtube-ai-epiphany
+  title: Aleksa Gordić - The AI Epiphany
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCj8shE7aIn4Yawwbo2FceCQ
+  source_type: youtube
+  topics:
+  - research
+  - education
+  - ml
+- id: youtube-ai-coffee-break
+  title: AI Coffee Break with Letitia
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCobqgqE4i5Kf7wrxRxhToQA
+  source_type: youtube
+  topics:
+  - research
+  - llm
+  - nlp
+  - cv
+- id: youtube-robert-miles
+  title: Robert Miles AI Safety
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCLB7AzTwc6VFZrBsO2ucBMg
+  source_type: youtube
+  topics:
+  - safety
+  - alignment
+  - research
+- id: youtube-assemblyai
+  title: AssemblyAI
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCtatfZMf-8EkIwASXM4ts0A
+  source_type: youtube
+  topics:
+  - audio-speech
+  - llm
+  - education
+- id: youtube-hugging-face
+  title: Hugging Face
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCHlNU7kIZhRgSbhHvFoy72w
+  source_type: youtube
+  topics:
+  - open-source
+  - llm
+  - research
+- id: youtube-anthropic
+  title: Anthropic
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCrDwWp7EBBv4NwvScIpBDOA
+  source_type: youtube
+  topics:
+  - safety
+  - research
+  - llm
+- id: youtube-google-deepmind
+  title: Google DeepMind
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCP7jMXSY2xbc3KCAE0MHQ-A
+  source_type: youtube
+  topics:
+  - research
+  - ml
+- id: youtube-openai
+  title: OpenAI
+  feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCXZCJLdBC09xxGZ6gcdrc6A
+  source_type: youtube
+  topics:
+  - research
+  - llm
+  - product

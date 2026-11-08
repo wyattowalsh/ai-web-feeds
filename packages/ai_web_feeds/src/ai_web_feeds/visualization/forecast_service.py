@@ -1,24 +1,22 @@
-"""
-Time-series forecasting service using Prophet.
+"""Disabled time-series forecast service.
 
-Implements Phase 6 (US4): T058-T074
-- Prophet model training
-- Forecast generation
-- Confidence intervals
-- Model evaluation metrics
+Forecast operations stay off. Stored rows may be reshaped into ds/y columns.
+This module does not sample a demo series or fit a model.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any
 
-import numpy as np
-import pandas as pd
-from loguru import logger
-from prophet import Prophet
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ai_web_feeds.visualization.models import Forecast
+_FORECAST_DISABLED: MappingProxyType[str, bool | str] = MappingProxyType(
+    {
+        "enabled": False,
+        "reason": "forecast is not enabled",
+    }
+)
 
 
 @dataclass
@@ -30,15 +28,25 @@ class ForecastResult:
     model_params: dict[str, Any]
 
 
-class ForecastService:
-    """Service for time-series forecasting."""
+def _disabled_forecast(*_args: object, **_kwargs: object) -> Mapping[str, bool | str]:
+    """Return the shared disabled payload without reading inputs."""
+    return _FORECAST_DISABLED
 
-    def __init__(self, session: Session):
+
+def _empty_series() -> dict[str, list[Any]]:
+    """Return an empty ds/y shape. No generated values."""
+    return {"ds": [], "y": []}
+
+
+class ForecastService:
+    """Service for time-series forecasting. Operations stay disabled."""
+
+    def __init__(self, session: Session) -> None:
         """
         Initialize forecast service.
 
         Args:
-            session: Database session
+            session: Database session. Stored only. Forecasts are not read or written.
         """
         self.session = session
 
@@ -46,259 +54,118 @@ class ForecastService:
         self,
         device_id: str,
         data_source: str,
-        historical_data: pd.DataFrame,
+        historical_data: object,
         horizon_days: int = 30,
         confidence_level: float = 0.95,
         seasonality_mode: str = "multiplicative",
         include_holidays: bool = True,
-    ) -> Forecast:
+    ) -> Mapping[str, bool | str]:
         """
-        Generate time-series forecast using Prophet.
+        Forecasting stays disabled.
 
         Args:
-            device_id: Device identifier
-            data_source: Data source (topics, feeds, articles)
-            historical_data: Historical time series (columns: ds, y)
-            horizon_days: Number of days to forecast
-            confidence_level: Confidence interval (0.80, 0.95, 0.99)
-            seasonality_mode: 'additive' or 'multiplicative'
-            include_holidays: Include US holidays
+            device_id: Device identifier. Not used to build a series.
+            data_source: Data source name. Not used to build a series.
+            historical_data: Stored rows, if any. Not used to build a series.
+            horizon_days: Requested horizon. Not used to build a series.
+            confidence_level: Requested interval. Not used to build a series.
+            seasonality_mode: Requested seasonality. Not used to build a series.
+            include_holidays: Holiday flag. Not used to build a series.
 
         Returns:
-            Forecast object with predictions and metrics
+            Frozen payload ``{"enabled": False, "reason": "forecast is not enabled"}``.
         """
-        logger.info(f"Generating {horizon_days}-day forecast for {data_source}")
-
-        # Validate input data
-        if not {"ds", "y"}.issubset(historical_data.columns):
-            msg = "Historical data must have 'ds' (date) and 'y' (value) columns"
-            raise ValueError(msg)
-
-        # Prepare Prophet model
-        model = Prophet(
-            interval_width=confidence_level,
-            seasonality_mode=seasonality_mode,
-            daily_seasonality=True,
-            weekly_seasonality=True,
-            yearly_seasonality=True,
+        return _disabled_forecast(
+            self.session,
+            device_id,
+            data_source,
+            historical_data,
+            horizon_days,
+            confidence_level,
+            seasonality_mode,
+            include_holidays,
         )
-
-        if include_holidays:
-            # Add US holidays
-            model.add_country_holidays(country_name="US")
-
-        # Fit model
-        try:
-            model.fit(historical_data)
-        except Exception as e:
-            logger.error(f"Failed to fit Prophet model: {e}")
-            raise
-
-        # Make future dataframe
-        future = model.make_future_dataframe(periods=horizon_days)
-
-        # Generate predictions
-        forecast_df = model.predict(future)
-
-        # Extract predictions for future dates only
-        future_predictions = forecast_df.tail(horizon_days)
-
-        predictions = []
-        for _, row in future_predictions.iterrows():
-            predictions.append(
-                {
-                    "date": row["ds"].strftime("%Y-%m-%d"),
-                    "value": float(row["yhat"]),
-                    "lower": float(row["yhat_lower"]),
-                    "upper": float(row["yhat_upper"]),
-                    "trend": float(row["trend"]),
-                    "seasonal": float(row.get("weekly", 0) + row.get("yearly", 0)),
-                }
-            )
-
-        # Calculate evaluation metrics on historical data
-        metrics = self._calculate_metrics(historical_data, forecast_df.head(len(historical_data)))
-
-        # Create and save forecast
-        forecast = Forecast(
-            device_id=device_id,
-            data_source=data_source,
-            horizon_days=horizon_days,
-            confidence_level=confidence_level,
-            predictions=predictions,
-            metrics=metrics,
-        )
-
-        self.session.add(forecast)
-        self.session.commit()
-
-        logger.info(f"Forecast created with MAE={metrics['mae']:.2f}, RMSE={metrics['rmse']:.2f}")
-
-        return forecast
-
-    def _calculate_metrics(
-        self,
-        actual: pd.DataFrame,
-        predicted: pd.DataFrame,
-    ) -> dict[str, float]:
-        """
-        Calculate forecast evaluation metrics.
-
-        Args:
-            actual: Actual values (columns: ds, y)
-            predicted: Predicted values (columns: ds, yhat)
-
-        Returns:
-            Dictionary of metrics
-        """
-        # Merge actual and predicted
-        merged = actual.merge(predicted[["ds", "yhat"]], on="ds", how="inner")
-        if merged.empty:
-            return {
-                "mae": 0.0,
-                "rmse": 0.0,
-                "mape": 0.0,
-                "r2": 0.0,
-            }
-
-        y_true = merged["y"].to_numpy()
-        y_pred = merged["yhat"].to_numpy()
-
-        # Calculate metrics
-        mae = float(np.mean(np.abs(y_true - y_pred)))
-        rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
-        non_zero_mask = y_true != 0
-        if np.any(non_zero_mask):
-            mape = float(
-                np.mean(
-                    np.abs((y_true[non_zero_mask] - y_pred[non_zero_mask]) / y_true[non_zero_mask])
-                )
-                * 100
-            )
-        else:
-            mape = 0.0
-
-        # R-squared
-        ss_res = np.sum((y_true - y_pred) ** 2)
-        ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
-        if np.isclose(ss_tot, 0.0):
-            r2 = 1.0 if np.isclose(ss_res, 0.0) else 0.0
-        else:
-            r2 = float(1 - (ss_res / ss_tot))
-
-        return {
-            "mae": mae,
-            "rmse": rmse,
-            "mape": mape,
-            "r2": r2,
-        }
 
     async def get_forecast(
         self,
         forecast_id: int,
         device_id: str,
-    ) -> Forecast | None:
+    ) -> Mapping[str, bool | str]:
         """
-        Get forecast by ID.
+        Forecast lookup stays disabled.
 
         Args:
-            forecast_id: Forecast identifier
-            device_id: Device identifier
+            forecast_id: Forecast identifier. Not queried.
+            device_id: Device identifier. Not queried.
 
         Returns:
-            Forecast object or None
+            Frozen disabled payload.
         """
-        return self.session.execute(
-            select(Forecast).filter(
-                Forecast.id == forecast_id,
-                Forecast.device_id == device_id,
-            )
-        ).scalar_one_or_none()
+        return _disabled_forecast(self.session, forecast_id, device_id)
 
     async def list_forecasts(
         self,
         device_id: str,
         limit: int = 50,
         offset: int = 0,
-    ) -> list[Forecast]:
+    ) -> Mapping[str, bool | str]:
         """
-        List forecasts for a device.
+        Forecast listing stays disabled.
 
         Args:
-            device_id: Device identifier
-            limit: Maximum number of results
-            offset: Pagination offset
+            device_id: Device identifier. Not queried.
+            limit: Requested page size. Not queried.
+            offset: Requested offset. Not queried.
 
         Returns:
-            List of forecasts
+            Frozen disabled payload.
         """
-        return list(
-            self.session.execute(
-                select(Forecast)
-                .filter(Forecast.device_id == device_id)
-                .order_by(Forecast.created_at.desc())
-                .limit(limit)
-                .offset(offset)
-            )
-            .scalars()
-            .all()
-        )
+        return _disabled_forecast(self.session, device_id, limit, offset)
 
     async def delete_forecast(
         self,
         forecast_id: int,
         device_id: str,
-    ) -> bool:
+    ) -> Mapping[str, bool | str]:
         """
-        Delete a forecast.
+        Forecast deletion stays disabled.
 
         Args:
-            forecast_id: Forecast identifier
-            device_id: Device identifier
+            forecast_id: Forecast identifier. Not deleted.
+            device_id: Device identifier. Not queried.
 
         Returns:
-            True if deleted, False if not found
+            Frozen disabled payload.
         """
-        forecast = await self.get_forecast(forecast_id, device_id)
-
-        if not forecast:
-            return False
-
-        self.session.delete(forecast)
-        self.session.commit()
-
-        logger.info(f"Deleted forecast {forecast_id}")
-        return True
+        return _disabled_forecast(self.session, forecast_id, device_id)
 
 
 def prepare_historical_data(
     data: list[dict[str, Any]],
     date_column: str = "date",
     value_column: str = "count",
-) -> pd.DataFrame:
+) -> dict[str, list[Any]]:
     """
-    Prepare historical data for Prophet.
+    Reshape stored rows into ds/y columns.
+
+    Empty input stays offline and returns an empty series. Values are copied
+    from the given rows and are not invented.
 
     Args:
-        data: List of data points
-        date_column: Name of date column
-        value_column: Name of value column
+        data: Stored data points.
+        date_column: Name of the date field on each row.
+        value_column: Name of the value field on each row.
 
     Returns:
-        DataFrame with 'ds' and 'y' columns
+        Mapping with ``ds`` and ``y`` lists.
     """
-    frame = pd.DataFrame(data)
+    if not data:
+        return _empty_series()
 
-    # Rename columns to Prophet format
-    frame = frame.rename(columns={date_column: "ds", value_column: "y"})
-
-    # Convert date to datetime
-    frame["ds"] = pd.to_datetime(frame["ds"])
-
-    # Sort by date
-    frame = frame.sort_values("ds")
-
-    return frame[["ds", "y"]]
+    pairs = [(row[date_column], row[value_column]) for row in data]
+    pairs.sort(key=lambda pair: pair[0])
+    dates, values = zip(*pairs, strict=True)
+    return {"ds": list(dates), "y": list(values)}
 
 
 def generate_sample_time_series(
@@ -307,29 +174,24 @@ def generate_sample_time_series(
     trend_slope: float = 0.5,
     seasonal_amplitude: float = 10.0,
     noise_level: float = 5.0,
-) -> pd.DataFrame:
+) -> dict[str, list[Any]]:
     """
-    Generate sample time series data for testing.
+    Return an empty offline series.
+
+    No numeric demo series is generated.
 
     Args:
-        start_date: Start date (YYYY-MM-DD)
-        days: Number of days
-        trend_slope: Linear trend slope
-        seasonal_amplitude: Seasonal component amplitude
-        noise_level: Random noise standard deviation
+        start_date: Accepted for callers. Not used to invent rows.
+        days: Caller-facing length. Must be non-negative. Not used to invent rows.
+        trend_slope: Accepted for callers. Not used to invent rows.
+        seasonal_amplitude: Accepted for callers. Not used to invent rows.
+        noise_level: Accepted for callers. Not used to invent rows.
 
     Returns:
-        DataFrame with 'ds' and 'y' columns
+        Empty ``ds`` and ``y`` lists.
     """
-    dates = pd.date_range(start=start_date, periods=days, freq="D")
-    rng = np.random.default_rng(42)
-
-    # Generate components
-    trend = np.arange(days) * trend_slope
-    seasonal = seasonal_amplitude * np.sin(2 * np.pi * np.arange(days) / 7)  # Weekly
-    noise = rng.normal(0, noise_level, days)
-
-    # Combine
-    values = 100 + trend + seasonal + noise
-
-    return pd.DataFrame({"ds": dates, "y": values})
+    del start_date, trend_slope, seasonal_amplitude, noise_level
+    if days < 0:
+        msg = "days must be non-negative"
+        raise ValueError(msg)
+    return _empty_series()

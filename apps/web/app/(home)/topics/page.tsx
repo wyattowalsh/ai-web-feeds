@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Network, Tags } from "lucide-react";
+import { TopicGraph } from "@/app/(home)/topics/topic-graph";
+import { GraphVisualizer, getDefaultGraphControls } from "@/components/graph-visualizer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JsonLd } from "@/components/json-ld";
@@ -61,6 +63,14 @@ export default async function TopicsPage() {
               Open interactive graph explorer
             </Link>
           </div>
+        </div>
+
+        <div id="topic-graph" className="overflow-x-auto">
+          <TopicGraph
+            data={topics}
+            visualizer={GraphVisualizer}
+            initialControls={getDefaultGraphControls("topics")}
+          />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

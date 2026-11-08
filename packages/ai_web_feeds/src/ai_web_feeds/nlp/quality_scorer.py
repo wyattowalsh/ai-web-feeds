@@ -1,12 +1,17 @@
 """Quality scoring for articles using heuristic-based metrics (Phase 5A)."""
 
 import re
-from typing import ClassVar
+from collections.abc import Callable
+from typing import Any, ClassVar
 
 from loguru import logger
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
+
+
+class MissingOptionalDependencyError(Exception):
+    """Raised when scoring needs the optional ml extra and it is not installed."""
 
 
 class QualityScoreComponents(BaseModel):
@@ -28,9 +33,10 @@ class QualityScorer:
     - References (external links, citations)
     - Author authority (credentials, bio)
     - Domain reputation (feed quality score)
-    - Engagement (estimated read time, sharing)
+    - Engagement (estimated read time)
 
     All scores are normalized to 0-100 scale.
+    A model may be injected. This module does not download or construct one.
     """
 
     # Scoring weights for overall score calculation
@@ -42,11 +48,25 @@ class QualityScorer:
         "engagement": 0.10,  # User engagement
     }
 
-    def __init__(self, settings: Settings | None = None):
-        """Initialize quality scorer with configuration."""
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        *,
+        model: Callable[..., Any] | None = None,
+    ):
+        """Initialize quality scorer with configuration.
+
+        Args:
+            settings: Application settings. Defaults are used when omitted.
+            model: Optional injected scorer. Called as ``model(article, feed)``.
+                Import errors from the model propagate as a missing ml extra.
+                Returning None falls through to the heuristic scorer.
+                Nothing is downloaded when this is omitted.
+        """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
         self.min_words = self.config.quality_min_words
+        self.model = model
 
     def score_article(
         self, article: dict, feed: dict | None = None
@@ -59,8 +79,17 @@ class QualityScorer:
 
         Returns:
             QualityScoreComponents with all scores, or None if article too short
+
+        Raises:
+            MissingOptionalDependencyError: The injected model or a scoring
+                helper could not import the optional ml extra.
         """
         try:
+            if self.model is not None:
+                produced = self.model(article, feed)
+                if produced is not None:
+                    return produced
+
             # Extract text content
             content = self._get_content(article)
             word_count = len(content.split())
@@ -98,6 +127,11 @@ class QualityScorer:
                 overall_score=overall_score,
             )
 
+        except MissingOptionalDependencyError:
+            raise
+        except ImportError as exc:
+            message = f"optional ml extra is missing: {exc}"
+            raise MissingOptionalDependencyError(message) from exc
         except Exception as e:
             logger.error(f"Failed to score article: {e}")
             return None
@@ -209,14 +243,11 @@ class QualityScorer:
         # Use existing feed quality metrics if available
         return feed.get("quality_score", 50)
 
-    def _score_engagement(self, word_count: int, article: dict) -> int:
-        """Score engagement potential based on read time and sharing.
+    def _score_engagement(self, word_count: int, _article: dict) -> int:
+        """Score engagement potential from estimated read time.
 
-        Metrics:
-        - Estimated read time (50 pts): 5-15 min ideal (not too short, not too long)
-        - Sharing metadata (50 pts): Social share counts, comments
+        Read time is 0-50 points: 5-15 minutes is ideal.
         """
-        # Read time score (0-50)
         # Assume 200 words per minute reading speed
         read_minutes = word_count / 200
         if 5 <= read_minutes <= 15:
@@ -226,9 +257,4 @@ class QualityScorer:
         else:
             read_score = int(50 * (1 - min(1, (read_minutes - 15) / 30)))  # Decay after 15 min
 
-        # Sharing score (0-50)
-        # This would come from social APIs or feed metadata
-        share_count = article.get("share_count", 0)
-        share_score = min(50, share_count)
-
-        return min(100, read_score + share_score)
+        return min(100, read_score)

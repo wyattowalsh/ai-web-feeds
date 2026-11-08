@@ -132,7 +132,7 @@ export async function exportChart(
     "</head>",
     "<body>",
     `  <h1>${escapeHtml(options.title ?? "Visualization Export")}</h1>`,
-    `  <img src="${imageDataUrl}" alt="${escapeHtml(options.title ?? "Chart export")}" />`,
+    `  <img src="${imageDataUrl}" alt="${escapeHtml(options.title ?? "Visualization Export")}" />`,
   ];
 
   if (metadata) {

@@ -1,244 +1,120 @@
 ---
 title: Visualization & Analytics
-description: Interactive data visualization, 3D topic clustering, custom dashboards, and predictive analytics
+description: 2D topic graph (GraphVisualizer and d3) and Chart.js analytics charts. Forecasts, the custom chart builder, and the dashboard builder are not enabled.
 ---
 
-# Advanced Visualization & Analytics
+# Visualization & Analytics
 
-AIWebFeeds Phase 006 adds powerful visualization and analytics capabilities for exploring feed data interactively.
+The shipped visualization surface is a 2D topic graph and Chart.js analytics charts. Series stay on stored catalog rows. An empty series is `{ "demo": false, "points": [] }`.
 
-## Features
+Forecasts are not enabled. The custom chart builder is not enabled. The dashboard builder is not enabled. This guide does not add Redis, a device-id JWT, or a database migration.
 
-### Interactive Data Visualization
+## Topic graph
 
-- **6 Chart Types**: Line, bar, scatter, pie, area, heatmap
-- **Real-time Customization**: Colors, labels, axes, legends
-- **Publication-Quality Export**: PNG (300 DPI), SVG, interactive HTML
-- **Device-Based Persistence**: Save visualizations across sessions
+`GraphVisualizer` in `apps/web/components/graph-visualizer.tsx` draws an SVG graph with `d3`. It is not a WebGL or Three.js scene.
 
-### 3D Topic Clustering
+Layouts are `force`, `radial`, `tree`, and `circular`. The same component supports d3 drag and zoom.
 
-- **WebGL Rendering**: Smooth 60fps 3D topic graphs using Three.js
-- **Force-Directed Layout**: Topics spatially clustered by relationships
-- **Interactive Navigation**: Orbit, pan, zoom with mouse/keyboard
-- **Automatic Static View**: 2D network view on performance degradation
+It is used on:
 
-### Custom Dashboards
+- `/topics`, through `TopicGraph`
+- `/explorer`, through `ExplorerClient`
 
-- **Drag-and-Drop Builder**: Create personalized dashboard layouts
-- **Multiple Widget Types**: Charts, metrics cards, feed lists, topic clouds
-- **Grid-Based Layout**: Responsive 12-column grid system
-- **Auto-Refresh**: Configurable widget refresh intervals (1min-1hour)
+`d3` is already a dependency of `apps/web`. Do not add a second graph or chart library for this view.
 
-### Time-Series Forecasting
+## Analytics charts
 
-- **Prophet Model**: Automatic seasonality detection
-- **Multiple Horizons**: 30/60/90-day predictions
-- **Confidence Intervals**: 80% and 95% bands
-- **Accuracy Tracking**: Percentage-error and MAE metrics with auto-retrain triggers
+These analytics components import `chart.js` and `react-chartjs-2`:
 
-### Comparative Analytics
+- `VelocityChart` uses a line chart and requests `/api/analytics/velocity`
+- `TrendingTopicsChart` uses a bar chart and requests `/api/analytics/trending`
+- `HealthDistributionChart` uses a pie chart and reads `health_distribution` from `/api/analytics/summary`
 
-- **Side-by-Side Comparison**: Compare up to 10 feeds, topics, or authors
-- **Synchronized Views**: Linked date ranges across charts
-- **Statistical Analysis**: Correlation, trends, significance tests
-- **Export Reports**: CSV tables and PNG charts
+`/api/analytics/summary` accepts `date_range` values `7d`, `30d`, and `90d` (anything else is treated as `30d`) and an optional `topic`. The summary object includes `demo: false`, `forecast_enabled: false`, and `ml: null`. It is not the points series below.
 
-### Data Export API
+There is no separate chart library beside Chart.js.
 
-- **Multiple Formats**: CSV, JSON, Parquet
-- **Async Job Queue**: Handle large exports (>10k records)
-- **API Key Authentication**: Secure programmatic access
-- **Rate Limiting**: 100 requests/hour with burst support
+## Series contract
 
-## Architecture
+When a series has no stored rows, the JSON body is:
 
-### Backend (Python)
-
-- **FastAPI**: REST API with async support
-- **SQLAlchemy**: Database ORM with 7 new tables
-- **Prophet**: Time-series forecasting
-- **Redis**: 5-minute cache layer when explicitly configured
-
-### Frontend (TypeScript/React)
-
-- **Next.js 15**: Server components and App Router
-- **Three.js**: 3D WebGL visualization
-- **Chart.js**: 2D charts with publication quality
-- **React Grid Layout**: Drag-drop dashboard builder
-
-### Data Flow
-
-```
-User Request
-    ↓
-Device ID (localStorage)
-    ↓
-FastAPI Router (auth)
-    ↓
-Cache Layer (Redis or memory) ← 5min TTL
-    ↓
-Data Service (validation)
-    ↓
-SQLAlchemy (Phase 002 tables)
-    ↓
-PostgreSQL/SQLite
+```json
+{ "demo": false, "points": [] }
 ```
 
-## Getting Started
+That is the empty result of `catalogSeries` in `apps/web/lib/visualization/catalog-series.ts`, and of these routes when they have nothing to return:
+
+- `GET /api/analytics/export`
+- `GET /api/analytics/trending`
+- `GET /api/analytics/velocity`
+- `GET` and `POST /api/visualizations`
+- `POST /api/visualizations/[id]/data`
+
+`demo` stays `false` when points exist. Those points are stored catalog or validation rows, not a generated forecast. An `ml` object is copied only when the caller already supplied one. An empty catalog does not add `ml`.
+
+On the Python visualization router, `POST /api/v1/visualizations/{id}/data` returns the same empty series when `AWF_VIZ_ENABLED` is unset or blank. A non-empty value only allows that route to return stored catalog points. It does not turn on forecasts or the dashboard builder.
+
+## Not enabled
+
+### Forecasts
+
+Forecasts are not enabled. `/analytics/forecasts` says so. `ForecastService` returns `{ "enabled": false, "reason": "forecast is not enabled" }` and does not fit a model. Do not install a forecasting extra for this guide.
+
+Forecast tables are not a user feature. This guide does not add a migration for them.
+
+### Custom chart builder
+
+The custom chart builder is not enabled. `/analytics/visualizations` keeps real catalog rows only, with `demo` false. Saved-chart editing, publication export, and a custom builder are not part of this setup.
+
+### Dashboard builder
+
+The dashboard builder is not enabled. Web dashboard routes respond with HTTP 501 and:
+
+```json
+{ "enabled": false, "reason": "dashboard builder is not enabled" }
+```
+
+Do not install or document a grid-layout builder. Dashboard tables are not a user feature. This guide does not add a migration for them.
+
+## Getting started
 
 ### Prerequisites
 
-- Python 3.13+ with uv package manager
-- Node.js 20+ with pnpm
-- Redis (optional; leave unset for explicit in-memory cache mode)
-- Phase 002 analytics data
+- Python 3.13+ with uv
+- Node.js with pnpm
 
-### Installation
+Redis is not required. There is no device-id JWT to configure.
 
-**Backend Dependencies:**
+### Install
+
+From the repository root:
 
 ```bash
-cd packages/ai_web_feeds
-uv sync --package ai-web-feeds --extra ml
+uv sync
 ```
 
-**Frontend Dependencies:**
+Chart.js is what the analytics charts import. From `apps/web`:
 
 ```bash
 cd apps/web
-pnpm add three @react-three/fiber @react-three/drei react-grid-layout chart.js react-chartjs-2
+pnpm add chart.js react-chartjs-2
 ```
 
-### Database Migration
+Do not add `three`, `@react-three/fiber`, `@react-three/drei`, or `react-grid-layout`.
+
+### Run the web app
 
 ```bash
-cd packages
-alembic upgrade head
+cd apps/web
+pnpm install
+pnpm dev
 ```
 
-This creates 7 new tables:
+Open `/topics` or `/explorer` for the 2D graph.
 
-- `visualizations` - Saved chart configurations
-- `dashboards` - Dashboard layouts
-- `dashboard_widgets` - Widget configurations
-- `forecasts` - Time-series predictions
-- `api_keys` - API authentication
-- `export_jobs` - Async export queue
-- `api_usage` - API usage tracking
+## Next steps
 
-### Configuration
-
-**Environment Variables:**
-
-```bash
-# Redis cache (optional)
-REDIS_URL=redis://localhost:6379/0
-
-# Database
-DATABASE_URL=postgresql://user:pass@localhost/aiwebfeeds
-
-# API settings
-MAX_CONCURRENT_EXPORTS=10
-FORECAST_TIMEOUT=30
-```
-
-## Device-Based Persistence
-
-Visualizations use **browser-based device identification** instead of user accounts:
-
-- **Device ID**: UUID v4 generated on first visit
-- **Storage**: localStorage with versioning (`v1:uuid:timestamp`)
-- **Scope**: Device-specific (no cross-device sync)
-- **Export/Import**: Manual transfer via JSON export
-
-### Device ID Management
-
-```typescript
-import { getDeviceId, exportDeviceData, importDeviceData } from "@/lib/visualization/device-id";
-
-// Get current device ID
-const deviceId = getDeviceId();
-
-// Export data for transfer
-const exportedData = exportDeviceData();
-
-// Import on new device
-importDeviceData(exportedData);
-```
-
-## Cache Layer
-
-5-minute cache with explicit Redis or in-memory mode:
-
-- **Cache Key**: SHA-256 hash of (query_type + filters + date_range + device_id)
-- **TTL**: 300 seconds (5 minutes) for queries, 3600 seconds (1 hour) for topic graph
-- **Invalidation**: Automatic on TTL expiry, manual on data writes
-- **Memory mode**: In-memory cache when Redis is not configured
-- **Redis mode**: Redis is required when `REDIS_URL` and Redis caching are enabled
-
-**Cache Statistics:**
-
-```python
-from ai_web_feeds.visualization.cache import get_cache
-
-cache = get_cache()
-stats = cache.get_stats()
-# Returns: {cache_type, hits, misses, hit_rate, total_requests}
-```
-
-## API Authentication
-
-Dual authentication system:
-
-### JWT Tokens (Web App)
-
-- Generated on first visit
-- Stored in httpOnly cookie
-- 30-day expiration
-- Automatic renewal
-
-### API Keys (Programmatic)
-
-- User-generated in web UI
-- bcrypt hashed storage
-- Format: `awf_` + 32 random chars
-- Revokable via UI
-
-**API Request:**
-
-```bash
-# When BACKEND_URL points to a running ai-web-feeds backend:
-curl -H "X-API-Key: awf_abc123..." \
-  "${BACKEND_URL}/api/analytics/export?format=csv"
-```
-
-## Validation & Security
-
-### Input Validation
-
-- **Table Whitelist**: Only `topic_metrics`, `feed_health`, `validation_logs`, `article_metadata`
-- **Date Ranges**: No future dates, max 365-day range
-- **Query Limits**: Max 100k rows per query
-- **SQL Injection Prevention**: Parameterized queries, escaped LIKE clauses
-
-### Dashboard Constraints
-
-- **Widget Limit**: Max 20 widgets per dashboard
-- **Grid Dimensions**: 12 columns, minimum 2x2 widget size
-- **Collision Detection**: Reject overlapping widgets
-- **Version Locking**: Optimistic locking with version field
-
-### Customization Limits
-
-- **Title Length**: Max 200 characters (auto-truncated)
-- **Color Palette**: Max 50 colors
-- **Font Size**: 8-72px range
-- **Opacity**: 0-100% range
-
-## Next Steps
-
-- [Analytics Feature](/docs/features/analytics) - Visualization and analytics capabilities
-- [Taxonomy Visualization](/docs/taxonomy-visualization) - Topic graph exploration
+- [Analytics Feature](/docs/features/analytics) - Dashboard surface and analytics API boundaries
+- [Taxonomy Visualization](/docs/taxonomy-visualization) - Topic taxonomy structure
 - [Analytics Guide](/docs/guides/analytics) - Analysis workflows and outputs
 - [Python API](/docs/development/python-api) - Programmatic integration details

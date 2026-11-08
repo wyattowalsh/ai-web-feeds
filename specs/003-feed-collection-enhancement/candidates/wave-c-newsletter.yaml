@@ -1,0 +1,112 @@
+- id: chinai-newsletter
+  title: ChinAI Newsletter
+  feed: https://chinai.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - governance
+  - industry
+- id: understanding-ai
+  title: Understanding AI
+  feed: https://www.understandingai.org/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - education
+  - industry
+- id: transformer-newsletter
+  title: Transformer
+  feed: https://www.transformernews.ai/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - governance
+  - industry
+- id: hyperdimensional
+  title: Hyperdimensional
+  feed: https://www.hyperdimensional.co/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - governance
+  - industry
+- id: rising-tide
+  title: Rising Tide
+  feed: https://helentoner.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - governance
+  - safety
+- id: state-of-ai-newsletter
+  title: State of AI newsletter
+  feed: https://nathanbenaich.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - research
+  - industry
+- id: marcus-on-ai
+  title: Marcus on AI
+  feed: https://garymarcus.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - research
+  - governance
+- id: deep-learning-focus
+  title: Deep (Learning) Focus
+  feed: https://cameronrwolfe.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - research
+  - education
+- id: exploring-language-models
+  title: Exploring Language Models
+  feed: https://newsletter.maartengrootendorst.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - llm
+  - education
+- id: deep-learning-weekly
+  title: Deep Learning Weekly
+  feed: https://www.deeplearningweekly.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - research
+  - industry
+- id: alphasignal
+  title: AlphaSignal
+  feed: https://alphasignalai.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - research
+  - llm
+- id: chain-of-thought
+  title: Chain of Thought
+  feed: https://every.to/chain-of-thought/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - product
+  - industry
+- id: memia
+  title: Memia
+  feed: https://memia.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - industry
+  - governance
+- id: linas-newsletter
+  title: Linas's Newsletter
+  feed: https://linas.substack.com/feed
+  source_type: newsletter
+  topics:
+  - newsletters
+  - finance-ai
+  - industry

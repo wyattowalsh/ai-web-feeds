@@ -1,4 +1,4 @@
-"""Regression gates for catalog expansion rounds 20–23 + PR #16 web security."""
+"""Regression gates for catalog expansion rounds 20-23 + PR #16 web security."""
 
 from __future__ import annotations
 
@@ -21,10 +21,19 @@ G4_JSON = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/g4-verification.json"
 AUTH_MANIFEST = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/authoritative-changed-files.json"
 EVIDENCE_SCRIPT = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/run_plan_evidence.sh"
 SCOPE_CONSTANTS = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/scope_constants.py"
+SYNC_CLASSIFIER = REPO_ROOT / "goals/comprehensive-ai-feed-catalog/sync_classifier_artifacts.py"
 
 
 def _load_scope_constants():
     spec = importlib.util.spec_from_file_location("scope_constants", SCOPE_CONSTANTS)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _load_sync_classifier():
+    spec = importlib.util.spec_from_file_location("sync_classifier_artifacts", SYNC_CLASSIFIER)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -108,6 +117,7 @@ def test_authoritative_scope_zero_forbidden_paths() -> None:
     doc = json.loads(result.stdout)
     assert doc["forbidden_paths_count"] == 0
     assert doc["forbidden_paths"] == []
+    assert all(not path.startswith("tmp-log") for path in doc["untracked"])
 
 
 @pytest.mark.unit
@@ -117,6 +127,31 @@ def test_g4_scope_isolation_summary_matches_gate_script() -> None:
     scope_check = next((c for c in g4["checks"] if c["id"] == "scope_isolation"), None)
     assert scope_check is not None
     assert "forbidden prefixes" in scope_check["summary"]
+
+
+@pytest.mark.unit
+def test_scope_in_scope_paths_match_catalog_deliverable_policy() -> None:
+    """Every declared in-scope artifact must be covered by the shared scope policy."""
+    sc = _load_scope_constants()
+    scope = sc.load_scope()
+    uncovered = [rel for rel in scope["in_scope_paths"] if not sc.is_catalog_deliverable_path(rel)]
+    assert uncovered == []
+
+
+@pytest.mark.unit
+def test_sync_classifier_patch_head_uses_scope_policy() -> None:
+    """Patch-head filtering must honor catalog deliverable carve-outs."""
+    mod = _load_sync_classifier()
+    taxonomy_head = (
+        "diff --git a/packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py "
+        "b/packages/ai_web_feeds/src/ai_web_feeds/taxonomy/loader.py"
+    )
+    core_head = (
+        "diff --git a/packages/ai_web_feeds/src/ai_web_feeds/enrich.py "
+        "b/packages/ai_web_feeds/src/ai_web_feeds/enrich.py"
+    )
+    assert mod.patch_head_has_forbidden_path(taxonomy_head) is False
+    assert mod.patch_head_has_forbidden_path(core_head) is True
 
 
 @pytest.mark.unit
@@ -169,7 +204,7 @@ def test_prune_hunk_records_removes_forbidden_paths(tmp_path: Path) -> None:
         {"filePath": str(REPO_ROOT / "data/feeds.yaml"), "eventType": "updated"},
         {"filePath": str(REPO_ROOT / "apps/cli/main.py"), "eventType": "added"},
         {
-            "filePath": str(REPO_ROOT / "packages/ai_web_feeds/src/ai_web_feeds/validate.py"),
+            "filePath": str(REPO_ROOT / "packages/ai_web_feeds/src/ai_web_feeds/enrich.py"),
             "eventType": "removed",
         },
     ]

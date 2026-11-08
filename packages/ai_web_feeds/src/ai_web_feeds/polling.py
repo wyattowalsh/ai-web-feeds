@@ -6,7 +6,7 @@ triggering for real-time feed monitoring.
 
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from typing import Any
+from typing import Any, Protocol
 
 import feedparser
 import httpx
@@ -14,8 +14,27 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ai_web_feeds.config import Settings
-from ai_web_feeds.models import ArticleEntry, CurationStatus, FeedPollJob, FeedSource, PollStatus
+from ai_web_feeds.models import (
+    ArticleEntry,
+    CurationStatus,
+    FeedPollJob,
+    FeedSource,
+    Notification,
+    NotificationType,
+    PollStatus,
+)
 from ai_web_feeds.storage import DatabaseManager
+
+
+class _FeedUpdateBroadcaster(Protocol):
+    """Target with the same ``broadcast_notification`` method as WebSocketServer.
+
+    The implementation emits one ``notification`` event. This protocol does not
+    start a server or bind a port.
+    """
+
+    async def broadcast_notification(self, user_id: str, notification: Notification) -> None:
+        """Broadcast one notification to ``user_id``."""
 
 
 def _utc_now() -> datetime:
@@ -30,15 +49,20 @@ class FeedPoller:
         self,
         db: DatabaseManager,
         settings: Settings,
+        *,
+        broadcaster: _FeedUpdateBroadcaster | None = None,
     ) -> None:
         """Initialize feed poller.
 
         Args:
             db: Database manager instance
             settings: Application settings
+            broadcaster: Optional live target. When omitted, new articles are
+                stored and no notification event is emitted.
         """
         self.db = db
         self.settings = settings
+        self.broadcaster = broadcaster
         self.poll_timeout = settings.phase3b.feed_poll_timeout
         self.max_concurrent = settings.phase3b.feed_poll_max_concurrent
 
@@ -93,6 +117,7 @@ class FeedPoller:
                 if await self._is_new_entry(feed_entry.guid, feed_entry.link, feed_id):
                     self.db.add_article(feed_entry)
                     articles_count += 1
+                    await self._broadcast_feed_updated(feed_entry)
 
             # Update job success
             job.completed_at = _utc_now()
@@ -193,6 +218,29 @@ class FeedPoller:
             return False
 
         return self.db.get_article_by_identity(guid, link, feed_id) is None
+
+    async def _broadcast_feed_updated(self, article: ArticleEntry) -> None:
+        """Emit one FEED_UPDATED notification for a newly stored article.
+
+        Seen articles never reach this method. With no broadcaster, nothing is
+        sent and no socket is opened.
+        """
+        broadcaster = self.broadcaster
+        if broadcaster is None:
+            return
+
+        notification = Notification(
+            user_id=article.feed_id,
+            type=NotificationType.FEED_UPDATED,
+            title=article.title,
+            message=article.summary or article.title,
+            action_url=article.link or None,
+            context_data={
+                "feed_id": article.feed_id,
+                "guid": article.guid,
+            },
+        )
+        await broadcaster.broadcast_notification(notification.user_id, notification)
 
     def _parse_entry(self, entry: dict[str, Any], feed_id: str) -> ArticleEntry:
         """Parse feedparser entry into ArticleEntry model.

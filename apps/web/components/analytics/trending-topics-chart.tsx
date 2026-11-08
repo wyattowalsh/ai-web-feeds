@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -14,11 +13,9 @@ import {
   type TooltipItem,
 } from "chart.js";
 import { ChartShell } from "@/components/analytics/chart-shell";
-import { ChartSkeleton } from "@/components/analytics/chart-skeleton";
 import { getAnalyticsChartTheme } from "@/components/analytics/chart-theme";
 import { useTheme } from "@/lib/theme-manager";
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface TrendingTopic {
@@ -28,67 +25,27 @@ interface TrendingTopic {
   avg_health_score: number;
 }
 
-export function TrendingTopicsChart({
-  dateRange = "30d",
-  limit = 10,
-}: {
+interface TrendingTopicsChartProps {
+  topics?: TrendingTopic[] | null;
+  error?: string | null;
+  // Existing callers still pass these. They do not load or invent topic rows.
   dateRange?: string;
   limit?: number;
-}) {
-  const [topics, setTopics] = useState<TrendingTopic[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+}
+
+export function TrendingTopicsChart({ topics = [], error = null }: TrendingTopicsChartProps) {
   const { isDark } = useTheme();
   const chartTheme = getAnalyticsChartTheme(isDark);
-
-  useEffect(() => {
-    const fetchTopics = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `/api/analytics/trending?limit=${limit}&date_range=${dateRange}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch trending topics");
-
-        const data = await response.json();
-        setTopics(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTopics();
-  }, [dateRange, limit]);
-
-  if (loading) {
-    return <ChartSkeleton className="h-[32rem]" />;
-  }
-
-  if (error || topics.length === 0) {
-    return (
-      <ChartShell
-        eyebrow="Topic momentum"
-        title="Trending topics"
-        description="Weighted validation activity is used here as a proxy for current attention and movement inside the catalog."
-      >
-        <div className="rounded-2xl border border-[color:var(--warning-tone)]/40 bg-[color:color-mix(in_oklab,var(--warning-tone)_12%,var(--surface))] p-5 text-[color:var(--ink)]">
-          <p className="text-lg font-semibold">No trending topics available</p>
-          <p className="small-note mt-2">{error || "Run analytics snapshot first"}</p>
-        </div>
-      </ChartShell>
-    );
-  }
+  const rows = Array.isArray(topics) ? topics : [];
+  const errorMessage = typeof error === "string" ? error.trim() : "";
+  const showChart = errorMessage.length === 0 && rows.length > 0;
 
   const chartData = {
-    labels: topics.map((t) => t.topic.toUpperCase()),
+    labels: rows.map((row) => row.topic),
     datasets: [
       {
         label: "Validation Frequency",
-        data: topics.map((t) => t.validation_frequency),
+        data: rows.map((row) => row.validation_frequency),
         backgroundColor: chartTheme.accentSoft,
         borderColor: chartTheme.accent,
         borderWidth: 1,
@@ -102,7 +59,7 @@ export function TrendingTopicsChart({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: "top",
         labels: {
           color: chartTheme.textMuted,
         },
@@ -110,7 +67,10 @@ export function TrendingTopicsChart({
       tooltip: {
         callbacks: {
           afterLabel: (context: TooltipItem<"bar">) => {
-            const topic = topics[context.dataIndex];
+            const topic = rows[context.dataIndex];
+            if (!topic) {
+              return "";
+            }
             return [
               `Feed Count: ${topic.feed_count}`,
               `Avg Health: ${(topic.avg_health_score * 100).toFixed(1)}%`,
@@ -155,30 +115,36 @@ export function TrendingTopicsChart({
       eyebrow="Topic momentum"
       title="Trending topics"
       description="Weighted validation frequency helps surface the parts of the catalog drawing the most recent operational attention."
+      empty={rows.length === 0}
+      error={errorMessage || null}
       footer={
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          {topics.map((topic) => (
-            <div
-              key={topic.topic}
-              className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-3 text-center"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-muted)]">
-                {topic.topic}
-              </p>
-              <p className="mt-2 text-base font-semibold text-[color:var(--ink)]">
-                {topic.feed_count} feeds
-              </p>
-              <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
-                {(topic.avg_health_score * 100).toFixed(0)}% health
-              </p>
-            </div>
-          ))}
-        </div>
+        showChart ? (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            {rows.map((topic, index) => (
+              <div
+                key={`${topic.topic}-${index}`}
+                className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] p-3 text-center"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-muted)]">
+                  {topic.topic}
+                </p>
+                <p className="mt-2 text-base font-semibold text-[color:var(--ink)]">
+                  {topic.feed_count} feeds
+                </p>
+                <p className="mt-1 text-xs text-[color:var(--ink-muted)]">
+                  {(topic.avg_health_score * 100).toFixed(0)}% health
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : null
       }
     >
-      <div className="h-96">
-        <Bar data={chartData} options={options} />
-      </div>
+      {showChart ? (
+        <div className="h-96" data-demo="false">
+          <Bar data={chartData} options={options} />
+        </div>
+      ) : null}
     </ChartShell>
   );
 }

@@ -1,0 +1,107 @@
+sources:
+- id: radiant-earth
+  title: Radiant Earth
+  feed: https://radiant.earth/index.xml
+  source_type: organization
+  topics:
+  - geospatial-ml
+  - datasets
+- id: carto-blog
+  title: CARTO Blog
+  feed: https://carto.com/blog/index.xml
+  source_type: blog
+  topics:
+  - geospatial-ml
+  - industry
+- id: development-seed
+  title: Development Seed
+  feed: https://developmentseed.org/rss.xml
+  source_type: blog
+  topics:
+  - geospatial-ml
+  - data
+- id: openmined-blog
+  title: OpenMined Blog
+  feed: https://openmined.org/rss.xml
+  source_type: blog
+  topics:
+  - pets
+  - privacy
+- id: opendp
+  title: OpenDP
+  feed: https://opendp.org/feed/
+  source_type: organization
+  topics:
+  - pets
+  - privacy
+- id: concrete-ml-releases
+  title: Concrete ML Releases
+  feed: https://github.com/zama-ai/concrete-ml/releases.atom
+  source_type: github
+  topics:
+  - pets
+  - privacy
+- id: sigstore-blog
+  title: Sigstore Blog
+  feed: https://blog.sigstore.dev/index.xml
+  source_type: blog
+  topics:
+  - supply-chain
+  - security
+  - open-source
+- id: chainguard-unchained
+  title: Chainguard Unchained
+  feed: https://www.chainguard.dev/unchained/rss.xml
+  source_type: blog
+  topics:
+  - supply-chain
+  - security
+- id: sigstore-model-signing
+  title: Sigstore Model Signing
+  feed: https://github.com/sigstore/model-transparency/releases.atom
+  source_type: github
+  topics:
+  - supply-chain
+  - security
+- id: ai-incident-database
+  title: AI Incident Database
+  feed: https://incidentdatabase.ai/rss.xml
+  source_type: organization
+  topics:
+  - incident-response
+  - safety
+- id: edge-impulse-blog
+  title: Edge Impulse Blog
+  feed: https://www.edgeimpulse.com/blog/category/all/rss/
+  source_type: blog
+  topics:
+  - edge
+  - on-device
+- id: hive-blog
+  title: Hive Blog
+  feed: https://thehive.ai/blog/sitemap.rss
+  source_type: blog
+  topics:
+  - content-moderation
+  - safety
+- id: authors-alliance
+  title: Authors Alliance
+  feed: https://www.authorsalliance.org/feed/
+  source_type: organization
+  topics:
+  - copyright-ip
+  - governance
+- id: label-studio-releases
+  title: Label Studio Releases
+  feed: https://github.com/HumanSignal/label-studio/releases.atom
+  source_type: github
+  topics:
+  - labeling
+  - data-centric-ai
+- id: openclip-releases
+  title: OpenCLIP Releases
+  feed: https://github.com/mlfoundations/open_clip/releases.atom
+  source_type: github
+  topics:
+  - multimodal
+  - vlm

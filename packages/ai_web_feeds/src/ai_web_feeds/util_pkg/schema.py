@@ -1,0 +1,180 @@
+"""Enriched-feed JSON Schema generation and output."""
+
+import json
+from pathlib import Path
+from typing import Any
+
+from loguru import logger
+
+
+def generate_enriched_schema() -> dict[str, Any]:
+    """Generate JSON schema for enriched feeds.
+
+    Returns:
+        JSON schema dict
+    """
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": (
+            "https://github.com/wyattowalsh/ai-web-feeds/raw/main/data/feeds.enriched.schema.json"
+        ),
+        "title": "AIWebFeeds — Enriched Feeds Schema",
+        "description": (
+            "Fully enriched feed data with validated metadata, discovery results, "
+            "and quality scores"
+        ),
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["schema_version", "sources"],
+        "properties": {
+            "schema_version": {
+                "type": "string",
+                "pattern": "^feeds\\.enriched-3\\.[0-9]+\\.[0-9]+$",
+                "default": "feeds.enriched-3.0.0",
+            },
+            "document_meta": {
+                "type": "object",
+                "properties": {
+                    "created": {"type": "string", "format": "date-time"},
+                    "updated": {"type": "string", "format": "date-time"},
+                    "enriched_at": {"type": "string", "format": "date-time"},
+                    "total_sources": {"type": "integer", "minimum": 0},
+                    "notes": {"type": "string"},
+                },
+            },
+            "sources": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["id", "url", "title", "source_type", "topics"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "url": {"type": "string"},
+                        "feed": {"type": "string"},
+                        "site": {"type": "string"},
+                        "title": {"type": "string"},
+                        "source_type": {
+                            "type": "string",
+                            "enum": [
+                                "blog",
+                                "newsletter",
+                                "podcast",
+                                "journal",
+                                "preprint",
+                                "organization",
+                                "aggregator",
+                                "video",
+                                "docs",
+                                "forum",
+                                "dataset",
+                                "code-repo",
+                                "newsroom",
+                                "education",
+                                "reddit",
+                                "medium",
+                                "youtube",
+                                "github",
+                                "substack",
+                                "devto",
+                                "hackernews",
+                                "twitter",
+                                "arxiv",
+                            ],
+                        },
+                        "mediums": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["text", "audio", "video", "code", "data"],
+                            },
+                        },
+                        "tags": {"type": "array", "items": {"type": "string"}},
+                        "topics": {"type": "array", "items": {"type": "string"}},
+                        "topic_weights": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                            },
+                        },
+                        "meta": {
+                            "type": "object",
+                            "properties": {
+                                "language": {"type": "string"},
+                                "format": {
+                                    "type": "string",
+                                    "enum": ["rss", "atom", "jsonfeed", "unknown"],
+                                },
+                                "updated": {"type": "string", "format": "date"},
+                                "last_validated": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                },
+                                "verified": {"type": "boolean"},
+                                "contributor": {"type": "string"},
+                                "discovered": {"type": "boolean"},
+                                "discovered_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                },
+                            },
+                        },
+                        "curation": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "verified",
+                                        "unverified",
+                                        "archived",
+                                        "experimental",
+                                        "inactive",
+                                    ],
+                                },
+                                "since": {"type": "string", "format": "date"},
+                                "by": {"type": "string"},
+                                "quality_score": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                },
+                                "notes": {"type": "string"},
+                            },
+                        },
+                        "provenance": {
+                            "type": "object",
+                            "properties": {
+                                "source": {
+                                    "type": "string",
+                                    "enum": ["manual", "automation", "import"],
+                                },
+                                "from": {"type": "string"},
+                                "license": {"type": "string"},
+                            },
+                        },
+                        "relations": {"type": "object"},
+                        "mappings": {"type": "object"},
+                        "discover": {"oneOf": [{"type": "boolean"}, {"type": "object"}]},
+                        "notes": {"type": "string"},
+                    },
+                },
+            },
+        },
+    }
+
+
+def save_json_schema(schema: dict[str, Any], path: Path | str) -> None:
+    """Save JSON schema to file.
+
+    Args:
+        schema: JSON schema dict
+        path: Path to schema file
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w") as f:
+        json.dump(schema, f, indent=2)
+    logger.info(f"Saved JSON schema to {path}")

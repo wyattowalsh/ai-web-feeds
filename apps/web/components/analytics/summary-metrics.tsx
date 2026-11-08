@@ -1,10 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Activity, CircleGauge, RadioTower, ShieldCheck } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 
-interface SummaryMetrics {
+interface SummaryMetricValues {
   total_feeds: number;
   active_feeds: number;
   validation_success_rate: number;
@@ -14,123 +12,137 @@ interface SummaryMetrics {
     moderate: number;
     unhealthy: number;
   };
-  last_updated: string;
+  last_updated?: string | null;
 }
 
-export function SummaryMetrics({
-  dateRange = "30d",
-  topic,
-}: {
+interface SummaryMetricsProps {
+  metrics?: SummaryMetricValues | null;
+  error?: string | null;
+  // Existing callers still pass these. They do not load or invent catalog rows.
   dateRange?: string;
   topic?: string;
-}) {
-  const [metrics, setMetrics] = useState<SummaryMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+}
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setLoading(true);
-      setError(null);
+export function SummaryMetrics({ metrics = null, error = null }: SummaryMetricsProps) {
+  const errorMessage = typeof error === "string" ? error.trim() : "";
+  const summary = metrics;
+  let state: "ready" | "empty" | "error" = "ready";
+  if (errorMessage) state = "error";
+  else if (!summary) state = "empty";
 
-      try {
-        const params = new URLSearchParams({ date_range: dateRange });
-        if (topic) params.set("topic", topic);
+  const updatedLabel = summary ? formatLastUpdated(summary.last_updated) : null;
 
-        const response = await fetch(`/api/analytics/summary?${params}`);
-        if (!response.ok) throw new Error("Failed to fetch metrics");
-
-        const data = await response.json();
-        setMetrics(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-  }, [dateRange, topic]);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="surface-card space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 space-y-3">
-                <div className="h-4 w-24 animate-pulse rounded-full bg-[color:var(--surface-muted)]" />
-                <div className="h-10 w-28 animate-pulse rounded-full bg-[color:var(--surface-muted)]" />
-                <div className="h-4 w-36 animate-pulse rounded-full bg-[color:var(--surface-muted)]" />
-              </div>
-              <div className="h-12 w-12 animate-pulse rounded-2xl bg-[color:var(--surface-muted)]" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error || !metrics) {
-    return (
-      <div className="surface-card border-(--danger-tone)/40 text-(--ink)">
+  let body: ReactNode;
+  if (!summary) {
+    body = errorMessage ? (
+      <div
+        role="alert"
+        data-state="error"
+        className="surface-card border-(--danger-tone)/40 text-(--ink)"
+      >
         <p className="text-lg font-semibold">Error loading metrics</p>
-        <p className="small-note mt-2">{error || "No data available"}</p>
+        <p className="small-note mt-2">{errorMessage}</p>
+      </div>
+    ) : (
+      <div
+        role="status"
+        data-state="empty"
+        className="surface-card border-(--warning-tone)/40 text-(--ink)"
+      >
+        <p className="text-lg font-semibold">No data</p>
+        <p className="small-note mt-2">No catalog metrics were provided.</p>
       </div>
     );
-  }
+  } else {
+    const activeShare =
+      summary.total_feeds > 0
+        ? ((summary.active_feeds / summary.total_feeds) * 100).toFixed(1)
+        : "0.0";
 
-  const activeShare = metrics.total_feeds
-    ? ((metrics.active_feeds / metrics.total_feeds) * 100).toFixed(1)
-    : "0.0";
+    body = (
+      <>
+        {errorMessage ? (
+          <div
+            role="alert"
+            data-state="error"
+            className="surface-card border-(--danger-tone)/40 text-(--ink)"
+          >
+            <p className="text-lg font-semibold">Error loading metrics</p>
+            <p className="small-note mt-2">{errorMessage}</p>
+          </div>
+        ) : null}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total feeds"
+            value={summary.total_feeds.toLocaleString()}
+            detail="Structured sources in the current catalog"
+            icon={<RadioTower className="size-5" />}
+          />
+          <MetricCard
+            label="Active feeds"
+            value={summary.active_feeds.toLocaleString()}
+            detail={`${activeShare}% of total currently active`}
+            icon={<ShieldCheck className="size-5" />}
+          />
+          <MetricCard
+            label="Success rate"
+            value={`${(summary.validation_success_rate * 100).toFixed(1)}%`}
+            detail="Validation success"
+            icon={<Activity className="size-5" />}
+            iconClassName="bg-[color:color-mix(in_oklab,var(--success-tone)_14%,var(--surface))] text-[color:var(--success-tone)]"
+          />
+          <MetricCard
+            label="Average response"
+            value={`${summary.avg_response_time.toFixed(0)} ms`}
+            detail="Latency across recent validation checks"
+            icon={<CircleGauge className="size-5" />}
+          />
+        </div>
+        <div className="surface-card-soft flex flex-wrap gap-4">
+          <HealthChip label="Healthy" value={summary.health_distribution.healthy} tone="success" />
+          <HealthChip
+            label="Moderate"
+            value={summary.health_distribution.moderate}
+            tone="warning"
+          />
+          <HealthChip
+            label="Unhealthy"
+            value={summary.health_distribution.unhealthy}
+            tone="danger"
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
-    <section className="space-y-5">
+    <section
+      aria-label="Summary metrics"
+      className="space-y-5"
+      data-state={state}
+      data-demo="false"
+    >
       <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <span className="eyebrow">Key metrics</span>
           <h2 className="section-heading">Summary metrics</h2>
         </div>
-        <p className="small-note">
-          Last updated: {new Date(metrics.last_updated).toLocaleString()}
-        </p>
+        {summary && updatedLabel ? (
+          <p className="small-note">Last updated: {updatedLabel}</p>
+        ) : null}
       </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="Total feeds"
-          value={metrics.total_feeds.toLocaleString()}
-          detail="Structured sources in the current catalog"
-          icon={<RadioTower className="size-5" />}
-        />
-        <MetricCard
-          label="Active feeds"
-          value={metrics.active_feeds.toLocaleString()}
-          detail={`${activeShare}% of total currently active`}
-          icon={<ShieldCheck className="size-5" />}
-        />
-        <MetricCard
-          label="Success rate"
-          value={`${(metrics.validation_success_rate * 100).toFixed(1)}%`}
-          detail="Validation success"
-          icon={<Activity className="size-5" />}
-          iconClassName="bg-[color:color-mix(in_oklab,var(--success-tone)_14%,var(--surface))] text-[color:var(--success-tone)]"
-        />
-        <MetricCard
-          label="Average response"
-          value={`${metrics.avg_response_time.toFixed(0)} ms`}
-          detail="Latency across recent validation checks"
-          icon={<CircleGauge className="size-5" />}
-        />
-      </div>
-
-      <div className="surface-card-soft flex flex-wrap gap-4">
-        <HealthChip label="Healthy" value={metrics.health_distribution.healthy} tone="success" />
-        <HealthChip label="Moderate" value={metrics.health_distribution.moderate} tone="warning" />
-        <HealthChip label="Unhealthy" value={metrics.health_distribution.unhealthy} tone="danger" />
-      </div>
+      {body}
     </section>
   );
+}
+
+function formatLastUpdated(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleString();
 }
 
 function HealthChip({

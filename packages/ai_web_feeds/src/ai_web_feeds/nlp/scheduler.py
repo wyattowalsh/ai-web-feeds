@@ -1,4 +1,11 @@
-"""APScheduler configuration for NLP batch jobs (Phase 5)."""
+"""APScheduler configuration for NLP batch jobs (Phase 5).
+
+Importing this module does not start a scheduler thread, download model
+weights, or import the optional ML extra. Jobs are registered explicitly.
+When that extra is missing, the scheduled job is skipped and logged.
+"""
+
+import importlib
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -93,50 +100,76 @@ class NLPScheduler:
             self.scheduler.shutdown(wait=wait)
             logger.info("NLP scheduler stopped")
 
+    def _run_job(
+        self,
+        module_name: str,
+        class_name: str,
+        *,
+        label: str,
+        completed: str,
+        failed: str,
+    ) -> None:
+        """Run one registered batch job.
+
+        Importing the job module is deferred until the job fires. A missing
+        optional ML extra is logged and skipped. Other failures are logged
+        and do not escape the scheduler thread.
+
+        Args:
+            module_name: Job module imported only when the job runs.
+            class_name: Batch job class on that module.
+            label: Short name used in the start and skip logs.
+            completed: Success log prefix. Stats are appended.
+            failed: Failure log prefix. The error is appended.
+        """
+        try:
+            module = importlib.import_module(module_name)
+            job_cls = getattr(module, class_name)
+            logger.info(f"Starting scheduled {label}")
+            job = job_cls(self.settings)
+            stats = job.run()
+            logger.info(f"{completed}: {stats}")
+        except ImportError as exc:
+            logger.warning(f"Skipping {label}; optional ml extra is missing: {exc}")
+        except Exception as exc:
+            logger.error(f"{failed}: {exc}")
+
     def _run_quality_job(self) -> None:
         """Execute quality scoring batch job."""
-        try:
-            from ai_web_feeds.nlp.jobs.quality_job import QualityBatchJob
-
-            logger.info("Starting scheduled quality scoring job")
-            job = QualityBatchJob(self.settings)
-            stats = job.run()
-            logger.info(f"Quality scoring job completed: {stats}")
-        except Exception as e:
-            logger.error(f"Quality scoring job failed: {e}")
+        self._run_job(
+            "ai_web_feeds.nlp.jobs.quality_job",
+            "QualityBatchJob",
+            label="quality scoring job",
+            completed="Quality scoring job completed",
+            failed="Quality scoring job failed",
+        )
 
     def _run_entity_job(self) -> None:
         """Execute entity extraction batch job."""
-        try:
-            from ai_web_feeds.nlp.jobs.entity_job import EntityBatchJob
-
-            logger.info("Starting scheduled entity extraction job")
-            job = EntityBatchJob(self.settings)
-            stats = job.run()
-            logger.info(f"Entity extraction job completed: {stats}")
-        except Exception as e:
-            logger.error(f"Entity extraction job failed: {e}")
+        self._run_job(
+            "ai_web_feeds.nlp.jobs.entity_job",
+            "EntityBatchJob",
+            label="entity extraction job",
+            completed="Entity extraction job completed",
+            failed="Entity extraction job failed",
+        )
 
     def _run_sentiment_job(self) -> None:
         """Execute sentiment analysis batch job."""
-        try:
-            from ai_web_feeds.nlp.jobs.sentiment_job import SentimentBatchJob
-
-            logger.info("Starting scheduled sentiment analysis job")
-            job = SentimentBatchJob(self.settings)
-            stats = job.run()
-            logger.info(f"Sentiment analysis job completed: {stats}")
-        except Exception as e:
-            logger.error(f"Sentiment analysis job failed: {e}")
+        self._run_job(
+            "ai_web_feeds.nlp.jobs.sentiment_job",
+            "SentimentBatchJob",
+            label="sentiment analysis job",
+            completed="Sentiment analysis job completed",
+            failed="Sentiment analysis job failed",
+        )
 
     def _run_topic_job(self) -> None:
         """Execute topic modeling batch job."""
-        try:
-            from ai_web_feeds.nlp.jobs.topic_job import TopicModelingJob
-
-            logger.info("Starting scheduled topic modeling job")
-            job = TopicModelingJob(self.settings)
-            stats = job.run()
-            logger.info(f"TopicNode modeling job completed: {stats}")
-        except Exception as e:
-            logger.error(f"TopicNode modeling job failed: {e}")
+        self._run_job(
+            "ai_web_feeds.nlp.jobs.topic_job",
+            "TopicModelingJob",
+            label="topic modeling job",
+            completed="TopicNode modeling job completed",
+            failed="TopicNode modeling job failed",
+        )

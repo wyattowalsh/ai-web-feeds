@@ -1,19 +1,66 @@
-"""TopicNode modeling using LDA/BERTopic (Phase 5D)."""
+"""Topic modeling using LDA/BERTopic (Phase 5D).
+
+Gensim lives in the optional ml extra. Importing this module does not import
+gensim, download weights, or open a network connection. Pass ``model`` to score
+stored text with an injected callable instead of training LDA.
+"""
 
 import re
+from collections.abc import Callable
+from typing import Any
 
-from gensim import corpora, models
-from gensim.models import CoherenceModel
 from loguru import logger
 from pydantic import BaseModel, Field
 
 from ai_web_feeds.config import Settings
 
-# Lazy numpy for ml extra (gensim dep); top-level try to satisfy linters
-try:
-    import numpy as np  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover
-    np = None  # type: ignore[assignment]
+# Patch points for unit tests. Real gensim classes are bound on first LDA fit.
+TopicModel = Callable[[str], Any]
+
+
+class _LazySymbols:
+    """Holds gensim classes without importing gensim at module import."""
+
+    def __init__(self) -> None:
+        self.Dictionary: Any = None
+        self.LdaModel: Any = None
+
+
+corpora = _LazySymbols()
+models = _LazySymbols()
+CoherenceModel: Any = None
+
+
+def _bind_gensim() -> None:
+    """Bind gensim LDA symbols unless tests already patched them.
+
+    Raises:
+        ImportError: Neither symbol is patched and gensim is not installed.
+    """
+    if corpora.Dictionary is not None and models.LdaModel is not None:
+        return
+    try:
+        from gensim import corpora as gensim_corpora
+        from gensim import models as gensim_models
+    except ImportError as exc:
+        if corpora.Dictionary is None and models.LdaModel is None:
+            message = f"optional ml extra is missing: {exc}"
+            raise ImportError(message) from exc
+        return
+    if corpora.Dictionary is None:
+        corpora.Dictionary = gensim_corpora.Dictionary
+    if models.LdaModel is None:
+        models.LdaModel = gensim_models.LdaModel
+
+
+def _coherence_type() -> Any:
+    """Return the coherence class, loading gensim only if nothing patched it."""
+    global CoherenceModel
+    if CoherenceModel is None:
+        from gensim.models import CoherenceModel as GensimCoherenceModel
+
+        CoherenceModel = GensimCoherenceModel
+    return CoherenceModel
 
 
 class DiscoveredSubtopic(BaseModel):
@@ -37,16 +84,135 @@ class TopicModeler:
     Uses Gensim LDA by default, with BERTopic as future enhancement.
     """
 
-    def __init__(self, settings: Settings | None = None):
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        *,
+        model: TopicModel | None = None,
+    ):
         """Initialize topic modeler.
 
         Args:
             settings: Application settings (uses defaults if None)
+            model: Callable scored as ``model(stored_text)``. When omitted, LDA
+                loads gensim on first use. A missing ml extra is not an import
+                of this module and does not download weights.
         """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
         self.topic_model_type = self.config.topic_model
         self.min_coherence = self.config.topic_coherence_min
+        self.model = model
+        self._missing_ml_extra: ImportError | None = None
+
+    def ensure_ml(self) -> None:
+        """Import gensim unless an injected model will score the text.
+
+        Raises:
+            ImportError: The optional ml extra is not installed.
+        """
+        if self.model is not None:
+            return
+        if self._missing_ml_extra is not None:
+            raise self._missing_ml_extra
+        try:
+            _bind_gensim()
+        except ImportError as exc:
+            self._missing_ml_extra = exc
+            logger.warning(f"Optional ml extra is missing; topic rows will be skipped: {exc}")
+            raise
+
+    def score_stored(self, article: dict[str, Any]) -> list[DiscoveredSubtopic]:
+        """Score one stored article.
+
+        The text is built from stored title, summary, and content only.
+        ``link`` and other URLs are ignored.
+
+        Raises:
+            ImportError: No injected model is set and gensim is not installed.
+        """
+        text = self._stored_text(article)
+        if not text.strip():
+            return []
+        if self.model is not None:
+            return self._coerce_subtopics(self.model(text))
+        self.ensure_ml()
+        parent = str(article.get("topic") or "general")
+        return self.discover_subtopics(parent, [article], num_topics=5, min_articles=1)
+
+    def _score_injected(
+        self,
+        topic: str,
+        articles: list[dict[str, Any]],
+        num_topics: int,
+    ) -> list[DiscoveredSubtopic]:
+        """Score each article's stored text with the injected model."""
+        logger.debug(
+            f"Scoring stored text for '{topic}' with injected model (num_topics={num_topics})"
+        )
+        discovered: list[DiscoveredSubtopic] = []
+        model = self.model
+        if model is None:
+            return discovered
+        for article in articles:
+            text = self._stored_text(article)
+            if not text.strip():
+                continue
+            discovered.extend(self._coerce_subtopics(model(text)))
+        logger.info(f"Discovered {len(discovered)} subtopics for '{topic}'")
+        return discovered
+
+    def _stored_text(self, article: dict[str, Any]) -> str:
+        """Join stored title, summary, and content. URLs are not included."""
+        title = article.get("title") or ""
+        summary = article.get("summary") or ""
+        content = article.get("content")
+        if isinstance(content, list):
+            content = " ".join(item.get("value", "") for item in content if isinstance(item, dict))
+        content_text = "" if content is None else str(content)
+        parts: list[str] = []
+        if title:
+            parts.append(str(title))
+        if summary:
+            parts.append(str(summary))
+        if content_text and content_text != str(summary):
+            parts.append(content_text)
+        return " ".join(parts)
+
+    def _coerce_subtopics(self, produced: Any) -> list[DiscoveredSubtopic]:
+        """Normalize an injected model result into discovered subtopics."""
+        if produced is None:
+            return []
+        if isinstance(produced, DiscoveredSubtopic):
+            return [produced]
+        if isinstance(produced, dict):
+            return [self._coerce_one(produced)]
+        if isinstance(produced, list | tuple):
+            coerced: list[DiscoveredSubtopic] = []
+            for item in produced:
+                coerced.extend(self._coerce_subtopics(item))
+            return coerced
+        return [self._coerce_one(produced)]
+
+    def _coerce_one(self, item: Any) -> DiscoveredSubtopic:
+        """Build one subtopic from a mapping or attribute object."""
+        if isinstance(item, DiscoveredSubtopic):
+            return item
+        if isinstance(item, dict):
+            keywords = item.get("keywords") or []
+            return DiscoveredSubtopic(
+                name=str(item["name"]),
+                keywords=[str(keyword) for keyword in keywords],
+                coherence_score=float(item.get("coherence_score", 0.0)),
+                article_count=int(item.get("article_count", 0)),
+            )
+        keywords = getattr(item, "keywords", ()) or ()
+        return DiscoveredSubtopic(
+            name=str(item.name),
+            keywords=[str(keyword) for keyword in keywords],
+            coherence_score=float(item.coherence_score),
+            article_count=int(item.article_count),
+        )
 
     def discover_subtopics(
         self, topic: str, articles: list[dict], num_topics: int = 5, min_articles: int = 10
@@ -62,6 +228,9 @@ class TopicModeler:
         Returns:
             List of discovered subtopics with keywords and scores
         """
+        if self.model is not None:
+            return self._score_injected(topic, articles, num_topics)
+
         if len(articles) < min_articles:
             logger.warning(
                 f"Insufficient articles for topic modeling: {len(articles)} < {min_articles}"
@@ -79,6 +248,8 @@ class TopicModeler:
             if not texts:
                 logger.warning("No text content after preprocessing")
                 return []
+
+            _bind_gensim()
 
             # Create dictionary and corpus
             dictionary = corpora.Dictionary(texts)
@@ -133,6 +304,8 @@ class TopicModeler:
             logger.info(f"Discovered {len(subtopics)} subtopics for '{topic}'")
             return subtopics
 
+        except ImportError:
+            raise
         except Exception as e:
             logger.error(f"Failed to discover subtopics for '{topic}': {e}")
             return []
@@ -370,7 +543,8 @@ class TopicModeler:
     ) -> float:
         """Compute topic coherence for an LDA model."""
 
-        coherence_model = CoherenceModel(
+        coherence_cls = _coherence_type()
+        coherence_model = coherence_cls(
             model=lda_model,
             texts=texts,
             dictionary=dictionary,
@@ -480,7 +654,9 @@ class TopicModeler:
 
         Returns None if numpy unavailable (caller falls back).
         """
-        if np is None:
+        try:
+            import numpy as np
+        except ImportError:
             return None
 
         k1 = st1.keywords[:5]

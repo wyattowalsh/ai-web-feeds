@@ -1,6 +1,8 @@
 """Batch job for sentiment analysis (Phase 5C)."""
 
+from collections.abc import Callable
 from datetime import UTC, datetime
+from typing import Any
 
 from loguru import logger
 from sqlmodel import select
@@ -27,11 +29,20 @@ class SentimentBatchJob:
         self,
         settings: Settings | None = None,
         db_manager: DatabaseManager | None = None,
+        *,
+        model: Callable[[str], Any] | None = None,
     ):
-        """Initialize sentiment batch job."""
+        """Initialize sentiment batch job.
+
+        Args:
+            settings: Application settings (uses defaults if None)
+            db_manager: Database holding stored article text
+            model: Injected scorer. When omitted, the analyzer loads the
+                optional ml pipeline. A missing extra skips each row.
+        """
         self.settings = settings or Settings()
         self.config = self.settings.phase5
-        self.analyzer = SentimentAnalyzer(self.settings)
+        self.analyzer = SentimentAnalyzer(self.settings, model=model)
         self.db_manager = db_manager or DatabaseManager(self.settings.database_url)
 
     def run(self, batch_size: int | None = None, force: bool = False) -> dict:

@@ -19,6 +19,9 @@ import pandas as pd
 from fastapi import APIRouter, Depends, Query, Response
 from fastapi.responses import StreamingResponse
 from loguru import logger
+from sqlalchemy import column, inspect, select
+from sqlalchemy import table as sql_table
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from ai_web_feeds.visualization.auth import get_current_device_id
@@ -49,6 +52,15 @@ class ExportRequest:
     cursor: str | None = None
 
 
+# Declared export columns. Rows come from storage; these names are not values.
+_EXPORT_COLUMNS: dict[str, tuple[str, ...]] = {
+    "topic_metrics": ("topic_id", "date", "mention_count", "sentiment_score"),
+    "feed_health": ("feed_id", "timestamp", "status", "response_time_ms", "error"),
+    "article_metadata": ("article_id", "feed_id", "title", "published_at", "author"),
+    "validation_logs": ("feed_id", "timestamp", "is_valid", "error_count", "warning_count"),
+}
+
+
 @router.get("/tables")
 async def list_exportable_tables(
     device_id: str = Depends(get_current_device_id),
@@ -64,19 +76,19 @@ async def list_exportable_tables(
     tables = {
         "topic_metrics": {
             "description": "TopicNode mention frequency and trends",
-            "columns": ["topic_id", "date", "mention_count", "sentiment_score"],
+            "columns": list(_EXPORT_COLUMNS["topic_metrics"]),
         },
         "feed_health": {
             "description": "Feed health and response metrics",
-            "columns": ["feed_id", "timestamp", "status", "response_time_ms", "error"],
+            "columns": list(_EXPORT_COLUMNS["feed_health"]),
         },
         "article_metadata": {
             "description": "Article publication data",
-            "columns": ["article_id", "feed_id", "title", "published_at", "author"],
+            "columns": list(_EXPORT_COLUMNS["article_metadata"]),
         },
         "validation_logs": {
             "description": "Feed validation results",
-            "columns": ["feed_id", "timestamp", "is_valid", "error_count", "warning_count"],
+            "columns": list(_EXPORT_COLUMNS["validation_logs"]),
         },
     }
 
@@ -117,14 +129,19 @@ async def export_data(
 
     logger.info(f"Device {device_id[:8]} exporting {table} as {format}")
 
-    # Generate sample data for demonstration
-    # In production, this would query the actual database
-    sample_data = _generate_sample_export_data(table, limit)
+    # Stored catalog rows only. An empty or missing table stays an empty frame.
+    frame = _catalog_frame(
+        session,
+        table,
+        limit,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
 
     # Convert to requested format
     if format == ExportFormat.JSON:
         return Response(
-            content=sample_data.to_json(orient="records", date_format="iso"),
+            content=frame.to_json(orient="records", date_format="iso"),
             media_type="application/json",
             headers={
                 "Content-Disposition": f'attachment; filename="{table}.json"',
@@ -133,7 +150,7 @@ async def export_data(
 
     if format == ExportFormat.CSV:
         csv_buffer = StringIO()
-        sample_data.to_csv(csv_buffer, index=False)
+        frame.to_csv(csv_buffer, index=False)
         return Response(
             content=csv_buffer.getvalue(),
             media_type="text/csv",
@@ -144,7 +161,7 @@ async def export_data(
 
     if format == ExportFormat.PARQUET:
         # Parquet export (requires pyarrow)
-        parquet_buffer = sample_data.to_parquet()
+        parquet_buffer = frame.to_parquet()
         return Response(
             content=parquet_buffer,
             media_type="application/octet-stream",
@@ -179,19 +196,15 @@ async def stream_export(
     logger.info(f"Device {device_id[:8]} streaming {table} export")
 
     async def generate_stream():
-        """Generate data stream in batches."""
-        # In production, this would use database cursor
-        for batch_num in range(5):  # 5 batches for demo
-            batch_data = _generate_sample_export_data(table, batch_size)
-
-            if format == ExportFormat.JSON:
-                yield batch_data.to_json(orient="records", lines=True) + "\n"
-            elif format == ExportFormat.CSV:
-                if batch_num == 0:
-                    # Include header on first batch
-                    yield batch_data.to_csv(index=False)
-                else:
-                    yield batch_data.to_csv(index=False, header=False)
+        """Yield stored rows only. Empty storage yields no batches."""
+        frame = _generate_sample_export_data(table, batch_size)
+        if frame.empty:
+            return
+        if format == ExportFormat.JSON:
+            yield frame.to_json(orient="records", lines=True) + "\n"
+            return
+        if format == ExportFormat.CSV:
+            yield frame.to_csv(index=False)
 
     return StreamingResponse(
         generate_stream(),
@@ -243,56 +256,83 @@ async def bulk_export(
     }
 
 
-def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
+def _empty_export_frame(table: str) -> pd.DataFrame:
+    """Return a zero-row frame. Known tables keep column names and no values."""
+    columns = _EXPORT_COLUMNS.get(table, ())
+    return pd.DataFrame(columns=list(columns))
+
+
+def _read_catalog_rows(
+    session: Session,
+    table: str,
+    names: tuple[str, ...],
+    limit: int,
+    sort_by: str | None,
+    sort_order: str,
+) -> list[dict[str, Any]]:
+    """Read whitelisted columns from an existing table. Missing tables yield nothing."""
+    connection = session.connection()
+    info = inspect(connection)
+    if not info.has_table(table):
+        return []
+
+    present = {column_info["name"] for column_info in info.get_columns(table)}
+    if any(name not in present for name in names):
+        return []
+
+    export_table = sql_table(table, *[column(name) for name in names])
+    statement = select(*(export_table.c[name] for name in names)).limit(limit)
+    if sort_by in names:
+        ordered = export_table.c[sort_by]
+        ordered = ordered.desc() if sort_order == "desc" else ordered.asc()
+        statement = statement.order_by(ordered)
+
+    rows = session.execute(statement).mappings().all()
+    return [dict(row) for row in rows]
+
+
+def _catalog_frame(
+    session: Session | None,
+    table: str,
+    limit: int,
+    sort_by: str | None = None,
+    sort_order: str = "asc",
+) -> pd.DataFrame:
+    """Return stored rows for one export table, or a zero-row frame.
+
+    Does not fill missing metrics, health, articles, or a default series.
     """
-    Generate sample data for export demonstration.
+    empty = _empty_export_frame(table)
+    names = tuple(str(name) for name in empty.columns)
+    if session is None or not names or limit <= 0:
+        return empty
+
+    try:
+        loaded = _read_catalog_rows(session, table, names, limit, sort_by, sort_order)
+    except SQLAlchemyError:
+        logger.debug(f"Export table {table} is not readable")
+        return empty
+
+    if not loaded:
+        return empty
+    return pd.DataFrame(loaded, columns=list(names))
+
+
+def _generate_sample_export_data(table: str, limit: int) -> pd.DataFrame:
+    """Return a zero-row export frame.
+
+    Topic metrics, feed health, article metadata, and unknown tables are not
+    filled with demonstration values. Streaming has no session, so it cannot
+    invent batches from this helper.
 
     Args:
-        table: Table name
-        limit: Number of rows
+        table: Table name.
+        limit: Requested row cap. Must be non-negative. Not used to invent rows.
 
     Returns:
-        Sample DataFrame
+        Empty DataFrame. Known tables keep their column names and no values.
     """
-    if table == "topic_metrics":
-        return pd.DataFrame(
-            {
-                "topic_id": [f"topic-{i}" for i in range(limit)],
-                "date": pd.date_range(start="2024-01-01", periods=limit, freq="D"),
-                "mention_count": pd.np.random.randint(10, 100, size=limit),
-                "sentiment_score": pd.np.random.uniform(-1, 1, size=limit),
-            }
-        )
-
-    if table == "feed_health":
-        return pd.DataFrame(
-            {
-                "feed_id": [f"feed-{i % 20}" for i in range(limit)],
-                "timestamp": pd.date_range(start="2024-01-01", periods=limit, freq="h"),
-                "status": pd.np.random.choice(["success", "error", "timeout"], size=limit),
-                "response_time_ms": pd.np.random.randint(100, 5000, size=limit),
-                "error": [
-                    None if status == "success" else "Sample error"
-                    for status in pd.np.random.choice(["success", "error"], size=limit)
-                ],
-            }
-        )
-
-    if table == "article_metadata":
-        return pd.DataFrame(
-            {
-                "article_id": [f"article-{i}" for i in range(limit)],
-                "feed_id": [f"feed-{i % 20}" for i in range(limit)],
-                "title": [f"Article Title {i}" for i in range(limit)],
-                "published_at": pd.date_range(start="2024-01-01", periods=limit, freq="6h"),
-                "author": [f"Author {i % 50}" for i in range(limit)],
-            }
-        )
-
-    # Default empty DataFrame
-    return pd.DataFrame(
-        {
-            "id": range(limit),
-            "value": pd.np.random.random(limit),
-        }
-    )
+    if limit < 0:
+        msg = "limit must be non-negative"
+        raise ValueError(msg)
+    return _empty_export_frame(table)

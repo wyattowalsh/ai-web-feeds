@@ -1,0 +1,89 @@
+sources:
+- id: arxiv-cs-cg
+  title: arXiv cs.CG (Computational Geometry)
+  feed: https://export.arxiv.org/rss/cs.CG
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - cv
+- id: arxiv-cs-ds
+  title: arXiv cs.DS (Data Structures and Algorithms)
+  feed: https://export.arxiv.org/rss/cs.DS
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ml
+- id: arxiv-cs-gr
+  title: arXiv cs.GR (Graphics)
+  feed: https://export.arxiv.org/rss/cs.GR
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - cv
+- id: arxiv-cs-lo
+  title: arXiv cs.LO (Logic in Computer Science)
+  feed: https://export.arxiv.org/rss/cs.LO
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ai
+- id: arxiv-cs-mm
+  title: arXiv cs.MM (Multimedia)
+  feed: https://export.arxiv.org/rss/cs.MM
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - multimodal
+- id: arxiv-cs-sc
+  title: arXiv cs.SC (Symbolic Computation)
+  feed: https://export.arxiv.org/rss/cs.SC
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ai
+- id: arxiv-cs-si
+  title: arXiv cs.SI (Social and Information Networks)
+  feed: https://export.arxiv.org/rss/cs.SI
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ml
+- id: arxiv-cond-mat-dis-nn
+  title: arXiv cond-mat.dis-nn (Disordered Systems and Neural Networks)
+  feed: https://export.arxiv.org/rss/cond-mat.dis-nn
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ml
+- id: arxiv-nlin-ao
+  title: arXiv nlin.AO (Adaptation and Self-Organizing Systems)
+  feed: https://export.arxiv.org/rss/nlin.AO
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ml
+- id: arxiv-physics-data-an
+  title: arXiv physics.data-an (Data Analysis, Statistics and Probability)
+  feed: https://export.arxiv.org/rss/physics.data-an
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ai-for-science
+- id: arxiv-stat-co
+  title: arXiv stat.CO (Computation)
+  feed: https://export.arxiv.org/rss/stat.CO
+  source_type: arxiv
+  topics:
+  - research
+  - papers
+  - ml

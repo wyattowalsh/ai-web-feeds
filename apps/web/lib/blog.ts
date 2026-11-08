@@ -51,7 +51,7 @@ const PLACEHOLDER_POSTS: BlogPost[] = [
     slug: "reader-updates",
     title: "Reader and local-first improvements",
     date: "2026-06-10T00:00:00.000Z",
-    summary: "Dexie, virtualized streams, and keyboard navigation now ship by default.",
+    summary: "Raw IndexedDB, virtualized streams, and keyboard navigation now ship by default.",
     content:
       "Recent work extracted the monolithic workspace into composable reader components and added local persistence layers for IndexedDB-backed articles, search, and annotations.",
   },

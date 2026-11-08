@@ -157,6 +157,10 @@ function createAuthInstance() {
     session: {
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
+      // No database URL makes Better Auth enable a JWE cookie cache. jose 6
+      // rejects that key and getSession then returns 500 for a real session.
+      // The adapter remains the session store.
+      cookieCache: { enabled: false },
     },
     advanced: {
       cookiePrefix: "aiwf",

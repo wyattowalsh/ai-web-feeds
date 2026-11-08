@@ -1,0 +1,120 @@
+sources:
+- id: vllm-blog
+  title: vLLM Blog
+  feed: https://vllm.ai/blog/rss.xml
+  source_type: blog
+  topics:
+  - inference
+  - serving
+  - open-source
+- id: scikit-learn-blog
+  title: scikit-learn Blog
+  feed: https://blog.scikit-learn.org/feed.xml
+  source_type: blog
+  topics:
+  - ml
+  - open-source
+  - education
+- id: answer-ai
+  title: Answer.AI
+  feed: https://www.answer.ai/index.xml
+  source_type: blog
+  topics:
+  - research
+  - training
+  - open-source
+- id: qwen-blog
+  title: Qwen Blog
+  feed: https://qwenlm.github.io/blog/index.xml
+  source_type: blog
+  topics:
+  - llm
+  - open-source
+  - research
+- id: stability-ai-news
+  title: Stability AI — News & Updates
+  feed: https://stability.ai/news-updates?format=rss
+  source_type: newsroom
+  topics:
+  - genai
+  - diffusion
+  - industry
+- id: laion-blog
+  title: LAION Blog
+  feed: https://laion.ai/blog/rss.xml
+  source_type: blog
+  topics:
+  - datasets
+  - research
+  - open-source
+- id: sony-ai-blog
+  title: Sony AI Blog
+  feed: https://ai.sony/archive/rss.xml
+  source_type: blog
+  topics:
+  - research
+  - rl
+  - industry
+- id: elevenlabs-blog
+  title: ElevenLabs Blog
+  feed: https://elevenlabs.io/blog/rss.xml
+  source_type: blog
+  topics:
+  - audio-speech
+  - genai
+  - product
+- id: deepspeed-blog
+  title: DeepSpeed
+  feed: https://www.deepspeed.ai/feed.xml
+  source_type: blog
+  topics:
+  - training
+  - optimization
+  - open-source
+- id: far-ai-news
+  title: FAR.AI News
+  feed: https://www.far.ai/blog/rss.xml
+  source_type: blog
+  topics:
+  - safety
+  - alignment
+  - research
+- id: amd-rocm-blogs
+  title: AMD ROCm Blogs
+  feed: https://rocm.blogs.amd.com/blog/atom.xml
+  source_type: blog
+  topics:
+  - hardware
+  - accelerators
+  - open-source
+- id: pinecone-blog
+  title: Pinecone
+  feed: https://www.pinecone.io/rss/
+  source_type: blog
+  topics:
+  - vector
+  - retrieval
+  - rag
+- id: kubeflow-blog
+  title: Kubeflow Blog
+  feed: https://blog.kubeflow.org/feed.xml
+  source_type: blog
+  topics:
+  - mlops
+  - orchestration
+  - open-source
+- id: explosion-blog
+  title: Explosion
+  feed: https://explosion.ai/feed
+  source_type: blog
+  topics:
+  - nlp
+  - open-source
+  - product
+- id: riken-aip-news
+  title: RIKEN AIP — News
+  feed: https://aip.riken.jp/category/news/feed/?lang=en
+  source_type: organization
+  topics:
+  - research
+  - ml

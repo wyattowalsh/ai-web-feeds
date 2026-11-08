@@ -2,7 +2,7 @@
   "schema_version": "feeds-3.0.0",
   "document_meta": {
     "created": "2025-10-15",
-    "updated": "2026-06-28",
+    "updated": "2026-11-08",
     "generated_with": {
       "tool": "aiwebfeeds-cli",
       "version": "0.1.0"
@@ -345,19 +345,6 @@
       "title": "fast.ai — Blog"
     },
     {
-      "url": "https://blog.eleuther.ai/index.xml",
-      "topics": [
-        "open-source",
-        "llm",
-        "research",
-        "industry",
-        "safety"
-      ],
-      "notes": "Open research on LLMs and scaling; known feed endpoint at /index.xml. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "6d1e4d5f90717cfb",
-      "title": "EleutherAI — Blog"
-    },
-    {
       "url": "https://nixtla.github.io/blog/feed",
       "topics": [
         "time-series",
@@ -394,17 +381,6 @@
       "title": "Neo4j — Developer Blog"
     },
     {
-      "url": "https://arize.com/blog/feed/",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "llmops"
-      ],
-      "notes": "Prod ML/LLM monitoring, evals, and tracing patterns. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "804715f8f1497559",
-      "title": "Arize AI — Blog"
-    },
-    {
       "url": "https://modal.com/blog/atom.xml",
       "topics": [
         "serving",
@@ -425,31 +401,6 @@
       "notes": "Platform features + partner work; separate from MSR feed. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "5b13693f8f06a94e",
       "title": "Microsoft AI — Blog"
-    },
-    {
-      "url": "https://ainowinstitute.org/category/news/feed",
-      "topics": [
-        "governance",
-        "safety",
-        "research",
-        "ethics",
-        "fairness",
-        "regulation"
-      ],
-      "notes": "Policy, governance, and safety analyses; active 2025 cadence.",
-      "id": "c3775a125353e5c5",
-      "title": "AI Now Institute — News (RSS)"
-    },
-    {
-      "url": "https://blog.ml.cmu.edu/feed/",
-      "topics": [
-        "research",
-        "education",
-        "ml"
-      ],
-      "notes": "Faculty/student explainers and research notes.",
-      "id": "c07010ac537774a6",
-      "title": "CMU Machine Learning Department — Blog (RSS)"
     },
     {
       "url": "https://news.mit.edu/topic/mitmachine-learning-rss.xml",
@@ -564,40 +515,6 @@
       "title": "Proceedings of Machine Learning Research (PMLR)"
     },
     {
-      "url": "https://www.nature.com/natmachintell/rss",
-      "topics": [
-        "research",
-        "papers",
-        "ml"
-      ],
-      "notes": "Nature research journal; feed auto-discovery expected. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "0ac423b4dfcf525a",
-      "title": "Nature Machine Intelligence"
-    },
-    {
-      "url": "https://www.nature.com/npjdigitalmed/rss",
-      "topics": [
-        "healthcare-ai",
-        "research",
-        "papers"
-      ],
-      "notes": "Digital medicine / clinical AI journal. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "3daf7af1d06a28d1",
-      "title": "NPJ Digital Medicine"
-    },
-    {
-      "url": "https://docs.wandb.ai/ref/release-notes/index.xml",
-      "topics": [
-        "mlops",
-        "monitoring",
-        "benchops",
-        "data-viz"
-      ],
-      "notes": "Product/runtime changes; useful for MLOps tracking.",
-      "id": "5d60e495d86ee1e1",
-      "title": "Weights & Biases — Release Notes (RSS)"
-    },
-    {
       "url": "https://blog.neurips.cc/feed",
       "topics": [
         "research",
@@ -620,17 +537,6 @@
       "notes": "Conference news, calls, and program updates; feed autodiscovery. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "32c0308e29797618",
       "title": "ICLR — Official Blog"
-    },
-    {
-      "url": "https://ai.stanford.edu/blog/feed.xml",
-      "topics": [
-        "research",
-        "ml",
-        "education"
-      ],
-      "notes": "Active lab blog with explicit RSS; papers/talks round-ups and technical explainers. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "3d11b8b7e6cb0ea8",
-      "title": "Stanford AI Lab — SAIL Blog"
     },
     {
       "url": "http://export.arxiv.org/rss/cs.CV",
@@ -973,19 +879,6 @@
       "title": "Modular Blog"
     },
     {
-      "url": "https://datahub.com/blog/feed",
-      "topics": [
-        "data-governance",
-        "mlops",
-        "workflows",
-        "llmops",
-        "blogs"
-      ],
-      "notes": "Metadata, lineage, governance patterns; LLM app metadata/eval posts. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "a4f5be9aef7dbd4d",
-      "title": "DataHub — Blog"
-    },
-    {
       "url": "https://blog.agen.cy/feed",
       "topics": [
         "agents",
@@ -1035,20 +928,6 @@
       "notes": "Frontier model evaluations and risk reports. HTTP fix: feed URL discovered 2026-06-24.",
       "id": "db5a00c01013fff4",
       "title": "METR (ARC Evals) — Blog"
-    },
-    {
-      "url": "https://www.protectai.com/blog/rss.xml",
-      "topics": [
-        "security",
-        "mlops",
-        "llmops",
-        "blogs",
-        "content-moderation",
-        "model-risk"
-      ],
-      "notes": "Threat modeling, SBOMs for ML, supply chain, scanning/model risk. HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "3b885a608add9f1e",
-      "title": "Protect AI — MLSecOps Blog"
     },
     {
       "url": "https://bankunderground.co.uk/feed",
@@ -1376,27 +1255,6 @@
       "id": "artificiallawyer-com-feed-1440a62e1b"
     },
     {
-      "url": "https://www.nature.com/npjdigitalmed.rss",
-      "topics": [
-        "research",
-        "papers",
-        "healthcare-ai"
-      ],
-      "title": "NPJ Digital Medicine",
-      "notes": "Nature digital health journal",
-      "id": "nature-com-npjdigitalmed-rss-47258164a4"
-    },
-    {
-      "url": "https://venturebeat.com/category/ai/feed/",
-      "topics": [
-        "industry",
-        "product"
-      ],
-      "title": "VentureBeat AI",
-      "notes": "VB AI category feed",
-      "id": "venturebeat-com-category-ai-feed-39256bb1bf"
-    },
-    {
       "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
       "topics": [
         "industry",
@@ -1650,17 +1508,6 @@
       "id": "thedataexchange-media-feed-f1cd540f50"
     },
     {
-      "url": "https://www.superdatascience.com/feed",
-      "topics": [
-        "podcasts",
-        "ml",
-        "education"
-      ],
-      "title": "Super Data Science",
-      "notes": "ML career and practice podcast",
-      "id": "superdatascience-com-feed-c963da8e36"
-    },
-    {
       "url": "https://simonwillison.net/atom/everything/",
       "topics": [
         "blogs",
@@ -1837,49 +1684,6 @@
       "id": "theaiinsider-tech-feed-fda6154730"
     },
     {
-      "url": "https://www.aitrends.com/feed",
-      "topics": [
-        "blogs",
-        "industry"
-      ],
-      "title": "AI Trends",
-      "notes": "AI industry trends and analysis",
-      "id": "aitrends-com-feed-ac816baf11"
-    },
-    {
-      "url": "https://aiweirdness.com/rss",
-      "topics": [
-        "blogs",
-        "ml",
-        "research"
-      ],
-      "title": "AI Weirdness",
-      "notes": "Fun and insightful AI weirdness blog",
-      "id": "aiweirdness-com-rss-86994f8dba"
-    },
-    {
-      "url": "https://mlinproduction.com/feed",
-      "topics": [
-        "blogs",
-        "mlops",
-        "industry"
-      ],
-      "title": "ML in Production",
-      "notes": "Practical ML production and engineering",
-      "id": "mlinproduction-com-feed-acd08e3d71"
-    },
-    {
-      "url": "https://davidstutz.de/feed/feed",
-      "topics": [
-        "blogs",
-        "research",
-        "ml"
-      ],
-      "title": "David Stutz",
-      "notes": "ML research blog and paper notes HTTP fix: feed URL discovered 2026-06-24.",
-      "id": "davidstutz-de-feed-7050d0c25f"
-    },
-    {
       "url": "https://danieltakeshi.github.io/feed.xml",
       "topics": [
         "blogs",
@@ -2004,7 +1808,8 @@
       "topics": [
         "blogs",
         "education",
-        "research"
+        "research",
+        "data-viz"
       ],
       "title": "Jay Alammar",
       "notes": "Visual explanations of ML and LLMs",
@@ -2307,16 +2112,6 @@
       "id": "github-com-anthropics-anthropic-sdk-python-relea-7dec23793f"
     },
     {
-      "url": "https://code.claude.com/docs/en/changelog/rss.xml",
-      "topics": [
-        "devtools",
-        "llm"
-      ],
-      "title": "Claude Code Changelog",
-      "notes": "Claude developer tools changelog (docs)",
-      "id": "code-claude-com-docs-en-changelog-rss-xml-d48425535a"
-    },
-    {
       "url": "https://berkeleyrdi.substack.com/feed",
       "topics": [
         "community",
@@ -2415,17 +2210,6 @@
       "title": "Artificial Intelligence Made Simple",
       "notes": "Substack newsletter feed",
       "id": "artificialintelligencemadesimple-substack-com-fe-c5e4ef43e4"
-    },
-    {
-      "url": "https://arxiv.org/rss/cs",
-      "topics": [
-        "ai",
-        "research",
-        "papers"
-      ],
-      "title": "cs updates on arXiv.org",
-      "notes": "arXiv RSS category feed",
-      "id": "arxiv-org-rss-cs-785337eeee"
     },
     {
       "url": "https://rss.arxiv.org/rss/cs.LG",
@@ -2644,16 +2428,6 @@
       "id": "news-mit-edu-rss-topic-artificial-intelligence2-9539d7d50e"
     },
     {
-      "url": "https://www.nature.com/nature/current_issue/rss",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "Nature",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "nature-com-nature-current-issue-rss-ff3fcddf77"
-    },
-    {
       "url": "https://oneusefulthing.substack.com/feed",
       "topics": [
         "community",
@@ -2812,16 +2586,6 @@
       "title": "Release notes from trl",
       "notes": "GitHub releases.atom feed",
       "id": "github-com-huggingface-trl-releases-atom-a894460717"
-    },
-    {
-      "url": "https://mistral.ai/rss.xml  # may dup",
-      "topics": [
-        "ai",
-        "industry"
-      ],
-      "title": "rss.xml  # may dup",
-      "notes": "Discovered via 2026 web search; HTTP verified RSS/Atom feed",
-      "id": "mistral-ai-rss-xml-e9f4f41c47"
     },
     {
       "url": "https://simonw.substack.com/feed",
@@ -3327,16 +3091,6 @@
       "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-e12aeef815"
     },
     {
-      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_thinkingmachines.xml",
-      "topics": [
-        "industry",
-        "research"
-      ],
-      "title": "Thinking Machines Lab - Connectionism",
-      "notes": "Olshansk proxy; HTTP verified",
-      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-9d897b9db1"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_google_ai.xml",
       "topics": [
         "industry",
@@ -3398,17 +3152,6 @@
       "title": "Simbo AI – Blogs",
       "notes": "Simbo voice AI for healthcare; HTTP verified",
       "id": "simbo-ai-blog-index-php-feed-ac9e388acd"
-    },
-    {
-      "url": "https://viz.ai/blog/feed",
-      "topics": [
-        "healthcare-ai",
-        "industry",
-        "cv"
-      ],
-      "title": "Latest blog posts on AI-powered healthcare | Viz.ai",
-      "notes": "Viz.ai healthcare imaging AI blog; HTTP verified",
-      "id": "viz-ai-blog-feed-0c6997e82d"
     },
     {
       "url": "https://github.com/ray-project/ray/releases.atom",
@@ -4008,17 +3751,6 @@
       "id": "github-com-intel-neural-compressor-releases-atom-ab4e4ce187"
     },
     {
-      "url": "https://forum.effectivealtruism.org/feed.xml",
-      "topics": [
-        "community",
-        "research",
-        "governance"
-      ],
-      "title": "Effective Altruism Forum",
-      "notes": "EA Forum feed (community/research)",
-      "id": "forum-effectivealtruism-org-feed-xml-48b321d2aa"
-    },
-    {
       "url": "https://rss.arxiv.org/rss/cs.SY",
       "topics": [
         "ai",
@@ -4028,17 +3760,6 @@
       "title": "cs.SY updates on arXiv.org",
       "notes": "arXiv RSS for Systems and Control (target gap); HTTP verified via validate_feed_url",
       "id": "rss-arxiv-org-rss-cs-sy-c051a1d012"
-    },
-    {
-      "url": "https://rss.arxiv.org/rss/stat.AP",
-      "topics": [
-        "ai",
-        "research",
-        "papers"
-      ],
-      "title": "stat.AP updates on arXiv.org",
-      "notes": "arXiv RSS Statistics Applications (target gap); HTTP verified via validate_feed_url",
-      "id": "rss-arxiv-org-rss-stat-ap-eea3184c12"
     },
     {
       "url": "https://rss.arxiv.org/rss/eess.AS",
@@ -4290,42 +4011,6 @@
       "id": "rss-arxiv-org-rss-q-bio-1ae8732c8b"
     },
     {
-      "url": "https://www.nature.com/natmachintell.rss",
-      "topics": [
-        "ai",
-        "ml",
-        "research",
-        "papers"
-      ],
-      "title": "Nature Machine Intelligence",
-      "notes": "Nature ML journal RSS (verified path); HTTP verified via validate_feed_url",
-      "id": "nature-com-natmachintell-rss-02736d1b8f"
-    },
-    {
-      "url": "https://www.nature.com/subjects/machine-learning.rss",
-      "topics": [
-        "ai",
-        "ml",
-        "research",
-        "papers"
-      ],
-      "title": "Machine learning : nature.com subject feeds",
-      "notes": "Nature subject feed for ML; HTTP verified via validate_feed_url",
-      "id": "nature-com-subjects-machine-learning-rss-def57bc76c"
-    },
-    {
-      "url": "https://www.nature.com/subjects/computer-science.rss",
-      "topics": [
-        "ai",
-        "ml",
-        "research",
-        "papers"
-      ],
-      "title": "Computer science : nature.com subject feeds",
-      "notes": "Nature subject feed; HTTP verified via validate_feed_url",
-      "id": "nature-com-subjects-computer-science-rss-0b0eee29a9"
-    },
-    {
       "url": "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics",
       "topics": [
         "ai",
@@ -4471,17 +4156,6 @@
       "title": "Mila - Quebec Artificial Intelligence Institute",
       "notes": "HTTP verified via validate_feed_url 2026-06-24",
       "id": "mila-quebec-rss-xml-6eb1787665"
-    },
-    {
-      "url": "https://vectorinstitute.ai/feed/",
-      "topics": [
-        "ai",
-        "research",
-        "papers"
-      ],
-      "title": "Vector Institute for Artificial Intelligence",
-      "notes": "HTTP verified via validate_feed_url 2026-06-24",
-      "id": "vectorinstitute-ai-feed-746f6f5cc9"
     },
     {
       "url": "https://blog.inria.fr/feed/",
@@ -4770,16 +4444,6 @@
       "id": "whytryai-com-feed-6a33342386"
     },
     {
-      "url": "https://www.artificial-intelligence.blog/ai-news?format=rss",
-      "topics": [
-        "industry",
-        "blogs"
-      ],
-      "title": "Artificial Intelligence Blog & News - AI Blog",
-      "notes": "International/non-US; HTTP verified (rss, ~20 entries); saturation-pass-9",
-      "id": "artificial-intelligence-blog-ai-news-4d0337155b"
-    },
-    {
       "url": "https://www.cnil.fr/fr/rss.xml",
       "topics": [
         "governance",
@@ -4867,17 +4531,6 @@
       "id": "creativebloq-com-feeds-tag-ai-865c350bd8"
     },
     {
-      "url": "https://www.nature.com/nbt.rss",
-      "topics": [
-        "ai-for-science",
-        "research",
-        "papers"
-      ],
-      "title": "Nature Biotechnology",
-      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
-      "id": "nature-com-nbt-rss-eef52f982c"
-    },
-    {
       "url": "https://www.science.org/rss/news_current.xml",
       "topics": [
         "ai-for-science",
@@ -4886,17 +4539,6 @@
       "title": "Science Magazine News",
       "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
       "id": "science-org-rss-news-current-xml-e1793a9532"
-    },
-    {
-      "url": "https://www.nature.com/nature.rss",
-      "topics": [
-        "ai-for-science",
-        "research",
-        "papers"
-      ],
-      "title": "Nature",
-      "notes": "HTTP verified via validate_feed_url 2026-06-24 (verticals pass)",
-      "id": "nature-com-nature-rss-d592eddffe"
     },
     {
       "url": "https://www.theguardian.com/technology/artificialintelligenceai/rss",
@@ -5304,17 +4946,6 @@
       "id": "github-com-ukgovernmentbeis-inspect-ai-releases-602e3e241f"
     },
     {
-      "url": "https://dev.to/feed/tag/llmops",
-      "topics": [
-        "llmops",
-        "community",
-        "blogs"
-      ],
-      "title": "DEV.to LLMOps",
-      "notes": "Extend-prune round 15; HTTP verified 2026-06-25",
-      "id": "dev-to-feed-tag-llmops-fa478dec6b"
-    },
-    {
       "url": "https://github.com/guidance-ai/guidance/releases.atom",
       "topics": [
         "structured-generation",
@@ -5445,18 +5076,6 @@
       "title": "Phoenix Releases",
       "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
       "id": "github-com-arize-ai-phoenix-releases-atom-893fe536d8"
-    },
-    {
-      "url": "https://arize.com/blog/category/ml-observability/feed/",
-      "topics": [
-        "monitoring",
-        "mlops",
-        "llmops",
-        "incident-response"
-      ],
-      "title": "Arize ML Observability",
-      "notes": "Extend-prune round 16; HTTP verified 2026-06-25",
-      "id": "arize-com-blog-category-ml-observability-feed-5f7cc24740"
     },
     {
       "url": "https://github.com/langfuse/langfuse/releases.atom",
@@ -5774,17 +5393,6 @@
       "title": "Prefect Releases",
       "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
       "id": "github-com-prefecthq-prefect-releases-atom-cd2aab9588"
-    },
-    {
-      "url": "https://github.com/huggingface/optimum/releases.atom",
-      "topics": [
-        "open-source",
-        "inference",
-        "training"
-      ],
-      "title": "Optimum Releases",
-      "notes": "Extend-prune round 20; HTTP verified 2026-06-25",
-      "id": "github-com-huggingface-optimum-releases-atom-d1332d6390"
     },
     {
       "url": "https://github.com/deepseek-ai/DeepSeek-R1/releases.atom",
@@ -6424,17 +6032,6 @@
       "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
     },
     {
-      "url": "https://www.artificialintelligence-news.com/feed/",
-      "topics": [
-        "industry",
-        "product",
-        "llm"
-      ],
-      "id": "artificialintelligence-news-com-feed-a69cb801a0",
-      "title": "AI News",
-      "notes": "Extend-prune round 21; HTTP verified 2026-06-25"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml",
       "topics": [
         "open-source",
@@ -6443,17 +6040,6 @@
       ],
       "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-3b0696dfd4",
       "title": "Ollama Blog (Olshansk mirror)",
-      "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_changelog_claude_code.xml",
-      "topics": [
-        "industry",
-        "llm",
-        "devtools"
-      ],
-      "id": "raw-githubusercontent-com-olshansk-rss-feeds-mai-52d27b4568",
-      "title": "Anthropic Claude Code Changelog (Olshansk mirror)",
       "notes": "Extend-prune round 22; HTTP verified 2026-06-25"
     },
     {
@@ -6994,6 +6580,2340 @@
       "id": "dev-to-feed-tag-ollama-46538de261",
       "title": "DEV Community — ollama",
       "notes": "Extend-prune round 23; HTTP verified 2026-06-25"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.CG",
+      "topics": [
+        "research",
+        "papers",
+        "cv"
+      ],
+      "id": "export-arxiv-org-rss-cs-CG-d88ea9e4",
+      "title": "arXiv cs.CG (Computational Geometry)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.DS",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-DS-8c5a470b",
+      "title": "arXiv cs.DS (Data Structures and Algorithms)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.GR",
+      "topics": [
+        "research",
+        "papers",
+        "cv"
+      ],
+      "id": "export-arxiv-org-rss-cs-GR-e5b749d9",
+      "title": "arXiv cs.GR (Graphics)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.LO",
+      "topics": [
+        "research",
+        "papers",
+        "ai"
+      ],
+      "id": "export-arxiv-org-rss-cs-LO-2e68d93a",
+      "title": "arXiv cs.LO (Logic in Computer Science)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.MM",
+      "topics": [
+        "research",
+        "papers",
+        "multimodal"
+      ],
+      "id": "export-arxiv-org-rss-cs-MM-086737bc",
+      "title": "arXiv cs.MM (Multimedia)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.SC",
+      "topics": [
+        "research",
+        "papers",
+        "ai"
+      ],
+      "id": "export-arxiv-org-rss-cs-SC-725f4742",
+      "title": "arXiv cs.SC (Symbolic Computation)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cs.SI",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cs-SI-3f1a5220",
+      "title": "arXiv cs.SI (Social and Information Networks)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/cond-mat.dis-nn",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-cond-mat-dis-nn-42bc731f",
+      "title": "arXiv cond-mat.dis-nn (Disordered Systems and Neural Networks)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/nlin.AO",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-nlin-AO-46132deb",
+      "title": "arXiv nlin.AO (Adaptation and Self-Organizing Systems)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/physics.data-an",
+      "topics": [
+        "research",
+        "papers",
+        "ai-for-science"
+      ],
+      "id": "export-arxiv-org-rss-physics-data-an-c0ab2599",
+      "title": "arXiv physics.data-an (Data Analysis, Statistics and Probability)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://export.arxiv.org/rss/stat.CO",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "export-arxiv-org-rss-stat-CO-953550de",
+      "title": "arXiv stat.CO (Computation)",
+      "source_type": "arxiv"
+    },
+    {
+      "url": "https://chinai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "governance",
+        "industry"
+      ],
+      "id": "chinai-substack-com-feed-a1578886",
+      "title": "ChinAI Newsletter",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://www.understandingai.org/feed",
+      "topics": [
+        "newsletters",
+        "education",
+        "industry"
+      ],
+      "id": "understandingai-org-feed-d5cb48a5",
+      "title": "Understanding AI",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://www.transformernews.ai/feed",
+      "topics": [
+        "newsletters",
+        "governance",
+        "industry"
+      ],
+      "id": "transformernews-ai-feed-11f2475d",
+      "title": "Transformer",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://www.hyperdimensional.co/feed",
+      "topics": [
+        "newsletters",
+        "governance",
+        "industry"
+      ],
+      "id": "hyperdimensional-co-feed-5f09a536",
+      "title": "Hyperdimensional",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://helentoner.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "governance",
+        "safety"
+      ],
+      "id": "helentoner-substack-com-feed-3cb1edcc",
+      "title": "Rising Tide",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://nathanbenaich.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "id": "nathanbenaich-substack-com-feed-ba7cb56a",
+      "title": "State of AI newsletter",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://garymarcus.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "governance"
+      ],
+      "id": "garymarcus-substack-com-feed-ea33fa47",
+      "title": "Marcus on AI",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://cameronrwolfe.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "education"
+      ],
+      "id": "cameronrwolfe-substack-com-feed-5d791aaa",
+      "title": "Deep (Learning) Focus",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://newsletter.maartengrootendorst.com/feed",
+      "topics": [
+        "newsletters",
+        "llm",
+        "education"
+      ],
+      "id": "newsletter-maartengrootendorst-com-feed-d63e437f",
+      "title": "Exploring Language Models",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://www.deeplearningweekly.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "industry"
+      ],
+      "id": "deeplearningweekly-com-feed-201649d3",
+      "title": "Deep Learning Weekly",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://alphasignalai.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "research",
+        "llm"
+      ],
+      "id": "alphasignalai-substack-com-feed-54cf6856",
+      "title": "AlphaSignal",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://every.to/chain-of-thought/feed",
+      "topics": [
+        "newsletters",
+        "product",
+        "industry"
+      ],
+      "id": "every-to-chain-of-thought-feed-7de0c82b",
+      "title": "Chain of Thought",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://memia.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "industry",
+        "governance"
+      ],
+      "id": "memia-substack-com-feed-bab244ae",
+      "title": "Memia",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://linas.substack.com/feed",
+      "topics": [
+        "newsletters",
+        "finance-ai",
+        "industry"
+      ],
+      "id": "linas-substack-com-feed-11fc5374",
+      "title": "Linas's Newsletter",
+      "source_type": "newsletter"
+    },
+    {
+      "url": "https://lexfridman.com/feed/podcast/",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "id": "lexfridman-com-feed-podcast-0b84d74a",
+      "title": "Lex Fridman Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.captivate.fm/gradient-dissent/",
+      "topics": [
+        "podcasts",
+        "ml",
+        "industry"
+      ],
+      "id": "feeds-captivate-fm-gradient-dissent-a111d7cf",
+      "title": "Gradient Dissent: Conversations on AI",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.megaphone.fm/nvidiaaipodcast",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "id": "feeds-megaphone-fm-nvidiaaipodcast-b7d7fd55",
+      "title": "NVIDIA AI Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.acast.com/public/shows/the-robot-brains",
+      "topics": [
+        "podcasts",
+        "robotics",
+        "research"
+      ],
+      "id": "feeds-acast-com-public-shows-the-robot-b-d1f1c77a",
+      "title": "The Robot Brains Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.megaphone.fm/TPG7603691495",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "id": "feeds-megaphone-fm-TPG7603691495-7cd0d87e",
+      "title": "Me, Myself, and AI",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://rss.libsyn.com/shows/312947/destinations/2517215.xml",
+      "topics": [
+        "podcasts",
+        "safety",
+        "research"
+      ],
+      "id": "rss-libsyn-com-shows-312947-destinations-6bee2c54",
+      "title": "AXRP - the AI X-risk Research Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.simplecast.com/JT6pbPkg",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "id": "feeds-simplecast-com-JT6pbPkg-be312859",
+      "title": "Google DeepMind: The Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.megaphone.fm/trainingdata",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "id": "feeds-megaphone-fm-trainingdata-155f53f5",
+      "title": "Training Data",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.simplecast.com/dOSE_bdP",
+      "topics": [
+        "podcasts",
+        "industry",
+        "product"
+      ],
+      "id": "feeds-simplecast-com-dOSE_bdP-9541039d",
+      "title": "Unsupervised Learning with Jacob Effron",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://anchor.fm/s/f2ee4948/podcast/rss",
+      "topics": [
+        "podcasts",
+        "industry",
+        "mlops"
+      ],
+      "id": "anchor-fm-s-f2ee4948-podcast-rss-6dc668d3",
+      "title": "The MAD Podcast: How AI Gets Built — with Matt Turck",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://anchor.fm/s/1035b1568/podcast/rss",
+      "topics": [
+        "podcasts",
+        "product",
+        "llm"
+      ],
+      "id": "anchor-fm-s-1035b1568-podcast-rss-02cb4a38",
+      "title": "How I AI",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.simplecast.com/Hb_IuXOo",
+      "topics": [
+        "podcasts",
+        "industry",
+        "llm"
+      ],
+      "id": "feeds-simplecast-com-Hb_IuXOo-e871d751",
+      "title": "AI + a16z",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://feeds.transistor.fm/talkrl",
+      "topics": [
+        "podcasts",
+        "research",
+        "ml"
+      ],
+      "id": "feeds-transistor-fm-talkrl-e29022f3",
+      "title": "TalkRL: The Reinforcement Learning Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://api.substack.com/feed/podcast/1801228.rss",
+      "topics": [
+        "podcasts",
+        "industry",
+        "llm"
+      ],
+      "id": "api-substack-com-feed-podcast-1801228-rs-1b53f746",
+      "title": "ThursdAI - The top AI news from the past week",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://anchor.fm/s/174cb1b8/podcast/rss",
+      "topics": [
+        "podcasts",
+        "mlops",
+        "industry"
+      ],
+      "id": "anchor-fm-s-174cb1b8-podcast-rss-754432e4",
+      "title": "Agentic Conversations (MLOps Community)",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://vllm.ai/blog/rss.xml",
+      "topics": [
+        "inference",
+        "serving",
+        "open-source"
+      ],
+      "id": "vllm-ai-blog-rss-xml-38dcd83a",
+      "title": "vLLM Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://blog.scikit-learn.org/feed.xml",
+      "topics": [
+        "ml",
+        "open-source",
+        "education"
+      ],
+      "id": "blog-scikit-learn-org-feed-xml-3d6144ee",
+      "title": "scikit-learn Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.answer.ai/index.xml",
+      "topics": [
+        "research",
+        "training",
+        "open-source"
+      ],
+      "id": "answer-ai-index-xml-6cac6153",
+      "title": "Answer.AI",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://qwenlm.github.io/blog/index.xml",
+      "topics": [
+        "llm",
+        "open-source",
+        "research"
+      ],
+      "id": "qwenlm-github-io-blog-index-xml-0b52f48c",
+      "title": "Qwen Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://stability.ai/news-updates?format=rss",
+      "topics": [
+        "genai",
+        "diffusion",
+        "industry"
+      ],
+      "id": "stability-ai-news-updates-0b2749af",
+      "title": "Stability AI — News & Updates",
+      "source_type": "newsroom"
+    },
+    {
+      "url": "https://laion.ai/blog/rss.xml",
+      "topics": [
+        "datasets",
+        "research",
+        "open-source"
+      ],
+      "id": "laion-ai-blog-rss-xml-27510ac7",
+      "title": "LAION Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://ai.sony/archive/rss.xml",
+      "topics": [
+        "research",
+        "rl",
+        "industry"
+      ],
+      "id": "ai-sony-archive-rss-xml-273e91ab",
+      "title": "Sony AI Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.deepspeed.ai/feed.xml",
+      "topics": [
+        "training",
+        "optimization",
+        "open-source"
+      ],
+      "id": "deepspeed-ai-feed-xml-9508ee2d",
+      "title": "DeepSpeed",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.far.ai/blog/rss.xml",
+      "topics": [
+        "safety",
+        "alignment",
+        "research"
+      ],
+      "id": "far-ai-blog-rss-xml-f908b488",
+      "title": "FAR.AI News",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://rocm.blogs.amd.com/blog/atom.xml",
+      "topics": [
+        "hardware",
+        "accelerators",
+        "open-source"
+      ],
+      "id": "rocm-blogs-amd-com-blog-atom-xml-cbd688fe",
+      "title": "AMD ROCm Blogs",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.pinecone.io/rss/",
+      "topics": [
+        "vector",
+        "retrieval",
+        "rag"
+      ],
+      "id": "pinecone-io-rss-4f1e6c71",
+      "title": "Pinecone",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://blog.kubeflow.org/feed.xml",
+      "topics": [
+        "mlops",
+        "orchestration",
+        "open-source"
+      ],
+      "id": "blog-kubeflow-org-feed-xml-13c0c724",
+      "title": "Kubeflow Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://explosion.ai/feed",
+      "topics": [
+        "nlp",
+        "open-source",
+        "product"
+      ],
+      "id": "explosion-ai-feed-cfcf0749",
+      "title": "Explosion",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://aip.riken.jp/category/news/feed/?lang=en",
+      "topics": [
+        "research",
+        "ml"
+      ],
+      "id": "aip-riken-jp-category-news-feed-fd907c53",
+      "title": "RIKEN AIP — News",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://radiant.earth/index.xml",
+      "topics": [
+        "geospatial-ml",
+        "datasets"
+      ],
+      "id": "radiant-earth-index-xml-e3bccedf",
+      "title": "Radiant Earth",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://carto.com/blog/index.xml",
+      "topics": [
+        "geospatial-ml",
+        "industry"
+      ],
+      "id": "carto-com-blog-index-xml-df3a58b2",
+      "title": "CARTO Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://developmentseed.org/rss.xml",
+      "topics": [
+        "geospatial-ml",
+        "data"
+      ],
+      "id": "developmentseed-org-rss-xml-ac8e24b2",
+      "title": "Development Seed",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://openmined.org/rss.xml",
+      "topics": [
+        "pets",
+        "privacy"
+      ],
+      "id": "openmined-org-rss-xml-86f3dcea",
+      "title": "OpenMined Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://github.com/zama-ai/concrete-ml/releases.atom",
+      "topics": [
+        "pets",
+        "privacy"
+      ],
+      "id": "github-com-zama-ai-concrete-ml-releases-0e3ea40c",
+      "title": "Concrete ML Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://blog.sigstore.dev/index.xml",
+      "topics": [
+        "supply-chain",
+        "security",
+        "open-source"
+      ],
+      "id": "blog-sigstore-dev-index-xml-aeb0b4ed",
+      "title": "Sigstore Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.chainguard.dev/unchained/rss.xml",
+      "topics": [
+        "supply-chain",
+        "security"
+      ],
+      "id": "chainguard-dev-unchained-rss-xml-f1b5a448",
+      "title": "Chainguard Unchained",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://github.com/sigstore/model-transparency/releases.atom",
+      "topics": [
+        "supply-chain",
+        "security"
+      ],
+      "id": "github-com-sigstore-model-transparency-r-1e72cd05",
+      "title": "Sigstore Model Signing",
+      "source_type": "github"
+    },
+    {
+      "url": "https://incidentdatabase.ai/rss.xml",
+      "topics": [
+        "incident-response",
+        "safety"
+      ],
+      "id": "incidentdatabase-ai-rss-xml-b5d88f57",
+      "title": "AI Incident Database",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://www.edgeimpulse.com/blog/category/all/rss/",
+      "topics": [
+        "edge",
+        "on-device"
+      ],
+      "id": "edgeimpulse-com-blog-category-all-rss-f94875ec",
+      "title": "Edge Impulse Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://thehive.ai/blog/sitemap.rss",
+      "topics": [
+        "content-moderation",
+        "safety"
+      ],
+      "id": "thehive-ai-blog-sitemap-rss-c01c5a6d",
+      "title": "Hive Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.authorsalliance.org/feed/",
+      "topics": [
+        "copyright-ip",
+        "governance"
+      ],
+      "id": "authorsalliance-org-feed-4e8365da",
+      "title": "Authors Alliance",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://github.com/HumanSignal/label-studio/releases.atom",
+      "topics": [
+        "labeling",
+        "data-centric-ai"
+      ],
+      "id": "github-com-HumanSignal-label-studio-rele-07b893da",
+      "title": "Label Studio Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/mlfoundations/open_clip/releases.atom",
+      "topics": [
+        "multimodal",
+        "vlm"
+      ],
+      "id": "github-com-mlfoundations-open_clip-relea-e906c9bf",
+      "title": "OpenCLIP Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
+      "topics": [
+        "research",
+        "papers",
+        "cv",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-0e86b243",
+      "title": "Two Minute Papers",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew",
+      "topics": [
+        "research",
+        "papers",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-78ea30a8",
+      "title": "Yannic Kilcher",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCXUPKJO5MZQN11PqgIvyuvQ",
+      "topics": [
+        "llm",
+        "education",
+        "training",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-66c10e0a",
+      "title": "Andrej Karpathy",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCcIXc5mJsHVYTZR1maL5l9w",
+      "topics": [
+        "education",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-4b8704a0",
+      "title": "DeepLearningAI",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCMLtBahI5DMrt0NPvDSoIRQ",
+      "topics": [
+        "research",
+        "podcasts",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-ee8180f6",
+      "title": "Machine Learning Street Talk",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw",
+      "topics": [
+        "llm",
+        "evaluation",
+        "research",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-5a6c6d23",
+      "title": "AI Explained",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCNIkB2IeJ-6AmZv7bQ1oBYg",
+      "topics": [
+        "research",
+        "papers",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-790a9aa7",
+      "title": "Arxiv Insights",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCj8shE7aIn4Yawwbo2FceCQ",
+      "topics": [
+        "research",
+        "education",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-b9301c59",
+      "title": "Aleksa Gordić - The AI Epiphany",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCobqgqE4i5Kf7wrxRxhToQA",
+      "topics": [
+        "research",
+        "llm",
+        "nlp",
+        "cv",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-cdce0b79",
+      "title": "AI Coffee Break with Letitia",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCLB7AzTwc6VFZrBsO2ucBMg",
+      "topics": [
+        "safety",
+        "alignment",
+        "research",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-b7dd7cc7",
+      "title": "Robert Miles AI Safety",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCtatfZMf-8EkIwASXM4ts0A",
+      "topics": [
+        "audio-speech",
+        "llm",
+        "education",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-13297982",
+      "title": "AssemblyAI",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCHlNU7kIZhRgSbhHvFoy72w",
+      "topics": [
+        "open-source",
+        "llm",
+        "research",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-0ca164b5",
+      "title": "Hugging Face",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCrDwWp7EBBv4NwvScIpBDOA",
+      "topics": [
+        "safety",
+        "research",
+        "llm",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-fd3ba63c",
+      "title": "Anthropic",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCP7jMXSY2xbc3KCAE0MHQ-A",
+      "topics": [
+        "research",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-361db262",
+      "title": "Google DeepMind",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCXZCJLdBC09xxGZ6gcdrc6A",
+      "topics": [
+        "research",
+        "llm",
+        "product",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-119fcb0a",
+      "title": "OpenAI",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.marktechpost.com/feed/",
+      "topics": [
+        "industry",
+        "research",
+        "llm"
+      ],
+      "id": "marktechpost-com-feed-ef3ff28c",
+      "title": "MarkTechPost",
+      "source_type": "newsroom"
+    },
+    {
+      "url": "https://www.unite.ai/feed/",
+      "topics": [
+        "industry",
+        "genai",
+        "product"
+      ],
+      "id": "unite-ai-feed-3d156f21",
+      "title": "Unite.AI",
+      "source_type": "newsroom"
+    },
+    {
+      "url": "https://www.analyticsvidhya.com/feed/",
+      "topics": [
+        "education",
+        "ml",
+        "blogs"
+      ],
+      "id": "analyticsvidhya-com-feed-508bf23e",
+      "title": "Analytics Vidhya",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://pub.towardsai.net/feed",
+      "topics": [
+        "education",
+        "ml",
+        "llm"
+      ],
+      "id": "pub-towardsai-net-feed-1dfb67dd",
+      "title": "Towards AI",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.reddit.com/r/LocalLLaMA/.rss",
+      "topics": [
+        "llm",
+        "open-source",
+        "community"
+      ],
+      "id": "reddit-com-r-LocalLLaMA--rss-4fd915c6",
+      "title": "r/LocalLLaMA",
+      "source_type": "reddit"
+    },
+    {
+      "url": "https://huyenchip.com/feed.xml",
+      "topics": [
+        "mlops",
+        "llm",
+        "education"
+      ],
+      "id": "huyenchip-com-feed-xml-14c54713",
+      "title": "Chip Huyen",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://twimlai.com/feed/podcast/",
+      "topics": [
+        "podcasts",
+        "ml",
+        "industry"
+      ],
+      "id": "twimlai-com-feed-podcast-78034fca",
+      "title": "TWIML AI Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSHZKyawb77ixDdsGog4iWA",
+      "topics": [
+        "podcasts",
+        "research",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-13a6464e",
+      "title": "Lex Fridman YouTube",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCfzlCWGWYyIQ0aLC5w48gBQ",
+      "topics": [
+        "education",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-6b55d14c",
+      "title": "Sentdex",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCtYLUTtgS3k1Fg4y5tAhLbw",
+      "topics": [
+        "education",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-8a5aab81",
+      "title": "StatQuest with Josh Starmer",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/research/blog/feed/",
+      "topics": [
+        "research",
+        "ml",
+        "industry"
+      ],
+      "id": "microsoft-com-en-us-research-blog-feed-a236382e",
+      "title": "Microsoft Research Blog",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://engineering.fb.com/category/ml-applications/feed/",
+      "topics": [
+        "research",
+        "ml",
+        "industry"
+      ],
+      "id": "engineering-fb-com-category-ml-applicati-ba5a8829",
+      "title": "Meta Engineering ML",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://aider.chat/feed.xml",
+      "topics": [
+        "ai-for-code",
+        "agents",
+        "open-source"
+      ],
+      "id": "aider-chat-feed-xml-02df26e8",
+      "title": "Aider",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://cset.georgetown.edu/feed/",
+      "topics": [
+        "governance",
+        "research",
+        "industry"
+      ],
+      "id": "cset-georgetown-edu-feed-4545df93",
+      "title": "CSET Georgetown",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://mlcommons.org/feed/",
+      "topics": [
+        "benchops",
+        "evaluation",
+        "open-source"
+      ],
+      "id": "mlcommons-org-feed-fce16250",
+      "title": "MLCommons",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://algorithmwatch.org/en/feed/",
+      "topics": [
+        "governance",
+        "ethics",
+        "regulation",
+        "fairness"
+      ],
+      "id": "algorithmwatch-org-en-feed-23078463",
+      "title": "AlgorithmWatch",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://www.jair.org/index.php/jair/gateway/plugin/WebFeedGatewayPlugin/rss2",
+      "topics": [
+        "research",
+        "papers",
+        "ml"
+      ],
+      "id": "jair-org-index-php-jair-gateway-plugin-2c22b407",
+      "title": "Journal of Artificial Intelligence Research",
+      "source_type": "journal"
+    },
+    {
+      "url": "https://www.zenml.io/blog/rss.xml",
+      "topics": [
+        "mlops",
+        "orchestration",
+        "open-source"
+      ],
+      "id": "zenml-io-blog-rss-xml-36164141",
+      "title": "ZenML Blog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.dwarkeshpatel.com/feed",
+      "topics": [
+        "podcasts",
+        "research",
+        "industry"
+      ],
+      "id": "dwarkeshpatel-com-feed-aa795f5d",
+      "title": "Dwarkesh Podcast",
+      "source_type": "podcast"
+    },
+    {
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases.atom",
+      "topics": [
+        "diffusion",
+        "genai",
+        "open-source"
+      ],
+      "id": "github-com-AUTOMATIC1111-stable-diffusio-c27749e7",
+      "title": "Stable Diffusion WebUI Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/scikit-learn/scikit-learn/releases.atom",
+      "topics": [
+        "ml",
+        "education",
+        "open-source"
+      ],
+      "id": "github-com-scikit-learn-scikit-learn-rel-5c061f8b",
+      "title": "scikit-learn Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google-deepmind/alphafold/releases.atom",
+      "topics": [
+        "ai-for-science",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-google-deepmind-alphafold-rel-1872ebb1",
+      "title": "AlphaFold Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/NVIDIA/Megatron-LM/releases.atom",
+      "topics": [
+        "training",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-NVIDIA-Megatron-LM-releases-a-d36f7626",
+      "title": "Megatron-LM Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/hpcaitech/ColossalAI/releases.atom",
+      "topics": [
+        "training",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-hpcaitech-ColossalAI-releases-00393553",
+      "title": "ColossalAI Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/lm-sys/FastChat/releases.atom",
+      "topics": [
+        "llm",
+        "open-source",
+        "research"
+      ],
+      "id": "github-com-lm-sys-FastChat-releases-atom-f443f8bc",
+      "title": "FastChat Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/All-Hands-AI/OpenHands/releases.atom",
+      "topics": [
+        "agents",
+        "ai-for-code",
+        "open-source"
+      ],
+      "id": "github-com-All-Hands-AI-OpenHands-releas-a1708ce7",
+      "title": "OpenHands Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/lerobot/releases.atom",
+      "topics": [
+        "robotics",
+        "open-source",
+        "research"
+      ],
+      "id": "github-com-huggingface-lerobot-releases-0253c64b",
+      "title": "LeRobot Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/triton-lang/triton/releases.atom",
+      "topics": [
+        "compilers",
+        "accelerators",
+        "open-source"
+      ],
+      "id": "github-com-triton-lang-triton-releases-a-26ada7d3",
+      "title": "Triton Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/bitsandbytes-foundation/bitsandbytes/releases.atom",
+      "topics": [
+        "optimization",
+        "training",
+        "open-source"
+      ],
+      "id": "github-com-bitsandbytes-foundation-bitsa-571c572e",
+      "title": "bitsandbytes Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/dottxt-ai/outlines/releases.atom",
+      "topics": [
+        "structured-generation",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-dottxt-ai-outlines-releases-a-9b3cf9f1",
+      "title": "Outlines Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/state-spaces/mamba/releases.atom",
+      "topics": [
+        "research",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-state-spaces-mamba-releases-a-af2487cd",
+      "title": "Mamba Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/facebookresearch/detectron2/releases.atom",
+      "topics": [
+        "cv",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-facebookresearch-detectron2-r-e1c0856b",
+      "title": "Detectron2 Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://cursor.com/changelog/rss.xml",
+      "topics": [
+        "ai-for-code",
+        "product",
+        "agents"
+      ],
+      "id": "cursor-com-changelog-rss-xml-341280db",
+      "title": "Cursor Changelog",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://thinkingmachines.ai/index.xml",
+      "topics": [
+        "research",
+        "llm",
+        "training"
+      ],
+      "id": "thinkingmachines-ai-index-xml-92309369",
+      "title": "Thinking Machines Lab",
+      "source_type": "organization"
+    },
+    {
+      "url": "https://github.com/OpenAccess-AI-Collective/axolotl/releases.atom",
+      "topics": [
+        "training",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-OpenAccess-AI-Collective-axol-cf12d4c8",
+      "title": "Axolotl Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/OpenRLHF/OpenRLHF/releases.atom",
+      "topics": [
+        "training",
+        "rl",
+        "open-source"
+      ],
+      "id": "github-com-OpenRLHF-OpenRLHF-releases-at-a485db9e",
+      "title": "OpenRLHF Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/volcengine/verl/releases.atom",
+      "topics": [
+        "training",
+        "rl",
+        "llm"
+      ],
+      "id": "github-com-volcengine-verl-releases-atom-b0203bac",
+      "title": "veRL Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/embeddings-benchmark/mteb/releases.atom",
+      "topics": [
+        "embeddings",
+        "evaluation",
+        "benchops"
+      ],
+      "id": "github-com-embeddings-benchmark-mteb-rel-c82dc11e",
+      "title": "MTEB Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/Mozilla-Ocho/llamafile/releases.atom",
+      "topics": [
+        "inference",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-Mozilla-Ocho-llamafile-releas-34df20c3",
+      "title": "llamafile Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/abetlen/llama-cpp-python/releases.atom",
+      "topics": [
+        "inference",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-abetlen-llama-cpp-python-rele-58fefc10",
+      "title": "llama-cpp-python Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/oobabooga/text-generation-webui/releases.atom",
+      "topics": [
+        "llm",
+        "inference",
+        "open-source"
+      ],
+      "id": "github-com-oobabooga-text-generation-web-d38a8a6a",
+      "title": "text-generation-webui Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/PanQiWei/AutoGPTQ/releases.atom",
+      "topics": [
+        "optimization",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-PanQiWei-AutoGPTQ-releases-at-ef67c1fd",
+      "title": "AutoGPTQ Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/InternLM/lmdeploy/releases.atom",
+      "topics": [
+        "inference",
+        "serving",
+        "open-source"
+      ],
+      "id": "github-com-InternLM-lmdeploy-releases-at-748372af",
+      "title": "lmdeploy Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/NVIDIA/cutlass/releases.atom",
+      "topics": [
+        "accelerators",
+        "compilers",
+        "open-source"
+      ],
+      "id": "github-com-NVIDIA-cutlass-releases-atom-8d538ff4",
+      "title": "CUTLASS Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/bentoml/BentoML/releases.atom",
+      "topics": [
+        "serving",
+        "mlops",
+        "open-source"
+      ],
+      "id": "github-com-bentoml-BentoML-releases-atom-28e12b0a",
+      "title": "BentoML Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/replicate/cog/releases.atom",
+      "topics": [
+        "mlops",
+        "serving",
+        "open-source"
+      ],
+      "id": "github-com-replicate-cog-releases-atom-e9b65870",
+      "title": "Cog Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pgvector/pgvector/releases.atom",
+      "topics": [
+        "vector",
+        "retrieval",
+        "open-source"
+      ],
+      "id": "github-com-pgvector-pgvector-releases-at-994f26b6",
+      "title": "pgvector Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/haotian-liu/LLaVA/releases.atom",
+      "topics": [
+        "vlm",
+        "multimodal",
+        "research"
+      ],
+      "id": "github-com-haotian-liu-LLaVA-releases-at-95ab1be2",
+      "title": "LLaVA Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/OpenGVLab/InternVL/releases.atom",
+      "topics": [
+        "vlm",
+        "multimodal",
+        "research"
+      ],
+      "id": "github-com-OpenGVLab-InternVL-releases-a-a567f8d6",
+      "title": "InternVL Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/hpcaitech/Open-Sora/releases.atom",
+      "topics": [
+        "diffusion",
+        "genai",
+        "open-source"
+      ],
+      "id": "github-com-hpcaitech-Open-Sora-releases-592f078b",
+      "title": "Open-Sora Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/lllyasviel/Fooocus/releases.atom",
+      "topics": [
+        "diffusion",
+        "genai",
+        "open-source"
+      ],
+      "id": "github-com-lllyasviel-Fooocus-releases-a-0c538934",
+      "title": "Fooocus Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/openai/tiktoken/releases.atom",
+      "topics": [
+        "llm",
+        "open-source",
+        "nlp"
+      ],
+      "id": "github-com-openai-tiktoken-releases-atom-cb791261",
+      "title": "tiktoken Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/openai/evals/releases.atom",
+      "topics": [
+        "evaluation",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-openai-evals-releases-atom-94db879e",
+      "title": "OpenAI Evals Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google-deepmind/mujoco/releases.atom",
+      "topics": [
+        "robotics",
+        "simulation",
+        "open-source"
+      ],
+      "id": "github-com-google-deepmind-mujoco-releas-d39ec7ba",
+      "title": "MuJoCo Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/Farama-Foundation/Gymnasium/releases.atom",
+      "topics": [
+        "rl",
+        "simulation",
+        "open-source"
+      ],
+      "id": "github-com-Farama-Foundation-Gymnasium-r-8cf7cda2",
+      "title": "Gymnasium Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/DLR-RM/stable-baselines3/releases.atom",
+      "topics": [
+        "rl",
+        "open-source",
+        "education"
+      ],
+      "id": "github-com-DLR-RM-stable-baselines3-rele-7734bac7",
+      "title": "Stable Baselines3 Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/candle/releases.atom",
+      "topics": [
+        "inference",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-huggingface-candle-releases-a-90617c54",
+      "title": "candle Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/Lightning-AI/litgpt/releases.atom",
+      "topics": [
+        "training",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-Lightning-AI-litgpt-releases-7e2da9fe",
+      "title": "LitGPT Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/bigscience-workshop/petals/releases.atom",
+      "topics": [
+        "inference",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-bigscience-workshop-petals-re-a3c682c0",
+      "title": "Petals Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/PaddlePaddle/PaddleOCR/releases.atom",
+      "topics": [
+        "cv",
+        "nlp",
+        "open-source"
+      ],
+      "id": "github-com-PaddlePaddle-PaddleOCR-releas-34816c58",
+      "title": "PaddleOCR Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/modelscope/modelscope/releases.atom",
+      "topics": [
+        "open-source",
+        "mlops",
+        "llm"
+      ],
+      "id": "github-com-modelscope-modelscope-release-618bdce8",
+      "title": "ModelScope Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/OpenBMB/MiniCPM/releases.atom",
+      "topics": [
+        "llm",
+        "small-models",
+        "open-source"
+      ],
+      "id": "github-com-OpenBMB-MiniCPM-releases-atom-fc0c80c6",
+      "title": "MiniCPM Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/geekan/MetaGPT/releases.atom",
+      "topics": [
+        "agents",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-geekan-MetaGPT-releases-atom-d2e7b2e2",
+      "title": "MetaGPT Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/NVIDIA/NeMo-Guardrails/releases.atom",
+      "topics": [
+        "safety",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-NVIDIA-NeMo-Guardrails-releas-eacf7e69",
+      "title": "NeMo Guardrails Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/protectai/llm-guard/releases.atom",
+      "topics": [
+        "security",
+        "safety",
+        "open-source"
+      ],
+      "id": "github-com-protectai-llm-guard-releases-fdf61b44",
+      "title": "LLM Guard Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/FlagOpen/FlagEmbedding/releases.atom",
+      "topics": [
+        "embeddings",
+        "retrieval",
+        "open-source"
+      ],
+      "id": "github-com-FlagOpen-FlagEmbedding-releas-b20e1dfc",
+      "title": "FlagEmbedding Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pytorch/torchtitan/releases.atom",
+      "topics": [
+        "training",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-pytorch-torchtitan-releases-a-e59654a4",
+      "title": "torchtitan Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pytorch/ao/releases.atom",
+      "topics": [
+        "optimization",
+        "training",
+        "open-source"
+      ],
+      "id": "github-com-pytorch-ao-releases-atom-38a42290",
+      "title": "PyTorch AO Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/facebookresearch/fairseq/releases.atom",
+      "topics": [
+        "nlp",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-facebookresearch-fairseq-rele-c84e45b0",
+      "title": "fairseq Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/mindspore-ai/mindspore/releases.atom",
+      "topics": [
+        "ml",
+        "open-source",
+        "training"
+      ],
+      "id": "github-com-mindspore-ai-mindspore-releas-0a9d8171",
+      "title": "MindSpore Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UChpleBmo18P08aKCIgti38g",
+      "topics": [
+        "genai",
+        "product",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-da5719c1",
+      "title": "Matt Wolfe",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCNU_lfiiWBdtULKOw6X0Dig",
+      "topics": [
+        "education",
+        "ml",
+        "videos"
+      ],
+      "id": "youtube-com-feeds-videos-xml-9d124f1c",
+      "title": "Krish Naik",
+      "source_type": "youtube"
+    },
+    {
+      "url": "https://github.com/huggingface/pytorch-image-models/releases.atom",
+      "topics": [
+        "cv",
+        "open-source",
+        "ml"
+      ],
+      "id": "github-com-huggingface-pytorch-image-mod-8aeb06b1",
+      "title": "timm Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/ultralytics/ultralytics/releases.atom",
+      "topics": [
+        "cv",
+        "open-source",
+        "product"
+      ],
+      "id": "github-com-ultralytics-ultralytics-relea-707417cd",
+      "title": "Ultralytics Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/open-mmlab/mmdetection/releases.atom",
+      "topics": [
+        "cv",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-open-mmlab-mmdetection-releas-51db919d",
+      "title": "MMDetection Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/open-mmlab/mmpretrain/releases.atom",
+      "topics": [
+        "cv",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-open-mmlab-mmpretrain-release-c13f9d66",
+      "title": "MMPreTrain Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/kohya-ss/sd-scripts/releases.atom",
+      "topics": [
+        "diffusion",
+        "training",
+        "open-source"
+      ],
+      "id": "github-com-kohya-ss-sd-scripts-releases-77175351",
+      "title": "sd-scripts Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/jxnl/instructor/releases.atom",
+      "topics": [
+        "structured-generation",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-jxnl-instructor-releases-atom-7d241ac0",
+      "title": "Instructor Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/mendableai/firecrawl/releases.atom",
+      "topics": [
+        "rag",
+        "tool-use",
+        "open-source"
+      ],
+      "id": "github-com-mendableai-firecrawl-releases-8f6d80e7",
+      "title": "Firecrawl Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/getzep/graphiti/releases.atom",
+      "topics": [
+        "knowledge-graphs",
+        "agents",
+        "open-source"
+      ],
+      "id": "github-com-getzep-graphiti-releases-atom-8439e475",
+      "title": "Graphiti Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/topoteretes/cognee/releases.atom",
+      "topics": [
+        "knowledge-graphs",
+        "rag",
+        "open-source"
+      ],
+      "id": "github-com-topoteretes-cognee-releases-a-f34d60b4",
+      "title": "Cognee Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/e2b-dev/e2b/releases.atom",
+      "topics": [
+        "agents",
+        "tool-use",
+        "open-source"
+      ],
+      "id": "github-com-e2b-dev-e2b-releases-atom-299733ea",
+      "title": "E2B Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/allenai/dolma/releases.atom",
+      "topics": [
+        "datasets",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-allenai-dolma-releases-atom-538c6e7a",
+      "title": "Dolma Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/vwxyzjn/cleanrl/releases.atom",
+      "topics": [
+        "rl",
+        "education",
+        "open-source"
+      ],
+      "id": "github-com-vwxyzjn-cleanrl-releases-atom-1a64044b",
+      "title": "CleanRL Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google-deepmind/dm_control/releases.atom",
+      "topics": [
+        "rl",
+        "robotics",
+        "open-source"
+      ],
+      "id": "github-com-google-deepmind-dm_control-re-20eedb98",
+      "title": "dm_control Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/NVlabs/instant-ngp/releases.atom",
+      "topics": [
+        "cv",
+        "genai",
+        "research"
+      ],
+      "id": "github-com-NVlabs-instant-ngp-releases-a-ba0edbc1",
+      "title": "instant-ngp Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/Stability-AI/generative-models/releases.atom",
+      "topics": [
+        "diffusion",
+        "genai",
+        "open-source"
+      ],
+      "id": "github-com-Stability-AI-generative-model-a095727e",
+      "title": "generative-models Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/ultralytics/yolov5/releases.atom",
+      "topics": [
+        "cv",
+        "open-source",
+        "education"
+      ],
+      "id": "github-com-ultralytics-yolov5-releases-a-f1382090",
+      "title": "YOLOv5 Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/IDEA-Research/GroundingDINO/releases.atom",
+      "topics": [
+        "cv",
+        "vlm",
+        "research"
+      ],
+      "id": "github-com-IDEA-Research-GroundingDINO-r-7fbfac13",
+      "title": "GroundingDINO Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/allenai/ai2thor/releases.atom",
+      "topics": [
+        "simulation",
+        "robotics",
+        "research"
+      ],
+      "id": "github-com-allenai-ai2thor-releases-atom-64338650",
+      "title": "ai2thor Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/facebookresearch/habitat-lab/releases.atom",
+      "topics": [
+        "robotics",
+        "simulation",
+        "research"
+      ],
+      "id": "github-com-facebookresearch-habitat-lab-ef095d19",
+      "title": "habitat-lab Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/Farama-Foundation/PettingZoo/releases.atom",
+      "topics": [
+        "rl",
+        "simulation",
+        "open-source"
+      ],
+      "id": "github-com-Farama-Foundation-PettingZoo-20bcc37f",
+      "title": "PettingZoo Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/HumanCompatibleAI/imitation/releases.atom",
+      "topics": [
+        "rl",
+        "safety",
+        "research"
+      ],
+      "id": "github-com-HumanCompatibleAI-imitation-r-b806396e",
+      "title": "imitation Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://ruder.io/rss",
+      "topics": [
+        "nlp",
+        "research",
+        "education"
+      ],
+      "id": "ruder-io-rss-62605395",
+      "title": "Sebastian Ruder",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://github.com/mlc-ai/web-llm/releases.atom",
+      "topics": [
+        "inference",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-mlc-ai-web-llm-releases-atom-7e3982e1",
+      "title": "WebLLM Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/text-embeddings-inference/releases.atom",
+      "topics": [
+        "embeddings",
+        "serving",
+        "open-source"
+      ],
+      "id": "github-com-huggingface-text-embeddings-i-c447c73b",
+      "title": "Text Embeddings Inference Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/chat-ui/releases.atom",
+      "topics": [
+        "llm",
+        "product",
+        "open-source"
+      ],
+      "id": "github-com-huggingface-chat-ui-releases-92c01e1d",
+      "title": "Hugging Face Chat UI Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/xenova/transformers.js/releases.atom",
+      "topics": [
+        "inference",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-xenova-transformers-js-releas-4e0f4a68",
+      "title": "Transformers.js Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/unum-cloud/usearch/releases.atom",
+      "topics": [
+        "vector",
+        "retrieval",
+        "open-source"
+      ],
+      "id": "github-com-unum-cloud-usearch-releases-a-6810c344",
+      "title": "USearch Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/nmslib/hnswlib/releases.atom",
+      "topics": [
+        "vector",
+        "retrieval",
+        "open-source"
+      ],
+      "id": "github-com-nmslib-hnswlib-releases-atom-f2371f91",
+      "title": "hnswlib Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/rapidsai/cuml/releases.atom",
+      "topics": [
+        "ml",
+        "accelerators",
+        "open-source"
+      ],
+      "id": "github-com-rapidsai-cuml-releases-atom-3274132d",
+      "title": "cuML Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/microsoft/LightGBM/releases.atom",
+      "topics": [
+        "ml",
+        "open-source",
+        "education"
+      ],
+      "id": "github-com-microsoft-LightGBM-releases-a-d68afe9a",
+      "title": "LightGBM Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/catboost/catboost/releases.atom",
+      "topics": [
+        "ml",
+        "open-source",
+        "education"
+      ],
+      "id": "github-com-catboost-catboost-releases-at-0c1fb408",
+      "title": "CatBoost Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pyg-team/pytorch_geometric/releases.atom",
+      "topics": [
+        "ml",
+        "knowledge-graphs",
+        "open-source"
+      ],
+      "id": "github-com-pyg-team-pytorch_geometric-re-f0930627",
+      "title": "PyG Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/dmlc/dgl/releases.atom",
+      "topics": [
+        "ml",
+        "knowledge-graphs",
+        "open-source"
+      ],
+      "id": "github-com-dmlc-dgl-releases-atom-7e162a19",
+      "title": "DGL Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pykeen/pykeen/releases.atom",
+      "topics": [
+        "knowledge-graphs",
+        "embeddings",
+        "open-source"
+      ],
+      "id": "github-com-pykeen-pykeen-releases-atom-ccb10965",
+      "title": "PyKEEN Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/snorkel-team/snorkel/releases.atom",
+      "topics": [
+        "labeling",
+        "data-centric-ai",
+        "open-source"
+      ],
+      "id": "github-com-snorkel-team-snorkel-releases-9aa51ea2",
+      "title": "Snorkel Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/setfit/releases.atom",
+      "topics": [
+        "nlp",
+        "training",
+        "open-source"
+      ],
+      "id": "github-com-huggingface-setfit-releases-a-3ee735b7",
+      "title": "SetFit Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/jlowin/fastmcp/releases.atom",
+      "topics": [
+        "agents",
+        "tool-use",
+        "open-source"
+      ],
+      "id": "github-com-jlowin-fastmcp-releases-atom-c23bf5a5",
+      "title": "FastMCP Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/modelcontextprotocol/python-sdk/releases.atom",
+      "topics": [
+        "agents",
+        "tool-use",
+        "open-source"
+      ],
+      "id": "github-com-modelcontextprotocol-python-s-44dcd0dc",
+      "title": "MCP Python SDK Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google-gemini/gemini-cli/releases.atom",
+      "topics": [
+        "agents",
+        "llm",
+        "product"
+      ],
+      "id": "github-com-google-gemini-gemini-cli-rele-e4daece1",
+      "title": "Gemini CLI Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/apple/coremltools/releases.atom",
+      "topics": [
+        "edge",
+        "on-device",
+        "open-source"
+      ],
+      "id": "github-com-apple-coremltools-releases-at-0369afd6",
+      "title": "coremltools Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google-ai-edge/mediapipe/releases.atom",
+      "topics": [
+        "cv",
+        "edge",
+        "open-source"
+      ],
+      "id": "github-com-google-ai-edge-mediapipe-rele-3c3bb4f2",
+      "title": "MediaPipe Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/NVIDIA/apex/releases.atom",
+      "topics": [
+        "optimization",
+        "training",
+        "open-source"
+      ],
+      "id": "github-com-NVIDIA-apex-releases-atom-7ff2c6a9",
+      "title": "APEX Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/facebookresearch/fairscale/releases.atom",
+      "topics": [
+        "training",
+        "optimization",
+        "open-source"
+      ],
+      "id": "github-com-facebookresearch-fairscale-re-e24e14e4",
+      "title": "fairscale Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pytorch/captum/releases.atom",
+      "topics": [
+        "interpretability",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-pytorch-captum-releases-atom-a09b02dd",
+      "title": "Captum Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/slundberg/shap/releases.atom",
+      "topics": [
+        "interpretability",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-slundberg-shap-releases-atom-f644655d",
+      "title": "SHAP Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/SeldonIO/alibi/releases.atom",
+      "topics": [
+        "interpretability",
+        "trust-audit",
+        "open-source"
+      ],
+      "id": "github-com-SeldonIO-alibi-releases-atom-43f5fb47",
+      "title": "Alibi Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/interpretml/interpret/releases.atom",
+      "topics": [
+        "interpretability",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-interpretml-interpret-release-16877857",
+      "title": "InterpretML Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/lutzroeder/netron/releases.atom",
+      "topics": [
+        "devtools",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-lutzroeder-netron-releases-at-f21afd48",
+      "title": "Netron Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/tensorflow/tensorboard/releases.atom",
+      "topics": [
+        "monitoring",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-tensorflow-tensorboard-releas-4a0293da",
+      "title": "TensorBoard Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pyro-ppl/pyro/releases.atom",
+      "topics": [
+        "ml",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-pyro-ppl-pyro-releases-atom-b3d3fff8",
+      "title": "Pyro Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/google/sentencepiece/releases.atom",
+      "topics": [
+        "nlp",
+        "llm",
+        "open-source"
+      ],
+      "id": "github-com-google-sentencepiece-releases-0edb9334",
+      "title": "SentencePiece Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/huggingface/evaluate/releases.atom",
+      "topics": [
+        "evaluation",
+        "ml",
+        "open-source"
+      ],
+      "id": "github-com-huggingface-evaluate-releases-478553ec",
+      "title": "Evaluate Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pyro-ppl/numpyro/releases.atom",
+      "topics": [
+        "ml",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-pyro-ppl-numpyro-releases-ato-3be9195f",
+      "title": "NumPyro Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://github.com/pymc-devs/pymc/releases.atom",
+      "topics": [
+        "ml",
+        "research",
+        "open-source"
+      ],
+      "id": "github-com-pymc-devs-pymc-releases-atom-8a88f4d9",
+      "title": "PyMC Releases",
+      "source_type": "github"
+    },
+    {
+      "url": "https://www.cold-takes.com/feed/",
+      "topics": [
+        "governance",
+        "safety",
+        "research"
+      ],
+      "id": "cold-takes-com-feed-16db45a7",
+      "title": "Cold Takes",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://blog.redwoodresearch.org/feed/",
+      "topics": [
+        "safety",
+        "alignment",
+        "research"
+      ],
+      "id": "blog-redwoodresearch-org-feed-fd26c9fa",
+      "title": "Redwood Research",
+      "source_type": "blog"
+    },
+    {
+      "url": "https://www.theregister.com/software/ai_ml/headlines.atom",
+      "topics": [
+        "industry",
+        "ml",
+        "product"
+      ],
+      "id": "theregister-com-software-ai_ml-headlines-a1d48549",
+      "title": "The Register AI/ML",
+      "source_type": "newsroom"
     }
   ]
 }

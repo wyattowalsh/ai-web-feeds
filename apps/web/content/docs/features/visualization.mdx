@@ -8,75 +8,85 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 # Visualization & Analytics
 
-Advanced visualization tooling for exploring analytics, trends, and forecasts. These surfaces are available when `BACKEND_URL` points to a running `ai-web-feeds` backend that includes the Spec 006 visualization router.
+Series are stored catalog rows, or `{ "demo": false, "points": [] }` when there is nothing to return. `demo` stays false. Points are not invented.
 
-<Callout type="info">These pages proxy to backend routes under `/api/v1/*`. Without a configured backend they return a `503 FEATURE_UNAVAILABLE` response and the UI surfaces remain usable with sample or local data where applicable.</Callout>
+Forecasts are not enabled. The dashboard builder is not enabled. The topic graph is a 2D D3 view of catalog topics and feeds.
+
+<Callout type="info">Next.js routes under `/api/visualizations` read the feed catalog in the web app. They do not proxy to `BACKEND_URL`, and they do not return `503`.</Callout>
+
+## Series
+
+`catalogSeries` in `apps/web/lib/visualization/catalog-series.ts` keeps object rows from `points`, `rows`, `feeds`, `sources`, a nested `catalog`, or `topics` when the value is not feed-like. One object that already has an identity field is a single point. Forecast arrays are ignored. An `ml` object is copied only when the input already includes one.
+
+An empty, unreadable, or non-row input is:
+
+```json
+{ "demo": false, "points": [] }
+```
+
+## Web routes
+
+| Route                                         | Methods          | Result                                                                   |
+| --------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
+| `/api/visualizations`                         | GET, POST        | Catalog series from stored feeds, or from a JSON body on POST            |
+| `/api/visualizations/[id]`                    | GET              | Catalog sources whose `id`, `feed`, or `url` equals the id               |
+| `/api/visualizations/[id]/data`               | POST             | Stored-catalog rows for that id. The request body is not catalog storage |
+| `/api/visualizations/dashboards`              | GET, POST        | `501`, builder disabled                                                  |
+| `/api/visualizations/dashboards/[id]`         | GET, PUT, DELETE | `501`, builder disabled                                                  |
+| `/api/visualizations/dashboards/[id]/widgets` | POST             | `501`, builder disabled                                                  |
+
+GET `/api/visualizations` uses the stored catalog. POST uses a JSON body when one is present, and the stored catalog when the body is empty. Invalid JSON becomes the empty series. The response is `{ "demo": false, "points": [...] }`, plus `ml` only when the input supplied it. `Cache-Control` is `private, s-maxage=60, stale-while-revalidate=300`. Telemetry names are `visualizations.list` and `visualizations.create`.
+
+GET `/api/visualizations/[id]` returns `catalogSeries` for matching sources, or the empty series when the id is missing or unknown. PUT and DELETE are not implemented on that route. Telemetry name: `visualizations.get`.
+
+POST `/api/visualizations/[id]/data` reads `loadFeedCatalog()` only. It matches `id`, `feed`, `feed_id`, `source_id`, `url`, or `visualization_id`, or a non-reserved key on the stored object. No match returns the empty series. Telemetry name: `visualizations.data`.
+
+Dashboard routes respond with HTTP 501:
+
+```json
+{ "enabled": false, "reason": "dashboard builder is not enabled" }
+```
+
+Nothing is stored.
 
 ## Pages
 
-- `/analytics/visualizations` — Chart builder for topics, feeds, and article metrics. Supports line, bar, area, scatter, pie, and heatmap.
-- `/analytics/dashboards` — Drag-and-drop multi-widget dashboards using react-grid-layout.
-- `/analytics/forecasts` — Time-series forecasts with confidence intervals and model metrics.
+- `/analytics/visualizations` states that the custom chart builder is not enabled. Real catalog rows only.
+- `/analytics/forecasts` states that forecast is not enabled. It does not fit a model or return a forecast series.
+- `/analytics/dashboards` is not a working builder. The dashboard routes above refuse the request.
 
-## Components
+## Topic graph
 
-Reusable visualization components live under `apps/web/components/visualizations/`:
+`GraphVisualizer` in `apps/web/components/graph-visualizer.tsx` draws a 2D SVG graph with D3. Layouts are force, radial, tree, and circular. Nodes come from the topic catalog, the feed catalog, or both. `/explorer` loads the topic catalog into that view. Topic pages use the same component through `apps/web/app/(home)/topics/topic-graph.tsx`.
 
-- `ChartBuilder`, `ChartContainer`, `ChartTypeSelector`, `DataSourceSelector`, `DateRangeFilter`, `CustomizationPanel`
-- Chart primitives: `LineChart`, `BarChart`, `AreaChart`, `ScatterChart`, `PieChart`, `HeatmapChart`
-- `DashboardBuilder` (widgets, layouts, add/remove/configure)
-- `ForecastChart` + `ForecastMetrics`
-- `TopicCluster3D` (React Three Fiber) with automatic 2D D3 fallback when WebGL is unavailable or FPS is low
+The graph does not invent a series.
 
-## API Proxy Routes
+## Python router
 
-Next.js API routes under `/api/visualizations/*` forward to the Python backend visualization endpoints:
+`create_app()` in `packages/ai_web_feeds/src/ai_web_feeds/web_api.py` already mounts `ai_web_feeds.visualization.api` at `/api/v1` and runs its startup and shutdown hooks in the app lifespan.
 
-| Web Route                                     | Backend (when mounted)             | Methods          |
-| --------------------------------------------- | ---------------------------------- | ---------------- |
-| `/api/visualizations`                         | `/api/v1/visualizations`           | GET, POST        |
-| `/api/visualizations/[id]`                    | `/api/v1/visualizations/{id}`      | GET, PUT, DELETE |
-| `/api/visualizations/[id]/data`               | `/api/v1/visualizations/{id}/data` | POST             |
-| `/api/visualizations/dashboards`              | `/api/v1/dashboards`               | GET, POST        |
-| `/api/visualizations/dashboards/[id]`         | `/api/v1/dashboards/{id}`          | GET, PUT, DELETE |
-| `/api/visualizations/dashboards/[id]/widgets` | `/api/v1/dashboards/{id}/widgets`  | POST             |
+`POST /api/v1/visualizations/{visualization_id}/data` still requires backend authorization. A device id is not a credential. When the caller is authorized and `AWF_VIZ_ENABLED` is unset or blank, the body is `{ "demo": false, "points": [] }` and the catalog is not read. When that variable is a non-empty string, points are stored dict rows from `data/feeds.yaml` (`sources`) for data source `feeds`, or from `data/topics.yaml` (`topics`) for data source `topics`, capped by `limit`. Any other data source stays an empty list. A missing visualization is HTTP 404. The body is always `{ "demo": false, "points": [...] }`.
 
-All routes include telemetry wrappers and return a friendly `503` payload when `BACKEND_URL` is not set.
+Dashboard handlers on that router return `{ "enabled": false, "reason": "dashboard builder is not enabled" }` and store nothing. `ForecastService` returns `{ "enabled": false, "reason": "forecast is not enabled" }`. No forecast route produces a series.
 
-## 3D Topic Clustering Fallback
+`GET`, `POST`, `PUT`, and `DELETE` on `/api/v1/visualizations` and `/api/v1/visualizations/{visualization_id}` read and write visualization records through `VisualizationService`. They use the same authorization rule: a device id is not a credential. Those records are not the web catalog-series routes, and their chart points still come only from the data handler above.
 
-`TopicCluster3D` renders with Three.js + React Three Fiber when WebGL and performance allow. When either condition fails it seamlessly switches to a 2D force-directed graph implemented with D3 (force simulation, zoom/pan, hover/click interactions) reusing layout patterns from `graph-visualizer.tsx`.
+## Storage
 
-## Backend Wiring
+These series are computed from the catalog on the server. They are not kept in a browser database. Reader state elsewhere uses raw IndexedDB through `apps/web/lib/db`.
 
-Mount the visualization router in the backend:
-
-```python
-from ai_web_feeds.web_api import create_app
-from ai_web_feeds.visualization.api import (
-    router as viz_router,
-    startup_event as viz_startup,
-    shutdown_event as viz_shutdown,
-)
-
-app = create_app()
-app.include_router(viz_router)
-app.add_event_handler("startup", viz_startup)
-app.add_event_handler("shutdown", viz_shutdown)
-```
-
-## Local Development
+## Local development
 
 ```bash
-# Terminal 1: backend with visualization routes
-uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
-
-# Terminal 2: web app
-BACKEND_URL=http://127.0.0.1:8001 pnpm dev
+cd apps/web && pnpm dev
 ```
 
-Open:
+The Python API, including the visualization router:
 
-- http://localhost:3000/analytics/visualizations
-- http://localhost:3000/analytics/dashboards
-- http://localhost:3000/analytics/forecasts
+```bash
+uv run uvicorn ai_web_feeds.web_api:app --host 127.0.0.1 --port 8001
+```
+
+`AWF_VIZ_ENABLED` only lets the Python data route return catalog rows. It does not enable forecasts or the dashboard builder. The web visualization routes do not read that variable and do not need `BACKEND_URL`.
+
+Open `/explorer` for the 2D topic graph. `/analytics/visualizations` only reports that the custom chart builder is not enabled.
